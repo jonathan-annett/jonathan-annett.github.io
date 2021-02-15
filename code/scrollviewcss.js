@@ -30,7 +30,10 @@ function addScrollCss (options,elementIds){
       height = options.height||480,
       left = options.left||0,
       top = options.top||0,
-      maxCount = options.maxCount|| elementIds.reduce(getMaxCount),
+      maxCount = options.maxCount|| elementIds.map(function(id){ 
+        var el = getEl(id);
+        return el?el.children.length:0;
+      }).reduce(getMaxCount),
       speed = options.swipeSeconds||0.25;
    
   function getEl(id,fn) {
@@ -100,7 +103,7 @@ function addScrollCss (options,elementIds){
      }
 
 
-    function snapLeft() {
+    function snapLeft(cb) {
       
       var count = contain.children.length,
           CB = typeof cb==='function'?cb:undefined;
@@ -126,7 +129,7 @@ function addScrollCss (options,elementIds){
          
     }
  
-    function scrollLeft(e) {
+    function scrollLeft(e,cb) {
       console.log("left",e.type,e.detail.shiftKey,e.detail.swipeDevice);
       if (e.detail.shiftKey) return snapLeft(e,cb);
       
