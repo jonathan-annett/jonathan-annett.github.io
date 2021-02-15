@@ -48,9 +48,6 @@
       
         },
        
-        shiftKey : e.shiftKey,
-        ctrlKey : e.ctrlKey,
-        altKey : e.altKey,
        
 
         // add coordinate data that would typically acompany a touch/click event
