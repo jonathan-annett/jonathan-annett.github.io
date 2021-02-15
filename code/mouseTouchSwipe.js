@@ -59,10 +59,10 @@
       end = {},
       tracking = false,
       thresholdDistanceX = function(){
-        return (o.offsetWidth || o.clientWidth) * mouseSwipeDelta;
+        return o.mouseSwipeThresholdX ||  (o.clientWidth* mouseSwipeDelta) ;
       },
       thresholdDistanceY = function(){
-        return (o.offsetHeight || o.clientHeight) * mouseSwipeDelta;
+        return o.mouseSwipeThresholdY || (o.clientHeight) * mouseSwipeDelta);
       };
     function gestureStart(e) {
       tracking = true;
@@ -138,13 +138,13 @@
     var start = {};
     var end = {};
     var tracking = false;
-    var thresholdDistanceX = function(){
-        return  (o.offsetWidth || o.clientWidth) * touchSwipeDelta;
+    var 
+      thresholdDistanceX = function(){
+        return o.mouseSwipeThresholdX ||  (o.clientWidth* touchSwipeDelta) ;
       },
       thresholdDistanceY = function(){
-        return  (o.offsetHeight || o.clientHeight) * touchSwipeDelta;
+        return o.mouseSwipeThresholdY || (o.clientHeight) * touchSwipeDelta);
       };
-
     function gestureStart(e) {
       if (e.touches.length > 1) {
         tracking = false;
