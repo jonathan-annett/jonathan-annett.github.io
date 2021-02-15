@@ -1,6 +1,6 @@
 //based loosely on: https://davidwalsh.name/vendor-prefix
   
-(function(){
+  (function(){
  if (typeof window!=='object') 
     return;
  if (typeof window.vendorPrefix!=='undefined') 
