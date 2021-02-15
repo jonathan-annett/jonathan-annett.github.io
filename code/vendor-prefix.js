@@ -1,9 +1,7 @@
 //based loosely on: https://davidwalsh.name/vendor-prefix
   
   (function(){
- if (typeof window!=='object') 
-    return;
- if (typeof window.vendorPrefix!=='undefined') 
+ if (scriptLock(['cdpen.io'],'jonathan-annett.github.io') ||  (typeof window!=='object') ||  (typeof window.vendorPrefix!=='undefined') )
     return;
   
   var styles = window.getComputedStyle(document.documentElement, ''),
@@ -19,4 +17,10 @@
     css: '-' + pre + '-',
     js: pre[0].toUpperCase() + pre.substr(1)
   };
+   function scriptLock(domain,offsite){
+    var scripts = document.getElementsByTagName('script');
+    var src = scripts[scripts.length - 1].src; 
+    if (!src.startsWith('https://'+offsite+'/')) return false;
+    return domain.indexOf(location.hostname)<0;
+  }
 })();
