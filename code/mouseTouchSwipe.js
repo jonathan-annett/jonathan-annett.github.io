@@ -1,4 +1,16 @@
-  function defaultSwipeEventNames(ev) {
+(function(){
+ if (typeof window!=='object') 
+    return;
+ if (typeof window.mouseSwipeEvents==='function') 
+    return;
+  
+  var  ON = "addEventListener",
+      OFF= "removeEventListener";
+
+ window.mouseSwipeEvents = mouseSwipeEvents;
+ window.mobileSwipeEvents = mobileSwipeEvents;
+  
+ function defaultSwipeEventNames(ev) {
     return (
       ev || {
         up: "swipe-up",
@@ -225,3 +237,5 @@
     return self;
 
   }
+  
+})();
