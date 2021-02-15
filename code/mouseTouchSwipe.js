@@ -118,7 +118,7 @@
             -deltaY > t_y &&
             Math.abs(deltaX) < t_x
           ) {
-            emitSwipe(o, evs.up, e,, deltaY, deltaTime );
+            emitSwipe(o, evs.up, e, deltaY, deltaTime );
           }
         }
       }
@@ -204,7 +204,7 @@
           -deltaY > t_y &&
           Math.abs(deltaX) < t_x
         ) {
-          emitSwipe(o, evs.up, e, deltaY );
+          emitSwipe(o, evs.up, e, deltaY, deltaTime );
         }
       }
     }
