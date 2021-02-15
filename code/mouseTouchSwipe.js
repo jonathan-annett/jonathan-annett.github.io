@@ -27,7 +27,7 @@
     );
   }
  
-  function emitSwipe(o, swipe_type, e) {
+  function emitSwipe(o, swipe_type, e , swipeDelta, swipeTimeDelta) {
     o.dispatchEvent(
       new CustomEvent(swipe_type, {
         bubbles: true,
@@ -38,6 +38,9 @@
           clientX: e.clientX,
           clientY: e.clientY
         },
+       
+        swipeDelta : swipeDelta ? Math.abs(swipeDelta) : undefined,
+        swipeTimeDelta :  swipeTimeDelta,
 
         // add coordinate data that would typically acompany a touch/click event
         clientX: e.clientX,
@@ -100,22 +103,22 @@
             deltaX > t_x &&
             Math.abs(deltaY) < t_y
           ) {
-            emitSwipe(o, evs.right, e);
+            emitSwipe(o, evs.right, e, deltaX, deltaTime );
           } else if (
             -deltaX > t_x &&
             Math.abs(deltaY) < t_y
           ) {
-            emitSwipe(o, evs.left, e);
+            emitSwipe(o, evs.left, e, deltaX, deltaTime );
           } else if (
             deltaY > t_y &&
             Math.abs(deltaX) < t_x
           ) {
-            emitSwipe(o, evs.down, e);
+            emitSwipe(o, evs.down, e, deltaY, deltaTime );
           } else if (
             -deltaY > t_y &&
             Math.abs(deltaX) < t_x
           ) {
-            emitSwipe(o, evs.up, e);
+            emitSwipe(o, evs.up, e,, deltaY, deltaTime );
           }
         }
       }
@@ -186,22 +189,22 @@
           deltaX > t_x &&
           Math.abs(deltaY) < t_y
         ) {
-          emitSwipe(o, evs.right, e);
+          emitSwipe(o, evs.right, e, deltaX, deltaTime );
         } else if (
           -deltaX > t_x &&
           Math.abs(deltaY) < t_y
         ) {
-          emitSwipe(o, evs.left, e);
+          emitSwipe(o, evs.left, e, deltaX, deltaTime );
         } else if (
           deltaY > t_y &&
           Math.abs(deltaX) < t_x
         ) {
-          emitSwipe(o, evs.down, e);
+          emitSwipe(o, evs.down, e, deltaY, deltaTime );
         } else if (
           -deltaY > t_y &&
           Math.abs(deltaX) < t_x
         ) {
-          emitSwipe(o, evs.up, e);
+          emitSwipe(o, evs.up, e, deltaY );
         }
       }
     }
