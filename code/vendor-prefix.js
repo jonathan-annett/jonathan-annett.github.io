@@ -1,7 +1,7 @@
 //based loosely on: https://davidwalsh.name/vendor-prefix
   
   (function(){
- if (scriptLock(['cdpen.io'],'jonathan-annett.github.io') ||  (typeof window!=='object') ||  (typeof window.vendorPrefix!=='undefined') )
+ if (scriptLock(['cdpn.io','codepen.io'],'jonathan-annett.github.io') ||  (typeof window!=='object') ||  (typeof window.vendorPrefix!=='undefined') )
     return;
   
   var styles = window.getComputedStyle(document.documentElement, ''),
