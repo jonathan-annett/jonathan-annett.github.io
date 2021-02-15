@@ -36,11 +36,12 @@
         // custom event data (legacy)
         detail: {
           clientX: e.clientX,
-          clientY: e.clientY
+          clientY: e.clientY,
+          swipeDelta : swipeDelta ? Math.abs(swipeDelta) : undefined,
+          swipeTimeDelta :  swipeTimeDelta
+      
         },
        
-        swipeDelta : swipeDelta ? Math.abs(swipeDelta) : undefined,
-        swipeTimeDelta :  swipeTimeDelta,
 
         // add coordinate data that would typically acompany a touch/click event
         clientX: e.clientX,
