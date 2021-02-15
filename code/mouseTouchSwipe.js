@@ -9,6 +9,12 @@
 
  window.mouseSwipeEvents = mouseSwipeEvents;
  window.mobileSwipeEvents = mobileSwipeEvents;
+ window.touchSwipeEvents  = mobileSwipeEvents;
+ 
+ window.mouseSwipeTimeout=300;
+ window.touchSwipeTimeout=200;
+ window.mouseSwipeDelta= 1/4;
+ window.touchSwipeDelta= 1/4;
   
  function defaultSwipeEventNames(ev) {
     return (
