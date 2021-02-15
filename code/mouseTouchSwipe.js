@@ -27,7 +27,7 @@
     );
   }
  
-  function emitSwipe(o, swipe_type, e , swipeDelta, swipeTimeDelta) {
+  function emitSwipe(o, swipe_type, e , swipeDelta, swipeTimeDelta, swipeDevice) {
     o.dispatchEvent(
       new CustomEvent(swipe_type, {
         bubbles: true,
@@ -38,9 +38,19 @@
           clientX: e.clientX,
           clientY: e.clientY,
           swipeDelta : swipeDelta ? Math.abs(swipeDelta) : undefined,
-          swipeTimeDelta :  swipeTimeDelta
+          swipeTimeDelta :  swipeTimeDelta,
+         
+           shiftKey : e.shiftKey,
+           ctrlKey : e.ctrlKey,
+           altKey : e.altKey,
+           swipeDevice : swipeDevice
+       
       
         },
+       
+        shiftKey : e.shiftKey,
+        ctrlKey : e.ctrlKey,
+        altKey : e.altKey,
        
 
         // add coordinate data that would typically acompany a touch/click event
@@ -57,6 +67,7 @@
   }
 
   function mouseSwipeEvents(o, left, right, up, down, ev) {
+    var swipeDevice = 'mouse';
     var evs = defaultSwipeEventNames(ev);
 
     var start = {},
@@ -104,22 +115,22 @@
             deltaX > t_x &&
             Math.abs(deltaY) < t_y
           ) {
-            emitSwipe(o, evs.right, e, deltaX, deltaTime );
+            emitSwipe(o, evs.right, e, deltaX, deltaTime,swipeDevice );
           } else if (
             -deltaX > t_x &&
             Math.abs(deltaY) < t_y
           ) {
-            emitSwipe(o, evs.left, e, deltaX, deltaTime );
+            emitSwipe(o, evs.left, e, deltaX, deltaTime,swipeDevice );
           } else if (
             deltaY > t_y &&
             Math.abs(deltaX) < t_x
           ) {
-            emitSwipe(o, evs.down, e, deltaY, deltaTime );
+            emitSwipe(o, evs.down, e, deltaY, deltaTime,swipeDevice );
           } else if (
             -deltaY > t_y &&
             Math.abs(deltaX) < t_x
           ) {
-            emitSwipe(o, evs.up, e, deltaY, deltaTime );
+            emitSwipe(o, evs.up, e, deltaY, deltaTime,swipeDevice );
           }
         }
       }
@@ -137,6 +148,7 @@
   }
 
   function mobileSwipeEvents(o, left, right, up, down, ev) {
+    var swipeDevice = 'touch';
     var evs = defaultSwipeEventNames(ev);
 
     var start = {};
@@ -190,22 +202,22 @@
           deltaX > t_x &&
           Math.abs(deltaY) < t_y
         ) {
-          emitSwipe(o, evs.right, e, deltaX, deltaTime );
+          emitSwipe(o, evs.right, e, deltaX, deltaTime,swipeDevice );
         } else if (
           -deltaX > t_x &&
           Math.abs(deltaY) < t_y
         ) {
-          emitSwipe(o, evs.left, e, deltaX, deltaTime );
+          emitSwipe(o, evs.left, e, deltaX, deltaTime,swipeDevice );
         } else if (
           deltaY > t_y &&
           Math.abs(deltaX) < t_x
         ) {
-          emitSwipe(o, evs.down, e, deltaY, deltaTime );
+          emitSwipe(o, evs.down, e, deltaY, deltaTime,swipeDevice );
         } else if (
           -deltaY > t_y &&
           Math.abs(deltaX) < t_x
         ) {
-          emitSwipe(o, evs.up, e, deltaY, deltaTime );
+          emitSwipe(o, evs.up, e, deltaY, deltaTime,swipeDevice );
         }
       }
     }
