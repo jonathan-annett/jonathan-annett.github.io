@@ -289,7 +289,20 @@ function addScrollCss (options,elementIds){
     
     var cssTxt = "",width_= width.toString()+"px",height_=+height.toString()+"px";
     
+    
     cssTxt += "."+container_clip+"{"+eol;   
+    
+    cssTxt += "user-select: none;"+eol;   
+      if (window.vendorPrefix) {
+      cssTxt += window.vendorPrefix.css+"user-select: none;"+eol;   
+   }  else {
+       cssTxt += "-webkit-touch-callout: none;"+eol;   
+       cssTxt += "-webkit-user-select: none;"+eol;   
+       cssTxt += "-khtml-user-select: none;"+eol;   
+       cssTxt += "-moz-user-select: none;"+eol;   
+       cssTxt += "-ms-user-select: none;"+eol;   
+   }
+    
   
     cssTxt += "overflow:hidden;"+eol;
     cssTxt += "width : "+width_+";"+eol;
