@@ -1,0 +1,519 @@
+
+
+<!DOCTYPE html>
+<html lang="en" ><p class="codepen" data-height="474" data-theme-id="dark" data-default-tab="html,result" data-user="sophtwhere" data-slug-hash="rNWyOVQ" style="height: 474px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="simple swipe framework for mouse and touch devices">
+  <span>See the Pen <a href="https://codepen.io/sophtwhere/pen/rNWyOVQ">
+  simple swipe framework for mouse and touch devices</a> by Jonathan  Annett (<a href="https://codepen.io/sophtwhere">@sophtwhere</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+<head>
+
+  <meta charset="UTF-8">
+  
+<link rel="apple-touch-icon" type="image/png" href="https://cpwebassets.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png" />
+<meta name="apple-mobile-web-app-title" content="CodePen">
+
+<link rel="shortcut icon" type="image/x-icon" href="https://cpwebassets.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico" />
+
+<link rel="mask-icon" type="" href="https://cpwebassets.codepen.io/assets/favicon/logo-pin-8f3771b1072e3c38bd662872f6b673a722f4b3ca2421637d5596661b4e2132cc.svg" color="#111" />
+
+
+  <title>CodePen - A Pen by Jonathan  Annett</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  
+  
+<style>
+body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.odd,
+.even {
+   font-size:72pt;
+}
+
+.odd {
+  background-color: #0adaf1;
+}
+
+.container.snap0,
+.container.scroll0,
+.container.scroll1,
+.even {
+  background-color: #c3b4a4;
+}
+
+
+
+.container_clip {
+  
+  overflow:hidden;
+  width : 500px;
+  height : 300px; 
+  position:absolute;
+  top:50px;
+  left :0;
+  padding:0;
+  margin:0;
+ 
+}
+
+#second_container {
+  top : 400px;
+}
+</style>
+
+  
+  
+  
+  
+
+</head>
+
+<body translate="no" >
+  <div class="container_clip">
+   <!--pre populated-->
+  <div id="container" class="odd container snap1">
+    <div class="contained odd"> 1 
+    </div><div class="contained even"> 2 
+    </div><div class="contained odd"> 3 
+    </div><div class="contained even">4 
+    </div><div class="contained even"> 5 
+    </div></div>
+</div>
+<div id="second_container" class="container_clip"></div>
+
+
+<button id="snapleft">&lt;snap</button>
+<button id="snapright">snap&gt;</button>
+<button id="scrollleft">&lt;scroll</button>
+<button id="scrollright">scroll&gt;</button>
+
+<button onclick="containerScroller.scrollTo(1);">1</button>
+<button onclick="containerScroller.scrollTo(2);">2</button>
+<button onclick="containerScroller.scrollTo(3);">3</button>
+<button onclick="containerScroller.scrollTo(4);">4</button>
+  
+  <script src='https://jonathan-annett.github.io/code/current-device.js'></script>
+<script src='https://jonathan-annett.github.io/code/addLongPress.js'></script>
+<script src='https://jonathan-annett.github.io/code/mouseTouchSwipe.js#2b24e597c4e958fd88214b36696c2cddb689b767'></script>
+<script src='https://jonathan-annett.github.io/code/vendor-prefix.js#477e69868fed007a87b3d4a288e2aeecc1c47dda'></script>
+      <script id="rendered-js" >
+(function(){
+   function scriptCheck(domain,offsite,fn,typ){
+    if (typeof window!=='object'||(!!fn&&typeof window[fn]===typ)) return false;
+    var scripts = document.getElementsByTagName('script');
+    var src = scripts[scripts.length - 1].src; 
+    if (!src.startsWith('https://'+offsite+'/')) return false;
+    if (domain.indexOf(location.hostname)>=0) return false;
+    console.error("PLEASE DON'T SERVE THIS FILE FROM "+offsite);
+    console.warn('Please download '+src+' and serve it from your own server.');
+    return true;
+  }
+  
+       function scriptCheck(e,o,t,n){if(typeof window!=='object'||t&&typeof window[t]===n)return!1;var r=document.getElementsByTagName("script"),s=r[r.length-1].src;return!!s.startsWith("https://"+o+"/")&&(!(e.indexOf(location.hostname)>=0)&&(console.error("PLEASE DON'T SERVE THIS FILE FROM "+o),console.warn("Please download "+s+" and serve it from your own server."),!0))}
+
+})();
+
+
+//https://jonathan-annett.github.io/code/mouseTouchSwipe.js#2b24e597c4e958fd88214b36696c2cddb689b767
+
+
+  // https://jonathan-annett.github.io/code//scrollviewcss.js
+(function(){
+  
+    if (scriptCheck(['cdpn.io','codepen.io'],'jonathan-annett.github.io','addScrollCss','function')  ) 
+    return;
+
+
+window.addScrollCss=addScrollCss;
+
+function addScrollCss (options,elementIds){ 
+  scrollClases = scrollClases ||{};
+  elementIds = (typeof elementIds=== 'object' && 
+                  elementIds.constructor===Array) ? elementIds : [elementIds];
+
+  var ON = "addEventListener",
+      OFF= "remove"+ON.substr(3),
+      HAS="some",
+      QS="querySelector",
+      QSA=QS+"All",
+      console = window.console,
+
+     
+
+      eol="",
+      defaultClasses = {
+        container_clip : "container_clip",
+        container : "container",
+        contained : "contained",
+        even_odd  : [ "even","odd"] 
+      },
+      container_clip = options.container_clip||defaultClasses.container_clip,
+      container= options.container||defaultClasses.container,
+      contained= options.contained||defaultClasses.contained,
+      odd  = (options.even_odd&&options.even_odd[1]) ||defaultClasses.even_odd[1],
+      even = (options.even_odd&&options.even_odd[0]) ||defaultClasses.even_odd[0],
+      even_odd=[even,odd],
+      width = options.width||320,
+      height = options.height||480,
+      left = options.left||0,
+      top = options.top||0,
+      maxCount = options.maxCount|| elementIds.map(function(id){ 
+        var el = getEl(id);
+        return el?el.children.length:0;
+      }).reduce(getMaxCount),
+      speed = options.swipeSeconds||0.25;
+  
+
+  function getEl(id,fn) {
+    var c=document.getElementById(id);
+    if(fn)c.onclick=fn
+    return c;
+  }
+  function getMaxCount (max,val) {
+    max = ( max === undefined || val >max ) ? val : max;
+    return max;
+  }
+  
+  function getContainerFromClip(contain_clip){
+      var contain = contain_clip[QSA]("."+container);
+      if (contain && contain.length===1) {
+        return contain[0];
+      } else {
+        
+        return false;
+      }
+  }
+ 
+  function wrapContainer(containerId) {
+    var 
+    contain_clip,
+    contain=getEl(containerId);
+    if (contain.classList.contains(container_clip)) {
+      contain_clip = contain;
+      contain = getContainerFromClip(contain_clip);
+      if(contain===null) return null;
+    } else {
+       if (contain.classList.contains(container)) {
+         contain_clip=contain.parentElement;
+         contain = getContainerFromClip(contain_clip);
+         if(contain===null) {
+           if (contain_clip.children.length===0) {
+             contain = document.createElement('div');
+             contain.className = container;
+             contain.classList.add(even);
+             contain_clip.addChildElement(contain);
+           }
+         }
+       }
+       if(contain===null) return null;
+    }
+    var tabindex = 1;
+    if (!contain) return null;
+
+    contain.mouseSwipeThresholdX  = 100;
+    contain.mouseSwipeThresholdY  = 100;
+    contain.touchSwipeThresholdX  = 100;
+    contain.touchSwipeThresholdY  = 100;
+    
+    var transitionCallback=false,
+        transitionCallbackFired=function() {
+        if (transitionCallback) {
+            transitionCallback();
+            transitionCallback=false;
+        }
+      };
+    contain[ON]('transitioncancel', transitionCallbackFired);
+
+    contain[ON]('transitionend', transitionCallbackFired);
+
+    function setSectionIndex(index,setMode,cb) {
+       transitionCallback=cb;
+       var t=[],
+          count=contain.children.length,
+          retval = (typeof index ==='number') && (index >=0) && (index <= count+2);
+      index = retval ? index : 1;
+
+      var newClass = (setMode||"scroll")+index.toString();
+      if (contain.classList.contains(newClass)){
+         transitionCallback=undefined;
+         return typeof cb==='function'?cb():cb;
+      }
+
+      if (!t.concat.apply(t,contain.classList).some(function(x){
+
+        if (x.startsWith("scroll") && !isNaN(x.substr(6)) ) { 
+           
+           contain.classList.add(newClass);
+           contain.classList.remove(x);
+           return true;
+        }
+
+        if (x.startsWith("snap") && !isNaN(x.substr(5)) ) {
+           contain.classList.remove(x);
+           contain.classList.add(newClass);
+           return true;
+        }
+        
+        return false;
+      })) {
+          contain.classList.add(newClass);
+      }
+
+     }
+
+    function snapLeft(cb) {
+      
+      var count = contain.children.length,
+          CB = typeof cb==='function'?cb:undefined;
+      
+      tabindex++;
+      if (tabindex >count)  {
+         tabindex=1;
+      } 
+      
+      setSectionIndex(tabindex,"snap",CB);
+    }
+    
+    function snapRight(cb) {
+      var count=contain.children.length,
+          CB = typeof cb==='function'?cb:undefined;
+      
+      tabindex--;
+      if (tabindex <1)  {
+        tabindex=count;
+       }
+   
+      setSectionIndex(tabindex,"snap",CB);
+         
+    }
+ 
+    function scrollLeft(e,cb) {
+      console.log("left",e.type,e.detail.shiftKey,e.detail.swipeDevice);
+      if (e.detail.shiftKey) return snapLeft(e,cb);
+      
+      var count=contain.children.length,
+          CB=typeof cb==='function'?cb:undefined;
+      tabindex++;
+      if (tabindex > count)  {
+
+        setSectionIndex(0,"snap",function(){
+           setSectionIndex(1,"scroll",CB);
+           tabindex=1;
+        });
+         
+      } else
+        setSectionIndex(tabindex,"scroll",CB);
+    }
+    
+    function scrollRight (e,cb) {
+      
+      console.log("right",e.type, e.detail.shiftKey,e.detail.swipeDevice);
+      if (e.detail.shiftKey) return snapRight(e,cb);
+      
+      var count=contain.children.length,
+          CB=typeof cb==='function'?cb:undefined;
+      
+      tabindex--;
+      if (tabindex <1)  {
+
+        
+         setSectionIndex(count+1,"snap",function(){
+            setSectionIndex(count,"scroll",CB);
+            tabindex=count;
+        });
+        
+      } else
+        setSectionIndex(tabindex,"scroll",CB);
+    }
+
+    function scrollToSect(n) {
+      if (n===tabindex) 
+        return;
+      contain.className = 'container scroll'+n;
+      tabindex=n;
+    }
+
+    function snapToSect(n) {
+      if (n===tabindex) 
+        return;
+      contain.className = 'container nap'+n;
+      tabindex=n;
+    }
+
+    
+    
+    if (options.mouse) {
+     mouseSwipeEvents(contain,scrollLeft , scrollRight) ;
+    }
+    
+    if (options.touch) {
+     touchSwipeEvents(contain, scrollLeft, scrollRight);
+    }
+    
+    
+    
+    for (var i= 0;i<contain.children.length;i++) {
+      var el=contain.children[i];
+       el.classList.remove(even_odd[i % 2]);
+       el.classList.add(even_odd[1-(i % 2)]);
+    }
+
+
+    return {
+      scrollLeft   : scrollLeft,
+      scrollRight  : scrollRight,
+      snapLeft     : snapLeft,
+      snapRight    : snapRight,
+      scrollTo     : scrollToSect,
+      snapTo       : snapToSect
+    };
+
+  } 
+  
+  var csstransition = function(s,mode){
+    if (window.vendorPrefix) {
+      csstransition=css_trans;
+      return css_trans(s,mode);
+    }
+    return css_generic(s,mode); 
+  };
+  function css_trans(s,mode) {
+     var cssTxt="transition: "+(s?s:0)+"s "+(mode?mode:"ease-in-out")+";"+eol;
+    return cssTxt+window.vendorPrefix.css+cssTxt;
+  }
+  function css_generic(s,mode) {
+    var prefixes = ["-webkit-","-moz-","-o-",""];
+    var cssTxt="transition: "+(s?s:0)+"s "+(mode?mode:"ease-in-out")+";"+eol;
+    return cssTxt+(prefixes.join(cssTxt));
+  }
+
+  function scrollCssElement(container,contained,width,index,speed) {
+
+    return (
+      "."+container+ ".scroll"+index+" ."+contained+ "{"+eol+
+      " transform: translate("+  (width*(1-index)).toString()+"px,0);"+ eol +
+      csstransition(speed,"ease-in-out") + eol +
+      "}" + eol +
+
+      "."+container+ ".snap"+index+" ."+contained+ "{"+eol+
+      " transform: translate("+  (width*(1-index)).toString()+"px,0);"+ eol +
+      csstransition(0.01,"ease-in-out") + eol +
+      "}"
+    );
+  }
+
+  function scrollCss (container_clip,container,contained,width,height,left,top,count,speed){
+    
+    
+    
+    
+    var cssTxt = "",width_= width.toString()+"px",height_=+height.toString()+"px";
+    
+    cssTxt += "."+container_clip+"{"+eol;   
+  
+    cssTxt += "overflow:hidden;"+eol;
+    cssTxt += "width : "+width_+";"+eol;
+    cssTxt += "height : "+height_+"; "+eol;
+    cssTxt += "position:absolute;"+eol;
+    cssTxt += "top:"+top.toString()+"px;"+eol;
+    cssTxt += "left :"+left.toString()+"px;"+eol;
+    cssTxt += "padding:0;"+eol;
+    cssTxt += "margin:0;"+eol;
+    cssTxt += "}"+eol;
+
+    cssTxt += "."+container+" {"+eol;
+    cssTxt += "width: "+((count+2)*width).toString()+"px;"+eol;
+    cssTxt += "position: absolute;"+eol;
+    cssTxt += "left:0;"+eol;
+    cssTxt += "top:0;"+eol;
+    cssTxt += "padding:0;margin:0;"+eol;
+    cssTxt += "clip: rect(0,"+width_+","+height_+",0);"+eol;
+    cssTxt += "}"+eol;
+    cssTxt += "."+contained+" {"+eol;
+    cssTxt += "position: relative;"+eol;
+    cssTxt += "display: inline-block;"+eol;
+    cssTxt += "width:  "+width_+";"+eol;
+    cssTxt += "height: "+height_+";"+eol;
+    cssTxt += "margin :0;"+eol;
+    cssTxt += "padding:0;"+eol;
+    cssTxt += "}";
+
+    for (var index=0;index<count+2;index++) {
+      cssTxt+=(eol+scrollCssElement(container,contained,width,index,speed)) ;
+    }
+    return cssTxt;
+  }
+
+  var style = document.createElement('style');
+  style.type = 'text/css';
+  style.innerHTML = scrollCss (container_clip,container,contained,width,height,left,top,maxCount,speed);
+  document.getElementsByTagName('head')[0].appendChild(style);
+  
+  var controllers = elementIds.map(wrapContainer).filter (function(c){
+    if (c===null) return false;
+    c.controllers=controllers;
+    return true; 
+  });
+  
+ return controllers[0];
+  
+
+
+
+}
+     function scriptCheck(e,o,t,n){if(typeof window!=='object'||t&&typeof window[t]===n)return!1;var r=document.getElementsByTagName("script"),s=r[r.length-1].src;return!!s.startsWith("https://"+o+"/")&&(!(e.indexOf(location.hostname)>=0)&&(console.error("PLEASE DON'T SERVE THIS FILE FROM "+o),console.warn("Please download "+s+" and serve it from your own server."),!0))}
+  
+})();
+
+
+var elementIds = ["container"]; 
+
+var containerScroller = addScrollCss (scrollClases = {
+  container_clip : "container_clip",
+  container : "container",
+  contained : "contained",
+  even_odd  : ["even","odd"],
+  width:500,
+  height:300,
+  left:50,
+  top:50,
+  swipeSeconds : 0.25,
+  mouse:window.device ? window.device.desktop():false,
+  touch:true
+},elementIds);
+
+ 
+ 
+function getEl(id,fn) {
+  var c=document.getElementById(id);
+  if(fn)c.onclick=fn
+  return c;
+}
+   
+
+getEl("snapleft",containerScroller.snapLeft );
+
+getEl("snapright",containerScroller.snapRight );
+
+getEl("scrollleft",containerScroller.scrollLeft);
+
+getEl("scrollright",containerScroller.scrollRight);
+    </script>
+
+  
+
+</body>
+
+</html>
+ 
