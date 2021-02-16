@@ -1,19 +1,26 @@
 (function(){
- if (typeof window!=='object') 
+  
+    if (scriptCheck(['cdpn.io','codepen.io'],'jonathan-annett.github.io','addScrollCss','function')  ) 
     return;
- if (typeof window.addScrollCss==='function') 
-    return;
+
+
 window.addScrollCss=addScrollCss;
 
 function addScrollCss (options,elementIds){ 
   scrollClases = scrollClases ||{};
   elementIds = (typeof elementIds=== 'object' && 
                   elementIds.constructor===Array) ? elementIds : [elementIds];
-    
-  var eol="\n",
-      ON = "addEventListener",
-      OFF= "removeEventListener",
+
+  var ON = "addEventListener",
+      OFF= "remove"+ON.substr(3),
       HAS="some",
+      QS="querySelector",
+      QSA=QS+"All",
+      console = window.console,
+
+     
+
+      eol="",
       defaultClasses = {
         container_clip : "container_clip",
         container : "container",
@@ -35,7 +42,8 @@ function addScrollCss (options,elementIds){
         return el?el.children.length:0;
       }).reduce(getMaxCount),
       speed = options.swipeSeconds||0.25;
-   
+  
+
   function getEl(id,fn) {
     var c=document.getElementById(id);
     if(fn)c.onclick=fn
@@ -45,9 +53,40 @@ function addScrollCss (options,elementIds){
     max = ( max === undefined || val >max ) ? val : max;
     return max;
   }
+  
+  function getContainerFromClip(contain_clip){
+      var contain = contain_clip[QSA]("."+container);
+      if (contain && contain.length===1) {
+        return contain[0];
+      } else {
+        
+        return false;
+      }
+  }
  
   function wrapContainer(containerId) {
-    var contain=getEl(containerId);
+    var 
+    contain_clip,
+    contain=getEl(containerId);
+    if (contain.classList.contains(container_clip)) {
+      contain_clip = contain;
+      contain = getContainerFromClip(contain_clip);
+      if(contain===null) return null;
+    } else {
+       if (contain.classList.contains(container)) {
+         contain_clip=contain.parentElement;
+         contain = getContainerFromClip(contain_clip);
+         if(contain===null) {
+           if (contain_clip.children.length===0) {
+             contain = document.createElement('div');
+             contain.className = container;
+             contain.classList.add(even);
+             contain_clip.addChildElement(contain);
+           }
+         }
+       }
+       if(contain===null) return null;
+    }
     var tabindex = 1;
     if (!contain) return null;
 
@@ -102,7 +141,6 @@ function addScrollCss (options,elementIds){
 
      }
 
-
     function snapLeft(cb) {
       
       var count = contain.children.length,
@@ -144,7 +182,7 @@ function addScrollCss (options,elementIds){
         });
          
       } else
-        setSectionIndex(tabindex,"scroll",CB)
+        setSectionIndex(tabindex,"scroll",CB);
     }
     
     function scrollRight (e,cb) {
@@ -182,15 +220,17 @@ function addScrollCss (options,elementIds){
       tabindex=n;
     }
 
-   
+    
     
     if (options.mouse) {
-      mouseSwipeEvents(contain,scrollLeft , scrollRight);
-    } ;
+     mouseSwipeEvents(contain,scrollLeft , scrollRight) ;
+    }
     
     if (options.touch) {
-      touchSwipeEvents(contain, scrollLeft, scrollRight);
+     touchSwipeEvents(contain, scrollLeft, scrollRight);
     }
+    
+    
     
     for (var i= 0;i<contain.children.length;i++) {
       var el=contain.children[i];
@@ -209,10 +249,22 @@ function addScrollCss (options,elementIds){
     };
 
   } 
-
-  function csstransition(sex,mode) {
-    var cssTxt="transition: "+(sex?sex:0)+"s "+(mode?mode:"ease-in-out")+";"+eol;
-    return cssTxt+(["-webkit-","-moz-","-o-",""].join(cssTxt));
+  
+  var csstransition = function(s,mode){
+    if (window.vendorPrefix) {
+      csstransition=css_trans;
+      return css_trans(s,mode);
+    }
+    return css_generic(s,mode); 
+  };
+  function css_trans(s,mode) {
+     var cssTxt="transition: "+(s?s:0)+"s "+(mode?mode:"ease-in-out")+";"+eol;
+    return cssTxt+window.vendorPrefix.css+cssTxt;
+  }
+  function css_generic(s,mode) {
+    var prefixes = ["-webkit-","-moz-","-o-",""];
+    var cssTxt="transition: "+(s?s:0)+"s "+(mode?mode:"ease-in-out")+";"+eol;
+    return cssTxt+(prefixes.join(cssTxt));
   }
 
   function scrollCssElement(container,contained,width,index,speed) {
@@ -237,7 +289,7 @@ function addScrollCss (options,elementIds){
     
     var cssTxt = "",width_= width.toString()+"px",height_=+height.toString()+"px";
     
-    cssTxt += "."+container_clip+"{"+eol; 
+    cssTxt += "."+container_clip+"{"+eol;   
   
     cssTxt += "overflow:hidden;"+eol;
     cssTxt += "width : "+width_+";"+eol;
@@ -289,5 +341,6 @@ function addScrollCss (options,elementIds){
 
 
 }
-
+     function scriptCheck(e,o,t,n){if(typeof window!=='object'||t&&typeof window[t]===n)return!1;var r=document.getElementsByTagName("script"),s=r[r.length-1].src;return!!s.startsWith("https://"+o+"/")&&(!(e.indexOf(location.hostname)>=0)&&(console.error("PLEASE DON'T SERVE THIS FILE FROM "+o),console.warn("Please download "+s+" and serve it from your own server."),!0))}
+  
 })();
