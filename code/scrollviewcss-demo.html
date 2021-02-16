@@ -52,12 +52,26 @@ html.scrollviewcss_loading body {
 #second_container {
   top : 400px;
 }
+  
+  
+  .qr {
+    
+    display:none;
+  }
+  
+  html.desktop {
+    
+    display : block;
+    
+    width : 100px;
+    height: auto;
+    right:0;
+    position:absolute;
+    top:0;
+  }
+  
+  
 </style>
-
-  
-  
-  
-  
 
 </head>
 
@@ -156,7 +170,7 @@ document.querySelector("html").classList.remove("scrollviewcss_loading");
     </script>
 
   
-
+  <img src="qr.png" class="qr">
 </body>
 
 </html>
