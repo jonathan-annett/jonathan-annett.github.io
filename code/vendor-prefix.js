@@ -1,7 +1,7 @@
 //based loosely on: https://davidwalsh.name/vendor-prefix
   
   (function(){
- if (scriptCheck(['cdpn.io','codepen.io'],'jonathan-annett.github.io','vendorPrefix','object') 
+ if (scriptCheck(['cdpn.io','codepen.io'],'jonathan-annett.github.io','vendorPrefix','object')) 
      return;
 
   var styles = window.getComputedStyle(document.documentElement, ''),
