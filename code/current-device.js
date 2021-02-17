@@ -1,4 +1,4 @@
-/*based on https://github.com/matthewhudson/current-device/blob/master/src/index.js*/
+/*based on https://github.com/matthewhudson/current-device/blob/master/src/index.js*/;
 (function(exports,module){'use strict';
 
 exports.__esModule = true;
@@ -318,6 +318,37 @@ function setOrientationCache() {
 }
 
 setOrientationCache();
+                          
+/*
+custom options added by Jonathan Annett
+*/                         
+                          
+ function isFramed () {
+  /*
+https://developer.mozilla.org/en-US/docs/Web/API/Window/parent
+
+  The Window.parent property is a reference to the parent of the current window or subframe.
+
+If a window does not have a parent, its parent property is a reference to itself.
+
+When a window is loaded in an <iframe>, <object>, or <frame>, its parent is the window with the element embedding the window.
+  */
+   try {
+     // strictly speaking do not need to wrap this as we aren't digging into any parent properties
+     // but if we were, a cross-origin error may occur.
+     return window.parent!==window;
+   } catch (e) {
+      return true;
+   }
+}  
+  
+if ( isFramed () )
+  addClass("framed");
+                          
+device.framed = function () {
+  return find('framed');
+};
+                           
 
 exports.default = device;
 module.exports = exports['default'];})({},{exports:{}})
