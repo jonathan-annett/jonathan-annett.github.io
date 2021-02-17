@@ -1,6 +1,30 @@
-
-
 <!DOCTYPE html>
+
+<!--
+MIT License
+
+Copyright (c) 2021 Jonathan Annett
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+-->
 <html lang="en" class="scrollviewcss_loading">
 
 <head>
@@ -59,7 +83,7 @@ html.scrollviewcss_loading body {
     display:none;
   }
   
-  html.desktop img.qr {
+  html.desktop.landscape img.qr {
     
     display : block;
     
@@ -98,38 +122,13 @@ html.scrollviewcss_loading body {
 <button onclick="containerScroller.scrollTo(3);">3</button>
 <button onclick="containerScroller.scrollTo(4);">4</button>
   
-<script src='current-device.js'></script>
-<script src='addLongPress.js'></script>
-<script src='mouseTouchSwipe.js#02e3abe0e0a274ece1d0189ca65011d798e0b014'></script>
-<script src='vendor-prefix.js#3cbba0ab4c9fbd3a5272f2311242e9827cb76062'></script>
-<script src='scrollviewcss.js#f56b3fa8676da97a7be8a242f810b5102af329f2'></script>
+<script src="current-device.js"></script>
+<script src="addLongPress.js"></script>
+<script src="mouseTouchSwipe.js#02e3abe0e0a274ece1d0189ca65011d798e0b014"></script>
+<script src="vendor-prefix.js#3cbba0ab4c9fbd3a5272f2311242e9827cb76062"></script>
+<script src="scrollviewcss.js#f56b3fa8676da97a7be8a242f810b5102af329f2"></script>
 <script defer>
- 
-   /*
-  MIT License
 
-Copyright (c) 2021 Jonathan Annett
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-  
-  */
    
 
 var elementIds = ["container"]; 
@@ -173,4 +172,3 @@ document.querySelector("html").classList.remove("scrollviewcss_loading");
 </body>
 
 </html>
- 
