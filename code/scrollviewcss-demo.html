@@ -83,7 +83,7 @@ html.scrollviewcss_loading body {
     display:none;
   }
   
-  html.desktop.landscape img.qr {
+  html.desktop img.qr {
     
     display : block;
     
@@ -92,7 +92,11 @@ html.scrollviewcss_loading body {
     position:absolute;
     top:0;
   }
-  
+    
+   html.framed  img.qr {
+    
+    display:none;
+  }
   
 </style>
 
@@ -143,13 +147,13 @@ var containerScroller = addScrollCss (scrollClases = {
   left:8,
   top:30,
   swipeSeconds : 0.5,
-  mouse:window.device ? window.device.desktop():false,
+  mouse:window.device ? window.device.desktop() :false,
   touch:true,
 },elementIds);
 
  
  
-function getEl(id,fn) {
+function getEl(id,fn) { 
   var c=document.getElementById(id);
   if(fn)c.onclick=fn
   return c;
@@ -165,6 +169,7 @@ getEl("scrollleft",containerScroller.scrollLeft);
 getEl("scrollright",containerScroller.scrollRight);
 
 document.querySelector("html").classList.remove("scrollviewcss_loading");
+  
     </script>
 
   
