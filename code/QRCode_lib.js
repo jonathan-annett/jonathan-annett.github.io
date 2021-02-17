@@ -1,5 +1,5 @@
 
-    function QRCode_lib(){
+    //function QRCode_lib(){
     
         /**
          * @fileoverview
@@ -1418,5 +1418,5 @@
             QRCode.CorrectLevel = QRErrorCorrectLevel;
         })();
     
-    }
+  //  }
     
