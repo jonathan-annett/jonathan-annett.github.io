@@ -33,7 +33,7 @@ SOFTWARE.
 window.addScrollCss=addScrollCss;
 
 function addScrollCss (options,elementIds){ 
-  scrollClases = scrollClases ||{};
+  options = options ||{};
   elementIds = (typeof elementIds=== 'object' && 
                   elementIds.constructor===Array) ? elementIds : [elementIds];
 

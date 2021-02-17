@@ -1,4 +1,4 @@
-/*based on https://github.com/matthewhudson/current-device/blob/master/src/index.js*/;
+/*based on https://github.com/matthewhudson/current-device/blob/master/src/index.js*/
 (function(exports,module){'use strict';
 
 exports.__esModule = true;
