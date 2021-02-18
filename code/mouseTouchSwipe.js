@@ -1,33 +1,35 @@
-(function(){
-
-  if (scriptCheck(['cdpn.io','codepen.io'],'jonathan-annett.github.io','mouseSwipeEvents','function')  ) 
+(function() {
+  if (
+    scriptCheck(
+      ["cdpn.io", "codepen.io"],
+      "jonathan-annett.github.io",
+      "mouseSwipeEvents",
+      "function"
+    )
+  )
     return;
 
-  
-  var  ON = "addEventListener",
-       OFF= "removeEventListener",
-      
-      swipe_events_hooked = [],
-      active_swipes={},
-      fakeConsole= {
-        log:function(){},
-        info:function(){},
-        warn:function(){},
-        error:function(){}},
-      console=fakeConsole;
+  var ON = "addEventListener",
+    OFF = "removeEventListener",
+    swipe_events_hooked = [],
+    active_swipes = {},
+    fakeConsole = {
+      log: function() {},
+      info: function() {},
+      warn: function() {},
+      error: function() {}
+    }, console = fakeConsole;
 
-  
+  window.mouseSwipeEvents = mouseSwipeEvents;
+  window.mobileSwipeEvents = mobileSwipeEvents;
+  window.touchSwipeEvents = mobileSwipeEvents;
 
- window.mouseSwipeEvents = mouseSwipeEvents;
- window.mobileSwipeEvents = mobileSwipeEvents;
- window.touchSwipeEvents  = mobileSwipeEvents;
- 
- window.mouseSwipeTimeout=300;
- window.touchSwipeTimeout=200;
- window.mouseSwipeDelta= 1/4;
- window.touchSwipeDelta= 1/4;
-  
- function defaultSwipeEventNames(ev) {
+  window.mouseSwipeTimeout = 300;
+  window.touchSwipeTimeout = 200;
+  window.mouseSwipeDelta = 1 / 4;
+  window.touchSwipeDelta = 1 / 4;
+
+  function defaultSwipeEventNames(ev) {
     return (
       ev || {
         up: "swipe-up",
@@ -37,13 +39,18 @@
       }
     );
   }
-  
+
   // some touch screen drivers send simultaous touch and pointer events.
   // in order to respond to either, some debouncing is required.
-   
- 
- 
-  function emitSwipe(o, swipe_type, e , swipeDelta, swipeTimeDelta, swipeDevice) {
+
+  function emitSwipe(
+    o,
+    swipe_type,
+    e,
+    swipeDelta,
+    swipeTimeDelta,
+    swipeDevice
+  ) {
     o.dispatchEvent(
       new CustomEvent(swipe_type, {
         bubbles: true,
@@ -53,18 +60,14 @@
         detail: {
           clientX: e.clientX,
           clientY: e.clientY,
-          swipeDelta : swipeDelta ? Math.abs(swipeDelta) : undefined,
-          swipeTimeDelta :  swipeTimeDelta,
-         
-           shiftKey : e.shiftKey,
-           ctrlKey : e.ctrlKey,
-           altKey : e.altKey,
-           swipeDevice : swipeDevice
-       
-      
+          swipeDelta: swipeDelta ? Math.abs(swipeDelta) : undefined,
+          swipeTimeDelta: swipeTimeDelta,
+
+          shiftKey: e.shiftKey,
+          ctrlKey: e.ctrlKey,
+          altKey: e.altKey,
+          swipeDevice: swipeDevice
         },
-       
-       
 
         // add coordinate data that would typically acompany a touch/click event
         clientX: e.clientX,
@@ -78,61 +81,58 @@
       })
     );
   }
-  
-   function logEvent(e,mode,clear) {
-      var active=active_swipes[e.timeStamp],
-          log={mode:mode,type:e.type,x:e.screenX,y:e.screenY};
-          console.log(e.timeStamp,mode,log);
-     
-       
-        if (clear) { 
-          
-          Object.keys(active_swipes).forEach(function(k){
-             var active=active_swipes[k],
-                 filtered=active.filter(function(log){
-                    return log.mode!==mode;
-                 });
-            if (filtered.length===0) {
-               active.splice(0,active.length);
-               delete active_swipes[k];
-            }
+
+  function logEvent(e, mode, clear) {
+    var active = active_swipes[e.timeStamp],
+      log = { mode: mode, type: e.type, x: e.screenX, y: e.screenY };
+    console.log(e.timeStamp, mode, log);
+
+    if (clear) {
+      Object.keys(active_swipes).forEach(function(k) {
+        var active = active_swipes[k],
+          filtered = active.filter(function(log) {
+            return log.mode !== mode;
           });
-         
-        } else {
-           if (active) {
-              active.push(log);
-             } else {
-              active_swipes[e.timeStamp]=[log];
-            }
+        if (filtered.length === 0) {
+          active.splice(0, active.length);
+          delete active_swipes[k];
         }
-      return !!active;
+      });
+    } else {
+      if (active) {
+        active.push(log);
+      } else {
+        active_swipes[e.timeStamp] = [log];
+      }
     }
+    return !!active;
+  }
 
   function mouseSwipeEvents(o, left, right, up, down, ev) {
-    var swipeDevice = 'mouse';
+    var swipeDevice = "mouse";
     var evs = defaultSwipeEventNames(ev);
     var self;
     var start = {},
       end = {},
       tracking = false,
-      
-      thresholdDistanceX = function(){
-        return o.mouseSwipeThresholdX ||  (o.clientWidth* mouseSwipeDelta) ;
+      thresholdDistanceX = function() {
+        return o.mouseSwipeThresholdX || o.clientWidth * window.mouseSwipeDelta;
       },
-      thresholdDistanceY = function(){
-        return o.mouseSwipeThresholdY || (o.clientHeight * mouseSwipeDelta);
+      thresholdDistanceY = function() {
+        return (
+          o.mouseSwipeThresholdY || o.clientHeight * window.mouseSwipeDelta
+        );
       };
-    
+
     function gestureStart(e) {
-      
-      logEvent(e,"mouse");
-      
+      logEvent(e, "mouse");
+
       tracking = true;
       /* Hack - would normally use e.timeStamp but it's whack in Fx/Android */
       start.t = Date.now();
       start.x = e.clientX;
       start.y = e.clientY;
-      Object.keys(start).forEach(function (k) {
+      Object.keys(start).forEach(function(k) {
         end[k] = start[k];
       });
     }
@@ -142,45 +142,70 @@
         e.preventDefault();
         end.x = e.clientX;
         end.y = e.clientY;
+        
+      } else {
+      
+        
       }
+    }
+    
+    function swipeDeltaCheck(){
+      var now = Date.now();
+        var deltaTime = now - start.t;
+       var deltaX = end.x - start.x;
+          var deltaY = end.y - start.y;
+          var t_y = thresholdDistanceY(),
+            t_x = thresholdDistanceX(),
+          result = {
+            deltaTime : deltaTime
+          };
+          if (deltaX > t_x && Math.abs(deltaY) < t_y) {
+            //emitSwipe(o, evs.right, e, deltaX, deltaTime, swipeDevice);
+            result.direction = evs.right;
+            result.delta = Math.abs(deltaX);
+            result.velocity = result.delta / deltaTime;
+          } else if (-deltaX > t_x && Math.abs(deltaY) < t_y) {
+            //emitSwipe(o, evs.left, e, deltaX, deltaTime, swipeDevice);
+            result.direction = evs.left;
+            result.delta = Math.abs(deltaX);
+            result.velocity = result.delta / deltaTime;
+          } else if (deltaY > t_y && Math.abs(deltaX) < t_x) {
+            //emitSwipe(o, evs.down, e, deltaY, deltaTime, swipeDevice);
+            result.direction = evs.down;
+            result.delta = Math.abs(deltaY);
+            result.velocity = result.delta / deltaTime;
+          } else if (-deltaY > t_y && Math.abs(deltaX) < t_x) {
+            //emitSwipe(o, evs.up, e, deltaY, deltaTime, swipeDevice);
+            result.direction =  evs.up;
+            result.delta = Math.abs(deltaY);
+            result.velocity = result.delta / deltaTime;
+          }
     }
 
     function gestureEnd(e) {
-       if (tracking ) {
-         
-        logEvent(e,"mouse",true);
-         
+      if (tracking) {
+        logEvent(e, "mouse", true);
+
         tracking = false;
         var now = Date.now();
         var deltaTime = now - start.t;
-         /* work out what the movement was */
-        if (deltaTime > mouseSwipeTimeout) {
+        /* work out what the movement was */
+        if (deltaTime > window.mouseSwipeTimeout) {
           /* gesture too slow */
           return;
         } else {
           var deltaX = end.x - start.x;
           var deltaY = end.y - start.y;
-          var t_y= thresholdDistanceY(),t_x=thresholdDistanceX();
-          if (
-            deltaX > t_x &&
-            Math.abs(deltaY) < t_y
-          ) {
-            emitSwipe(o, evs.right, e, deltaX, deltaTime,swipeDevice );
-          } else if (
-            -deltaX > t_x &&
-            Math.abs(deltaY) < t_y
-          ) {
-            emitSwipe(o, evs.left, e, deltaX, deltaTime,swipeDevice );
-          } else if (
-            deltaY > t_y &&
-            Math.abs(deltaX) < t_x
-          ) {
-            emitSwipe(o, evs.down, e, deltaY, deltaTime,swipeDevice );
-          } else if (
-            -deltaY > t_y &&
-            Math.abs(deltaX) < t_x
-          ) {
-            emitSwipe(o, evs.up, e, deltaY, deltaTime,swipeDevice );
+          var t_y = thresholdDistanceY(),
+            t_x = thresholdDistanceX();
+          if (deltaX > t_x && Math.abs(deltaY) < t_y) {
+            emitSwipe(o, evs.right, e, deltaX, deltaTime, swipeDevice);
+          } else if (-deltaX > t_x && Math.abs(deltaY) < t_y) {
+            emitSwipe(o, evs.left, e, deltaX, deltaTime, swipeDevice);
+          } else if (deltaY > t_y && Math.abs(deltaX) < t_x) {
+            emitSwipe(o, evs.down, e, deltaY, deltaTime, swipeDevice);
+          } else if (-deltaY > t_y && Math.abs(deltaX) < t_x) {
+            emitSwipe(o, evs.up, e, deltaY, deltaTime, swipeDevice);
           }
         }
       }
@@ -190,70 +215,63 @@
     if (right) o[ON](evs.right, right);
     if (up) o[ON](evs.up, up);
     if (down) o[ON](evs.down, down);
-    
-   
-    
-    self= {
-       hooked : function() {
-         return swipe_events_hooked.indexOf(self)>0;
-       },
-      
-         
-       stop : function(){
-         var ix=swipe_events_hooked.indexOf(self);
-         if (ix>0) {
-           swipe_events_hooked.splice(ix,1);
-           o[OFF]("pointerdown", gestureStart);
-           o[OFF]("pointermove", gestureMove);
-           o[OFF]("pointerup", gestureEnd);
-           o[OFF]("pointerleave", gestureEnd, );
-           o[OFF]("pointercancel", gestureEnd);
-          } 
-       },
-      start : function(){
-         if (!self.hooked()) {
-           
-           o[ON]("pointerdown", gestureStart, false);
-           o[ON]("pointermove", gestureMove, false);
-           o[ON]("pointerup", gestureEnd, false);
-           o[ON]("pointerleave", gestureEnd, false);
-           o[ON]("pointercancel", gestureEnd, false);
-           
-           swipe_events_hooked.push(self);
-        
-         }
-       },
-      fakeConsole:fakeConsole
+
+    self = {
+      hooked: function() {
+        return swipe_events_hooked.indexOf(self) > 0;
+      },
+
+      stop: function() {
+        var ix = swipe_events_hooked.indexOf(self);
+        if (ix > 0) {
+          swipe_events_hooked.splice(ix, 1);
+          o[OFF]("pointerdown", gestureStart);
+          o[OFF]("pointermove", gestureMove);
+          o[OFF]("pointerup", gestureEnd);
+          o[OFF]("pointerleave", gestureEnd);
+          o[OFF]("pointercancel", gestureEnd);
+        }
+      },
+      start: function() {
+        if (!self.hooked()) {
+          o[ON]("pointerdown", gestureStart, false);
+          o[ON]("pointermove", gestureMove, false);
+          o[ON]("pointerup", gestureEnd, false);
+          o[ON]("pointerleave", gestureEnd, false);
+          o[ON]("pointercancel", gestureEnd, false);
+
+          swipe_events_hooked.push(self);
+        }
+      },
+      fakeConsole: fakeConsole
     };
     self.start();
     return self;
   }
 
   function mobileSwipeEvents(o, left, right, up, down, ev) {
-    var swipeDevice = 'touch';
+    var swipeDevice = "touch";
     var evs = defaultSwipeEventNames(ev);
     var self;
     var start = {};
     var end = {};
     var tracking = false;
-    var 
-      thresholdDistanceX = function(){
-        return o.mouseSwipeThresholdX ||  (o.clientWidth* touchSwipeDelta) ;
+    var thresholdDistanceX = function() {
+        return o.mouseSwipeThresholdX || o.clientWidth * window.touchSwipeDelta;
       },
-      thresholdDistanceY = function(){
-        return o.mouseSwipeThresholdY || (o.clientHeight * touchSwipeDelta);
+      thresholdDistanceY = function() {
+        return (
+          o.mouseSwipeThresholdY || o.clientHeight * window.touchSwipeDelta
+        );
       };
     function gestureStart(e) {
-       
-      
-      if(logEvent(e,"touch")) {
-          console.log("double swipe detected in start!");
-          e.preventDefault();
-          tracking=false;
-          return;
+      if (logEvent(e, "touch")) {
+        console.log("double swipe detected in start!");
+        e.preventDefault();
+        tracking = false;
+        return;
       }
-         
-      
+
       if (e.touches.length > 1) {
         tracking = false;
         return;
@@ -263,7 +281,7 @@
         start.t = Date.now();
         start.x = e.targetTouches[0].clientX;
         start.y = e.targetTouches[0].clientY;
-        Object.keys(start).forEach(function (k) {
+        Object.keys(start).forEach(function(k) {
           end[k] = start[k];
         });
       }
@@ -276,93 +294,86 @@
         end.y = e.targetTouches[0].clientY;
       }
     }
-    
-   
 
     function gestureEnd(e) {
       if (tracking) {
         tracking = false;
-        
-        if(logEvent(e,"touch")) {
+
+        if (logEvent(e, "touch")) {
           console.log("double swipe detected - in end!");
         }
-        
+
         var now = Date.now();
         var deltaTime = now - start.t;
         /* work out what the movement was */
-        if (deltaTime > touchSwipeTimeout) {
+        if (deltaTime > window.touchSwipeTimeout) {
           /* gesture too slow */
           return;
         } else {
-
           var deltaX = end.x - start.x;
           var deltaY = end.y - start.y;
-          var t_y= thresholdDistanceY(),t_x=thresholdDistanceX();
-          if (
-            deltaX > t_x &&
-            Math.abs(deltaY) < t_y
-          ) {
-            emitSwipe(o, evs.right, e, deltaX, deltaTime,swipeDevice );
-          } else if (
-            -deltaX > t_x &&
-            Math.abs(deltaY) < t_y
-          ) {
-            emitSwipe(o, evs.left, e, deltaX, deltaTime,swipeDevice );
-          } else if (
-            deltaY > t_y &&
-            Math.abs(deltaX) < t_x
-          ) {
-            emitSwipe(o, evs.down, e, deltaY, deltaTime,swipeDevice );
-          } else if (
-            -deltaY > t_y &&
-            Math.abs(deltaX) < t_x
-          ) {
-            emitSwipe(o, evs.up, e, deltaY, deltaTime,swipeDevice );
+          var t_y = thresholdDistanceY(),
+            t_x = thresholdDistanceX();
+          if (deltaX > t_x && Math.abs(deltaY) < t_y) {
+            emitSwipe(o, evs.right, e, deltaX, deltaTime, swipeDevice);
+          } else if (-deltaX > t_x && Math.abs(deltaY) < t_y) {
+            emitSwipe(o, evs.left, e, deltaX, deltaTime, swipeDevice);
+          } else if (deltaY > t_y && Math.abs(deltaX) < t_x) {
+            emitSwipe(o, evs.down, e, deltaY, deltaTime, swipeDevice);
+          } else if (-deltaY > t_y && Math.abs(deltaX) < t_x) {
+            emitSwipe(o, evs.up, e, deltaY, deltaTime, swipeDevice);
           }
         }
       }
- 
     }
-    
+
     if (left) o[ON](evs.left, left);
     if (right) o[ON](evs.right, right);
     if (up) o[ON](evs.up, up);
-    if (down) o[ON](evs.down, down); 
+    if (down) o[ON](evs.down, down);
 
-    
-    
-    self= {
-       hooked : function() {
-         return swipe_events_hooked.indexOf(self)>0;
-       },
-      
-         
-       stop : function(){
-         var ix=swipe_events_hooked.indexOf(self);
-         if (ix>0) {
-             swipe_events_hooked.splice(ix,1);
-             o[OFF]("touchstart", gestureStart); 
-             o[OFF]("touchmove", gestureMove);
-             o[OFF]("touchend", gestureEnd);
-             console.log("touch events unhooked");
-         }
-       },
-      start : function(){
-         if (!self.hooked()) {
-           
-             o[ON]("touchstart", gestureStart); 
-             o[ON]("touchmove", gestureMove);
-             o[ON]("touchend", gestureEnd);
-            swipe_events_hooked.push(self);
-           console.log("touch events hooked");
-          }
-       },
-      fakeConsole:fakeConsole
+    self = {
+      hooked: function() {
+        return swipe_events_hooked.indexOf(self) > 0;
+      },
+
+      stop: function() {
+        var ix = swipe_events_hooked.indexOf(self);
+        if (ix > 0) {
+          swipe_events_hooked.splice(ix, 1);
+          o[OFF]("touchstart", gestureStart);
+          o[OFF]("touchmove", gestureMove);
+          o[OFF]("touchend", gestureEnd);
+          console.log("touch events unhooked");
+        }
+      },
+      start: function() {
+        if (!self.hooked()) {
+          o[ON]("touchstart", gestureStart);
+          o[ON]("touchmove", gestureMove);
+          o[ON]("touchend", gestureEnd);
+          swipe_events_hooked.push(self);
+          console.log("touch events hooked");
+        }
+      },
+      fakeConsole: fakeConsole
     };
     self.start();
     return self;
-
   }
-  
-function scriptCheck(e,o,t,n){if("object"!=typeof window||t&&typeof window[t]===n)return!1;var r=document.getElementsByTagName("script"),s=r[r.length-1].src;return!!s.startsWith("https://"+o+"/")&&(!(e.concat([o]).indexOf(location.hostname)>=0)&&(console.error("PLEASE DON'T SERVE THIS FILE FROM "+o),console.warn("Please download "+s+" and serve it from your own server."),!0))}
-} )();
+
+  function scriptCheck(e, o, t, n) {
+    if ("object" != typeof window || (t && typeof window[t] === n)) return !1;
+    var r = document.getElementsByTagName("script"),
+      s = r[r.length - 1].src;
+    return (
+      !!s.startsWith("https://" + o + "/") &&
+      (!(e.concat([o]).indexOf(location.hostname) >= 0) &&
+        (console.error("PLEASE DON'T SERVE THIS FILE FROM " + o),
+        console.warn(
+          "Please download " + s + " and serve it from your own server."
+        ),
+        !0))
+    );
+  }
+})();
