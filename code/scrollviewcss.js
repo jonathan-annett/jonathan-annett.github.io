@@ -46,13 +46,14 @@ function addScrollCss (options,elementIds){
 
      
 
-      eol="",
+      eol="\n",
       defaultClasses = {
         container_clip : "container_clip",
         container : "container",
         contained : "contained",
         even_odd  : [ "even","odd"] 
       },
+      
       container_clip = options.container_clip||defaultClasses.container_clip,
       container= options.container||defaultClasses.container,
       contained= options.contained||defaultClasses.contained,
@@ -75,6 +76,15 @@ function addScrollCss (options,elementIds){
     if(fn)c.onclick=fn
     return c;
   }
+  
+  function crEl(id,typ,cls,html) {
+    var c=document.createElement(typ);
+    if(id) c.id=id;
+    if(cls)c.className=cls;
+    if(html)c.innerHTML=html;
+    return c;
+  }
+  
   function getMaxCount (max,val) {
     max = ( max === undefined || val >max ) ? val : max;
     return max;
@@ -86,32 +96,97 @@ function addScrollCss (options,elementIds){
         return contain[0];
       } else {
         
-        return false;
+        return null;
       }
+  }
+  
+  function getContainerData(x,containedClass) {
+    
+    // x=== either "some_id" or { some_id :[ "some","data" ]}
+      var 
+      keys=typeof x==='object' ? Object.keys(x) : false,
+      containerData = keys ? x[ keys[0] ] : undefined,
+      containerId =  keys ? keys[0] : x,
+      obj = {
+         containerId   : containerId,
+         containerData : containerData,
+         hadData       : !!keys,
+         element       : getEl(containerId)
+      };
+    
+      if (!obj.element) { 
+           return null;
+      } 
+    
+      if (containerData) {
+           
+        
+           return obj;
+        
+      }
+          
+    
+      cleanupDiv(obj.element,containedClass);
+      obj.containerData = new Array (obj.element.children.length);
+      for (var i=0;i<obj.element.children.length;i++) {
+         obj.containerData [i]=obj.element.children[i].innerText;
+      }
+    
+    return obj;
   }
  
   function wrapContainer(containerId) {
-    var 
-    contain_clip,
-    contain=getEl(containerId);
+    
+     var 
+      contain,
+      contain_clip,
+      hadData, 
+      containerDataMeta=[],
+      containerData = (function(data){ 
+         hadData=data.hadData;
+         containerId=data.containerId;
+         contain =data.element;
+         return data.containerData;
+      })(getContainerData(containerId,contained));
+  
+     if(contain===null) return null;
+    
     if (contain.classList.contains(container_clip)) {
+      
       contain_clip = contain;
       contain = getContainerFromClip(contain_clip);
-      if(contain===null) return null;
+      if(contain===null) {
+         
+         if (contain_clip.children.length===0) {
+           contain = document.createElement('div');
+           contain.className = container;
+           contain.classList.add(even);
+           contain_clip.appendChild(contain);
+           if (hadData && options.on_need_element) {
+           containerData.forEach(function(data,index){
+             var 
+             content = options.on_need_element(containerId,index,data); 
+             if (typeof content==='string') {
+                return crEl(undefined,"div",contained,content);
+             } else {
+                return content;
+             }
+          });
+         }
+         }
+        
+       }
+       
+      
+     
     } else {
+      
        if (contain.classList.contains(container)) {
          contain_clip=contain.parentElement;
          contain = getContainerFromClip(contain_clip);
-         if(contain===null) {
-           if (contain_clip.children.length===0) {
-             contain = document.createElement('div');
-             contain.className = container;
-             contain.classList.add(even);
-             contain_clip.addChildElement(contain);
-           }
-         }
        }
        if(contain===null) return null;
+      
     }
     var tabindex = 1;
     if (!contain) return null;
@@ -283,15 +358,50 @@ function addScrollCss (options,elementIds){
     }
     return css_generic(s,mode); 
   };
+  
   function css_trans(s,mode) {
      var cssTxt="transition: "+(s?s:0)+"s "+(mode?mode:"ease-in-out")+";"+eol;
     return cssTxt+window.vendorPrefix.css+cssTxt;
   }
+  
   function css_generic(s,mode) {
-    var prefixes = ["-webkit-","-moz-","-o-",""];
+    var prefixes = ["","-webkit-","-moz-","-o-",""];
     var cssTxt="transition: "+(s?s:0)+"s "+(mode?mode:"ease-in-out")+";"+eol;
-    return cssTxt+(prefixes.join(cssTxt));
+    return prefixes.join(cssTxt);
   }
+  
+  
+function cleanupDiv(div,cls){
+  // remove any top level child nodes that are not divs containing class cls
+  var i=0,
+      node,
+      isDiv=function(x){
+         return x.tagName==="DIV";
+      },
+      isValid=cls?function(x){return isDiv(x) && x.classList.contains(cls);}:isDiv;
+  
+  while (i<div.childNodes.length) { 
+    node=div.childNodes[i];
+    
+    if (!isValid(node)) { 
+      div.removeChild(node);
+    } else {
+      i++;
+    }
+  } 
+  return div;
+}
+
+ 
+  function prependStyleSheet(newStyleSheet){
+    var bodyClass = document.getElementsByTagName('head')[0];         
+    bodyClass.insertBefore(newStyleSheet, bodyClass.childNodes[2]);
+  }
+  function appendStyleSheet(newStyleSheet){
+    var bodyClass = document.getElementsByTagName('head')[0];         
+    bodyClass.appendChild(newStyleSheet);
+  }
+  
 
   function scrollCssElement(container,contained,width,index,speed) {
 
@@ -318,8 +428,8 @@ function addScrollCss (options,elementIds){
     
     cssTxt += "."+container_clip+"{"+eol;   
     
-    cssTxt += "user-select: none;"+eol;   
-      if (window.vendorPrefix) {
+   
+    if (window.vendorPrefix) {
       cssTxt += window.vendorPrefix.css+"user-select: none;"+eol;   
    }  else {
        cssTxt += "-webkit-touch-callout: none;"+eol;   
@@ -328,7 +438,7 @@ function addScrollCss (options,elementIds){
        cssTxt += "-moz-user-select: none;"+eol;   
        cssTxt += "-ms-user-select: none;"+eol;   
    }
-    
+     cssTxt += "user-select: none;"+eol;   
   
     cssTxt += "overflow:hidden;"+eol;
     cssTxt += "width : "+width_+";"+eol;
@@ -366,7 +476,8 @@ function addScrollCss (options,elementIds){
   var style = document.createElement('style');
   style.type = 'text/css';
   style.innerHTML = scrollCss (container_clip,container,contained,width,height,left,top,maxCount,speed);
-  document.getElementsByTagName('head')[0].appendChild(style);
+  appendStyleSheet(style);
+ 
   
   var controllers = elementIds.map(wrapContainer).filter (function(c){
     if (c===null) return false;
