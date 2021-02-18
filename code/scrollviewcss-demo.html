@@ -74,6 +74,13 @@ SOFTWARE.
   #second_container {
     top : 400px;
   }
+   div.toolbar {
+      width: 450px;
+      height: 10px;
+      poistion: absolute;
+      left: 0;
+      top: 10px;
+    }
 
 
     img.qr {
@@ -139,6 +146,8 @@ SOFTWARE.
 
   </style>
   
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.10.1/css/all.css" integrity="sha384-wxqG4glGB3nlqX0bi23nmgwCSjWIW13BdLUEYC4VIMehfbcro/ATkyDsF/AbIOVe" crossorigin="anonymous">
+
 
  
 </head>
@@ -163,8 +172,8 @@ SOFTWARE.
       </button>
       <button id="snapleft">&lt;snap</button>
       <button id="snapright">snap&gt;</button>
-      <button id="scrollleft">&lt;scroll</button>
-      <button id="scrollright">scroll&gt;</button>
+      <button id="scrollleft"><i class="fas fa-hand-point-left"></i>&nbsp;swipe</button>
+      <button id="scrollright">swipe&nbsp;<i class="fas fa-hand-point-right"></i></button>
       <button onclick="containerScroller.scrollTo(1);">1</button>
       <button onclick="containerScroller.scrollTo(2);">2</button>
       <button onclick="containerScroller.scrollTo(3);">3</button>
@@ -187,7 +196,8 @@ SOFTWARE.
 
    
 
-var elementIds = ["container"]; 
+var elementIds = ["container",
+                  { second_container: ["one", "two", "three", "four", "five"] }]; 
 
 var containerScroller = addScrollCss (scrollClases = {
   container_clip : "container_clip",
@@ -201,6 +211,10 @@ var containerScroller = addScrollCss (scrollClases = {
   swipeSeconds : 0.5,
   mouse:window.device ? window.device.desktop() :false,
   touch:true,
+  
+   on_need_element: function(id, index, data, vars) {
+    return id + " # " + index + "=" + data.toString();
+  }
 },elementIds);
 
  
@@ -230,7 +244,7 @@ getEl("btn_open_on_mobile", function() {
 
  
 
-document.querySelector("html").classList.remove("scrollviewcss_loading");
+      document.querySelector("html").classList.remove("scrollviewcss_loading");
   
     </script>
 
