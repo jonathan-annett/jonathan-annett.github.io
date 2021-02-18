@@ -43,16 +43,16 @@ SOFTWARE.
   .odd,
   .even {
      font-size:72pt;
+     background-color: #eaabab;
   }
 
-  .odd {
+  .container.inScroll div.odd {
     background-color: #0adaf1;
   }
 
-  .container.snap0,
-  .container.scroll0,
-  .container.scroll1,
-  .even {
+  .container.inScroll.scroll0,
+  .container.inScroll.scroll1,
+  .container.inScroll div.even {
     background-color: #c3b4a4;
   }
 
@@ -64,7 +64,7 @@ SOFTWARE.
     width : 500px;
     height : 300px; 
     position:absolute;
-    top:50px;
+    top: 50px;
     left :0;
     padding:0;
     margin:0;
@@ -73,7 +73,23 @@ SOFTWARE.
 
   #second_container {
     top : 400px;
+   }
+    
+  #second_container .odd,
+  #second_container .even {
+     font-size:16pt;
   }
+    
+    #second_container .odd {
+         background-color: lime;
+    }
+    #second_container .even {
+         background-color: red;
+    }
+
+    
+    
+    
    div.toolbar {
       width: 450px;
       height: 10px;
@@ -174,11 +190,15 @@ SOFTWARE.
       <button id="snapright">snap&gt;</button>
       <button id="scrollleft"><i class="fas fa-hand-point-left"></i>&nbsp;swipe</button>
       <button id="scrollright">swipe&nbsp;<i class="fas fa-hand-point-right"></i></button>
-      <button onclick="containerScroller.scrollTo(1);">1</button>
-      <button onclick="containerScroller.scrollTo(2);">2</button>
-      <button onclick="containerScroller.scrollTo(3);">3</button>
-      <button onclick="containerScroller.scrollTo(4);">4</button>
-    </div>
+      <!--button id="btn0">0</button-->
+      <button id="btn1">1</button>
+      <button id="btn2">2</button>
+      <button id="btn3">3</button>
+      <button id="btn4">4</button>
+      <button id="btn5">5</button>
+      <!--button id="btn6">6</button-->
+      
+      </div>
 <script src="current-device.js"></script>
 <script src="addLongPress.js"></script>
 <script src="mouseTouchSwipe.js#02e3abe0e0a274ece1d0189ca65011d798e0b014"></script>
@@ -199,7 +219,10 @@ SOFTWARE.
 var elementIds = ["container",
                   { second_container: ["one", "two", "three", "four", "five"] }]; 
 
-var containerScroller = addScrollCss (scrollClases = {
+var 
+  desktop = window.device ? window.device.desktop() :false,
+  mobile  = window.device ? window.device.mobile() :true,
+  containerScroller = addScrollCss (scrollClases = {
   container_clip : "container_clip",
   container : "container",
   contained : "contained",
@@ -208,9 +231,9 @@ var containerScroller = addScrollCss (scrollClases = {
   height:300,
   left:8,
   top:30,
-  swipeSeconds : 0.5,
-  mouse:window.device ? window.device.desktop() :false,
-  touch:true,
+  swipeSeconds : desktop ? 0.5 : 0.25,
+  mouse: desktop,
+  touch: true,
   
    on_need_element: function(id, index, data, vars) {
     return id + " # " + index + "=" + data.toString();
@@ -225,6 +248,17 @@ function getEl(id,fn) {
   return c;
 }
    
+[//"btn0",
+  "btn1","btn2","btn3","btn4","btn5"//,"btn6"
+].forEach(
+  function(btn,index){
+    getEl (btn,function(e){
+      containerScroller[e.shiftKey?'snapTo':'scrollTo'](index);
+    });
+  }
+);
+
+  
 
 getEl("snapleft",containerScroller.snapLeft );
 

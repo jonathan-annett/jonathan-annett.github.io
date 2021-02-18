@@ -26,6 +26,8 @@ SOFTWARE.
   
   */
   
+  /*global mouseSwipeEvents,touchSwipeEvents*/
+  
     if (scriptCheck(['cdpn.io','codepen.io'],'jonathan-annett.github.io','addScrollCss','function')  ) 
     return;
 
@@ -60,6 +62,7 @@ function addScrollCss (options,elementIds){
       odd  = (options.even_odd&&options.even_odd[1]) ||defaultClasses.even_odd[1],
       even = (options.even_odd&&options.even_odd[0]) ||defaultClasses.even_odd[0],
       even_odd=[even,odd],
+      odd_even=[odd,even],
       width = options.width||320,
       height = options.height||480,
       left = options.left||0,
@@ -130,6 +133,7 @@ function addScrollCss (options,elementIds){
       obj.containerData = new Array (obj.element.children.length);
       for (var i=0;i<obj.element.children.length;i++) {
          obj.containerData [i]=obj.element.children[i].innerText;
+         
       }
     
     return obj;
@@ -141,7 +145,7 @@ function addScrollCss (options,elementIds){
       contain,
       contain_clip,
       hadData, 
-      containerDataMeta=[],
+      containerDataMeta,
       containerData = (function(data){ 
          hadData=data.hadData;
          containerId=data.containerId;
@@ -163,16 +167,23 @@ function addScrollCss (options,elementIds){
            contain.classList.add(even);
            contain_clip.appendChild(contain);
            if (hadData && options.on_need_element) {
-           containerData.forEach(function(data,index){
-             var 
-             content = options.on_need_element(containerId,index,data); 
-             if (typeof content==='string') {
-                return crEl(undefined,"div",contained,content);
-             } else {
-                return content;
+               containerDataMeta = containerData.map(function(data,index){
+                 var 
+                 content = options.on_need_element(containerId,index,data); 
+                 if (typeof content==='string') {
+                    return {el:crEl(undefined,"div",contained,content)};
+                 } else {
+                    return {el:content};
+                 }
+              });
+               containerDataMeta.forEach(function(meta,index) {
+                 contain.appendChild(meta.el);
+                 meta.el.id=containerId+"_tab_"+(index+1).toString();
+                 //meta.el.dataset.meta=meta;
+                 meta.vars={};
+               }); 
+
              }
-          });
-         }
          }
         
        }
@@ -184,11 +195,21 @@ function addScrollCss (options,elementIds){
        if (contain.classList.contains(container)) {
          contain_clip=contain.parentElement;
          contain = getContainerFromClip(contain_clip);
+         var i,c=contain.children.length;
+         containerDataMeta=new Array(c);
+         for (i = 0;i<c;i++) {
+            var el=contain.children[i],
+            meta={el:el,vars:{}};
+            
+            meta.el.id=containerId+"_tab_"+(i+1).toString();
+            //meta.el.dataset.meta=meta;
+            containerDataMeta[i]=meta;
+         }
        }
        if(contain===null) return null;
       
     }
-    var tabindex = 1;
+    var tabindex = 1,selectIndexFired=1;
     if (!contain) return null;
 
     contain.mouseSwipeThresholdX  = 100;
@@ -196,20 +217,28 @@ function addScrollCss (options,elementIds){
     contain.touchSwipeThresholdX  = 100;
     contain.touchSwipeThresholdY  = 100;
     
-    var transitionCallback=false,
-        transitionCallbackFired=function() {
-        if (transitionCallback) {
-            transitionCallback();
-            transitionCallback=false;
+    var transitionCallback,
+        transitionCallbackElement=contain.children[contain.children.length-1],
+        transitionCallbackFired=function(e) {
+        if (e.target===transitionCallbackElement)  {
+          if (e.elapsedTime >= 0.02) {
+            contain.classList.remove("inScroll");
+          }
+           if (transitionCallback) {
+               var cb= transitionCallback;
+               transitionCallback=undefined;
+               cb(e);
+           }
         }
       };
+    
     contain[ON]('transitioncancel', transitionCallbackFired);
 
     contain[ON]('transitionend', transitionCallbackFired);
 
     function setSectionIndex(index,setMode,cb) {
-       transitionCallback=cb;
-       var t=[],
+      var t=[],
+          
           count=contain.children.length,
           retval = (typeof index ==='number') && (index >=0) && (index <= count+2);
       index = retval ? index : 1;
@@ -217,29 +246,27 @@ function addScrollCss (options,elementIds){
       var newClass = (setMode||"scroll")+index.toString();
       if (contain.classList.contains(newClass)){
          transitionCallback=undefined;
+         contain.classList.remove("inScroll");
          return typeof cb==='function'?cb():cb;
       }
-
-      if (!t.concat.apply(t,contain.classList).some(function(x){
-
+      
+            
+      var clsName = newClass.startsWith('scroll') ?  "inScroll "+newClass : newClass ; 
+      contain.className.split(" ").forEach(function(x){
+        
         if (x.startsWith("scroll") && !isNaN(x.substr(6)) ) { 
-           
-           contain.classList.add(newClass);
-           contain.classList.remove(x);
-           return true;
+            return;
         }
 
         if (x.startsWith("snap") && !isNaN(x.substr(5)) ) {
-           contain.classList.remove(x);
-           contain.classList.add(newClass);
-           return true;
+           return;
         }
         
-        return false;
-      })) {
-          contain.classList.add(newClass);
-      }
-
+        clsName+=" "+x;
+      });
+      
+      transitionCallback=cb;
+      contain.className=clsName;
      }
 
     function snapLeft(cb) {
@@ -267,23 +294,42 @@ function addScrollCss (options,elementIds){
       setSectionIndex(tabindex,"snap",CB);
          
     }
+    
+    function edgeSnap(e,toIndex,CB) {
+      tabindex=toIndex;
+      //console.log("snapped-rescrolling:",tabindex);
+      //setSectionIndex(tabindex,"scroll",function(e){
+         console.log("scrolling complete:",tabindex);
+         if (CB) CB(e);
+      //});
+    }
  
     function scrollLeft(e,cb) {
-      console.log("left",e.type,e.detail.shiftKey,e.detail.swipeDevice);
-      if (e.detail.shiftKey) return snapLeft(e,cb);
       
-      var count=contain.children.length,
-          CB=typeof cb==='function'?cb:undefined;
-      tabindex++;
-      if (tabindex > count)  {
+        console.log("left",e.type,e.detail.shiftKey,e.detail.swipeDevice);
+      
+        if (e.detail.shiftKey) 
+          return snapLeft(e,cb);
 
-        setSectionIndex(0,"snap",function(){
-           setSectionIndex(1,"scroll",CB);
-           tabindex=1;
+        var count=contain.children.length,
+            CB=typeof cb==='function'?cb:undefined;
+
+        console.log("scrolling to:",tabindex+1);
+        setSectionIndex(tabindex+1,"scroll",function(e){
+          
+            tabindex++;
+            if(tabindex===count+1) {
+                console.log("snapping to:",1);
+                setSectionIndex(1,"snap",function(e){
+                  edgeSnap(e,1,CB);
+                });
+            } else {
+              console.log("scrolling complete:",tabindex);
+              if (CB) CB(e);
+            }
+          
         });
-         
-      } else
-        setSectionIndex(tabindex,"scroll",CB);
+      
     }
     
     function scrollRight (e,cb) {
@@ -294,34 +340,44 @@ function addScrollCss (options,elementIds){
       var count=contain.children.length,
           CB=typeof cb==='function'?cb:undefined;
       
-      tabindex--;
-      if (tabindex <1)  {
-
-        
-         setSectionIndex(count+1,"snap",function(){
-            setSectionIndex(count,"scroll",CB);
-            tabindex=count;
+      
+    
+        console.log("scrolling to:",tabindex-1);
+        setSectionIndex(tabindex-1,"scroll",function(e){
+          tabindex--;
+          if (tabindex===0) {
+            console.log("snapping to:",count);
+            setSectionIndex(count,"snap",function(e){
+              edgeSnap(e,count,CB);
+            });
+          } else {
+            console.log("scrolling complete:",tabindex);
+            if (CB) CB(e);
+          }
         });
-        
-      } else
-        setSectionIndex(tabindex,"scroll",CB);
+       
     }
 
     function scrollToSect(n) {
-      if (n===tabindex) 
-        return;
-      contain.className = 'container scroll'+n;
-      tabindex=n;
+      setSectionIndex(n,"scroll");
     }
 
     function snapToSect(n) {
-      if (n===tabindex) 
-        return;
-      contain.className = 'container nap'+n;
-      tabindex=n;
+      setSectionIndex(n,"snap");
     }
 
-    
+    function setEvenOdd (flipIt) {
+      var addRemove     = ["add","remove"];
+      var c=contain.children.length,i;
+      var start =0,end=c-1;
+      for (i=0;i<c;i++) {
+        var el=contain.children[i],o=i%2,e=1-o;
+           el.classList[addRemove[i<=start?0:1]]("first");
+           el.classList[addRemove[i>=end?0:1]]("last");
+           el.classList[addRemove[flipIt?o:o]](odd);
+           el.classList[addRemove[flipIt?e:e]](even);
+        }
+    }
     
     if (options.mouse) {
      mouseSwipeEvents(contain,scrollLeft , scrollRight) ;
@@ -331,13 +387,15 @@ function addScrollCss (options,elementIds){
      touchSwipeEvents(contain, scrollLeft, scrollRight);
     }
     
-    
-    
-    for (var i= 0;i<contain.children.length;i++) {
+    setEvenOdd (false);
+    /*
+    for (var c=contain.children.length,i=0;i<c;i++) {
       var el=contain.children[i];
+       el.classList[i===0?"add":"remove"]("first");
+       el.classList[i===c-1?"add":"remove"]("last");
        el.classList.remove(even_odd[i % 2]);
        el.classList.add(even_odd[1-(i % 2)]);
-    }
+    }*/
 
 
     return {
@@ -351,27 +409,7 @@ function addScrollCss (options,elementIds){
 
   } 
   
-  var csstransition = function(s,mode){
-    if (window.vendorPrefix) {
-      csstransition=css_trans;
-      return css_trans(s,mode);
-    }
-    return css_generic(s,mode); 
-  };
-  
-  function css_trans(s,mode) {
-     var cssTxt="transition: "+(s?s:0)+"s "+(mode?mode:"ease-in-out")+";"+eol;
-    return cssTxt+window.vendorPrefix.css+cssTxt;
-  }
-  
-  function css_generic(s,mode) {
-    var prefixes = ["","-webkit-","-moz-","-o-",""];
-    var cssTxt="transition: "+(s?s:0)+"s "+(mode?mode:"ease-in-out")+";"+eol;
-    return prefixes.join(cssTxt);
-  }
-  
-  
-function cleanupDiv(div,cls){
+  function cleanupDiv(div,cls){
   // remove any top level child nodes that are not divs containing class cls
   var i=0,
       node,
@@ -391,16 +429,145 @@ function cleanupDiv(div,cls){
   } 
   return div;
 }
+  
+  var csstransition = function(s,mode){
+    if (window.vendorPrefix) {
+      csstransition=css_trans;
+      return css_trans(s,mode);
+    }
+    return css_generic(s,mode); 
+  };
+  
+  function css_trans(s,mode) {
+     var cssTxt="transition: "+(s?s:0)+"s "+(mode?mode:"ease-in-out")+";"+eol;
+    return window.vendorPrefix.css+cssTxt+cssTxt;
+  }
+  
+  function css_generic(s,mode) {
+    var prefixes = ["-webkit-","-moz-","-o-","",""];
+    var cssTxt="transition: "+(s?s:0)+"s "+(mode?mode:"ease-in-out")+";"+eol;
+    return prefixes.join(cssTxt);
+  }
+  
+  function makeArray(value,len) {
+    if (Array.prototype.fill) {
+      return Array(len).fill(value);
+    }
+    var arr = new Array(len);
+    for (var i = 0; i < len; i++) {
+      arr[i]=value;
+    }
+    return arr;
+ }
+  
+  function styleSpacing(count,width) {
+    return makeArray(0,count).map(function (x,index){
+       return ((1-index) * width).toString()+"px";
+    });
+  }
+   
+  function renderCssScrollRule(offsetPx,index) {
+      var 
+      classHeader=function (move) {
+       return "."+container+ "."+move+index+" ."+contained ;
+      },
+      trans=" transform: translate("+offsetPx+",0);";
+      return [
+        classHeader("scroll") +"{" ,
+        trans ,
+        csstransition(speed,"ease-in-out") ,
+        "}" + eol +
 
+        classHeader("snap") +"{" ,
+        trans ,
+        csstransition(0.01,"ease-in-out") ,
+        "}",
+        ""
+      ].join(eol);
+  }
+  
+  function renderScrollCss (offsets){
+   
+    var count = offsets.length;
+    var width_= width.toString()+"px",height_=+height.toString()+"px";
+  
+    
+    return [
+      
+      
+       "."+container_clip+"{",  
+    
+   
+      (!!window.vendorPrefix) ? (
+        window.vendorPrefix.css+"user-select: none;" 
+   ) : [
+       "-webkit-touch-callout: none;",
+       "-webkit-user-select: none;",
+       "-khtml-user-select: none;", 
+       "-moz-user-select: none;",
+       "-ms-user-select: none;" 
+   ].join(eol),
+      
+    "user-select: none;",
+  
+    "overflow:hidden;",
+    "width : "+width_+";",
+    "height : "+height_+"; ",
+    "position:absolute;",
+    "top:"+top.toString()+"px;",
+    "left :"+left.toString()+"px;",
+    "padding:0;",
+    "margin:0;",
+    "}",
+
+    "."+container+" {",
+    "width: "+((count+2)*width).toString()+"px;",
+    "position: absolute;",
+    "left:0;",
+    "top:0;",
+    "padding:0;margin:0;",
+    "clip: rect(0,"+width_+","+height_+",0);",
+    "}",
+    "."+contained+" {",
+    "position: relative;",
+    "display: inline-block;",
+    "width:  "+width_+";",
+    "height: "+height_+";",
+    "margin :0;",
+    "padding:0;",
+    "}",
+
+    offsets.map(renderCssScrollRule).join(eol),
+    
+    "."+container+".snap"+(count+1).toString()+" div.first,",
+    "."+container+".scroll"+(count+1).toString()+" div.first {",
+    "  position:absolute;",
+    "  top:0;",
+    "  left:"+(width*(count)).toString()+"px;" ,
+    "  z-index:1;",
+    "}",
+
+    "."+container+".snap0 div.last,",
+    "."+container+".scroll0 div.last {",
+    "  position:absolute;",
+    "  top:0;",
+    "  left:-"+width_+";",
+    "  z-index:1;",
+    "}",
+    ].join(eol);
+  }
  
   function prependStyleSheet(newStyleSheet){
     var bodyClass = document.getElementsByTagName('head')[0];         
     bodyClass.insertBefore(newStyleSheet, bodyClass.childNodes[2]);
   }
+  
   function appendStyleSheet(newStyleSheet){
-    var bodyClass = document.getElementsByTagName('head')[0];         
-    bodyClass.appendChild(newStyleSheet);
+     var bodyClass = document.getElementsByTagName('head')[0];         
+     bodyClass.appendChild(newStyleSheet);
   }
+  
+ 
   
 
   function scrollCssElement(container,contained,width,index,speed) {
@@ -419,9 +586,6 @@ function cleanupDiv(div,cls){
   }
 
   function scrollCss (container_clip,container,contained,width,height,left,top,count,speed){
-    
-    
-    
     
     var cssTxt = "",width_= width.toString()+"px",height_=+height.toString()+"px";
     
@@ -465,16 +629,37 @@ function cleanupDiv(div,cls){
     cssTxt += "height: "+height_+";"+eol;
     cssTxt += "margin :0;"+eol;
     cssTxt += "padding:0;"+eol;
-    cssTxt += "}";
+    cssTxt += "}"+eol;
 
     for (var index=0;index<count+2;index++) {
       cssTxt+=(eol+scrollCssElement(container,contained,width,index,speed)) ;
     }
+    
+    cssTxt += eol+"."+container+".snap"+(count+1).toString()+" div.first,"+eol;
+    cssTxt += "."+container+".scroll"+(count+1).toString()+" div.first {"+eol;
+    cssTxt += "  position:absolute;"+eol;
+    cssTxt += "  top:0;"+eol;
+    cssTxt += "  left:"+(width*(count)).toString()+"px;"+ eol ;
+    cssTxt += "}"+eol;
+
+    cssTxt += "."+container+".snap0 div.last,"+eol;
+    cssTxt += "."+container+".scroll0 div.last {"+eol;
+    cssTxt += "  position:absolute;"+eol;
+    cssTxt += "  top:0;"+eol;
+    cssTxt += "  left:-"+width_+";"+eol;
+    cssTxt += "}"+eol;
+
+    
     return cssTxt;
   }
 
   var style = document.createElement('style');
   style.type = 'text/css';
+  
+  var offsets = styleSpacing(maxCount,width); 
+  
+  //style.innerHTML = renderScrollCss (offsets);  
+  
   style.innerHTML = scrollCss (container_clip,container,contained,width,height,left,top,maxCount,speed);
   appendStyleSheet(style);
  
