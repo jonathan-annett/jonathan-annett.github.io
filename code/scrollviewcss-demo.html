@@ -34,72 +34,114 @@ SOFTWARE.
   <title>scrollview demo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
-  
-  
-<style>
-html.scrollviewcss_loading body {
-  
-  display :none;
-}
+  <style>
+  html.scrollviewcss_loading body {
 
-.odd,
-.even {
-   font-size:72pt;
-}
-
-.odd {
-  background-color: #0adaf1;
-}
-
-.container.snap0,
-.container.scroll0,
-.container.scroll1,
-.even {
-  background-color: #c3b4a4;
-}
-
-
-
-.container_clip {
-  
-  overflow:hidden;
-  width : 500px;
-  height : 300px; 
-  position:absolute;
-  top:50px;
-  left :0;
-  padding:0;
-  margin:0;
- 
-}
-
-#second_container {
-  top : 400px;
-}
-  
-  
-  img.qr {
-    
-    display:none;
+    display :none;
   }
-  
-  html.desktop img.qr {
-    
-    display : block;
-    
-   
-    right:0;
+
+  .odd,
+  .even {
+     font-size:72pt;
+  }
+
+  .odd {
+    background-color: #0adaf1;
+  }
+
+  .container.snap0,
+  .container.scroll0,
+  .container.scroll1,
+  .even {
+    background-color: #c3b4a4;
+  }
+
+
+
+  .container_clip {
+
+    overflow:hidden;
+    width : 500px;
+    height : 300px; 
     position:absolute;
-    top:0;
-  }
-    
-   html.framed  img.qr {
-    
-    display:none;
-  }
-  
-</style>
+    top:50px;
+    left :0;
+    padding:0;
+    margin:0;
 
+  }
+
+  #second_container {
+    top : 400px;
+  }
+
+
+    img.qr {
+
+      display:none;
+    }
+
+    html.desktop img.qr {
+
+      display : block;
+
+
+      right:0;
+      position:absolute;
+      top:0;
+    }
+
+     html.framed  img.qr {
+
+      display:none;
+    }
+    
+    @media screen/*qrcode settings*/ {
+        #btn_open_on_mobile,
+        div.qr {
+          display: none;
+        }
+
+        div.qr p,
+        div.qr img {
+          margin: 0;
+          width: 300px;
+          height: auto;
+        }
+
+        html.desktop div.qr {
+          display: none;
+          display: block;
+
+          position: absolute;
+          top: 10px;
+          right: 10px;
+        }
+
+        html.framed.showqr div.container_clip,
+        html.framed.showqr button,
+        html.framed div.qr {
+          display: none;
+        }
+
+        html.framed.showqr div.qr,
+        html.framed #btn_open_on_mobile {
+          display: inline-block;
+        }
+
+        html.framed.showqr div.qr {
+          left: 8px;
+          right: unset;
+          top: 32px;
+          position: absolute;
+        }
+      }
+
+  </style>
+  
+  <link rel="stylesheet" href="fontawesome.v5.7.0.css" />
+
+ 
 </head>
 
 <body translate="no" >
@@ -116,21 +158,32 @@ html.scrollviewcss_loading body {
 <div id="second_container" class="container_clip"></div>
 
 
-<button id="snapleft">&lt;snap</button>
-<button id="snapright">snap&gt;</button>
-<button id="scrollleft">&lt;scroll</button>
-<button id="scrollright">scroll&gt;</button>
-
-<button onclick="containerScroller.scrollTo(1);">1</button>
-<button onclick="containerScroller.scrollTo(2);">2</button>
-<button onclick="containerScroller.scrollTo(3);">3</button>
-<button onclick="containerScroller.scrollTo(4);">4</button>
-  
+ <div class="toolbar">
+      <button id="btn_open_on_mobile">
+        Mobile&nbsp;<i class="fas fa-mobile-alt"></i>
+      </button>
+      <button id="snapleft">&lt;snap</button>
+      <button id="snapright">snap&gt;</button>
+      <button id="scrollleft">&lt;scroll</button>
+      <button id="scrollright">scroll&gt;</button>
+      <button onclick="containerScroller.scrollTo(1);">1</button>
+      <button onclick="containerScroller.scrollTo(2);">2</button>
+      <button onclick="containerScroller.scrollTo(3);">3</button>
+      <button onclick="containerScroller.scrollTo(4);">4</button>
+    </div>
 <script src="current-device.js"></script>
 <script src="addLongPress.js"></script>
 <script src="mouseTouchSwipe.js#02e3abe0e0a274ece1d0189ca65011d798e0b014"></script>
 <script src="vendor-prefix.js#3cbba0ab4c9fbd3a5272f2311242e9827cb76062"></script>
 <script src="scrollviewcss.js#f56b3fa8676da97a7be8a242f810b5102af329f2"></script>
+<script src="QRCode_lib.min.js"></script>
+<div class="qr">
+  <div id="qrcode"></div>
+  <p>
+    the qr code lets you easily open this page on your camera equipped touch
+    enabled device.
+  </p>
+</div>
 <script defer>
 
    
@@ -167,13 +220,22 @@ getEl("snapright",containerScroller.snapRight );
 getEl("scrollleft",containerScroller.scrollLeft);
 
 getEl("scrollright",containerScroller.scrollRight);
+getEl("btn_open_on_mobile", function() {
+        document.querySelector("html").classList.toggle("showqr");
+      });
+      var qrcode = new QRCode(getEl("qrcode"), {
+        width: 300,
+        height: 300
+      });
+      qrcode.makeCode(location.href);
+
+ 
 
 document.querySelector("html").classList.remove("scrollviewcss_loading");
   
     </script>
 
-  
-  <img src="qr.png" class="qr">
+   
 </body>
 
 </html>
