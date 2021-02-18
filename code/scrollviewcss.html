@@ -1,17 +1,92 @@
 <html>
   <head>
     <title>simple swipe framework for mouse and touch devices</title>
+    <style>
+      @media screen/*qrcode settings*/ {
+        #btn_open_on_mobile,
+        div.qr {
+          display: none;
+        }
+
+        div.qr p,
+        div.qr img {
+          margin: 0;
+          width: 300px;
+          height: auto;
+        }
+
+        html.desktop div.qr {
+          display: block;
+        }
+
+        html.framed.showqr div.container_clip,
+        html.framed.showqr button,
+        html.framed div.qr {
+          display: none;
+        }
+
+        html.framed.showqr div.qr,
+        html.framed #btn_open_on_mobile {
+          display: inline-block;
+        }
+
+        html.framed.showqr div.qr {
+          left: 8px;
+          right: unset;
+          top: 32px;
+          position: absolute;
+        }
+      }
+    </style>
   </head>
-<body>
-<p class="codepen" data-height="474" data-theme-id="dark" data-default-tab="js,result" data-user="sophtwhere" data-slug-hash="rNWyOVQ" style="height: 474px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="simple swipe framework for mouse and touch devices">
-  <span>See the Pen <a href="https://codepen.io/sophtwhere/pen/rNWyOVQ">
-  simple swipe framework for mouse and touch devices</a> by Jonathan  Annett (<a href="https://codepen.io/sophtwhere">@sophtwhere</a>)
-  on <a href="https://codepen.io">CodePen</a>.</span>
-</p>
-<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
-  <h2>
-    mobile demo here 
-  </h2>
-  <a href="scrollviewcss-demo.html"><img src="qr.png"></a>
-</body>
+  <body>
+    <p
+      class="codepen"
+      data-height="474"
+      data-theme-id="dark"
+      data-default-tab="result"
+      data-user="sophtwhere"
+      data-slug-hash="rNWyOVQ"
+      style="height: 474px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;"
+      data-pen-title="simple swipe framework for mouse and touch devices"
+    >
+      <span
+        >See the Pen
+        <a href="https://codepen.io/sophtwhere/pen/rNWyOVQ">
+          simple swipe framework for mouse and touch devices</a
+        >
+        by Jonathan Annett (<a href="https://codepen.io/sophtwhere"
+          >@sophtwhere</a
+        >) on <a href="https://codepen.io">CodePen</a>.</span
+      >
+    </p>
+    <script
+      async
+      src="https://cpwebassets.codepen.io/assets/embed/ei.js"
+    ></script>
+    <h2>
+      mobile demo here
+    </h2>
+    <script src="QRCode_lib.min.js"></script>
+
+    <div class="qr">
+      <a href="scrollviewcss-demo.html"> <div id="qrcode"></div></a>
+      <p>
+        the qr code lets you easily open this page on your camera equipped touch
+        enabled device.
+      </p>
+    </div>
+
+    <script src="current-device.js"></script>
+
+    <script>
+      var qrcode = new QRCode(document.getElementById("qrcode"), {
+        width: 300,
+        height: 300
+      });
+      var this_file = location.href.split("/").pop();
+      var demo_filename = this_file.replace(".html", "-demo.html");
+      qrcode.makeCode(location.href.replace(this_file, demo_filename));
+    </script>
+  </body>
 </html>
