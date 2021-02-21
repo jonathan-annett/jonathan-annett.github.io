@@ -24,8 +24,8 @@
   window.mobileSwipeEvents = mobileSwipeEvents;
   window.touchSwipeEvents = mobileSwipeEvents;
 
-  window.mouseSwipeTimeout = 300;
-  window.touchSwipeTimeout = 200;
+  window.mouseSwipeTimeout = 5000;
+  window.touchSwipeTimeout = 5000;
   window.mouseSwipeDelta = 1 / 4;
   window.touchSwipeDelta = 1 / 4;
 
@@ -51,6 +51,9 @@
     swipeTimeDelta,
     swipeDevice
   ) {
+    var 
+    absDelta = swipeDelta ? Math.abs(swipeDelta)    : undefined,
+    velocity = absDelta   ? absDelta/swipeTimeDelta : 0;
     o.dispatchEvent(
       new CustomEvent(swipe_type, {
         bubbles: true,
@@ -60,8 +63,10 @@
         detail: {
           clientX: e.clientX,
           clientY: e.clientY,
-          swipeDelta: swipeDelta ? Math.abs(swipeDelta) : undefined,
+          swipeDelta: absDelta,
           swipeTimeDelta: swipeTimeDelta,
+          swipeVelocity: velocity,
+          
 
           shiftKey: e.shiftKey,
           ctrlKey: e.ctrlKey,
@@ -74,15 +79,15 @@
         clientY: e.clientY,
         offsetX: e.offsetX,
         offsetY: e.offsetY,
-        pageX: e.pageX,
-        pageY: e.pageY,
+        pageX  : e.pageX,
+        pageY  : e.pageY,
         screenX: e.screenX,
         screenY: e.screenY
       })
     );
   }
 
-  function logEvent(e, mode, clear) {
+   function logEvent(e, mode, clear) {
     var active = active_swipes[e.timeStamp],
       log = { mode: mode, type: e.type, x: e.screenX, y: e.screenY };
     console.log(e.timeStamp, mode, log);
@@ -107,12 +112,75 @@
     }
     return !!active;
   }
+  
+   function dragXclass(x) {
+      var d = x<0?"left_":"right_";  
+      return "drag_"+d+(x<0?0-x:x).toString();
+    }
+  
+   function dragYclass(y) {
+      var d = y<0?"up_":"down_";  
+      return "drag_"+d+(y<0?0-y:y).toString();
+    }
+  
+   function addDragXClass(el,dragState,x,in_drag) {
+       if (in_drag) {
+         el.classList.add(in_drag); 
+       }
+       if (dragState.x===x) return;
+        
+       el.classList.add(dragXclass(x)); 
+       
+       if(dragState.x!==undefined) {
+           el.classList.remove(dragXclass(dragState.x));
+       }
+     
+       dragState.x=x;
+    }
+  
+   function removeDragXClass(el,dragState,in_drag) {
+       if (in_drag) {
+         el.classList.remove(in_drag); 
+       }
+       if(dragState.x===undefined) return;
+       
+       el.classList.remove(dragXclass(dragState.x));
+       delete dragState.x;  
+    }
+    
+    
+   function addDragYClass(el,dragState,y,in_drag) {
+       if (in_drag) {
+         el.classList.add(in_drag); 
+       }
+       if (dragYclass===y) return;
+       el.classList.add(dragYclass(y));
+       
+       if(dragState.y!==undefined) {
+           el.classList.remove(dragYclass(dragState.y));
+       }
+       dragState.y=y;
+    }
+  
+   function removeDragYClass(el,dragState,in_drag) {
+       if (in_drag) {
+         el.classList.remove(in_drag); 
+       }
+       if(dragState.y===undefined) return;
+      
+       el.classList.remove(dragYclass(dragState.y));
+       delete dragState.y;
+    }
+
 
   function mouseSwipeEvents(o, left, right, up, down, ev) {
-    var swipeDevice = "mouse";
-    var evs = defaultSwipeEventNames(ev);
-    var self;
-    var start = {},
+    var 
+    swipeDevice = "mouse",
+    evs = defaultSwipeEventNames(ev),
+    self,
+    start = {},
+        
+        
       end = {},
       tracking = false,
       thresholdDistanceX = function() {
@@ -123,6 +191,11 @@
           o.mouseSwipeThresholdY || o.clientHeight * window.mouseSwipeDelta
         );
       };
+    
+    var 
+    par = o.parentElement,
+    dragState={};
+     
 
     function gestureStart(e) {
       logEvent(e, "mouse");
@@ -135,6 +208,9 @@
       Object.keys(start).forEach(function(k) {
         end[k] = start[k];
       });
+      
+      if (self.enableDragX) addDragXClass(par,dragState,0,"in_drag_x"); 
+      if (self.enableDragY) addDragYClass(par,dragState,0,"in_drag_y"); 
     }
 
     function gestureMove(e) {
@@ -142,7 +218,8 @@
         e.preventDefault();
         end.x = e.clientX;
         end.y = e.clientY;
-        
+        if (self.enableDragX) addDragXClass(par,dragState,Math.floor((end.x-start.x) / self.xGranularity)*self.xGranularity);
+        if (self.enableDragY) addDragYClass(par,dragState,Math.floor((end.y-start.y) / self.yGranularity)*self.yGranularity);
       } else {
       
         
@@ -185,7 +262,9 @@
     function gestureEnd(e) {
       if (tracking) {
         logEvent(e, "mouse", true);
-
+        if (self.enableDragX) removeDragXClass(par,dragState,"in_drag_x"); 
+        if (self.enableDragY) removeDragYClass(par,dragState,"in_drag_y"); 
+        
         tracking = false;
         var now = Date.now();
         var deltaTime = now - start.t;
@@ -243,19 +322,34 @@
           swipe_events_hooked.push(self);
         }
       },
-      fakeConsole: fakeConsole
+      fakeConsole: fakeConsole,
+      
+      enableDragX : window.xDragGranularity!==false,
+      enableDragY : window.yDragGranularity!==false,
+
+      xGranularity : window.xDragGranularity||10,
+      yGranularity : window.yDragGranularity||10 
+    
+  
+      
     };
     self.start();
     return self;
   }
 
   function mobileSwipeEvents(o, left, right, up, down, ev) {
-    var swipeDevice = "touch";
-    var evs = defaultSwipeEventNames(ev);
-    var self;
-    var start = {};
-    var end = {};
-    var tracking = false;
+    var 
+    swipeDevice = "touch",
+    evs = defaultSwipeEventNames(ev),
+    self,
+    start = {},
+    end = {},
+    tracking = false,
+    par = o.parentElement,
+    dragState={}; 
+    
+    
+    
     var thresholdDistanceX = function() {
         return o.mouseSwipeThresholdX || o.clientWidth * window.touchSwipeDelta;
       },
@@ -264,6 +358,7 @@
           o.mouseSwipeThresholdY || o.clientHeight * window.touchSwipeDelta
         );
       };
+    
     function gestureStart(e) {
       if (logEvent(e, "touch")) {
         console.log("double swipe detected in start!");
@@ -284,6 +379,9 @@
         Object.keys(start).forEach(function(k) {
           end[k] = start[k];
         });
+        
+        if (self.enableDragX) addDragXClass(par,dragState,0,"in_drag_x"); 
+        if (self.enableDragY) addDragYClass(par,dragState,0,"in_drag_y"); 
       }
     }
 
@@ -292,12 +390,16 @@
         e.preventDefault();
         end.x = e.targetTouches[0].clientX;
         end.y = e.targetTouches[0].clientY;
+        if (self.enableDragX) addDragXClass(par,dragState,Math.floor((end.x-start.x) / self.xGranularity)*self.xGranularity);
+        if (self.enableDragY) addDragYClass(par,dragState,Math.floor((end.y-start.y) / self.yGranularity)*self.yGranularity);
       }
     }
 
     function gestureEnd(e) {
       if (tracking) {
         tracking = false;
+        if (self.enableDragX) removeDragXClass(par,dragState,"in_drag_x"); 
+        if (self.enableDragY) removeDragYClass(par,dragState,"in_drag_y"); 
 
         if (logEvent(e, "touch")) {
           console.log("double swipe detected - in end!");
@@ -356,7 +458,14 @@
           console.log("touch events hooked");
         }
       },
-      fakeConsole: fakeConsole
+      fakeConsole: fakeConsole,
+      
+      enableDragX : window.xDragGranularity!==false,
+      enableDragY : window.yDragGranularity!==false,
+
+      xGranularity : window.xDragGranularity||10,
+      yGranularity : window.yDragGranularity||10 
+      
     };
     self.start();
     return self;
