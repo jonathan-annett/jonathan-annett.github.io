@@ -46,6 +46,7 @@ function addScrollCss (options,elementIds){
       QSA=QS+"All",
       console = window.console,
       updateDragStyle,
+      api,
 
      
 
@@ -76,6 +77,8 @@ function addScrollCss (options,elementIds){
       speed = options.swipeSeconds||0.25,
       fastSpeed = options.swipeSecondsFast||false,
       wrap = typeof options.wrap ==='boolean' ? options.wrap : true;
+  
+      maxCount+= Math.floor(maxCount / 2);
   
   function getEl(id,fn) {
     var c=document.getElementById(id);
@@ -141,7 +144,8 @@ function addScrollCss (options,elementIds){
     
     return obj;
   }
- 
+  
+
   function wrapContainer(containerId) {
     
      var 
@@ -170,26 +174,9 @@ function addScrollCss (options,elementIds){
            contain.classList.add(even);
            contain_clip.appendChild(contain);
            if (hadData && options.on_need_element) {
-               containerDataMeta = containerData.map(function(data,index){
-                 var 
-                 vars = {},
-                 content = options.on_need_element(containerId,index,data,vars); 
-                 if (typeof content==='string') {
-                    return {el:crEl(undefined,"div",contained,content),vars:vars};
-                 } else {
-                    if (content.classList) {
-                       content.classList.add(contained);
-                    }
-                    return {el:content,vars:vars};
-                 }
-              });
-               containerDataMeta.forEach(function(meta,index) {
-                 contain.appendChild(meta.el);
-                 meta.el.id=containerId+"_tab_"+(index+1).toString();
-                 
-               }); 
-
-             }
+             containerDataMeta = containerData.map(resolveElement);
+             containerDataMeta.forEach(appendMetaElement); 
+           }
          }
         
        }
@@ -208,7 +195,6 @@ function addScrollCss (options,elementIds){
             meta={el:el,vars:{}};
             
             meta.el.id=containerId+"_tab_"+(i+1).toString();
-            //meta.el.dataset.meta=meta;
             containerDataMeta[i]=meta;
          }
        }
@@ -243,8 +229,6 @@ function addScrollCss (options,elementIds){
 
     contain[ON]('transitionend', transitionCallbackFired);
     
-   
-
     function setSectionIndex(index,setMode,cb) {
       var t=[],
           
@@ -289,6 +273,176 @@ function addScrollCss (options,elementIds){
       abort : function(){},
       chain : transitionScript
     };
+    
+    
+   function resolveElement (data,index){
+       var 
+       vars = {},
+       content = options.on_need_element(containerId,index+1,data,vars); 
+       if (typeof content==='string') {
+          return {el:crEl(undefined,"div",contained,content),vars:vars};
+       } else {
+          if (content.classList) {
+             content.classList.add(contained);
+          }
+          return {el:content,vars:vars};
+       }
+
+    } 
+    
+    function fixElementOrder(){
+      containerDataMeta.forEach(function(meta){
+        contain.appendChild(meta.el);
+       
+      });
+      
+       if (typeof options.on_freshen_element==='function') {
+            containerDataMeta.forEach(function(meta,index){
+               options.on_freshen_element(
+                 containerId,
+                 meta.el,
+                 index+1,
+                 containerData[index],
+                 meta.vars
+               ) ; 
+            });
+       }
+    }
+    
+    function appendMetaElement(meta,index) {
+         contain.appendChild(meta.el);
+         meta.el.id=containerId+"_tab_"+(index+1).toString();
+     }
+     
+    function unshiftElement (data) {
+      var 
+       newIndex=0,
+       meta=resolveElement(data,newIndex);
+      
+       containerDataMeta.unshift(meta);
+       containerData.unshift(data);
+       appendMetaElement(meta,newIndex);
+       fixElementOrder();
+      
+       if (containerData.length>=maxCount) {
+           maxCount+= Math.floor(maxCount / 8);
+           api.render();
+       }
+       contain.classList.add('notransition');
+       setDragX((mouse&&mouse.enableDragX)||(touch&&touch.enableDragX)); 
+       setEvenOdd (false);
+       contain.offsetHeight;
+       contain.classList.remove('notransition');
+       snapToSect(tabindex===1?3:1);
+        
+          scrollToSect(1,function (){
+         
+         
+   
+         
+       });
+  
+    }
+
+    
+    function pushElement ( data ) {
+      
+       var 
+       newIndex=containerData.length,
+       meta=resolveElement(data,newIndex);
+      
+       containerDataMeta.push(meta);
+       containerData.push(data);
+       appendMetaElement(meta,newIndex);
+      
+       if (containerData.length>=maxCount) {
+           maxCount+= Math.floor(maxCount / 8);
+           api.render();
+       }
+       contain.classList.add('notransition');
+       setDragX((mouse&&mouse.enableDragX)||(touch&&touch.enableDragX)); 
+       setEvenOdd (false);
+       contain.offsetHeight;
+       contain.classList.remove('notransition');
+       snapToSect(tabindex);
+       scrollToSect(newIndex+1);
+  
+     
+    }
+
+    function popElement ( cb ) {
+        if (containerDataMeta.length===0) {
+          return undefined;
+        }
+      
+        var result = {};
+      
+        scrollToSect(containerDataMeta.length,function(){
+          
+            result.meta = containerDataMeta.pop();
+            contain.removeChild(result.meta.el);
+            result.data = containerData.pop(); 
+            setDragX((mouse&&mouse.enableDragX)||(touch&&touch.enableDragX)); 
+            setEvenOdd (false);
+     
+          
+           
+            scrollToSect(containerDataMeta.length);
+          
+            if (typeof cb==='function') {
+               cb(result);
+             }
+           
+      
+        });
+        
+       
+        return result;
+    }
+    
+    function shiftElement (cb) {
+       if (containerDataMeta.length===0) {
+          return undefined;
+        }
+      
+        var result = {};
+      
+        scrollToSect(1,function(){
+          
+            result.meta = containerDataMeta.shift();
+            contain.removeChild(result.meta.el);
+            fixElementOrder();
+            result.data = containerData.shift(); 
+            setDragX((mouse&&mouse.enableDragX)||(touch&&touch.enableDragX)); 
+            setEvenOdd (false);
+            
+            scrollToSect(1);
+           
+
+            if (typeof cb==='function') {
+             cb(result);
+            }
+
+      
+        });
+        
+       
+        return result;
+    }
+
+    
+  
+    function getElement ( index ) {
+       return {
+         meta : containerDataMeta[index],
+         data : containerData[index]
+       };
+    }
+
+    function setElement ( index, el ) {
+
+    }
+ 
     
     function indexFromClassName(x) {
        var result;
@@ -377,7 +531,7 @@ function addScrollCss (options,elementIds){
              };
            }
          };
-         return self;
+          return self;
           
     }
 
@@ -594,19 +748,21 @@ function addScrollCss (options,elementIds){
    
     }
 
-    function scrollToSect(n) {
+    function scrollToSect(n,cb) {
       setSectionIndex(n,"scroll",function(){
          tabindex=n;
          updateDragStyle(tabindex);
          notifySelected(tabindex);
+         if(typeof cb==='function') cb();
       });
     }
 
-    function snapToSect(n) {
+    function snapToSect(n,cb) {
       setSectionIndex(n,"snap",function(){
          tabindex=n;
          updateDragStyle(tabindex);
          notifySelected(tabindex);
+          if(typeof cb==='function') cb();
       });
     }
 
@@ -657,15 +813,29 @@ function addScrollCss (options,elementIds){
     
     notifySelected(1);
  
+  
+    
+    
 
     return {
-      meta         : containerDataMeta,
+      //meta         : containerDataMeta,
       scrollLeft   : scrollLeft,
       scrollRight  : scrollRight,
       snapLeft     : snapLeft,
       snapRight    : snapRight,
       scrollTo     : scrollToSect,
-      snapTo       : snapToSect
+      snapTo       : snapToSect,
+      
+      push         : pushElement,
+      unshift      : unshiftElement,
+      
+      pop          : popElement,
+      shift        : shiftElement,
+      
+      
+      getElement   : getElement,
+      setElement   : setElement
+      
     };
 
   } 
@@ -817,7 +987,8 @@ function addScrollCss (options,elementIds){
       var d = x<0?"left_":"right_",X = x<0?0-x:x;  
       return "drag_"+d+X.toString();
     }
-    function ycls(y) {
+  
+   function ycls(y) {
       var d = y<0?"up_":"down_",Y = y<0?0-y:y;  
       return "drag_"+d+Y.toString();
     }
@@ -844,8 +1015,8 @@ function addScrollCss (options,elementIds){
     dragWidth= Math.ceil(width/xGranularity)*xGranularity;
     dragStyle.innerHTML   = dragXCss(-dragWidth,+dragWidth,xGranularity,(0-(index-1))*width);
   };
-  var
-  obj = {
+  
+  api = {
     
     render:render,
     
@@ -862,9 +1033,9 @@ function addScrollCss (options,elementIds){
   };
   
   scrollStyle.type = 'text/css';
-  dragStyle.type = 'text/css';
+  dragStyle.type   = 'text/css';
  
-  obj.setWidth(width);
+  api.setWidth(width);
   updateDragStyle(1);
   appendStyleSheet(scrollStyle); 
   appendStyleSheet(dragStyle); 
@@ -874,7 +1045,7 @@ function addScrollCss (options,elementIds){
   });
 
   controllers.forEach(function(c){
-    c.styleRules=obj;
+    c.styleRules=api;
   });
   
  return controllers[0];
