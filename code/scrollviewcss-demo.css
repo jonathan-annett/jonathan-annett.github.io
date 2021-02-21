@@ -19,64 +19,81 @@ html.scrollviewcss_loading body {
   display: none;
 }
 
-.odd,
-.even {
-  font-size: 72pt;
-  background-color: #eaabab;
-}
-.container P {
-   font-size: 24pt;
- 
+
+@media screen /*fonts and colors for scrollview*/ {
+  /* don't set dimensions here, - a custom stylesheed is generated on the fly 
+     by addScrollCss()  the overall size and shape of the scrollview and it's embeds
+     needs to be carefully calculated to get the scroll effect */
+    .odd,
+    .even {
+      font-size: 36pt;
+      background-color: #eaabab;
+    }
+    .container P {
+       font-size: 24pt;
+
+    }
+
+    .container_clip.in_drag_x div.container div.odd, 
+    .container.inScroll div.odd {
+      background-color: #0adaf1;
+    }
+
+    .container_clip.in_drag_x div.container.scroll0, 
+    .container_clip.in_drag_x div.container.scroll1, 
+    .container_clip.in_drag_x div.container div.even, 
+    .container.inScroll.scroll0,
+    .container.inScroll.scroll1,
+    .container.inScroll div.even {
+      background-color: #c3b4a4;
+    }
+
 }
 
-.container_clip.in_drag_x div.container div.odd, 
-.container.inScroll div.odd {
-  background-color: #0adaf1;
+@media screen /** relocate/recolor the second scroll view container*/ {
+  /*
+  
+  you'd normally have a addScrollCss() per scrollview, but we can get away with 
+   sharing the stylesheet created for "container", becuase we have stipulated in this case
+  it's going to have the same dimensions. this means the same scroll rules will work
+  we just need to put it somewhere else on the screen - since the scrollview uses clipping to work
+  it's majic, it needs to be absolutely positioned. we can relocate it by specifying an id and a new top/left
+  
+  
+  */
+  #second_container {
+    top: 310px;
+  }
+
+  #second_container .odd,
+  #second_container .even {
+    font-size: 16pt;
+  }
+
+  #second_container .odd {
+    background-color: #9eff9e;
+  }
+  #second_container .even {
+    background-color: #86a1fd;
+  }
 }
 
-.container_clip.in_drag_x div.container.scroll0, 
-.container_clip.in_drag_x div.container.scroll1, 
-.container_clip.in_drag_x div.container div.even, 
-.container.inScroll.scroll0,
-.container.inScroll.scroll1,
-.container.inScroll div.even {
-  background-color: #c3b4a4;
-}
-
-.container_clip {
-  overflow: hidden;
-  width: 500px;
-  height: 200px;
-  position: absolute;
-  top: 50px;
-  left: 0;
-  padding: 0;
-  margin: 0;
-}
-
-#second_container {
-  top: 310px;
-}
-
-#second_container .odd,
-#second_container .even {
-  font-size: 16pt;
-}
-
-#second_container .odd {
-  background-color: #9eff9e;
-}
-#second_container .even {
-  background-color: #86a1fd;
-}
-
-
+@media screen /* some cosmetics pertaining to the toolbar and qr codes */ {
+  
+  button {
+    height :25px;
+    
+  }
 .toolbar p {
     margin-block-start: 0;
     margin-block-end: 0;
     margin-inline-start: 0px;
     margin-inline-end: 0px;
 }
+  
+  .toolbar input {
+    width : 100px;
+  }
 
 div.toolbar {
   width: 550px;
@@ -103,14 +120,14 @@ html.framed img.qr {
   display: none;
 }
 
-
+}
 
 @media screen /*info headers dimensions and placement*/{
   
   .header1 {
     
     position :absolute;
-    top:60px;
+    top:90px;
     left:8px;
     width:500px;
     
@@ -131,9 +148,6 @@ html.framed img.qr {
   
 }
 
-
-
-
 @media screen/*open on mobile button*/{
   
   #btn_open_on_mobile {
@@ -153,7 +167,7 @@ html.framed img.qr {
 	text-shadow:0px 1px 0px #ffee66;
   width:80px;
 }
-#btn_open_on_mobile:hover {
+html.desktop #btn_open_on_mobile:hover {
 	background:linear-gradient(to bottom, #ffab23 5%, #ffec64 100%);
 	background-color:#ffab23;
 }
@@ -184,7 +198,7 @@ html.framed img.qr {
 	text-shadow:0px 1px 0px #5f16b3;
   width:80px;
 }
-.snapScrollBtn:hover {
+html.desktop .snapScrollBtn:hover {
 	background:linear-gradient(to bottom, #0d54bd 5%, #248dde 100%);
 	background-color:#0d54bd;
 }
@@ -201,13 +215,13 @@ html.framed img.qr {
   
   .scrollToBtn {
 	box-shadow:inset 0px 1px 0px 0px #85f2e0;
-	background:linear-gradient(to bottom, #248dde 5%, #0d54bd 100%);
+	background:linear-gradient(to bottom, #fffa3a 35%, #f38e21 100%);
 	background-color:#248dde;
 	border-radius:2px;
 	border:1px solid #1d11bf;
 	display:inline-block;
 	cursor:pointer;
-	color:#ffffff;
+	color:#000000;
 	font-family:Arial;
 	font-size:12px;
 	font-weight:bold;
@@ -215,11 +229,45 @@ html.framed img.qr {
 	text-shadow:0px 1px 0px #5f16b3;
   width:80px;
 }
-.scrollToBtn:hover {
+html.desktop .scrollToBtn:hover {
 	background:linear-gradient(to bottom, #0d54bd 5%, #248dde 100%);
 	background-color:#0d54bd;
 }
 .scrollToBtn:active {
+	position:relative;
+	top:1px;
+}
+
+        
+  
+}
+
+@media screen/*scroll to buttons*/{
+  
+  .pushPopBtn {
+	box-shadow:inset 0px 1px 0px 0px #85f2e0;
+	background:linear-gradient(to bottom, #3affa5 5%, #21f3c2 100%);
+	background-color:#248dde;
+	border-radius:2px;
+	border:1px solid #1d11bf;
+	display:inline-block;
+	cursor:pointer;
+	color:#0a0505;
+	font-family:Arial;
+	font-size:12px;
+	font-weight:bold;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #5f16b3;
+  width:90px;
+}
+  .pushPopBtn.popshift {
+     width:60px;
+  }
+html.desktop .pushPopBtn:hover {
+	background:linear-gradient(to bottom, #0d54bd 5%, #248dde 100%);
+	background-color:#0d54bd;
+}
+.pushPopBtn:active {
 	position:relative;
 	top:1px;
 }
@@ -267,7 +315,7 @@ html.framed img.qr {
     }  
 
 
-  .speedBtn:hover {
+html.desktop  .speedBtn:hover {
     background:linear-gradient(to bottom, #ffb2f6 5%, #f0befa 100%);
     background-color:#ffb2f6;
   }
@@ -322,7 +370,7 @@ html.framed img.qr {
   }
 }
 
-
+@media screen /*trickery to show/hide the qrcode when embedded in an iframe*/ {
   
 html.desktop div.toolbar,
 html.desktop  p.header1,
@@ -345,4 +393,6 @@ html.desktop p.protip {
 
 html.framed p.protip {
     display : none;
+}
+  
 }
