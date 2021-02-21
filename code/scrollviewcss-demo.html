@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 
 <!--
@@ -56,7 +57,7 @@ SOFTWARE.
       <div id="container" class="odd container snap1">
         this text will be removed, as it's not a div with class "contained"
         <div class="contained drag_x odd">
-          1
+          <span>1</span>
           <p>
             first page
           </p>
@@ -65,25 +66,25 @@ SOFTWARE.
           this div will also be removed as it does not have the contained class
         </div>
         <div class="contained drag_x even">
-          2
+          <span>2</span>
           <p>
             second page
           </p>
         </div>
         <div class="contained drag_x odd">
-          3
+          <span>3</span>
           <p>
             middle page
           </p>
         </div>
         <div class="contained drag_x even">
-          4
+          <span>4</span>
           <p>
             penultimate page
           </p>
         </div>
         <div class="contained drag_x even">
-          5
+          <span>5</span>
           <p>
             last page
           </p>
@@ -111,16 +112,25 @@ SOFTWARE.
       <button class="snapScrollBtn" id="snapright">snapRight()</button>
       <button class="snapScrollBtn" id="scrollleft">swipeLeft()</button>
       <button class="snapScrollBtn" id="scrollright">swipeRight()</button>
+      <button class="speedBtn" id="btnFast">fast</button>
+      <button class="speedBtn" id="btnSlow">slow</button>
       <br />
-      <!--button id="btn0">0</button-->
+      <button class="pushPopBtn" id="pushBtn">push('...')</button>
+      <button class="pushPopBtn" id="unshiftBtn">unshift('...')</button>
+      <input type="text" value="new item" placeholder="any valid html" id="edData">
+      <button class="pushPopBtn popshift" id="popBtn">pop()</button>
+      <button class="pushPopBtn popshift" id="shiftBtn">shift()</button>
+      <br />
+     
       <button class="scrollToBtn" id="btn1">scrollTo(1)</button>
       <button class="scrollToBtn" id="btn2">scrollTo(2)</button>
       <button class="scrollToBtn" id="btn3">scrollTo(3)</button>
       <button class="scrollToBtn" id="btn4">scrollTo(4)</button>
       <button class="scrollToBtn" id="btn5">scrollTo(5)</button>
-      <button class="speedBtn" id="btnFast">fast</button>
-      <button class="speedBtn" id="btnSlow">slow</button>
-      <!--button id="btn6">6</button-->
+      
+  
+
+     
     </div>
 
     <script src="current-device.js"></script>
@@ -151,9 +161,9 @@ SOFTWARE.
             contained: "contained",
             even_odd: ["even", "odd"],
             width: 500,
-            height: 180,
+            height: 150,
             left: desktop ? 30 : 8, // touch screens on windows 10 trigger desktop swiching when swipped from edge.
-            top: 100,
+            top: 130,
             swipeSeconds: desktop ? 1 : 0.25,
             swipeSecondsFast: desktop ? 0.5 : 0.1,
             mouse: desktop,
@@ -162,33 +172,42 @@ SOFTWARE.
             xDragGranularity: mobile ? 10 : 20,
             yDragGranularity: false,
 
-            on_need_element: function(id, index, data, vars) {
-              var infoHtml = id + " # " + index + "=" + data.toString();
-
-              //make up a random string toprove each tab has it's own set of vars
-              vars.mysecret = Math.random()
-                .toString(36)
-                .substr(2);
-
-              if (index % 2 === 0) {
-                // on_need_element can return formatted innerHTML...
-                return "<p>" + infoHtml + "</p>" + '<p class="info"></p>';
+            // invoked when the view needs a new element 
+            // this could be on startup (for a dynamically defined list)
+            // or when 'push' / 'unshift' is invoked
+            on_need_element: function  (id, index, data, vars) {
+              console.log("on_need_element",id,index,data);
+              if (id==="second_container") {
+                return newSecondContainerElement (id, index, data, vars) ;
               }
-
-              // or a dom element of type div (can have className, however "odd" / "even" and "contained"
-              // will be applied
-              var el = document.createElement("div"),
-                p1 = document.createElement("p"),
-                p2 = document.createElement("p");
-              p1.innerHTML = infoHtml;
-              p2.innerHtml = "";
-              p2.className = "info";
-              el.appendChild(p1);
-              el.appendChild(p2);
-              return el;
+              if (id==="container") {
+                return newContainerElement (id, index, data, vars) ;
+              }
+              
+          
+            },
+            
+            
+            // invoked after other elements are added or removed, in case the item needs to
+            // indicate it's position (ie if it displays something based on index)
+            // note - in these callbacks, index is 1 based.
+          
+            on_freshen_element: function(id, element, index, data, vars) {
+              if (id==="second_container") {
+                
+              }
+              if (id==="container") {
+                // since the first span tells us the index (1 based) 
+                   element.querySelector("span").innerHTML = index.toString();
+              }
             },
 
+            //invoked when an item is scrolled/snapped to
             on_element_selected: function(id, element, index, data, vars) {
+              if (id === "container") {
+                element.querySelector("span").innerHTML = index.toString();
+              }
+              
               if (id === "second_container") {
                 if (!vars.tmr) {
                   vars.tmr = setInterval(function() {
@@ -197,8 +216,10 @@ SOFTWARE.
                   }, 500);
                 }
               }
+              
             },
 
+            //inovoked when an item is scrolled/sanpped away from
             on_element_deselected: function(id, element, index, data, vars) {
               if (id === "second_container") {
                 if (vars.tmr) {
@@ -208,9 +229,44 @@ SOFTWARE.
                 }
               }
             }
+            
+            
           }),
           elementIds
         );
+      
+      function newContainerElement (id, index, data, vars) {
+         return ('<span>'+(index+1).toString()+'</span>'+
+          '<p>'+
+            data+
+          '</p>');
+      }
+      
+      function newSecondContainerElement (id, index, data, vars) {
+        var infoHtml = id + " # " + index + "=" + data.toString();
+
+        //make up a random string toprove each tab has it's own set of vars
+        vars.mysecret = Math.random()
+          .toString(36)
+          .substr(2);
+
+        if (index % 2 === 0) {
+          // on_need_element can return formatted innerHTML...
+          return "<p>" + infoHtml + "</p>" + '<p class="info"></p>';
+        }
+
+        // or a dom element of type div (can have className, however "odd" / "even" and "contained"
+        // will be applied
+        var el = document.createElement("div"),
+          p1 = document.createElement("p"),
+          p2 = document.createElement("p");
+        p1.innerHTML = infoHtml;
+        p2.innerHtml = "";
+        p2.className = "info";
+        el.appendChild(p1);
+        el.appendChild(p2);
+        return el;
+      }
 
       function getEl(id, fn) {
         var c = document.getElementById(id);
@@ -226,9 +282,11 @@ SOFTWARE.
         "btn4",
         "btn5" //,"btn6"
       ].forEach(function(btn, index) {
+        
         getEl(btn, function(e) {
           containerScroller[e.shiftKey ? "snapTo" : "scrollTo"](index + 1);
         });
+        
       });
 
       getEl("snapleft", containerScroller.snapLeft);
@@ -238,25 +296,62 @@ SOFTWARE.
       getEl("scrollleft", containerScroller.scrollLeft);
 
       getEl("scrollright", containerScroller.scrollRight);
+      
+      var edData = getEl("edData");
+      
+      getEl("pushBtn",function(){
+         containerScroller.push(edData.value);
+      });
+      
+      getEl("unshiftBtn",function(){
+         containerScroller.unshift(edData.value);
+      });
+      
+      
+      getEl("popBtn",function(){
+          
+         containerScroller.pop(function(popped){
+           edData.value=popped.meta.el.querySelector("p").innerHTML;
+           console.log("popped:",popped);
+         });
+        
+         
+         
+      });
+      
+      getEl("shiftBtn",function(){
+          containerScroller.shift(function(shifted){
+             edData.value=shifted.meta.el.querySelector("p").innerHTML;
+             console.log("shifted:",shifted);
+         });
+      });
+      
+      
 
-      var btnSlow,
+      var 
+      
+      btnSlow,
         btnFast = getEl("btnFast", function(e) {
           containerScroller.styleRules.setSpeed(desktop ? 0.5 : 0.1);
           btnSlow.classList.remove("selected");
           btnFast.classList.add("selected");
+          btnFast.blur();
+     
         });
 
       btnSlow = getEl("btnSlow", function() {
         containerScroller.styleRules.setSpeed(desktop ? 1 : 0.25);
         btnFast.classList.remove("selected");
         btnSlow.classList.add("selected");
+        btnSlow.blur();
+     
       });
       btnSlow.classList.add("selected");
       getEl("btn_open_on_mobile", function() {
         document.querySelector("html").classList.toggle("showqr");
       });
       var qrcode = new QRCode(getEl("qrcode"), {
-        width: 300,
+        width:  300,
         height: 300
       });
 
