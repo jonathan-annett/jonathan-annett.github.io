@@ -1,3 +1,18 @@
+.notransition {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
+}
+
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;  
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none; 
+}
+
 html.scrollviewcss_loading body {
   display: none;
 }
@@ -7,11 +22,19 @@ html.scrollviewcss_loading body {
   font-size: 72pt;
   background-color: #eaabab;
 }
+.container P {
+   font-size: 24pt;
+ 
+}
 
+.container_clip.in_drag_x div.container div.odd, 
 .container.inScroll div.odd {
   background-color: #0adaf1;
 }
 
+.container_clip.in_drag_x div.container.scroll0, 
+.container_clip.in_drag_x div.container.scroll1, 
+.container_clip.in_drag_x div.container div.even, 
 .container.inScroll.scroll0,
 .container.inScroll.scroll1,
 .container.inScroll div.even {
@@ -21,7 +44,7 @@ html.scrollviewcss_loading body {
 .container_clip {
   overflow: hidden;
   width: 500px;
-  height: 300px;
+  height: 200px;
   position: absolute;
   top: 50px;
   left: 0;
@@ -30,7 +53,7 @@ html.scrollviewcss_loading body {
 }
 
 #second_container {
-  top: 400px;
+  top: 310px;
 }
 
 #second_container .odd,
@@ -39,16 +62,23 @@ html.scrollviewcss_loading body {
 }
 
 #second_container .odd {
-  background-color: lime;
+  background-color: #9eff9e;
 }
 #second_container .even {
-  background-color: red;
+  background-color: #86a1fd;
+}
+.toolbar p {
+    margin-block-start: 0;
+    margin-block-end: 0;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
 }
 
 div.toolbar {
-  width: 450px;
+  width: 550px;
   height: 10px;
-  poistion: absolute;
+  position: absolute;
+  margin:0;
   left: 0;
   top: 10px;
 }
@@ -69,6 +99,177 @@ html.framed img.qr {
   display: none;
 }
 
+
+
+@media screen /*info headers dimensions and placement*/{
+  
+  .header1 {
+    
+    position :absolute;
+    top:60px;
+    left:8px;
+    width:500px;
+    
+  }
+  
+   .header2 {
+    
+    position :absolute;
+    top:270px;
+    left:8px;
+    width:500px;
+  }
+
+  
+}
+
+
+
+
+@media screen/*open on mobile button*/{
+  
+  #btn_open_on_mobile {
+	box-shadow: 0px 1px 0px 0px #fff6af;
+	background:linear-gradient(to bottom, #ffec64 5%, #ffab23 100%);
+	background-color:#ffec64;
+	border-radius:2px;
+	border:1px solid #ffaa22;
+
+	display:inline-block;
+	cursor:pointer;
+	color:#333333;
+	font-family:Arial;
+	font-size:12px;
+	font-weight:bold;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #ffee66;
+  width:80px;
+}
+#btn_open_on_mobile:hover {
+	background:linear-gradient(to bottom, #ffab23 5%, #ffec64 100%);
+	background-color:#ffab23;
+}
+#btn_open_on_mobile:active {
+	position:relative;
+	top:1px;
+}
+
+        
+  
+}
+
+@media screen/*snap and scroll buttons*/{
+  
+  .snapScrollBtn {
+	box-shadow:inset 0px 1px 0px 0px #85f2e0;
+	background:linear-gradient(to bottom, #248dde 5%, #0d54bd 100%);
+	background-color:#248dde;
+	border-radius:2px;
+	border:1px solid #1d11bf;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:12px;
+	font-weight:bold;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #5f16b3;
+  width:80px;
+}
+.snapScrollBtn:hover {
+	background:linear-gradient(to bottom, #0d54bd 5%, #248dde 100%);
+	background-color:#0d54bd;
+}
+.snapScrollBtn:active {
+	position:relative;
+	top:1px;
+}
+
+        
+  
+}
+
+@media screen/*scroll to buttons*/{
+  
+  .scrollToBtn {
+	box-shadow:inset 0px 1px 0px 0px #85f2e0;
+	background:linear-gradient(to bottom, #248dde 5%, #0d54bd 100%);
+	background-color:#248dde;
+	border-radius:2px;
+	border:1px solid #1d11bf;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:12px;
+	font-weight:bold;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #5f16b3;
+  width:80px;
+}
+.scrollToBtn:hover {
+	background:linear-gradient(to bottom, #0d54bd 5%, #248dde 100%);
+	background-color:#0d54bd;
+}
+.scrollToBtn:active {
+	position:relative;
+	top:1px;
+}
+
+        
+  
+}
+
+@media screen/*speed buttons*/ {
+  
+
+  .speedBtn {
+    box-shadow:inset 0px 1px 0px 0px #e184f3;
+    background:linear-gradient(to bottom, #f0befa 5%, #ffb2f6 100%);
+    background-color:#f0befa;
+    border-radius:2px;
+    border:1px solid #a511c0;
+    display:inline-block;
+    cursor:pointer;
+    color:#857d85;
+    font-family:Arial;
+    font-size:12px;
+    font-weight:bold;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #9b14b3;
+  }
+
+  .speedBtn.selected  {
+
+    box-shadow:inset 0px 1px 0px 0px #e184f3;
+    background:linear-gradient(to bottom, #c123de 5%, #a20dbd 100%);
+    background-color:#c123de;
+    border-radius:2px;
+    border:1px solid #a511c0;
+    display:inline-block;
+    cursor:pointer;
+    color:#ffffff;
+    font-family:Arial;
+    font-size:12px;
+    font-weight:bold;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #9b14b3;
+
+
+    }  
+
+
+  .speedBtn:hover {
+    background:linear-gradient(to bottom, #ffb2f6 5%, #f0befa 100%);
+    background-color:#ffb2f6;
+  }
+  .speedBtn:active {
+    position:relative;
+    top:1px;
+  }
+
+}
+ 
 @media screen/*qrcode settings*/ {
   #btn_open_on_mobile,
   div.qr {
@@ -92,20 +293,32 @@ html.framed img.qr {
   }
 
   html.framed.showqr div.container_clip,
+  html.framed.showqr p,
   html.framed.showqr button,
   html.framed div.qr {
     display: none;
   }
 
+  html.framed.showqr div.qr p,
   html.framed.showqr div.qr,
   html.framed #btn_open_on_mobile {
     display: inline-block;
   }
-
+  
+    
   html.framed.showqr div.qr {
-    left: 8px;
+    left: 40px;
     right: unset;
-    top: 32px;
+    top: 30px;
     position: absolute;
   }
 }
+
+
+  
+html.desktop div.toolbar,
+html.desktop  p.header1,
+html.desktop  p.header2  {
+    
+      left:30px;
+  }
