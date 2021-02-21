@@ -26,263 +26,244 @@ SOFTWARE.
 
 -->
 <html lang="en" class="scrollviewcss_loading">
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
+    <title>scrollview demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <meta charset="UTF-8">
+    <link rel="stylesheet" href="scrollviewcss-demo.css" />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.10.1/css/all.css"
+      integrity="sha384-wxqG4glGB3nlqX0bi23nmgwCSjWIW13BdLUEYC4VIMehfbcro/ATkyDsF/AbIOVe"
+      crossorigin="anonymous"
+    />
+  </head>
 
-  <title>scrollview demo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <style>
-  html.scrollviewcss_loading body {
-
-    display :none;
-  }
-
-  .odd,
-  .even {
-     font-size:72pt;
-     background-color: #eaabab;
-  }
-
-  .container.inScroll div.odd {
-    background-color: #0adaf1;
-  }
-
-  .container.inScroll.scroll0,
-  .container.inScroll.scroll1,
-  .container.inScroll div.even {
-    background-color: #c3b4a4;
-  }
-
-
-
-  .container_clip {
-
-    overflow:hidden;
-    width : 500px;
-    height : 300px; 
-    position:absolute;
-    top: 50px;
-    left :0;
-    padding:0;
-    margin:0;
-
-  }
-
-  #second_container {
-    top : 400px;
-   }
+  <body class="noselect">
     
-  #second_container .odd,
-  #second_container .even {
-     font-size:16pt;
-  }
+     <p class="header1">
+        Statically Defined Swipe Panel, with in-drag custom styling.
+      </p>
     
-    #second_container .odd {
-         background-color: lime;
-    }
-    #second_container .even {
-         background-color: red;
-    }
+    <div class="container_clip">
+      <!--
 
-    
-    
-    
-   div.toolbar {
-      width: 450px;
-      height: 10px;
-      poistion: absolute;
-      left: 0;
-      top: 10px;
-    }
+      pre populated example
+      top level elements inside 'container' must be divs with class 'contained'
 
+   -->
+      <div id="container" class="odd container snap1">
+        this text will be removed, as it's not a div with class "contained"
+        <div class="contained drag_x odd">
+          1
+          <p>
+            first page
+          </p>
+        </div>
+        <div>
+          this div will also be removed as it does not have the contained class
+        </div>
+        <div class="contained drag_x even">
+          2
+          <p>
+            second page
+          </p>
+        </div>
+        <div class="contained drag_x odd">
+          3
+          <p>
+            middle page
+          </p>
+        </div>
+        <div class="contained drag_x even">
+          4
+          <p>
+            penultimate page
+          </p>
+        </div>
+        <div class="contained drag_x even">
+          5
+          <p>
+            last page
+          </p>
+        </div>
+      </div>
+    </div>
+     <p class="header2">
+        Dynamically Defined Swipe Panel, (javascript renderers the html)
+      </p>
+    <div id="second_container" class="container_clip"></div>
 
-    img.qr {
-
-      display:none;
-    }
-
-    html.desktop img.qr {
-
-      display : block;
-
-
-      right:0;
-      position:absolute;
-      top:0;
-    }
-
-     html.framed  img.qr {
-
-      display:none;
-    }
-    
-    @media screen/*qrcode settings*/ {
-        #btn_open_on_mobile,
-        div.qr {
-          display: none;
-        }
-
-        div.qr p,
-        div.qr img {
-          margin: 0;
-          width: 300px;
-          height: auto;
-        }
-
-        html.desktop div.qr {
-          display: none;
-          display: block;
-
-          position: absolute;
-          top: 10px;
-          right: 10px;
-        }
-
-        html.framed.showqr div.container_clip,
-        html.framed.showqr button,
-        html.framed div.qr {
-          display: none;
-        }
-
-        html.framed.showqr div.qr,
-        html.framed #btn_open_on_mobile {
-          display: inline-block;
-        }
-
-        html.framed.showqr div.qr {
-          left: 8px;
-          right: unset;
-          top: 32px;
-          position: absolute;
-        }
-      }
-
-  </style>
-  
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.10.1/css/all.css" integrity="sha384-wxqG4glGB3nlqX0bi23nmgwCSjWIW13BdLUEYC4VIMehfbcro/ATkyDsF/AbIOVe" crossorigin="anonymous">
-
-
- 
-</head>
-
-<body translate="no" >
-  <div class="container_clip">
-   <!--pre populated-->
-  <div id="container" class="odd container snap1">
-    <div class="contained odd"> 1 
-    </div><div class="contained even"> 2 
-    </div><div class="contained odd"> 3 
-    </div><div class="contained even">4 
-    </div><div class="contained even"> 5 
-    </div></div>
-</div>
-<div id="second_container" class="container_clip"></div>
-
-
- <div class="toolbar">
+    <div class="toolbar">
+      <p>
+        Programatic naviation - code can simulate swiping, snapping
+      </p>
       <button id="btn_open_on_mobile">
         Mobile&nbsp;<i class="fas fa-mobile-alt"></i>
       </button>
-      <button id="snapleft">&lt;snap</button>
-      <button id="snapright">snap&gt;</button>
-      <button id="scrollleft"><i class="fas fa-hand-point-left"></i>&nbsp;swipe</button>
-      <button id="scrollright">swipe&nbsp;<i class="fas fa-hand-point-right"></i></button>
+      <button class="snapScrollBtn" id="snapleft">snapLeft()</button>
+      <button class="snapScrollBtn" id="snapright">snapRight()</button>
+      <button class="snapScrollBtn" id="scrollleft">swipeLeft()</button>
+      <button class="snapScrollBtn" id="scrollright">swipeRight()</button>
+      <br />
       <!--button id="btn0">0</button-->
-      <button id="btn1">1</button>
-      <button id="btn2">2</button>
-      <button id="btn3">3</button>
-      <button id="btn4">4</button>
-      <button id="btn5">5</button>
+      <button class="scrollToBtn" id="btn1">scrollTo(1)</button>
+      <button class="scrollToBtn" id="btn2">scrollTo(2)</button>
+      <button class="scrollToBtn" id="btn3">scrollTo(3)</button>
+      <button class="scrollToBtn" id="btn4">scrollTo(4)</button>
+      <button class="scrollToBtn" id="btn5">scrollTo(5)</button>
+      <button class="speedBtn" id="btnFast">fast</button>
+      <button class="speedBtn" id="btnSlow">slow</button>
       <!--button id="btn6">6</button-->
-      
-      </div>
-<script src="current-device.js"></script>
-<script src="addLongPress.js"></script>
-<script src="mouseTouchSwipe.js#02e3abe0e0a274ece1d0189ca65011d798e0b014"></script>
-<script src="vendor-prefix.js#3cbba0ab4c9fbd3a5272f2311242e9827cb76062"></script>
-<script src="scrollviewcss.js#f56b3fa8676da97a7be8a242f810b5102af329f2"></script>
-<script src="QRCode_lib.min.js"></script>
-<div class="qr">
-  <div id="qrcode"></div>
-  <p>
-    the qr code lets you easily open this page on your camera equipped touch
-    enabled device.
-  </p>
-</div>
-<script defer>
+     
+    </div>
 
-   
+    <script src="current-device.js"></script>
+    <script src="addLongPress.js"></script>
+    <script src="mouseTouchSwipe.js#02e3abe0e0a274ece1d0189ca65011d798e0b014"></script>
+    <script src="vendor-prefix.js#3cbba0ab4c9fbd3a5272f2311242e9827cb76062"></script>
+    <script src="scrollviewcss.js#f56b3fa8676da97a7be8a242f810b5102af329f2"></script>
+    <script src="QRCode_lib.min.js"></script>
+    <div class="qr">
+      <div id="qrcode"></div>
+      <p>
+        the qr code lets you easily open this page on your camera equipped touch
+        enabled device.
+      </p>
+    </div>
+    <script defer>
+      var elementIds = [
+        "container",
+        { second_container: ["one", "two", "three", "four", "five"] }
+      ];
 
-var elementIds = ["container",
-                  { second_container: ["one", "two", "three", "four", "five"] }]; 
+      var desktop = window.device ? window.device.desktop() : false,
+        mobile = window.device ? window.device.mobile() : true,
+        containerScroller = addScrollCss(
+          (scrollClases = {
+            container_clip: "container_clip",
+            container: "container",
+            contained: "contained",
+            even_odd: ["even", "odd"],
+            width: 500,
+            height: 180,
+            left: desktop? 30: 8,// touch screens on windows 10 trigger desktop swiching when swipped from edge.
+            top: 100,
+            swipeSeconds: desktop ? 1 : 0.25,
+            swipeSecondsFast: desktop ? 0.5 : 0.1,
+            mouse: desktop,
+            touch: true,
+            wrap: true,
+            xDragGranularity: mobile ? 10 : 20,
+            yDragGranularity: false,
 
-var 
-  desktop = window.device ? window.device.desktop() :false,
-  mobile  = window.device ? window.device.mobile() :true,
-  containerScroller = addScrollCss (scrollClases = {
-  container_clip : "container_clip",
-  container : "container",
-  contained : "contained",
-  even_odd  : ["even","odd"],
-  width:500,
-  height:300,
-  left:8,
-  top:30,
-  swipeSeconds : desktop ? 0.5 : 0.25,
-  mouse: desktop,
-  touch: true,
-  
-   on_need_element: function(id, index, data, vars) {
-    return id + " # " + index + "=" + data.toString();
-  }
-},elementIds);
+            on_need_element: function(id, index, data, vars) {
+              
+              var infoHtml = id + " # " + index + "=" + data.toString();
+              
+              //make up a random string toprove each tab has it's own set of vars
+              vars.mysecret=Math.random().toString(36).substr(2);
+              
+              if (index % 2 === 0) {
+                // on_need_element can return formatted innerHTML...
+                  return '<p>'+infoHtml+'</p>'+
+                         '<p class="info"></p>';
+              }
+              
+              // or a dom element of type div (can have className, however "odd" / "even" and "contained"
+              // will be applied
+              var el = document.createElement("div"),
+                  p1 = document.createElement("p"),
+                  p2 = document.createElement("p");
+              p1.innerHTML=infoHtml;
+              p2.innerHtml='';
+              p2.className="info";
+              el.appendChild(p1);
+              el.appendChild(p2);
+              return el;
+                  
+            },
+            
+            on_element_selected: function(id,element,index,data,vars) {
+              if (id==="second_container") {
+                if (!vars.tmr) {
+                  vars.tmr = setInterval(function() {
+                     element.querySelector(".info").innerHTML = vars.mysecret +' @ '+ Date.now().toString();
+                  },500);
+                }
+              }
+            },
+            
+            on_element_deselected: function(id,element,index,data,vars) {
+              if (id==="second_container") {
+                if (vars.tmr) {
+                    clearInterval(vars.tmr);
+                    element.querySelector(".info").innerHTML = 'sleeping...';
+                   delete vars.tmr;
+                 }
+              }
+            },
+            
+            
+          }),
+          elementIds
+        );
 
- 
- 
-function getEl(id,fn) { 
-  var c=document.getElementById(id);
-  if(fn)c.onclick=fn
-  return c;
-}
-   
-[//"btn0",
-  "btn1","btn2","btn3","btn4","btn5"//,"btn6"
-].forEach(
-  function(btn,index){
-    getEl (btn,function(e){
-      containerScroller[e.shiftKey?'snapTo':'scrollTo'](index);
-    });
-  }
-);
+      function getEl(id, fn) {
+        var c = document.getElementById(id);
+        if (fn) c.onclick = fn;
+        return c;
+      }
 
-  
+      [
+        //"btn0",
+        "btn1",
+        "btn2",
+        "btn3",
+        "btn4",
+        "btn5" //,"btn6"
+      ].forEach(function(btn, index) {
+        getEl(btn, function(e) {
+          containerScroller[e.shiftKey ? "snapTo" : "scrollTo"](index + 1);
+        });
+      });
 
-getEl("snapleft",containerScroller.snapLeft );
+      getEl("snapleft", containerScroller.snapLeft);
 
-getEl("snapright",containerScroller.snapRight );
+      getEl("snapright", containerScroller.snapRight);
 
-getEl("scrollleft",containerScroller.scrollLeft);
+      getEl("scrollleft", containerScroller.scrollLeft);
 
-getEl("scrollright",containerScroller.scrollRight);
-getEl("btn_open_on_mobile", function() {
+      getEl("scrollright", containerScroller.scrollRight);
+
+      var btnSlow,
+        btnFast = getEl("btnFast", function(e) {
+          containerScroller.styleRules.setSpeed(desktop ? 0.5 : 0.1);
+          btnSlow.classList.remove("selected");
+          btnFast.classList.add("selected");
+        });
+
+      btnSlow = getEl("btnSlow", function() {
+        containerScroller.styleRules.setSpeed(desktop ? 1 : 0.25);
+        btnFast.classList.remove("selected");
+        btnSlow.classList.add("selected");
+      });
+      btnSlow.classList.add("selected");
+      getEl("btn_open_on_mobile", function() {
         document.querySelector("html").classList.toggle("showqr");
       });
       var qrcode = new QRCode(getEl("qrcode"), {
         width: 300,
         height: 300
       });
-      qrcode.makeCode(location.href);
 
- 
+      setInterval(function() {
+        qrcode.makeCode(location.href + "?reload" + Math.random().toString(36));
+      }, 5000);
 
       document.querySelector("html").classList.remove("scrollviewcss_loading");
-  
     </script>
-
-   
-</body>
-
+  </body>
 </html>
