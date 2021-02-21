@@ -1,16 +1,18 @@
-.notransition {
-  -webkit-transition: none !important;
-  -moz-transition: none !important;
-  -o-transition: none !important;
-  transition: none !important;
-}
+@media screen /* general rules */ {
+  .notransition {
+    -webkit-transition: none !important;
+    -moz-transition: none !important;
+    -o-transition: none !important;
+    transition: none !important;
+  }
 
-.noselect {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;  
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none; 
+  .noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;  
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none; 
+  }
 }
 
 html.scrollviewcss_loading body {
@@ -67,6 +69,8 @@ html.scrollviewcss_loading body {
 #second_container .even {
   background-color: #86a1fd;
 }
+
+
 .toolbar p {
     margin-block-start: 0;
     margin-block-end: 0;
@@ -119,7 +123,11 @@ html.framed img.qr {
     left:8px;
     width:500px;
   }
+  
+  
 
+  
+  
   
 }
 
@@ -322,3 +330,19 @@ html.desktop  p.header2  {
     
       left:30px;
   }
+
+p.protip {
+  display : none;
+}
+
+html.desktop p.protip {
+    display:inline-block;
+    position :absolute;
+    bottom:10px;
+    left:8px;
+    width:500px;
+  }
+
+html.framed p.protip {
+    display : none;
+}
