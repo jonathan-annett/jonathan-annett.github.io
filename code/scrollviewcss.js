@@ -431,7 +431,7 @@ function addScrollCss (options,elementIds){
     var last_meta_selected,last_index_selected;
     
     function notifySelected(tabindex) {
-      if ((tabindex<0) | (tabindex>contain.children.length)) return;
+      if ((tabindex<0) || (tabindex>contain.children.length)) return;
       if ((typeof options.on_element_deselected === 'function') && (last_index_selected!==undefined)) {
          options.on_element_deselected(
            containerId,
