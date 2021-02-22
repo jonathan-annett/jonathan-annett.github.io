@@ -53,13 +53,18 @@ function addScrollCss (options,elementIds){
       eol="\n",
       defaultClasses = {
         container_clip : "container_clip",
-        container : "container",
-        contained : "contained",
-        even_odd  : [ "even","odd"] 
+        container      : "container",
+        container_left_arrow : "container_left_arrow",
+        container_right_arrow : "container_right_arrow",
+        
+        contained      : "contained",
+        even_odd       : [ "even","odd"] 
       },
       
       container_clip = options.container_clip||defaultClasses.container_clip,
       container= options.container||defaultClasses.container,
+      container_left_arrow=options.container_left_arrow||defaultClasses.container_left_arrow,
+      container_right_arrow=options.container_right_arrow||defaultClasses.container_right_arrow,
       contained= options.contained||defaultClasses.contained,
       odd  = (options.even_odd&&options.even_odd[1]) ||defaultClasses.even_odd[1],
       even = (options.even_odd&&options.even_odd[0]) ||defaultClasses.even_odd[0],
@@ -79,6 +84,89 @@ function addScrollCss (options,elementIds){
       wrap = typeof options.wrap ==='boolean' ? options.wrap : true;
   
       maxCount+= Math.floor(maxCount / 2);
+
+  
+  
+  function arrowSVGCss(clsLeft,clsRight) {
+
+    return (
+
+      "svg."+clsLeft+", svg."+clsRight+" {"+eol+
+      "  display : none;"+eol+
+      "}"+eol+eol+
+
+      "html.desktop svg."+clsLeft+","+eol+
+      "html.desktop svg."+clsRight+" {"+eol+
+      "  display : block;"+eol+
+      "  width: 20%;"+eol+
+      "  height: 20%;"+eol+
+      "  position: absolute;"+eol+
+      "  opacity:0.1;"+eol+
+      "  right:-7%;"+eol+
+      "  top:40%;"+eol+
+      "}"+eol+eol+
+
+      "svg."+clsLeft+" {"+eol+
+      "  left:-7%;"+eol+
+      "  right:unset;"+eol+
+      "  transform: rotate(180deg);"+eol+
+      "}"+eol+eol+
+      
+      
+
+      "@keyframes color {"+eol+
+      "  0% {"+eol+
+      "    fill: red; "+eol+
+      "  }"+eol+
+      "  10% {"+eol+
+      "    fill: orange; "+eol+
+      "  }"+eol+
+      "  20% {"+eol+
+      "    fill: yellow;  "+eol+
+      "  }"+eol+
+      "  30% {"+eol+
+      "    fill: Chartreuse;  "+eol+
+      "  }"+eol+
+      "  40% {"+eol+
+      "    fill: cyan; "+eol+
+      "  }"+eol+
+      "  50% {"+eol+
+      "    fill: blue; "+eol+
+      "  }"+eol+
+      "  60% {"+eol+
+      "    fill: DarkOrchid; " +eol+
+      "  }"+eol+
+      "  70% {"+eol+
+      "    fill: DeepPink;"+eol+
+      "  }"+eol+
+      "  80% {"+eol+
+      "    fill: red; "+eol+
+      "  }"+eol+
+      "  90% {"+eol+
+      "    fill: red; "+eol+
+      "  }"+eol+
+      "  100% {"+eol+
+      "    fill: red;"+eol+
+      "  }"+eol+
+      "}"+eol+
+
+      "svg."+clsLeft+":hover,"+eol+
+      "svg."+clsRight+":hover {"+eol+
+      "  opacity:1.0 !important;"+eol+
+      "   animation: color 1s infinite;"+eol+
+      "}"+eol
+ 
+    );
+
+  }
+
+  function arrowSVGCode(cls) {
+    return (
+       '<svg class="' +
+      cls +
+      '" enable-background="new 0 0 451.846 451.847" version="1.1" viewBox="0 0 451.85 451.85" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><path d="m345.44 248.29-194.29 194.28c-12.359 12.365-32.397 12.365-44.75 0-12.354-12.354-12.354-32.391 0-44.744l171.91-171.91-171.91-171.9c-12.354-12.359-12.354-32.394 0-44.748 12.354-12.359 32.391-12.359 44.75 0l194.29 194.28c6.177 6.18 9.262 14.271 9.262 22.366 0 8.099-3.091 16.196-9.267 22.373z"/></svg>'
+     );
+  }
   
   function getEl(id,fn) {
     var c=document.getElementById(id);
@@ -274,8 +362,7 @@ function addScrollCss (options,elementIds){
       chain : transitionScript
     };
     
-    
-   function resolveElement (data,index){
+    function resolveElement (data,index){
        var 
        vars = {},
        content = options.on_need_element(containerId,index+1,data,vars); 
@@ -343,8 +430,7 @@ function addScrollCss (options,elementIds){
        });
   
     }
-
-    
+   
     function pushElement ( data ) {
       
        var 
@@ -429,9 +515,7 @@ function addScrollCss (options,elementIds){
        
         return result;
     }
-
-    
-  
+ 
     function getElement ( index ) {
        return {
          meta : containerDataMeta[index],
@@ -442,8 +526,7 @@ function addScrollCss (options,elementIds){
     function setElement ( index, el ) {
 
     }
- 
-    
+     
     function indexFromClassName(x) {
        var result;
        if (x.className.split(' ').some(function(c){
@@ -580,8 +663,7 @@ function addScrollCss (options,elementIds){
       });
          
     }
-
-    
+   
     var last_meta_selected,last_index_selected;
     
     function notifySelected(tabindex) {
@@ -790,13 +872,25 @@ function addScrollCss (options,elementIds){
          
         }
     }
-    var mouse;
+    
+    var mouse,btnLeft,btnRight;
+    
     if (options.mouse) {
       mouse  = mouseSwipeEvents(contain,scrollLeft , scrollRight) ;
       mouse.xDragGranularity = options.xDragGranularity|| window.xDragGranularity;
       mouse.yDragGranularity = options.yDragGranularity|| window.yDragGranularity;
       mouse.enableDragX = !!mouse.xDragGranularity;
       mouse.enableDragY = !!mouse.yDragGranularity;
+      
+      var tempBtn  = crEl(undefined,"div",undefined,arrowSVGCode(container_left_arrow) + arrowSVGCode(container_right_arrow));
+      
+      btnLeft=tempBtn.children[0];
+      btnRight=tempBtn.children[1];
+      contain_clip.appendChild(btnLeft);
+      contain_clip.appendChild(btnRight);
+      btnLeft.addEventListener("click",scrollRight);//yes this seems wrong
+      btnRight.addEventListener("click",scrollLeft);//but no it is correct!
+      
     }
     var touch;
     if (options.touch) {
@@ -984,14 +1078,16 @@ function addScrollCss (options,elementIds){
   }
   
    function xcls(x) {
-      var d = x<0?"left_":"right_",X = x<0?0-x:x;  
-      return "drag_"+d+X.toString();
-    }
-  
+     var d = x < 0 ? "left_" : "right_",
+       X = x < 0 ? 0 - x : x;
+     return "drag_" + d + X.toString();
+   }
+
    function ycls(y) {
-      var d = y<0?"up_":"down_",Y = y<0?0-y:y;  
-      return "drag_"+d+Y.toString();
-    }
+     var d = y < 0 ? "up_" : "down_",
+       Y = y < 0 ? 0 - y : y;
+     return "drag_" + d + Y.toString();
+   }
 
   function dragXCss(fromX,toX,step,left) {
     var csstext = "";
@@ -1007,7 +1103,8 @@ function addScrollCss (options,elementIds){
   scrollStyle = document.createElement('style'),
   dragStyle   = document.createElement('style'),
   render = function (){
-    scrollStyle.innerHTML = scrollCss (container_clip,container,contained,width,height,left,top,maxCount,speed,fastSpeed);
+    scrollStyle.innerHTML = scrollCss (container_clip,container,contained,width,height,left,top,maxCount,speed,fastSpeed)+
+                            (!!options.mouse?arrowSVGCss(container_left_arrow,container_right_arrow):"");
   };
   updateDragStyle=function(index){
   var
@@ -1050,6 +1147,7 @@ function addScrollCss (options,elementIds){
   
  return controllers[0];
   
+ 
 }
 function scriptCheck(e,o,t,n){if("object"!=typeof window||t&&typeof window[t]===n)return!1;var r=document.getElementsByTagName("script"),s=r[r.length-1].src;return!!s.startsWith("https://"+o+"/")&&(!(e.concat([o]).indexOf(location.hostname)>=0)&&(console.error("PLEASE DON'T SERVE THIS FILE FROM "+o),console.warn("Please download "+s+" and serve it from your own server."),!0))}
 })();
