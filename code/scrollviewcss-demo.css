@@ -350,6 +350,7 @@ html.desktop  .speedBtn:hover {
 
   html.framed.showqr div.container_clip,
   html.framed.showqr p,
+  html.framed.showqr input,
   html.framed.showqr button,
   html.framed div.qr {
     display: none;
@@ -363,9 +364,9 @@ html.desktop  .speedBtn:hover {
   
     
   html.framed.showqr div.qr {
-    left: 40px;
+    left: 30px;
     right: unset;
-    top: 30px;
+    top: 40px;
     position: absolute;
   }
 }
