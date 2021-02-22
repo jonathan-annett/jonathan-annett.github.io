@@ -176,7 +176,6 @@ SOFTWARE.
             // this could be on startup (for a dynamically defined list)
             // or when 'push' / 'unshift' is invoked
             on_need_element: function  (id, index, data, vars) {
-              console.log("on_need_element",id,index,data);
               if (id==="second_container") {
                 return newSecondContainerElement (id, index, data, vars) ;
               }
@@ -252,7 +251,7 @@ SOFTWARE.
 
         if (index % 2 === 0) {
           // on_need_element can return formatted innerHTML...
-          return "<p>" + infoHtml + "</p>" + '<p class="info"></p>';
+          return "<p>" + infoHtml + "</p>" + '<p class="info">&nbsp;</p>';
         }
 
         // or a dom element of type div (can have className, however "odd" / "even" and "contained"
@@ -260,11 +259,11 @@ SOFTWARE.
         var el = document.createElement("div"),
             p1 = document.createElement("p"),
             p2 = document.createElement("p");
-        p1.innerHTML = infoHtml;
-        p2.innerHtml = "&nbsp;";
-        p2.className = "info";
         el.appendChild(p1);
         el.appendChild(p2);
+        p1.innerHTML = infoHtml;
+        p2.innerHTML = "&nbsp;";
+        p2.className = "info";
         return el;
       }
 
