@@ -40,7 +40,7 @@
     );
   }
 
-  // some touch screen drivers send simultaous touch and pointer events.
+  // some touch screen drivers send simultaneous touch and pointer events.
   // in order to respond to either, some debouncing is required.
 
   function emitSwipe(
@@ -128,12 +128,14 @@
          el.classList.add(in_drag); 
        }
        if (dragState.x===x) return;
-        
+       el.classList.add('notransition'); 
        el.classList.add(dragXclass(x)); 
        
        if(dragState.x!==undefined) {
            el.classList.remove(dragXclass(dragState.x));
        }
+      el.offsetHeight; // Trigger a reflow, flushing the CSS changes
+      el.classList.remove('notransition');
      
        dragState.x=x;
     }
@@ -143,8 +145,10 @@
          el.classList.remove(in_drag); 
        }
        if(dragState.x===undefined) return;
-       
-       el.classList.remove(dragXclass(dragState.x));
+      el.classList.add('notransition'); 
+      el.classList.remove(dragXclass(dragState.x));
+      el.offsetHeight; // Trigger a reflow, flushing the CSS changes
+      el.classList.remove('notransition');
        delete dragState.x;  
     }
     
@@ -154,12 +158,15 @@
          el.classList.add(in_drag); 
        }
        if (dragYclass===y) return;
+       el.classList.add('notransition'); 
        el.classList.add(dragYclass(y));
        
        if(dragState.y!==undefined) {
            el.classList.remove(dragYclass(dragState.y));
        }
        dragState.y=y;
+       el.offsetHeight; // Trigger a reflow, flushing the CSS changes
+       el.classList.remove('notransition');
     }
   
    function removeDragYClass(el,dragState,in_drag) {
@@ -167,8 +174,10 @@
          el.classList.remove(in_drag); 
        }
        if(dragState.y===undefined) return;
-      
+       el.classList.add('notransition'); 
        el.classList.remove(dragYclass(dragState.y));
+       el.offsetHeight; // Trigger a reflow, flushing the CSS changes
+       el.classList.remove('notransition');
        delete dragState.y;
     }
 
