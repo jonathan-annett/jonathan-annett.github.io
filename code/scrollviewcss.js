@@ -93,8 +93,8 @@ function addScrollCss (options,elementIds){
       "  display : none;"+eol+
       "}"+eol+eol+
 
-      "html.desktop svg."+clsLeft+","+eol+
-      "html.desktop svg."+clsRight+" {"+eol+
+      "html.desktop div."+container_clip+":not(.in_drag_x) svg."+clsLeft+","+eol+
+      "html.desktop div."+container_clip+":not(.in_drag_x) svg."+clsRight+" {"+eol+
       "  display : block;"+eol+
       "  width: 20%;"+eol+
       "  height: 20%;"+eol+
@@ -110,7 +110,7 @@ function addScrollCss (options,elementIds){
       "  transform: rotate(180deg);"+eol+
       "}"+eol+eol+
       
-      
+        
 
       "@keyframes color {"+eol+
       "  0% {"+eol+
@@ -320,7 +320,7 @@ function addScrollCss (options,elementIds){
           
           count=contain.children.length,
           retval = (typeof index ==='number') && (index >=0) && (index <= count+2);
-      index = retval ? index : 1;
+          index = retval ? index : 1;
 
       var newClass = (setMode||"scroll")+index.toString();
       if (contain.classList.contains(newClass)){
