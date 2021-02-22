@@ -1093,7 +1093,7 @@ function addScrollCss (options,elementIds){
   function dragXCss(fromX,toX,step,left) {
     var csstext = "";
     for(var x = fromX;x<=toX;x+=step ) {
-      csstext += "div.container_clip."+xcls(x)+" div.container div.contained.drag_x {"+eol;
+      csstext += "div."+container_clip+"."+xcls(x)+" div."+container+" div."+contained+".drag_x {"+eol;
       csstext += " transform: translate("+(left+x).toString()+"px,0px);"+eol;
       csstext += "}"+eol+eol;
     }
