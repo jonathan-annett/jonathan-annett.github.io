@@ -299,9 +299,9 @@ function addScrollCss (options,elementIds){
         transitionCallbackElement=contain.children[contain.children.length-1],
         transitionCallbackFired=function(e) {
         if (e.target===transitionCallbackElement)  {
-          if (e.elapsedTime >= 0.02) {
+        
             contain.classList.remove("inScroll");
-          }
+          
            if (transitionCallback) {
                var cb= transitionCallback;
                transitionCallback=undefined;
