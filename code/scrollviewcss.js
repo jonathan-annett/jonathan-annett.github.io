@@ -74,16 +74,14 @@ function addScrollCss (options,elementIds){
       height = options.height||480,
       left = options.left||0,
       top = options.top||0,
-      maxCount = options.maxCount|| elementIds.map(function(id){ 
-        var el = getEl(id);
-        return el?el.children.length:0;
-      }).reduce(getMaxCount),
+      maxCount,
       spacing,
       speed = options.swipeSeconds||0.25,
       fastSpeed = options.swipeSecondsFast||false,
       wrap = typeof options.wrap ==='boolean' ? options.wrap : true;
   
-      maxCount+= Math.floor(maxCount / 2);
+  
+      
 
   
   
@@ -399,6 +397,9 @@ function addScrollCss (options,elementIds){
     function appendMetaElement(meta,index) {
          contain.appendChild(meta.el);
          meta.el.id=containerId+"_tab_"+(index+1).toString();
+         meta.el.classList.add(contained);
+         meta.el.offsetHeight;
+         contain.offsetHeight;
      }
      
     function unshiftElement (data) {
@@ -1131,6 +1132,13 @@ function addScrollCss (options,elementIds){
   
   scrollStyle.type = 'text/css';
   dragStyle.type   = 'text/css';
+  
+  maxCount = options.maxCount|| elementIds.map(function(id){ 
+        if (typeof id==='object') id = Object.keys(id)[0];
+        var el = getEl(id);
+        return el?el.children.length:0;
+      }).reduce(getMaxCount);
+      maxCount+= Math.floor(maxCount / 2);
  
   api.setWidth(width);
   updateDragStyle(1);
