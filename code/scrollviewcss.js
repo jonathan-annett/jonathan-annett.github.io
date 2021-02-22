@@ -1101,8 +1101,8 @@ function addScrollCss (options,elementIds){
   }
   
   var 
-  scrollStyle = document.createElement('style'),
-  dragStyle   = document.createElement('style'),
+  scrollStyle,
+  dragStyle,
   render = function (){
     scrollStyle.innerHTML = scrollCss (container_clip,container,contained,width,height,left,top,maxCount,speed,fastSpeed)+
                             (!!options.mouse?arrowSVGCss(container_left_arrow,container_right_arrow):"");
@@ -1130,24 +1130,13 @@ function addScrollCss (options,elementIds){
     
   };
   
-  scrollStyle.type = 'text/css';
-  dragStyle.type   = 'text/css';
-  
-  maxCount = options.maxCount|| elementIds.map(function(id){ 
-        if (typeof id==='object') id = Object.keys(id)[0];
-        var el = getEl(id);
-        return el?el.children.length:0;
-      }).reduce(getMaxCount);
-      maxCount+= Math.floor(maxCount / 2);
+  //bootStrapCss();
  
-  api.setWidth(width);
-  updateDragStyle(1);
-  appendStyleSheet(scrollStyle); 
-  appendStyleSheet(dragStyle); 
-  
   var controllers = elementIds.map(wrapContainer).filter (function(c){
     return (c!==null); 
   });
+  
+  bootStrapCss();  
 
   controllers.forEach(function(c){
     c.styleRules=api;
@@ -1155,6 +1144,32 @@ function addScrollCss (options,elementIds){
   
  return controllers[0];
   
+  function bootStrapCss(){
+          /*work out the maximum number of elements for any of the divs we are retracking */
+          maxCount = options.maxCount|| elementIds.map(function(id){ 
+             if (typeof id==='object') id = Object.keys(id)[0];
+            var el = getEl(id);
+            return el?el.children.length:0;
+          }).reduce(getMaxCount);
+    
+          /*add a 50% margin for additions*/
+    
+          maxCount+= Math.floor(maxCount / 2);
+
+          // create the dom objects
+          scrollStyle = document.createElement('style'),
+          dragStyle   = document.createElement('style'),
+          scrollStyle.type = 'text/css';
+          dragStyle.type   = 'text/css';
+          
+          // populate the dom objects
+          api.setWidth(width);
+    
+          // append them to the document
+          updateDragStyle(1);
+          appendStyleSheet(scrollStyle); 
+          appendStyleSheet(dragStyle); 
+  }
  
 }
 function scriptCheck(e,o,t,n){if("object"!=typeof window||t&&typeof window[t]===n)return!1;var r=document.getElementsByTagName("script"),s=r[r.length-1].src;return!!s.startsWith("https://"+o+"/")&&(!(e.concat([o]).indexOf(location.hostname)>=0)&&(console.error("PLEASE DON'T SERVE THIS FILE FROM "+o),console.warn("Please download "+s+" and serve it from your own server."),!0))}
