@@ -48,7 +48,6 @@ function classAnimations(w,console) {
        var bodyClass = document.getElementsByTagName('head')[0];         
        bodyClass.appendChild(newStyleSheet);
     }
-
   
     function customXYTranslate(cls,X,Y,time){ 
       
@@ -88,6 +87,63 @@ function classAnimations(w,console) {
         return cls; 
    
       
+    }
+  
+    function snapClass(el,clsName,cb,inscript) {
+         var ts = Date.now();
+          el = typeof el==='object'?el:getEl(el);
+          if (!inscript)
+              el.dataset.ts=ts;
+
+        el.classList.add(notrans);
+        var prev = el.dataset.current;
+        console.log("snap",prev,"-->",clsName);
+        if (prev) {
+            el.classList.remove(prev);
+        }
+        el.classList.add(clsName);
+        el.dataset.current=clsName;
+        el.classList.remove(notrans); 
+        el.offsetHeight; // Trigger a reflow, flushing the CSS changes
+        delete el.dataset.currentName; 
+        if (typeof cb==='function')  cb(el,clsName,prev)     
+    }
+  
+    function transitionClass(el,clsName,cb,inscript) {
+      var ts = Date.now();
+      el = typeof el==='object'?el:getEl(el);
+      if (inscript)
+        ts = el.dataset.ts
+      else
+        el.dataset.ts=ts;
+  
+      el.classList.add(notrans);
+      var prev = el.dataset.current;
+      if (prev===clsName) {
+        console.log("skipping:transition",prev,"-->",clsName);
+        return (typeof cb==='function') ? cb (el,prev,prev):cb;
+      }
+      console.log("transition",prev,"-->",clsName);
+      if (prev) 
+         el.classList.remove(prev);
+      el.dataset.current=clsName;
+      delete el.dataset.currentName; 
+      var ev;
+      el[ON]('transitionend',(ev=function(){
+        el[OFF]('transitionend',ev);
+        el[OFF]('transitioncancel',ev);
+        if (ts==el.dataset.ts) {
+          el.dataset.currentName=name;
+          if (typeof cb==='function') {
+            cb(el,clsName,prev)
+          }
+        }
+      }));
+      el[ON]('transitioncancel',ev);
+
+      el.classList.remove(notrans);
+      el.classList.add(clsName);
+
     }
 
     function sleep(el,msec,cb,inscript) {
@@ -250,7 +306,9 @@ function classAnimations(w,console) {
   if (w) {
       w.sleep=sleep;
       w.snap=snap;
+      w.snapClass=snapClass;
       w.transition=transition;
+      w.transitionClass=transitionClass;
       w.exec=exec;
       w.translate=translate;
       w.script=script;
@@ -259,7 +317,9 @@ function classAnimations(w,console) {
   return {
     sleep:sleep,
     snap:snap,
+    snapClass:snapClass,
     transition:transition,
+    transitionClass:transitionClass,
     exec:exec,
     translate:translate,
     script:script,
