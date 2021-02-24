@@ -32,16 +32,16 @@ SOFTWARE.
 
     window.motionTrack=motionTrack;
 
-    function motionTrack(whatToTrack) {
+    function motionTrack(whatToTrack,granularity) {
       var WHAT = typeof whatToTrack === "string" ? [whatToTrack] : whatToTrack,
         ON  = "addEventListener",
         OFF = "remove" + ON.substr(3),
         MENU= "contextmenu",
         X   = "clientX",
         T   = "touches",
-        gran = 1,
+        gran = granularity||10,
         MODES = WHAT.map(function (w) {
-          t = w === "touch";
+          var t = w === "touch";
           return {
             t: t,
             w: w,
@@ -51,9 +51,12 @@ SOFTWARE.
           };
         });
 
-      function trackX(el, inDragClass,minusPrefix,plusPrefix,contextClass) {
+      function trackX(el, inDragClass,minusPrefix,plusPrefix,contextClass,cb) {
         el = typeof el === "string" ? document.querySelector(el) : el;
         var
+          CB_=cb,
+          CB=undefined,
+          started=Date.now(),
           impassive={passive:false},
           cl=function(cb){
             var l = el&&el.classList||false;
@@ -97,29 +100,44 @@ SOFTWARE.
            }
           },
           up  = function (x,lastX) {
-             if (lastX!==undefined) {
-              if(lastX<0) {
-                 remove(minusPrefix,0-lastX);
-              } else {
-                 remove(plusPrefix,lastX);
-              }
+            
+              var class_cleanup = function(){
+                
+                if (lastX!==undefined) {
+                  if(lastX<0) {
+                     remove(minusPrefix,0-lastX);
+                  } else {
+                     remove(plusPrefix,lastX);
+                  }
+                }
+            
+            
+                if(x!==undefined) { 
+                if(x<0) {
+                     remove(minusPrefix,0-x);
+                  } else {
+                     remove(plusPrefix,x);
+                  } 
+                }
+                remove(inDragClass);
+            };
+            if (typeof CB==='function') {
+              setTimeout(CB,1,class_cleanup,x,Date.now()-started);
+              CB=undefined;
+            } else {
+              class_cleanup();
             }
-            if(x!==undefined) { 
-             if(x<0) {
-                 remove(minusPrefix,0-x);
-              } else {
-                 remove(plusPrefix,x);
-              } 
-            }
-            remove(inDragClass);
+            
           },
           bound_dn={},
           dn_ = function (TOUCH,DOWN, MOVE, UP, e) {
-            var mv_,
+            var now_=Date.now(),
+                mv_,
                 up_,
                 t = e[T],
-                valid = t ?( t.length === 1 ) : (e.button===0);
+                valid = t ?( t.length === 1 ) : (e.buttons===1);
             if (valid) {
+              
               var 
               E = valid ? (!!t ? t[0] : e) : {},
               start = E[X],
@@ -142,24 +160,29 @@ SOFTWARE.
                   return now;
                 }
               };
-
-                el[OFF](DOWN,bound_dn[DOWN]); 
-                e.preventDefault();
-                el[ON]( MOVE,    (mv_ = function (e) {
+              started=now_;
+              CB=CB_,
+              el[OFF](DOWN,bound_dn[DOWN]); 
+              e.preventDefault();
+              el[ON](  UP,   (up_ = function (e) {
+                  var valid= !e.touches||e.touches.length===0;
+                  if (valid) {
+                    el[OFF](UP, up_);
+                    el[OFF](MOVE, mv_);
+                    up(delta(e),last);
+                    el[ON](DOWN,bound_dn[DOWN],impassive); 
+                  }
+                }),  impassive  );
+              el[ON]( MOVE,    (mv_ = function (e) {
+                    if (e.buttons===0) {
+                      return up_(e);
+                    }
                     delta(e, mv);
                   }),   impassive );
-                el[ON](  UP,   (up_ = function (e) {
-                    var valid= !e.touches||e.touches.length===0;
-                    if (valid) {
-                      el[OFF](UP, up_);
-                      el[OFF](MOVE, mv_);
-                      up(delta(e),last);
-                      el[ON](DOWN,bound_dn[DOWN],impassive); 
-                    }
-                  }),  impassive  );
+                
                 dn(0);
             } else {
-              if (e.button===2) {
+              if (e.buttons===2) {
                 var mnu;
                 el[ON](MENU,(mnu=function(e){
                   e.preventDefault();
