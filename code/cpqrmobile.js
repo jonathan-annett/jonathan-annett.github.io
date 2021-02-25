@@ -3,9 +3,13 @@
   if ( !(
          device && typeof device.desktop ==='function' &&  device.desktop() && 
          typeof QRCode==='function'  &&
-         ( location.hostname==="cdpn.io") &&
-            (location.pathname.split('/')[2]==='debug') 
-         ) ) return;
+    ( (location.hostname==='jonathan-annett.github.io') || 
+         (
+            ( location.hostname==="cdpn.io") &&  (location.pathname.split('/')[2]==='debug') 
+              
+         )
+        ) 
+     ) return;
   
   var qrDiv = d.createElement('div'),
       qrEmbed = d.createElement('div'),
