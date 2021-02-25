@@ -663,16 +663,7 @@ SOFTWARE.
               if (contextClass) {
                 el[ON](  MENU,toggleContextClass,impassive );
               }
-            } else {
-              
-               clearLongPressTimer();
-               if (!!t || (e.buttons === 1)) {
-
-                 if (e.target!==el) {
-                   //console.log("setting timeout for longpress",e.target);
-                   longPressTimer = setTimeout(doLongPress,longPressTimeout,e.target);
-                 }
-              }
+                 
             }
           }
         },
