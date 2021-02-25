@@ -99,6 +99,7 @@ SOFTWARE.
         snapWidth,
         data_source,
         data_render,
+        longPressTimeout=1000,
         contextModeTimeout=1000;
       if (typeof options === "object") {
         minusPrefix = options.minusPrefix;
@@ -132,7 +133,7 @@ SOFTWARE.
       }
 
       var _u /*ndefined*/,
-        CB_ = cb,
+        CB_ = options && options.onSelected||cb,
         CB = undefined,
         auto_id = function (prefix) {
           var res;
@@ -369,16 +370,35 @@ SOFTWARE.
           t = t && t[0];
           return t && !inside(document.elementFromPoint(t.pageX, t.pageY), el);
         },
+          
         notifyVisibleItems= function(){
          
           var sw = options.snapWidth,
               index = 0 - Math.floor(transformedElsX[0] / sw),
               el0 = transformedEls[0],
               count = Math.floor(viewportWidth() / sw),
-              visible = transformedEls.slice(index, index + count);
+              visible = transformedEls.slice(index, index + count),
+              notvisible = transformedEls.filter(function(x){
+                return visible.indexOf(x)<0;
+              });
 
-          CB_(function(){}, index, count, visible);
+          CB_(function(){}, index, count, visible,notvisible);
 
+        },
+          
+          
+        longPressTimer,
+        clearLongPressTimer = function(){
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer=undefined;
+          }
+        },
+        doLongPress=function(el){
+          clearLongPressTimer();
+          if (options && typeof options.onLongPress === 'function') {
+           options.onLongPress(el);
+          }
         },
           
         swapContextModeTimer,
@@ -388,17 +408,22 @@ SOFTWARE.
             swapContextModeTimer=undefined;
           }
         },
+          
+         setContextMode=function(mode) {
+          if (mode ) {
+            valid_buttons = [2];
+            el.parentElement.classList.add('dragmode');
+          } else {
+             valid_buttons = [2,1];
+            el.parentElement.classList.remove('dragmode');
+          }
+         },
         swapContextMode = function(){
           clearContextTimer();
-          if ( valid_buttons.length===1) {
-            valid_buttons.push(1)
-            el.parentElement.classList.remove('dragmode');
-          } else {
-            valid_buttons.pop();
-            el.parentElement.classList.add('dragmode');
-          }
-          
+          setContextMode( ! el.parentElement.classList.contains('dragmode') ) ;
         },
+       
+          
           ignoreContextMenu = function (e) {
             clearContextTimer();
             e.preventDefault();
@@ -436,12 +461,15 @@ SOFTWARE.
             el0 = els[0],
             count = Math.floor(viewportWidth() / sw),
             visible = els.slice(index, index + count),
+            notvisible = transformedEls.filter(function(x){
+                return visible.indexOf(x)<0;
+            }),
             ids = visible.map(function (elx) {
               return elx.id;
             });
 
           if (visible.length === count) {
-            cb(cleanup, index, count, visible);
+            cb(cleanup, index, count, visible, notvisible);
           } else {
             transformedElsFinalX = transformedElsBounceEnd();
             cleanup(0.25, transformedElsFinalX[0]);
@@ -452,9 +480,15 @@ SOFTWARE.
           //add(plusPrefix,0);
           remove(contextClass);
         },
+          
         mv = function (x, lastX) {
-          if (swapContextModeTimer && Math.abs(x) >20) {
-            clearContextTimer();
+          if(Math.abs(x) >20) {
+            if (swapContextModeTimer) {
+              clearContextTimer();
+            }
+            if (longPressTimer) {
+               clearLongPressTimer(); 
+            }
           }
           if (style) {
             setDragX(x);
@@ -475,6 +509,7 @@ SOFTWARE.
             }
           }
         },
+          
         up = function (x, lastX, factor) {
           var when = Date.now(),
             bounce = false,
@@ -505,6 +540,9 @@ SOFTWARE.
                 });
               }
             };
+          
+          clearLongPressTimer(); 
+          clearContextTimer();
 
           // calc current left per element (so we can pass it callback)
           transformedElsReleaseX = transformedElsX.map(function (elX, ix) {
@@ -603,7 +641,15 @@ SOFTWARE.
             if (LEAVE) {
               el[ON](LEAVE, up_, impassive);
             }
-            
+            clearLongPressTimer();
+             if (!!t || (e.buttons === 1)) {
+               
+               if (e.target!==el) {
+                 //console.log("setting timeout for longpress",e.target);
+                 longPressTimer = setTimeout(doLongPress,longPressTimeout,e.target);
+               }
+            }
+
             if (e.buttons === 2) {
                 swapContextModeTimer = setTimeout(swapContextMode,contextModeTimeout);
                 el[ON](  MENU,ignoreContextMenu, impassive );
@@ -616,6 +662,16 @@ SOFTWARE.
               var mnu;
               if (contextClass) {
                 el[ON](  MENU,toggleContextClass,impassive );
+              }
+            } else {
+              
+               clearLongPressTimer();
+               if (!!t || (e.buttons === 1)) {
+
+                 if (e.target!==el) {
+                   //console.log("setting timeout for longpress",e.target);
+                   longPressTimer = setTimeout(doLongPress,longPressTimeout,e.target);
+                 }
               }
             }
           }
@@ -674,7 +730,7 @@ SOFTWARE.
             transformedElsX = add==="push" ? transformedElsBounceEnd() : transformedElsBounceStart.slice();
             
             setIdle(0.25,transformedElsX[0]);
-         
+            return transformedEls.length;
         }; 
       
         if (contextClass==='dragmode') {
@@ -708,7 +764,9 @@ SOFTWARE.
             transformedElsX.shift;
             transformedElsBounceStart.shift();
             return data_source.shift();
-          }  
+          },
+          
+           setContextMode:setContextMode
           
         };
       
