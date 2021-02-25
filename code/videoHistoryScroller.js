@@ -48,7 +48,7 @@ SOFTWARE.
     );
   }
   
-  function videoHistoryScroller (scrollerId,urls) {
+  function videoHistoryScroller (scrollerId,urls,x2) {
     
 var
    rateLimitingMsecBetweenVideos=100,
@@ -66,7 +66,7 @@ var
                 return objs.indexOf(item) >= 0 ? false : objs.push(item);
         });
     },
-
+   sizecls = x2 ? ' x2' : '',
   
    invalid_videoId = "kvO_nHnvPtQ", // 1 second black screen
    valid_yt_domains = [
@@ -193,7 +193,7 @@ var
 
     function dragDiv(videoId, index) {
       return (
-        '<div class="videoHistory">' + imageHtml(videoId, index) + "</div>"
+        '<div class="videoHistory'+sizecls+'">' + imageHtml(videoId, index) + "</div>"
       );
     }
     
