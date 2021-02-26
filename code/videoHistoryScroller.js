@@ -534,7 +534,7 @@ var
           fs: 1,
           controls: 0,
           playsinline: 0,
-          enablejsapi: 0,
+          enablejsapi: 1,
           modestbranding: 1,
           disablekb: 1,
           autohide: 1,
