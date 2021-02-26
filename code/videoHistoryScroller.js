@@ -538,7 +538,7 @@ var
           loop: 0,
           volume: 0,
           iv_load_policy: 3,
-          origin: location.origin,
+          origin: location.href,
           widget_referrer : location.href
         }
       }
