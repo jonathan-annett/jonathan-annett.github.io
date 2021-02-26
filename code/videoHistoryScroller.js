@@ -409,8 +409,11 @@ var
 
     } 
     
-    
+  var createOne=true;  
   function createYouTubePlayer(info, index) {
+    if (createOne==="stop") return;
+     if (createOne===true) 
+          createOne="stop";
     var cb =
       typeof index === "function"
         ? index
