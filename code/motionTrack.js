@@ -111,6 +111,7 @@ SOFTWARE.
         snapWidth = options.snapWidth;
         data_source = options.data;
         data_render = options.per_data_html;
+        longPressTimeout =  options.longPressTimeout || 1000;
         contextModeTimeout =  options.contextModeTimeout || 1000;
         if (
           typeof data_source === "object" &&
