@@ -30,50 +30,5 @@
         height: 300
       });
      qrcode.makeCode(location.href + "?reload" + Math.random().toString(36)); 
-   
-     
-   
-})(document,window.QRCode,window.device||{});
-
-
-
-var defaultUrls = [
-    "https://i3.ytimg.com/vi/MQ3FI2-gsEI/hqdefault.jpg",
-    "https://www.youtube.com/watch?v=Jsj-hDW9bS8",
-    "https://www.youtube.com/watch?v=nQK3izm77tI&t=1s",
-    "NsUWXo8M7UA",
-    "2RocXKPPx4o",
-    "https://www.youtube.com/watch?v=ovtcUfyVwy0",
-
-    "Ywy9JEBbyuI",
-    "https://www.youtube.com/watch?v=wtCSXIl0eqA",
-    "https://www.youtube.com/watch?v=TH09EPRZ9rA",
-    "https://www.youtube.com/watch?v=09gJX0Cc6p0"
-  ];
-
-var urls=location.href.indexOf('clear')<0? localStorage.ytHist : undefined;
-if (urls) {
-  urls=JSON.parse(urls);
-} else {
-   urls = defaultUrls;
-   localStorage.ytHist = JSON.stringify(defaultUrls);
-}
-
-var vidHist = videoHistoryScroller("videoHistoryScroller",urls); 
-
-function pushUrl() {
-  var urlText = document.querySelector("#url");
-  
-  var c = vidHist.length;
-  if (  vidHist.push(urlText.value) > c) {
-    urls.push(urlText.value);
-    localStorage.ytHist = JSON.stringify(urls);
-  };
-  urlText.value="";
-}
-
-
-
-document.querySelector("#btnAdd").addEventListener("click", pushUrl);
  
  
