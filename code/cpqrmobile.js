@@ -31,4 +31,4 @@
       });
      qrcode.makeCode(location.href + "?reload" + Math.random().toString(36)); 
  
- 
+ })(document,window.QRCode,window.device||{});
