@@ -51,6 +51,7 @@ SOFTWARE.
   function videoHistoryScroller (scrollerId,urls,x2) {
     
 var
+   createOnePlayerOnly = location.search.indexOf('oneplayer')>=0 ? true : false,  
    rateLimitingMsecBetweenVideos=100,
    getEl = document.getElementById.bind(document),
    crEl = document.createElement.bind(document),
@@ -409,11 +410,11 @@ var
 
     } 
     
-  var createOne=true;  
+ 
   function createYouTubePlayer(info, index) {
-    if (createOne==="stop") return;
-     if (createOne===true) 
-          createOne="stop";
+    if (createOnePlayerOnly==="stop") return;
+     if (createOnePlayerOnly===true) 
+          createOnePlayerOnly="stop";
     var cb =
       typeof index === "function"
         ? index
