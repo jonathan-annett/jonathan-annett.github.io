@@ -112,7 +112,7 @@ SOFTWARE.
                     edit.innerHTML = scripts[0][1];
                     edit.className="draggable";
                     wrapper.appendChild(edit);
-                    document.appendChild(wrapper);
+                    document.body.appendChild(wrapper);
                     
                     
                 }
