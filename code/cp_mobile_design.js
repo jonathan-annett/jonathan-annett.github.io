@@ -40,6 +40,14 @@ SOFTWARE.
         
     } 
     
+    function append_CSS(CSS){ 
+      var doc=document,rule = doc.createElement('style');
+      rule.type = 'text/css';
+      rule.innerHTML = CSS; 
+      doc.getElementsByTagName('head')[0].appendChild(rule);
+      return rule;
+    }
+    
      function mobileDependancies(scripts,callback,elements,scr) {
      //question: what is this?
      //answer: a way of refreshing the cache on mobile devices to enable development
@@ -90,6 +98,26 @@ SOFTWARE.
      
      while (scripts && scripts.length && scripts.constructor===Array && typeof scripts[0] !== 'string' ) {
      
+        if (typeof scripts[0] ==='object') {
+           
+            var fn=typeof scripts[0][0]==='string'?scripts[0][0].split('#')[0]:false;
+           
+            if (fn && fn.endsWith('.css') ) {
+                if (typeof scripts[0][1]==='string' ) {
+                    console.log('included inline stylesheet:',fn)
+                    append_CSS(scripts[0][1]);
+                }
+            }
+            
+            
+            if (fn && fn.endsWith('.js') ) {
+                if (typeof scripts[0][1]==='undefined' ) {
+                    console.log('included inline script:',fn)
+                }
+            }
+            
+        }
+        
         scripts.shift();
         
      }
