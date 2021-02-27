@@ -243,7 +243,10 @@ SOFTWARE.
                     wrapper.appendChild(edit_div);
                     document.body.appendChild(wrapper);
                     
-                    edit.onchange=editorOnChange.bind(this,sheet,edit);
+                    edit.addEventListener(
+                        "input",  
+                         editorOnChange.bind(this,sheet,edit)
+                    );
                     
                     dragElement (edit_div);
                     
