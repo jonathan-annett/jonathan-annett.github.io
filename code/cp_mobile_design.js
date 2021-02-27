@@ -203,15 +203,30 @@ SOFTWARE.
        
     }
     
-    var startTime=Date.now();
-    loadRemoteFile("https://jonathan-annett.github.io/README.md",function(err,txt){
-        var lag=Date.now()-startTime;
-        if (!err && txt) {
-            console.log(txt,lag);
-        }
-    });
+    function getRandomHash(cb) {
+        var startTime=Date.now();
+        var seedText=Math.random().toString(36)+startTime.toString(16);
+        loadRemoteFile("/?"+Math.random().toString(36),
+        function(err,txt){
+            var lag=Date.now()-startTime;
+            
+            seedText+=txt||err&& err.message||err.toString&&err.toString();
+            seedText+=Math.floor(Math.random()*Number.MAX_SAFE_INTEGER).toString(2+(Math.random()*34));
+            seedText+=Date.now().toString(27);
+            seedText+=lag.toString(36);
+            window.subtle_hash.cb.sha256(function(err,hash){
+                
+                  cb(hash||err);
+            });
+
+        });
+    }
     
-     
+    
+    getRandomHash(function(hash){
+        console.log(hash);
+    });
+   
     
      function mobileDependancies(scripts,callback,elements,scr) {
      //question: what is this?
