@@ -133,7 +133,7 @@ SOFTWARE.
       ' <p class="undersize_y">&#8595;</p>  '+
       ' <p class="oversize_y">&#8593;</p>   '+
       ' </div>  '+
-      ' <div style="display:inline-block;position:absolute;width:100vw;height:100vh;top:0;left:0;"><div id="mobile_chooser">  '+
+      ' <div id="mobile_chooser">  '+
       '   <select>  '+
       '     <option>choose device</option>  '+
       '     <option>generic </option>  '+
@@ -154,7 +154,7 @@ SOFTWARE.
       '     <option>iPad_Pro</option>  '+
       '     <option>surface_Duo</option>  '+
       '     <option>galaxy_Fold</option>  '+
-      '   </select></div>'+
+      '   </select>'+
       ' </div>  ';
     
       
