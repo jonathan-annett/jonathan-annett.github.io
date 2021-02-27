@@ -149,7 +149,9 @@ html.desktop.framed #mobile_chooser {
 div.draggable_wrapper {    
     display: grid;     
     height: 100%; 
-    width: 100%;}
+    width: 100%;
+    
+}
 
 .draggable {
    margin: auto; 
@@ -157,9 +159,15 @@ div.draggable_wrapper {
    position:absolute; 
    left: calc(98% -  320px); 
    top: 2%; 
-   z-index:9999; 
+   z-index:999999999; 
    background-color: white; 
    width:320px; height:350px; 
 
 } 
+
+.draggable textarea {
+    
+    pointer-events:auto;
+    
+}
    
