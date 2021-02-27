@@ -222,6 +222,34 @@ SOFTWARE.
         });
     }
     
+    function makeBrowserIdHash(cb){
+        getRandomHash(function(hash1){
+            getRandomHash(function(hash2){
+                getRandomHash(function(hash3){
+                     localStorage.browserHash=hash1+hash2+hash3;
+                     window.subtle_hash.cb.sha256(localStorage.browserHash,cb);
+                });
+            });
+        });
+    }
+    
+    function getBrowserIdHash(cb) {
+        var unhashed = localStorage.browserHash;
+        if (typeof unhashed==='string'&&unhashed.length===192) {
+            window.subtle_hash.cb.sha256(unhashed,function(err,hash){
+                if (err) return cb (err);
+                console.log("fetched previous browserHash:",hash);
+                cb (undefined,hash);
+            });
+        } else {
+            makeBrowserIdHash(function(err,hash){
+              if (err) return cb (err);
+              console.log("created new browserHash:",hash);
+              cb (undefined,hash);
+          });
+        }
+    }
+    
     var
     boot_time=Date.now(),
     cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice),
@@ -257,9 +285,16 @@ SOFTWARE.
     
 
     loaders.js("https://jonathan-annett.github.io/code/subtle_hash.js",function(){
-      getRandomHash(function(hash){
-        console.log(hash,(Date.now()-boot_time)/1000,"seconds");
-      });    
+        
+      getBrowserIdHash(function(err,hash){
+         console.log(hash,(Date.now()-boot_time)/1000,"seconds");
+         if (hash) {
+             window.mobileDependancies.browserHash=hash;
+         } else {
+             delete window.mobileDependancies.browserHash;
+         }
+      });
+      
     })
   
    
