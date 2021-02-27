@@ -159,11 +159,15 @@ div.draggable_wrapper {
    position:absolute; 
    left: calc(98% -  320px); 
    top: 2%; 
-   z-index:999999999; 
+   z-index:99999999; 
    background-color: white; 
    width:320px; height:350px; 
 
 } 
+
+.draggable h1 {
+    font-size:14pt;
+}
 
 .draggable textarea {
     
@@ -172,6 +176,7 @@ div.draggable_wrapper {
     height:50px;
     left:10px;
     top:10px;
+    z-index:9999999999; 
     position:absolute; 
     
 }
