@@ -1,3 +1,7 @@
+
+[
+    'https://jonathan-annett.github.io/code/videoHistoryScroller.js',
+
 (function(functionName) {
     /*
   MIT License
@@ -174,9 +178,7 @@ SOFTWARE.
                     else return objs.indexOf(item) >= 0 ? false : objs.push(item);
                 });
             },
-            sizecls =  x2  ? ' '+x2 : '',
-
-            sizeclsouter = [1, "book"].indexOf(x2) < 0 ? false : 'x2',
+            sizecls = x2===1 ? 'x2' : (typeof x2  !== "string" ? false : x2),
 
 
             invalid_videoId = "kvO_nHnvPtQ", // 1 second black screen
@@ -200,12 +202,9 @@ SOFTWARE.
             mainScrollerDiv.classList.add("videoHistoryScroller");
         }
         mainScrollerDiv.innerHTML = scrollerHTML();
-        if (sizeclsouter) {
-            mainScrollerDiv.classList.add(sizeclsouter);
-        }
-
-        if (sizecls !== '') {
-            getEl('trackingSlider').classList.add(sizecls.trim());
+        
+        if (sizecls) {
+            document.body.classList.add(sizecls.trim());
         }
 
 
@@ -342,7 +341,7 @@ SOFTWARE.
 
         function dragDiv(videoId, index) {
             return (
-                '<div class="videoHistory' + sizecls + '">' + imageHtml(videoId, index) + "</div>");
+                '<div class="videoHistory">' + imageHtml(videoId, index) + "</div>");
         }
 
         function scrollerHTML() {
@@ -428,7 +427,9 @@ SOFTWARE.
                         }
 
                     } else {
-                        attachSlider(info);
+                        if (bookMode) {
+                           attachSlider(info);
+                        }
                     }
 
                 });
@@ -849,4 +850,6 @@ SOFTWARE.
 
     }
 
-})("videoHistoryScroller");
+})("videoHistoryScroller")
+]
+;
