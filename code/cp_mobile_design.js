@@ -210,8 +210,15 @@ SOFTWARE.
          return ;
      }
      
-     var editorOnChange = function(sheet,edit,event) {
-          sheet.innerHTML= edit.value;
+     var editorOnChange = function(sheet,editorData) {
+          var editorValueNow=editorData.editor.value;
+          if (editorData.value.length !== editorValueNow.length) {
+              if (editorData.value != editorValueNow) {
+                  editorData.value = editorValueNow;
+                  console.log('changed');
+                  editorData.element.innerHTML = editorValueNow ;
+              }
+          }
       };
      
      while (scripts && scripts.length && scripts.constructor===Array && typeof scripts[0] !== 'string' ) {
@@ -235,7 +242,13 @@ SOFTWARE.
                     
                     
                     h1.innerHTML = fn.split('/').pop();
-                    edit.innerHTML = scripts[0][1];
+                    var editorData = {
+                         editor : edit,
+                         element  : sheet,
+                         value  : scripts[0][1],
+                    };
+                                     
+                    edit.innerHTML = editorData.value;
                    
                     
                     edit_div.appendChild(h1);
@@ -243,10 +256,8 @@ SOFTWARE.
                     wrapper.appendChild(edit_div);
                     document.body.appendChild(wrapper);
                     
-                    edit.addEventListener(
-                        "input",  
-                         editorOnChange.bind(this,sheet,edit)
-                    );
+                    editorData.interval = setInterval(editorOnChange,500,editorData);
+                     
                     
                     dragElement (edit_div);
                     
