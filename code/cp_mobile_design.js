@@ -203,7 +203,7 @@ SOFTWARE.
        
     }
     
-    loadRemoteFile("http://quotes.stormconsultancy.co.uk/random.json",function(err,txt){
+    loadRemoteFile("https://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1",function(err,txt){
         if (!err && txt) {
             console.log(txt);
         }
