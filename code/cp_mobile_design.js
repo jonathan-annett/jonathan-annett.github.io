@@ -87,6 +87,12 @@ SOFTWARE.
          window.location.href=window.location.origin+window.location.pathname+'?refresh=1';
          return ;
      }
+     
+     while (scripts && scripts.length && scripts.constructor===Array && typeof scripts[0] !== 'string' ) {
+     
+        scripts.shift();
+        
+     }
    
      if (scripts && scripts.length && scripts.constructor===Array) {
        if (!elements) {
