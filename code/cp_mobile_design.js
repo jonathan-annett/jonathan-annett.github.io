@@ -160,6 +160,55 @@ SOFTWARE.
         }
     }
     
+    function loadRemoteFile(url,cb) {
+        if (typeof url==='string' && typeof cb==='function') {
+            var xhr = new XMLHttpRequest();
+            
+            xhr.open('GET', url);
+            if (cb.length>=2) {
+                xhr.onload = function() {
+                  if (xhr.status !== 200) { // analyze HTTP status of the response
+                    cb({status:xhr.status,response:xhr.response}); // e.g. 404: Not Found
+                  } else { // show the result
+                    cb(undefined,xhr.response);
+                  }
+                };
+            } else {
+                xhr.onload = function() {
+                  cb({status:xhr.status,response:xhr.response}); // e.g. 404: Not Found
+                };
+            }
+            
+            if (cb.length>=3) {
+                xhr.onprogress = function(event) {
+                  if (event.lengthComputable) {
+                    cb(undefined,undefined,event.loaded,event.total);
+                  } else {
+                    cb(undefined,undefined,event.loaded);
+                  }
+                };
+            }
+            if (cb.length>=2) {
+                xhr.onerror = function(e) {
+                   cb(e||"error");
+                };
+            } else {
+                xhr.onerror = function(e) {
+                   console.error(e||"error");
+                };
+            }
+            
+            xhr.send();
+        } 
+       
+    }
+    
+    loadRemoteFile("http://quotes.stormconsultancy.co.uk/random.json",function(err,txt){
+        if (!err && txt) {
+            console.log(txt);
+        }
+    });
+    
      
     
      function mobileDependancies(scripts,callback,elements,scr) {

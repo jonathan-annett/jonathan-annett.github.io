@@ -171,12 +171,13 @@ div.draggable_wrapper {
 .draggable textarea {
     
     pointer-events:auto;
-    width:94px;
+    width:274px;
     height:50px;
     left:2px;
     top:40px;
     position:absolute; 
     overflow:hidden;
+    background-color:bisque;
     
     
 }
