@@ -45,6 +45,8 @@ SOFTWARE.
     function videoHistoryScroller(scrollerId, urls, x2) {
 
         var
+        attachSlider_states=[1,3],
+        
         createOnePlayerOnly = location.search.indexOf('oneplayer') >= 0 ? true : false,
             rateLimitingMsecBetweenVideos = 100,
             getEl = document.getElementById.bind(document),
@@ -265,6 +267,7 @@ SOFTWARE.
                     }
                 },
                 pop: tracker.pop
+               
 
             };
 
@@ -532,9 +535,7 @@ SOFTWARE.
                 trackingSlider.attach(
                 info.player.getCurrentTime(),
                 info.player.getDuration(),
-                true,
-                // [YT.PlayerState.BUFFERING,
-                //  YT.PlayerState.PLAYING].indexOf(info.player.getPlayerState())>=0,
+                attachSlider_states.indexOf(info.player.getPlayerState())>=0,
                 function getElapsedSeconds() {
                     return Math.floor(info.player.getCurrentTime() * 1000);
                 },
@@ -548,6 +549,7 @@ SOFTWARE.
                 0, 0, false);
             }
         }
+        
 
         function onVideosSelected(cleanup, index, count, visible, notVisible) {
 
@@ -668,12 +670,90 @@ SOFTWARE.
         function createPlayerYTImpl(info) {
             info._player = new YT.Player(info.player_iframe.id, info.youTubeArgs);
         }
+        
+        function bookModeStateChange(info,event) {
+            
+            if ( (event.data === YT.PlayerState.PAUSED)) {
+                if (info.previewElement.classList.contains('playable')) {
+                    bookModeUnloadHooks.forEach(function(fn) {
+                        fn();
+                    });
+                    bookModeUnloadHooks.splice(0, bookModeUnloadHooks.length);
+                    attachSlider(info);
+                }
+                info.player.seekTo(bookMode[info.videoId], false);
+            } else {
+
+                 if ( (event.data === YT.PlayerState.PLAYING)) {
+                    if (toFade) {
+
+                        toFade.filter(function(i) {
+                            return i.videoId !== info.videoId;
+                        }).forEach(fadeOut.bind(this, 5));
+
+                        toFade = undefined;
+                    }
+                    attachSlider(info);
+                }
+                
+                
+            }
+            
+        }
+        function bookModePlayerReady(info,event) {
+              var cb = info.__open_cb;
+              delete info.__open_cb;
+              info.player = event.target;
+              delete info._player;
+              if (typeof cb === "function") cb(info, info.player);          
+        }
+        function bookModePlaybackQualityChange(info,event) {
+            console.log("bookMode event","PlaybackQualityChange", event.data,info.videoId);
+        }
+        function bookModePlaybackRateChange(info,event){
+            console.log("bookMode event","PlaybackRateChange", event.data,info.videoId);
+        }
+        function bookModeApiChange(info,event) {
+            console.log("bookMode event","ApiChange", event.data,info.videoId);
+        }
+        
+        
+        
+        
+        
+        
+        
+        function playerStateChange(info,event) {
+            console.log("event",event.name, event.data,info.videoId);
+        }
+        
+        function playerReady(info,event) {
+               var cb = info.__open_cb;
+               delete info.__open_cb;
+               info.player = event.target;
+               delete info._player;
+               if (typeof cb === "function") cb(info, info.player);         
+        }
+        
+        function playbackQualityChange(info,event) {
+            console.log("event","PlaybackQualityChange", event.data,info.videoId);
+        }
+        
+        function playbackRateChange(info,event){
+            console.log("event","PlaybackRateChange", event.data,info.videoId);
+        }
+        
+        function apiChange(info,event) {
+           console.log("event","ApiChange", event.data,info.videoId);
+        }
+
+        function bindInfoEvent(info,bookFn,fn) {
+            return (!!bookMode ? bookFn : fn).bind(this,info);
+        }
 
         function createYTPlayer(info, ix) {
+            
             var rateLimitingDelay = ix ? ix * rateLimitingMsecBetweenVideos : 0;
-
-
-
 
             info.player_div_outer = document.createElement("div");
             info.player_div_outer.id = "player_outer_" + ix;
@@ -687,7 +767,6 @@ SOFTWARE.
             info.player_div_inner.dataset.videoid = info.videoId;
             info.player_div_inner.classList.add("player_inner");
 
-
             info.player_iframe = document.createElement("div");
             info.player_iframe.id = "player_" + ix;
             info.player_iframe.dataset.videoid = info.videoId;
@@ -697,7 +776,6 @@ SOFTWARE.
             info.player_div_outer.appendChild(info.player_div_inner);
             info.player_div_inner.appendChild(info.player_iframe);
 
-
             if (info.previewElement) {
                 info.previewElement.appendChild(info.player_div_outer);
             }
@@ -705,37 +783,14 @@ SOFTWARE.
             info.youTubeArgs = {
                 videoId: info.videoId,
                 events: {
-                    onReady: function onPlayerReady(event) {
-                        var cb = info.__open_cb;
-                        delete info.__open_cb;
-                        info.player = event.target;
-                        delete info._player;
-                        if (typeof cb === "function") cb(info, info.player);
-                    },
-                    onStateChange: function onPlayerStateChange(event) {
-
-                        if (bookMode && (event.data === YT.PlayerState.PAUSED)) {
-                            if (info.previewElement.classList.contains('playable')) {
-                                bookModeUnloadHooks.forEach(function(fn) {
-                                    fn();
-                                });
-                                bookModeUnloadHooks.splice(0, bookModeUnloadHooks.length);
-                            }
-                            info.player.seekTo(bookMode[info.videoId], false);
-                        } else {
-
-                            if (bookMode && toFade && (event.data === YT.PlayerState.PLAYING)) {
-
-                                toFade.filter(function(i) {
-                                    return i.videoId !== info.videoId;
-                                }).forEach(fadeOut.bind(this, 5));
-
-                                toFade = undefined;
-                            }
-                        }
-
-
-                    },
+                    onReady:        bindInfoEvent (info,bookModePlayerReady,playerReady),
+                    onStateChange:  bindInfoEvent (info,bookModeStateChange,playerStateChange),
+                    
+                    onPlaybackQualityChange : bindInfoEvent (info,bookModePlaybackQualityChange,playbackQualityChange),
+                    onPlaybackRateChange    : bindInfoEvent (info,bookModePlaybackRateChange,playbackRateChange),
+                    onApiChange             : bindInfoEvent (info,bookModeApiChange,apiChange),
+            
+                    
                     playerVars: info.playerVars || {
                         fs: 1,
                         controls: 0,

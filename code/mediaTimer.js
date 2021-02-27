@@ -134,23 +134,23 @@
               checkEvery = checkEvery || 1000;
               var muted = false,
                   last,
-                  start = Date.now(),
+                  started = Date.now(),
 
                   defaultGetElapsed = function() {
-                      return Date.now() - start;
+                      return Date.now() - started;
                   },
-                  defaultSetElpased = function(elapsed) {
-                      start = Date.now() - elapsed;
+                  defaultSetElapsed = function(elapsed) {
+                      started = Date.now() - elapsed;
                       return elapsed;
                   };
 
 
               getElapsed = (typeof getElapsed === "function" ? getElapsed : defaultGetElapsed);
-              setElapsed = (typeof setElapsed === "function" ? setElapsed : defaultSetElpased);
+              setElapsed = (typeof setElapsed === "function" ? setElapsed : defaultSetElapsed);
 
               var self,
               rangeElmMouseUp = function() {
-                  start = Date.now() - setElapsed(rangeElem.value);
+                  started = Date.now() - setElapsed(rangeElem.value);
                   self.unmute();
               },
               tmr,
@@ -158,11 +158,11 @@
                   rangeElem.value = 0;
                   tmr = setInterval(function() {
                       var now_ = Date.now(),
-                          elapsed = now_ - start;
+                          elapsed = now_ - started;
                       if (muted) return;
                       if (elapsed > rangeElem.max) {
                           console.log("looks like the end..");
-                          start = (now_ = Date.now()) - (elapsed = getElapsed());
+                          started = (now_ = Date.now()) - (elapsed = getElapsed());
                           last = now_;
                           if (elapsed > rangeElem.max) {
                               console.log("yes it's the end..");
@@ -190,10 +190,10 @@
               self = {
                   seek: function(seconds) {
                       var now_;
-                      start = (now_ = Date.now()) - seconds;
+                      started = (now_ = Date.now()) - seconds;
                       last = now_;
                   },
-                  start: restart,
+                  started: restart,
                   stop: function() {
                       clearTimeout(tmr);
                       console.log("stopped");
@@ -207,6 +207,25 @@
                   },
                   unmute: function() {
                       muted = false;
+                  },
+                  
+                  attach: function (elapsed,dur,running,getter,setter) {
+                      if (tmr) {
+                          clearInterval(tmr);
+                          tmr = undefined;
+                      }
+                      getElapsed = typeof getter === 'function' ? getter : defaultGetElapsed;
+                      setElapsed = typeof setter === 'function' ? setter : defaultSetElapsed;
+                      duration = dur;
+                      durationMsec = Math.floor(duration * 1000);
+                      rangeElem.value = Math.floor(elapsed*1000);
+                          rangeElem.max = durationMsec;
+                      onTimeSlideChanged();
+                      if (running) {
+                          started=Date.now()-elapsed;
+                          restart();
+                      }
+                     
                   }
               };
 
