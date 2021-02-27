@@ -159,8 +159,8 @@ div.draggable_wrapper {
    position:absolute; 
    left: calc(98% -  320px); 
    top: 2%; 
-    background-color: white; 
-   width:320px; height:350px; 
+   background-color: white; 
+   width:285px; height:100px; 
 
 } 
 
@@ -171,9 +171,9 @@ div.draggable_wrapper {
 .draggable textarea {
     
     pointer-events:auto;
-    width:100%;
+    width:94px;
     height:50px;
-    left:0;
+    left:2px;
     top:40px;
     position:absolute; 
     overflow:hidden;
