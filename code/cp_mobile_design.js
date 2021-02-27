@@ -210,6 +210,10 @@ SOFTWARE.
          return ;
      }
      
+     var editorOnChange = function(sheet,edit,event) {
+          sheet.innerHTML= edit.value;
+      };
+     
      while (scripts && scripts.length && scripts.constructor===Array && typeof scripts[0] !== 'string' ) {
      
         if (typeof scripts[0] ==='object') {
@@ -239,7 +243,9 @@ SOFTWARE.
                     wrapper.appendChild(edit_div);
                     document.body.appendChild(wrapper);
                     
-                   // dragElement (edit_div);
+                    edit.onchange=editorOnChange.bind(this,sheet,edit);
+                    
+                    dragElement (edit_div);
                     
                     
                 }
