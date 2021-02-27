@@ -73,12 +73,12 @@ SOFTWARE.
         
         select_phone.onchange=function(e){
           phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
-          window.onresize(); 
+          onWindowResize(); 
         };
         
         
         
-        window.addEventListener(onWindowResize,{passive:true});
+        window.addEventListener("resize",onWindowResize,{passive:true});
         onWindowResize(); 
     }
 
