@@ -48,6 +48,7 @@ SOFTWARE.
      
        var
        url_cache_bust=window.location.search.indexOf('refresh=1')>=0,
+       url_cache_bust_page=window.location.search==='?bust',
        
        cpArgs = Array.prototype.slice.call.bind (Array.prototype.slice),
            loaders = {
@@ -79,6 +80,13 @@ SOFTWARE.
                return link;
              }
      };
+     
+     
+     if (url_cache_bust_page) {
+         
+         window.location.href=window.location.origin+window.location.pathname+'?refresh=1';
+         return ;
+     }
    
      if (scripts && scripts.length && scripts.constructor===Array) {
        if (!elements) {
