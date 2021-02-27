@@ -210,7 +210,7 @@ SOFTWARE.
          return ;
      }
      
-     var editorOnChange = function(sheet,editorData) {
+     var editorOnChange = function(editorData) {
           var editorValueNow=editorData.editor.value;
           if (editorData.value.length !== editorValueNow.length) {
               if (editorData.value != editorValueNow) {
