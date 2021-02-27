@@ -174,7 +174,7 @@ SOFTWARE.
                     else return objs.indexOf(item) >= 0 ? false : objs.push(item);
                 });
             },
-            sizecls = x2 ? ' x2' : '',
+            sizecls =  x2  ? ' x2' : '',
 
             sizeclsouter = [1, "book"].indexOf(x2) < 0 ? false : 'x2',
 
