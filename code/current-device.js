@@ -346,7 +346,7 @@ if ( isFramed () )
   addClass("framed");
                           
 device.framed = function () {
-  return find('framed');
+  return hasClass("framed");
 };
                            
 
