@@ -203,9 +203,11 @@ SOFTWARE.
        
     }
     
-    loadRemoteFile("https://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1",function(err,txt){
+    var startTime=Date.now();
+    loadRemoteFile("/README.md",function(err,txt){
+        var lag=Date.now()-startTime;
         if (!err && txt) {
-            console.log(txt);
+            console.log(txt,lag);
         }
     });
     
