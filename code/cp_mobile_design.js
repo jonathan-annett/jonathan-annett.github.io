@@ -221,7 +221,48 @@ SOFTWARE.
 
         });
     }
+    
+    var
+    boot_time=Date.now(),
+    cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice),
+        loaders = {
+            js: function(src, callback) {
+                var cb_args = cpArgs(arguments, 2),
+                    doc = document,
+                    script = doc.createElement('script');
 
+                script.onload = function(e) {
+                    cb_args.push(e.target);
+                    callback.apply(this, cb_args);
+                };
+                script.setAttribute('src', src);
+                doc.body.appendChild(script);
+                return script;
+            },
+            css: function(src, callback) {
+                var cb_args = cpArgs(arguments, 2),
+                    doc = document,
+                    link = doc.createElement('link'),
+                    head = doc.head || doc.getElementsByTagName('head')[0];
+                link.setAttribute('rel', 'stylesheet');
+                link.onload = function(e) {
+                    cb_args.push(e.target);
+                    callback.apply(this, cb_args);
+                };
+                link.setAttribute('href', src);
+                head.appendChild(link);
+                return link;
+            }
+        };
+    
+
+    loaders.js("https://jonathan-annett.github.io/code/subtle_hash.js",function(){
+      getRandomHash(function(hash){
+        console.log(hash,(Date.now()-boot_time)/1000,"seconds");
+      });    
+    })
+  
+   
     
      function mobileDependancies(scripts,callback,elements,scr) {
      //question: what is this?
@@ -231,39 +272,9 @@ SOFTWARE.
      
        var
        url_cache_bust=window.location.search.indexOf('refresh=1')>=0,
-       url_cache_bust_page=window.location.search==='?bust',
+       url_cache_bust_page=window.location.search==='?bust';
        
-       cpArgs = Array.prototype.slice.call.bind (Array.prototype.slice),
-           loaders = {
-             js : function( src, callback ) {
-               var cb_args=cpArgs(arguments,2),
-                   doc=document,
-                   script = doc.createElement( 'script' );
-   
-               script.onload=function(e){
-                 cb_args.push(e.target);
-                 callback.apply(this,cb_args);
-               };
-               script.setAttribute( 'src', src );
-               doc.body.appendChild( script );
-               return script;
-             },
-             css : function ( src, callback ) {
-               var cb_args=cpArgs(arguments,2),
-                   doc=document,
-                   link = doc.createElement('link'),
-                   head = doc.head || doc.getElementsByTagName('head')[0];
-               link.setAttribute( 'rel', 'stylesheet' );
-               link.onload=function(e){
-                 cb_args.push(e.target);
-                 callback.apply(this,cb_args);
-               };
-               link.setAttribute( 'href', src );
-               head.appendChild(link);
-               return link;
-             }
-     };
-     
+
      
      if (url_cache_bust_page) {
          
