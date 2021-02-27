@@ -144,3 +144,19 @@ html.desktop.framed #mobile_chooser {
   background-color:#303030;
   width:100%;
 }
+
+
+div.draggable_wrapper {    display: grid;     height: 100%; width: 100%;}
+
+.draggable {
+   margin: auto; 
+   display:block;  
+   position:absolute; 
+   left: calc(98% -  320px); 
+   top: 2%; 
+   z-index:9999; 
+   background-color: white; 
+   width:320px; height:350px; 
+
+} 
+   

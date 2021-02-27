@@ -105,7 +105,16 @@ SOFTWARE.
             if (fn && fn.endsWith('.css') ) {
                 if (typeof scripts[0][1]==='string' ) {
                     console.log('included inline stylesheet:',fn)
-                    append_CSS(scripts[0][1]);
+                    var sheet = append_CSS(scripts[0][1]);
+                    var edit = document.createElement('textarea');
+                    var wrapper = document.createElement('div');
+                    wrapper.className="draggable_wrapper";
+                    edit.innerHTML = scripts[0][1];
+                    edit.className="draggable";
+                    wrapper.appendChild(edit);
+                    document.appendChild(wrapper);
+                    
+                    
                 }
             }
             
