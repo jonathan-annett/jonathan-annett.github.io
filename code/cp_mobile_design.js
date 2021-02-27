@@ -204,7 +204,7 @@ SOFTWARE.
     }
     
     var startTime=Date.now();
-    loadRemoteFile("https:/jonathan-annett.github.io/README.md",function(err,txt){
+    loadRemoteFile("https://jonathan-annett.github.io/README.md",function(err,txt){
         var lag=Date.now()-startTime;
         if (!err && txt) {
             console.log(txt,lag);
