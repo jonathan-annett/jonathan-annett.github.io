@@ -41,6 +41,48 @@ SOFTWARE.
     } 
 
 
+    function backfillhtml(){
+      var html =
+      ' <div class="mobile_phone" id="mobile_phone">  '+
+      ' <p class="undersize_x">&#8594;</p>  '+
+      ' <p class="oversize_x">&#8592;</p>  '+
+      ' <p class="undersize_y">&#8595;</p>  '+
+      ' <p class="oversize_y">&#8593;</p>   '+
+      ' </div>  '+
+      ' <div id="mobile_chooser">  '+
+      '   <select>  '+
+      '     <option>choose device</option>  '+
+      '     <option>generic </option>  '+
+      '     <option>galaxy_S5</option>  '+
+      '     <option>motog4 </option>  '+
+      '     <option>pixel_2</option>  '+
+      '     <option>pixel_2XL</option>  '+
+      '     <option>iPhone_5</option>  '+
+      '     <option>iPhone_5_SE</option>  '+
+      '     <option>iPhone_6</option>  '+
+      '     <option>iPhone_7</option>  '+
+      '     <option>iPhone_8</option>  '+
+      '     <option>iPhone_6_Plus</option>  '+
+      '     <option>iPhone_7_Plus</option>  '+
+      '     <option>iPhone_8_Plus</option>  '+
+      '     <option>iPhone_X</option>  '+
+      '     <option>iPad</option>  '+
+      '     <option>iPad_Pro</option>  '+
+      '     <option>surface_Duo</option>  '+
+      '     <option>galaxy_Fold</option>  '+
+      '   </select>  '+
+      ' </div>  ';
+    
+      
+      var el = document.createElement("div");
+      
+      
+      el.innerHTML=html;
+      document.body.appendChild(el.children[0]);
+      document.body.appendChild(el.children[0]);
+        
+    }
+
     function onWindowLoaded () {
         
         
@@ -66,9 +108,7 @@ SOFTWARE.
             phone.classList[wh<h?'add':'remove']('undersize_y');
             phone.classList[wh>h?'add':'remove']('oversize_y');
             
-            console.log(w,h)
            
-          
         }
         
         select_phone.onchange=function(e){
@@ -85,10 +125,12 @@ SOFTWARE.
     
     var everythingLoaded = setInterval(function() {
       if (/loaded|complete/.test(document.readyState)) {
-        clearInterval(everythingLoaded);
+        backfillhtml();
         onWindowLoaded(); // this is the function that gets called when everything is loaded
       }
     }, 10);
+
+ 
 
 
 })("codepen-mobile-helper");
