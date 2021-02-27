@@ -239,7 +239,7 @@ SOFTWARE.
                     wrapper.appendChild(edit_div);
                     document.body.appendChild(wrapper);
                     
-                    dragElement (edit_div);
+                   // dragElement (edit_div);
                     
                     
                 }
