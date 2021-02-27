@@ -125,7 +125,9 @@ SOFTWARE.
     
     var everythingLoaded = setInterval(function() {
       if (/loaded|complete/.test(document.readyState)) {
+        clearInterval(everythingLoaded);
         backfillhtml();
+        
         onWindowLoaded(); // this is the function that gets called when everything is loaded
       }
     }, 10);
