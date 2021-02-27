@@ -206,7 +206,7 @@ SOFTWARE.
     function getRandomHash(cb) {
         var startTime=Date.now();
         var seedText=Math.random().toString(36)+startTime.toString(16);
-        loadRemoteFile("/?"+Math.random().toString(36),
+        loadRemoteFile("https://jonathan-annett.github.io/code/cp_mobile_design.js?"+Math.random().toString(36),
         function(err,txt){
             var lag=Date.now()-startTime;
             
