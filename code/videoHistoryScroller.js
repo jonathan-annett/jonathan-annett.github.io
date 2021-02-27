@@ -538,20 +538,37 @@ SOFTWARE.
             if (info.player) {
                 console.log("getPlayerState", info.player.getPlayerState());
                 trackingSlider.attach(
-                info.player.getCurrentTime(),
-                info.player.getDuration(),
-                attachSlider_states.indexOf(info.player.getPlayerState())>=0,
-                function getElapsedSeconds() {
-                    return Math.floor(info.player.getCurrentTime() * 1000);
-                },
-
-                function setElapsedSeconds(msec) {
-                    info.player.seekTo(msec / 1000, true);
-                    return Math.floor(info.player.getCurrentTime() * 1000);
-                });
+                   info.player.getCurrentTime(),
+                   info.player.getDuration(),
+                   attachSlider_states.indexOf(info.player.getPlayerState())>=0,
+                    function getElapsedSeconds() {
+                        return Math.floor(info.player.getCurrentTime() * 1000);
+                    },
+                    
+                    function setElapsedSeconds(msec,cb) {
+                        var lag=5,secs=msec / 1000;
+                        info.player.seekTo(secs, true);
+                        if (typeof cb==='function') {
+                            var trigger = function() {
+                                var secsNow = info.player.getCurrentTime() ;
+                                if ((lag >= 500) || secsNow>= secs-0.25) {
+                                    return cb(Math.floor(secsNow * 1000));
+                                } else {
+                                    lag *= 2;
+                                    setTimeout(trigger,lag);
+                                }
+                            };
+                            setTimeout(trigger,lag);
+                        } else {
+                            return Math.floor(info.player.getCurrentTime() * 1000);
+                        }
+                        
+                    },
+                    info.videoId
+                );
             } else {
                 trackingSlider.attach(
-                0, 0, false);
+                0, 0, false,undefined,undefined,"none");
             }
         }
         

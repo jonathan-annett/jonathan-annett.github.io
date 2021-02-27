@@ -17,7 +17,7 @@
 
 
 
-    function mediaTimerWrap(containerId, duration, autostart) {
+    function mediaTimerWrap(containerId, duration, autostart,playerId) {
         var updateInterval = 100;
         var durationMsec;
         var sliderDiv = document.getElementById(containerId);
@@ -69,6 +69,8 @@
                 return def;
             }
         }
+        
+        var slideFrozen = false;
         /**
          * Lower range value
          */
@@ -95,8 +97,8 @@
          * Update textElem value to rangeElem value
          */
         //
-        function onTimeSlideChanged() {
-            var ms = rangeElem.value;
+        function onTimeSlideChanged(e,ignore,ms) {
+            ms = ms || rangeElem.value;
             textElem.value = MSECtoString(ms);
             elapsedElem.textContent = MSECtoString(ms,1);
             remainElem.textContent = MSECtoString(durationMsec - ms,1);
@@ -132,9 +134,9 @@
         textElem.addEventListener("input", onEditTimeCode);
 
         function createTimer(checkEvery, getElapsed, setElapsed) {
+            var timerObj;
             checkEvery = checkEvery || 1000;
-            var muted = false,
-                last,
+            var last,
                 started = Date.now(),
 
                 defaultGetElapsed = function() {
@@ -149,78 +151,148 @@
             getElapsed = (typeof getElapsed === "function" ? getElapsed : defaultGetElapsed);
             setElapsed = (typeof setElapsed === "function" ? setElapsed : defaultSetElapsed);
 
-            var self,
+            var 
+            mouse_down=false,
             rangeElmMouseUp = function() {
-                started = Date.now() - setElapsed(rangeElem.value);
-                self.unmute();
+                var ms = Number(rangeElem.value);
+                setElapsed(ms,function(newMS){
+                    console.log({ms,newMS});
+                    rangeElem.value = newMS;
+                    started = now_-ms;
+                    last = now_-2000;
+                });/*ignore returned value as it hasn't finsihed seeking*/
+                var now_=Date.now();
+                started = now_-ms;
+                last = now_+2000;
+                rangeElem.value = ms;
+                mouse_down = false;
             },
-            tmr,
+            rangeElmMouseDn = function(e) {
+                mouse_down = true;
+                slideFrozen = true;
+            },
+            rangeElmMouseEnter= function(e) {
+                slideFrozen = mouse_down;
+            },
+            rangeElmMouseLeave = function(e) {
+              if (!mouse_down) {
+                  slideFrozen = false;
+              }
+            },
+            
+            tmr,lastKnownPlayerElapsed,
+            displayUpdateTimer = function() {
+                var now_ = Date.now(),
+                    elapsed = now_ - started;
+
+                if (elapsed >= rangeElem.max) {
+                    console.log("double checking endtime") ;
+                    started = now_ - (elapsed = getElapsed());
+                    last = now_;
+                    if (elapsed >= rangeElem.max) {
+                        console.log("playback has finished") ;
+                        clearTimeout(tmr);
+                        tmr = undefined;
+                        return;
+                    } else {
+                       console.log("keep going") ;
+                    }
+                }
+                
+                if (!slideFrozen) {
+                    rangeElem.value = elapsed;
+                    onTimeSlideChanged(undefined, undefined, elapsed);
+                    
+                   
+                    var updateIn = last ? now_ - last : 0;
+    
+                    if (!last || (updateIn >= checkEvery)) {
+                        var newElapsed = getElapsed();
+                        if (!last && lastKnownPlayerElapsed && lastKnownPlayerElapsed===newElapsed) {
+                            console.log("player appears to have stopped");
+                            clearTimeout(tmr);
+                            tmr=undefined;
+                           
+                        } else {
+                            lastKnownPlayerElapsed = newElapsed
+                            console.log(updateIn,"msec since last check, checked elapsed(",elapsed,") against player (",newElapsed,")");
+                            timerObj.seek(newElapsed);
+                        }
+                    } else {
+                       // console.log("not frozen, setting", elapsed);
+                    }
+                 } else {
+                  //   console.log("frozen, ignoring", elapsed);
+                 }
+
+            },
+            
             restart = function() {
                 rangeElem.value = 0;
-                tmr = setInterval(function() {
-                    var now_ = Date.now(),
-                        elapsed = now_ - started;
-                    if (muted) return;
-                    if (elapsed > rangeElem.max) {
-                        console.log("looks like the end..");
-                        started = (now_ = Date.now()) - (elapsed = getElapsed());
-                        last = now_;
-                        if (elapsed > rangeElem.max) {
-                            console.log("yes it's the end..");
-                            clearTimeout(tmr);
-                            tmr = undefined;
-                            return;
-                        } else {
-                            console.log("nope not yet");
-                        }
-                    }
-                    rangeElem.value = elapsed;
-                    onTimeSlideChanged();
-                    if (!last || now_ - last > checkEvery) {
-                        self.seek(getElapsed());
-                    }
-
-
-                }, updateInterval);
-                rangeElem.addEventListener("touchstart", self.mute, impassive);
-                rangeElem.addEventListener("mouseenter", self.mute, impassive);
+                tmr = setInterval(displayUpdateTimer, updateInterval);
+                rangeElem.addEventListener("touchstart", rangeElmMouseDn, impassive);
                 rangeElem.addEventListener("touchend", rangeElmMouseUp, impassive);
-                rangeElem.addEventListener("mouseleave", rangeElmMouseUp, impassive);
+                
+                rangeElem.addEventListener("mouseenter", rangeElmMouseEnter, impassive);
+                rangeElem.addEventListener("mousedown", rangeElmMouseDn, impassive);
+                rangeElem.addEventListener("mouseup", rangeElmMouseUp, impassive);
+                rangeElem.addEventListener("mouseleave", rangeElmMouseLeave, impassive);
             };
 
-            self = {
-                seek: function(seconds) {
+            timerObj = {
+                seek: function(msec) {
                     var now_;
-                    started = (now_ = Date.now()) - seconds;
+                    started = (now_ = Date.now()) - msec;
                     last = now_;
+                    //console.log("seek",msec,"msec at",now_);
                 },
-                started: restart,
+                start: restart,
                 stop: function() {
                     clearTimeout(tmr);
                     console.log("stopped");
-                    rangeElem.removeEventListener("touchstart", self.mute);
-                    rangeElem.removeEventListener("mouseenter", self.mute);
+                    rangeElem.removeEventListener("touchstart", rangeElmMouseDn);
                     rangeElem.removeEventListener("touchend", rangeElmMouseUp);
-                    rangeElem.removeEventListener("mouseleave", rangeElmMouseUp);
+                    
+                    rangeElem.removeEventListener("mouseenter", rangeElmMouseEnter);
+                    rangeElem.removeEventListener("mousedown", rangeElmMouseDn);
+                    rangeElem.removeEventListener("mouseleave", rangeElmMouseLeave);
+                    rangeElem.removeEventListener("mouseup", rangeElmMouseUp);
+                    
                 },
                 mute: function() {
-                    muted = true;
+                    slideFrozen = true;
                 },
                 unmute: function() {
-                    muted = false;
+                    slideFrozen = false;
                 },
                 
-                attach: function (elapsed,dur,running,getter,setter) {
+                attach: function (elapsed,dur,running,getter,setter,attachId) {
+                    if ( playerId===attachId ) {
+                        //already attached to this player
+                        
+                        if (running && !tmr) {
+                            started=Date.now()-elapsed;
+                            restart();
+                            console.log("already attached to",attachId,"restarting display timer");
+                        } else {
+                            console.log("already attached to",attachId,running?"running":"not running",!!tmr?"timer active":"timer not active");
+                        }
+                        return;
+                    }
+                    console.log("attaching:",playerId,"-->",attachId);
+                    playerId=attachId;
+                    
                     if (tmr) {
                         clearInterval(tmr);
                         tmr = undefined;
                     }
+                  
                     getElapsed = typeof getter === 'function' ? getter : defaultGetElapsed;
                     setElapsed = typeof setter === 'function' ? setter : defaultSetElapsed;
                     duration = dur;
                     durationMsec = Math.floor(duration * 1000);
                     rangeElem.value = Math.floor(elapsed*1000);
-                        rangeElem.max = durationMsec;
+                    rangeElem.max = durationMsec;
                     onTimeSlideChanged();
                     if (running) {
                         started=Date.now()-elapsed;
@@ -240,7 +312,7 @@
                 rangeElem.value = 0;
                 onTimeSlideChanged();
             }
-            return self;
+            return timerObj;
         }
 
         return createTimer(1000);

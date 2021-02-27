@@ -1,0 +1,92 @@
+(function(functionName) {
+    /*
+  MIT License
+Copyright (c) 2021 Jonathan Annett
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+  
+  */
+
+    if (
+    scriptCheck(
+    ["cdpn.io", "codepen.io"],
+        "jonathan-annett.github.io",
+    functionName,
+        "boolean")) return;
+
+    window[functionName] = true;
+
+    function scriptCheck(e, o, t, n) {
+        /* jshint ignore:start*/
+        if ("object" != typeof window || t && typeof window[t] === n) return !1;
+        var r = document.getElementsByTagName("script"),
+            s = r[r.length - 1].src;
+        
+        return !!s.startsWith("https://" + o + "/") && (!(e.concat([o]).indexOf(location.hostname) >= 0) && (console.error("PLEASE DON'T LINK TO THIS FILE FROM " + o), console.warn("Please download " + s + " and serve it from your own server."), !0))
+        /* jshint ignore:end*/
+        
+    } 
+
+
+var targ ={
+  w : 100,
+  h : 100
+},
+select_phone=document.querySelector("#mobile_chooser"),
+phone=document.querySelector("#mobile_phone");
+
+function onWindowResize (){
+  var ww=window.innerWidth,wh=window.innerHeight,
+      s = getComputedStyle(phone),
+      w =parseInt(s.width),
+      h = parseInt(s.height); 
+    if (isNaN(w)) return;
+  
+  
+    wh-=parseInt(getComputedStyle(select_phone).height);
+  
+    phone.classList[ww<w?'add':'remove']('undersize_x');
+    phone.classList[ww>w?'add':'remove']('oversize_x');
+    phone.classList[wh<h?'add':'remove']('undersize_y');
+    phone.classList[wh>h?'add':'remove']('oversize_y');
+    
+    console.log(w,h)
+   
+  
+}
+
+select_phone.onchange=function(e){
+  phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
+  window.onresize(); 
+};
+
+
+function onWindowLoaded () {
+    window.addEventListener(onWindowResize,{passive:true});
+    onWindowResize(); 
+}
+
+window.addEventListener("load",onWindowLoaded);
+
+var everythingLoaded = setInterval(function() {
+  if (/loaded|complete/.test(document.readyState)) {
+    clearInterval(everythingLoaded);
+    onWindowLoaded(); // this is the function that gets called when everything is loaded
+  }
+}, 10);
+
+
+})("codepen-mobile-helper");

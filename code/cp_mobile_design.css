@@ -1,0 +1,136 @@
+#mobile_chooser,
+p.oversize_x,
+p.oversize_y,
+p.undersize_x,
+p.undersize_y,
+.mobile_phone {
+  display:none;
+  position:absolute;
+}
+
+p.oversize_x,
+p.undersize_x,
+p.oversize_y,
+p.undersize_y 
+{  
+  top:0;
+  right:0;
+  width:20px;
+  height:20px;
+}
+p.oversize_y,
+p.undersize_y 
+{  
+  top:20px;
+  
+  width:20px;
+  height:20px;
+}
+
+
+.mobile_phone.oversize_x p.oversize_x,
+.mobile_phone.oversize_y p.oversize_y,
+.mobile_phone.undersize_x p.undersize_x,
+.mobile_phone.undersize_y p.undersize_y  {
+  
+  display : inline-block;
+}
+
+html.desktop.framed .mobile_phone.oversize_x,
+html.desktop.framed .mobile_phone.oversize_y,
+html.desktop.framed .mobile_phone.undersize_x,
+html.desktop.framed .mobile_phone.undersize_y  {
+    display:inline-block;
+    background-color:red;
+    opacity : 0.75;
+}
+
+.mobile_phone {
+  left:0;
+  top:0;
+  z-index:9999999;
+}
+
+.mobile_phone.generic {
+  width:320px;
+  height:480px;
+}
+
+.mobile_phone.galaxy_S5,
+.mobile_phone.motog4 {
+  width:360px;
+  height:640px;
+}
+.mobile_phone.pixel_2
+ {
+  width:411px;
+  height:731px;
+}
+
+.mobile_phone.pixel_2XL
+ {
+  width:411px;
+  height:823px;
+}
+
+.mobile_phone.iPhone_5,
+.mobile_phone.iPhone_5_SE
+ {
+  width:320px;
+  height:568px;
+}
+
+.mobile_phone.iPhone_6,
+.mobile_phone.iPhone_7,
+.mobile_phone.iPhone_8
+ {
+  width:375px;
+  height:667px;
+}
+
+.mobile_phone.iPhone_6_Plus,
+.mobile_phone.iPhone_7_Plus,
+.mobile_phone.iPhone_8_Plus
+ {
+  width:414px;
+  height:736px;
+}
+
+.mobile_phone.iPhone_X
+ {
+  width:375px;
+  height:812px;
+}
+
+.mobile_phone.iPad
+ {
+  width:768px;
+  height:1024px;
+}
+.mobile_phone.iPad_Pro
+ {
+  width:1024px;
+  height:1366px;
+}
+.mobile_phone.surface_Duo
+ {
+  width:540px;
+  height:720px;
+}
+.mobile_phone.galaxy_Fold
+ {
+  width:280px;
+  height:658px;
+}
+
+
+
+html.desktop.framed #mobile_chooser {
+  display:inline-block;
+  bottom:0;
+  top:unset;
+  height:20px;
+  right:0;
+  background-color:#303030;
+  width:100vw;
+}
