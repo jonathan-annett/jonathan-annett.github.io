@@ -41,52 +41,54 @@ SOFTWARE.
     } 
 
 
-var targ ={
-  w : 100,
-  h : 100
-},
-select_phone=document.querySelector("#mobile_chooser"),
-phone=document.querySelector("#mobile_phone");
+    function onWindowLoaded () {
+        
+        
+        var targ ={
+          w : 100,
+          h : 100
+        },
+        select_phone=document.querySelector("#mobile_chooser"),
+        phone=document.querySelector("#mobile_phone");
+        
+        function onWindowResize (){
+          var ww=window.innerWidth,wh=window.innerHeight,
+              s = getComputedStyle(phone),
+              w =parseInt(s.width),
+              h = parseInt(s.height); 
+            if (isNaN(w)) return;
+          
+          
+            wh-=parseInt(getComputedStyle(select_phone).height);
+          
+            phone.classList[ww<w?'add':'remove']('undersize_x');
+            phone.classList[ww>w?'add':'remove']('oversize_x');
+            phone.classList[wh<h?'add':'remove']('undersize_y');
+            phone.classList[wh>h?'add':'remove']('oversize_y');
+            
+            console.log(w,h)
+           
+          
+        }
+        
+        select_phone.onchange=function(e){
+          phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
+          window.onresize(); 
+        };
+        
+        
+        
+        window.addEventListener(onWindowResize,{passive:true});
+        onWindowResize(); 
+    }
 
-function onWindowResize (){
-  var ww=window.innerWidth,wh=window.innerHeight,
-      s = getComputedStyle(phone),
-      w =parseInt(s.width),
-      h = parseInt(s.height); 
-    if (isNaN(w)) return;
-  
-  
-    wh-=parseInt(getComputedStyle(select_phone).height);
-  
-    phone.classList[ww<w?'add':'remove']('undersize_x');
-    phone.classList[ww>w?'add':'remove']('oversize_x');
-    phone.classList[wh<h?'add':'remove']('undersize_y');
-    phone.classList[wh>h?'add':'remove']('oversize_y');
     
-    console.log(w,h)
-   
-  
-}
-
-select_phone.onchange=function(e){
-  phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
-  window.onresize(); 
-};
-
-
-function onWindowLoaded () {
-    window.addEventListener(onWindowResize,{passive:true});
-    onWindowResize(); 
-}
-
-window.addEventListener("load",onWindowLoaded);
-
-var everythingLoaded = setInterval(function() {
-  if (/loaded|complete/.test(document.readyState)) {
-    clearInterval(everythingLoaded);
-    onWindowLoaded(); // this is the function that gets called when everything is loaded
-  }
-}, 10);
+    var everythingLoaded = setInterval(function() {
+      if (/loaded|complete/.test(document.readyState)) {
+        clearInterval(everythingLoaded);
+        onWindowLoaded(); // this is the function that gets called when everything is loaded
+      }
+    }, 10);
 
 
 })("codepen-mobile-helper");
