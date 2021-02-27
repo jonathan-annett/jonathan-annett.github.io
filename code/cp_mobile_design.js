@@ -25,9 +25,9 @@ SOFTWARE.
     ["cdpn.io", "codepen.io"],
         "jonathan-annett.github.io",
     functionName,
-        "boolean")) return;
+        "function")) return;
 
-    window[functionName] = true;
+    window[functionName] = mobileDependancies;
 
     function scriptCheck(e, o, t, n) {
         /* jshint ignore:start*/
@@ -39,8 +39,84 @@ SOFTWARE.
         /* jshint ignore:end*/
         
     } 
-
-
+    
+     function mobileDependancies(scripts,callback,elements,scr) {
+     //question: what is this?
+     //answer: a way of refreshing the cache on mobile devices to enable development
+     //not intended for production, as it's pretty heavy on bandwidth and slow to load a page
+     //
+     
+       var
+       url_cache_bust=window.location.search.indexOf('refresh=1')>=0,
+       
+       cpArgs = Array.prototype.slice.call.bind (Array.prototype.slice),
+           loaders = {
+             js : function( src, callback ) {
+               var cb_args=cpArgs(arguments,2),
+                   doc=document,
+                   script = doc.createElement( 'script' );
+   
+               script.onload=function(e){
+                 cb_args.push(e.target);
+                 callback.apply(this,cb_args);
+               };
+               script.setAttribute( 'src', src );
+               doc.body.appendChild( script );
+               return script;
+             },
+             css : function ( src, callback ) {
+               var cb_args=cpArgs(arguments,2),
+                   doc=document,
+                   link = doc.createElement('link'),
+                   head = doc.head || doc.getElementsByTagName('head')[0];
+               link.setAttribute( 'rel', 'stylesheet' );
+               link.onload=function(e){
+                 cb_args.push(e.target);
+                 callback.apply(this,cb_args);
+               };
+               link.setAttribute( 'href', src );
+               head.appendChild(link);
+               return link;
+             }
+     };
+   
+     if (scripts && scripts.length && scripts.constructor===Array) {
+       if (!elements) {
+         elements=[]; 
+       }
+   
+       var 
+       src_ver=scripts[0].split('#'),
+       src=src_ver[0],
+       ver=src_ver[1]||false,
+       ext=src.split('.').pop(),
+       loader = loaders[ext],
+       cache_bust='?'+Date.now().toString(36)+Math.random().toString(36);
+       
+       if (!url_cache_bust) {
+         
+         if (ver) {
+           cache_bust='?ver='+ver;
+         } else {
+           cache_bust='';
+         }
+       }
+     
+       elements.push(loader(src+cache_bust,mobileDependancies,scripts.slice(1),callback,elements));
+   
+     } else {
+       
+       if (typeof callback==='function') {
+         
+          if (url_cache_bust) {
+            window.location.href=window.location.origin+window.location.pathname;
+         }  
+         callback(elements);
+         
+       }
+     }
+    }
+   
     function backfillhtml(){
       var html =
       ' <div class="mobile_phone" id="mobile_phone">  '+
@@ -135,4 +211,4 @@ SOFTWARE.
  
 
 
-})("codepen-mobile-helper");
+})("mobileDependancies");
