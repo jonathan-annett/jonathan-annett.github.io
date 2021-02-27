@@ -214,7 +214,7 @@ SOFTWARE.
             seedText+=Math.floor(Math.random()*Number.MAX_SAFE_INTEGER).toString(2+(Math.random()*34));
             seedText+=Date.now().toString(27);
             seedText+=lag.toString(36);
-            window.subtle_hash.cb.sha256(function(err,hash){
+            window.subtle_hash.cb.sha256(seedText,function(err,hash){
                 
                   cb(hash||err);
             });
