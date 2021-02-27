@@ -99,9 +99,13 @@
 
   window.subtle_hash = {
     sha256 : sha256,
-    sha1   : sha1
+    sha1   : sha1,
+    cb: {
+          sha256 : window.a2cb(sha256), 
+          sha1   : window.a2cb(sha1),
+    }
   };
-
+  
   async function sha256(message) {
     const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
     const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8); // hash the message
