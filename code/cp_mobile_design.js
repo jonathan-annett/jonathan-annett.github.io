@@ -221,12 +221,7 @@ SOFTWARE.
 
         });
     }
-    
-    
-    getRandomHash(function(hash){
-        console.log(hash);
-    });
-   
+
     
      function mobileDependancies(scripts,callback,elements,scr) {
      //question: what is this?
