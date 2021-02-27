@@ -44,16 +44,17 @@
               return (x < 10 ? "0" : "") + x.toString();
           }
 
-          function decimalSecondsToString(seconds) {
+          function decimalSecondsToString(seconds,places) {
+              places=places||3;
               var min = Math.floor(seconds / 60);
               var sec = Math.floor(seconds) % 60;
               var frac = seconds - (min * 60 + sec);
-              frac = frac === 0 ? ".000" : (frac.toString() + "000").substr(1, 4);
+              frac = frac === 0 ? ".000" : (frac.toString() + "000").substr(1, 1+places);
               return min.toString() + ":" + twoDigits(sec) + frac;
           }
 
-          function MSECtoString(ms) {
-              return decimalSecondsToString(ms / 1000);
+          function MSECtoString(ms,places) {
+              return decimalSecondsToString(ms / 1000,places);
           }
 
           function stringToDecimalSeconds(t, def) {
@@ -94,11 +95,10 @@
            */
           //
           function onTimeSlideChanged() {
-              var ms = rangeElem.value,
-                  secStr = MSECtoString(ms);
-              textElem.value = secStr;
-              elapsedElem.textContent = secStr;
-              remainElem.textContent = MSECtoString(durationMsec - ms);
+              var ms = rangeElem.value;
+              textElem.value = MSECtoString(ms);
+              elapsedElem.textContent = MSECtoString(ms,1);
+              remainElem.textContent = MSECtoString(durationMsec - ms,1);
           }
 
           function onEditTimeCode() {
@@ -106,8 +106,8 @@
                   ms = clamp(seconds);
 
               rangeElem.value = ms;
-              elapsedElem.textContent = MSECtoString(ms);
-              remainElem.textContent = MSECtoString(durationMsec - ms);
+              elapsedElem.textContent = MSECtoString(ms,1);
+              remainElem.textContent  = MSECtoString(durationMsec - ms,1);
           }
 
           /**

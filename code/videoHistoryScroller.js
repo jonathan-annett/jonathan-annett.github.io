@@ -387,7 +387,8 @@ SOFTWARE.
 
         function showVideo(info) {
             if (info.player_div_outer) {
-
+                // player has been instantiated before
+                
                 var ix = hiddenVideos.indexOf(info);
                 if (ix >= 0) {
                     hiddenVideos.splice(ix, 1);
@@ -410,11 +411,13 @@ SOFTWARE.
 
 
             } else {
-
+                // we need to make a new player object
+                
                 createYouTubePlayer(info, function() {
 
                     // console.log("added player for",info.videoId);
                     visibleVideos.push(info);
+                    
                     if (info.previewElement.classList.contains('playable')) {
 
                         if (bookMode) {
@@ -424,6 +427,8 @@ SOFTWARE.
                             info.player.setVolume(100);
                         }
 
+                    } else {
+                        attachSlider(info);
                     }
 
                 });
@@ -671,6 +676,10 @@ SOFTWARE.
             info._player = new YT.Player(info.player_iframe.id, info.youTubeArgs);
         }
         
+        
+        
+        
+        
         function bookModeStateChange(info,event) {
             
             if ( (event.data === YT.PlayerState.PAUSED)) {
@@ -700,6 +709,7 @@ SOFTWARE.
             }
             
         }
+        
         function bookModePlayerReady(info,event) {
               var cb = info.__open_cb;
               delete info.__open_cb;
@@ -707,12 +717,15 @@ SOFTWARE.
               delete info._player;
               if (typeof cb === "function") cb(info, info.player);          
         }
+        
         function bookModePlaybackQualityChange(info,event) {
             console.log("bookMode event","PlaybackQualityChange", event.data,info.videoId);
         }
+        
         function bookModePlaybackRateChange(info,event){
             console.log("bookMode event","PlaybackRateChange", event.data,info.videoId);
         }
+        
         function bookModeApiChange(info,event) {
             console.log("bookMode event","ApiChange", event.data,info.videoId);
         }
@@ -781,6 +794,7 @@ SOFTWARE.
             }
 
             info.youTubeArgs = {
+                
                 videoId: info.videoId,
                 events: {
                     onReady:        bindInfoEvent (info,bookModePlayerReady,playerReady),
