@@ -6,6 +6,7 @@ p.undersize_y,
 .mobile_phone {
   display:none;
   position:absolute;
+  z-index:99999999;
 }
 
 p.oversize_x,
