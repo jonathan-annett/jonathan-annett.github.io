@@ -1026,33 +1026,107 @@ SOFTWARE.
              });
          }
          
+         function lsFs (hashPrefix) {
+             
+             
+             var 
+             privates = {
+                compressor :  window.LZString.compressToEncodedURIComponent,
+                decompressor : window.LZString.decompressFromEncodedURIComponent,
+                pending : {},
+                nameToHash_ : {},
+                nameToHash  : function (name,cb) {
+                     var c=privates.nameToHash_;
+                     if (c[name]) return cb(undefined,c[name]);
+                     singleSha256(name,function(err,hash){
+                         if (err) return cb(err);
+                         c[name]=hashPrefix+"_"+hash;
+                         cb(err,c[name]);
+                     });
+                 },
+             },
+             publics = {
+                 writeFile : function (name,data,cb) {
+                    privates.nameToHash(name,function(err,hash) {
+                        if (err) return cb(err);
+                        var job = privates.pending[hash];
+                        if (job && job.saver) {
+                            if (job.saving) clearTimeout(job.saving);
+                            job.data = data;
+                            job.saving = setTimeout(job.saver,10*1000);
+                            return cb(undefined,"replaced previous pending writeFile op for:"+name);
+                            
+                        } else {
+                            
+                                var saver = function(hash,pending){
+                                   localStorage[hash] = privates.compressor (pending[hash].data);
+                                   if (!privates.pending[hash].loaded) {
+                                      delete pending[hash];
+                                      return cb(undefined,"writeFile complete:"+name,"cache removed");
+                                       
+                                   } else {
+                                       delete pending[hash].saving;
+                                       return cb(undefined,"writeFile complete:"+name+",cache remains loaded");
+                                       
+                                   }
+                                }.bind(this,hash,privates.pending);
+                                
+                                if (job) {
+                                    job.saver  = saver;
+                                    job.saving = setTimeout(saver,10*1000);
+                                    return cb(undefined,"updated pending writeFile op for:"+name);
+                                } else {
+                                    privates.pending[hash]={
+                                        data : data,
+                                        saver : saver,
+                                        saving : setTimeout(saver,10*1000)
+                                    };
+                                    return cb(undefined,"new pending writeFile op for:"+name);
+                                }
+                                 
+                        }
+                    });    
+                 },
+                 load : function(name,cb) {
+                     privates.nameToHash(name,function(err,hash) {
+                       if (privates.pending[hash]) {
+                           if (privates.pending[hash].loaded) {
+                               clearTimeout(privates.pending[hash].loaded);
+                           }
+                           privates.pending[hash].loaded = setTimeout(function(){
+                               delete privates.pending[hash];
+                           },10*1000);
+                           
+                           return cb (undefined,privates.pending[hash].data);
+                       } else {
+                           var compressed = localStorage[hash];
+                           if (!compressed) return cb("not found");
+                           var data  = privates.decompressor(compressed);
+                           privates.pending[hash]={
+                               data : data,
+                               loaded : setTimeout(function(){
+                                   delete privates.pending[hash];
+                               },10*1000)
+                           };
+                           cb(undefined,data);
+                       }
+                     });
+                 }
+             };
+             
+             
+             return publics;
+         }
+         
+         var fs = lsFs("editing_");
+         
          function editorOnChange(editorData) {
              var editorValueNow=editorData.editor.value;
              if (editorData.value.length !== editorValueNow.length) {
                  if (editorData.value != editorValueNow) {
-                     
-                     if ( editorData.storageTimeout ) {
-                         clearInterval(editorData.storageTimeout);
-                         delete editorData.storageTimeout;
-                     }
                      editorData.value = editorValueNow;
-                     console.log('changed');
                      editorData.element.innerHTML = editorValueNow ;
-                     if (editorData.storageHash) {
-                         editorData.storageTimeout = setTimeout(function() {
-                             delete editorData.storageTimeout;
-                             localStorage[editorData.storageHash] = window.LZString.compressToEncodedURIComponent (editorData.value);
-                             
-                         },10*1000);
-                     } else {
-                         singleSha256(editorData.name,function(err,hash){
-                             if (!err && hash) {
-                                 editorData.storageHash = "editing_"+hash;
-                                 localStorage[editorData.storageHash] = window.LZString.compressToEncodedURIComponent (editorData.value);
-                             }
-                         });
-                         
-                     }
+                     fs.writeFile(editorData.name,editorValueNow);
                  }
              }
          }
