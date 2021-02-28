@@ -541,7 +541,7 @@ SOFTWARE.
     module.exports = exports['default'];})({},{exports:{}})
     
     
-    (function(){
+  
         
          window[functionName] = mobileDependancies;
          open_window.pos_cache = {};
@@ -1287,7 +1287,7 @@ SOFTWARE.
         }
         
         
-    })();
+    
     
 
 
