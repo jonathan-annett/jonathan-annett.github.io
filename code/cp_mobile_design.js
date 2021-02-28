@@ -1672,10 +1672,10 @@ SOFTWARE.
              dragElement (edit_div);
              CSS_Text = fs.loadFile(fn);
              if (CSS_Text) {
-                 console.log("got updated CSS for ",fn);
-                 editorData.value = CSS_Text;
-                 editorData.editor.value = CSS_Text;
-                 editorData.element.innerHTML = CSS_Text ;
+                 console.log("got updated CSS for ",fn,"date", new Date(CSS_Text.when));
+                 editorData.value = CSS_Text.data;
+                 editorData.editor.value = CSS_Text.data;
+                 editorData.element.innerHTML = CSS_Text.data ;
              }
              editorData.interval = setInterval(editorOnChange,500,editorData);
              
