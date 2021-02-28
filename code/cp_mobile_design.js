@@ -528,19 +528,7 @@ SOFTWARE.
     module.exports = exports['default'];})({},{exports:{}})
     
     //inject Lz-String
- (function (objectName) {
-   if (
-     scriptCheck(
-       ["cdpn.io", "codepen.io"],
-       "jonathan-annett.github.io",
-       objectName,
-       "object"
-     )
-   )
-     return;
-     
-  
- 
+
  /*
  
  Copyright (c) 2013 Pieroxy <pieroxy@pieroxy.net>
@@ -591,8 +579,9 @@ SOFTWARE.
    }
    return baseReverseDic[alphabet][character];
  }
+
  
- var LZString = (window[objectName] = {
+ window.LZString = window.LZString || {
    compressToBase64 : function (input) {
      if (input === null) return "";
      var res = LZString._compress(input, 6, function(a){return keyStrBase64.charAt(a);});
@@ -1057,12 +1046,8 @@ SOFTWARE.
  
      }
    }
- });
- 
- 
- })("LZString");
- 
-   
+ };
+
   
         
          window[functionName] = mobileDependancies;
