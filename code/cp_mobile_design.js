@@ -1587,7 +1587,7 @@ SOFTWARE.
                  var 
                  archive = {},
                  keys = Object.keys(localStorage).filter(function(k){
-                    return k.startWith(hashPrefix);
+                    return k.startsWith(hashPrefix);
                  });
                  keys.map(function(k){
                        return parseStorageKey(k);
