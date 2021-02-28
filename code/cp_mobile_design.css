@@ -155,7 +155,7 @@ html.desktop.editor #mobile_chooser {
 }
 
 
-html.desktop.editor div.draggable_wrapper {    
+html.desktop.editor.floaters div.draggable_wrapper {    
     display: grid;     
     height: 100%; 
     width: 100%;
@@ -164,7 +164,7 @@ html.desktop.editor div.draggable_wrapper {
 
 
 
-html.desktop.editor .draggable {
+html.desktop.editor.floaters .draggable {
    margin: auto; 
    display:block;  
    position:absolute; 

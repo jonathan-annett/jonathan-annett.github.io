@@ -1308,13 +1308,25 @@ SOFTWARE.
                
             }
             
+            
+            function onWindowKeydown (e) {
+                if (e.ctrlKey && e.shiftKey && e.keyCode==='Backslash' ) {
+                    document.querySelector("html").classList.toggle('floaters');
+                }
+            }
+            
             select_phone.onchange=function(e){
               phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
               onWindowResize(true);
             };
             
+            
+            
     
-            window.addEventListener("resize",onWindowResize,{passive:true});
+            window[ON]("resize",onWindowResize,{passive:true});
+            
+            window[ON]("keydown",onWindowKeydown,{passive:true});
+            
             onWindowResize(); 
         }
         
