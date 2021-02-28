@@ -24,9 +24,7 @@ function scriptCheck(e, o, t, n) {
     !0)
   );
 }
-
-window[objectName] = 
-
+(function(){
 /*
 
 Copyright (c) 2013 Pieroxy <pieroxy@pieroxy.net>
@@ -61,7 +59,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 @license*/
- (function() {
 
 // private property
 var f = String.fromCharCode;
@@ -78,8 +75,7 @@ function getBaseValue(alphabet, character) {
   }
   return baseReverseDic[alphabet][character];
 }
-
-var LZString = {
+var LZString = (window[objectName] = {
   compressToBase64 : function (input) {
     if (input === null) return "";
     var res = LZString._compress(input, 6, function(a){return keyStrBase64.charAt(a);});
@@ -544,11 +540,10 @@ var LZString = {
 
     }
   }
-};
-  return LZString;
+});
+
 })();
 
-  
 })("LZString");
 
 
