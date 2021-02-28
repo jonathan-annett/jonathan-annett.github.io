@@ -1978,6 +1978,15 @@ SOFTWARE.
             
             select_phone.onchange=function(e){
               phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
+              if (e.target.value==="none") {
+                 window.device.cancelFakeItMode();
+              } else {
+                  var modes = {};
+                  Object.keys(e.target.dataset).forEach(function(mode){
+                      modes[mode]=true;
+                  });
+                  window.device.fakeItMode(modes);
+              }
               onWindowResize(true);
             };
             
