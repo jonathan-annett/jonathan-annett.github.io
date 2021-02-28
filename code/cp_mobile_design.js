@@ -582,13 +582,13 @@ SOFTWARE.
        
         checkBrowserHashes(function(){
             
-            if (window.devices && window.devices.framed()) {
+            if (window.device && window.device.framed()) {
                 backfillhtml();
                 onFrameLoaded(); 
                 window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
             
             } else {
-                if (window.devices && window.devices.desktop()) {
+                if (window.device && window.device.desktop()) {
                     backfillhtml();
                     onWindowLoaded(); 
                     window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
