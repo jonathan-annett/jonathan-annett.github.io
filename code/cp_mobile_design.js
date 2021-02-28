@@ -1059,7 +1059,7 @@ SOFTWARE.
                         } else {
                         
                             var saver = function(hash,pending){
-                               localStorage[hash] = job.when.toString(36)+':'+window.LZString.compressToEncodedURIComponent (pending[hash].data);
+                               localStorage[hash] = pending[hash].when.toString(36)+':'+window.LZString.compressToEncodedURIComponent (pending[hash].data);
                                if (!privates.pending[hash].loaded) {
                                   delete pending[hash];
                                   return cb(undefined,"writeFile complete:"+name,"cache removed");
