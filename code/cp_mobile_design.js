@@ -203,6 +203,24 @@ SOFTWARE.
        
     }
     
+    function singleSha256 (unhashed,cb) {
+         window.subtle_hash.cb.sha256(unhashed,cb);
+    }
+    
+    function doubleSha256 (unhashed,cb) {
+        singleSha256(unhashed,function(err,hashedOnce){
+            if (err) return cb(err);
+            singleSha256(hashedOnce,cb);
+        });
+    }
+    
+    function quadSha256 (unhashed,cb) {
+        doubleSha256(unhashed,function(err,hashedTwice){
+            if (err) return cb(err);
+            doubleSha256(hashedTwice,cb);
+        });
+    }
+    
     function getRandomHash(cb) {
         var startTime=Date.now();
         var seedText=Math.random().toString(36)+startTime.toString(16);
@@ -214,7 +232,7 @@ SOFTWARE.
             seedText+=Math.floor(Math.random()*Number.MAX_SAFE_INTEGER).toString(2+(Math.random()*34));
             seedText+=Date.now().toString(27);
             seedText+=lag.toString(36);
-            window.subtle_hash.cb.sha256(seedText,function(err,hash){
+            quadSha256(seedText,function(err,hash){
                 
                   cb(hash||err);
             });
@@ -222,12 +240,14 @@ SOFTWARE.
         });
     }
     
+
+    
     function makeBrowserIdHash(cb){
         getRandomHash(function(hash1){
             getRandomHash(function(hash2){
                 getRandomHash(function(hash3){
                      localStorage.browserHash=hash1+hash2+hash3;
-                     window.subtle_hash.cb.sha256(localStorage.browserHash,cb);
+                     quadSha256(localStorage.browserHash,cb);
                 });
             });
         });
@@ -236,17 +256,9 @@ SOFTWARE.
     function getBrowserIdHash(cb) {
         var unhashed = localStorage.browserHash;
         if (typeof unhashed==='string'&&unhashed.length===192) {
-            window.subtle_hash.cb.sha256(unhashed,function(err,hash){
-                if (err) return cb (err);
-                console.log("fetched previous browserHash:",hash);
-                cb (undefined,hash);
-            });
+            quadSha256(unhashed,cb);
         } else {
-            makeBrowserIdHash(function(err,hash){
-              if (err) return cb (err);
-              console.log("created new browserHash:",hash);
-              cb (undefined,hash);
-          });
+            makeBrowserIdHash(cb);
         }
     }
     
@@ -287,7 +299,6 @@ SOFTWARE.
     loaders.js("https://jonathan-annett.github.io/code/subtle_hash.js",function(){
         
       getBrowserIdHash(function(err,hash){
-         console.log(hash,(Date.now()-boot_time)/1000,"seconds");
          if (hash) {
              window.mobileDependancies.browserHash=hash;
          } else {
