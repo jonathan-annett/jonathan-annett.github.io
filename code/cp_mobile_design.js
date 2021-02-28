@@ -18,7 +18,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
   
-  */
+@license*/
 
     if (
     scriptCheck(
@@ -1025,144 +1025,150 @@ SOFTWARE.
                  }
              });
          }
-       
-        
-        function mobileDependancies(scripts,callback,editorHashes,elements,scr) {
-         //question: what is this?
-         //answer: a way of refreshing the cache on mobile devices to enable development
-         //not intended for production, as it's pretty heavy on bandwidth and slow to load a page
-         //
          
-           var
-           url_cache_bust=window.location.search.indexOf('refresh=1')>=0,
-           url_cache_bust_page=window.location.search==='?bust';
-           
-    
-         
-         if (url_cache_bust_page) {
-             allLoaded=false;
-             whenLoaded=false;
-             window.location.href=window.location.origin+window.location.pathname+'?refresh=1';
-             return ;
-         }
-         
-        
-         
-         var editorOnChange = function(editorData) {
-              var editorValueNow=editorData.editor.value;
-              if (editorData.value.length !== editorValueNow.length) {
-                  if (editorData.value != editorValueNow) {
-                      editorData.value = editorValueNow;
-                      console.log('changed');
-                      editorData.element.innerHTML = editorValueNow ;
-                  }
-              }
-          };
-         
-         while (scripts && scripts.length && scripts.constructor===Array && typeof scripts[0] !== 'string' ) {
-         
-            if (typeof scripts[0] ==='object') {
-               
-                var fn=typeof scripts[0][0]==='string'?scripts[0][0].split('#')[0]:false;
-               
-                if (fn && fn.endsWith('.css') ) {
-                    if (typeof scripts[0][1]==='string' ) {
-                        console.log('included inline stylesheet:',fn)
-                        var sheet = append_CSS(scripts[0][1]);
-                        var wrapper = document.createElement('div');
-                        wrapper.className="draggable_wrapper editor";
-                        
-                        var edit_div = document.createElement('div');
-                        edit_div.className="draggable editor";
-                        
-                        var h1 = document.createElement('h1');
-                        var edit = document.createElement('textarea');
-                        
-                        
-                        h1.innerHTML = fn.split('/').pop();
-                        var editorData = {
-                             editor : edit,
-                             element  : sheet,
-                             value  : scripts[0][1],
-                        };
-                                         
-                        edit.innerHTML = editorData.value;
-                       
-                        
-                        edit_div.appendChild(h1);
-                        edit_div.appendChild(edit);
-                        wrapper.appendChild(edit_div);
-                        document.body.appendChild(wrapper);
-                        
-                        editorData.interval = setInterval(editorOnChange,500,editorData);
-                         
-                        
-                        dragElement (edit_div);
-                        
-                        
-                    }
-                }
-                
-                
-                if (fn && fn.endsWith('.js') ) {
-                    if (typeof scripts[0][1]==='undefined' ) {
-                        console.log('included inline script:',fn)
-                    }
-                }
-                
-            }
-            
-            scripts.shift();
-            
-         }
-       
-         if (scripts && scripts.length && scripts.constructor===Array) {
-           if (!elements) {
-             elements=[]; 
-           }
-       
-           var 
-           src_ver=scripts[0].split('#'),
-           src=src_ver[0],
-           ver=src_ver[1]||false,
-           ext=src.split('.').pop(),
-           loader = loaders[ext],
-           cache_bust='?'+Date.now().toString(36)+Math.random().toString(36);
-           
-           if (!url_cache_bust) {
-             
-             if (ver) {
-               cache_bust='?ver='+ver;
-             } else {
-               cache_bust='';
-             }
-           }
-         
-           elements.push(loader(src+cache_bust,mobileDependancies,scripts.slice(1),callback,editorHashes,elements));
-       
-         } else {
-           
-           if (typeof callback==='function') {
-             
-              if (url_cache_bust) {
-                window.location.href=window.location.origin+window.location.pathname;
-             }  
-             
-             if (allLoaded) {
-                 if (allLoaded!=="editor_launcher") {
-                     callback(elements,allLoaded);
+         function editorOnChange(editorData) {
+             var editorValueNow=editorData.editor.value;
+             if (editorData.value.length !== editorValueNow.length) {
+                 if (editorData.value != editorValueNow) {
+                     editorData.value = editorValueNow;
+                     console.log('changed');
+                     editorData.element.innerHTML = editorValueNow ;
                  }
-             } else {
-                 whenLoaded = function(allLoaded) {
-                     if (allLoaded!=="editor_launcher") {
-                         callback(elements,allLoaded);
-                     }
-                 };
              }
-             
-           }
          }
-         validBrowserHashes=editorHashes;
+         
+         function addEditableCSS(CSS_Text,fn) {
+             
+             
+             console.log('included inline stylesheet:',fn)
+             var sheet = append_CSS(CSS_Text);
+             var wrapper = document.createElement('div');
+             wrapper.className="draggable_wrapper editor";
+             
+             var edit_div = document.createElement('div');
+             edit_div.className="draggable editor";
+             
+             var h1 = document.createElement('h1');
+             var edit = document.createElement('textarea');
+             
+             
+             h1.innerHTML = fn.split('/').pop();
+             var editorData = {
+                  editor : edit,
+                  element  : sheet,
+                  value  : CSS_Text,
+             };
+                              
+             edit.innerHTML = editorData.value;
+            
+             
+             edit_div.appendChild(h1);
+             edit_div.appendChild(edit);
+             wrapper.appendChild(edit_div);
+             document.body.appendChild(wrapper);
+             
+             editorData.interval = setInterval(editorOnChange,500,editorData);
+              
+             
+             dragElement (edit_div);
+             
+             
+         }
+        
+        
+        function mobileDependancies(scripts, callback, editorHashes) {
+
+            function loadDeps(scripts, elements) {
+
+                var url_cache_bust = window.location.search.indexOf('refresh=1') >= 0,
+                    url_cache_bust_page = window.location.search === '?bust';
+
+
+
+                if (url_cache_bust_page) {
+                    allLoaded = false;
+                    whenLoaded = false;
+                    window.location.href = window.location.origin + window.location.pathname + '?refresh=1';
+                    return;
+                }
+                while (scripts && scripts.length && scripts.constructor === Array && typeof scripts[0] !== 'string') {
+
+                    if (typeof scripts[0] === 'object') {
+
+                        var fn = typeof scripts[0][0] === 'string' ? scripts[0][0].split('#')[0] : false;
+
+                        if (fn && fn.endsWith('.css')) {
+                            if (typeof scripts[0][1] === 'string') {
+                                addEditableCSS(scripts[0][1], fn);
+                            }
+                        }
+
+
+                        if (fn && fn.endsWith('.js')) {
+                            if (typeof scripts[0][1] === 'undefined') {
+                                console.log('included inline script:', fn)
+                            }
+                        }
+
+                    }
+
+                    scripts.shift();
+
+                }
+
+                if (scripts && scripts.length && scripts.constructor === Array) {
+                    if (!elements) {
+                        elements = [];
+                    }
+
+                    var
+                    src_ver = scripts[0].split('#'),
+                        src = src_ver[0],
+                        ver = src_ver[1] || false,
+                        ext = src.split('.').pop(),
+                        loader = loaders[ext],
+                        cache_bust = '?' + Date.now().toString(36) + Math.random().toString(36);
+
+                    if (!url_cache_bust) {
+
+                        if (ver) {
+                            cache_bust = '?ver=' + ver;
+                        } else {
+                            cache_bust = '';
+                        }
+                    }
+
+                    elements.push(loader(src + cache_bust, loadDeps, scripts.slice(1), elements));
+
+                } else {
+
+                    if (typeof callback === 'function') {
+
+                        if (url_cache_bust) {
+                            window.location.href = window.location.origin + window.location.pathname;
+                        }
+
+                        if (allLoaded) {
+                            validBrowserHashes = editorHashes;
+                            if (allLoaded !== "editor_launcher") {
+                                callback(elements, allLoaded);
+                            }
+                        } else {
+                            whenLoaded = function(allLoaded) {
+                                validBrowserHashes = editorHashes;
+                                if (allLoaded !== "editor_launcher") {
+                                    callback(elements, allLoaded);
+                                }
+                            };
+                        }
+
+                    }
+                }
+            }
+
+            loadDeps(scripts);
+            
+            
         }
        
         function backfillhtml(){
@@ -1257,25 +1263,8 @@ SOFTWARE.
                 );
             }
         };
-        var resizeViewPort2 = function(width, height) {
-            var tmp = document.documentElement.style.overflow;
-            document.documentElement.style.overflow = "scroll";
         
-            if (window.outerWidth) {
-                window.resizeTo(
-                    width + (window.outerWidth - document.documentElement.clientWidth),
-                    height + (window.outerHeight - document.documentElement.clientHeight)
-                );
-            } else {
-                window.resizeTo(500, 500);
-                window.resizeTo(
-                    width + (500 - document.documentElement.clientWidth),
-                    height + (500 - document.documentElement.clientHeight)
-                );
-            }
         
-            document.documentElement.style.overflow = tmp;
-        };
         function onWindowLoaded () {
             
             var 
@@ -1316,7 +1305,7 @@ SOFTWARE.
                 }
                 if (e.ctrlKey && e.shiftKey && e.which===72 ) {
                     window.location.href=window.location.origin+window.location.pathname+'?bust';
-                    return
+                    return;
                 }
             }
             
