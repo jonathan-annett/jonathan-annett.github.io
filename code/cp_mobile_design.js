@@ -528,57 +528,540 @@ SOFTWARE.
     module.exports = exports['default'];})({},{exports:{}})
     
     //inject Lz-String
-(function (objectName) {
-  if (
-    scriptCheck(
-      ["cdpn.io", "codepen.io"],
-      "jonathan-annett.github.io",
-      objectName,
-      "object"
-    )
-  )
-    return;
-    
-    /*
-    
-    Copyright (c) 2013 Pieroxy <pieroxy@pieroxy.net>
-    This work is free. You can redistribute it and/or modify it
-    under the terms of the WTFPL, Version 2
-    For more information see LICENSE.txt or http://www.wtfpl.net/
-    For more information, the home page:
-    http://pieroxy.net/blog/pages/lz-string/testing.html
-    LZ-based compression algorithm, version 1.4.4
-    
-    
-    MIT License
-    
-    Copyright (c) 2013 pieroxy
-    
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-    
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-    
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.
-    
-    @license*/
-    var f=String.fromCharCode,keyStrBase64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",keyStrUriSafe="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",baseReverseDic={};function getBaseValue(r,e){if(!baseReverseDic[r]){baseReverseDic[r]={};for(var o=0;o<r.length;o++)baseReverseDic[r][r.charAt(o)]=o}return baseReverseDic[r][e]}var LZString=window[objectName]={compressToBase64:function(r){if(null===r)return"";var e=LZString._compress(r,6,function(r){return keyStrBase64.charAt(r)});switch(e.length%4){default:case 0:return e;case 1:return e+"===";case 2:return e+"==";case 3:return e+"="}},decompressFromBase64:function(r){return null===r?"":""===r?null:LZString._decompress(r.length,32,function(e){return getBaseValue(keyStrBase64,r.charAt(e))})},compressToUTF16:function(r){return null===r?"":LZString._compress(r,15,function(r){return f(r+32)})+" "},decompressFromUTF16:function(r){return null===r?"":""===r?null:LZString._decompress(r.length,16384,function(e){return r.charCodeAt(e)-32})},compressToUint8Array:function(r){for(var e=LZString.compress(r),o=new Uint8Array(2*e.length),t=0,n=e.length;t<n;t++){var s=e.charCodeAt(t);o[2*t]=s>>>8,o[2*t+1]=s%256}return o},decompressFromUint8Array:function(r){if(null==r)return LZString.decompress(r);for(var e=new Array(r.length/2),o=0,t=e.length;o<t;o++)e[o]=256*r[2*o]+r[2*o+1];var n=[];return e.forEach(function(r){n.push(f(r))}),LZString.decompress(n.join(""))},compressToEncodedURIComponent:function(r){return null===r?"":LZString._compress(r,6,function(r){return keyStrUriSafe.charAt(r)})},decompressFromEncodedURIComponent:function(r){return null===r?"":""===r?null:(r=r.replace(/ /g,"+"),LZString._decompress(r.length,32,function(e){return getBaseValue(keyStrUriSafe,r.charAt(e))}))},compress:function(r){return LZString._compress(r,16,function(r){return f(r)})},_compress:function(r,e,o){if(null===r)return"";var t,n,s,i={},a={},c="",p="",u="",f=2,l=3,h=2,d=[],m=0,g=0;for(s=0;s<r.length;s+=1)if(c=r.charAt(s),Object.prototype.hasOwnProperty.call(i,c)||(i[c]=l++,a[c]=!0),p=u+c,Object.prototype.hasOwnProperty.call(i,p))u=p;else{if(Object.prototype.hasOwnProperty.call(a,u)){if(u.charCodeAt(0)<256){for(t=0;t<h;t++)m<<=1,g==e-1?(g=0,d.push(o(m)),m=0):g++;for(n=u.charCodeAt(0),t=0;t<8;t++)m=m<<1|1&n,g==e-1?(g=0,d.push(o(m)),m=0):g++,n>>=1}else{for(n=1,t=0;t<h;t++)m=m<<1|n,g==e-1?(g=0,d.push(o(m)),m=0):g++,n=0;for(n=u.charCodeAt(0),t=0;t<16;t++)m=m<<1|1&n,g==e-1?(g=0,d.push(o(m)),m=0):g++,n>>=1}0===--f&&(f=Math.pow(2,h),h++),delete a[u]}else for(n=i[u],t=0;t<h;t++)m=m<<1|1&n,g==e-1?(g=0,d.push(o(m)),m=0):g++,n>>=1;0===--f&&(f=Math.pow(2,h),h++),i[p]=l++,u=String(c)}if(""!==u){if(Object.prototype.hasOwnProperty.call(a,u)){if(u.charCodeAt(0)<256){for(t=0;t<h;t++)m<<=1,g==e-1?(g=0,d.push(o(m)),m=0):g++;for(n=u.charCodeAt(0),t=0;t<8;t++)m=m<<1|1&n,g==e-1?(g=0,d.push(o(m)),m=0):g++,n>>=1}else{for(n=1,t=0;t<h;t++)m=m<<1|n,g==e-1?(g=0,d.push(o(m)),m=0):g++,n=0;for(n=u.charCodeAt(0),t=0;t<16;t++)m=m<<1|1&n,g==e-1?(g=0,d.push(o(m)),m=0):g++,n>>=1}0===--f&&(f=Math.pow(2,h),h++),delete a[u]}else for(n=i[u],t=0;t<h;t++)m=m<<1|1&n,g==e-1?(g=0,d.push(o(m)),m=0):g++,n>>=1;0===--f&&(f=Math.pow(2,h),h++)}for(n=2,t=0;t<h;t++)m=m<<1|1&n,g==e-1?(g=0,d.push(o(m)),m=0):g++,n>>=1;for(;;){if(m<<=1,g==e-1){d.push(o(m));break}g++}return d.join("")},decompress:function(r){return null===r?"":""===r?null:LZString._decompress(r.length,32768,function(e){return r.charCodeAt(e)})},_decompress:function(r,e,o){var t,n,s,i,a,c,p,u=[],l=4,h=4,d=3,m="",g=[],v={val:o(0),position:e,index:1};for(t=0;t<3;t+=1)u[t]=t;for(s=0,a=Math.pow(2,2),c=1;c!=a;)i=v.val&v.position,v.position>>=1,0===v.position&&(v.position=e,v.val=o(v.index++)),s|=(i>0?1:0)*c,c<<=1;switch(s){case 0:for(s=0,a=Math.pow(2,8),c=1;c!=a;)i=v.val&v.position,v.position>>=1,0===v.position&&(v.position=e,v.val=o(v.index++)),s|=(i>0?1:0)*c,c<<=1;p=f(s);break;case 1:for(s=0,a=Math.pow(2,16),c=1;c!=a;)i=v.val&v.position,v.position>>=1,0===v.position&&(v.position=e,v.val=o(v.index++)),s|=(i>0?1:0)*c,c<<=1;p=f(s);break;case 2:return""}for(u[3]=p,n=p,g.push(p);;){if(v.index>r)return"";for(s=0,a=Math.pow(2,d),c=1;c!=a;)i=v.val&v.position,v.position>>=1,0===v.position&&(v.position=e,v.val=o(v.index++)),s|=(i>0?1:0)*c,c<<=1;switch(p=s){case 0:for(s=0,a=Math.pow(2,8),c=1;c!=a;)i=v.val&v.position,v.position>>=1,0===v.position&&(v.position=e,v.val=o(v.index++)),s|=(i>0?1:0)*c,c<<=1;u[h++]=f(s),p=h-1,l--;break;case 1:for(s=0,a=Math.pow(2,16),c=1;c!=a;)i=v.val&v.position,v.position>>=1,0===v.position&&(v.position=e,v.val=o(v.index++)),s|=(i>0?1:0)*c,c<<=1;u[h++]=f(s),p=h-1,l--;break;case 2:return g.join("")}if(0===l&&(l=Math.pow(2,d),d++),u[p])m=u[p];else{if(p!==h)return null;m=n+n.charAt(0)}g.push(m),u[h++]=n+m.charAt(0),n=m,0===--l&&(l=Math.pow(2,d),d++)}}};
-    
-
-})("LZString");
-
-   
+ (function (objectName) {
+   if (
+     scriptCheck(
+       ["cdpn.io", "codepen.io"],
+       "jonathan-annett.github.io",
+       objectName,
+       "object"
+     )
+   )
+     return;
+     
+  
+ 
+ /*
+ 
+ Copyright (c) 2013 Pieroxy <pieroxy@pieroxy.net>
+ This work is free. You can redistribute it and/or modify it
+ under the terms of the WTFPL, Version 2
+ For more information see LICENSE.txt or http://www.wtfpl.net/
+ For more information, the home page:
+ http://pieroxy.net/blog/pages/lz-string/testing.html
+ LZ-based compression algorithm, version 1.4.4
+ 
+ 
+ MIT License
+ 
+ Copyright (c) 2013 pieroxy
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ 
+ @license*/
+ 
+ // private property
+ var f = String.fromCharCode;
+ var keyStrBase64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+ var keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
+ var baseReverseDic = {};
+ 
+ function getBaseValue(alphabet, character) {
+   if (!baseReverseDic[alphabet]) {
+     baseReverseDic[alphabet] = {};
+     for (var i=0 ; i<alphabet.length ; i++) {
+       baseReverseDic[alphabet][alphabet.charAt(i)] = i;
+     }
+   }
+   return baseReverseDic[alphabet][character];
+ }
+ 
+ var LZString = (window[objectName] = {
+   compressToBase64 : function (input) {
+     if (input === null) return "";
+     var res = LZString._compress(input, 6, function(a){return keyStrBase64.charAt(a);});
+     switch (res.length % 4) { // To produce valid Base64
+     default: // When could this happen ?
+     case 0 : return res;
+     case 1 : return res+"===";
+     case 2 : return res+"==";
+     case 3 : return res+"=";
+     }
+   },
+ 
+   decompressFromBase64 : function (input) {
+     if (input === null) return "";
+     if (input === "") return null;
+     return LZString._decompress(input.length, 32, function(index) { return getBaseValue(keyStrBase64, input.charAt(index)); });
+   },
+ 
+   compressToUTF16 : function (input) {
+     if (input === null) return "";
+     return LZString._compress(input, 15, function(a){return f(a+32);}) + " ";
+   },
+ 
+   decompressFromUTF16: function (compressed) {
+     if (compressed === null) return "";
+     if (compressed === "") return null;
+     return LZString._decompress(compressed.length, 16384, function(index) { return compressed.charCodeAt(index) - 32; });
+   },
+ 
+   //compress into uint8array (UCS-2 big endian format)
+   compressToUint8Array: function (uncompressed) {
+     var compressed = LZString.compress(uncompressed);
+     var buf=new Uint8Array(compressed.length*2); // 2 bytes per character
+ 
+     for (var i=0, TotalLen=compressed.length; i<TotalLen; i++) {
+       var current_value = compressed.charCodeAt(i);
+       buf[i*2] = current_value >>> 8;
+       buf[i*2+1] = current_value % 256;
+     }
+     return buf;
+   },
+ 
+   //decompress from uint8array (UCS-2 big endian format)
+   decompressFromUint8Array:function (compressed) {
+     if (compressed===null || compressed===undefined){
+         return LZString.decompress(compressed);
+     } else {
+         var buf=new Array(compressed.length/2); // 2 bytes per character
+         for (var i=0, TotalLen=buf.length; i<TotalLen; i++) {
+           buf[i]=compressed[i*2]*256+compressed[i*2+1];
+         }
+ 
+         var result = [];
+         buf.forEach(function (c) {
+           result.push(f(c));
+         });
+         return LZString.decompress(result.join(''));
+ 
+     }
+ 
+   },
+ 
+ 
+   //compress into a string that is already URI encoded
+   compressToEncodedURIComponent: function (input) {
+     if (input === null) return "";
+     return LZString._compress(input, 6, function(a){return keyStrUriSafe.charAt(a);});
+   },
+ 
+   //decompress from an output of compressToEncodedURIComponent
+   decompressFromEncodedURIComponent:function (input) {
+     if (input === null) return "";
+     if (input === "") return null;
+     input = input.replace(/ /g, "+");
+     return LZString._decompress(input.length, 32, function(index) { return getBaseValue(keyStrUriSafe, input.charAt(index)); });
+   },
+ 
+   compress: function (uncompressed) {
+     return LZString._compress(uncompressed, 16, function(a){return f(a);});
+   },
+   _compress: function (uncompressed, bitsPerChar, getCharFromInt) {
+     if (uncompressed === null) return "";
+     var i, value,
+         context_dictionary= {},
+         context_dictionaryToCreate= {},
+         context_c="",
+         context_wc="",
+         context_w="",
+         context_enlargeIn= 2, // Compensate for the first entry which should not count
+         context_dictSize= 3,
+         context_numBits= 2,
+         context_data=[],
+         context_data_val=0,
+         context_data_position=0,
+         ii;
+ 
+     for (ii = 0; ii < uncompressed.length; ii += 1) {
+       context_c = uncompressed.charAt(ii);
+       if (!Object.prototype.hasOwnProperty.call(context_dictionary,context_c)) {
+         context_dictionary[context_c] = context_dictSize++;
+         context_dictionaryToCreate[context_c] = true;
+       }
+ 
+       context_wc = context_w + context_c;
+       if (Object.prototype.hasOwnProperty.call(context_dictionary,context_wc)) {
+         context_w = context_wc;
+       } else {
+         if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate,context_w)) {
+           if (context_w.charCodeAt(0)<256) {
+             for (i=0 ; i<context_numBits ; i++) {
+               context_data_val = (context_data_val << 1);
+               if (context_data_position == bitsPerChar-1) {
+                 context_data_position = 0;
+                 context_data.push(getCharFromInt(context_data_val));
+                 context_data_val = 0;
+               } else {
+                 context_data_position++;
+               }
+             }
+             value = context_w.charCodeAt(0);
+             for (i=0 ; i<8 ; i++) {
+               context_data_val = (context_data_val << 1) | (value&1);
+               if (context_data_position == bitsPerChar-1) {
+                 context_data_position = 0;
+                 context_data.push(getCharFromInt(context_data_val));
+                 context_data_val = 0;
+               } else {
+                 context_data_position++;
+               }
+               value = value >> 1;
+             }
+           } else {
+             value = 1;
+             for (i=0 ; i<context_numBits ; i++) {
+               context_data_val = (context_data_val << 1) | value;
+               if (context_data_position ==bitsPerChar-1) {
+                 context_data_position = 0;
+                 context_data.push(getCharFromInt(context_data_val));
+                 context_data_val = 0;
+               } else {
+                 context_data_position++;
+               }
+               value = 0;
+             }
+             value = context_w.charCodeAt(0);
+             for (i=0 ; i<16 ; i++) {
+               context_data_val = (context_data_val << 1) | (value&1);
+               if (context_data_position == bitsPerChar-1) {
+                 context_data_position = 0;
+                 context_data.push(getCharFromInt(context_data_val));
+                 context_data_val = 0;
+               } else {
+                 context_data_position++;
+               }
+               value = value >> 1;
+             }
+           }
+           context_enlargeIn--;
+           if (context_enlargeIn === 0) {
+             context_enlargeIn = Math.pow(2, context_numBits);
+             context_numBits++;
+           }
+           delete context_dictionaryToCreate[context_w];
+         } else {
+           value = context_dictionary[context_w];
+           for (i=0 ; i<context_numBits ; i++) {
+             context_data_val = (context_data_val << 1) | (value&1);
+             if (context_data_position == bitsPerChar-1) {
+               context_data_position = 0;
+               context_data.push(getCharFromInt(context_data_val));
+               context_data_val = 0;
+             } else {
+               context_data_position++;
+             }
+             value = value >> 1;
+           }
+ 
+ 
+         }
+         context_enlargeIn--;
+         if (context_enlargeIn === 0) {
+           context_enlargeIn = Math.pow(2, context_numBits);
+           context_numBits++;
+         }
+         // Add wc to the dictionary.
+         context_dictionary[context_wc] = context_dictSize++;
+         context_w = String(context_c);
+       }
+     }
+ 
+     // Output the code for w.
+     if (context_w !== "") {
+       if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate,context_w)) {
+         if (context_w.charCodeAt(0)<256) {
+           for (i=0 ; i<context_numBits ; i++) {
+             context_data_val = (context_data_val << 1);
+             if (context_data_position == bitsPerChar-1) {
+               context_data_position = 0;
+               context_data.push(getCharFromInt(context_data_val));
+               context_data_val = 0;
+             } else {
+               context_data_position++;
+             }
+           }
+           value = context_w.charCodeAt(0);
+           for (i=0 ; i<8 ; i++) {
+             context_data_val = (context_data_val << 1) | (value&1);
+             if (context_data_position == bitsPerChar-1) {
+               context_data_position = 0;
+               context_data.push(getCharFromInt(context_data_val));
+               context_data_val = 0;
+             } else {
+               context_data_position++;
+             }
+             value = value >> 1;
+           }
+         } else {
+           value = 1;
+           for (i=0 ; i<context_numBits ; i++) {
+             context_data_val = (context_data_val << 1) | value;
+             if (context_data_position == bitsPerChar-1) {
+               context_data_position = 0;
+               context_data.push(getCharFromInt(context_data_val));
+               context_data_val = 0;
+             } else {
+               context_data_position++;
+             }
+             value = 0;
+           }
+           value = context_w.charCodeAt(0);
+           for (i=0 ; i<16 ; i++) {
+             context_data_val = (context_data_val << 1) | (value&1);
+             if (context_data_position == bitsPerChar-1) {
+               context_data_position = 0;
+               context_data.push(getCharFromInt(context_data_val));
+               context_data_val = 0;
+             } else {
+               context_data_position++;
+             }
+             value = value >> 1;
+           }
+         }
+         context_enlargeIn--;
+         if (context_enlargeIn === 0) {
+           context_enlargeIn = Math.pow(2, context_numBits);
+           context_numBits++;
+         }
+         delete context_dictionaryToCreate[context_w];
+       } else {
+         value = context_dictionary[context_w];
+         for (i=0 ; i<context_numBits ; i++) {
+           context_data_val = (context_data_val << 1) | (value&1);
+           if (context_data_position == bitsPerChar-1) {
+             context_data_position = 0;
+             context_data.push(getCharFromInt(context_data_val));
+             context_data_val = 0;
+           } else {
+             context_data_position++;
+           }
+           value = value >> 1;
+         }
+ 
+ 
+       }
+       context_enlargeIn--;
+       if (context_enlargeIn === 0) {
+         context_enlargeIn = Math.pow(2, context_numBits);
+         context_numBits++;
+       }
+     }
+ 
+     // Mark the end of the stream
+     value = 2;
+     for (i=0 ; i<context_numBits ; i++) {
+       context_data_val = (context_data_val << 1) | (value&1);
+       if (context_data_position == bitsPerChar-1) {
+         context_data_position = 0;
+         context_data.push(getCharFromInt(context_data_val));
+         context_data_val = 0;
+       } else {
+         context_data_position++;
+       }
+       value = value >> 1;
+     }
+ 
+     // Flush the last char
+     while (true) {
+       context_data_val = (context_data_val << 1);
+       if (context_data_position == bitsPerChar-1) {
+         context_data.push(getCharFromInt(context_data_val));
+         break;
+       }
+       else context_data_position++;
+     }
+     return context_data.join('');
+   },
+ 
+   decompress: function (compressed) {
+     if (compressed === null) return "";
+     if (compressed === "") return null;
+     return LZString._decompress(compressed.length, 32768, function(index) { return compressed.charCodeAt(index); });
+   },
+ 
+   _decompress: function (length, resetValue, getNextValue) {
+     var dictionary = [],
+         next,
+         enlargeIn = 4,
+         dictSize = 4,
+         numBits = 3,
+         entry = "",
+         result = [],
+         i,
+         w,
+         bits, resb, maxpower, power,
+         c,
+         data = {val:getNextValue(0), position:resetValue, index:1};
+ 
+     for (i = 0; i < 3; i += 1) {
+       dictionary[i] = i;
+     }
+ 
+     bits = 0;
+     maxpower = Math.pow(2,2);
+     power=1;
+     while (power!=maxpower) {
+       resb = data.val & data.position;
+       data.position >>= 1;
+       if (data.position === 0) {
+         data.position = resetValue;
+         data.val = getNextValue(data.index++);
+       }
+       bits |= (resb>0 ? 1 : 0) * power;
+       power <<= 1;
+     }
+ 
+     switch ((next = bits)) {
+       case 0:
+           bits = 0;
+           maxpower = Math.pow(2,8);
+           power=1;
+           while (power!=maxpower) {
+             resb = data.val & data.position;
+             data.position >>= 1;
+             if (data.position === 0) {
+               data.position = resetValue;
+               data.val = getNextValue(data.index++);
+             }
+             bits |= (resb>0 ? 1 : 0) * power;
+             power <<= 1;
+           }
+         c = f(bits);
+         break;
+       case 1:
+           bits = 0;
+           maxpower = Math.pow(2,16);
+           power=1;
+           while (power!=maxpower) {
+             resb = data.val & data.position;
+             data.position >>= 1;
+             if (data.position === 0) {
+               data.position = resetValue;
+               data.val = getNextValue(data.index++);
+             }
+             bits |= (resb>0 ? 1 : 0) * power;
+             power <<= 1;
+           }
+         c = f(bits);
+         break;
+       case 2:
+         return "";
+     }
+     dictionary[3] = c;
+     w = c;
+     result.push(c);
+     while (true) {
+       if (data.index > length) {
+         return "";
+       }
+ 
+       bits = 0;
+       maxpower = Math.pow(2,numBits);
+       power=1;
+       while (power!=maxpower) {
+         resb = data.val & data.position;
+         data.position >>= 1;
+         if (data.position === 0) {
+           data.position = resetValue;
+           data.val = getNextValue(data.index++);
+         }
+         bits |= (resb>0 ? 1 : 0) * power;
+         power <<= 1;
+       }
+ 
+       switch ((c = bits)) {
+         case 0:
+           bits = 0;
+           maxpower = Math.pow(2,8);
+           power=1;
+           while (power!=maxpower) {
+             resb = data.val & data.position;
+             data.position >>= 1;
+             if (data.position === 0) {
+               data.position = resetValue;
+               data.val = getNextValue(data.index++);
+             }
+             bits |= (resb>0 ? 1 : 0) * power;
+             power <<= 1;
+           }
+ 
+           dictionary[dictSize++] = f(bits);
+           c = dictSize-1;
+           enlargeIn--;
+           break;
+         case 1:
+           bits = 0;
+           maxpower = Math.pow(2,16);
+           power=1;
+           while (power!=maxpower) {
+             resb = data.val & data.position;
+             data.position >>= 1;
+             if (data.position === 0) {
+               data.position = resetValue;
+               data.val = getNextValue(data.index++);
+             }
+             bits |= (resb>0 ? 1 : 0) * power;
+             power <<= 1;
+           }
+           dictionary[dictSize++] = f(bits);
+           c = dictSize-1;
+           enlargeIn--;
+           break;
+         case 2:
+           return result.join('');
+       }
+ 
+       if (enlargeIn === 0) {
+         enlargeIn = Math.pow(2, numBits);
+         numBits++;
+       }
+ 
+       if (dictionary[c]) {
+         entry = dictionary[c];
+       } else {
+         if (c === dictSize) {
+           entry = w + w.charAt(0);
+         } else {
+           return null;
+         }
+       }
+       result.push(entry);
+ 
+       // Add w+entry[0] to the dictionary.
+       dictionary[dictSize++] = w + entry.charAt(0);
+       enlargeIn--;
+ 
+       w = entry;
+ 
+       if (enlargeIn === 0) {
+         enlargeIn = Math.pow(2, numBits);
+         numBits++;
+       }
+ 
+     }
+   }
+ });
+ 
+ 
+ })("LZString");
+ 
    
   
         

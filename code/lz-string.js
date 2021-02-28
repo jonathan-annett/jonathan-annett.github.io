@@ -24,7 +24,6 @@ function scriptCheck(e, o, t, n) {
     !0)
   );
 }
-(function(){
 /*
 
 Copyright (c) 2013 Pieroxy <pieroxy@pieroxy.net>
@@ -75,6 +74,7 @@ function getBaseValue(alphabet, character) {
   }
   return baseReverseDic[alphabet][character];
 }
+
 var LZString = (window[objectName] = {
   compressToBase64 : function (input) {
     if (input === null) return "";
@@ -542,7 +542,6 @@ var LZString = (window[objectName] = {
   }
 });
 
-})();
 
 })("LZString");
 
