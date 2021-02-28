@@ -1123,8 +1123,16 @@ SOFTWARE.
                         if (fn && fn.endsWith('.css')) {
                             if (typeof scripts[0][1] === 'string') {
                                 
-                                //scripts.unshift("lz-string.js")
                                 
+                                if (!window.LZString) {
+                                    if (scripts.indexOf("lz-string.js")<0) {
+                                        if (!seen["lz-string.js"]) {
+                                            scripts.push("lz-string.js");
+                                        }
+                                    }
+                                    
+                                }
+
                                 addEditableCSS(scripts[0][1], fn);
                             }
                         }
