@@ -27,8 +27,6 @@ SOFTWARE.
     functionName,
         "function")) return;
 
-    window[functionName] = mobileDependancies;
-
     function scriptCheck(e, o, t, n) {
         /* jshint ignore:start*/
         if ("object" != typeof window || t && typeof window[t] === n) return !1;
@@ -40,744 +38,890 @@ SOFTWARE.
         
     } 
     
-    function append_CSS(CSS){ 
-      var doc=document,rule = doc.createElement('style');
-      rule.type = 'text/css';
-      rule.innerHTML = CSS; 
-      doc.getElementsByTagName('head')[0].appendChild(rule);
-      return rule;
-    }
+    //inject a2cb
+    (function () {
+      if (
+        scriptCheck(
+          ["cdpn.io", "codepen.io"],
+          "jonathan-annett.github.io",
+          "a2cb",
+          "function"
+        )
+      )
+        return;
     
+      window.a2cb = a2cb;
     
+      var cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice);
     
-    function dragElement(elmnt) {
-        var pos1 = 0,
-            pos2 = 0,
-            pos3 = 0,
-            pos4 = 0;
-    
-        addTouchToMouse(elmnt);
-        elmnt.onmousedown = dragMouseDown;
-    
-        function dragMouseDown(e) {
-            e = e || window.event;
-            e.preventDefault();
-            // get the mouse cursor position at startup:
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            document.onmouseup = closeDragElement;
-            document.onmousemove = elementDrag;
+      async function a2cb(fn, cb) {
+        try {
+          cb(undefined, await fn());
+        } catch (e) {
+          cb(e);
         }
+      }
     
-        function elementDrag(e) {
-            e = e || window.event;
-            e.preventDefault();
-            // calculate the new cursor position:
-            pos1 = pos3 - e.clientX;
-            pos2 = pos4 - e.clientY;
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            // set the element's new position:
-            elmnt.style.top = elmnt.offsetTop - pos2 + "px";
-            elmnt.style.left = elmnt.offsetLeft - pos1 + "px";
+      async function a2cb1(fn, a, cb) {
+        try {
+          cb(undefined, await fn(a));
+        } catch (e) {
+          cb(e);
         }
+      }
     
-        function closeDragElement() {
-            document.onmouseup = null;
-            document.onmousemove = null;
+      async function a2cb2(fn, a, b, cb) {
+        try {
+          cb(undefined, await fn(a, b));
+        } catch (e) {
+          cb(e);
         }
-        
-      
+      }
     
-        function addTouchToMouse(forEl) {
-            doc = document;
+      async function a2cb3(fn, a, b, c, cb) {
+        try {
+          cb(undefined, await fn(a, b, c));
+        } catch (e) {
+          cb(e);
+        }
+      }
     
-            if (typeof forEl.removeTouchToMouse === "function") return;
-    
-            doc.addEventListener("touchstart", touch2Mouse, true);
-            doc.addEventListener("touchmove", touch2Mouse, true);
-            doc.addEventListener("touchend", touch2Mouse, true);
-            var touching = false;
-            
-             function isValidTouch (el) {
-                        if (el===forEl) return true;
-    
-                        if ((el.parentElement===forEl)&&["INPUT","A","BUTTON"].indexOf(el.tagName)<0) return true;
-                    }
-            function touch2Mouse(e) {
-                var theTouch = e.changedTouches[0];
-                var mouseEv;
-    
-                if (!isValidTouch(e.target)) return;
-    
-                switch (e.type) {
-                    case "touchstart":
-                        if (e.touches.length !== 1) return;
-                        touching = true;
-                        mouseEv = "mousedown";
-                        break;
-                    case "touchend":
-                        if (!touching) return;
-                        mouseEv = "mouseup";
-                        touching = false;
-                        break;
-                    case "touchmove":
-                        if (e.touches.length !== 1) return;
-                        mouseEv = "mousemove";
-                        break;
-                    default:
-                        return;
-                } 
-    
-                var mouseEvent = document.createEvent("MouseEvent");
-                mouseEvent.initMouseEvent(
-                    mouseEv,
-                    true,
-                    true,
-                    window,
-                    1,
-                    theTouch.screenX,
-                    theTouch.screenY,
-                    theTouch.clientX,
-                    theTouch.clientY,
-                    false,
-                    false,
-                    false,
-                    false,
-                    0,
-                    null
-                );
-                theTouch.target.dispatchEvent(mouseEvent);
-    
-                e.preventDefault();
-            }
-    
-            forEl.removeTouchToMouse = function removeTouchToMouse() {
-                doc.removeEventListener("touchstart", touch2Mouse, true);
-                doc.removeEventListener("touchmove", touch2Mouse, true);
-                doc.removeEventListener("touchend", touch2Mouse, true);
+      function a2cb(fn) {
+        switch (fn.length) {
+          case 0:
+            return function (cb) {
+              a2cb0(fn, cb);
+            };
+          case 1:
+            return function (a, cb) {
+              a2cb1(fn, a, cb);
+            };
+          case 2:
+            return function (a, b, cb) {
+              a2cb2(fn, a, b, cb);
+            };
+          case 3:
+            return function (a, b, c, cb) {
+              a2cb3(fn, a, b, c, cb);
+            };
+          case 3:
+            return function (a, b, c, d, cb) {
+              a2cb4(fn, a, b, c, d, cb);
             };
         }
-    }
-    
-    function loadRemoteFile(url,cb) {
-        if (typeof url==='string' && typeof cb==='function') {
-            var xhr = new XMLHttpRequest();
-            
-            xhr.open('GET', url);
-            if (cb.length>=2) {
-                xhr.onload = function() {
-                  if (xhr.status !== 200) { // analyze HTTP status of the response
-                    cb({status:xhr.status,response:xhr.response}); // e.g. 404: Not Found
-                  } else { // show the result
-                    cb(undefined,xhr.response);
-                  }
-                };
-            } else {
-                xhr.onload = function() {
-                  cb({status:xhr.status,response:xhr.response}); // e.g. 404: Not Found
-                };
-            }
-            
-            if (cb.length>=3) {
-                xhr.onprogress = function(event) {
-                  if (event.lengthComputable) {
-                    cb(undefined,undefined,event.loaded,event.total);
-                  } else {
-                    cb(undefined,undefined,event.loaded);
-                  }
-                };
-            }
-            if (cb.length>=2) {
-                xhr.onerror = function(e) {
-                   cb(e||"error");
-                };
-            } else {
-                xhr.onerror = function(e) {
-                   console.error(e||"error");
-                };
-            }
-            
-            xhr.send();
-        } 
-       
-    }
-    
-    function singleSha256 (unhashed,cb) {
-         window.subtle_hash.cb.sha256(unhashed,cb);
-    }
-    
-    function doubleSha256 (unhashed,cb) {
-        singleSha256(unhashed,function(err,hashedOnce){
-            if (err) return cb(err);
-            singleSha256(hashedOnce,cb);
-        });
-    }
-    
-    function quadSha256 (unhashed,cb) {
-        doubleSha256(unhashed,function(err,hashedTwice){
-            if (err) return cb(err);
-            doubleSha256(hashedTwice,cb);
-        });
-    }
-    
-    function getRandomHash(cb) {
-        var startTime=Date.now();
-        var seedText=Math.random().toString(36)+startTime.toString(16);
-        loadRemoteFile("https://jonathan-annett.github.io/code/cp_mobile_design.js?"+Math.random().toString(36),
-        function(err,txt){
-            var lag=Date.now()-startTime;
-            
-            seedText+=txt||err&& err.message||err.toString&&err.toString();
-            seedText+=Math.floor(Math.random()*Number.MAX_SAFE_INTEGER).toString(2+(Math.random()*34));
-            seedText+=Date.now().toString(27);
-            seedText+=lag.toString(36);
-            quadSha256(seedText,function(err,hash){
-                
-                  cb(hash||err);
-            });
-
-        });
-    }
-    
-
-    
-    function makeBrowserIdHash(cb){
-        getRandomHash(function(hash1){
-            getRandomHash(function(hash2){
-                getRandomHash(function(hash3){
-                     localStorage.browserHash=hash1+hash2+hash3;
-                     quadSha256(localStorage.browserHash,cb);
-                });
-            });
-        });
-    }
-    
-    function getBrowserIdHash(cb) {
-        var unhashed = localStorage.browserHash;
-        if (typeof unhashed==='string'&&unhashed.length===192) {
-            quadSha256(unhashed,cb);
-        } else {
-            makeBrowserIdHash(cb);
-        }
-    }
-    
-    var
-    boot_time=Date.now(),
-    cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice),
-        loaders = {
-            js: function(src, callback) {
-                var cb_args = cpArgs(arguments, 2),
-                    doc = document,
-                    script = doc.createElement('script');
-
-                script.onload = function(e) {
-                    cb_args.push(e.target);
-                    callback.apply(this, cb_args);
-                };
-                script.setAttribute('src', src);
-                doc.body.appendChild(script);
-                return script;
-            },
-            css: function(src, callback) {
-                var cb_args = cpArgs(arguments, 2),
-                    doc = document,
-                    link = doc.createElement('link'),
-                    head = doc.head || doc.getElementsByTagName('head')[0];
-                link.setAttribute('rel', 'stylesheet');
-                link.onload = function(e) {
-                    cb_args.push(e.target);
-                    callback.apply(this, cb_args);
-                };
-                link.setAttribute('href', src);
-                head.appendChild(link);
-                return link;
-            }
-        };
-    
-
-    var validBrowserHashes=false;
-    loaders.js("https://jonathan-annett.github.io/code/subtle_hash.js",function(){
-        
-      getBrowserIdHash(function(err,hash){
-         if (hash) {
-             window.mobileDependancies.browserHash=hash;
-         } else {
-             delete window.mobileDependancies.browserHash;
-         }
-         checkBrowserHashes();
-      });
-      
-    });
-    
-    var On="addEventListener";
-    
-    function on_window_close(w, fn) {
-      if (typeof fn === "function" && w && typeof w === "object") {
-        setTimeout(function() {
-          if (w.closed) return fn();
-
-          try {
-            w[On]("beforeunload", fn);
-          } catch (err) {
-            // console.log(err);
-            var fallback = function() {
-              if (w.closed) return fn();
-              setTimeout(fallback, 500, w, fn);
-            };
-            setTimeout(fallback, 500);
-          }
-        }, 1000);
       }
-    }
-
-    function on_window_open(w, fn) {
-      if (typeof fn === "function" && w && typeof w === "object") {
-        try {
-          w[On]("load", fn);
-        } catch (err) {
-          setTimeout(fn, 2000, w);
-        }
+    
+      function scriptCheck(e, o, t, n) {
+        if ("object" != typeof window || (t && typeof window[t] === n)) return !1;
+        var r = document.getElementsByTagName("script"),
+          s = r[r.length - 1].src;
+        return (
+          !!s.startsWith("https://" + o + "/") &&
+          !(e.concat([o]).indexOf(location.hostname) >= 0) &&
+          (console.error("PLEASE DON'T SERVE THIS FILE FROM " + o),
+          console.warn(
+            "Please download " + s + " and serve it from your own server."
+          ),
+          !0)
+        );
       }
-    }
+    })();
     
-    function on_window_move (w,fn) {
-      
-       if (typeof fn === "function" && w && typeof w === "object") {
-        try {
-          
-          var
-          last_top=w.screenY,last_left=w.screenX,
-          check = function(){
-             if(last_left != w.screenX || last_top != w.screenY){
-                last_left = w.screenX;
-                last_top = w.screenY; 
-                fn(last_left,last_top);
-               }
-          },
-          interval = setInterval(check,500);
-          w("resize", check);
-          w("focus", check);
-          w("blur", check);
-          w.cancel_on_window_move = function(){
-             if (interval) clearTimeout(interval);
-             interval=undefined;
-             w.removeEventListener("resize", check);
-             w.removeEventListener("focus", check);
-             w.removeEventListener("blur", check);
-          };
-          
-        } catch (err) {
-           
+    //inject subtle_hash
+    (function () {
+      if (
+        scriptCheck(
+          ["cdpn.io", "codepen.io"],
+          "jonathan-annett.github.io",
+          "subtle_hash",
+          "object"
+        )
+      )
+        return;
+    
+      window.subtle_hash = {
+        sha256 : sha256,
+        sha1   : sha1,
+        cb: {
+              sha256 : window.a2cb(sha256), 
+              sha1   : window.a2cb(sha1),
         }
-      }
-    }
-    
-    function on_window_size(w,fn) {
-        if (typeof fn === "function" && w && typeof w === "object") {
-            try {
-              w[On]("resize", function(){
-                fn(w.outerWidth,w.outerHeight);
-              });
-            } catch (err) {
-              console.log(err);
-            }
-          }  
-    }
-
-    function open_window(
-      url,
-      name,
-      left,
-      top,
-      width,
-      height,
-      size,
-      onClosed,
-      onOpened
-    ) {
-      
-      var pos=open_window.pos_cache[name];
-      if (pos) {
-         left= pos.left || left;
-         top=  pos.top || top;
-        } else {
-        pos = {
-          left:left,
-          top:top
-          };
-        open_window.pos_cache[name] = pos;
-      } 
-        
-      
-        
-      var opts =
-          "toolbar=no, menubar=no, location=no, resizable=" +
-          (size ? "yes" : "no") +
-          "scrollbars=" +
-          (size ? "yes" : "no") +
-          ", top=" +
-          top.toString() +
-          ",left=" +
-          left.toString() +
-          ", width=" +
-          width.toString() +
-          ", height=" +
-          height.toString(),
-        w = window.open(url, name, opts);
-         
-       if (w) {
-         on_window_open(w,onOpened);
-         on_window_close(w,onClosed);
-       }
-        
-       return w;
-    }
-    
-    open_window.pos_cache = {};
-    
-    
-    function checkBrowserHashes(cb){
-        getBrowserIdHash(function(err,thisBrowserHash){
-            var html= document.querySelector("html");
-            if (err) return html.classList.remove("editor");
-            var 
-            dt=window.device?window.device.desktop():false,
-            mob=window.device?window.device.desktop():true,
-            frm=window.top!==window;
-            if (dt && thisBrowserHash && validBrowserHashes && validBrowserHashes.indexOf(thisBrowserHash)>=0) {
-                html.classList.add("editor");
-                if (typeof cb==='function') cb("editor");
-            } else {
-               html.classList.remove("editor");
-               if (typeof cb==='function') cb(dt && frm ? "framed" : mob ? "mobile" : "desktop");
-            }
-        });
-    }
-  
-   var 
-   childEditor,
-   allLoaded=false,whenLoaded,
-   loadCheckerInterval = setInterval(function() {
-     if (/loaded|complete/.test(document.readyState)) {
-       clearInterval(loadCheckerInterval);
-       checkBrowserHashes(function(mode){
-           if (mode==='editor') {
-               if (window.device && window.device.framed()) {
-                   backfillhtml();
-                   onFrameLoaded(); 
-                   window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
-                   allLoaded="framed_editor";
-               } else { 
-                   if (window.device && window.device.desktop()) {
-                       if (window.top===top && window.toolbar.visible ) {
-                           
-                           document.body.innerHTML='<button>Open Editor</button>';
-                           document.body.querySelector('button').onclick=function() {
-                                var 
-                                url=window.location.origin+window.location.pathname+'?refresh=1',
-                                name=window.location.hostname.replace(/\./g,'_')+
-                                     window.location.pathname.replace(/\//g,'').replace(/\./,'_'),
-                                width_ = 320,
-                                height_ = 480,
-                                left=10,
-                                top=10,
-                               
-                               childEditor = open_window(
-                                   url,
-                                   name,
-                                   left,
-                                   top,
-                                   width_,
-                                   height_,
-                                   true,
-                                   function onClosed(){},
-                                   function onOpened(){}
-                                 );
-                                 
-                           };
-                           allLoaded="editor_launcher";
-                           
-                       } else {
-                           backfillhtml();
-                           onWindowLoaded(); 
-                           window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
-                           allLoaded="editor";
-                       }
-                   }
-               }
-           } else {
-               allLoaded=mode;
-           }
-           if (whenLoaded) {
-               whenLoaded(allLoaded);
-               whenLoaded=undefined;
-           }
-       });
-   
-     }
-   }, 10);
-
-    
-     function mobileDependancies(scripts,callback,editorHashes,elements,scr) {
-     //question: what is this?
-     //answer: a way of refreshing the cache on mobile devices to enable development
-     //not intended for production, as it's pretty heavy on bandwidth and slow to load a page
-     //
-     
-       var
-       url_cache_bust=window.location.search.indexOf('refresh=1')>=0,
-       url_cache_bust_page=window.location.search==='?bust';
-       
-
-     
-     if (url_cache_bust_page) {
-         allLoaded=false;
-         whenLoaded=false;
-         window.location.href=window.location.origin+window.location.pathname+'?refresh=1';
-         return ;
-     }
-     
-    
-     
-     var editorOnChange = function(editorData) {
-          var editorValueNow=editorData.editor.value;
-          if (editorData.value.length !== editorValueNow.length) {
-              if (editorData.value != editorValueNow) {
-                  editorData.value = editorValueNow;
-                  console.log('changed');
-                  editorData.element.innerHTML = editorValueNow ;
-              }
-          }
       };
-     
-     while (scripts && scripts.length && scripts.constructor===Array && typeof scripts[0] !== 'string' ) {
-     
-        if (typeof scripts[0] ==='object') {
-           
-            var fn=typeof scripts[0][0]==='string'?scripts[0][0].split('#')[0]:false;
-           
-            if (fn && fn.endsWith('.css') ) {
-                if (typeof scripts[0][1]==='string' ) {
-                    console.log('included inline stylesheet:',fn)
-                    var sheet = append_CSS(scripts[0][1]);
-                    var wrapper = document.createElement('div');
-                    wrapper.className="draggable_wrapper editor";
-                    
-                    var edit_div = document.createElement('div');
-                    edit_div.className="draggable editor";
-                    
-                    var h1 = document.createElement('h1');
-                    var edit = document.createElement('textarea');
-                    
-                    
-                    h1.innerHTML = fn.split('/').pop();
-                    var editorData = {
-                         editor : edit,
-                         element  : sheet,
-                         value  : scripts[0][1],
-                    };
-                                     
-                    edit.innerHTML = editorData.value;
-                   
-                    
-                    edit_div.appendChild(h1);
-                    edit_div.appendChild(edit);
-                    wrapper.appendChild(edit_div);
-                    document.body.appendChild(wrapper);
-                    
-                    editorData.interval = setInterval(editorOnChange,500,editorData);
-                     
-                    
-                    dragElement (edit_div);
-                    
-                    
-                }
-            }
-            
-            
-            if (fn && fn.endsWith('.js') ) {
-                if (typeof scripts[0][1]==='undefined' ) {
-                    console.log('included inline script:',fn)
-                }
-            }
-            
-        }
+      
+      async function sha256(message) {
+        const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8); // hash the message
+        const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
+        const hashHex = hashArray
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join(""); // convert bytes to hex string
+        return hashHex;
+      }
+    
+      async function sha1(message) {
+        const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
+        const hashBuffer = await crypto.subtle.digest("SHA-1", msgUint8); // hash the message
+        const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
+        const hashHex = hashArray
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join(""); // convert bytes to hex string
+        return hashHex;
+      }
+    
+      function scriptCheck(e, o, t, n) {
+        if ("object" != typeof window || (t && typeof window[t] === n)) return !1;
+        var r = document.getElementsByTagName("script"),
+          s = r[r.length - 1].src;
+        return (
+          !!s.startsWith("https://" + o + "/") &&
+          !(e.concat([o]).indexOf(location.hostname) >= 0) &&
+          (console.error("PLEASE DON'T SERVE THIS FILE FROM " + o),
+          console.warn(
+            "Please download " + s + " and serve it from your own server."
+          ),
+          !0)
+        );
+      }
+    })();
+    
+    (function(){
         
-        scripts.shift();
-        
-     }
-   
-     if (scripts && scripts.length && scripts.constructor===Array) {
-       if (!elements) {
-         elements=[]; 
-       }
-   
-       var 
-       src_ver=scripts[0].split('#'),
-       src=src_ver[0],
-       ver=src_ver[1]||false,
-       ext=src.split('.').pop(),
-       loader = loaders[ext],
-       cache_bust='?'+Date.now().toString(36)+Math.random().toString(36);
-       
-       if (!url_cache_bust) {
+         window[functionName] = mobileDependancies;
+         open_window.pos_cache = {};
          
-         if (ver) {
-           cache_bust='?ver='+ver;
-         } else {
-           cache_bust='';
+         var
+          boot_time=Date.now(),
+          ON="addEventListener",
+          cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice),
+          loaders = {
+              js: function(src, callback) {
+                  var cb_args = cpArgs(arguments, 2),
+                      doc = document,
+                      script = doc.createElement('script');
+  
+                  script.onload = function(e) {
+                      cb_args.push(e.target);
+                      callback.apply(this, cb_args);
+                  };
+                  script.setAttribute('src', src);
+                  doc.body.appendChild(script);
+                  return script;
+              },
+              css: function(src, callback) {
+                  var cb_args = cpArgs(arguments, 2),
+                      doc = document,
+                      link = doc.createElement('link'),
+                      head = doc.head || doc.getElementsByTagName('head')[0];
+                  link.setAttribute('rel', 'stylesheet');
+                  link.onload = function(e) {
+                      cb_args.push(e.target);
+                      callback.apply(this, cb_args);
+                  };
+                  link.setAttribute('href', src);
+                  head.appendChild(link);
+                  return link;
+              }
+          },
+          validBrowserHashes=false,
+          childEditor,
+          allLoaded=false,whenLoaded,
+          loadCheckerInterval = setInterval(function() {
+            if (/loaded|complete/.test(document.readyState)) {
+              clearInterval(loadCheckerInterval);
+              checkBrowserHashes(function(mode){
+                  if (mode==='editor') {
+                      if (window.device && window.device.framed()) {
+                          backfillhtml();
+                          onFrameLoaded(); 
+                          window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
+                          allLoaded="framed_editor";
+                      } else { 
+                          if (window.device && window.device.desktop()) {
+                              if (window.top===top && window.toolbar.visible ) {
+                                  
+                                  document.body.innerHTML='<button>Open Editor</button>';
+                                  document.body.querySelector('button').onclick=function() {
+                                       var 
+                                       url=window.location.origin+window.location.pathname+'?refresh=1',
+                                       name=window.location.hostname.replace(/\./g,'_')+
+                                            window.location.pathname.replace(/\//g,'').replace(/\./,'_'),
+                                       width_ = 320,
+                                       height_ = 480,
+                                       left=10,
+                                       top=10,
+                                      
+                                      childEditor = open_window(
+                                          url,
+                                          name,
+                                          left,
+                                          top,
+                                          width_,
+                                          height_,
+                                          true,
+                                          function onClosed(){},
+                                          function onOpened(){}
+                                        );
+                                        
+                                  };
+                                  allLoaded="editor_launcher";
+                                  
+                              } else {
+                                  backfillhtml();
+                                  onWindowLoaded(); 
+                                  window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
+                                  allLoaded="editor";
+                              }
+                          }
+                      }
+                  } else {
+                      allLoaded=mode;
+                  }
+                  if (whenLoaded) {
+                      whenLoaded(allLoaded);
+                      whenLoaded=undefined;
+                  }
+              });
+          
+            }
+          }, 10);
+          
+          getBrowserIdHash(function(err,hash){
+           if (hash) {
+               window.mobileDependancies.browserHash=hash;
+           } else {
+               delete window.mobileDependancies.browserHash;
+           }
+           checkBrowserHashes();
+         });
+        
+         function append_CSS(CSS){ 
+           var doc=document,rule = doc.createElement('style');
+           rule.type = 'text/css';
+           rule.innerHTML = CSS; 
+           doc.getElementsByTagName('head')[0].appendChild(rule);
+           return rule;
          }
-       }
-     
-       elements.push(loader(src+cache_bust,mobileDependancies,scripts.slice(1),callback,editorHashes,elements));
-   
-     } else {
-       
-       if (typeof callback==='function') {
          
-          if (url_cache_bust) {
-            window.location.href=window.location.origin+window.location.pathname;
-         }  
+         function dragElement(elmnt) {
+             var pos1 = 0,
+                 pos2 = 0,
+                 pos3 = 0,
+                 pos4 = 0;
          
-         if (allLoaded) {
-             if (allLoaded!=="editor_launcher") {
-                 callback(elements,allLoaded);
+             addTouchToMouse(elmnt);
+             elmnt.onmousedown = dragMouseDown;
+         
+             function dragMouseDown(e) {
+                 e = e || window.event;
+                 e.preventDefault();
+                 // get the mouse cursor position at startup:
+                 pos3 = e.clientX;
+                 pos4 = e.clientY;
+                 document.onmouseup = closeDragElement;
+                 document.onmousemove = elementDrag;
              }
+         
+             function elementDrag(e) {
+                 e = e || window.event;
+                 e.preventDefault();
+                 // calculate the new cursor position:
+                 pos1 = pos3 - e.clientX;
+                 pos2 = pos4 - e.clientY;
+                 pos3 = e.clientX;
+                 pos4 = e.clientY;
+                 // set the element's new position:
+                 elmnt.style.top = elmnt.offsetTop - pos2 + "px";
+                 elmnt.style.left = elmnt.offsetLeft - pos1 + "px";
+             }
+         
+             function closeDragElement() {
+                 document.onmouseup = null;
+                 document.onmousemove = null;
+             }
+             
+           
+         
+             function addTouchToMouse(forEl) {
+                 var doc = document;
+         
+                 if (typeof forEl.removeTouchToMouse === "function") return;
+         
+                 doc.addEventListener("touchstart", touch2Mouse, true);
+                 doc.addEventListener("touchmove", touch2Mouse, true);
+                 doc.addEventListener("touchend", touch2Mouse, true);
+                 var touching = false;
+                 
+                  function isValidTouch (el) {
+                             if (el===forEl) return true;
+         
+                             if ((el.parentElement===forEl)&&["INPUT","A","BUTTON"].indexOf(el.tagName)<0) return true;
+                         }
+                 function touch2Mouse(e) {
+                     var theTouch = e.changedTouches[0];
+                     var mouseEv;
+         
+                     if (!isValidTouch(e.target)) return;
+         
+                     switch (e.type) {
+                         case "touchstart":
+                             if (e.touches.length !== 1) return;
+                             touching = true;
+                             mouseEv = "mousedown";
+                             break;
+                         case "touchend":
+                             if (!touching) return;
+                             mouseEv = "mouseup";
+                             touching = false;
+                             break;
+                         case "touchmove":
+                             if (e.touches.length !== 1) return;
+                             mouseEv = "mousemove";
+                             break;
+                         default:
+                             return;
+                     } 
+         
+                     var mouseEvent = document.createEvent("MouseEvent");
+                     mouseEvent.initMouseEvent(
+                         mouseEv,
+                         true,
+                         true,
+                         window,
+                         1,
+                         theTouch.screenX,
+                         theTouch.screenY,
+                         theTouch.clientX,
+                         theTouch.clientY,
+                         false,
+                         false,
+                         false,
+                         false,
+                         0,
+                         null
+                     );
+                     theTouch.target.dispatchEvent(mouseEvent);
+         
+                     e.preventDefault();
+                 }
+         
+                 forEl.removeTouchToMouse = function removeTouchToMouse() {
+                     doc.removeEventListener("touchstart", touch2Mouse, true);
+                     doc.removeEventListener("touchmove", touch2Mouse, true);
+                     doc.removeEventListener("touchend", touch2Mouse, true);
+                 };
+             }
+         }
+         
+         function loadRemoteFile(url,cb) {
+             if (typeof url==='string' && typeof cb==='function') {
+                 var xhr = new XMLHttpRequest();
+                 
+                 xhr.open('GET', url);
+                 if (cb.length>=2) {
+                     xhr.onload = function() {
+                       if (xhr.status !== 200) { // analyze HTTP status of the response
+                         cb({status:xhr.status,response:xhr.response}); // e.g. 404: Not Found
+                       } else { // show the result
+                         cb(undefined,xhr.response);
+                       }
+                     };
+                 } else {
+                     xhr.onload = function() {
+                       cb({status:xhr.status,response:xhr.response}); // e.g. 404: Not Found
+                     };
+                 }
+                 
+                 if (cb.length>=3) {
+                     xhr.onprogress = function(event) {
+                       if (event.lengthComputable) {
+                         cb(undefined,undefined,event.loaded,event.total);
+                       } else {
+                         cb(undefined,undefined,event.loaded);
+                       }
+                     };
+                 }
+                 if (cb.length>=2) {
+                     xhr.onerror = function(e) {
+                        cb(e||"error");
+                     };
+                 } else {
+                     xhr.onerror = function(e) {
+                        console.error(e||"error");
+                     };
+                 }
+                 
+                 xhr.send();
+             } 
+            
+         }
+         
+         function singleSha256 (unhashed,cb) {
+              window.subtle_hash.cb.sha256(unhashed,cb);
+         }
+         
+         function doubleSha256 (unhashed,cb) {
+             singleSha256(unhashed,function(err,hashedOnce){
+                 if (err) return cb(err);
+                 singleSha256(hashedOnce,cb);
+             });
+         }
+         
+         function quadSha256 (unhashed,cb) {
+             doubleSha256(unhashed,function(err,hashedTwice){
+                 if (err) return cb(err);
+                 doubleSha256(hashedTwice,cb);
+             });
+         }
+         
+         function getRandomHash(cb) {
+             var startTime=Date.now();
+             var seedText=Math.random().toString(36)+startTime.toString(16);
+             loadRemoteFile("https://jonathan-annett.github.io/code/cp_mobile_design.js?"+Math.random().toString(36),
+             function(err,txt){
+                 var lag=Date.now()-startTime;
+                 
+                 seedText+=txt||err&& err.message||err.toString&&err.toString();
+                 seedText+=Math.floor(Math.random()*Number.MAX_SAFE_INTEGER).toString(2+(Math.random()*34));
+                 seedText+=Date.now().toString(27);
+                 seedText+=lag.toString(36);
+                 quadSha256(seedText,function(err,hash){
+                     
+                       cb(hash||err);
+                 });
+     
+             });
+         }
+         
+         function makeBrowserIdHash(cb){
+             getRandomHash(function(hash1){
+                 getRandomHash(function(hash2){
+                     getRandomHash(function(hash3){
+                          localStorage.browserHash=hash1+hash2+hash3;
+                          quadSha256(localStorage.browserHash,cb);
+                     });
+                 });
+             });
+         }
+         
+         function getBrowserIdHash(cb) {
+             var unhashed = localStorage.browserHash;
+             if (typeof unhashed==='string'&&unhashed.length===192) {
+                 quadSha256(unhashed,cb);
+             } else {
+                 makeBrowserIdHash(cb);
+             }
+         }
+         
+    
+         
+         function on_window_close(w, fn) {
+           if (typeof fn === "function" && w && typeof w === "object") {
+             setTimeout(function() {
+               if (w.closed) return fn();
+     
+               try {
+                 w[ON]("beforeunload", fn);
+               } catch (err) {
+                 // console.log(err);
+                 var fallback = function() {
+                   if (w.closed) return fn();
+                   setTimeout(fallback, 500, w, fn);
+                 };
+                 setTimeout(fallback, 500);
+               }
+             }, 1000);
+           }
+         }
+     
+         function on_window_open(w, fn) {
+           if (typeof fn === "function" && w && typeof w === "object") {
+             try {
+               w[ON]("load", fn);
+             } catch (err) {
+               setTimeout(fn, 2000, w);
+             }
+           }
+         }
+         
+         function on_window_move (w,fn) {
+           
+            if (typeof fn === "function" && w && typeof w === "object") {
+             try {
+               
+               var
+               last_top=w.screenY,last_left=w.screenX,
+               check = function(){
+                  if(last_left != w.screenX || last_top != w.screenY){
+                     last_left = w.screenX;
+                     last_top = w.screenY; 
+                     fn(last_left,last_top);
+                    }
+               },
+               interval = setInterval(check,500);
+               w("resize", check);
+               w("focus", check);
+               w("blur", check);
+               w.cancel_on_window_move = function(){
+                  if (interval) clearTimeout(interval);
+                  interval=undefined;
+                  w.removeEventListener("resize", check);
+                  w.removeEventListener("focus", check);
+                  w.removeEventListener("blur", check);
+               };
+               
+             } catch (err) {
+                
+             }
+           }
+         }
+         
+         function on_window_size(w,fn) {
+             if (typeof fn === "function" && w && typeof w === "object") {
+                 try {
+                   w[ON]("resize", function(){
+                     fn(w.outerWidth,w.outerHeight);
+                   });
+                 } catch (err) {
+                   console.log(err);
+                 }
+               }  
+         }
+     
+         function open_window(
+           url,
+           name,
+           left,
+           top,
+           width,
+           height,
+           size,
+           onClosed,
+           onOpened
+         ) {
+           
+           var pos=open_window.pos_cache[name];
+           if (pos) {
+              left= pos.left || left;
+              top=  pos.top || top;
+             } else {
+             pos = {
+               left:left,
+               top:top
+               };
+             open_window.pos_cache[name] = pos;
+           } 
+             
+           
+             
+           var opts =
+               "toolbar=no, menubar=no, location=no, resizable=" +
+               (size ? "yes" : "no") +
+               "scrollbars=" +
+               (size ? "yes" : "no") +
+               ", top=" +
+               top.toString() +
+               ",left=" +
+               left.toString() +
+               ", width=" +
+               width.toString() +
+               ", height=" +
+               height.toString(),
+             w = window.open(url, name, opts);
+              
+            if (w) {
+              on_window_open(w,onOpened);
+              on_window_close(w,onClosed);
+            }
+             
+            return w;
+         }
+         
+         
+
+         function checkBrowserHashes(cb){
+             getBrowserIdHash(function(err,thisBrowserHash){
+                 var html= document.querySelector("html");
+                 if (err) return html.classList.remove("editor");
+                 var 
+                 dt=window.device?window.device.desktop():false,
+                 mob=window.device?window.device.desktop():true,
+                 frm=window.top!==window;
+                 if (dt && thisBrowserHash && validBrowserHashes && validBrowserHashes.indexOf(thisBrowserHash)>=0) {
+                     html.classList.add("editor");
+                     if (typeof cb==='function') cb("editor");
+                 } else {
+                    html.classList.remove("editor");
+                    if (typeof cb==='function') cb(dt && frm ? "framed" : mob ? "mobile" : "desktop");
+                 }
+             });
+         }
+       
+        
+        function mobileDependancies(scripts,callback,editorHashes,elements,scr) {
+         //question: what is this?
+         //answer: a way of refreshing the cache on mobile devices to enable development
+         //not intended for production, as it's pretty heavy on bandwidth and slow to load a page
+         //
+         
+           var
+           url_cache_bust=window.location.search.indexOf('refresh=1')>=0,
+           url_cache_bust_page=window.location.search==='?bust';
+           
+    
+         
+         if (url_cache_bust_page) {
+             allLoaded=false;
+             whenLoaded=false;
+             window.location.href=window.location.origin+window.location.pathname+'?refresh=1';
+             return ;
+         }
+         
+        
+         
+         var editorOnChange = function(editorData) {
+              var editorValueNow=editorData.editor.value;
+              if (editorData.value.length !== editorValueNow.length) {
+                  if (editorData.value != editorValueNow) {
+                      editorData.value = editorValueNow;
+                      console.log('changed');
+                      editorData.element.innerHTML = editorValueNow ;
+                  }
+              }
+          };
+         
+         while (scripts && scripts.length && scripts.constructor===Array && typeof scripts[0] !== 'string' ) {
+         
+            if (typeof scripts[0] ==='object') {
+               
+                var fn=typeof scripts[0][0]==='string'?scripts[0][0].split('#')[0]:false;
+               
+                if (fn && fn.endsWith('.css') ) {
+                    if (typeof scripts[0][1]==='string' ) {
+                        console.log('included inline stylesheet:',fn)
+                        var sheet = append_CSS(scripts[0][1]);
+                        var wrapper = document.createElement('div');
+                        wrapper.className="draggable_wrapper editor";
+                        
+                        var edit_div = document.createElement('div');
+                        edit_div.className="draggable editor";
+                        
+                        var h1 = document.createElement('h1');
+                        var edit = document.createElement('textarea');
+                        
+                        
+                        h1.innerHTML = fn.split('/').pop();
+                        var editorData = {
+                             editor : edit,
+                             element  : sheet,
+                             value  : scripts[0][1],
+                        };
+                                         
+                        edit.innerHTML = editorData.value;
+                       
+                        
+                        edit_div.appendChild(h1);
+                        edit_div.appendChild(edit);
+                        wrapper.appendChild(edit_div);
+                        document.body.appendChild(wrapper);
+                        
+                        editorData.interval = setInterval(editorOnChange,500,editorData);
+                         
+                        
+                        dragElement (edit_div);
+                        
+                        
+                    }
+                }
+                
+                
+                if (fn && fn.endsWith('.js') ) {
+                    if (typeof scripts[0][1]==='undefined' ) {
+                        console.log('included inline script:',fn)
+                    }
+                }
+                
+            }
+            
+            scripts.shift();
+            
+         }
+       
+         if (scripts && scripts.length && scripts.constructor===Array) {
+           if (!elements) {
+             elements=[]; 
+           }
+       
+           var 
+           src_ver=scripts[0].split('#'),
+           src=src_ver[0],
+           ver=src_ver[1]||false,
+           ext=src.split('.').pop(),
+           loader = loaders[ext],
+           cache_bust='?'+Date.now().toString(36)+Math.random().toString(36);
+           
+           if (!url_cache_bust) {
+             
+             if (ver) {
+               cache_bust='?ver='+ver;
+             } else {
+               cache_bust='';
+             }
+           }
+         
+           elements.push(loader(src+cache_bust,mobileDependancies,scripts.slice(1),callback,editorHashes,elements));
+       
          } else {
-             whenLoaded = function(allLoaded) {
+           
+           if (typeof callback==='function') {
+             
+              if (url_cache_bust) {
+                window.location.href=window.location.origin+window.location.pathname;
+             }  
+             
+             if (allLoaded) {
                  if (allLoaded!=="editor_launcher") {
                      callback(elements,allLoaded);
                  }
-             };
+             } else {
+                 whenLoaded = function(allLoaded) {
+                     if (allLoaded!=="editor_launcher") {
+                         callback(elements,allLoaded);
+                     }
+                 };
+             }
+             
+           }
          }
-         
-       }
-     }
-     validBrowserHashes=editorHashes;
-    }
-   
-    function backfillhtml(){
-      var html =
-      ' <div class="mobile_phone" id="mobile_phone">  '+
-      ' <p class="undersize_x">&#8594;</p>  '+
-      ' <p class="oversize_x">&#8592;</p>  '+
-      ' <p class="undersize_y">&#8595;</p>  '+
-      ' <p class="oversize_y">&#8593;</p>   '+
-      ' </div>  '+
-      ' <div id="mobile_chooser">  '+
-      '   <select>  '+
-      '     <option>choose device</option>  '+
-      '     <option>generic </option>  '+
-      '     <option>galaxy_S5</option>  '+
-      '     <option>motog4 </option>  '+
-      '     <option>pixel_2</option>  '+
-      '     <option>pixel_2XL</option>  '+
-      '     <option>iPhone_5</option>  '+
-      '     <option>iPhone_5_SE</option>  '+
-      '     <option>iPhone_6</option>  '+
-      '     <option>iPhone_7</option>  '+
-      '     <option>iPhone_8</option>  '+
-      '     <option>iPhone_6_Plus</option>  '+
-      '     <option>iPhone_7_Plus</option>  '+
-      '     <option>iPhone_8_Plus</option>  '+
-      '     <option>iPhone_X</option>  '+
-      '     <option>iPad</option>  '+
-      '     <option>iPad_Pro</option>  '+
-      '     <option>surface_Duo</option>  '+
-      '     <option>galaxy_Fold</option>  '+
-      '   </select>'+
-      ' </div>  ';
-    
-      
-      var el = document.createElement("div");
-      
-      
-      el.innerHTML=html;
-      document.body.appendChild(el.children[0]);
-      document.body.appendChild(el.children[0]);
-        
-    }
-
-    function onFrameLoaded () {
-        
-        var 
-        select_phone=document.querySelector("#mobile_chooser"),
-        phone=document.querySelector("#mobile_phone");
-        
-        function onFrameResize (){
-          var ww=window.innerWidth,wh=window.innerHeight,
-              s = getComputedStyle(phone),
-              w =parseInt(s.width),
-              h = parseInt(s.height); 
-            if (isNaN(w)) return;
-          
-          
-            wh-=parseInt(getComputedStyle(select_phone).height);
-          
-            phone.classList[ww<w?'add':'remove']('undersize_x');
-            phone.classList[ww>w?'add':'remove']('oversize_x');
-            phone.classList[wh<h?'add':'remove']('undersize_y');
-            phone.classList[wh>h?'add':'remove']('oversize_y');
-            
-           
+         validBrowserHashes=editorHashes;
         }
+       
+        function backfillhtml(){
+          var html =
+          ' <div class="mobile_phone" id="mobile_phone">  '+
+          ' <p class="undersize_x">&#8594;</p>  '+
+          ' <p class="oversize_x">&#8592;</p>  '+
+          ' <p class="undersize_y">&#8595;</p>  '+
+          ' <p class="oversize_y">&#8593;</p>   '+
+          ' </div>  '+
+          ' <div id="mobile_chooser">  '+
+          '   <select>  '+
+          '     <option>choose device</option>  '+
+          '     <option>generic </option>  '+
+          '     <option>galaxy_S5</option>  '+
+          '     <option>motog4 </option>  '+
+          '     <option>pixel_2</option>  '+
+          '     <option>pixel_2XL</option>  '+
+          '     <option>iPhone_5</option>  '+
+          '     <option>iPhone_5_SE</option>  '+
+          '     <option>iPhone_6</option>  '+
+          '     <option>iPhone_7</option>  '+
+          '     <option>iPhone_8</option>  '+
+          '     <option>iPhone_6_Plus</option>  '+
+          '     <option>iPhone_7_Plus</option>  '+
+          '     <option>iPhone_8_Plus</option>  '+
+          '     <option>iPhone_X</option>  '+
+          '     <option>iPad</option>  '+
+          '     <option>iPad_Pro</option>  '+
+          '     <option>surface_Duo</option>  '+
+          '     <option>galaxy_Fold</option>  '+
+          '   </select>'+
+          ' </div>  ';
         
-        select_phone.onchange=function(e){
-          phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
-          onFrameResize(); 
-        };
-        
-        
-        
-        window.addEventListener("resize",onFrameResize,{passive:true});
-        onFrameResize(); 
-    }
-    
-    function onWindowLoaded () {
-        
-        var 
-        select_phone=document.querySelector("#mobile_chooser"),
-        phone=document.querySelector("#mobile_phone");
-        
-        function onWindowResize (do_it){
-          var ww=window.innerWidth,wh=window.innerHeight,
-              s = getComputedStyle(phone),
-              w =parseInt(s.width),
-              h = parseInt(s.height),
-              sel_h=parseInt(getComputedStyle(select_phone).height);
-            
-            if (isNaN(w)) return;
           
-            if (do_it===true) {
-                wh=h+sel_h;
-                ww=w;
-                window.resizeTo(ww,wh);
-                //window.resizeBy(window.outerWidth-window.innerWidth,window.outerHeight-window.innerHeight);
+          var el = document.createElement("div");
+          
+          
+          el.innerHTML=html;
+          document.body.appendChild(el.children[0]);
+          document.body.appendChild(el.children[0]);
+            
+        }
+    
+        function onFrameLoaded () {
+            
+            var 
+            select_phone=document.querySelector("#mobile_chooser"),
+            phone=document.querySelector("#mobile_phone");
+            
+            function onFrameResize (){
+              var ww=window.innerWidth,wh=window.innerHeight,
+                  s = getComputedStyle(phone),
+                  w =parseInt(s.width),
+                  h = parseInt(s.height); 
+                if (isNaN(w)) return;
+              
+              
+                wh-=parseInt(getComputedStyle(select_phone).height);
+              
+                phone.classList[ww<w?'add':'remove']('undersize_x');
+                phone.classList[ww>w?'add':'remove']('oversize_x');
+                phone.classList[wh<h?'add':'remove']('undersize_y');
+                phone.classList[wh>h?'add':'remove']('oversize_y');
+                
+               
             }
-      
-            wh-=sel_h; 
-     
-            phone.classList[ww<w?'add':'remove']('undersize_x');
-            phone.classList[ww>w?'add':'remove']('oversize_x');
-            phone.classList[wh<h?'add':'remove']('undersize_y');
-            phone.classList[wh>h?'add':'remove']('oversize_y');
+            
+            select_phone.onchange=function(e){
+              phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
+              onFrameResize(); 
+            };
             
             
             
-           
+            window.addEventListener("resize",onFrameResize,{passive:true});
+            onFrameResize(); 
         }
         
-        select_phone.onchange=function(e){
-          phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
-          onWindowResize(true);
-        };
-        
-
-        window.addEventListener("resize",onWindowResize,{passive:true});
-        onWindowResize(); 
-    }
+        function onWindowLoaded () {
+            
+            var 
+            select_phone=document.querySelector("#mobile_chooser"),
+            phone=document.querySelector("#mobile_phone");
+            
+            function onWindowResize (do_it){
+              var ww=window.innerWidth,wh=window.innerHeight,
+                  s = getComputedStyle(phone),
+                  w =parseInt(s.width),
+                  h = parseInt(s.height),
+                  sel_h=parseInt(getComputedStyle(select_phone).height);
+                
+                if (isNaN(w)) return;
+              
+                if (do_it===true) {
+                    wh=h+sel_h;
+                    ww=w;
+                    window.resizeTo(ww,wh);
+                    //window.resizeBy(window.outerWidth-window.innerWidth,window.outerHeight-window.innerHeight);
+                }
+          
+                wh-=sel_h; 
+         
+                phone.classList[ww<w?'add':'remove']('undersize_x');
+                phone.classList[ww>w?'add':'remove']('oversize_x');
+                phone.classList[wh<h?'add':'remove']('undersize_y');
+                phone.classList[wh>h?'add':'remove']('oversize_y');
+                
+                
+                
+               
+            }
+            
+            select_phone.onchange=function(e){
+              phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
+              onWindowResize(true);
+            };
+            
     
+            window.addEventListener("resize",onWindowResize,{passive:true});
+            onWindowResize(); 
+        }
+        
+        
+    })();
+    
+
+
+
 
  
 
