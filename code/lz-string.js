@@ -1,3 +1,32 @@
+(function (objectName) {
+  if (
+    scriptCheck(
+      ["cdpn.io", "codepen.io"],
+      "jonathan-annett.github.io",
+      objectName,
+      "object"
+    )
+  )
+    return;
+    
+ 
+function scriptCheck(e, o, t, n) {
+  if ("object" != typeof window || (t && typeof window[t] === n)) return !1;
+  var r = document.getElementsByTagName("script"),
+    s = r[r.length - 1].src;
+  return (
+    !!s.startsWith("https://" + o + "/") &&
+    !(e.concat([o]).indexOf(location.hostname) >= 0) &&
+    (console.error("PLEASE DON'T LINK TO THIS FILE FROM " + o),
+    console.warn(
+      "Please download " + s + " and serve it from your own server."
+    ),
+    !0)
+  );
+}
+
+window[objectName] = 
+
 /*
 
 Copyright (c) 2013 Pieroxy <pieroxy@pieroxy.net>
@@ -32,7 +61,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 @license*/
-var LZString = (function() {
+ (function() {
 
 // private property
 var f = String.fromCharCode;
@@ -52,7 +81,7 @@ function getBaseValue(alphabet, character) {
 
 var LZString = {
   compressToBase64 : function (input) {
-    if (input == null) return "";
+    if (input === null) return "";
     var res = LZString._compress(input, 6, function(a){return keyStrBase64.charAt(a);});
     switch (res.length % 4) { // To produce valid Base64
     default: // When could this happen ?
@@ -64,19 +93,19 @@ var LZString = {
   },
 
   decompressFromBase64 : function (input) {
-    if (input == null) return "";
-    if (input == "") return null;
+    if (input === null) return "";
+    if (input === "") return null;
     return LZString._decompress(input.length, 32, function(index) { return getBaseValue(keyStrBase64, input.charAt(index)); });
   },
 
   compressToUTF16 : function (input) {
-    if (input == null) return "";
+    if (input === null) return "";
     return LZString._compress(input, 15, function(a){return f(a+32);}) + " ";
   },
 
   decompressFromUTF16: function (compressed) {
-    if (compressed == null) return "";
-    if (compressed == "") return null;
+    if (compressed === null) return "";
+    if (compressed === "") return null;
     return LZString._decompress(compressed.length, 16384, function(index) { return compressed.charCodeAt(index) - 32; });
   },
 
@@ -116,14 +145,14 @@ var LZString = {
 
   //compress into a string that is already URI encoded
   compressToEncodedURIComponent: function (input) {
-    if (input == null) return "";
+    if (input === null) return "";
     return LZString._compress(input, 6, function(a){return keyStrUriSafe.charAt(a);});
   },
 
   //decompress from an output of compressToEncodedURIComponent
   decompressFromEncodedURIComponent:function (input) {
-    if (input == null) return "";
-    if (input == "") return null;
+    if (input === null) return "";
+    if (input === "") return null;
     input = input.replace(/ /g, "+");
     return LZString._decompress(input.length, 32, function(index) { return getBaseValue(keyStrUriSafe, input.charAt(index)); });
   },
@@ -132,7 +161,7 @@ var LZString = {
     return LZString._compress(uncompressed, 16, function(a){return f(a);});
   },
   _compress: function (uncompressed, bitsPerChar, getCharFromInt) {
-    if (uncompressed == null) return "";
+    if (uncompressed === null) return "";
     var i, value,
         context_dictionary= {},
         context_dictionaryToCreate= {},
@@ -209,7 +238,7 @@ var LZString = {
             }
           }
           context_enlargeIn--;
-          if (context_enlargeIn == 0) {
+          if (context_enlargeIn === 0) {
             context_enlargeIn = Math.pow(2, context_numBits);
             context_numBits++;
           }
@@ -231,7 +260,7 @@ var LZString = {
 
         }
         context_enlargeIn--;
-        if (context_enlargeIn == 0) {
+        if (context_enlargeIn === 0) {
           context_enlargeIn = Math.pow(2, context_numBits);
           context_numBits++;
         }
@@ -294,7 +323,7 @@ var LZString = {
           }
         }
         context_enlargeIn--;
-        if (context_enlargeIn == 0) {
+        if (context_enlargeIn === 0) {
           context_enlargeIn = Math.pow(2, context_numBits);
           context_numBits++;
         }
@@ -316,7 +345,7 @@ var LZString = {
 
       }
       context_enlargeIn--;
-      if (context_enlargeIn == 0) {
+      if (context_enlargeIn === 0) {
         context_enlargeIn = Math.pow(2, context_numBits);
         context_numBits++;
       }
@@ -349,8 +378,8 @@ var LZString = {
   },
 
   decompress: function (compressed) {
-    if (compressed == null) return "";
-    if (compressed == "") return null;
+    if (compressed === null) return "";
+    if (compressed === "") return null;
     return LZString._decompress(compressed.length, 32768, function(index) { return compressed.charCodeAt(index); });
   },
 
@@ -378,7 +407,7 @@ var LZString = {
     while (power!=maxpower) {
       resb = data.val & data.position;
       data.position >>= 1;
-      if (data.position == 0) {
+      if (data.position === 0) {
         data.position = resetValue;
         data.val = getNextValue(data.index++);
       }
@@ -386,7 +415,7 @@ var LZString = {
       power <<= 1;
     }
 
-    switch (next = bits) {
+    switch ((next = bits)) {
       case 0:
           bits = 0;
           maxpower = Math.pow(2,8);
@@ -394,7 +423,7 @@ var LZString = {
           while (power!=maxpower) {
             resb = data.val & data.position;
             data.position >>= 1;
-            if (data.position == 0) {
+            if (data.position === 0) {
               data.position = resetValue;
               data.val = getNextValue(data.index++);
             }
@@ -410,7 +439,7 @@ var LZString = {
           while (power!=maxpower) {
             resb = data.val & data.position;
             data.position >>= 1;
-            if (data.position == 0) {
+            if (data.position === 0) {
               data.position = resetValue;
               data.val = getNextValue(data.index++);
             }
@@ -436,7 +465,7 @@ var LZString = {
       while (power!=maxpower) {
         resb = data.val & data.position;
         data.position >>= 1;
-        if (data.position == 0) {
+        if (data.position === 0) {
           data.position = resetValue;
           data.val = getNextValue(data.index++);
         }
@@ -444,7 +473,7 @@ var LZString = {
         power <<= 1;
       }
 
-      switch (c = bits) {
+      switch ((c = bits)) {
         case 0:
           bits = 0;
           maxpower = Math.pow(2,8);
@@ -452,7 +481,7 @@ var LZString = {
           while (power!=maxpower) {
             resb = data.val & data.position;
             data.position >>= 1;
-            if (data.position == 0) {
+            if (data.position === 0) {
               data.position = resetValue;
               data.val = getNextValue(data.index++);
             }
@@ -471,7 +500,7 @@ var LZString = {
           while (power!=maxpower) {
             resb = data.val & data.position;
             data.position >>= 1;
-            if (data.position == 0) {
+            if (data.position === 0) {
               data.position = resetValue;
               data.val = getNextValue(data.index++);
             }
@@ -486,7 +515,7 @@ var LZString = {
           return result.join('');
       }
 
-      if (enlargeIn == 0) {
+      if (enlargeIn === 0) {
         enlargeIn = Math.pow(2, numBits);
         numBits++;
       }
@@ -508,7 +537,7 @@ var LZString = {
 
       w = entry;
 
-      if (enlargeIn == 0) {
+      if (enlargeIn === 0) {
         enlargeIn = Math.pow(2, numBits);
         numBits++;
       }
@@ -519,13 +548,7 @@ var LZString = {
   return LZString;
 })();
 
-if (typeof define === 'function' && define.amd) {
-  define(function () { return LZString; });
-} else if( typeof module !== 'undefined' && module != null ) {
-  module.exports = LZString
-} else if( typeof angular !== 'undefined' && angular != null ) {
-  angular.module('LZString', [])
-  .factory('LZString', function () {
-    return LZString;
-  });
-} 
+  
+})("LZString");
+
+

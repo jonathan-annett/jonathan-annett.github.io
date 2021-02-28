@@ -1030,9 +1030,29 @@ SOFTWARE.
              var editorValueNow=editorData.editor.value;
              if (editorData.value.length !== editorValueNow.length) {
                  if (editorData.value != editorValueNow) {
+                     
+                     if ( editorData.storageTimeout ) {
+                         clearInterval(editorData.storageTimeout);
+                         delete editorData.storageTimeout;
+                     }
                      editorData.value = editorValueNow;
                      console.log('changed');
                      editorData.element.innerHTML = editorValueNow ;
+                     if (editorData.storageHash) {
+                         editorData.storageTimeout = setTimeout(function() {
+                             delete editorData.storageTimeout;
+                             localStorage[editorData.storageHash] = window.LZString.compressToEncodedURIComponent (editorData.value);
+                             
+                         },10*1000);
+                     } else {
+                         singleSha256(editorData.name,function(err,hash){
+                             if (!err && hash) {
+                                 editorData.storageHash = "editing_"+hash;
+                                 localStorage[editorData.storageHash] = window.LZString.compressToEncodedURIComponent (editorData.value);
+                             }
+                         });
+                         
+                     }
                  }
              }
          }
@@ -1052,13 +1072,14 @@ SOFTWARE.
              var edit = document.createElement('textarea');
              
              
-             h1.innerHTML = fn.split('/').pop();
+            
              var editorData = {
-                  editor : edit,
-                  element  : sheet,
-                  value  : CSS_Text,
+                  name    : fn.split('/').pop(),
+                  editor  : edit,
+                  element : sheet,
+                  value   : CSS_Text,
              };
-                              
+             h1.innerHTML = editorData.name;                
              edit.innerHTML = editorData.value;
             
              
@@ -1077,6 +1098,8 @@ SOFTWARE.
         
         
         function mobileDependancies(scripts, callback, editorHashes) {
+            
+           
 
             function loadDeps(scripts, elements) {
 
@@ -1099,6 +1122,9 @@ SOFTWARE.
 
                         if (fn && fn.endsWith('.css')) {
                             if (typeof scripts[0][1] === 'string') {
+                                
+                                //scripts.unshift("lz-string.js")
+                                
                                 addEditableCSS(scripts[0][1], fn);
                             }
                         }
