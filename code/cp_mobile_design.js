@@ -1085,7 +1085,7 @@ SOFTWARE.
                         }
                     });    
                  },
-                 load : function(name,cb) {
+                 readFile : function(name,cb) {
                      privates.nameToHash(name,function(err,hash) {
                        if (privates.pending[hash]) {
                            if (privates.pending[hash].loaded) {
@@ -1095,7 +1095,7 @@ SOFTWARE.
                                delete privates.pending[hash];
                            },10*1000);
                            
-                           return cb (undefined,privates.pending[hash].data);
+                           return cb (undefined,privates.pending[hash].data,"read from cache");
                        } else {
                            var compressed = localStorage[hash];
                            if (!compressed) return cb("not found");
@@ -1106,7 +1106,7 @@ SOFTWARE.
                                    delete privates.pending[hash];
                                },10*1000)
                            };
-                           cb(undefined,data);
+                           cb(undefined,data,"decompressed from storage");
                        }
                      });
                  }
@@ -1124,7 +1124,9 @@ SOFTWARE.
                  if (editorData.value != editorValueNow) {
                      editorData.value = editorValueNow;
                      editorData.element.innerHTML = editorValueNow ;
-                     fs.writeFile(editorData.name,editorValueNow);
+                     fs.writeFile(editorData.name,editorValueNow,function(err,info){
+                         console.log(err,info);
+                     });
                  }
              }
          }
