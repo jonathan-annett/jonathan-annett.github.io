@@ -502,10 +502,14 @@ SOFTWARE.
          }  
          
          if (allLoaded) {
-           callback(elements,allLoaded);
+             if (allLoaded!=="editor_launcher") {
+                 callback(elements,allLoaded);
+             }
          } else {
-             whenLoaded = function(all) {
-                 callback(elements,all);
+             whenLoaded = function(allLoaded) {
+                 if (allLoaded!=="editor_launcher") {
+                     callback(elements,allLoaded);
+                 }
              };
          }
          
