@@ -1240,8 +1240,41 @@ SOFTWARE.
             
             window.addEventListener("resize",onFrameResize,{passive:true});
             onFrameResize(); 
-        }
+        } 
         
+        var resizeViewPort = function(width, height) {
+            if (window.outerWidth) {
+                window.resizeTo(
+                    width + (window.outerWidth - window.innerWidth),
+                    height + (window.outerHeight - window.innerHeight)
+                );
+            } else {
+                window.resizeTo(500, 500);
+                window.resizeTo(
+                    width + (500 - document.body.offsetWidth),
+                    height + (500 - document.body.offsetHeight)
+                );
+            }
+        };
+        var resizeViewPort2 = function(width, height) {
+            var tmp = document.documentElement.style.overflow;
+            document.documentElement.style.overflow = "scroll";
+        
+            if (window.outerWidth) {
+                window.resizeTo(
+                    width + (window.outerWidth - document.documentElement.clientWidth),
+                    height + (window.outerHeight - document.documentElement.clientHeight)
+                );
+            } else {
+                window.resizeTo(500, 500);
+                window.resizeTo(
+                    width + (500 - document.documentElement.clientWidth),
+                    height + (500 - document.documentElement.clientHeight)
+                );
+            }
+        
+            document.documentElement.style.overflow = tmp;
+        };
         function onWindowLoaded () {
             
             var 
@@ -1257,38 +1290,14 @@ SOFTWARE.
                   sel_h=parseInt(getComputedStyle(select_phone).height);
                 
                 if (isNaN(w)) return;
-                wh-=sel_h; 
+                
                 if (do_it===true) {
-                    window.resizeTo(w+nudge_x,h+nudge_y);
+                    resizeViewPort(w,h+sel_h);
                     ww=window.innerWidth;
-                    wh=window.innerHeight
-                    wh-=sel_h; 
-                    var maxLoop=200;
-                    while ( (maxLoop>0) && ((ww<w) || (ww>w) || (wh<h) || (wh>h)) ) {
-                        if (ww>w) {
-                            nudge_x++;
-                        }
-                        if (ww<w) {
-                           nudge_x--;
-                        }
-                        if (wh>h) {
-                            nudge_y++;
-                        }
-                        if (wh<h) {
-                           nudge_y--;
-                        }
-                        window.resizeTo(w+nudge_x,h+nudge_y);
-                        ww=window.innerWidth;
-                        wh=window.innerHeight
-                        wh-=sel_h; 
-                        maxLoop--;
-                    }
-                   
-                    
+                    wh=window.innerHeight;
                 }
-          
-               
-         
+                wh-=sel_h; 
+                
                 phone.classList[ww<w?'add':'remove']('undersize_x');
                 phone.classList[ww>w?'add':'remove']('oversize_x');
                 phone.classList[wh<h?'add':'remove']('undersize_y');
