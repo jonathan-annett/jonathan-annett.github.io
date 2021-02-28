@@ -327,7 +327,7 @@ SOFTWARE.
   
    
     
-     function mobileDependancies(scripts,callback,elements,scr,editorHashes) {
+     function mobileDependancies(scripts,callback,editorHashes,elements,scr) {
      //question: what is this?
      //answer: a way of refreshing the cache on mobile devices to enable development
      //not intended for production, as it's pretty heavy on bandwidth and slow to load a page
@@ -437,7 +437,7 @@ SOFTWARE.
          }
        }
      
-       elements.push(loader(src+cache_bust,mobileDependancies,scripts.slice(1),callback,elements));
+       elements.push(loader(src+cache_bust,mobileDependancies,scripts.slice(1),callback,editorHashes,elements));
    
      } else {
        
