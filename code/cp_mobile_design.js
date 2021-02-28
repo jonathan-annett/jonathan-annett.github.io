@@ -1257,18 +1257,37 @@ SOFTWARE.
                   sel_h=parseInt(getComputedStyle(select_phone).height);
                 
                 if (isNaN(w)) return;
-              
+                wh-=sel_h; 
                 if (do_it===true) {
                     window.resizeTo(w+nudge_x,h+nudge_y);
-                    nudge_x=w-window.innerWidth;
-                    nudge_y=h-window.innerHeight+sel_h;
-                    if (nudge_x!==0 && nudge_y !== 0){
-                        console.log({updated:{nudge_x,nudge_y}});
-                        window.resizeBy(nudge_x,nudge_y);
+                    ww=window.innerWidth;
+                    wh=window.innerHeight
+                    wh-=sel_h; 
+                    var maxLoop=200;
+                    while ( (maxLoop>0) && ((ww<w) || (ww>w) || (wh<h) || (wh>h)) ) {
+                        if (ww<w) {
+                            nudge_x++;
+                        }
+                        if (ww>w) {
+                           nudge_x--;
+                        }
+                        if (wh<h) {
+                            nudge_y++;
+                        }
+                        if (wh>h) {
+                           nudge_y--;
+                        }
+                        window.resizeTo(w+nudge_x,h+nudge_y);
+                        ww=window.innerWidth;
+                        wh=window.innerHeight
+                        wh-=sel_h; 
+                        maxLoop--;
                     }
+                   
+                    
                 }
           
-                wh-=sel_h; 
+               
          
                 phone.classList[ww<w?'add':'remove']('undersize_x');
                 phone.classList[ww>w?'add':'remove']('oversize_x');
