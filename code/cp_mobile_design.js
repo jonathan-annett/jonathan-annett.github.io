@@ -1902,7 +1902,7 @@ SOFTWARE.
                  window.device.cancelFakeItMode();
               } else {
                   var modes = {};
-                  Object.keys(e.target.dataset).forEach(function(mode){
+                  Object.keys(e.target.selectedOptions[0].dataset).forEach(function(mode){
                       modes[mode]=true;
                   });
                   window.device.fakeItMode(modes);
@@ -1982,7 +1982,7 @@ SOFTWARE.
                  window.device.cancelFakeItMode();
               } else {
                   var modes = {};
-                  Object.keys(e.target.dataset).forEach(function(mode){
+                  Object.keys(e.target.selectedOptions[0].dataset).forEach(function(mode){
                       modes[mode]=true;
                   });
                   window.device.fakeItMode(modes);
