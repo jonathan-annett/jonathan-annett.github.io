@@ -315,17 +315,70 @@ SOFTWARE.
         getBrowserIdHash(function(err,thisBrowserHash){
             var html= document.querySelector("html");
             if (err) return html.classList.remove("editor");
-            
-            if (thisBrowserHash && validBrowserHashes && validBrowserHashes.indexOf(thisBrowserHash)>=0) {
+            var 
+            dt=window.device?window.device.desktop():false,
+            mob=window.device?window.device.desktop():true,
+            frm=window.top!==window;
+            if (dt && thisBrowserHash && validBrowserHashes && validBrowserHashes.indexOf(thisBrowserHash)>=0) {
                 html.classList.add("editor");
-                if (typeof cb==='function') cb();
+                if (typeof cb==='function') cb("editor");
             } else {
                html.classList.remove("editor");
+               if (typeof cb==='function') cb(dt && frm ? "framed" : mob ? "mobile" : "desktop");
             }
         });
     }
   
+   var 
+   childEditor,
+   allLoaded=false,whenLoaded,
+   loadCheckerInterval = setInterval(function() {
+     if (/loaded|complete/.test(document.readyState)) {
+       clearInterval(loadCheckerInterval);
+       checkBrowserHashes(function(mode){
+           if (mode==='editor') {
+               if (window.device && window.device.framed()) {
+                   backfillhtml();
+                   onFrameLoaded(); 
+                   window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
+                   allLoaded="framed_editor";
+               } else { 
+                   if (window.device && window.device.desktop()) {
+                       if (window.top===top) {
+                           
+                           document.body.innerHTML='<button>Open Editor</button>';
+                           document.body.querySelector('button').onclick=function() {
+                                var w = 320,h=480;
+                               
+                               childEditor = window.open(
+                                   window.location.href=window.location.origin+window.location.pathname+'?refresh=1',
+                                   window.location.hostname.replace(/\./g,'_')+
+                                   window.location.pathname.replace(/\//g,'').replace(/\./,'_'),
+                                   "menubar=no,location=no,resizable=no,scrollbars=no,status=yes,width="+w+",height="+h
+                                   ) ;
+                           };
+                           allLoaded="editor_launcher";
+                           
+                       } else {
+                           backfillhtml();
+                           onWindowLoaded(); 
+                           window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
+                           allLoaded="editor";
+                       }
+                   }
+               }
+           } else {
+               allLoaded=mode;
+           }
+           if (whenLoaded) {
+               whenLoaded(allLoaded);
+               whenLoaded=undefined;
+           }
+       });
    
+     }
+   }, 10);
+
     
      function mobileDependancies(scripts,callback,editorHashes,elements,scr) {
      //question: what is this?
@@ -340,7 +393,8 @@ SOFTWARE.
 
      
      if (url_cache_bust_page) {
-         
+         allLoaded=false;
+         whenLoaded=false;
          window.location.href=window.location.origin+window.location.pathname+'?refresh=1';
          return ;
      }
@@ -446,7 +500,14 @@ SOFTWARE.
           if (url_cache_bust) {
             window.location.href=window.location.origin+window.location.pathname;
          }  
-         callback(elements);
+         
+         if (allLoaded) {
+           callback(elements,allLoaded);
+         } else {
+             whenLoaded = function(all) {
+                 callback(elements,all);
+             };
+         }
          
        }
      }
@@ -573,48 +634,6 @@ SOFTWARE.
         onWindowResize(); 
     }
     
-    var 
-    childEditor,
-    everythingLoaded = setInterval(function() {
-      if (/loaded|complete/.test(document.readyState)) {
-          
-        clearInterval(everythingLoaded);
-        
-       
-        checkBrowserHashes(function(){
-            
-            if (window.device && window.device.framed()) {
-                backfillhtml();
-                onFrameLoaded(); 
-                window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
-            
-            } else { 
-                if (window.device && window.device.desktop()) {
-                    if (window.top===top) {
-                        
-                        document.body.innerHTML='<button>Open Editor</button>';
-                        document.body.querySelector('button').onclick=function() {
-                             var w = 320,h=480;
-                            
-                            childEditor = window.open(
-                                window.location.href=window.location.origin+window.location.pathname+'?refresh=1',
-                                window.location.hostname.replace(/\./g,'_')+
-                                window.location.pathname.replace(/\//g,'').replace(/\./,'_'),
-                                "menubar=no,location=no,resizable=no,scrollbars=no,status=yes,width="+w+",height="+h
-                                ) ;
-                        };
-                        
-                    } else {
-                        backfillhtml();
-                        onWindowLoaded(); 
-                        window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
-                    }
-                }
-            }
-        });
-    
-      }
-    }, 10);
 
  
 
