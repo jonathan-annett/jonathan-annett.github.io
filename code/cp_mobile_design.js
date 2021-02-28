@@ -1031,8 +1031,6 @@ SOFTWARE.
              
              var 
              privates = {
-                compressor :  window.LZString.compressToEncodedURIComponent,
-                decompressor : window.LZString.decompressFromEncodedURIComponent,
                 pending : {},
                 nameToHash_ : {},
                 nameToHash  : function (name,cb) {
@@ -1059,7 +1057,7 @@ SOFTWARE.
                         } else {
                             
                                 var saver = function(hash,pending){
-                                   localStorage[hash] = privates.compressor (pending[hash].data);
+                                   localStorage[hash] = window.LZString.compressToEncodedURIComponent (pending[hash].data);
                                    if (!privates.pending[hash].loaded) {
                                       delete pending[hash];
                                       return cb(undefined,"writeFile complete:"+name,"cache removed");
@@ -1101,7 +1099,7 @@ SOFTWARE.
                        } else {
                            var compressed = localStorage[hash];
                            if (!compressed) return cb("not found");
-                           var data  = privates.decompressor(compressed);
+                           var data  = window.LZString.decompressFromEncodedURIComponent(compressed);
                            privates.pending[hash]={
                                data : data,
                                loaded : setTimeout(function(){
