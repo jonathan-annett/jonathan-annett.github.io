@@ -753,7 +753,7 @@ SOFTWARE.
                 wh=h+sel_h;
                 ww=w;
                 window.resizeTo(ww,wh);
-                window.resizeBy(window.outerWidth-window.innerWidth,window.outerHeight-window.innerHeight);
+                //window.resizeBy(window.outerWidth-window.innerWidth,window.outerHeight-window.innerHeight);
             }
       
             wh-=sel_h; 
