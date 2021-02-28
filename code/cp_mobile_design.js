@@ -1389,8 +1389,6 @@ SOFTWARE.
              }
          }
          
-    
-         
          function on_window_close(w, fn) {
            if (typeof fn === "function" && w && typeof w === "object") {
              setTimeout(function() {
@@ -1512,8 +1510,6 @@ SOFTWARE.
              
             return w;
          }
-         
-         
 
          function checkBrowserHashes(cb){
              getBrowserIdHash(function(err,thisBrowserHash){
@@ -1535,104 +1531,111 @@ SOFTWARE.
          
          function lsFs (hashPrefix) {
              
+             function lze(x) {
+                 return window.LZString.compressToBase64(x);
+             }
              
-             var 
-             privates = {
-                pending : {},
-                nameToHash_ : {},
-                nameToHash  : function (name,cb) {
-                     var c=privates.nameToHash_;
-                     if (c[name]) return cb(undefined,c[name]);
-                     singleSha256(name,function(err,hash){
-                         if (err) return cb(err);
-                         c[name]=hashPrefix+"_"+hash;
-                         cb(err,c[name]);
-                     });
-                 },
-             },
-             publics = {
-                 writeFile : function (name,data,cb) {
-                    privates.nameToHash(name,function(err,hash) {
-                        if (err) return cb(err);
-                        var job = privates.pending[hash];
-                        if (job && job.saver) {
-                            
-                            if (job.saving) clearTimeout(job.saving);
-                            job.data = data;
-                            job.when = Date.now();
-                            job.saving = setTimeout(job.saver,10*1000);
-                            return cb(undefined,"replaced previous pending writeFile op for:"+name);
-                            
-                        } else {
-                        
-                            var saver = function(hash,pending){
-                               localStorage[hash] = pending[hash].when.toString(36)+':'+window.LZString.compressToEncodedURIComponent (pending[hash].data);
-                               if (!privates.pending[hash].loaded) {
-                                  delete pending[hash];
-                                  return cb(undefined,"writeFile complete:"+name,"cache removed");
-                                   
-                               } else {
-                                   delete pending[hash].saving;
-                                   return cb(undefined,"writeFile complete:"+name+",cache remains loaded");
-                                   
-                               }
-                            }.bind(this,hash,privates.pending);
-                            
-                            if (job) {
-                                job.data   = data,
-                                job.when   = Date.now(),
-                                job.saver  = saver;
-                                job.saving = setTimeout(saver,10*1000);
-                                return cb(undefined,"updated pending writeFile op for:"+name);
-                            } else {
-                                privates.pending[hash]={
-                                    data : data,
-                                    when : Date.now(),
-                                    saver : saver,
-                                    saving : setTimeout(saver,10*1000)
-                                };
-                                return cb(undefined,"new pending writeFile op for:"+name);
+             function lzd(x) {
+                 return window.LZString.decompressFromBase64(x);
+             }
+             
+             function storageKey(fn) {
+                 return hashPrefix+lze(JSON.stringify({f:fn,z:lze(fn)}));
+             }
+             
+             function parseStorageKey(key) {
+                 
+                 if (typeof key==='string' && key.startsWith(hashPrefix)) {
+                     try {
+                         var o=JSON.parse(lzd(key.substr(hashPrefix.length)));
+                         if (o.f===lzd(o.z)) return o.f;
+                     } catch(e) {   }
+                 }
+                 return false;
+             }
+             
+             function storeFile(fn,data) {
+                localStorage[storageKey(fn)]=lze(JSON.stringify({when:Date.now(),data:data}));
+             }
+             
+             function deleteFile (fn) {
+                  delete localStorage[ storageKey(fn) ];
+             }
+             
+             function loadFile(fn) {
+                 try {
+                   var key=storageKey(fn),
+                       zdata=localStorage(key);
+                   return zdata ? JSON.parse(lzd(zdata)) : false;
+                 } catch(e){
+                     return false;
+                 }
+             }
+             
+             function listing () {
+                 return Object.keys(localStorage)
+                    .filter(function(k){
+                        return k.startWith(hashPrefix);
+                    }).map(function(k){
+                        return parseStorageKey(k);
+                    }).filter (function(fn){
+                        return !!fn;
+                    });
+             }
+             
+             function getArchive(){
+                 var 
+                 archive = {},
+                 keys = Object.keys(localStorage).filter(function(k){
+                    return k.startWith(hashPrefix);
+                 });
+                 keys.map(function(k){
+                       return parseStorageKey(k);
+                 }).forEach(function(fn,ix){
+                     if (fn) {
+                        archive[fn] = JSON.parse(lzd(localStorage[ keys[ix] ]));
+                     }
+                 });
+                 return lze(JSON.stringify({when:Date.now(),files:archive}));
+             }
+             
+             function putArchive(data) {
+                 try {
+                    var json = lzd(data);
+                    if (typeof json!=='string') return false;
+                    json = JSON.parse(json);
+                    if (typeof json==='object'&&typeof json.when==='number' && typeof data.files==='object') {
+                        listing ().forEach(function(fn){
+                            delete localStorage[ storageKey(fn) ];
+                        });
+                        Object.keys(json.files).forEach(function(fn){
+                            if (typeof (fn)==='string') {
+                                var file = json.files[fn];
+                                if (typeof file==='object') {
+                                    if (typeof file.when==='number'&& typeof file.data==='string') {
+                                        localStorage[ storageKey (fn) ] = lze( JSON.stringify(file) ) ;
+                                    }
+                                }
                             }
-                             
-                        }
-                    });    
-                 },
-                 readFile : function(name,cb) {
+                        });
+                        return true;
                      
-                     publics.stat(name,function(err,stat,stored,ix){
-                        if (err) return cb(err);
-                        if (!(!!stored && !!ix) ) {
-                            return ("internal error");
-                        }
-                        var compressed = stored.substr(ix+1);
-                        var data  = window.LZString.decompressFromEncodedURIComponent(compressed);
-                        return cb(!data?"read error":undefined,data);
-                     });
-                    
-                 },
-                 
-                 stat : function(name,cb){
-                     privates.nameToHash(name,function(err,hash) {
-                        if (err) return cb(err);
-                         
-                        var stored = localStorage[hash];
-                        if (!hash || typeof stored!=='string') return cb("not found");
-                        var ix = stored.indexOf(':');
-                        if (ix<0) return cb("corrupt");
-                          cb (undefined, {
-                             mtime  : new Date(Number(stored.substr(0,ix-1),36)),
-                             size   : (stored.length-ix)-1,
-                             inode  : hash
-                          },stored,ix);
-                        
-                     });
-                 },
-                 
-                
+                    }
+                 } catch (e) {
+                   
+                 }
+                 return false;
+             }
+             
+             return {
+                 listing    : listing,
+                 storeFile  : storeFile,
+                 loadFile   : loadFile,
+                 getArchive : getArchive,
+                 putArchive : putArchive,
+                 deleteFile : deleteFile
              };
-             
-             
-             return publics;
+        
          }
          
          var fs = lsFs("editing_");
@@ -1643,9 +1646,7 @@ SOFTWARE.
                  if (editorData.value != editorValueNow) {
                      editorData.value = editorValueNow;
                      editorData.element.innerHTML = editorValueNow ;
-                     fs.writeFile(editorData.name,editorValueNow,function(err,info){
-                         console.log(err,info);
-                     });
+                     fs.storeFile(editorData.name,editorValueNow);
                  }
              }
          }
@@ -1682,21 +1683,14 @@ SOFTWARE.
              wrapper.appendChild(edit_div);
              document.body.appendChild(wrapper);
              dragElement (edit_div);
-             
-             fs.readFile(fn,function(err,CSS_Text){
-                if (!err && CSS_Text) {
-                    console.log("got updated CSS for ",fn);
-                     editorData.value = CSS_Text;
-                     editorData.editor.value = CSS_Text;
-                     editorData.element.innerHTML = CSS_Text ;
-                 }
-                 editorData.interval = setInterval(editorOnChange,500,editorData);
-             });
-             
-              
-             
-             
-             
+             CSS_Text = fs.loadFile(fn);
+             if (CSS_Text) {
+                 console.log("got updated CSS for ",fn);
+                 editorData.value = CSS_Text;
+                 editorData.editor.value = CSS_Text;
+                 editorData.element.innerHTML = CSS_Text ;
+             }
+             editorData.interval = setInterval(editorOnChange,500,editorData);
              
          }
         
