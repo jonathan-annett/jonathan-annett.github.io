@@ -1149,13 +1149,13 @@ SOFTWARE.
                         }
 
                         if (allLoaded) {
-                            validBrowserHashes = editorHashes;
+                           
                             if (allLoaded !== "editor_launcher") {
                                 callback(elements, allLoaded);
                             }
                         } else {
                             whenLoaded = function(allLoaded) {
-                                validBrowserHashes = editorHashes;
+                               
                                 if (allLoaded !== "editor_launcher") {
                                     callback(elements, allLoaded);
                                 }
@@ -1167,7 +1167,7 @@ SOFTWARE.
             }
 
             loadDeps(scripts);
-            
+            validBrowserHashes = editorHashes;
             
         }
        
