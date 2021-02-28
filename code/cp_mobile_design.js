@@ -163,8 +163,7 @@ SOFTWARE.
     
     exports.__esModule = true;
     
-    delete window.device;
-    
+
     var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
     
     // Save the previous value of the device variable.
@@ -448,7 +447,7 @@ SOFTWARE.
     }
     // Orientation Handling
     // --------------------
-    setClasses (device);
+    setClasses (window.device);
     
     // Handle device orientation changes.
     function handleOrientation() {
@@ -524,7 +523,7 @@ SOFTWARE.
       
       var realDevice =  device.noConflict();
     
-      device = {
+      window.device = {
           
           fakeItMode : function() {
               Object.keys(realDevice).forEach(function(key) {
@@ -533,7 +532,7 @@ SOFTWARE.
                   
                  var x = realDevice[key];
                  if (typeof x === 'function') {
-                     device[key]=function() {
+                     window.device[key]=function() {
                          if (typeof modes[key]==='undefined') {
                              return x();
                          }
@@ -542,15 +541,15 @@ SOFTWARE.
                  }
               });
               
-              setClasses (device);
+              setClasses (window.device);
               
           },
           cancelFakeItMode : function() {
-              device = realDevice;
+              window.device = realDevice;
           }
       };
       
-      device.fakeItMode(modes);
+      window.device.fakeItMode(modes);
       
     };
     
@@ -1902,7 +1901,7 @@ SOFTWARE.
                  window.device.cancelFakeItMode();
               } else {
                   var modes = {};
-                  Object.keys(e.target.selectedOptions[0].dataset).forEach(function(mode){
+                  Object.keys(e.target.dataset).forEach(function(mode){
                       modes[mode]=true;
                   });
                   window.device.fakeItMode(modes);
