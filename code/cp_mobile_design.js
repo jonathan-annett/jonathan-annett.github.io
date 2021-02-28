@@ -1014,7 +1014,7 @@ SOFTWARE.
                  if (err) return html.classList.remove("editor");
                  var 
                  dt=window.device?window.device.desktop():false,
-                 mob=window.device?window.device.desktop():true,
+                 mob=window.device?window.device.mobile():true,
                  frm=window.top!==window;
                  if (dt && thisBrowserHash && validBrowserHashes && validBrowserHashes.indexOf(thisBrowserHash)>=0) {
                      html.classList.add("editor");
