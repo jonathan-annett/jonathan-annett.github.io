@@ -158,10 +158,12 @@ SOFTWARE.
     })("subtle_hash");
     
     //inject current-device
+    /*based on https://github.com/matthewhudson/current-device/blob/master/src/index.js*/
     (function(exports,module){'use strict';
-     /*based on https://github.com/matthewhudson/current-device/blob/master/src/index.js*/
-   
+    
     exports.__esModule = true;
+    
+    delete window.device;
     
     var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
     
@@ -292,6 +294,25 @@ SOFTWARE.
       return false;
     };
     
+    device.framed = function () {
+      /*
+      https://developer.mozilla.org/en-US/docs/Web/API/Window/parent
+      
+        The Window.parent property is a reference to the parent of the current window or subframe.
+      
+      If a window does not have a parent, its parent property is a reference to itself.
+      
+      When a window is loaded in an <iframe>, <object>, or <frame>, its parent is the window with the element embedding the window.
+        */
+         try {
+           // strictly speaking do not need to wrap this as we aren't digging into any parent properties
+           // but if we were, a cross-origin error may occur.
+           return window.parent!==window;
+         } catch (e) {
+            return true;
+         }
+    };
+    
     device.portrait = function () {
       if (screen.orientation && Object.prototype.hasOwnProperty.call(window, 'onorientationchange')) {
         return includes(screen.orientation.type, 'portrait');
@@ -360,59 +381,74 @@ SOFTWARE.
     // ---------------------
     
     // Insert the appropriate CSS class based on the _user_agent.
+    function setClasses (device) {
+        
+        'ios ipad iphone ipod mobile table desktop macos desktop '+
+        'windows television cordova framed android '+
+        'blackberry fxos meego node-webkit'.split(' ').forEach(
+            function(x){ 
+                removeClass(x);
+            });
+        
+        if (device.ios()) {
+          if (device.ipad()) {
+            addClass('ios ipad tablet');
+          } else if (device.iphone()) {
+            addClass('ios iphone mobile');
+          } else if (device.ipod()) {
+            addClass('ios ipod mobile');
+          }
+        } else if (device.macos()) {
+          addClass('macos desktop');
+        } else if (device.android()) {
+          if (device.androidTablet()) {
+            addClass('android tablet');
+          } else {
+            addClass('android mobile');
+          }
+        } else if (device.blackberry()) {
+          if (device.blackberryTablet()) {
+            addClass('blackberry tablet');
+          } else {
+            addClass('blackberry mobile');
+          }
+        } else if (device.windows()) {
+          if (device.windowsTablet()) {
+            addClass('windows tablet');
+          } else if (device.windowsPhone()) {
+            addClass('windows mobile');
+          } else {
+            addClass('windows desktop');
+          }
+        } else if (device.fxos()) {
+          if (device.fxosTablet()) {
+            addClass('fxos tablet');
+          } else {
+            addClass('fxos mobile');
+          }
+        } else if (device.meego()) {
+          addClass('meego mobile');
+        } else if (device.nodeWebkit()) {
+          addClass('node-webkit');
+        } else if (device.television()) {
+          addClass('television');
+        } else if (device.desktop()) {
+          addClass('desktop');
+        }
+        
+        if (device.cordova()) {
+          addClass('cordova');
+        }
+        
+        if ( device.framed () ) {
+          addClass("framed");
+        }
     
-    if (device.ios()) {
-      if (device.ipad()) {
-        addClass('ios ipad tablet');
-      } else if (device.iphone()) {
-        addClass('ios iphone mobile');
-      } else if (device.ipod()) {
-        addClass('ios ipod mobile');
-      }
-    } else if (device.macos()) {
-      addClass('macos desktop');
-    } else if (device.android()) {
-      if (device.androidTablet()) {
-        addClass('android tablet');
-      } else {
-        addClass('android mobile');
-      }
-    } else if (device.blackberry()) {
-      if (device.blackberryTablet()) {
-        addClass('blackberry tablet');
-      } else {
-        addClass('blackberry mobile');
-      }
-    } else if (device.windows()) {
-      if (device.windowsTablet()) {
-        addClass('windows tablet');
-      } else if (device.windowsPhone()) {
-        addClass('windows mobile');
-      } else {
-        addClass('windows desktop');
-      }
-    } else if (device.fxos()) {
-      if (device.fxosTablet()) {
-        addClass('fxos tablet');
-      } else {
-        addClass('fxos mobile');
-      }
-    } else if (device.meego()) {
-      addClass('meego mobile');
-    } else if (device.nodeWebkit()) {
-      addClass('node-webkit');
-    } else if (device.television()) {
-      addClass('television');
-    } else if (device.desktop()) {
-      addClass('desktop');
+    
     }
-    
-    if (device.cordova()) {
-      addClass('cordova');
-    }
-    
     // Orientation Handling
     // --------------------
+    setClasses (device);
     
     // Handle device orientation changes.
     function handleOrientation() {
@@ -478,37 +514,45 @@ SOFTWARE.
     }
     
     setOrientationCache();
-                              
-    /*
-    custom options added by Jonathan Annett
-    */                         
-                              
-     function isFramed () {
-      /*
-    https://developer.mozilla.org/en-US/docs/Web/API/Window/parent
+     
     
-      The Window.parent property is a reference to the parent of the current window or subframe.
-    
-    If a window does not have a parent, its parent property is a reference to itself.
-    
-    When a window is loaded in an <iframe>, <object>, or <frame>, its parent is the window with the element embedding the window.
-      */
-       try {
-         // strictly speaking do not need to wrap this as we aren't digging into any parent properties
-         // but if we were, a cross-origin error may occur.
-         return window.parent!==window;
-       } catch (e) {
-          return true;
-       }
-    }  
-      
-    if ( isFramed () )
-      addClass("framed");
-                              
-    device.framed = function () {
-      return hasClass("framed");
+    device.cancelFakeItMode = function() {
+        
     };
-                               
+      
+    device.fakeItMode = function(modes) {
+      
+      var realDevice =  device.noConflict();
+    
+      device = {
+          
+          fakeItMode : function() {
+              Object.keys(realDevice).forEach(function(key) {
+                 if (key==='fakeItMode') return;
+                 if (key==='cancelFakeItMode') return;
+                  
+                 var x = realDevice[key];
+                 if (typeof x === 'function') {
+                     device[key]=function() {
+                         if (typeof modes[key]==='undefined') {
+                             return x();
+                         }
+                         return modes[key];
+                     }
+                 }
+              });
+              
+              setClasses (device);
+              
+          },
+          cancelFakeItMode : function() {
+              device = realDevice;
+          }
+      };
+      
+      device.fakeItMode(modes);
+      
+    };
     
     exports.default = device;
     module.exports = exports['default'];})({},{exports:{}})
@@ -1793,26 +1837,27 @@ SOFTWARE.
           ' </div>  '+
           ' <div id="mobile_chooser">  '+
           '   <select>  '+
-          '     <option>choose device</option>  '+
-          '     <option>generic </option>  '+
-          '     <option>galaxy_S5</option>  '+
-          '     <option>motog4 </option>  '+
-          '     <option>pixel_2</option>  '+
-          '     <option>pixel_2XL</option>  '+
-          '     <option>iPhone_5</option>  '+
-          '     <option>iPhone_5_SE</option>  '+
-          '     <option>iPhone_6</option>  '+
-          '     <option>iPhone_7</option>  '+
-          '     <option>iPhone_8</option>  '+
-          '     <option>iPhone_6_Plus</option>  '+
-          '     <option>iPhone_7_Plus</option>  '+
-          '     <option>iPhone_8_Plus</option>  '+
-          '     <option>iPhone_X</option>  '+
-          '     <option>iPad</option>  '+
-          '     <option>iPad_Pro</option>  '+
-          '     <option>surface_Duo</option>  '+
-          '     <option>galaxy_Fold</option>  '+
-          '     <option>Unihertz_Titan</option>  '+
+          '     <option value="none">choose device</option>  '+
+          '     <option data-mobile>generic</option>  '+
+          '     <option data-tablet>generic_tablet</option>  '+
+          '     <option data-android data-mobile>galaxy_S5</option>  '+
+          '     <option data-android data-mobile>motog4 </option>  '+
+          '     <option data-android data-mobile>pixel_2</option>  '+
+          '     <option data-android data-mobile>pixel_2XL</option>  '+
+          '     <option data-ios data-mobile>iPhone_5</option>  '+
+          '     <option data-ios data-mobile>iPhone_5_SE</option>  '+
+          '     <option data-ios data-mobile>iPhone_6</option>  '+
+          '     <option data-ios data-mobile>iPhone_7</option>  '+
+          '     <option data-ios data-mobile>iPhone_8</option>  '+
+          '     <option data-ios data-mobile>iPhone_6_Plus</option>  '+
+          '     <option data-ios data-mobile>iPhone_7_Plus</option>  '+
+          '     <option data-ios data-mobile>iPhone_8_Plus</option>  '+
+          '     <option data-ios data-mobile>iPhone_X</option>  '+
+          '     <option data-ios data-tablet>iPad</option>  '+
+          '     <option data-ios data-tablet>iPad_Pro</option>  '+
+          '     <option data-windows data-tablet>surface_Duo</option>  '+
+          '     <option data-android data-mobile>galaxy_Fold</option>  '+
+          '     <option data-android data-mobile>Unihertz_Titan</option>  '+
           '   </select>'+
           ' </div>  ';
         
@@ -1852,6 +1897,16 @@ SOFTWARE.
             
             select_phone.onchange=function(e){
               phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
+              
+              if (e.target.value==="none") {
+                 window.device.cancelFakeItMode();
+              } else {
+                  var modes = {};
+                  Object.keys(e.target.dataset).forEach(function(mode){
+                      modes[mode]=true;
+                  });
+                  window.device.fakeItMode(modes);
+              }
               onFrameResize(); 
             };
             
