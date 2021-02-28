@@ -193,13 +193,13 @@ html.desktop.editor.floaters .draggable {
     
 }
 
-html.desktop.editor div.qr {
-    display:none;
+html.desktop.editor div.qr_wrapper {
+    display: none!important;
 }
 
 
-html.desktop.editor.floaters div.qr {
-    display:inline-block;
+html.desktop.editor.floaters div.qr_wrapper {
+    display: inline-block !important;
 }
 
    
