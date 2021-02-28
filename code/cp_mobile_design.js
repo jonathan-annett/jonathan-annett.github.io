@@ -1049,67 +1049,79 @@ SOFTWARE.
                         if (err) return cb(err);
                         var job = privates.pending[hash];
                         if (job && job.saver) {
+                            
                             if (job.saving) clearTimeout(job.saving);
                             job.data = data;
+                            job.when = Date.now();
                             job.saving = setTimeout(job.saver,10*1000);
                             return cb(undefined,"replaced previous pending writeFile op for:"+name);
                             
                         } else {
+                        
+                            var saver = function(hash,pending){
+                               localStorage[hash] = job.when.toString(36)+':'+window.LZString.compressToEncodedURIComponent (pending[hash].data);
+                               if (!privates.pending[hash].loaded) {
+                                  delete pending[hash];
+                                  return cb(undefined,"writeFile complete:"+name,"cache removed");
+                                   
+                               } else {
+                                   delete pending[hash].saving;
+                                   return cb(undefined,"writeFile complete:"+name+",cache remains loaded");
+                                   
+                               }
+                            }.bind(this,hash,privates.pending);
                             
-                                var saver = function(hash,pending){
-                                   localStorage[hash] = window.LZString.compressToEncodedURIComponent (pending[hash].data);
-                                   if (!privates.pending[hash].loaded) {
-                                      delete pending[hash];
-                                      return cb(undefined,"writeFile complete:"+name,"cache removed");
-                                       
-                                   } else {
-                                       delete pending[hash].saving;
-                                       return cb(undefined,"writeFile complete:"+name+",cache remains loaded");
-                                       
-                                   }
-                                }.bind(this,hash,privates.pending);
-                                
-                                if (job) {
-                                    job.saver  = saver;
-                                    job.saving = setTimeout(saver,10*1000);
-                                    return cb(undefined,"updated pending writeFile op for:"+name);
-                                } else {
-                                    privates.pending[hash]={
-                                        data : data,
-                                        saver : saver,
-                                        saving : setTimeout(saver,10*1000)
-                                    };
-                                    return cb(undefined,"new pending writeFile op for:"+name);
-                                }
-                                 
+                            if (job) {
+                                job.data   = data,
+                                job.when   = Date.now(),
+                                job.saver  = saver;
+                                job.saving = setTimeout(saver,10*1000);
+                                return cb(undefined,"updated pending writeFile op for:"+name);
+                            } else {
+                                privates.pending[hash]={
+                                    data : data,
+                                    when : Date.now(),
+                                    saver : saver,
+                                    saving : setTimeout(saver,10*1000)
+                                };
+                                return cb(undefined,"new pending writeFile op for:"+name);
+                            }
+                             
                         }
                     });    
                  },
                  readFile : function(name,cb) {
-                     privates.nameToHash(name,function(err,hash) {
-                       if (privates.pending[hash]) {
-                           if (privates.pending[hash].loaded) {
-                               clearTimeout(privates.pending[hash].loaded);
-                           }
-                           privates.pending[hash].loaded = setTimeout(function(){
-                               delete privates.pending[hash];
-                           },10*1000);
-                           
-                           return cb (undefined,privates.pending[hash].data,"read from cache");
-                       } else {
-                           var compressed = localStorage[hash];
-                           if (!compressed) return cb("not found");
-                           var data  = window.LZString.decompressFromEncodedURIComponent(compressed);
-                           privates.pending[hash]={
-                               data : data,
-                               loaded : setTimeout(function(){
-                                   delete privates.pending[hash];
-                               },10*1000)
-                           };
-                           cb(undefined,data,"decompressed from storage");
-                       }
+                     
+                     publics.stat(name,function(err,stat,stored,ix){
+                        if (err) return cb(err);
+                        if (!(!!stored && !!ix) ) {
+                            return ("internal error");
+                        }
+                        var compressed = stored.substr(ix+1);
+                        var data  = window.LZString.decompressFromEncodedURIComponent(compressed);
+                        return cb(!data?"read error":undefined,data);
                      });
-                 }
+                    
+                 },
+                 
+                 stat : function(name,cb){
+                     privates.nameToHash(name,function(err,hash) {
+                        if (err) return cb(err);
+                         
+                        var stored = localStorage[hash];
+                        if (!hash || typeof stored!=='string') return cb("not found");
+                        var ix = stored.indexOf(':');
+                        if (ix<0) return cb("corrupt");
+                          cb (undefined, {
+                             mtime  : new Date(Number(stored.substr(0,ix-1),36)),
+                             size   : (stored.length-ix)-1,
+                             inode  : hash
+                          },stored,ix);
+                        
+                     });
+                 },
+                 
+                
              };
              
              
@@ -1132,6 +1144,7 @@ SOFTWARE.
          }
          
          function addEditableCSS(CSS_Text,fn) {
+             
              
              
              console.log('included inline stylesheet:',fn)
@@ -1161,11 +1174,21 @@ SOFTWARE.
              edit_div.appendChild(edit);
              wrapper.appendChild(edit_div);
              document.body.appendChild(wrapper);
+             dragElement (edit_div);
              
-             editorData.interval = setInterval(editorOnChange,500,editorData);
+             fs.readFile(fn,function(err,CSS_Text){
+                if (!err && CSS_Text) {
+                    console.log("got updated CSS for ",fn);
+                     editorData.value = CSS_Text;
+                     editorData.editor.value = CSS_Text;
+                     editorData.element.innerHTML = CSS_Text ;
+                 }
+                 editorData.interval = setInterval(editorOnChange,500,editorData);
+             });
+             
               
              
-             dragElement (edit_div);
+             
              
              
          }
