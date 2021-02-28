@@ -192,4 +192,14 @@ html.desktop.editor.floaters .draggable {
     
     
 }
+
+html.desktop.editor div.qr {
+    display:none;
+}
+
+
+html.desktop.editor.floaters div.qr {
+    display:inline-block;
+}
+
    
