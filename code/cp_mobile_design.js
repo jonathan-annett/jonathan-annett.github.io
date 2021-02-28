@@ -1194,6 +1194,7 @@ SOFTWARE.
           '     <option>iPad_Pro</option>  '+
           '     <option>surface_Duo</option>  '+
           '     <option>galaxy_Fold</option>  '+
+          '     <option>Unihertz_Titan</option>  '+
           '   </select>'+
           ' </div>  ';
         
