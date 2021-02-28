@@ -495,16 +495,13 @@ SOFTWARE.
         
     }
 
-    function onWindowLoaded () {
+    function onFrameLoaded () {
         
-        var targ ={
-          w : 100,
-          h : 100
-        },
+        var 
         select_phone=document.querySelector("#mobile_chooser"),
         phone=document.querySelector("#mobile_phone");
         
-        function onWindowResize (){
+        function onFrameResize (){
           var ww=window.innerWidth,wh=window.innerHeight,
               s = getComputedStyle(phone),
               w =parseInt(s.width),
@@ -524,15 +521,57 @@ SOFTWARE.
         
         select_phone.onchange=function(e){
           phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
-          onWindowResize(); 
+          onFrameResize(); 
         };
         
         
         
+        window.addEventListener("resize",onFrameResize,{passive:true});
+        onFrameResize(); 
+    }
+    
+    function onWindowLoaded () {
+        
+        var 
+        select_phone=document.querySelector("#mobile_chooser"),
+        phone=document.querySelector("#mobile_phone");
+        
+        function onWindowResize (do_it){
+          var ww=window.innerWidth,wh=window.innerHeight,
+              s = getComputedStyle(phone),
+              w =parseInt(s.width),
+              h = parseInt(s.height),
+              sel_h=parseInt(getComputedStyle(select_phone).height);
+            
+            if (isNaN(w)) return;
+          
+            if (do_it===true) {
+                wh=h+sel_h;
+                ww=w;
+                window.resizeTo(ww,wh);
+            }
+      
+            wh-=sel_h; 
+     
+            phone.classList[ww<w?'add':'remove']('undersize_x');
+            phone.classList[ww>w?'add':'remove']('oversize_x');
+            phone.classList[wh<h?'add':'remove']('undersize_y');
+            phone.classList[wh>h?'add':'remove']('oversize_y');
+            
+            
+            
+           
+        }
+        
+        select_phone.onchange=function(e){
+          phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
+          onWindowResize(true);
+        };
+        
+
         window.addEventListener("resize",onWindowResize,{passive:true});
         onWindowResize(); 
     }
-
     
     var 
     everythingLoaded = setInterval(function() {
@@ -540,10 +579,21 @@ SOFTWARE.
           
         clearInterval(everythingLoaded);
         
+       
         checkBrowserHashes(function(){
+            
+            if (window.devices && window.devices.framed()) {
                 backfillhtml();
-                onWindowLoaded(); 
+                onFrameLoaded(); 
                 window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
+            
+            } else {
+                if (window.devices && window.devices.desktop()) {
+                    backfillhtml();
+                    onWindowLoaded(); 
+                    window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
+                }
+            }
         });
     
       }
