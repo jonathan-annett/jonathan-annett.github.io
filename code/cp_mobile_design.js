@@ -1265,16 +1265,16 @@ SOFTWARE.
                     wh-=sel_h; 
                     var maxLoop=200;
                     while ( (maxLoop>0) && ((ww<w) || (ww>w) || (wh<h) || (wh>h)) ) {
-                        if (ww<w) {
+                        if (ww>w) {
                             nudge_x++;
                         }
-                        if (ww>w) {
+                        if (ww<w) {
                            nudge_x--;
                         }
-                        if (wh<h) {
+                        if (wh>h) {
                             nudge_y++;
                         }
-                        if (wh>h) {
+                        if (wh<h) {
                            nudge_y--;
                         }
                         window.resizeTo(w+nudge_x,h+nudge_y);
