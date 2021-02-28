@@ -1314,6 +1314,10 @@ SOFTWARE.
                 if (e.ctrlKey && e.shiftKey && e.which===220 ) {
                     document.querySelector("html").classList.toggle('floaters');
                 }
+                if (e.ctrlKey && e.shiftKey && e.which===72 ) {
+                    window.location.href=window.location.origin+window.location.pathname+'?bust';
+                    return
+                }
             }
             
             select_phone.onchange=function(e){
