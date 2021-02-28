@@ -470,7 +470,7 @@ SOFTWARE.
                    allLoaded="framed_editor";
                } else { 
                    if (window.device && window.device.desktop()) {
-                       if (window.top===top) {
+                       if (window.top===top && window.toolbar.visible ) {
                            
                            document.body.innerHTML='<button>Open Editor</button>';
                            document.body.querySelector('button').onclick=function() {
