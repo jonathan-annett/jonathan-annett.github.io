@@ -1262,11 +1262,10 @@ SOFTWARE.
                     window.resizeTo(w+nudge_x,h+nudge_y);
                     nudge_x=w-window.innerWidth;
                     nudge_y=h-window.innerHeight+sel_h;
-                    if (nudge_x!==0 && nudge_y !== 0);
-                    
-                    window.resizeBy(nudge_x,nudge_y);
-                    
-                    //window.resizeBy(window.outerWidth-window.innerWidth,window.outerHeight-window.innerHeight);
+                    if (nudge_x!==0 && nudge_y !== 0){
+                        console.log({updated:{nudge_x,nudge_y}});
+                        window.resizeBy(nudge_x,nudge_y);
+                    }
                 }
           
                 wh-=sel_h; 
