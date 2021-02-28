@@ -46,10 +46,10 @@ p.undersize_y
   display : inline-block;
 }
 
-html.desktop.framed .mobile_phone.oversize_x,
-html.desktop.framed .mobile_phone.oversize_y,
-html.desktop.framed .mobile_phone.undersize_x,
-html.desktop.framed .mobile_phone.undersize_y  {
+html.desktop.editor .mobile_phone.oversize_x,
+html.desktop.editor .mobile_phone.oversize_y,
+html.desktop.editor .mobile_phone.undersize_x,
+html.desktop.editor .mobile_phone.undersize_y  {
     display:inline-block;
     background-color:red;
     opacity : 0.75;
