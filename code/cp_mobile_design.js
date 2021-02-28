@@ -369,10 +369,10 @@ SOFTWARE.
                     console.log('included inline stylesheet:',fn)
                     var sheet = append_CSS(scripts[0][1]);
                     var wrapper = document.createElement('div');
-                    wrapper.className="draggable_wrapper";
+                    wrapper.className="draggable_wrapper editor";
                     
                     var edit_div = document.createElement('div');
-                    edit_div.className="draggable";
+                    edit_div.className="draggable editor";
                     
                     var h1 = document.createElement('h1');
                     var edit = document.createElement('textarea');

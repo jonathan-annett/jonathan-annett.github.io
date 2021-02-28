@@ -133,9 +133,12 @@ html.desktop.framed .mobile_phone.undersize_y  {
   height:658px;
 }
 
+div.draggable_wrapper.editor,
+.draggable.editor {
+    display:none;
+}
 
-
-html.desktop.framed #mobile_chooser {
+html.desktop.editor #mobile_chooser {
   display:inline-block;
   bottom:0;
   top:unset;
@@ -146,14 +149,16 @@ html.desktop.framed #mobile_chooser {
 }
 
 
-div.draggable_wrapper {    
+html.desktop.editor div.draggable_wrapper {    
     display: grid;     
     height: 100%; 
     width: 100%;
     
 }
 
-.draggable {
+
+
+html.desktop.editor .draggable {
    margin: auto; 
    display:block;  
    position:absolute; 
