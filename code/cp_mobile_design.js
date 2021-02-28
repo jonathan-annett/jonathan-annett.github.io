@@ -1310,7 +1310,7 @@ SOFTWARE.
             
             
             function onWindowKeydown (e) {
-                if (e.ctrlKey && e.shiftKey && e.keyCode==='Backslash' ) {
+                if (e.ctrlKey && e.shiftKey && e.which===220 ) {
                     document.querySelector("html").classList.toggle('floaters');
                 }
             }
