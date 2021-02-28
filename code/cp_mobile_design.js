@@ -310,6 +310,132 @@ SOFTWARE.
       
     });
     
+    var On="addEventListener";
+    
+    function on_window_close(w, fn) {
+      if (typeof fn === "function" && w && typeof w === "object") {
+        setTimeout(function() {
+          if (w.closed) return fn();
+
+          try {
+            w[On]("beforeunload", fn);
+          } catch (err) {
+            // console.log(err);
+            var fallback = function() {
+              if (w.closed) return fn();
+              setTimeout(fallback, 500, w, fn);
+            };
+            setTimeout(fallback, 500);
+          }
+        }, 1000);
+      }
+    }
+
+    function on_window_open(w, fn) {
+      if (typeof fn === "function" && w && typeof w === "object") {
+        try {
+          w[On]("load", fn);
+        } catch (err) {
+          setTimeout(fn, 2000, w);
+        }
+      }
+    }
+    
+    function on_window_move (w,fn) {
+      
+       if (typeof fn === "function" && w && typeof w === "object") {
+        try {
+          
+          var
+          last_top=w.screenY,last_left=w.screenX,
+          check = function(){
+             if(last_left != w.screenX || last_top != w.screenY){
+                last_left = w.screenX;
+                last_top = w.screenY; 
+                fn(last_left,last_top);
+               }
+          },
+          interval = setInterval(check,500);
+          w("resize", check);
+          w("focus", check);
+          w("blur", check);
+          w.cancel_on_window_move = function(){
+             if (interval) clearTimeout(interval);
+             interval=undefined;
+             w.removeEventListener("resize", check);
+             w.removeEventListener("focus", check);
+             w.removeEventListener("blur", check);
+          };
+          
+        } catch (err) {
+           
+        }
+      }
+    }
+    
+    function on_window_size(w,fn) {
+        if (typeof fn === "function" && w && typeof w === "object") {
+            try {
+              w[On]("resize", function(){
+                fn(w.outerWidth,w.outerHeight);
+              });
+            } catch (err) {
+              console.log(err);
+            }
+          }  
+    }
+
+    function open_window(
+      url,
+      name,
+      left,
+      top,
+      width,
+      height,
+      size,
+      onClosed,
+      onOpened
+    ) {
+      
+      var pos=open_window.pos_cache[name];
+      if (pos) {
+         left= pos.left || left;
+         top=  pos.top || top;
+        } else {
+        pos = {
+          left:left,
+          top:top
+          };
+        open_window.pos_cache[name] = pos;
+      } 
+        
+      
+        
+      var opts =
+          "toolbar=no, menubar=no, location=no, resizable=" +
+          (size ? "yes" : "no") +
+          "scrollbars=" +
+          (size ? "yes" : "no") +
+          ", top=" +
+          top.toString() +
+          ",left=" +
+          left.toString() +
+          ", width=" +
+          width.toString() +
+          ", height=" +
+          height.toString(),
+        w = window.open(url, name, opts);
+         
+       if (w) {
+         on_window_open(w,onOpened);
+         on_window_close(w,onClosed);
+       }
+        
+       return w;
+    }
+    
+    open_window.pos_cache = {};
+    
     
     function checkBrowserHashes(cb){
         getBrowserIdHash(function(err,thisBrowserHash){
@@ -348,14 +474,27 @@ SOFTWARE.
                            
                            document.body.innerHTML='<button>Open Editor</button>';
                            document.body.querySelector('button').onclick=function() {
-                                var w = 320,h=480;
+                                var 
+                                url=window.location.origin+window.location.pathname+'?refresh=1',
+                                name=window.location.hostname.replace(/\./g,'_')+
+                                     window.location.pathname.replace(/\//g,'').replace(/\./,'_'),
+                                width_ = 320,
+                                height_ = 480,
+                                left=10,
+                                top=10,
                                
-                               childEditor = window.open(
-                                   window.location.href=window.location.origin+window.location.pathname+'?refresh=1',
-                                   window.location.hostname.replace(/\./g,'_')+
-                                   window.location.pathname.replace(/\//g,'').replace(/\./,'_'),
-                                   "menubar=no,location=no,resizable=no,scrollbars=no,status=yes,width="+w+",height="+h
-                                   ) ;
+                               childEditor = open_window(
+                                   url,
+                                   name,
+                                   left,
+                                   top,
+                                   width_,
+                                   height_,
+                                   true,
+                                   function onClosed(){},
+                                   function onOpened(){}
+                                 );
+                                 
                            };
                            allLoaded="editor_launcher";
                            
