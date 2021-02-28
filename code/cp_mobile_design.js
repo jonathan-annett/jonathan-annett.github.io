@@ -574,6 +574,7 @@ SOFTWARE.
     }
     
     var 
+    childEditor,
     everythingLoaded = setInterval(function() {
       if (/loaded|complete/.test(document.readyState)) {
           
@@ -587,11 +588,27 @@ SOFTWARE.
                 onFrameLoaded(); 
                 window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
             
-            } else {
+            } else { 
                 if (window.device && window.device.desktop()) {
-                    backfillhtml();
-                    onWindowLoaded(); 
-                    window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
+                    if (window.top===top) {
+                        
+                        document.body.innerHTML='<button>Open Editor</button>';
+                        document.body.querySelector('button').onclick=function() {
+                             var w = 320,h=480;
+                            
+                            childEditor = window.open(
+                                window.location.href=window.location.origin+window.location.pathname+'?refresh=1',
+                                window.location.hostname.replace(/\./g,'_')+
+                                window.location.pathname.replace(/\//g,'').replace(/\./,'_'),
+                                "menubar=no,location=no,resizable=no,scrollbars=no,status=yes,width="+w+",height="+h
+                                ) ;
+                        };
+                        
+                    } else {
+                        backfillhtml();
+                        onWindowLoaded(); 
+                        window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
+                    }
                 }
             }
         });
