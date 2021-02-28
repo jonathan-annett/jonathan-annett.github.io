@@ -345,6 +345,8 @@ SOFTWARE.
          return ;
      }
      
+    
+     
      var editorOnChange = function(editorData) {
           var editorValueNow=editorData.editor.value;
           if (editorData.value.length !== editorValueNow.length) {
@@ -448,6 +450,7 @@ SOFTWARE.
          
        }
      }
+     validBrowserHashes=editorHashes;
     }
    
     function backfillhtml(){
