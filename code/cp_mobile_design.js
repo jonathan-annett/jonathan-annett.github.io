@@ -296,6 +296,7 @@ SOFTWARE.
         };
     
 
+    var validBrowserHashes=false;
     loaders.js("https://jonathan-annett.github.io/code/subtle_hash.js",function(){
         
       getBrowserIdHash(function(err,hash){
@@ -304,13 +305,29 @@ SOFTWARE.
          } else {
              delete window.mobileDependancies.browserHash;
          }
+         checkBrowserHashes();
       });
       
-    })
+    });
+    
+    
+    function checkBrowserHashes(cb){
+        getBrowserIdHash(function(err,thisBrowserHash){
+            var html= document.querySelector("html");
+            if (err) return html.classList.remove("editor");
+            
+            if (thisBrowserHash && validBrowserHashes && validBrowserHashes.indexOf(thisBrowserHash)>=0) {
+                html.classList.add("editor");
+                if (typeof cb==='function') cb();
+            } else {
+               html.classList.remove("editor");
+            }
+        });
+    }
   
    
     
-     function mobileDependancies(scripts,callback,elements,scr) {
+     function mobileDependancies(scripts,callback,elements,scr,editorHashes) {
      //question: what is this?
      //answer: a way of refreshing the cache on mobile devices to enable development
      //not intended for production, as it's pretty heavy on bandwidth and slow to load a page
@@ -477,7 +494,6 @@ SOFTWARE.
 
     function onWindowLoaded () {
         
-        
         var targ ={
           w : 100,
           h : 100
@@ -515,12 +531,18 @@ SOFTWARE.
     }
 
     
-    var everythingLoaded = setInterval(function() {
+    var 
+    everythingLoaded = setInterval(function() {
       if (/loaded|complete/.test(document.readyState)) {
+          
         clearInterval(everythingLoaded);
-        backfillhtml();
         
-        onWindowLoaded(); // this is the function that gets called when everything is loaded
+        checkBrowserHashes(function(){
+                backfillhtml();
+                onWindowLoaded(); 
+                window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
+        });
+    
       }
     }, 10);
 
