@@ -1639,6 +1639,7 @@ SOFTWARE.
          }
          
          var fs = lsFs("editing_");
+         mobileDependancies.fs = fs;
          
          function editorOnChange(editorData) {
              var editorValueNow=editorData.editor.value;
