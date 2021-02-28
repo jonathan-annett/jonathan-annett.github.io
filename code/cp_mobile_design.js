@@ -1551,7 +1551,7 @@ SOFTWARE.
              function loadFile(fn) {
                  try {
                    var key=storageKey(fn),
-                       zdata=localStorage(key);
+                       zdata=localStorage[key];
                    return zdata ? JSON.parse(lzd(zdata)) : false;
                  } catch(e){
                      return false;
