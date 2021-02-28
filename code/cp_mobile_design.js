@@ -1246,7 +1246,8 @@ SOFTWARE.
             
             var 
             select_phone=document.querySelector("#mobile_chooser"),
-            phone=document.querySelector("#mobile_phone");
+            phone=document.querySelector("#mobile_phone"),
+            nudge_x=0,nudge_y=0;
             
             function onWindowResize (do_it){
               var ww=window.innerWidth,wh=window.innerHeight,
@@ -1258,9 +1259,13 @@ SOFTWARE.
                 if (isNaN(w)) return;
               
                 if (do_it===true) {
-                    wh=h+sel_h;
-                    ww=w;
-                    window.resizeTo(ww,wh);
+                    window.resizeTo(w+nudge_x,h+nudge_y);
+                    nudge_x=w-window.innerWidth;
+                    nudge_y=h-window.innerHeight+sel_h;
+                    if (nudge_x!==0 && nudge_y !== 0);
+                    
+                    window.resizeBy(nudge_x,nudge_y);
+                    
                     //window.resizeBy(window.outerWidth-window.innerWidth,window.outerHeight-window.innerHeight);
                 }
           
