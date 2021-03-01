@@ -7,13 +7,19 @@
       div.cookies,
       html.answered div.ask {
         display:none; 
-        margin:20px;
+        margin-top:20px;
+        maring-left:20px;
       }
       
       html.answered.yes div.cookies,
       html.answered.no div.nocookies,
       .ask {
         display:inline-block;        
+      }
+      
+      pre {
+         background : yellow; 
+         width:100%;
       }
             
       
@@ -91,7 +97,7 @@
         } else {
            html.className=""; 
         }   
-        qry("#theCookies").innerHTML = document.cookie;
+        qry("#theCookies").innerHTML = document.cookie || "&nsbp;";
         qry("#theStorage").innerHTML = JSON.stringify(localStorage,undefined,4);
       
       }
