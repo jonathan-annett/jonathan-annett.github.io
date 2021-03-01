@@ -1835,11 +1835,12 @@ module.exports = exports['default'];})({},{exports:{}})
         }
         
         var realDevice = window.device;
-        var preserveClasses=document.body.querySelector("html").className;
+        var htmlEl = document.querySelector("html");
+        var preserveClasses=htmlEl.className;
         function fakeDevice(optEl) {
             
             if (optEl.value==='none') {
-                document.body.querySelector("html").className=preserveClasses;
+                htmlEl.className=preserveClasses;
                 window.device=realDevice;
                 return realDevice;
             }
@@ -1887,7 +1888,7 @@ module.exports = exports['default'];})({},{exports:{}})
                classes.unshift('framed');
             }
 
-            document.body.querySelector("html").className=classes.join(' ');
+            htmlEl.className=classes.join(' ');
             window.device=dev;
             return dev;
 
