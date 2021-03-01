@@ -1929,7 +1929,8 @@ module.exports = exports['default'];})({},{exports:{}})
             
             select_phone.onchange=function(e){
                 phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
-                fakeDevice(e.target.selectedOptions[0]);
+                console.log(e.target.selectedOptions,e.target.selectedIndex,e.target.options[e.target.selectedIndex])
+                //fakeDevice(e.target.selectedOptions[0]);
             };
             window.addEventListener("resize",onFrameResize,{passive:true});
             onFrameResize(); 
