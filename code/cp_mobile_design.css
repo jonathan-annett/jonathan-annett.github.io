@@ -47,15 +47,15 @@ p.undersize_y
 }
 
 
-html.desktop.editor,
-html.desktop.editor body {
+html.editor,
+html.editor body {
     overflow:hidden;
 }
 
-html.desktop.editor .mobile_phone.oversize_x,
-html.desktop.editor .mobile_phone.oversize_y,
-html.desktop.editor .mobile_phone.undersize_x,
-html.desktop.editor .mobile_phone.undersize_y  {
+html.editor .mobile_phone.oversize_x,
+html.editor .mobile_phone.oversize_y,
+html.editor .mobile_phone.undersize_x,
+html.editor .mobile_phone.undersize_y  {
     display:inline-block;
     background-color:red;
     opacity : 0.75;
@@ -158,7 +158,7 @@ div.draggable_wrapper.editor,
     display:none;
 }
 
-html.desktop.editor #mobile_chooser {
+html.editor #mobile_chooser {
   display:inline-block;
   bottom:0;
   top:unset;
@@ -169,7 +169,7 @@ html.desktop.editor #mobile_chooser {
 }
 
 
-html.desktop.editor.floaters div.draggable_wrapper {    
+html.editor.floaters div.draggable_wrapper {    
     display: grid;     
     height: 100%; 
     width: 100%;
@@ -178,7 +178,7 @@ html.desktop.editor.floaters div.draggable_wrapper {
 
 
 
-html.desktop.editor.floaters .draggable {
+html.editor.floaters .draggable {
    margin: auto; 
    display:block;  
    position:absolute; 
@@ -207,12 +207,12 @@ html.desktop.editor.floaters .draggable {
     
 }
 
-html.desktop.editor div.qr_wrapper {
+html.editor div.qr_wrapper {
     display: none!important;
 }
 
 
-html.desktop.editor.floaters div.qr_wrapper {
+html.editor.floaters div.qr_wrapper {
     display: inline-block !important;
 }
 
