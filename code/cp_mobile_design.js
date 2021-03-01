@@ -1835,12 +1835,11 @@ module.exports = exports['default'];})({},{exports:{}})
         }
         
         var realDevice = window.device;
-        var htmlEl = document.querySelector("html");
-        var preserveClasses=htmlEl.className;
+        var preserveClasses=document.querySelector("html").className;
         function fakeDevice(optEl) {
             
             if (optEl.value==='none') {
-                htmlEl.className=preserveClasses;
+                document.querySelector("html").className=preserveClasses;
                 window.device=realDevice;
                 return realDevice;
             }
@@ -1888,7 +1887,7 @@ module.exports = exports['default'];})({},{exports:{}})
                classes.unshift('framed');
             }
 
-            htmlEl.className=classes.join(' ');
+            document.querySelector("html").className=classes.join(' ');
             window.device=dev;
             return dev;
 
