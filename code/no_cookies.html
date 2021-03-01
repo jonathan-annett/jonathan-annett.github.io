@@ -53,11 +53,11 @@
       qry=document.querySelector.bind(document);
       function updateUI() {
         var html=qry('html');
-        html.classList.clear(); 
         if (typeof localStorage.answered==='string') {
-          html.classList.add('answered');
-          html.classList.add(localStorage.answered);
-        }
+          html.className= 'answered '+localStorage.answered;
+        } else {
+           html.className=""; 
+        }   
         qry("#theCookies").innerHTML = document.cookie;
         qry("#theStorage").innerHTML = JSON.stringify(localStorage,undefined,4);
       
