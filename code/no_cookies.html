@@ -55,77 +55,144 @@
     </div>
     
     <script>
-  
-      function createCookie(name,value,days) {
-            if (days) {
-                var date = new Date();
-                date.setTime(date.getTime()+(days*24*60*60*1000));
-                var expires = "; expires="+date.toGMTString();
-            }
-            else var expires = "";
-            document.cookie = name+"="+value+expires+"; path=/";
-        }
+  function createCookie(name, value, days) {
+  if (days) {
+    var date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    var expires = "; expires=" + date.toGMTString();
+  } else var expires = "";
+  document.cookie = name + "=" + value + expires + "; path=/";
+}
 
-        function readCookie(name) {
-            var nameEQ = name + "=";
-            var ca = document.cookie.split(';');
-            for(var i=0;i < ca.length;i++) {
-                var c = ca[i];
-                while (c.charAt(0)==' ') c = c.substring(1,c.length);
-                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-            }
-            return null;
-        }
+function readCookie(name) {
+  var nameEQ = name + "=";
+  var ca = document.cookie.split(";");
+  for (var i = 0; i < ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == " ") c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
 
-        function eraseCookie(name) {
-            createCookie(name,"",-1);
-        }
-      
-       function eraseAllCookies() {
-            var cookies = document.cookie.split(";");
-            for (var i = 0; i < cookies.length; i++)
-              eraseCookie(cookies[i].split("=")[0]);
-      }
+function eraseCookie(name) {
+  createCookie(name, "", -1);
+}
 
-      
-      var 
-      
-      qry=document.querySelector.bind(document);
-      
-      function updateUI() {
-        
-        var html=qry('html');
-        if (typeof localStorage.answered==='string') {
-          html.className= 'answered '+localStorage.answered;
-        } else {
-           html.className=""; 
-        }   
-        qry("#theCookies").innerHTML = document.cookie || ' ';//put a space in to force display
-        qry("#theStorage").innerHTML = JSON.stringify(localStorage,undefined,4);
-      
-      }
-      
-      function buttonClick(yesno){
-        if (yesno===null) {
-          delete localStorage.answered;
-        } else {
-          localStorage.answered=yesno;
-        }
-        if (yesno==="yes") {
-            createCookie("yummyCookie",Math.random().toString(36),180);
-        } else {
-            eraseAllCookies()
-        }
-            
-        updateUI();
-      }
-            
-      qry('#yes').addEventListener('click',buttonClick.bind(this,"yes"));
-      qry('#no').addEventListener('click',buttonClick.bind(this,"no"));
-      qry('#again').addEventListener('click',buttonClick.bind(this,null));
-                                                      
-      updateUI();
+function eraseAllCookies() {
+  var cookies = document.cookie.split(";");
+  for (var i = 0; i < cookies.length; i++)
+    eraseCookie(cookies[i].split("=")[0]);
+}
+
+var qry = document.querySelector.bind(document);
+
+function updateUI() {
+  var html = qry("html");
+  if (typeof localStorage.answered === "string") {
+    html.className = "answered " + localStorage.answered;
+  } else {
+    html.className = "";
+  }
+  qry("#theCookies").innerHTML = document.cookie || " "; //put a space in to force display
+  qry("#theStorage").innerHTML = JSON.stringify(localStorage, undefined, 4);
+}
+
+function buttonClick(yesno) {
+  if (yesno === null) {
+    delete localStorage.answered;
+  } else {
+    localStorage.answered = yesno;
+  }
+  if (yesno === "yes") {
+    createCookie("yummyCookie", Math.random().toString(36), 180);
+  } else {
+    eraseAllCookies();
+  }
+
+  updateUI();
+}
+
+qry("#yes").addEventListener("click", buttonClick.bind(this, "yes"));
+qry("#no").addEventListener("click", buttonClick.bind(this, "no"));
+qry("#again").addEventListener("click", buttonClick.bind(this, null));
+
+updateUI();
+
       
     </script>
+    
+    <div class="cookies nocookies">
+      <h1>the code</h1>
+      <div>
+        &nbsp;&nbsp;function&nbsp;createCookie(name,&nbsp;value,&nbsp;days)&nbsp;{</br>
+&nbsp;&nbsp;if&nbsp;(days)&nbsp;{</br>
+&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;date&nbsp;=&nbsp;new&nbsp;Date();</br>
+&nbsp;&nbsp;&nbsp;&nbsp;date.setTime(date.getTime()&nbsp;+&nbsp;days&nbsp;*&nbsp;24&nbsp;*&nbsp;60&nbsp;*&nbsp;60&nbsp;*&nbsp;1000);</br>
+&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;expires&nbsp;=&nbsp;";&nbsp;expires="&nbsp;+&nbsp;date.toGMTString();</br>
+&nbsp;&nbsp;}&nbsp;else&nbsp;var&nbsp;expires&nbsp;=&nbsp;"";</br>
+&nbsp;&nbsp;document.cookie&nbsp;=&nbsp;name&nbsp;+&nbsp;"="&nbsp;+&nbsp;value&nbsp;+&nbsp;expires&nbsp;+&nbsp;";&nbsp;path=/";</br>
+}</br>
+</br>
+function&nbsp;readCookie(name)&nbsp;{</br>
+&nbsp;&nbsp;var&nbsp;nameEQ&nbsp;=&nbsp;name&nbsp;+&nbsp;"=";</br>
+&nbsp;&nbsp;var&nbsp;ca&nbsp;=&nbsp;document.cookie.split(";");</br>
+&nbsp;&nbsp;for&nbsp;(var&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;ca.length;&nbsp;i++)&nbsp;{</br>
+&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;c&nbsp;=&nbsp;ca[i];</br>
+&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(c.charAt(0)&nbsp;==&nbsp;"&nbsp;")&nbsp;c&nbsp;=&nbsp;c.substring(1,&nbsp;c.length);</br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c.indexOf(nameEQ)&nbsp;==&nbsp;0)&nbsp;return&nbsp;c.substring(nameEQ.length,&nbsp;c.length);</br>
+&nbsp;&nbsp;}</br>
+&nbsp;&nbsp;return&nbsp;null;</br>
+}</br>
+</br>
+function&nbsp;eraseCookie(name)&nbsp;{</br>
+&nbsp;&nbsp;createCookie(name,&nbsp;"",&nbsp;-1);</br>
+}</br>
+</br>
+function&nbsp;eraseAllCookies()&nbsp;{</br>
+&nbsp;&nbsp;var&nbsp;cookies&nbsp;=&nbsp;document.cookie.split(";");</br>
+&nbsp;&nbsp;for&nbsp;(var&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;cookies.length;&nbsp;i++)</br>
+&nbsp;&nbsp;&nbsp;&nbsp;eraseCookie(cookies[i].split("=")[0]);</br>
+}</br>
+</br>
+var&nbsp;qry&nbsp;=&nbsp;document.querySelector.bind(document);</br>
+</br>
+function&nbsp;updateUI()&nbsp;{</br>
+&nbsp;&nbsp;var&nbsp;html&nbsp;=&nbsp;qry("html");</br>
+&nbsp;&nbsp;if&nbsp;(typeof&nbsp;localStorage.answered&nbsp;===&nbsp;"string")&nbsp;{</br>
+&nbsp;&nbsp;&nbsp;&nbsp;html.className&nbsp;=&nbsp;"answered&nbsp;"&nbsp;+&nbsp;localStorage.answered;</br>
+&nbsp;&nbsp;}&nbsp;else&nbsp;{</br>
+&nbsp;&nbsp;&nbsp;&nbsp;html.className&nbsp;=&nbsp;"";</br>
+&nbsp;&nbsp;}</br>
+&nbsp;&nbsp;qry("#theCookies").innerHTML&nbsp;=&nbsp;document.cookie&nbsp;||&nbsp;"&nbsp;";&nbsp;//put&nbsp;a&nbsp;space&nbsp;in&nbsp;to&nbsp;force&nbsp;display</br>
+&nbsp;&nbsp;qry("#theStorage").innerHTML&nbsp;=&nbsp;JSON.stringify(localStorage,&nbsp;undefined,&nbsp;4);</br>
+}</br>
+</br>
+function&nbsp;buttonClick(yesno)&nbsp;{</br>
+&nbsp;&nbsp;if&nbsp;(yesno&nbsp;===&nbsp;null)&nbsp;{</br>
+&nbsp;&nbsp;&nbsp;&nbsp;delete&nbsp;localStorage.answered;</br>
+&nbsp;&nbsp;}&nbsp;else&nbsp;{</br>
+&nbsp;&nbsp;&nbsp;&nbsp;localStorage.answered&nbsp;=&nbsp;yesno;</br>
+&nbsp;&nbsp;}</br>
+&nbsp;&nbsp;if&nbsp;(yesno&nbsp;===&nbsp;"yes")&nbsp;{</br>
+&nbsp;&nbsp;&nbsp;&nbsp;createCookie("yummyCookie",&nbsp;Math.random().toString(36),&nbsp;180);</br>
+&nbsp;&nbsp;}&nbsp;else&nbsp;{</br>
+&nbsp;&nbsp;&nbsp;&nbsp;eraseAllCookies();</br>
+&nbsp;&nbsp;}</br>
+</br>
+&nbsp;&nbsp;updateUI();</br>
+}</br>
+</br>
+qry("#yes").addEventListener("click",&nbsp;buttonClick.bind(this,&nbsp;"yes"));</br>
+qry("#no").addEventListener("click",&nbsp;buttonClick.bind(this,&nbsp;"no"));</br>
+qry("#again").addEventListener("click",&nbsp;buttonClick.bind(this,&nbsp;null));</br>
+</br>
+updateUI();</br>
+
+        
+      </div>
+ 
+
+    </div>
   </body>
 </html>
