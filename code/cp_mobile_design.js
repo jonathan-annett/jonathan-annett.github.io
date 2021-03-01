@@ -181,9 +181,7 @@ SOFTWARE.
     var hasClass = !!documentElement.classList ? hasClassNative : hasClassPolyfill;
     var addClass = !!documentElement.classList ? addClassNative : addClassPolyfill;
     var removeClass = !!documentElement.classList ? removeClassNative : removeClassPolyfill;
-    var removeClassImpl  = documentElement.classList && documentElement.classList.remove.bind(documentElement.classList);
-    var addClassImpl    = documentElement.classList && documentElement.classList.add.bind(documentElement.classList);
- 
+    
     
     // The client user agent string.
     // Lowercase, so we can use the more efficient indexOf(), instead of Regex
@@ -378,7 +376,7 @@ SOFTWARE.
     }
     
     function addClassNative(className) {
-        className.split(' ').forEach(addClassImpl);
+        className.split(' ').forEach(function(c){documentElement.classList.add(c);});
     }
     
     // Remove single CSS class from the <html> element.
@@ -388,7 +386,7 @@ SOFTWARE.
       }
     }
     function removeClassNative(className) {
-        className.split(' ').forEach(removeClassImpl);
+        className.split(' ').forEach(function(c){documentElement.classList.remove(c);});
     }
     
     
@@ -398,12 +396,11 @@ SOFTWARE.
     // Insert the appropriate CSS class based on the _user_agent.
     function setClasses (device) {
         
-        ('ios ipad iphone ipod mobile table desktop macos desktop '+
-        'windows television cordova framed android '+
-        'blackberry fxos meego node-webkit').split(' ').forEach(
-            function(x){ 
-                removeClass(x);
-            });
+        removeClass(
+            'ios ipad iphone ipod mobile tablet desktop macos desktop '+
+            'windows television cordova framed android '+
+            'blackberry fxos meego node-webkit' 
+        );
         
         if (device.ios()) {
           if (device.ipad()) {
@@ -537,8 +534,11 @@ SOFTWARE.
       
     device.fakeItMode = function(modes) {
       
-      var realDevice =  device.noConflict();
-    
+      var 
+      realDevice =  device.noConflict(),
+      no=function(){return false;},
+      yes=function(){return true;};
+
       window.device = {
           
           fakeItMode : function() {
@@ -557,7 +557,13 @@ SOFTWARE.
                  }
               });
               
-              setClasses (window.device);
+            window.device.windows=!!modes.windows ? yes:no;
+            window.device.macos=!!modes.macos ? yes:no;
+            window.device.ios=!!modes.ios ? yes:no;
+            window.device.linux=!!modes.linux ? yes:no;
+                  
+            setClasses (window.device);
+            addClass("editor");
               
           },
           cancelFakeItMode : function() {
