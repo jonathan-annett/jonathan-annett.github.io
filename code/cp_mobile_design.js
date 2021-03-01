@@ -178,6 +178,9 @@ SOFTWARE.
     
     // The <html> element.
     var documentElement = window.document.documentElement;
+    var hasClass = !!documentElement.classList ? hasClassNative : hasClassPolyfill;
+    var addClass = !!documentElement.classList ? addClassNative : addClassPolyfill;
+    var removeClass = !!documentElement.classList ? removeClassNative : removeClassPolyfill;
     
     // The client user agent string.
     // Lowercase, so we can use the more efficient indexOf(), instead of Regex
@@ -356,25 +359,34 @@ SOFTWARE.
     }
     
     // Check if documentElement already has a given class.
-    function hasClass(className) {
+    function hasClassPolyfill(className) {
       return documentElement.className.match(new RegExp(className, 'i'));
     }
-    
+    function hasClassNative(className) {
+        return documentElement.classList.contains(className);
+    }
     // Add one or more CSS classes to the <html> element.
-    function addClass(className) {
+    function addClassPolyfill(className) {
       var currentClassNames = null;
-      if (!hasClass(className)) {
+      if (!hasClassPolyfill(className)) {
         currentClassNames = documentElement.className.replace(/^\s+|\s+$/g, '');
         documentElement.className = currentClassNames + ' ' + className;
       }
     }
+    function addClassNative(className) {
+        documentElement.classList.add(className);
+    }
     
     // Remove single CSS class from the <html> element.
-    function removeClass(className) {
+    function removeClassPolyfill(className) {
       if (hasClass(className)) {
-        documentElement.className = documentElement.className.replace(' ' + className, '');
+        documentElement.className = (' '+documentElement.className).replace(' ' + className, '').leftTrim();
       }
     }
+    function removeClassNative(className) {
+        documentElement.classList.remove(className);
+    }
+    
     
     // HTML Element Handling
     // ---------------------
