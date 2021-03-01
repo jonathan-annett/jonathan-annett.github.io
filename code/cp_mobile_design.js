@@ -181,6 +181,9 @@ SOFTWARE.
     var hasClass = !!documentElement.classList ? hasClassNative : hasClassPolyfill;
     var addClass = !!documentElement.classList ? addClassNative : addClassPolyfill;
     var removeClass = !!documentElement.classList ? removeClassNative : removeClassPolyfill;
+    var removeClassImpl  = documentElement.classList && documentElement.classList.remove.bind(documentElement.classList);
+    var addClassImpl    = documentElement.classList && documentElement.classList.add.bind(documentElement.classList);
+ 
     
     // The client user agent string.
     // Lowercase, so we can use the more efficient indexOf(), instead of Regex
@@ -373,8 +376,9 @@ SOFTWARE.
         documentElement.className = currentClassNames + ' ' + className;
       }
     }
+    
     function addClassNative(className) {
-        documentElement.classList.add(className);
+        className.split(' ').forEach(addClassImpl);
     }
     
     // Remove single CSS class from the <html> element.
@@ -384,7 +388,7 @@ SOFTWARE.
       }
     }
     function removeClassNative(className) {
-        documentElement.classList.remove(className);
+        className.split(' ').forEach(removeClassImpl);
     }
     
     
