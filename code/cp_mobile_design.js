@@ -1155,6 +1155,10 @@ module.exports = exports['default'];})({},{exports:{}})
             }
           }, 10);
           
+          var realDevice = window.device;
+          var preserveClasses=document.querySelector("html").className;
+  
+          
           getBrowserIdHash(function(err,hash){
            if (hash) {
                window.mobileDependancies.browserHash=hash;
@@ -1834,8 +1838,6 @@ module.exports = exports['default'];})({},{exports:{}})
             
         }
         
-        var realDevice = window.device;
-        var preserveClasses=document.querySelector("html").className;
         function fakeDevice(optEl) {
             
             if (optEl.value==='none') {
@@ -1843,6 +1845,9 @@ module.exports = exports['default'];})({},{exports:{}})
                 window.device=realDevice;
                 return realDevice;
             }
+            
+           
+            
             var yes=function(){return true;},no=function(){return false;};
             var dev = {
               windows:no,  
@@ -1882,12 +1887,17 @@ module.exports = exports['default'];})({},{exports:{}})
                 dev[c]=yes;
             });
             
-            classes.unshift('editor');
+            classes.push('editor');
             if (realDevice.framed()) {
-               classes.unshift('framed');
+               classes.push('framed');
+            }
+            
+            var htmlEl = document.querySelector("html");
+            if (window.device===realDevice) {
+               preserveClasses = htmlEl.className;
             }
 
-            document.querySelector("html").className=classes.join(' ');
+            htmlEl.className=classes.join(' ');
             window.device=dev;
             return dev;
 
