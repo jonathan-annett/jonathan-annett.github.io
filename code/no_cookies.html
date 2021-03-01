@@ -89,15 +89,18 @@
 
       
       var 
+      
       qry=document.querySelector.bind(document);
+      
       function updateUI() {
+        
         var html=qry('html');
         if (typeof localStorage.answered==='string') {
           html.className= 'answered '+localStorage.answered;
         } else {
            html.className=""; 
         }   
-        qry("#theCookies").innerHTML = document.cookie;
+        qry("#theCookies").innerHTML = document.cookie || ' ';//put a space in to force display
         qry("#theStorage").innerHTML = JSON.stringify(localStorage,undefined,4);
       
       }
