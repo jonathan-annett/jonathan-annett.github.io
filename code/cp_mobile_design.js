@@ -382,9 +382,9 @@ SOFTWARE.
     // Insert the appropriate CSS class based on the _user_agent.
     function setClasses (device) {
         
-        'ios ipad iphone ipod mobile table desktop macos desktop '+
+        ('ios ipad iphone ipod mobile table desktop macos desktop '+
         'windows television cordova framed android '+
-        'blackberry fxos meego node-webkit'.split(' ').forEach(
+        'blackberry fxos meego node-webkit').split(' ').forEach(
             function(x){ 
                 removeClass(x);
             });
