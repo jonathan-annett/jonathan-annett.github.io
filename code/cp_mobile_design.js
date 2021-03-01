@@ -1138,7 +1138,7 @@ module.exports = exports['default'];})({},{exports:{}})
                               } else {
                                   fakeDeviceHtml();
                                   onWindowLoaded(); 
-                                  window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
+                                  //window.checkBrowserHashTimer=setInterval(checkBrowserHashes,15*1000,false);
                                   allLoaded="editor";
                               }
                           }
