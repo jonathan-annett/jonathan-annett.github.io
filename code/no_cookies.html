@@ -97,7 +97,7 @@
         } else {
            html.className=""; 
         }   
-        qry("#theCookies").innerHTML = document.cookie || "&nsbp;";
+        qry("#theCookies").innerHTML = document.cookie;
         qry("#theStorage").innerHTML = JSON.stringify(localStorage,undefined,4);
       
       }
