@@ -1839,9 +1839,9 @@ module.exports = exports['default'];})({},{exports:{}})
         }
         
         function fakeDevice(optEl) {
-            
+            var htmlEl = document.querySelector("html");
             if (optEl.value==='none') {
-                document.querySelector("html").className=preserveClasses;
+                htmlEl.className=preserveClasses;
                 window.device=realDevice;
                 return realDevice;
             }
@@ -1892,7 +1892,7 @@ module.exports = exports['default'];})({},{exports:{}})
                classes.push('framed');
             }
             
-            var htmlEl = document.querySelector("html");
+            
             if (window.device===realDevice) {
                preserveClasses = htmlEl.className;
             }
@@ -1998,9 +1998,8 @@ module.exports = exports['default'];})({},{exports:{}})
             
             select_phone.onchange=function(e){
               phone.className = "mobile_phone"+(e.target.value==="none"?"":" "+e.target.value);
-              console.log(e.target.selectedOptions,e.target.selectedIndex,e.target.options[e.target.selectedIndex])
-            
-              //fakeDevice(e.target.selectedOptions[0]);
+               
+              fakeDevice(e.target.options[e.target.selectedIndex]);
               
               onWindowResize(true);
             };
