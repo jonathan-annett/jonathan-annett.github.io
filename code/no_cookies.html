@@ -1,0 +1,83 @@
+<html>
+  <head>
+    <title>no cookies</title>
+    <style>
+      
+      .nocookies,
+      .cookies,
+      html.answered div.ask {
+        display:none; 
+      }
+      
+      html.answered.yes div.cookies,
+      html.answered.no div.nocookies,
+      .ask {
+        display:inline-block;        
+      }
+            
+      
+    </style>
+  </head>
+  <body>
+    
+    <div class="ask">
+      are you hungry for cookies?
+      <button id="yes">yes</button>
+      <button id="no">no></button>
+    </div>
+    
+    <div class="nocookies">
+       you previously said you didn't want cookies.<br>
+       ok, no cookies for you.<br>
+       <button>forget my choice</button>
+    </div>
+    <div class="cookies">
+       you previously said you like cookies.<br>
+       ok, all the cookies are for you.<br>
+    </div>
+    
+    <div class"cookies nocookies">
+      <button id="again">ask me again</button>
+    </div>
+    
+    <div class="cookies nocookies">
+      <h1>under the hood</h1>
+      <h2>cookies</h2>
+      <pre id="theCookies"></pre>
+      <h2>localStorage</h2>
+      <pre id="theStorage"></pre>
+    </div>
+    
+    <script>
+      var 
+      qry=document.querySelector.bind(document);
+      function updateUI() {
+        var html=qry('html');
+        html.classList.clear(); 
+        if (typeof localStorage.answered==='string') {
+          html.classList.add('answered');
+          html.classList.add(localStorage.answered);
+        }
+        qry("#theCookies").innerHTML = document.cookie;
+        qry("#theStorage").innerHTML = JSON.stringify(localStorage,undefined,4);
+      
+      }
+      
+      function buttonClick(yesno){
+        if (yesno===null {
+          delete localStorage.answered;
+        } else {
+          localStorage.answered=yesno;
+        }
+        updateUI();
+      }
+            
+      qry('#yes').addEventListener('click',buttonClick.bind(this,"yes"));
+      qry('#no').addEventListener('click',buttonClick.bind(this,"no"));
+      qry('#again').addEventListener('click',buttonClick.bind(this,null));
+                                                      
+      updateUI();
+      
+    </script>
+  </body>
+</html>
