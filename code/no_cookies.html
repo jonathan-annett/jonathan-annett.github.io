@@ -1,0 +1,124 @@
+<html>
+  <head>
+    <title>no cookies</title>
+    <style>
+      
+      div.nocookies,
+      div.cookies,
+      html.answered div.ask {
+        display:none; 
+        margin-top:20px;
+        maring-left:20px;
+      }
+      
+      html.answered.yes div.cookies,
+      html.answered.no div.nocookies,
+      .ask {
+        display:inline-block;        
+      }
+      
+      pre {
+         background : yellow; 
+         width:100%;
+      }
+            
+      
+    </style>
+  </head>
+  <body>
+    
+    <div class="ask">
+      are you hungry for cookies?
+      <button id="yes">yes</button>
+      <button id="no">no</button>
+    </div>
+    
+    <div class="nocookies">
+       you previously said you didn't want cookies.<br>
+       ok, no cookies for you.<br>
+    </div>
+    <div class="cookies">
+       you previously said you like cookies.<br>
+       ok, all the cookies are for you.<br>
+    </div>
+    
+    <div class="cookies nocookies">
+      <button id="again">ask me again</button>
+    </div>
+    
+    <div class="cookies nocookies">
+      <h1>under the hood</h1>
+      <h2>cookies</h2>
+      <pre id="theCookies"></pre>
+      <h2>localStorage</h2>
+      <pre id="theStorage"></pre>
+      <h2>the code</h2>
+      <a href="https://github.com/jonathan-annett/jonathan-annett.github.io/blob/e9f6040089b0ea0a42b753f5d5fca9f237345616/code/no_cookies.html#L66">
+        view on github
+      </a>
+    </div>
+    
+    <script>
+
+
+var qry = document.querySelector.bind(document);
+      
+qry("#yes").addEventListener("click", buttonClick.bind(this, "yes"));
+qry("#no").addEventListener("click", buttonClick.bind(this, "no"));
+qry("#again").addEventListener("click", buttonClick.bind(this, null));
+
+updateUI();      
+
+function updateUI() {
+  var html = qry("html");
+  if (typeof localStorage.answered === "string") {
+    html.className = "answered " + localStorage.answered;
+  } else {
+    html.className = "";
+  }
+  qry("#theCookies").innerHTML = document.cookie || " "; //put a space in to force display
+  qry("#theStorage").innerHTML = JSON.stringify(localStorage, undefined, 4);
+}
+
+function buttonClick(yesno) {
+  if (yesno === null) {
+    delete localStorage.answered;
+  } else {
+    localStorage.answered = yesno;
+  }
+  if (yesno === "yes") {
+    createCookie("yummyCookie", Math.random().toString(36), 180);
+  } else {
+    eraseAllCookies();
+  }
+
+  updateUI();
+}
+
+
+      
+      
+ function createCookie(name, value, days) {
+  if (days) {
+    var date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    var expires = "; expires=" + date.toGMTString();
+  } else var expires = "";
+  document.cookie = name + "=" + value + expires + "; path=/";
+}
+
+function eraseCookie(name) {
+  createCookie(name, "", -1);
+}
+
+function eraseAllCookies() {
+  var cookies = document.cookie.split(";");
+  for (var i = 0; i < cookies.length; i++)
+    eraseCookie(cookies[i].split("=")[0]);
+}
+      
+    </script>
+    
+
+  </body>
+</html>
