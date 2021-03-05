@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Test Page</title>
+    <meta name="description" content="tab-calls diagnostics page"  />
+    <link
+      id="favicon"
+      rel="icon"
+      href="favicon.ico"
+      type="image/x-icon"
+    />
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=320, initial-scale=1.0, minimum-scale=1.0,maximum-scale=1.0, user-scalable=no"
+    />
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css" />
+      <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+      integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ"
+      crossorigin="anonymous"
+    />
+    <!-- import the webpage's client-side javascript file -->
+     <script src="tab-calls-browser.js" defer></script>
+     <!--script src="/highlight.min.js" defer></script-->
+    <script src="htmlRenderer.js" defer></script>
+    
+   
+    <link rel="stylesheet" href="/tab-calls-tests.css" />
+ 
+    <script src="tab-calls-tests.js" defer></script>
+
+ <!--    
+    <link rel="stylesheet" href="/youtube-remote.css" /> 
+    <script src="/youtube-remote.js" defer></script>
+    
+-->    
+    <script src="client.js" defer></script>
+    
+    <script src="current-device.js" defer></script>
+    <!--script type="text/javascript" src="jquery.min.js"></script-->
+  </head>
+  <body class="pairing_off diagnostics boot ">
+ 
+    <div class="pointer_track media_query_detect"></div>
+    <script src="timer_manager.js" defer></script>
+    <script src="classname_tools.js" defer></script>
+    <script src="touch_polyfill.js" defer></script>
+    <script src="devclass.js" defer></script>
+ 
+   
+    <input class="version_info" id="tab-calls.version" value="" />
+    <input class="version_info" id="tab-calls.version.msg" value="" />
+    <input id="dupdetect" value="" style="display:none;" />
+
+    <div class="pairing_setup"></div>
+    <div class="main_not_pairing">
+      <div id="main_controls">
+        <button id="btnClear">Clear</button>
+        <button onclick="window.open(location.href,'_blank');">new tab</button>
+        <button class="pairing_button_on">Pairing</button>
+        <button class="diagnostics_button_on">Diagnostics</button>
+        
+      </div>
+      <button id="btnSendAll">Send All</button>
+      
+      <div id="send_others"></div>
+      
+      <div class="repositionableWrapper">
+      <ul id="verbose_info" class="repositionable">
+        <li>this tab's id is <span id="local_id">local</span></li>
+        <li id="nonWSInfo">
+          This tab is sharing a websocket connection owned by another tab.
+        </li>
+        <li>the device id is <span id="ws_device_id">?</span></li>
+        <li id="wsInfo">
+          This tab owns a websocket connection, which it is sharing with other
+          tabs.
+        </li>
+        <li id="wsSoloInfo">This tab owns a websocket connection.</li>
+        <li>
+          Function calls between tabs on this device are invoked directly,
+          function calls to tabs on other devices use the websocket
+        </li>
+        <li>
+          Devices with the same shared secret can call functions on each other's
+          tabs
+        </li>
+        <li> <a href="/"><button>Close Advanced Diagostics</button></a></li>
+       </ul>
+       
+      </div>
+      
+      
+      <pre id="peers"></pre>
+
+      <img
+        src="countdown.gif"
+        style="height: 1px;width: 1px;visibility:hidden;position:absolute;left:0;top:0;"
+      />
+      <img
+        src="dont_panic.gif"
+        style="height: 1px;width: 1px;visibility:hidden;;position:absolute;left:0;top:0;"
+      />
+      <div style="position: absolute; bottom:0px; height:50px; background:yellow;">
+      <h4 style="display:inline-block;" ><span>Log</span><input id="reverse_log" type="checkbox" value="reverse" style="width:30px;display:inline-block;" /></h4>
+      <span>Show in Reverse</span>
+      
+      <pre id="log" style="width:100%;height:80vh"></pre>
+      </div>
+
+    </div>
+    
+    <div id="filler">
+       &nbsp;
+    </div>
+  
+  </body>
+</html>
