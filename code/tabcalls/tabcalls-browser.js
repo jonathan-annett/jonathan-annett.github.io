@@ -4049,7 +4049,7 @@ function tabCalls (currentlyDeployedVersion) {
             
                 function pairing_html (cb) { 
                     
-                    loadFileContents("/tab-pairing-setup.html",function(err,raw){
+                    loadFileContents("tab-pairing-setup.html",function(err,raw){
                          if (!err) {
                             var chunks = raw.split("<!--pairing-setup-->");
                             if (chunks.length===3) {
@@ -4060,7 +4060,7 @@ function tabCalls (currentlyDeployedVersion) {
                 }
                 
                 function pairing_css (cb) {
-                  loadFileContents("/tab-pairing-setup.css",function(err,pr_css){
+                  loadFileContents("tab-pairing-setup.css",function(err,pr_css){
                          if (!err) {
                              cb(pr_css);
                          }                               
