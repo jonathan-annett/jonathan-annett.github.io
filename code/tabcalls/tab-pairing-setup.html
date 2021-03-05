@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>tab-calls template page</title>
+        <meta name="description" content="tab-calls template page">
+        <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=320, initial-scale=1.0, minimum-scale=1.0,maximum-scale=1.0, user-scalable=no">
+        <!-- import the webpage's stylesheet -->
+        <link rel="stylesheet" href="tab-pairing-setup.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+        <!-- import the webpage's client-side javascript file -->
+        <script src="/tab-calls.js" defer></script>
+    </head>
+    <body class="isWS by_sms">
+      
+        <input id="dupdetect" value="" style="display:none;">        
+        <div class="pairing_setup">
+         <!--pairing-setup-->    
+            <span class="pairing_header">{$pair_setup_title$}<button class="pairing_button_off">{$pair_close_btn$}</button></span>
+        
+            <input class="pairing_secret" id="secret" value="unset" name="secret" type="hidden">
+            <span class="pairing_button_new_wrap">
+               <button class="pairing_button_new"><i class="fas fa-redo" style="font-size:18px;color:blue"></i></button>
+               <span>confirm - this will remove connections<button><i class="fas fa-check" style="font-size:18px;color:green"></i></button></span>
+            </span>
+
+            <div class="pairing_buttons">
+                <button class="pairing_button_qr">show-QR</button>
+                <button class="pairing_button_scan">scan-QR</button>
+                <button class="pairing_button_sms">by&nbsp;sms <i class="fas fa-mobile-alt"></i></button>
+                <br>
+                <button class="pairing_button_show">show-<i class="fas fa-user-secret"></i></button>
+                <button class="pairing_button_tap">tap-<i class="fas fa-user-secret"></i></button>
+                <button class="pairing_button_email">by&nbsp;email <i class="    far fa-envelope"></i></button>
+            </div>
+          
+            <div class="pairing_name_wrap">
+                <table>
+                        <tr>
+                          <td>
+                            <label>Your Name</label> 
+                          </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input id="your_name" type="text">
+                            </td>
+                            <td><span>&nbsp;</span></td>
+                        </tr>
+                </table>
+            </div>
+            <div class="pairing_video_tophelp">Position the camera to capture
+                the QR code on the other device</div>
+            <canvas class="pairing_video_canvas"></canvas>
+            <div class="pairing_qrcode_tophelp">Display QR code so the other device
+                 can capture it, and complete the pairing.</div>
+          
+          
+            <div class="pairing_qrcode"></div>
+          
+            <div class="pairing_tap_help_general">To pair devices without a camera, tap random symbols to pair the devices</div>
+          
+            <div class="pairing_show_tap"></div>
+          
+            <div class="pairing_tap">
+                <div class="keypad">
+                    <div class="row0"><span class="digit_0"><i onclick="keypadTap(this.dataset.char,this);" data-char="0" class="fas fa-coffee" style="font-size:36px;color:red;"></i></span><span class="digit_1"><i onclick="keypadTap(this.dataset.char,this);" data-char="1" class="fas fa-coffee" style="font-size:36px;color:blue;"></i></span>
+        
+                        <span
+                        class="digit_2"><i onclick="keypadTap(this.dataset.char,this);" data-char="2" class="fas fa-coffee" style="font-size:36px;color:green;"></i>
+        
+                            </span><span class="digit_3"><i onclick="keypadTap(this.dataset.char,this);" data-char="3" class="fas fa-coffee" style="font-size:36px;color:black;"></i></span><span class="digit_4"><i onclick="keypadTap(this.dataset.char,this);" data-char="4" class="fas fa-coffee" style="font-size:36px;color:fuchsia;"></i></span>
+        
+                            <span
+                            class="digit_5"><i onclick="keypadTap(this.dataset.char,this);" data-char="5" class="fas fa-coffee" style="font-size:36px;color:orange;"></i>
+        
+                                </span>
+                    </div>
+                    <div class="row1"><span class="digit_0"><i onclick="keypadTap(this.dataset.char,this);" data-char="6" class="fas fa-shield-alt" style="font-size:36px;color:red;"></i></span><span class="digit_1"><i onclick="keypadTap(this.dataset.char,this);" data-char="7" class="fas fa-shield-alt" style="font-size:36px;color:blue;"></i></span>
+        
+                        <span
+                        class="digit_2"><i onclick="keypadTap(this.dataset.char,this);" data-char="8" class="fas fa-shield-alt" style="font-size:36px;color:green;"></i>
+        
+                            </span><span class="digit_3"><i onclick="keypadTap(this.dataset.char,this);" data-char="9" class="fas fa-shield-alt" style="font-size:36px;color:black;"></i></span><span class="digit_4"><i onclick="keypadTap(this.dataset.char,this);" data-char="a" class="fas fa-shield-alt" style="font-size:36px;color:fuchsia;"></i></span>
+        
+                            <span
+                            class="digit_5"><i onclick="keypadTap(this.dataset.char,this);" data-char="b" class="fas fa-shield-alt" style="font-size:36px;color:orange;"></i>
+        
+                                </span>
+                    </div>
+                    <div class="row2"><span class="digit_0"><i onclick="keypadTap(this.dataset.char,this);" data-char="c" class="fas fa-user-secret" style="font-size:36px;color:red;"></i></span><span class="digit_1"><i onclick="keypadTap(this.dataset.char,this);" data-char="d" class="fas fa-user-secret" style="font-size:36px;color:blue;"></i></span>
+        
+                        <span
+                        class="digit_2"><i onclick="keypadTap(this.dataset.char,this);" data-char="e" class="fas fa-user-secret" style="font-size:36px;color:green;"></i>
+        
+                            </span><span class="digit_3"><i onclick="keypadTap(this.dataset.char,this);" data-char="f" class="fas fa-user-secret" style="font-size:36px;color:black;"></i></span><span class="digit_4"><i onclick="keypadTap(this.dataset.char,this);" data-char="g" class="fas fa-user-secret" style="font-size:36px;color:fuchsia;"></i></span>
+        
+                            <span
+                            class="digit_5"><i onclick="keypadTap(this.dataset.char,this);" data-char="h" class="fas fa-user-secret" style="font-size:36px;color:orange;"></i>
+        
+                                </span>
+                    </div>
+                    <div class="row3"><span class="digit_0"><i onclick="keypadTap(this.dataset.char,this);" data-char="i" class="fas fa-handshake" style="font-size:36px;color:red;"></i></span><span class="digit_1"><i onclick="keypadTap(this.dataset.char,this);" data-char="j" class="fas fa-handshake" style="font-size:36px;color:blue;"></i></span>
+        
+                        <span
+                        class="digit_2"><i onclick="keypadTap(this.dataset.char,this);" data-char="k" class="fas fa-handshake" style="font-size:36px;color:green;"></i>
+        
+                            </span><span class="digit_3"><i onclick="keypadTap(this.dataset.char,this);" data-char="l" class="fas fa-handshake" style="font-size:36px;color:black;"></i></span><span class="digit_4"><i onclick="keypadTap(this.dataset.char,this);" data-char="m" class="fas fa-handshake" style="font-size:36px;color:fuchsia;"></i></span>
+        
+                            <span
+                            class="digit_5"><i onclick="keypadTap(this.dataset.char,this);" data-char="n" class="fas fa-handshake" style="font-size:36px;color:orange;"></i>
+        
+                                </span>
+                    </div>
+                    <div class="row4"><span class="digit_0"><i onclick="keypadTap(this.dataset.char,this);" data-char="o" class="fas fa-heart" style="font-size:36px;color:red;"></i></span><span class="digit_1"><i onclick="keypadTap(this.dataset.char,this);" data-char="p" class="fas fa-heart" style="font-size:36px;color:blue;"></i></span>
+        
+                        <span
+                        class="digit_2"><i onclick="keypadTap(this.dataset.char,this);" data-char="q" class="fas fa-heart" style="font-size:36px;color:green;"></i>
+        
+                            </span><span class="digit_3"><i onclick="keypadTap(this.dataset.char,this);" data-char="r" class="fas fa-heart" style="font-size:36px;color:black;"></i></span><span class="digit_4"><i onclick="keypadTap(this.dataset.char,this);" data-char="s" class="fas fa-heart" style="font-size:36px;color:fuchsia;"></i></span>
+        
+                            <span
+                            class="digit_5"><i onclick="keypadTap(this.dataset.char,this);" data-char="t" class="fas fa-heart" style="font-size:36px;color:orange;"></i>
+        
+                                </span>
+                    </div>
+                    <div class="row5"><span class="digit_0"><i onclick="keypadTap(this.dataset.char,this);" data-char="u" class="fas fa-cut" style="font-size:36px;color:red;"></i></span><span class="digit_1"><i onclick="keypadTap(this.dataset.char,this);" data-char="v" class="fas fa-cut" style="font-size:36px;color:blue;"></i></span>
+        
+                        <span
+                        class="digit_2"><i onclick="keypadTap(this.dataset.char,this);" data-char="w" class="fas fa-cut" style="font-size:36px;color:green;"></i>
+        
+                            </span><span class="digit_3"><i onclick="keypadTap(this.dataset.char,this);" data-char="x" class="fas fa-cut" style="font-size:36px;color:black;"></i></span><span class="digit_4"><i onclick="keypadTap(this.dataset.char,this);" data-char="y" class="fas fa-cut" style="font-size:36px;color:fuchsia;"></i></span>
+        
+                            <span
+                            class="digit_5"><i onclick="keypadTap(this.dataset.char,this);" data-char="z" class="fas fa-cut" style="font-size:36px;color:orange;"></i>
+        
+                                </span>
+                    </div>
+                </div>
+            </div>
+          
+            <div class="pairing_by_sms">
+                <form>
+                    <p>
+                        <label>Phone number to send to</label>
+                    </p>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input id="phone" type="tel">
+                                </td>
+                                <td><span class="sms_number_bad">Invalid Phone Number</span>
+        
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p></p>
+                    <a id="send_sms" class="pairing_send_sms" href="sms:?body=Hi, It's JonChromebook.%0A%0AOpen this web page to share your location%0A%0Ahttps://where-r-u.glitch.me/?pair=eyJmcm9tIjoiSm9uQ2hyb21lYm9vayIsInNlY3JldCI6IiRqNXlVOFQyZVVVdk9YUm80QndFWTZxa1UzRTloQlJSIn0=" target="_blank">Send SMS</a>
+                    <br> <pre id="sms_preview"></pre>
+                    <span class="pairing_header">Or... send URL using another app</span>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <button id="copy_sms_url" type="button">Copy</button>
+                                </td>
+                                <td><span class="sms_email_url_copied">URL copied to clipboard</span>
+        
+                                </td>
+                                <td>
+                                    <input id="sms_url" type="text" readonly="">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+            
+            <div class="pairing_by_email">
+                <form>
+                    <p>
+                        <label>Email address to send to</label>
+                        <input id="email" type="email">
+                    </p>
+                    <a id="send_email" class="pairing_send_email" href="#" target="_blank">Send Email</a>
+                    <br><pre id="email_preview"><span></span></pre>
+                    <span class="pairing_header">Or... send URL using another app</span>
+        
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <button id="copy_email_url" type="button">Copy</button>
+                                </td>
+                                <td><span class="sms_email_url_copied">URL copied to clipboard</span>
+        
+                                </td>
+                                <td><input id="email_url" type="text" readonly></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+            
+            <div class="pairing_show_tap_help">On the other device, choose
+                <button>tap-<i class="fas fa-user-secret"></i>
+        
+                </button>, and tap each symbol as it shown here until the devices are paired</div>
+          
+            <div class="pairing_tap_help">On the other device, choose
+                <button>show-<i class="fas fa-user-secret"></i>
+        
+                </button>, then on this device,tap the same image that is shown on the other device, repeating until the devices are paired</div>
+          
+            <div class="pair_sms_bottom_help">Use "by sms" to send a text to a friend that contains a link to let them quickly share their location, in real time.</div>
+            <div class="pair_email_bottom_help"></div>
+            <div class="pair_scan_bottom_help">Use QR code sharing to quickly pair your phone with a friend, so if you get separated later, you can find each other later. If you aren't currently with your friend, use "by sms" instead.</div>
+            <div class="pair_qr_bottom_help">Use QR code sharing to quickly pair your phone with a friend, so if you get separated later, you can find each other later. If you aren't currently with your friend, use "by sms" instead.</div>
+            <!--pairing-setup-->
+        </div>
+        <div class="main_not_pairing">
+            <button class="pairing_button_on">People</button>
+            <div id="peers_buttons"></div>
+            <div id="map"></div>
+            <div class="peers_list"></div>
+      </div>
+    </body>  
+</html>
