@@ -1,0 +1,89 @@
+@import url("devclass.css") screen;
+@import url("balloon.min.css") screen and  (hover: hover) ;
+@import url("dice-1.0.min.css") screen;
+
+  #verbose_info {
+    display: none;
+  }
+
+  body.diagnostics #verbose_info {
+    display: block;
+  }
+
+/* styles */
+/* called by your view template */
+
+* {
+  box-sizing: border-box;
+}
+
+
+
+body {
+  font-family: "Benton Sans", "Helvetica Neue", helvetica, arial, sans-serif;
+}
+
+h1 {
+  font-style: italic;
+  color: #373fff;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+p {
+  max-width: 600px;
+}
+
+form {
+  margin-bottom: 25px;
+  padding: 0;
+  display: inline-block;
+  max-width: 340px;
+  border-radius: 3px;
+}
+
+input {
+  display: block;
+  margin-bottom: 10px;
+  padding: 5px;
+  width: 100%;
+  border: 1px solid lightgray;
+  border-radius: 3px;
+  font-size: 16px;
+}
+
+button {
+  font-size: 16px;
+  border-radius: 3px;
+  background-color: lightgray;
+  border: 1px solid gray;
+  box-shadow: 2px 2px teal;
+  cursor: pointer;
+  min-width: 100px; 
+}
+
+
+
+button:hover {
+  background-color: yellow;
+}
+
+button:active {
+  box-shadow: none;
+}
+
+li {
+  margin-bottom: 5px;
+}
+
+footer {
+  margin-top: 50px;
+  padding-top: 25px;
+  border-top: 1px solid lightgrey;
+}
+
+button {
+    z-index:1000 !important;
+}
