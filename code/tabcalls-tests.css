@@ -1,0 +1,384 @@
+
+ /*leds used for status indicators */
+@media only screen {
+   
+  .template-dataset-focus_class,
+  .template-dataset-toggle_class, 
+  .template-dataset-sleep_class, 
+     
+  .led-red, .led-yellow, .led-green,.led-blue  {
+    
+        display: inline-block;
+        margin: 20px auto;
+        width: 16px;
+        height: 16px;
+        
+        border-radius: 50%;
+        box-shadow: #000 0 -1px 7px 1px, inset #600 0 -1px 9px, #F00 0 2px 12px;
+        z-index:1 
+  }
+  
+    .template-dataset-toggle_class, .led-red {
+        background-color: red/*#940*/;
+    }
+    
+    
+    .led-yellow {
+        background-color: yellow/*#A90*/;
+    }
+  
+    
+    .template-dataset-sleep_class, 
+   .led-green {
+        background-color: lime/*#690*/;
+    }
+    
+    .template-dataset-focus_class,
+   .led-blue {
+        background-color: blue/*#4AB*/;
+    }
+}
+/*vertical header rotation*/
+
+/* styles */
+/* called by your view template */
+
+* {
+  box-sizing: border-box;
+}
+
+
+.send_others_header,
+.device_info_table,
+.device_button_table {
+  position : absolute;
+  top      : 100px;
+  left     : 0px;
+  
+}
+
+.device_info_table_header,
+.device_button_table_header{
+    height : 100px;
+}
+
+.device_info_table_header{
+   background-color:lightgray;
+}
+
+.blank {
+  pointer-events:none;
+  visibilty:hidden;
+}
+
+.device_info_table_row,
+.device_button_table_row.blank {
+   height     : 65px;
+   min-height : 65px;
+   max-height : 65px;
+   vertical-align:middle;
+}
+
+.device_info_table_row.blank,
+.device_button_table_row {
+   height : 70px;
+   min-height:70px;
+   max-height:70px;
+}
+
+.device_info_table_row.template-dataset-odd_even,
+.device_info_table_row.odd {
+   background-color : #00ffa482;
+}
+
+.device_info_table_row.even {
+   background-color : #9400ff4f;
+}
+
+.send_others_header{
+  top : 60px;
+}
+
+#send_others table { 
+  border-collapse:collapse;
+  width : 500px; 
+  min-width:420px;
+  max-width:100vw;
+  padding:0;
+}
+
+ 
+#send_others th ,
+#send_others td, 
+#send_others tr { 
+  padding:0;
+}
+
+.vertical_header {
+     -webkit-transform: rotate(270deg);
+    -moz-transform: rotate(270deg);
+    -ms-transform: rotate(270deg);
+    -o-transform: rotate(270deg);
+    transform: rotate(270deg);
+    -webkit-transform-origin:  30px 65px;
+    -moz-transform-origin:  30px 65px;
+    -ms-transform-origin:  30px 65px;
+    -o-transform-origin:  30px 65px;
+    transform-origin:  30px 65px;
+    max-width : 22px;
+    min-width : 22px;
+    width: 22px;
+    height: 100px;
+    position : relative;
+    vertical-align : middle;
+    pointer-events:none;
+  }
+
+.vertical_data {
+    max-width  : 22px;
+    min-width  : 22px;
+    width      : 22px;
+    text-align : center;
+}
+  
+.vertical_data.last{
+    max-width  : 100%;
+    min-width  : 100%;
+    width      : 100%;
+    text-align : left;
+  
+}
+  
+.vertical_data.last span {
+   position : relative;
+   left:5px;
+}
+.template-dataset-header_row_class,
+.device_table_first_header{
+   background-color : cyan;
+}
+
+
+
+.dice-0 {
+   visibility:hidden;
+}
+
+.dice {position: relative; left: -80px;}
+
+.countdown ,
+.dont_panic,
+.dice,
+.sendOtherbtn,
+.callOtherbtn,
+.promiseOtherbtn,
+.toggleModebtn {
+  z-index:9;
+  height : 40px;
+  position : relative;
+  top : -30px;
+}
+
+.sendOtherbtn,
+.callOtherbtn {
+  width     : 60px;  
+  min-width : 60px; 
+}
+
+.promiseOtherbtn {
+  width     : 80px;  
+  min-width : 60px; 
+}
+
+.ws_flag {
+  width: 20px; height: 20px;
+}
+.ws_flag.not_ws {
+   visibility : hidden;
+}
+
+
+div.info_btn_wrap {
+     display: block;
+     width :70px;
+}
+
+
+div.info_btn_wrap.is_this_tab {
+     cursor: not-allowed;
+     z-index : 1500;
+}
+
+
+.info_btn_wrap2 {
+  width :90px;
+}
+
+.img_cell {
+  width: 100px;
+  min-width:100px;
+  max-width:100px;
+  
+  margin : 0;
+  padding : 0;
+}
+
+.countdown {
+  height:auto;
+  width: 100px;
+  visibility:hidden;
+  position: relative;
+  left:  8px;
+}
+
+.dont_panic {
+  
+  height: auto;
+  width: 100px;
+  visibility:hidden;
+  position: relative;
+  left: -90px;
+}
+
+
+
+
+
+
+button.is_remote {
+    
+  background-color: pink;
+    
+}
+
+button.is_this_tab {
+  background-color: darkgray;
+    pointer-events: none;
+}
+
+button.is_this_tab.toggleModebtn  {
+  background-color: lime;
+ 
+    pointer-events: unset;
+}
+
+
+
+button:hover {
+  background-color: yellow;
+}
+
+button:active {
+  box-shadow: none;
+}
+
+li {
+  margin-bottom: 5px;
+}
+
+footer {
+  margin-top: 50px;
+  padding-top: 25px;
+  border-top: 1px solid lightgrey;
+}
+
+#local_id {
+    background-color: lime;
+     color:black;
+}
+
+body.isWS #local_id {
+    background-color: fuchsia ;
+    color:white;
+}
+
+#wsInfo,
+#wsSoloInfo,
+.pairing_button_on,
+.pairing_setup {
+    display : none;
+}
+
+ 
+
+body.isWS #wsInfo {
+    display : list-item;
+    color: orange;
+}
+
+body.isWS.solo #wsInfo {
+    display : none;
+}
+
+body.isWS.solo #wsSoloInfo {
+    display : list-item;
+    color: fuchsia ;
+}
+
+body.isWS .pairing_button_on {
+  display : inline-block;
+}
+
+body.isWS .pairing_setup {
+    display : block;
+}
+
+#nonWSInfo {
+    color: lime;
+}
+
+body.isWS #nonWSInfo {
+    display : none;
+}
+
+
+.version_info {
+   display:none;
+   background:yellow;
+}
+
+body.update_ready .version_info {
+   background:red;
+}
+
+tr.shade_orange {
+  background:orange !important;
+}
+
+button.shade_red,
+tr.shade_red {
+  background:red !important;
+}
+
+button.shade_lime,
+tr.shade_lime {
+  background:lime !important;
+}
+
+
+tr.shade_green {
+  background:green !important;
+}
+
+tr.shade_pink {
+  background:pink !important;
+}
+
+tr.shade_blue {
+  background:blue !important;
+}
+
+tr.shade_b4ffa6 {
+  
+  background:#b4ffa6 !important;
+}
+
+
+button {
+    z-index:1000 !important;
+}
+
+
+body.boot {
+  display:none;
+}
