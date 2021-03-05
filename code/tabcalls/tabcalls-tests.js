@@ -66,7 +66,7 @@ function tabCallsApp() {
        }
     }
      
-  var renderer = htmlRenderer("/tab-calls-test-template.html",htmlTemplates);
+  var renderer = htmlRenderer("tabcalls-test-template.html",htmlTemplates);
   
   return function (storageSend) {
     

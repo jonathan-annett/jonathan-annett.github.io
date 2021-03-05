@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>${title}</title>
+    <meta name="description" content="Test page for tabcalls library" />
+    <link
+      id="favicon"
+      rel="icon"
+      href="https://glitch.com/edit/favicon-app.ico"
+      type="image/x-icon"
+    />
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=320, initial-scale=1.0, minimum-scale=1.0,maximum-scale=1.0, user-scalable=no"
+    />
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+      integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ"
+      crossorigin="anonymous"
+    />
+   </head>
+  <body class="pairing_off">
+    
+    <script>
+     
+  
+  function gifLoaded(gif) {
+       gif=typeof gif==='string'?document.getElementById(gif):gif;
+       // back up the source url so we can utilize it later, (image itself is cached now)
+       gif.dataset.src= gif.src;
+       // lock in dimensions (in case auto was used for width or height)
+       var ht = ""+gif.height+"px",wt = ""+gif.width+"px"; 
+       gif.style.width=wt;gif.style.height=ht;
+
+       // swizzle out the loader to handle the hiding after data-msec milliseconds
+       gif.onload=function() {
+         gif.style.visibility="visible";
+         setTimeout(function(){
+            gif.style.visibility="hidden";
+            if (gifEvents[gif.id]) {
+               gifEvents[gif.id]();
+               delete gifEvents[gif.id];
+            }
+         },gif.dataset.msec);
+       };
+    }
+  
+  function showGif(gif,cb) {
+       gif=typeof gif==='string'?document.getElementById(gif):gif;
+       gif.style.visibility="hidden";
+       gif.src = "";
+       gif.src= gif.dataset.src;
+       if (typeof cb==='function') {
+          gifEvents[gif.id]=cb;
+       } else {
+          if(gifEvents[gif.id]) delete gifEvents[gif.id];
+       }
+    }
+  
+    </script>
+    <input class="version_info" id="tab-calls.version" value="" />
+    <input class="version_info" id="tab-calls.version.msg" value="" />
+    <input id="dupdetect" value="" style="display:none;" />
+
+    <div class="pairing_setup"></div>
+    <div class="main_not_pairing">
+      
+      <div>
+        <button id="btnClear">Disconnect Peers</button>
+        <button id="btnSendAll">Send To Others</button>
+        <button onclick="window.open(location.href,'_blank');">new tab</button>
+        <button class="pairing_button_on">Pairing</button>
+      </div>
+
+      <div id="send_others">
+        <!--[send_others_info_header.start]-->
+
+      <h3 class="send_others_header">
+          <span data-template-id="devices_title">2 tabs in device group</span>
+      </h3>
+        
+        
+              <table class="device_info_table">
+                <tr class="device_info_table_header">
+                  <td class="vertical_header">
+                    network
+                  </td>
+                  <td class="vertical_header">
+                    local
+                  </td>
+                  <td class="vertical_header">
+                    remote
+                  </td>
+                  <td class="vertical_header">
+                    focus
+                  </td>
+                  <td class="vertical_header">
+                    sleep
+                  </td>
+                  <td class="vertical_header">
+                    send&nbsp;mode
+                  </td>
+                  <td class="vertical_header last">
+                    tab id
+                  </td>
+                </tr>
+                <!--[send_others_info_header.end]-->
+                
+                  <!--[send_others_info_table.start]-->
+                <tr id="${tab_id}_info" class="device_info_table_row template-dataset-odd_even">
+                  <td class="vertical_data">
+                    <img
+                      class="ws_flag template-dataset-ws_flag_class"
+                      id="${tab_id}_ws"
+                      onload="gifLoaded(this);"
+                      data-msec="5500"
+                      src="ws.png"
+                    />
+                  </td>
+                  <td class="vertical_data">
+                    <span data-template-id="local_icon" id="${tab_id}_local_icon">
+                      <i class="fa fa-laptop" style="font-size:18px"></i>
+                    </span>
+                  </td>
+                  <td class="vertical_data">
+                    <span data-template-id="remote_icon" id="${tab_id}_remote_icon">
+                      <i class="fa fa-mobile" style="font-size:24px">
+                      </i>
+                    </span>
+                  </td>
+                  <td class="vertical_data">
+                    <div
+                      id="${tab_id}_focused"
+                      class="template-dataset-focus_class"
+                      data-tab_id="${tab_id}"
+                      data-balloon-length="large"
+                      aria-label="The current value of this tab's variables.focused is shown here. it's blue if the tab has user focus"
+                      data-balloon-pos="up-left"
+                    ></div>
+                  </td>
+                  <td class="vertical_data">
+                    <div
+                      id="${tab_id}_sleeping"
+                      class="template-dataset-sleep_class"
+                      data-tab_id="${tab_id}"
+                      data-balloon-length="large"
+                      aria-label="The current value of this tab's variables.sleeping is shown here. it's green if the device is awake"
+                      data-balloon-pos="up-left"
+                    ></div>
+                  </td>
+                  <td class="vertical_data">
+                    <div
+                      id="${tab_id}_toggle"
+                      class="template-dataset-toggle_class"
+                      data-tab_id="${tab_id}"
+                      data-balloon-length="large"
+                      aria-label="Tapping or clicking this LED toggles the boolean variables.toggle for this tab. The value is replicated to all other tabs in the group."
+                      data-balloon-pos="up-left"
+                     
+                    ></div>
+                  </td>
+                  <td class="vertical_data last">
+                    <span data-template-id="tab_id">rJpyi_LojRC0ZFEH0.tD-sN6SU-i6cN</span>
+                  </td>
+                </tr>
+                <tr class="device_info_table_row  blank template-dataset-odd_even">
+                  <td class="vertical_data">&nbsp;</td>
+                  <td class="vertical_data">&nbsp;</td>
+                  <td class="vertical_data">&nbsp;</td>
+                  <td class="vertical_data">&nbsp;</td>
+                  <td class="vertical_data">&nbsp;</td>
+                  <td class="vertical_data">&nbsp;</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <!--[send_others_info_table.end]-->
+                <!--[omitted_even_sample.start]-->
+                <tr class="device_info_table_row even">
+                  <td class="vertical_data">
+                    <img
+                      class="ws_flag"
+                      onload="gifLoaded(this);"
+                      data-msec="5500"
+                      src="ws.png"/>
+                  </td>
+                  <td class="vertical_data">
+                    <span data-template-id="local_remote_tab">
+                      <i class="fa fa-laptop" style="font-size:18px"></i>
+                    </span>
+                  </td>
+                  <td class="vertical_data">
+                    <span data-template-id="local_remote_tab">
+                      <i class="fa fa-mobile" style="font-size:24px"></i>
+                    </span>
+                  </td>
+                  <td class="vertical_data">
+                    <div
+                      class="template-dataset-focus_class"
+                      data-tab_id="${tab_id}"
+                      data-balloon-length="large"
+                      aria-label="The current value of this tab's variables.focused is shown here. it's blue if the tab has user focus"
+                      data-balloon-pos="right"
+                    ></div>
+                  </td>
+                  <td class="vertical_data">
+                    <div
+                      class="template-dataset-sleep_class"
+                      data-tab_id="${tab_id}"
+                      data-balloon-length="large"
+                      aria-label="The current value of this tab's variables.sleeping is shown here. it's green if the device is awake"
+                      data-balloon-pos="right"
+                    ></div>
+                  </td>
+                  <td class="vertical_data">
+                    <div
+                       class="template-dataset-toggle_class"
+                      data-tab_id="${tab_id}"
+                      data-balloon-length="large"
+                      aria-label="Tapping or clicking this LED toggles the boolean variables.toggle for this tab. The value is replicated to all other tabs in the group."
+                      data-balloon-pos="right"
+                    ></div>
+                  </td>
+
+                  <td class="vertical_data last">
+                    <span data-template-id="tab_id">rJpyi_LojRC0ZFEH0.tD-sN6SU-i6cN</span>
+                  </td>
+                </tr>
+                <tr class="device_info_table_row even blank">
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                </tr>
+
+                <!--[omitted_even_sample.end]-->
+                 <!--[send_others_buttons_header.start]-->
+              </table>
+        
+              <table class="device_button_table">
+                <tr class="device_button_table_header">
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <!--[send_others_buttons_header.end]-->
+                <!--[send_others_buttons_table.start]-->
+                <tr class="device_button_table_row blank template-dataset-odd_even">
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr id="${tab_id}_btn_info" class="device_button_table_row template-dataset-odd_even">
+                  <td class="info_btn_wrap template-dataset-extra_classes">
+                    <button
+                      id="${tab_id}_sendOtherbtn"
+                      data-local_id="${short_id}"
+                      data-tab_id="${tab_id}"
+                      class="sendOtherbtn template-dataset-extra_classes"
+                      data-balloon-length="large"
+                      aria-label="Sends a message to tab ${tab_id} without waiting for a callback. when it gets the message, it's panel will turn dark green there, and light green here."
+                      data-balloon-pos="down-left">
+                      msg()
+                    </button>
+                  </td>
+                  <td class="info_btn_wrap template-dataset-extra_classes">
+                    <button
+                      id="${tab_id}_callOtherbtn"
+                      data-tab_id="${tab_id}"
+                      data-local_id="${short_id}"
+                      class="callOtherbtn template-dataset-extra_classes"
+                      data-balloon-length="large"
+                      aria-label="Sends a message to tab ${tab_id} and waits for a callback. when it gets this message, it will wait 5 seconds and then call this tab back with a response"
+                      data-balloon-pos="down-left">
+                      cb()
+                    </button>
+                  </td>
+                  <td class="info_btn_wrap info_btn_wrap2 template-dataset-extra_classes">
+                    <button
+                      id="${tab_id}_promiseOtherbtn"
+                      data-local_id="${short_id}"
+                      data-tab_id="${tab_id}"
+                      class="promiseOtherbtn template-dataset-extra_classes"
+                      data-balloon-length="large"
+                      aria-label="Sends a promise request to tab ${tab_id} and waits for a fullfillment or a rejection, based on a dice throw. 1,2 or 3 will be accepted. 4,5 or 6 will be rejected"
+                      data-balloon-pos="down-left">
+                      promise()
+                    </button>
+                  </td>
+                  
+                  <td class="info_btn_wrap info_btn_wrap2 template-dataset-extra_classes">
+                    <button
+                      id="${tab_id}_toggleModebtn"
+                      data-local_id="${short_id}"
+                      data-tab_id="${tab_id}"
+                      class="toggleModebtn template-dataset-extra_classes"
+                      data-balloon-length="large"
+                      aria-label="Toggles the sending mode for this tab. Mode is indicated by a red/yellow LED above."
+                      data-balloon-pos="down-left">
+                      send-mode
+                    </button>
+                  </td>
+                  
+                  <td class="img_cell">
+                    <img
+                      class="countdown"
+                      id="${tab_id}_countdown"
+                      onload="gifLoaded(this);"
+                      data-msec="5500"
+                      src="countdown.gif"/>
+                  </td>
+                  <td class="img_cell">
+                    <img
+                      class="dont_panic"
+                      id="${tab_id}_dont_panic"
+                      onload="gifLoaded(this);"
+                      data-msec="5500"
+                      src="dont_panic.gif"
+                      style="width: 71px; height: 40px;"/>
+                  </td>
+                  <td class="img_cell">
+                    <span style="display:inline-block;font-size: 2.5em;">
+                      <span
+                        class="dice dice-0"
+                        id="${tab_id}_dice_rolled">
+                      </span>
+                    </span>
+                  </td>
+                </tr>
+                <!--[send_others_buttons_table.end]-->
+                <!--[omitted_odd_sample.start]-->
+                <tr class="device_button_table_row odd blank">
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr class="device_button_table_row odd">
+                  <td class="info_btn_wrap template-dataset-extra_classes">
+                    <button
+                      data-local_id="${short_id}"
+                      data-tab_id="${tab_id}"
+                      class="sendOtherbtn template-dataset-extra_classes"
+                      data-balloon-length="large"
+                      aria-label="Sends a message to tab ${tab_id} without waiting for a callback. when it gets the message, it's panel will turn dark green there, and light green here."
+                      data-balloon-pos="right">
+                      msg()
+                    </button>
+                  </td>
+                  <td class="info_btn_wrap template-dataset-extra_classes">
+                    <button
+                      data-tab_id="${tab_id}"
+                      data-local_id="${short_id}"
+                      class="callOtherbtn template-dataset-extra_classes"
+                      data-balloon-length="large"
+                      aria-label="Sends a message to tab ${tab_id} and waits for a callback. when it gets this message, it will wait 5 seconds and then call this tab back with a response"
+                      data-balloon-pos="right">
+                      cb()
+                    </button>
+                  </td>
+                  <td class="info_btn_wrap info_btn_wrap2 template-dataset-extra_classes">
+                    <button
+                      data-local_id="${short_id}"
+                      data-tab_id="${tab_id}"
+                      class="promiseOtherbtn template-dataset-extra_classes"
+                      data-balloon-length="large"
+                      aria-label="Sends a promise request to tab ${tab_id} and waits for a fullfillment or a rejection, based on a dice throw. 1,2 or 3 will be accepted. 4,5 or 6 will be rejected"
+                      data-balloon-pos="right">
+                      promise()
+                    </button>
+                  </td>
+                  <td class="info_btn_wrap info_btn_wrap2 template-dataset-extra_classes">
+                    <button
+                      data-local_id="${short_id}"
+                      data-tab_id="${tab_id}"
+                      class="toggleModebtn template-dataset-extra_classes"
+                      data-balloon-length="large"
+                      aria-label="Toggles the sending mode for this tab. Mode is indicated by a red/yellow LED above."
+                      data-balloon-pos="down-left">
+                      send-mode
+                    </button>
+                  </td>
+                  <td class="img_cell">
+                    <img
+                      class="countdown"
+                      onload="gifLoaded(this);"
+                      data-msec="5500"
+                      src="countdown.gif"
+                      style="width: 71px; height: 40px;"/>
+                  </td>
+                  <td class="img_cell">
+                    <img
+                      class="dont_panic"
+                      onload="gifLoaded(this);"
+                      data-msec="5500"
+                      src="dont_panic.gif"
+                      style="width: 71px; height: 40px;"
+                    />
+                  </td>
+                  <td class="img_cell">
+                    <span style="display:inline-block;font-size: 2.5em;">
+                      <span
+                        class="dice dice-0"></span>
+                    </span>
+                  </td>
+                </tr>
+                <!--[omitted_odd_sample.end]-->
+                <!--[send_others_footer.start]-->
+              </table>
+        <!--[send_others_footer.end]-->
+          
+
+      
+
+
+      </div>
+      
+      <ul id="verbose_info">
+        <li>this tab's id is <span id="local_id">local</span></li>
+        <li id="nonWSInfo">
+          This tab is sharing a websocket connection owned by another tab.
+        </li>
+        <li>the device id is <span id="ws_device_id">?</span></li>
+        <li id="wsInfo">
+          This tab owns a websocket connection, which it is sharing with other
+          tabs.
+        </li>
+        <li id="wsSoloInfo">This tab owns a websocket connection.</li>
+        <li>
+          Function calls between tabs on this device are invoked directly,
+          function calls to tabs on other devices use the websocket
+        </li>
+        <li>
+          Devices with the same shared secret can call functions on each other's
+          tabs.
+        </li>
+      </ul>
+      <pre id="peers"></pre>
+
+      <img
+        src="countdown.gif"
+        style="height: 1px;width: 1px;visibility:hidden;position:absolute;left:0;top:0;"
+      />
+      <img
+        src="dont_panic.gif"
+        style="height: 1px;width: 1px;visibility:hidden;;position:absolute;left:0;top:0;"
+      />
+      <h4 style="display:inline-block;" ><span>Log</span><input id="reverse_log" type="checkbox" value="reverse" style="width:30px;display:inline-block;" /></h4>
+      <span>Show in reverse</span>
+      
+      <pre id="log" style="width:100%;height:80vh"></pre>
+    </div>
+  </body>
+</html>

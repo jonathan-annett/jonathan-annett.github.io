@@ -1,5 +1,5 @@
 @import url("devclass.css") screen;
-@import url("balloon.min.css") screen and  (hover: hover) ;
+@import url("../balloon.min.css") screen and  (hover: hover) ;
 @import url("dice-1.0.min.css") screen;
 
   #verbose_info {
