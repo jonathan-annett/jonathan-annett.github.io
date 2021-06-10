@@ -1,0 +1,359 @@
+{
+    "commands": {
+        "Configuration:Preferences:Decrease Continuous Completion Delay": {
+            "doc": "Decrease by 50ms the delay before displaying the completion menu.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "continuousCompletionDelay",
+            "amount": -50,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Increase Continuous Completion Delay": {
+            "doc": "Increase by 50ms the delay before displaying the completion menu.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "continuousCompletionDelay",
+            "amount": 50,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Decrease Font Size": {
+            "doc": "Decrease by 1 the font size.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "fontSize",
+            "amount": -1,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Increase Font Size": {
+            "doc": "Increase by 1 the font size.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "fontSize",
+            "amount": 1,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Decrease Preview Delay": {
+            "doc": "Decrease by 100ms the delay before updating the preview pane.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "previewDelay",
+            "amount": -100,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Increase Preview Delay": {
+            "doc": "Increase by 100ms the delay before updating the preview pane.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "previewDelay",
+            "amount": 100,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Decrease Print Margin Column": {
+            "doc": "Decrease by 1 the print margin column.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "printMarginColumn",
+            "amount": -1,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Increase Print Margin Column": {
+            "doc": "Increase by 1 the print margin column.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "printMarginColumn",
+            "amount": 1,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Decrease Recent Folder History": {
+            "doc": "Decrease by 1 the number of recent folders displayed in the project picker.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "recentFolderHistory",
+            "amount": -1,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Increase Recent Folder History": {
+            "doc": "Increase by 1 the number of recent folders displays in the project picker.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "recentFolderHistory",
+            "amount": 1,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Decrease Scroll Speed": {
+            "doc": "Decrease by 1 the scrolling speed.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "scrollSpeed",
+            "amount": -1,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Increase Scroll Speed": {
+            "doc": "Increase by 1 the scrolling speed.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "scrollSpeed",
+            "amount": 1,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Decrease Tab Size": {
+            "doc": "Decrease by 1 the tab size.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "tabSize",
+            "amount": -1,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Increase Tab Size": {
+            "doc": "Increase by 1 the tab size.",
+            "scriptUrl": "./command/config_int.js",
+            "preference": "tabSize",
+            "amount": 1,
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Auto Revert": {
+            "doc": "Toggle whether or not Zed prompts you to reload a file that has changed on disk.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "globalAutoRevert",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Auto Indent On Paste": {
+            "doc": "Toggle whether or not to automatically adjust the indent of pasted text.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "autoIndentOnPaste",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Display Indent Guides": {
+            "doc": "Toggle whether or not to display vertical lines at each tab stop.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "displayIndentGuides",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Display Fold Widgets": {
+            "doc": "Toggle whether or not to display fold triangles in the left margin.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "showFoldWidgets",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Highlight Active Line": {
+            "doc": "Toggle whether or not to highlight the current line.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "highlightActiveLine",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Highlight Gutter Line": {
+            "doc": "Toggle whether or not to highlight the current line number in the gutter.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "highlightGutterLine",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Show Gutter": {
+            "doc": "Toggle whether or not to display the left margin with line numbers and fold triangles.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "showGutter",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Show Invisibles": {
+            "doc": "Toggle whether or not to display invisible characters like spaces, tabs, and newlines.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "showInvisibles",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Show Print Margin": {
+            "doc": "Toggle whether or not to display a vertical line denoting the right margin.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "showPrintMargin",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Spell Check": {
+            "doc": "Toggle whether or not to highlight misspelled words.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "spellCheck",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Trim Whitespace On Empty Lines": {
+            "doc": "Toggle whether or not the whitespace trimming feature will truncate lines that contain nothing but whtespace.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "trimEmptyLines",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Trim Whitespace On Save": {
+            "doc": "Toggle whether or not to automatically remove trailing whitespace every save.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "trimWhitespaceOnSave",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Word Wrap": {
+            "doc": "Toggle whether or not to soft-wrap long lines.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "wordWrap",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Persistent Tree": {
+            "doc": "Toggle whether or not the file tree should always be visible on the left side of the screen.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "persistentTree",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Menus": {
+            "doc": "Toggle whether or not to show menus.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "showMenus",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Continuous Completion": {
+            "doc": "Toggle whether or not you must hit the Tab key before word completions are displayed to you.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "continuousCompletion",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Scroll Past End": {
+            "doc": "Toggle whether or not you can scroll past the last line in a document.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "scrollPastEnd",
+            "readOnly": true
+        },
+        "Configuration:Preferences:Toggle Native Scroll Bars": {
+            "doc": "Toggle whether or not to use native scroll bars.",
+            "scriptUrl": "./command/toggle.js",
+            "preference": "nativeScrollBars",
+            "readOnly": true
+        },
+        "Configuration:Preferences:KeyBinding:Zed": {
+            "doc": "Set keybinding to Zed keybindings.",
+            "scriptUrl": "./command/set_preference.js",
+            "preference": "keybinding",
+            "value": "zed",
+            "readOnly": true
+        },
+        "Configuration:Preferences:KeyBinding:Emacs": {
+            "doc": "Set keybinding to Emacs keybindings.",
+            "scriptUrl": "./command/set_preference.js",
+            "preference": "keybinding",
+            "value": "emacs",
+            "readOnly": true
+        },
+        "Configuration:Preferences:KeyBinding:Vim": {
+            "doc": "Set keybinding to Vim keybindings.",
+            "scriptUrl": "./command/set_preference.js",
+            "preference": "keybinding",
+            "value": "vim",
+            "readOnly": true
+        },
+        "Edit:Open Line Above": {
+            "scriptUrl": "./command/open_line.js",
+            "go": 0,
+            "inputs": {
+                "cursor": true,
+                "lines": true
+            }
+        },
+        "Edit:Open Line Below": {
+            "scriptUrl": "./command/open_line.js",
+            "go": 1,
+            "inputs": {
+                "cursor": true,
+                "lines": true
+            }
+        },
+        "Edit:Trim Whitespace": {
+            "doc": "This command will strip spaces and tabs from the end of every line (but not the line containing the cursor), and also ensures that the document ends with one and only one newline character.",
+            "scriptUrl": "./command/stripper.js",
+            "inputs": {
+                "cursors": true,
+                "isInsertingSnippet": true,
+                "lines": true,
+                "preferences": true
+            }
+        },
+        "Edit:Auto Trim Whitespace": {
+            "doc": "This is a special case of the whitespace trimmer used for auto-trimming on save, and is not displayed to the user.",
+            "scriptUrl": "./command/stripper.js",
+            "internal": true,
+            "inputs": {
+                "cursors": true,
+                "isInsertingSnippet": true,
+                "lines": true,
+                "preferences": true
+            }
+        },
+        "Cursor:Paragraph Up": {
+            "scriptUrl": "./command/paragraph.js",
+            "go": -1,
+            "inputs": {
+                "cursor": true,
+                "lines": true
+            }
+        },
+        "Cursor:Paragraph Down": {
+            "scriptUrl": "./command/paragraph.js",
+            "go": 1,
+            "inputs": {
+                "cursor": true,
+                "lines": true
+            }
+        },
+        "Select:Paragraph": {
+            "scriptUrl": "./command/paragraph.js",
+            "go": -1,
+            "select": true,
+            "inputs": {
+                "cursor": true,
+                "lines": true
+            }
+        },
+        "Find:Find In Project Internal": {
+            "doc": "Recursively search all files within the entire project.",
+            "scriptUrl": "./command/search.js",
+            "readOnly": true,
+            "internal": true,
+            "sandbox": "find-in-project"
+        },
+        "Select:Sort Lines": {
+            "doc": "Take the selected lines and sort them.",
+            "scriptUrl": "./command/sort_selection.js",
+            "inputs": {
+                "selectionRange": true,
+                "selectionText": true
+            }
+        },
+        "Help:View Log": {
+            "doc": "Shows the zed log, which can contain useful debugging messages in the event of a problem.",
+            "scriptUrl": "./command/goto.js",
+            "destination": "zed::log"
+        },
+        "Help:Intro": {
+            "doc": "Shows the zed introduction screen.",
+            "scriptUrl": "./command/goto.js",
+            "destination": "zed::start"
+        },
+        "Help:View Start Page": {
+            "doc": "Shows the zed start page, which contains a quick reference for basic Zed commands.",
+            "scriptUrl": "./command/goto.js",
+            "destination": "zed::start"
+        },
+        "Tools:Document Statistics": {
+            "doc": "Counts the characters, words, and lines in the current file.",
+            "scriptUrl": "./command/statistics.js",
+            "inputs": {
+                "lines": true,
+                "text": true
+            }
+        },
+        "Tools:Complete:Symbol": {
+            "doc": "Display auto-complete results based on symbol indexing.",
+            "scriptUrl": "./command/symbol_completer.js",
+            "sandbox": "complete"
+        },
+        "Tools:Complete:Text": {
+            "doc": "Display auto-complete results based on simple text matches.",
+            "scriptUrl": "./command/text_completer.js",
+            "sandbox": "complete"
+        },
+        "Tools:External:Insert Command Output": {
+            "doc": "Prompts for a command-line command to run and inserts output into file",
+            "scriptUrl": "./command/external_insert_output.js",
+            "requiredCapabilities": {
+                "run": true
+            }
+        },
+        "Tools:External:Filter Selection Through Command": {
+            "doc": "Prompts for a command-line command to run and filters the current selection through it",
+            "scriptUrl": "./command/external_filter.js",
+            "inputs": {
+                "selectionText": true,
+                "selectionRange": true
+            },
+            "requiredCapabilities": {
+                "run": true
+            }
+        }
+    }
+}
