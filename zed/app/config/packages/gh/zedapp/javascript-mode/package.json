@@ -1,0 +1,13 @@
+{
+    "name": "JavaScript mode",
+    "uri": "gh:zedapp/javascript-mode",
+    "version": "0.2",
+    "description": "JavaScript mode for Zed",
+    "files": [
+        "beautify-js.js",
+        "beautify.js",
+        "check.js",
+        "index.js",
+        "jshint.js"
+    ]
+}
