@@ -1,0 +1,44 @@
+{
+    modes: {
+        css: {
+            name: "CSS",
+            highlighter: "ace/mode/css",
+            extensions: [
+                "css"
+            ],
+            commands: {
+                "Tools:Beautify": {
+                    scriptUrl: "./beautify.js",
+                    inputs: {
+                        preferences: true
+                    }
+                },
+                "Tools:Check": {
+                    scriptUrl: "./check.js",
+                    options: {},
+                    inputs: {
+                        text: true
+                    },
+                    internal: true,
+                    sandbox: "check"
+                },
+                "Tools:Index": {
+                    scriptUrl: "./index.js",
+                    inputs: {
+                        text: true
+                    },
+                    internal: true,
+                    sandbox: "index"
+                }
+            },
+            handlers: {
+                check: [
+                    "Tools:Check"
+                ],
+                index: [
+                    "Tools:Index"
+                ]
+            }
+        }
+    }
+}
