@@ -5,7 +5,7 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var dropbox = require("lib/dropbox");
+        var dropbox = require("../lib/dropbox");
         var poll_watcher = require("./poll_watcher");
         var async = require("../lib/async");
         var rootPath = options.rootPath;
