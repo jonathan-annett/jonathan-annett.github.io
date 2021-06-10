@@ -1,0 +1,12 @@
+{
+    imports: [
+        "/default.json"
+    ],
+    preferences: {},
+    modes: {},
+    keys: {},
+    commands: {},
+    handlers: {},
+    themes: {},
+    packages: []
+}
