@@ -1,0 +1,17 @@
+{
+    modes: {
+        dart: {
+            name: "Dart",
+            highlighter: "ace/mode/dart",
+            extensions: [
+                "dart"
+            ],
+            completionTriggers: ["."],
+            commands: {
+                "Tools:Beautify": {
+                    scriptUrl: "plugin/beautify/javascript.js"
+                }
+            }
+        }
+    }
+}
