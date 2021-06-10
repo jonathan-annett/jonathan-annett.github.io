@@ -1,0 +1,9 @@
+{
+    "name": "JSON5 Mode",
+    "uri": "gh:zedapp/json5-mode",
+    "version": "0.1",
+    "description": "JSON5 mode for Zed",
+    "files": [
+        "check.js"
+    ]
+}

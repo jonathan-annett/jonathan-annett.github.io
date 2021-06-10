@@ -1,0 +1,32 @@
+{
+    modes: {
+        json5: {
+            name: "JSON 5",
+            highlighter: "ace/mode/javascript",
+            extensions: ["json5"],
+
+            commands: {
+                "Tools:Beautify": {
+                    scriptUrl: "/packages/gh/zedapp/javascript-mode/beautify.js",
+                    inputs: {
+                        text: true,
+                        preferences: true
+                    }
+                },
+
+                "Tools:Check": {
+                    scriptUrl: "./check.js",
+                    inputs: {
+                        text: true
+                    },
+                    internal: true,
+                    sandbox: "check"
+                }
+            },
+
+            handlers: {
+                check: ["Tools:Check"]
+            }
+        }
+    }
+}
