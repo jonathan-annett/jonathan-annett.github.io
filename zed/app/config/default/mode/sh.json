@@ -1,0 +1,11 @@
+{
+    modes: {
+        sh: {
+            name: "Shell",
+            highlighter: "ace/mode/sh",
+            extensions: [
+                "sh"
+            ]
+        }
+    }
+}

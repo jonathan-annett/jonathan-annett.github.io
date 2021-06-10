@@ -1,0 +1,9 @@
+{
+    "modes": {
+        "yaml": {
+            "name": "YAML",
+            "highlighter": "ace/mode/yaml",
+            "extensions": ["yml", "yaml"]
+        }
+    }
+}

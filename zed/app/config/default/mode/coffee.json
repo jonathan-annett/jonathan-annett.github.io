@@ -1,0 +1,51 @@
+{
+    modes: {
+        coffee: {
+            name: "CoffeeScript",
+            highlighter: "ace/mode/coffee",
+            extensions: [
+                "coffee"
+            ],
+            commands: {
+                "Tools:Check": {
+                    scriptUrl: "/default/mode/coffee/check.js",
+                    inputs: {
+                        text: true
+                    },
+                    internal: true,
+                    sandbox: "check"
+                },
+                "Tools:Index": {
+                    scriptUrl: "/default/mode/coffee/index.js",
+                    inputs: {
+                        text: true
+                    },
+                    sandbox: "index"
+                },
+                "Tools:Preview": {
+                    scriptUrl: "/default/mode/coffee/preview.js",
+                    inputs: {
+                        text: true
+                    }
+                },
+                "Tools:Compile": {
+                    scriptUrl: "/default/mode/coffee/compile.js",
+                    inputs: {
+                        text: true
+                    }
+                }
+            },
+            handlers: {
+                check: [
+                    "Tools:Check"
+                ],
+                index: [
+                    "Tools:Index"
+                ],
+                preview: [
+                    "Tools:Preview"
+                ]
+            }
+        }
+    }
+}

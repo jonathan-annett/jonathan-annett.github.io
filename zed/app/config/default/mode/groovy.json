@@ -1,0 +1,12 @@
+{
+    modes: {
+        groovy: {
+            name: "Groovy",
+            highlighter: "ace/mode/groovy",
+            extensions: [
+                "groovy"
+            ],
+            completionTriggers: ["."]
+        }
+    }
+}

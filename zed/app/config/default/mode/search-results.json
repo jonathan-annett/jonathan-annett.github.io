@@ -1,0 +1,32 @@
+{
+    "modes": {
+        "search-results": {
+            "name": "Zed Search Results",
+            "highlighter": "ace/mode/markdown",
+            "filenames": ["zed::search"],
+
+            "keys": {
+                "Search Results:Open File": "Enter"
+            },
+
+            "commands": {
+                "Search Results:Open File": {
+                    "scriptUrl": "/default/mode/search-results/open.js",
+                    "inputs": {
+                        "lines": true,
+                        "cursor": true
+                    }
+                }
+            },
+
+            "preferences": {
+                "showGutter": false,
+                "showPrintMargin": false
+            },
+
+            "handlers": {
+                "click": ["Search Results:Open File"]
+            }
+        }
+    }
+}

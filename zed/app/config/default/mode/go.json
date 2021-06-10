@@ -1,0 +1,38 @@
+{
+    modes: {
+        go: {
+            name: "Go",
+            highlighter: "ace/mode/golang",
+            extensions: [
+                "go"
+            ],
+            completionTriggers: ["."],
+            commands: {
+                "Tools:Index": {
+                    scriptUrl: "/default/command/regex_indexer.js",
+                    inputs: {
+                        text: true
+                    },
+                    regexes: [{
+                        regex: "type\\s*([A-Z-a-z0-9_]+)",
+                        symbolIndex: 1,
+                        type: "type"
+                    }, {
+                        regex: "func\\s*(\\([^\\)]+\\))?\\s*([a-zA-Z0-9_\\-\\$]+\\s*\\([^\\)]*\\))",
+                        symbolIndex: 2,
+                        type: "function"
+                    }],
+                    sandbox: "index"
+                }
+            },
+            handlers: {
+                index: [
+                    "Tools:Index"
+                ]
+            },
+            preferences: {
+                tabSize: 8
+            }
+        }
+    }
+}

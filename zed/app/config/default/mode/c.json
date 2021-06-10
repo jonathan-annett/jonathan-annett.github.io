@@ -1,0 +1,46 @@
+{
+    modes: {
+        c: {
+            name: "C",
+            highlighter: "ace/mode/c_cpp",
+            extensions: [
+                "c",
+                "h",
+                "cpp",
+                "cxx",
+                "hpp",
+                "hxx"
+            ],
+            completionTriggers: ["->", "."],
+
+            commands: {
+                "Tools:Index": {
+                    scriptUrl: "/default/command/regex_indexer.js",
+                    inputs: {
+                        text: true
+                    },
+                    regexes: [
+                        {
+                            regex: "(\\w+\\s*\\([^;{)]*\\))\\s*(?:(->|:)[^;{]*)?(?:const|override|final|\\s)*\\{",
+                            symbolIndex: 1,
+                            type: "function"
+                        }, {
+                            regex: "(?:template\\s*<[^>]*>\\s*)?(?:class|struct|union)\\s+(?:(?:\\[\\[[\\s:\\w,\\(\\)\\'\\\"]*\\]\\])?\\s*(?:alignas\\s*\\(\\s*\\w*\\s*\\))?\\s*)*([a-zA-Z_][0-9a-zA-Z_]*)[^{;]*\\{",
+                            symbolIndex: 1,
+                            type: "type"
+                        }, {
+                            regex: "typedef\\s+[^;]*\\s+(\\w*)\\s*;",
+                            symbolIndex: 1,
+                            type: "type"
+                        }
+                    ],
+                    sandbox: "index"
+                }
+            },
+
+            handlers: {
+                index: ["Tools:Index"]
+            }
+        }
+    }
+}

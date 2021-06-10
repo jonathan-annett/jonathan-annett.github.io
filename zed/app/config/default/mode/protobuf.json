@@ -1,0 +1,9 @@
+{
+    "modes": {
+        "protobuf": {
+            "name": "Google Protocol Buffers",
+            "highlighter": "ace/mode/protobuf",
+            "extensions": ["proto"]
+        }
+    }
+}

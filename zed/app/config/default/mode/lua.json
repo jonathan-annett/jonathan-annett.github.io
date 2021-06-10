@@ -1,0 +1,26 @@
+{
+    modes: {
+        lua: {
+            name: "Lua",
+            highlighter: "ace/mode/lua",
+            extensions: [
+                "lua"
+            ],
+            completionTriggers: ["."],
+            commands: {
+                "Tools:Check": {
+                    scriptUrl: "/default/mode/lua/check.js",
+                    inputs: {
+                        text: true
+                    },
+                    sandbox: "check"
+                }
+            },
+            handlers: {
+                check: [
+                    "Tools:Check"
+                ]
+            }
+        }
+    }
+}

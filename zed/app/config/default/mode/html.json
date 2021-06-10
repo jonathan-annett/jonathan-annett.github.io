@@ -1,0 +1,28 @@
+{
+    modes: {
+        html: {
+            name: "HTML",
+            highlighter: "ace/mode/html",
+            extensions: [
+                "html",
+                "htm"
+            ],
+            commands: {
+                "Tools:Beautify": {
+                    scriptUrl: "/default/mode/html/beautify.js",
+                    inputs: {
+                        preferences: true
+                    }
+                },
+                "Tools:Preview": {
+                    scriptUrl: "/default/mode/html/preview.js"
+                }
+            },
+            handlers: {
+                preview: [
+                    "Tools:Preview"
+                ]
+            }
+        }
+    }
+}

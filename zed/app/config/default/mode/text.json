@@ -1,0 +1,9 @@
+{
+    "modes": {
+        "text": {
+            "name": "Plain Text",
+            "highlighter": "ace/mode/text",
+            "extensions": []
+        }
+    }
+}

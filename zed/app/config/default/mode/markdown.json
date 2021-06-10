@@ -1,0 +1,34 @@
+{
+    modes: {
+        markdown: {
+            name: "Markdown",
+            highlighter: "ace/mode/markdown",
+            extensions: [
+                "md",
+                "txt",
+                "markdown"
+            ],
+            filenames: [
+                "zed::start"
+            ],
+            commands: {
+                "Tools:Preview": {
+                    scriptUrl: "/default/mode/markdown/preview.js",
+                    inputs: {
+                        text: true
+                    }
+                }
+            },
+            preferences: {
+                trimWhitespaceOnSave: false,
+                wordWrap: true,
+                wordWrapColumn: 80
+            },
+            handlers: {
+                preview: [
+                    "Tools:Preview"
+                ]
+            }
+        }
+    }
+}

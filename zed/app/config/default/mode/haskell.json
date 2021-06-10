@@ -1,0 +1,9 @@
+{
+    "modes": {
+        "haskell": {
+            "name": "Haskell",
+            "highlighter": "ace/mode/haskell",
+            "extensions": ["hs"]
+        }
+    }
+}
