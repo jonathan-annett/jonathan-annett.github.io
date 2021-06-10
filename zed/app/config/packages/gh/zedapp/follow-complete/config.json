@@ -1,0 +1,125 @@
+{
+    databases: {
+        follow: {
+            keyPath: "id",
+            indexes: {
+                pred_idn: {
+                    keyPath: ["mode", "sep", "prev", "rank", "follow"]
+                }
+            }
+        }
+    },
+    commands: {
+        "Tools:Follow:Index": {
+            scriptUrl: "./index.js",
+            inputs: {
+                text: true,
+                modeName: true,
+                mode: true
+            },
+            sandbox: "index"
+        },
+        "Tools:Follow:Complete": {
+            scriptUrl: "./complete.js",
+            inputs: {
+                text: true,
+                cursorIndex: true,
+                modeName: true,
+                mode: true
+            },
+            sandbox: "complete"
+        }
+    },
+    modes: {
+        javascript: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        python: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        ruby: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        c: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        go: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        java: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        csharp: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        groovy: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        elixir: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        lua: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        nix: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        rust: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        scala: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        php: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        },
+        clojure: {
+            handlers: {
+                complete: ["Tools:Follow:Complete"],
+                index: ["Tools:Follow:Index"]
+            }
+        }
+    }
+}
