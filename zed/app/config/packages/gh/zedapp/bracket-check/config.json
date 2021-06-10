@@ -1,0 +1,100 @@
+{
+    modes: {
+        clojure: {
+            commands: {
+                "Tools:Brackets:Check": {
+                    scriptUrl: "./check.js",
+                    internal: true,
+                    inputs: {
+                        text: true
+                    },
+                    brackets: ["()", "{}", "[]"],
+                    skip: [[";", "\n"], ["\"", "\""]]
+                }
+            },
+            handlers: {
+                check: ["Tools:Brackets:Check"]
+            }
+        },
+        go: {
+            commands: {
+                "Tools:Brackets:Check": {
+                    scriptUrl: "./check.js",
+                    internal: true,
+                    inputs: {
+                        text: true
+                    },
+                    brackets: ["()", "{}", "[]"],
+                    skip: [["\"", "\""], ["`", "`"], ["//", "\n"], ["/*", "*/"]]
+                }
+            },
+            handlers: {
+                check: ["Tools:Brackets:Check"]
+            }
+        },
+        dart: {
+            commands: {
+                "Tools:Brackets:Check": {
+                    scriptUrl: "./check.js",
+                    internal: true,
+                    inputs: {
+                        text: true
+                    },
+                    brackets: ["()", "{}", "[]"],
+                    skip: [["\"", "\""], ["'", "'"], ["//", "\n"], ["/*", "*/"]]
+                }
+            },
+            handlers: {
+                check: ["Tools:Brackets:Check"]
+            }
+        },
+        ruby: {
+            commands: {
+                "Tools:Brackets:Check": {
+                    scriptUrl: "./check.js",
+                    internal: true,
+                    inputs: {
+                        text: true
+                    },
+                    brackets: ["()", "{}", "[]"],
+                    skip: [["'", "'"], ["\"", "\""], ["#", "\n"]]
+                }
+            },
+            handlers: {
+                check: ["Tools:Brackets:Check"]
+            }
+        },
+        java: {
+            commands: {
+                "Tools:Brackets:Check": {
+                    scriptUrl: "./check.js",
+                    internal: true,
+                    inputs: {
+                        text: true
+                    },
+                    brackets: ["()", "{}", "[]"],
+                    skip: [["'", "'"], ["\"", "\""], ["//", "\n"], ["/*", "*/"]]
+                }
+            },
+            handlers: {
+                check: ["Tools:Brackets:Check"]
+            }
+        },
+        csharp: {
+            commands: {
+                "Tools:Brackets:Check": {
+                    scriptUrl: "./check.js",
+                    internal: true,
+                    inputs: {
+                        text: true
+                    },
+                    brackets: ["()", "{}", "[]"],
+                    skip: [["'", "'"], ["\"", "\""], ["//", "\n"], ["/*", "*/"]]
+                }
+            },
+            handlers: {
+                check: ["Tools:Brackets:Check"]
+            }
+        }
+    }
+}
