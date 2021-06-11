@@ -223,7 +223,6 @@ function refreshCache(cache,url) {
              if (response) {
                  const Etag =response.headers.get('Etag')
                  
-                 console.log("refreshing",url,Etag);
                  fetch(url, {
                    method: 'HEAD', // *GET, POST, PUT, DELETE, etc.
                    headers : {'If-None-Match':Etag}
@@ -231,11 +230,12 @@ function refreshCache(cache,url) {
                      const newETag = head.headers.get('Etag');
                   
                      console.log("HEAD-->",{head,etag :newETag});
-                     if ( head.status===200 && Etag !== newETag ) {
+                     if ( Etag !== newETag ) {
                          console.log("refreshing...",url);
                          fetch(url).then(resolve)
                          
                      } else {
+                         console.log("unchanged...",url);
                           resolve(response);
                      }
                       
