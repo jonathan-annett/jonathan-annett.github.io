@@ -107,21 +107,21 @@ function getPWAFiles(config_url) {
                       resolveConfig(
              
                          
-                            config.site.files.concat.apply(config.site.files,arrayOfFileLists);
+                            config.site.files.concat.apply(config.site.files,arrayOfFileLists)
                        
                       );
                       
-                  }).catch(reject);
+                  })
                   
                   
-              }).catch(reject);
+              });
 
           
 
            
-       }).catch(reject);
+       })
     
-    });
+   
 }
 
 
