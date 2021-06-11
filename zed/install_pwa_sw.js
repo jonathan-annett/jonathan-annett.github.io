@@ -46,7 +46,7 @@ function get_X_cluded (exclusionsList) {
         }   
     ).filter(function(x){ return x !== null;})
     
-    return function isExcluded (path) {
+    return function  (path) {
         return exclusions.some(function(test){ return test(path);});
     };
 }
@@ -75,14 +75,18 @@ function getGithubFileList (github_io_base) {
                      
                      function(item){ 
                          
-                         console.log("checking:",item) ;
-                         return item.type === "blob" && isIncluded(item.path) && ! isExcluded(item.path); 
-                         
+                         const result = item.type === "blob" && isIncluded(item.path) && ! isExcluded(item.path); 
+                         //console.log("checking:",item,result ? "included" : "excluded") ;
+                         return result;
                      }
                      
                  ).map(
                      
-                     function (item){ return github_io_base+item.path;  }
+                     function (item){ 
+                         console.log("including:",github_io_base+item.path);
+                         return github_io_base+item.path; 
+
+                     }
                      
                      
                  )
