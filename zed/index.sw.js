@@ -71,9 +71,8 @@ function getGithubFileList (github_io_base) {
   
        return new Promise(function (resolveList,reject) {
 
-           console.log("fetching:",github_config.url);
            fetch(github_config.url).then(downloadJSON).then(function(github_data){
-             console.log("fetched:",github_data);
+
              return resolveList( 
                  
                  
@@ -84,10 +83,6 @@ function getGithubFileList (github_io_base) {
                          const 
                          excluded =  isExcluded(item.path),
                          result = item.type === "blob" && isIncluded(item.path) && !excluded;
-                         if (item.type === "blob"  && excluded){
-                             console.log("excluded:",item) ;
-                         }
-                         //console.log("checking:",item,result ? "included" : "excluded") ;
                          return result;
                      }
                      
