@@ -14,7 +14,7 @@ require.config({
 require([
     "/zed/app/dep/architect.js", 
     "/zed/app/js/lib/options.js",
-    "/zed/app/js/fs_picker", 
+    "/zed/app/js/fs_picker.js", 
     "text!/zed/app/manual/intro.md"
     ], function(
         architect, 
