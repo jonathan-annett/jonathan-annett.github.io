@@ -242,7 +242,7 @@ function sw_message( e ) {
     if (e.data.type === 'UPDATE') {
         getPWAFiles( file_list_url ).then( function(filesToCache){
            const progressUpdate = messageSender('UPDATE',e.ports[0]);
-           const urls = filesToCache.site.concat(filesToCache.github);
+          const urls = filesToCache.site.concat(filesToCache.github);
            progressUpdate.send({files : urls});
            return caches.open(cacheName).then(function(cache) {
                updateURLArray(cache,urls,progressUpdate)
