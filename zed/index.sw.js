@@ -188,8 +188,10 @@ self.addEventListener('message', (event) => {
            return Promise.all(filesToCache.github.map(function(url,index){
                 console.log("loading...",url);
                 msg.send({loading:index,url:url});
-                return cache.add(url) 
-                  .then (function(dl){ msg.send({loaded:index}); return dl;})
+                return cache.add(url).then (function(dl){
+                      msg.send({loaded:index}); 
+                      return Promise.resolve(dl);
+                  })
                   .catch(function(err){
                      //Error stuff
                      console.log("failed adding",url,err);
