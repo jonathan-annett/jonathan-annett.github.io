@@ -285,7 +285,7 @@ function matchJS(url) {
     
     return new Promise(function(resolve,reject) {
   
-            if ( matchJSFixes[url] ||   /(\.|\/)(jpe?g|png|webp|pdf|svg|gif|ico|js|html|md|css)$/.test(url)) {
+            if (  /(\.|\/)(jpe?g|png|webp|pdf|svg|gif|ico|js|html|md|css)$/.test(url)) {
                 return caches.match(url).then (resolve).catch(reject);
             }
             
@@ -294,26 +294,9 @@ function matchJS(url) {
                 .then(function(responses){
                     if (!responses.some(function(response){
                        if (response) {
+                            console.log(url,"did not have .js ext");
+                            resolve(response);
                            
-                           
-                           cache.put(url, response).then (function(){
-                                matchJSFixes[url] = true;
-                                
-                               
-                                cache.put(
-                                    
-                                    "/zed/app/.matchFixes", 
-                                    new Response(new Blob([ JSON.stringify(matchJSFixes,undefined,4) ], {
-                                        type: 'application/json'
-                                    }),{ "status" : 200 })
-                                    
-                                    ).then (function(){
-                                        
-                                        
-                                        resolve(response);
-                           
-                                    })
-                           });
                           
                            return true; // terminate the some loop
                        } 
