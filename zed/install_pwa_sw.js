@@ -27,7 +27,7 @@ var urlCleanupRegex = /^\/$/, urlCleanupReplace = '/', urlCleanupReplace2 = '/';
 
 function downloadJSON(response) { return response.json(); }
 
-function getIsExcluded(exclusionsList) {
+function get_X_cluded (exclusionsList) {
     
     const exclusions  = exclusionsList.map(
         function (excl) {
@@ -51,11 +51,48 @@ function getIsExcluded(exclusionsList) {
 
 function getGithubFileList (github_io_base) {
     
-   
+    return function iterator(github_config) {
+        
+       const isIncluded = get_X_cluded ( github_config.include );
+       const isExcluded = get_X_cluded ( github_config.exclude );
+       
+       console.log({
+           isIncluded,
+           isExcluded
+       });
+  
+       return new Promise(function (resolveList,reject) {
+
+           fetch(github_config.url).then(downloadJSON).then(function(github_data){
+             
+             return resolveList( 
+                 
+                 
+                 github_data.tree.filter(
+                     
+                     function(item){ return item.type === "blob" && isIncluded(item.path) && ! isExcluded(item.path); }
+                     
+                 ).map(
+                     
+                     function (item){ return github_io_base+item.path;  }
+                     
+                     
+                 )
+                 
+                 
+              );
+           
+           });
+           
+       });
+       
+    };
+           
+   })
     
     return function (github_data){
         
-        const isExcluded = getIsExcluded( github_data.exclude );
+        const isExcluded = get_X_cluded ( github_data.exclude );
         
         return github_data.tree.filter(function(item){
                 
@@ -76,18 +113,27 @@ function getPWAFiles(config_url) {
          .then(function(config) { 
            
            var github_io_base = config.root;
+           
+           Promise.all( config.github.map( getGithubFileList(github_io_base) ))
+           
+              .then (function(arrayOfFileLists){  
+                  
+                      resolveConfig(
+             
+                         
+                            config.site.files.concat.apply(config.site.files,arrayOfFileLists);
+                       
+                      );
+                      
+                  }).catch(reject);
+                  
+                  
+              }).catch(reject);
 
-           fetch(config.github.url).then(downloadJSON).then(function(github_files){
-               
-               resolveConfig(
-                  config.site.concat.apply(config,github_files.map( getGithubFileList(github_io_base) ))
-               );
-               
-           }).catch(reject);
+          
 
            
-       })
-            .catch(reject);
+       }).catch(reject);
     
     });
 }
