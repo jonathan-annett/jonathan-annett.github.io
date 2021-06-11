@@ -1,13 +1,7 @@
 
-var worker;
 if ('serviceWorker' in navigator) {
-  worker = navigator.serviceWorker.register('/zed/install_pwa_sw.js')
-  .then((reg) => {
-    // registration worked
-    console.log('Registration succeeded. Scope is ' + reg.scope);
-    afterInstall(worker);
-    
-  }).catch((error) => {
+  navigator.serviceWorker.register('/zed/install_pwa_sw.js')
+  .then(afterInstall).catch((error) => {
     // registration failed
     console.log('Registration failed with ' + error);
   });
@@ -42,7 +36,7 @@ function installerMsg(msg){
 
 
 
-function messageReceiver(NAME,cb) {
+function messageReceiver(worker,NAME,cb) {
     
     // app.js - somewhere in our main app
     const messageChannel = new MessageChannel();
@@ -68,17 +62,17 @@ function messageReceiver(NAME,cb) {
     }
 }
 
-function afterInstall() {
+function afterInstall(worker) {
     console.log("installed");
     
     console.log(worker);
-    /*
-    messageReceiver('UPDATE',function(msg){
+  
+    messageReceiver(worker,'UPDATE',function(msg){
         
         console.log(msg);
         
         
-    }); */
+    });  
 }
 
 
