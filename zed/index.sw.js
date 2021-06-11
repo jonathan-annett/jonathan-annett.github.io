@@ -201,7 +201,8 @@ self.addEventListener('message', (event) => {
        return caches.open(cacheName).then(function(cache) {
            return Promise.all(filesToCache.github.map(function(url,index){
                 msg.send({loading:index,url:url});
-                return cache.add(url).then (function(dl){
+                       
+                return refreshCache(cache,url).then (function(dl){
                       msg.send({loaded:index}); 
                       return Promise.resolve(dl);
                   })
@@ -215,7 +216,30 @@ self.addEventListener('message', (event) => {
     }
 });
 
+function refreshCache(cache,url) {
+    
+    return new Promise(function(resolve) {
+         cache.match(url).then(function(response) {
+             if (response) {
+                 console.log("refreshing",url);
+                 fetch(url, {
+                   method: 'HEAD' // *GET, POST, PUT, DELETE, etc.
+                 }).then (function(headX){
+                     
+                     console.log("HEAD-->",{headX});
+                     resolve(response);
+                 });
+             } else {
+                 console.log("adding new url",url);
+                cache.add(url).then(resolve);
+             }
+         });
+    });
 
+}
+
+
+ 
 
 self.addEventListener('install', function(e) {
     
@@ -243,9 +267,7 @@ self.addEventListener('install', function(e) {
 
 
 
-
- 
-  self.addEventListener('fetch', function(event) {
+addEventListener('fetch', function(event) {
       
         
         console.log("fetch intercept[",event.request.url,"]");
