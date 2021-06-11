@@ -134,18 +134,27 @@ function w_load ( e ) {
         // worker that will activate immediately
         return;
       }
-      registration.update();
-  
-      onNewServiceWorker(registration, function() {
-          
-        afterInstall(registration,function(){
+      
+      if (registration.installing) {
+          afterInstall(registration,function(){
+              alert('welcome!');
+              
+          });
+      } else {
+         registration.update();
+      
+          onNewServiceWorker(registration, function() {
+              
+            afterInstall(registration,function(){
+                
+                showRefreshUI(registration);
+                
+            });
             
-            showRefreshUI(registration);
             
-        });
-        
-        
-      });
+          });
+      
+      }
     });
     
     
