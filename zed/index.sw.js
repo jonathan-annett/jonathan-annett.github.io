@@ -278,6 +278,29 @@ function sw_install( e ) {
     );
 }     
 
+
+function matchJS(cache,url) {
+    
+    return new Promise(function(resolve,reject) {
+  
+            if ( /(\.|\/)(jpe?g|png|webp|pdf|svg|gif|ico|js|html|md|css)$/.test(url)) {
+                return cache.match(url).then (resolve).catch(reject);
+            }
+            
+            cache.matchAll([url+'.js',url])
+              .then(function(responses){
+                  if (!responses.some(function(response){
+                     if (response) {
+                         resolve(response);
+                         return true
+                     } 
+                  })) reject();
+              });
+
+    });
+}
+
+
 function sw_fetch( e ) {
     
          
@@ -287,7 +310,6 @@ function sw_fetch( e ) {
     if (installed_root && site_root === e.request.url ) {
         console.log("root detect");
         e.respondWith(
-        
         
                 caches.match(installed_root).then(function(response) {
                     if (response) {
@@ -304,8 +326,7 @@ function sw_fetch( e ) {
         
         e.respondWith(
             
-            
-            caches.match(e.request).then(function(response) {
+            matchJS(caches,e.request.url).then(function(response) {
                 
                 if (response) {
                     
