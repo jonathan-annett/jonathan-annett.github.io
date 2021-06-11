@@ -83,7 +83,7 @@ function getGithubFileList (github_io_base) {
                  ).map(
                      
                      function (item){ 
-                         console.log("including:",github_io_base+item.path);
+                         //console.log("including:",github_io_base+item.path);
                          return github_io_base+item.path; 
 
                      }
@@ -169,7 +169,7 @@ function messageSender(NAME) {
    
    return {
        send : function (msg) {
-           console.log({msg});
+           //console.log({msg});
            if (pending) {
                pending.push(msg);
            } else {

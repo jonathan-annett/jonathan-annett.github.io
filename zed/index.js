@@ -14,6 +14,17 @@ function invokeServiceWorkerUpdateFlow(registration) {
     load_new_version.addEventListener('click', click);
 }
 
+var installerProgress;
+function installerMsg(msg){
+    if (!installerProgress) {
+       installerProgress =   document.getElementById("progress_container");
+       installerProgress.innerHTML= '<progress max="'+msg.progressTotal+'" value="'+msg.progress+'"> 70% </progress';
+       installerProgress = installerProgress.children[0];
+    } else {
+        installerProgress.progress = msg.progress;
+    }           
+}
+
 // check if the browser supports serviceWorker at all
 if ('serviceWorker' in navigator) {
     // wait for the page to load
@@ -25,6 +36,10 @@ if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.register('install_pwa_sw.js')
         
         console.log("registered service worker");
+        
+        
+        messageReceiver('INSTALL',installerMsg);
+        
         // ensure the case when the updatefound event was missed is also handled
         // by re-invoking the prompt when there's a waiting Service Worker
         if (registration.waiting) {
