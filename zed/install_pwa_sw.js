@@ -1,26 +1,14 @@
 
 /* global self, importScripts, caches  */
-importScripts('adderall.js');
 
-var file_list_url = "/zed/zedPWA.files.json";
-
-var cacheName = 'zed-pwa';
-
-var version = 1.0;
 
 var 
-site_domain = self.location.hostname,
-filesToCache = [
-  
-],
-locals = {};
 
-filesToCache.forEach(function(u){
-   locals["https://"+site_domain+u]=u; 
-});
-
-    
- 
+file_list_url = "/zed/zedPWA.files.json",
+filesToCache,
+cacheName   = 'zed-pwa',
+version     = 1.0,
+site_domain = self.location.hostname;
 
 var urlCleanupRegex = /^\/$/, urlCleanupReplace = '/', urlCleanupReplace2 = '/';
 
@@ -126,10 +114,10 @@ function getPWAFiles(config_url) {
                           
                               console.log("resolved:",arrayOfFileLists) ;
                               resolveConfig(
-                     
-                                 
-                                    config.site.files.concat.apply(config.site.files,arrayOfFileLists)
-                               
+                                   { 
+                                       site   : config.site,
+                                       github : [].concat.apply([],arrayOfFileLists)
+                                   }
                               );
                               
                           })
@@ -146,26 +134,31 @@ function getPWAFiles(config_url) {
 }
 
 
-
-
-function messageSender(NAME) {
+function messageSender(NAME,port) {
    // service-worker.js
    let messagePort,pending=[];
-   self.addEventListener("message", function(event) {
-     if (event.data && event.data.type === NAME) {
-       messagePort = event.ports[0];
+   const boot = function (port) {
+       messagePort = port; 
        if (pending) {
-           pending.forEach(function (msg){
-               messagePort.postMessage({ type : NAME, msg : msg, delayed:true });
-           });
-           pending.splice(0,pending.length)
-           pending=undefined;
-         }
-     }
+         pending.forEach(function (msg){
+             messagePort.postMessage({ type : NAME, msg : msg, delayed:true });
+         });
+         pending.splice(0,pending.length)
+         pending=undefined;
+       }
+   },
+         bootstrapper = function(event) {
+          if (event.data && event.data.type === NAME) {
+            self.removeEventListener("message", bootstrapper);
+            boot(event.ports[0]);
+          }
+        };
    
-
-    
-   }); 
+   if (port) {
+       boot(port);
+   } else {
+       self.addEventListener("message", bootstrapper); 
+    }
    
    return {
        send : function (msg) {
@@ -185,33 +178,39 @@ function messageSender(NAME) {
 
 self.addEventListener('message', (event) => {
     if (event.data === 'SKIP_WAITING') {
-        self.skipWaiting();
+        return self.skipWaiting();
+    }
+ 
+    if (event.data === 'UPDATE') {
+       const msg = messageSender('UPDATE',event.ports[0]);
+       msg.send({files : filesToCache.github});
+       return caches.open(cacheName).then(function(cache) {
+           return Promise.all(filesToCache.site.map(function(url,index){
+                console.log("loading...",url);
+                msg.send({loading:index});
+                return cache.add(url) 
+                  .then (function(dl){ msg.send({downloaded:index}); return dl;})
+                  .catch(function(err){
+                     //Error stuff
+                     console.log("failed adding",url,err);
+                 });
+           }));
+       })
+       
     }
 });
 
 
+
 self.addEventListener('install', function(e) {
-    
-          const msg = messageSender('INSTALL');
-        
           e.waitUntil(
-              
-              getPWAFiles( file_list_url )
-              
-                 .then(function(files){
-                    msg.send({progress:0,progressTotal:files.length});
-                    return caches.open(cacheName).then(function(cache) { 
-                        return Promise.all(files.map(function(url,index){
-                             //console.log("loading...",url);
-                             msg.send({progress:index,progressTotal:files.length,status:'downloading:'+url});
-                             return cache.add(url)
-                             .then(function(x){
-                                 msg.send({progress:index,progressTotal:files.length,status:'downloaded:'+url});
-                                 return x;
-                             })
-                             .catch(function(err){
+              getPWAFiles( file_list_url ).then(function(files){
+                    filesToCache = files;
+                    return caches.open(cacheName).then(function(cache) {
+                        return Promise.all(filesToCache.site.map(function(url,index){
+                             console.log("loading...",url);
+                             return cache.add(url) .catch(function(err){
                                   //Error stuff
-                                  msg.send({progress:index,progressTotal:files.length,status:'failed:'+url});   
                                   console.log("failed adding",url,err);
                               });
                         }));
@@ -220,6 +219,10 @@ self.addEventListener('install', function(e) {
                  })
           );
 });
+
+
+
+
 
 if (true) {
     
