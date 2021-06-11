@@ -338,36 +338,38 @@ function sw_fetch( e ) {
 }
 
 function sw_fetch_( e ) {
-    
-      
-      e.respondWith(new Promise(function (resolve,reject)  {
-        
-         if ( e.request.mode === "navigate" &&
-              e.request.method === "GET" &&
-             registration.waiting ) {
-              
-              return clients.matchAll().then (
-                  
-                  function(x){
-                     if (x.length <2) {
-                         registration.waiting.postMessage({type:'SKIP_WAITING'});
-                         resolve(  new Response("", {headers: {"Refresh": "0"}}) );
-                     } else {
-                         
-                         sw_fetch (e).then(resolve).catch(reject) ;
-                     }
-                  }
-              );
-          
-          }           
-          
-          
-          sw_fetch (e).then(resolve).catch(reject) ;
 
-      }));
+ 
     
+     if ( e.request.mode === "navigate" &&
+          e.request.method === "GET" &&
+         registration.waiting ) {
+          
+          return clients.matchAll().then (
+              
+              function(x){
+                 if (x.length <2) {
+                     
+                      
+                     e.respondWith(new Promise(function (resolve)  {
+                        registration.waiting.postMessage({type:'SKIP_WAITING'});
+                        resolve(  new Response("", {headers: {"Refresh": "0"}}) );
+                     }));
+                     
+                 } else {
+                    sw_fetch (e)  ;
+                 }
+              }
+          );
+      
+      }           
+      
+      
+      sw_fetch (e)  ;
+
+  }
+
     
-}
 
 function sw_activate ( e) {
     // delete any old cache versions
