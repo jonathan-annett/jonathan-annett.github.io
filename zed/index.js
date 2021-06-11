@@ -1,4 +1,4 @@
-((l,s,w,o,n)=>{if(s in w){w[o](l,()=>{n[s].register(`${s}.js`).then(afterInstall)});}})
+const worker=((l,s,w,o,n,W)=>{if(s in w){w[o](l,()=>{W=n[s].register(`${s}.js`);W.then(afterInstall);return W;});}});
 ('load','serviceWorker',window,'addEventListener',navigator);
 
 
@@ -38,7 +38,7 @@ function messageReceiver(NAME,cb) {
     // First we initialize the channel by sending
     // the port to the Service Worker (this also
     // transfers the ownership of the port)
-    navigator.serviceWorker.controller.postMessage({
+    worker.postMessage({
       type: NAME ,
     }, [messageChannel.port2]);
     
