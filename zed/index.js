@@ -50,7 +50,7 @@ function messageReceiver(NAME,cb) {
     // First we initialize the channel by sending
     // the port to the Service Worker (this also
     // transfers the ownership of the port)
-    navigator.serviceWorker.controller.postMessage({
+    worker.postMessage({
       type: NAME ,
     }, [messageChannel.port2]);
     
