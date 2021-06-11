@@ -26,10 +26,10 @@
             
             { "RegExp": "\/fs\\/node\\.js$" },
             
-            { "RegExp": "\\/nw\\init[1|2].js$" },
+            { "RegExp": "\\/nw\\/init[1|2].js$" },
             
             
-            "/zed/app/package.json"
+            "app/package.json"
 
         ]
     }]
