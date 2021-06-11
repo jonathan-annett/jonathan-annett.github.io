@@ -27,13 +27,13 @@ var urlCleanupRegex = /^\/$/, urlCleanupReplace = '/', urlCleanupReplace2 = '/';
 
 function downloadJSON(response) { return response.json(); }
 
-function get_X_cluded (exclusionsList) {
+function get_X_cluded (base,exclusionsList) {
     
     const exclusions  = exclusionsList.map(
         function (excl) {
             if (typeof excl === "string" ) { 
                 console.log('get_X_cluded:literal:',excl);
-                return function(path){ return path===excl;};
+                return function(path){ return path===base+excl;};
             } else {
                 if (typeof excl.RegExp === "string") {
                     const re = new RegExp(excl.RegExp,'');
@@ -55,8 +55,8 @@ function getGithubFileList (github_io_base) {
     
     return function iterator(github_config) {
         
-       const isIncluded = get_X_cluded ( github_config.include );
-       const isExcluded = get_X_cluded ( github_config.exclude );
+       const isIncluded = get_X_cluded ( github_io_base, github_config.include );
+       const isExcluded = get_X_cluded ( github_io_base, github_config.exclude );
        
        console.log({
            isIncluded,
