@@ -1,6 +1,7 @@
 
-/* global self, importScripts, caches ,registration,clients ,Response */
+/* global self, importScripts, caches ,registration,clients ,Response,localforage */
 
+importScripts("https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js")
 
 var 
 
@@ -8,10 +9,7 @@ file_list_url = "/zed/index.sw.json",
 
 version     = 1.1,
 
-cacheName   = 'zed-pwa-'+version,
-
-site_root,
-installed_root;
+cacheName   = 'zed-pwa-'+version;
 
 addEventListener('message',  sw_message );
 addEventListener('install',  sw_install);
@@ -107,15 +105,50 @@ function getGithubFileList (github_io_base) {
     
 }
 
-function getPWAFiles(config_url) {
+
+function getConfig(config_url) {
+  const key = '.config';
+  
+  return getConfig.cache ?  Promise.resolve(getConfig.cache) :
+  
+          new Promise(function (resolve,reject){
+      
+      localforage.getItem(key).then(function (cfg) {
+          
+          if (cfg) {
+              console.log("fetched config from localForage");
+              getConfig.cache=cfg;
+              return resolve(cfg);
+          }
+              
+            fetch(config_url)
+              .then(downloadJSON)
+                .then(function(cfg){
+                    
+                    localforage.setItem(key, cfg).then(function () {
+                        console.log("saved config in localForage");
+                        getConfig.cache=cfg;
+                        return resolve(cfg);
+                    });
+                    
+                }).catch(reject);
+          
+      });
+      
+  });
+}
+
+function downloadPWAFiles(config_url) {
+    
     return new Promise(function(resolveConfig,reject) {
         
-            
-                    
+        
+         
             console.log("fetching...:",config_url);
-            fetch(config_url)
-               .then(downloadJSON)
-                 .then(function(config) { 
+            
+            
+            getConfig(config_url)
+               .then(function(config) { 
                    
                    console.log("fetched...:",config);
                    
@@ -138,12 +171,49 @@ function getPWAFiles(config_url) {
                           })
                           
                           
-                      });
+                      })
+                  .catch(reject);
                       
        })
+       
 }
 
 
+function getPWAFiles(config_url) {
+    const key = '.PWAFiles';
+    return getPWAFiles.cache ? Promise.resolve(getPWAFiles) :
+    new Promise(function (resolve,reject) {
+        localforage.getItem(key).then(function (files) {
+            if (files) {
+                console.log("fetched files from localForage");
+                getPWAFiles.cache=files;
+                return resolve(files);
+            } else {
+                
+                return downloadPWAFiles(config_url).then(function(files){
+                    localforage.setItem(key, files).then(function () {
+                        console.log("downloaded, saved files in localForage");
+                        getPWAFiles.cache=files;
+                        return resolve(files);
+                    });
+
+                }).catch(reject);
+            }
+        }).catch(function () {
+             return downloadPWAFiles(config_url).then(function(files){
+                 localforage.setItem(key, files).then(function () {
+                     console.log("downloaded, saved files in localForage");
+                     getPWAFiles.cache=files;
+                    return resolve(files);
+                 });
+
+             }).catch(reject);
+        })
+        
+    });
+    
+}
+ 
 function messageSender(NAME,port) {
    // service-worker.js
    let messagePort,pending=[];
@@ -315,52 +385,56 @@ function sw_fetch( e ) {
     console.log("fetch intercept[",e.request.url,"]");
     
     
-    if (installed_root && site_root === e.request.url ) {
-        console.log("root detect");
-        e.respondWith(
+    getConfig(file_list_url).then(function(cfg) {
         
-                caches.match(installed_root).then(function(response) {
+        if (cfg.site.installed_root && cfg.site.site_root === e.request.url ) {
+            console.log("root detect");
+            e.respondWith(
+            
+                    caches.match(cfg.site.installed_root).then(function(response) {
+                        if (response) {
+                            console.log(">>>>[",cfg.site.installed_root,response.headers.get('content-length')," bytes]<<<< from cache");
+                            return response;
+                        }
+                        
+                    })
+                    
+            );
+     
+            
+        } else {
+            
+            e.respondWith(
+                
+                matchJS(e.request.url).then(function(response) {
+                    
                     if (response) {
-                        console.log(">>>>[",installed_root,response.headers.get('content-length')," bytes]<<<< from cache");
+                        
+                        console.log(">>>>[",e.request.url,response.headers.get('content-length')," bytes]<<<< from cache");
                         return response;
+                    
+                        
                     }
                     
+                    console.log(">>>>[",e.request.url,"]<<<< downloading");
+                    return fetch(e.request).then(function(response){
+                        console.log(">>>>[",e.request.url,response.headers.get('content-length')," bytes]<<<< from network");
+                        return response;
+                    }).catch(function(err){
+                           //Error stuff
+                        console.log("failed fetching",e.request.url,err);
+                        
+                    })
+                }).catch(function(err) {
+                    //Error stuff
+                    console.log("failed matching",e.request.url,err);
                 })
                 
-        );
- 
-        
-    } else {
-        
-        e.respondWith(
+            );
             
-            matchJS(e.request.url).then(function(response) {
-                
-                if (response) {
-                    
-                    console.log(">>>>[",e.request.url,response.headers.get('content-length')," bytes]<<<< from cache");
-                    return response;
-                
-                    
-                }
-                
-                console.log(">>>>[",e.request.url,"]<<<< downloading");
-                return fetch(e.request).then(function(response){
-                    console.log(">>>>[",e.request.url,response.headers.get('content-length')," bytes]<<<< from network");
-                    return response;
-                }).catch(function(err){
-                       //Error stuff
-                    console.log("failed fetching",e.request.url,err);
-                    
-                })
-            }).catch(function(err) {
-                //Error stuff
-                console.log("failed matching",e.request.url,err);
-            })
-            
-        );
+        }
         
-    }
+    });
 
     
 }

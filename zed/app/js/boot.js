@@ -108,7 +108,7 @@ require([
         $("div").remove();
         $("span").remove();
         $("webview").remove();
-        $("body").append("<img src='Icon.png' id='wait-logo'>");
+        $("body").append("<img src='/zed/app/Icon.png' id='wait-logo'>");
         return new Promise(function(resolve, reject) {
             architect.resolveConfig(modules, function(err, config) {
                 if (err) {
