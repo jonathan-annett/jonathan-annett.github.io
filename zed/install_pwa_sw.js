@@ -182,6 +182,14 @@ function messageSender(NAME) {
 
 /* Start the service worker and cache all of the app's content */
 
+
+self.addEventListener('message', (event) => {
+    if (event.data === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
+
 self.addEventListener('install', function(e) {
     
           const msg = messageSender('INSTALL');
