@@ -171,7 +171,7 @@ function messageSender(NAME) {
        send : function (msg) {
            console.log({msg});
            if (pending) {
-               pending.add(msg);
+               pending.push(msg);
            } else {
                messagePort.postMessage({ type : NAME, msg : msg });
            }
