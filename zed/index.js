@@ -62,17 +62,17 @@ function messageReceiver(worker,NAME,cb) {
     }
 }
 
-function afterInstall(worker) {
+function afterInstall(reg) {
     console.log("installed");
     
-    console.log(worker);
-  
-    messageReceiver(worker,'UPDATE',function(msg){
-        
-        console.log(msg);
-        
-        
-    });  
+    if (reg.active){
+        messageReceiver(reg.active,'UPDATE',function(msg){
+       
+            console.log(msg);
+            
+            
+        });  
+    }
 }
 
 
