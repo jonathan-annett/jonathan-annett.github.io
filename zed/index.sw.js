@@ -11,9 +11,6 @@ version     = 1.0,
 site_root,
 installed_root;
 
-var urlCleanupRegex = /^\/$/, urlCleanupReplace = '/', urlCleanupReplace2 = '/';
-
-
 function downloadJSON(response) { return response.json(); }
 
 function get_X_cluded (base,exclusionsList) {
@@ -21,9 +18,13 @@ function get_X_cluded (base,exclusionsList) {
     const exclusions  = exclusionsList.map(
         function (excl) {
             if (typeof excl === "string" ) { 
+                
                 console.log('get_X_cluded:literal:',excl);
-                return function(path){ return path===base+excl;};
+                
+                return function(path){ return path === base + excl ;};
+                
             } else {
+                
                 if (typeof excl.RegExp === "string") {
                     const re = new RegExp(excl.RegExp,'');
                     console.log('get_X_cluded:regex:',re);
@@ -31,13 +32,19 @@ function get_X_cluded (base,exclusionsList) {
                 } else {
                     return null;
                 }
+                
             }
         }   
     ).filter(function(x){ return x !== null;})
     
-    return function  (path) {
+    const fn =  function  (path) {
+       
         return exclusions.some(function(test){ return test(path);});
     };
+    
+    fn.list = exclusionsList;
+    
+    return fn;
 }
 
 function getGithubFileList (github_io_base) {
