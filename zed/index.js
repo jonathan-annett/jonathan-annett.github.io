@@ -70,12 +70,15 @@ function messageReceiver(NAME,cb) {
 
 function afterInstall() {
     console.log("installed");
+    
+    console.log(worker);
+    /*
     messageReceiver('UPDATE',function(msg){
         
         console.log(msg);
         
         
-    });
+    }); */
 }
 
 

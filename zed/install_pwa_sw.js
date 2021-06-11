@@ -115,7 +115,7 @@ function getPWAFiles(config_url) {
                               console.log("resolved:",arrayOfFileLists) ;
                               resolveConfig(
                                    { 
-                                       site   : config.site,
+                                       site   : config.site.files,
                                        github : [].concat.apply([],arrayOfFileLists)
                                    }
                               );
