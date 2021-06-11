@@ -185,7 +185,7 @@ self.addEventListener('message', (event) => {
        const msg = messageSender('UPDATE',event.ports[0]);
        msg.send({files : filesToCache.github});
        return caches.open(cacheName).then(function(cache) {
-           return Promise.all(filesToCache.site.map(function(url,index){
+           return Promise.all(filesToCache.github.map(function(url,index){
                 console.log("loading...",url);
                 msg.send({loading:index,url:url});
                 return cache.add(url) 
@@ -203,10 +203,14 @@ self.addEventListener('message', (event) => {
 
 
 self.addEventListener('install', function(e) {
+    
           e.waitUntil(
-              getPWAFiles( file_list_url ).then(function(files){
+              
+              getPWAFiles( file_list_url ).then( function(files){
+                  
                     filesToCache = files;
                     return caches.open(cacheName).then(function(cache) {
+                        
                         return Promise.all(filesToCache.site.map(function(url,index){
                              console.log("loading...",url);
                              return cache.add(url) .catch(function(err){
@@ -214,10 +218,12 @@ self.addEventListener('install', function(e) {
                                   console.log("failed adding",url,err);
                               });
                         }));
+                        
                     })
                     
-                 })
+              })
           );
+          
 });
 
 
