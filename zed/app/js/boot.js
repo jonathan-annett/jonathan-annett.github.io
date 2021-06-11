@@ -2,11 +2,11 @@
 require.config({
     baseUrl: "js",
     paths: {
-        "text":   "/zed/app/dep/text.js",
-        "json5":  "/zed/app/dep/json5.js",
-        "zedb":   "/zed/app/dep/zedb.js",
-        "async":  "/zed/app/config/api/zed/lib/async.js",
-        "events": "/zed/app/js/lib/emitter.js"
+        "text":   "/zed/app/dep/text",
+        "json5":  "/zed/app/dep/json5",
+        "zedb":   "/zed/app/dep/zed.js",
+        "async":  "/zed/app/config/api/zed/lib/async",
+        "events": "/zed/app/js/lib/emitter"
     },
 });
 
