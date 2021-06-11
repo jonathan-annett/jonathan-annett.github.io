@@ -5,9 +5,9 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var poll_watcher = require("./poll_watcher");
-        var fsUtil = require("./util");
-        var niceName = require("../lib/url_extractor").niceName;
+        var poll_watcher = require("/zed/app/js/fs/poll_watcher.js");
+        var fsUtil       = require("/zed/app/js/fs/util.js");
+        var niceName     = require("/zed/app/js/lib/url_extractor.js").niceName;
 
         var history = imports.history;
 

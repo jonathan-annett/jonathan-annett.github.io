@@ -1,5 +1,5 @@
 /*global define, sandboxRequest, _, self, Promise, importScripts, onmessage, postMessage*/
-importScripts("../dep/require.js", "../dep/underscore-min.js", "../dep/json5.js");
+importScripts("/zed/app/dep/require.js", "/zed/app/dep/underscore-min.js", "/zed/app/dep/json5.js");
 var debug = false;
 
 self.window = self;

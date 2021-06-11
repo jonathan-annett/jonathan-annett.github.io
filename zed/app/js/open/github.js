@@ -1,6 +1,7 @@
+/* global define, _, $ */
 define(function(require, exports, module) {
-    var filterList = require("../lib/filter_list");
-    var urlExtractor = require("../lib/url_extractor");
+    var filterList   = require("/zed/app/js/lib/filter_list.js");
+    var urlExtractor = require("/zed/app/js/lib/url_extractor.js");
 
     return function(githubToken) {
         function githubCall(method, url, args, bodyJson) {

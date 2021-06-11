@@ -9,7 +9,7 @@ define(function(require, exports, module) {
     function plugin(options, imports, register) {
         var async = require("async");
         var useragent = require("ace/lib/useragent");
-        var path = require("./lib/path");
+        var path = require("/zed/app/js/lib/path.js");
 
         var ui = imports.ui;
         var eventbus = imports.eventbus;

@@ -14,7 +14,7 @@ define(function(require, exports, module) {
     }
 
     function plugin(options, imports, register) {
-        var path = require("./lib/path");
+        var path = require("/zed/app/js/lib/path.js");
 
         var eventbus = imports.eventbus;
         var command = imports.command;

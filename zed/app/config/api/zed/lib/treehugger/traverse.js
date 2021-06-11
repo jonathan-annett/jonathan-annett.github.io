@@ -1,6 +1,6 @@
 define(function(require, exports, module) {
 
-var tree = require('./tree');
+var tree = require('/zed/app/config/api/zed/lib/treehugger/tree.js');
 
 if (!Function.prototype.curry) {
     Function.prototype.curry = function() {

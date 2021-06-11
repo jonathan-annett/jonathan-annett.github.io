@@ -1,11 +1,12 @@
+/* global define, zed, _ */
 define(function(require, exports, module) {
     plugin.consumes = ["eventbus", "symbol", "ui", "editor", "session_manager", "fs", "command"];
     plugin.provides = ["goto"];
     return plugin;
 
     function plugin(options, imports, register) {
-        var fuzzyfind = require("./lib/fuzzyfind");
-        var locator = require("./lib/locator");
+        var fuzzyfind = require("/zed/app/js/lib/fuzzyfind.js");
+        var locator = require("/zed/app/js/lib/locator.js");
 
         var eventbus = imports.eventbus;
         var symbol = imports.symbol;

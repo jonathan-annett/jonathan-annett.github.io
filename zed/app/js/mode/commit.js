@@ -1,9 +1,10 @@
+/* global define */
 define(function(require, exports, module) {
     "use strict";
 
     var oop = require("ace/lib/oop");
     var TextMode = require("ace/mode/text").Mode;
-    var CommitHighlightRules = require("./commit_highlight_rules").CommitHighlightRules;
+    var CommitHighlightRules = require("/zed/app/js/mode/commit_highlight_rules.js").CommitHighlightRules;
 
     var Mode = function() {
         this.HighlightRules = CommitHighlightRules;

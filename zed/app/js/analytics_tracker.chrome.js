@@ -1,4 +1,4 @@
-/*global analytics*/
+/*global analytics,define*/
 define(function(require, exports, module) {
     return function(config) {
         var service = analytics.getService("zed");

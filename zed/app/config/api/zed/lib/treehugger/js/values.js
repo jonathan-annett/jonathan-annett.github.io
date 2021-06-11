@@ -1,6 +1,7 @@
+/*global define */
 define(function(require, exports, module) {
 
-var tree = require('treehugger/tree');
+var tree = require('/zed/app/config/api/zed/lib/treehugger/tree');
 
 var valueRegistry = {};
 window.valueRegistry = valueRegistry;

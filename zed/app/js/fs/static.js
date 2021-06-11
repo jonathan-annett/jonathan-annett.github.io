@@ -2,14 +2,14 @@
  * This module implements the read-only file system, essentially a simple
  * way to serve files from folders from within the Zed application
  */
-/*global define */
+/*global define, $ */
 define(function(require, exports, module) {
     plugin.provides = ["fs"];
     return plugin;
 
     function plugin(options, imports, register) {
-        var http_cache = require("../lib/http_cache");
-        var fsUtil = require("./util");
+        var http_cache = require("/zed/app/js/lib/http_cache.js");
+        var fsUtil     = require("/zed/app/js/fs/util.js");
         var root = options.url;
         var readOnlyFn = options.readOnlyFn;
 

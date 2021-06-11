@@ -5,12 +5,7 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var api;
-        if(window.isNodeWebkit) {
-            api = require("./local_store.nw")();
-        } else {
-            api = require("./local_store.chrome")();
-        }
+        var api = require("/zed/app/js/local_store.chrome.js")();
         register(null, {
             local_store: api
         });

@@ -1,6 +1,6 @@
 /*global define, zed*/
 define(function(require, exports, module) {
-    var options = require("../../lib/options");
+    var options = require("/zed/app/js/lib/options.js");
     return {
         readFile: function(path, binary) {
             return zed.getService("fs").readFile(path, binary).

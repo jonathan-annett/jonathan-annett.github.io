@@ -1,4 +1,4 @@
-/* global $, _*/
+/* global define, $, _*/
 define(function(require, exports, module) {
     plugin.consumes = ["config", "command", "eventbus", "configfs", "window"];
     plugin.provides = ["theme"];

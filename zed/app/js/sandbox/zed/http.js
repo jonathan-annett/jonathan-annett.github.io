@@ -1,6 +1,6 @@
 /* global define, $ */
 define(function(require, exports, module) {
-    var http_cache = require("../../lib/http_cache");
+    var http_cache = require("/zed/app/js/lib/http_cache");
 
     /**
      * A request wrapper around the jQuery AJAX function.

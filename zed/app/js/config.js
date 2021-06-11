@@ -1,4 +1,4 @@
-/*global define, _, chrome, zed */
+/*global define, _, chrome, zed,JSON5 */
 define(function(require, exports, module) {
     "use strict";
     plugin.consumes = ["eventbus", "command", "sandboxes", "configfs", "local_store", "background"];
@@ -6,7 +6,7 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var path = require("./lib/path");
+        var path = require("/zed/app/js/lib/path");
 
         var eventbus = imports.eventbus;
         var command = imports.command;
@@ -18,7 +18,7 @@ define(function(require, exports, module) {
         eventbus.declare("configchanged");
         eventbus.declare("configneedsreloading");
 
-        require("lib/vim_patch");
+        require("/zed/app/js/lib/vim_patch.js");
 
         var minimumConfiguration = {
             imports: [
@@ -404,7 +404,7 @@ define(function(require, exports, module) {
         command.define("Configuration:Open Configuration Project", {
             doc: "Open a Zed window with the Configuration project",
             exec: function() {
-                background.openProject("Configuration", window.isNodeWebkit ? "nwconfig:" : "config:");
+                background.openProject("Configuration",  "config:");
             },
             readOnly: true
         });

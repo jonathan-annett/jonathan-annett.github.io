@@ -7,12 +7,12 @@ define(function(require, exports, module) {
     function plugin(options, imports, register) {
         var tokenStore = imports.local_store;
         var history = imports.history;
-        var poll_watcher = require("./poll_watcher");
-        var AWS = require("../lib/aws-sdk.min");
-        var fsUtil = require("./util");
-        var mimeTypes = require("../lib/mime_types");
-        var pathUtil = require("../lib/path");
-
+        var mimeTypes    = require("/zed/app/js/lib/mime_types");
+        var pathUtil     = require("/zed/app/js/lib/path.js");
+        var AWS          = require("/zed/app/js/lib/aws-sdk.min.js");
+        var poll_watcher = require("/zed/app/js/fs/poll_watcher.js");
+        var fsUtil       = require("/zed/app/js/fs/util.js");
+        
         var bucket = options.bucket;
 
         var s3;

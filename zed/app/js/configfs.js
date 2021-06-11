@@ -1,15 +1,11 @@
+/* global define*/
 define(function(require, exports, module) {
     plugin.consumes = ["command"];
     plugin.provides = ["configfs"];
     return plugin;
 
     function plugin(options, imports, register) {
-        var api;
-        if(window.isNodeWebkit) {
-            api = require("./configfs.nw")(imports.command);
-        } else {
-            api = require("./configfs.chrome")(imports.command);
-        }
+        var api = require("/zed/app/js/configfs.chrome.js")(imports.command);
         register(null, {
             configfs: api
         });

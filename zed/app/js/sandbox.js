@@ -1,14 +1,10 @@
+/* global define*/
 define(function(require, exports, module) {
     plugin.provides = ["sandbox"];
     return plugin;
 
     function plugin(options, imports, register) {
-        var api;
-        if(window.isNodeWebkit) {
-            api = require("./sandbox.nw")();
-        } else {
-            api = require("./sandbox.chrome")();
-        }
+        var api = require("/zed/app/js/sandbox.chrome.js")();
         register(null, {
             sandbox: api
         });

@@ -1,10 +1,11 @@
+/* global define */
 define(function(require, exports, module) {
     plugin.consumes = ["ui", "fs", "goto"];
     plugin.provides = ["dnd"];
     return plugin;
 
     function plugin(options, imports, register) {
-        var async = require("./lib/async");
+        var async = require("/zed/app/js/lib/async.js");
         var ui = imports.ui;
         var fs = imports.fs;
         var goto = imports.goto;

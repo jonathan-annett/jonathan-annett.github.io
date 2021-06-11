@@ -7,7 +7,7 @@ define(function(require, exports, module) {
 
     function plugin(options, imports, register) {
         var zedb = require("zedb");
-        var opts = require("./lib/options");
+        var opts = require("/zed/app/js/lib/options.js");
 
         var eventbus = imports.eventbus;
 

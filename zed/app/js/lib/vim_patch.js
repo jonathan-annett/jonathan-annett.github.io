@@ -1,3 +1,4 @@
+/* global define */
 define(function(require, exports, module) {
     // Monkey patch vim mode
     var vimKeyBindings = require("ace/keyboard/vim");

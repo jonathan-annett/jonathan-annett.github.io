@@ -4,17 +4,18 @@
  * analysis semi-evaluates the Javascript AST and attempts to do simple predictions
  * of the values an expression, function or variable may contain.
  */
-
+/*global define*/
 define(function(require, exports, module) {
 
-var tree          = require('treehugger/tree'),
-    Value         = require('treehugger/js/values').Value,
-    FunctionValue = require('treehugger/js/values').FunctionValue,
-    instantiate   = require('treehugger/js/values').instantiate,
-    valueFromJSON = require('treehugger/js/values').fromJSON,
-    lookupValue   = require('treehugger/js/values').lookupValue;
+var tree          = require('/zed/app/config/api/zed/lib/treehugger/tree.js'),
+    values        = require('/zed/app/config/api/zed/lib/treehugger/js/values.js'),
+    Value         = values.Value,
+    FunctionValue = values.FunctionValue,
+    instantiate   = values.instantiate,
+    valueFromJSON = values.fromJSON,
+    lookupValue   = values.lookupValue;
 
-require('treehugger/traverse');
+require('/zed/app/config/api/zed/lib/treehugger/traverse.js');
 
 /**
  * Implements Javascript's scoping mechanism using a hashmap with parent

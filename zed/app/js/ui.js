@@ -1,4 +1,4 @@
-/*global define, $, _, ace */
+/*global define, $, _, ace,zed  */
 define(function(require, exports, module) {
     "use strict";
     plugin.consumes = ["eventbus"];
@@ -6,10 +6,10 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var AcePopup = require("./lib/ace_popup").AcePopup;
+        var AcePopup = require("/zed/app/js/lib/ace_popup").AcePopup;
         // var AcePopup = require("ace/autocomplete/popup").AcePopup;
-        var path = require("./lib/path");
-        var keyCode = require("./lib/key_code");
+        var path = require("/zed/app/js/lib/path");
+        var keyCode = require("/zed/app/js/lib/key_code");
 
         var eventbus = imports.eventbus;
 
@@ -103,6 +103,7 @@ define(function(require, exports, module) {
                 });
 
                 input.keydown(function(event) {
+                    var i;
                     switch (event.keyCode) {
                         case keyCode('Space'):
                             var phrase = input.val();
@@ -137,13 +138,13 @@ define(function(require, exports, module) {
                             ignoreKeyup = true;
                             break;
                         case keyCode('PgUp'):
-                            for (var i = 0; i < 10; i++) {
+                            for (i = 0; i < 10; i++) {
                                 go('up');
                             }
                             ignoreKeyup = true;
                             break;
                         case keyCode('PgDown'):
-                            for (var i = 0; i < 10; i++) {
+                            for (i = 0; i < 10; i++) {
                                 go('down');
                             }
                             ignoreKeyup = true;
@@ -382,11 +383,7 @@ define(function(require, exports, module) {
                 if (webviewEl) {
                     webviewEl.remove();
                 }
-                if (window.isNodeWebkit) {
-                    webviewEl = $("<div class='webview-wrapper'><iframe nwdisable nwfaketop class='webview'>");
-                } else {
-                    webviewEl = $("<div class='webview-wrapper'><webview class='webview'>");
-                }
+                webviewEl = $("<div class='webview-wrapper'><webview class='webview'>");
                 webviewEl.find(".webview").attr("src", url);
                 $("#editor-wrapper").append(webviewEl);
                 webviewEl.find(".webview")[0].addEventListener("loadstop", function() {

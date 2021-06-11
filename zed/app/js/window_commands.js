@@ -9,7 +9,7 @@ define(function(require, exports, module) {
         var ui = imports.ui;
         var background = imports.background;
 
-        var opts = require("./lib/options");
+        var opts = require("/zed/app/js/lib/options.js");
 
         command.define("Window:Close", {
             doc: "Closes the current window.",

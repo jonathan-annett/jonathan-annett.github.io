@@ -1,6 +1,7 @@
+/* global define, $ */
 define(function(require, exports, module) {
 
-    var keyCode = require("./key_code");
+    var keyCode = require("/zed/app/js/lib/key_code.js");
 
     /**
      * - inputEl

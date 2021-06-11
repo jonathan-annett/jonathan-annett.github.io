@@ -1,14 +1,10 @@
+/* global define */
 define(function(require, exports, module) {
     plugin.provides = ["windows"];
     return plugin;
 
     function plugin(options, imports, register) {
-        var apiProm;
-        if(window.isNodeWebkit) {
-            apiProm = require("./windows.nw")();
-        } else {
-            apiProm = require("./windows.chrome")();
-        }
+        var apiProm = require("/zed/app/js/windows.chrome.js")();
         apiProm.then(function(api) {
             register(null, {
                 windows: api

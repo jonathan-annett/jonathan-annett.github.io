@@ -1,4 +1,4 @@
-/*global analytics*/
+/*global analytics,define*/
 define(function(require, exports, module) {
     "use strict";
     plugin.consumes = ["analytics_tracker", "eventbus"];

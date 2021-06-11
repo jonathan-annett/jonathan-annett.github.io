@@ -27,18 +27,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ******/
-
+/*global define*/
 define(function(require, exports, module) {
 "use strict";
 
 var ID_REGEX = /[a-zA-Z_0-9\$-]|[^\u0000-\u007F]/;
 
-var HashHandler = require("ace/keyboard/hash_handler").HashHandler;
-var AcePopup = require("./ace_popup").AcePopup;
-var util = require("ace/autocomplete/util");
-var event = require("ace/lib/event");
-var lang = require("ace/lib/lang");
+var HashHandler    = require("ace/keyboard/hash_handler").HashHandler;
+var util           = require("ace/autocomplete/util");
+var event          = require("ace/lib/event");
+var lang           = require("ace/lib/lang");
 var snippetManager = require("ace/snippets").snippetManager;
+var AcePopup       = require("/zed/app/lib/ace_popup.js").AcePopup;
 
 var Autocomplete = function() {
     this.autoInsert = true;

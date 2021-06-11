@@ -1,4 +1,4 @@
-/* global sandboxRequest */
+/* global sandboxRequest,define */
 define({
     load: function(name, req, onload, config) {
         sandboxRequest("zed/configfs", "readFile", [name]).then(function(text) {

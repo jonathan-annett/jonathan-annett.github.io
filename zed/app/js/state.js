@@ -12,7 +12,7 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var opts = require("./lib/options");
+        var opts = require("/zed/app/js/lib/options.js");
 
         var eventbus = imports.eventbus;
         var fs = imports.fs;

@@ -1,3 +1,4 @@
+/* global define, _ */
 define(function(require, exports, module) {
     plugin.consumes = ["webserver", "eventbus"];
     plugin.provides = ["webservers"];

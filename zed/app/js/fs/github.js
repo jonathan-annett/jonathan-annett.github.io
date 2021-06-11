@@ -1,4 +1,4 @@
-/*global define, _, nodeRequire */
+/*global define, _, $,zed, escape, nodeRequire */
 /**
  * This module implements the Github file system.
  * IndexedDB is used for caching blobs and storing the contents of changed files.
@@ -25,8 +25,8 @@ define(function(require, exports, module) {
         var history = imports.history;
 
         var zedb = require("zedb");
-        var pathUtil = require("../lib/path");
-        var poll_watcher = require("./poll_watcher");
+        var pathUtil     = require("/zed/app/js/lib/path.js");
+        var poll_watcher = require("/zed/app/js/fs/poll_watcher.js");
 
         var repo = options.repo;
         var branch = options.branch;

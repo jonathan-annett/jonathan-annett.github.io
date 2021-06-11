@@ -1,5 +1,5 @@
 // Adapted from: http://remysharp.com/2008/07/08/how-to-detect-if-a-font-is-installed-only-using-javascript/
-/* global $, _ */
+/* global $, _, define */
 define(function(require, exports, module) {
     var test_string = 'mmmmmmmmmwwwwwww';
     var test_font = '"Comic Sans MS"';

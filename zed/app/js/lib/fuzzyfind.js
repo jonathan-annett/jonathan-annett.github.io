@@ -1,5 +1,6 @@
+/* global define */
 define(function(require, exports, module) {
-    var path = require("./path");
+    var path = require("/zed/app/js/lib/path.js");
 
     // EVEN NEWER fuzzy find implementation
     function escapeRegExp(str) {

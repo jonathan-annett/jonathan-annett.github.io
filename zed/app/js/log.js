@@ -1,4 +1,4 @@
-/* global define, _ */
+/* global define, _, JSON5 */
 define(function(require, exports, module) {
     plugin.consumes = ["session_manager"];
     return plugin;

@@ -1,9 +1,10 @@
+/* global define */
 define(function(require, exports, module) {
     "use strict";
 
     var oop = require("ace/lib/oop");
     var TextMode = require("ace/mode/text").Mode;
-    var ZedUiHighlightRules = require("./zed_ui_highlight_rules").ZedUiHighlightRules;
+    var ZedUiHighlightRules = require("/zed/app/js/mode/zed_ui_highlight_rules.js").ZedUiHighlightRules;
 
     var Mode = function() {
         this.HighlightRules = ZedUiHighlightRules;

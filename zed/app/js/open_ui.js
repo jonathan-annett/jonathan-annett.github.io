@@ -1,4 +1,4 @@
-/* global DTNodeStatus_Ok */
+/* global DTNodeStatus_Ok, $, zed, define, chrome */
 define(function(require, exports, module) {
     plugin.consumes = ["eventbus", "history", "local_store", "fs", "editor", "config", "background", "menu"];
     plugin.provides = ["open_ui"];
@@ -14,49 +14,21 @@ define(function(require, exports, module) {
         var background = imports.background;
         var menu = imports.menu;
 
-        var options = require("./lib/options");
-        var icons = require("./lib/icons");
-        var filterList = require("./lib/filter_list");
-        var dropbox = require("./lib/dropbox");
-        var githubUi = require("./open/github");
-        var niceName = require("./lib/url_extractor").niceName;
-        var zedb = require("zedb");
+        var options    = require("/zed/app/js/lib/options");
+        var icons      = require("/zed/app/js/lib/icons");
+        var filterList = require("/zed/app/js/lib/filter_list");
+        var dropbox    = require("/zed/app/js/lib/dropbox");
+        var githubUi   = require("/zed/app/js/open/github");
+        var niceName   = require("/zed/app/js/lib/url_extractor").niceName;
+        
+        var zedb       = require("zedb");
 
-        var defaultConfig = JSON.parse(require("text!../config/default/preferences.json"));
-        var version = JSON.parse(require("text!../manifest.json")).version;
+        var defaultConfig = JSON.parse(require("text!/zed/app/config/default/preferences.json"));
+        var version = JSON.parse(require("text!/zed/app/manifest.json")).version;
 
         eventbus.declare("urlchanged");
 
-        var builtinProjects;
-
-        if (window.isNodeWebkit) {
-            builtinProjects = [{
-                name: "Local Folder",
-                url: "node:",
-                key: "L"
-            }, {
-                name: "Zedd Folder",
-                url: "zedd:",
-                key: "Z"
-            }, {
-                name: "Remote Folder",
-                url: "zedrem:"
-            }, {
-                name: "Github Repository",
-                url: "gh:"
-            }, {
-                section: "Zed"
-            }, {
-                name: "Configuration",
-                html: "Configuration <img class='tool' data-info='set-config-dir' src='/img/edit.png'>",
-                url: "nwconfig:",
-                key: "C"
-            }, {
-                name: "Manual",
-                url: "manual:"
-            }];
-        } else {
-            builtinProjects = [{
+        var builtinProjects = [{
                 name: "Local Folder",
                 url: "local:",
                 key: "L",
@@ -88,7 +60,7 @@ define(function(require, exports, module) {
                 name: "Manual",
                 url: "manual:",
             }];
-        }
+         
 
         var viewEl, headerEl, phraseEl, listEl;
 
@@ -615,13 +587,13 @@ define(function(require, exports, module) {
                             });
                             setTimeout(function() {
                                 localStore.get("zeddLastPath").then(function(path) {
-                                    var tree = treeEl.dynatree("getTree");
+                                    var node,tree = treeEl.dynatree("getTree");
                                     if (path && path.length > 1) {
                                         activatingPath = path.slice(2).split('/');
-                                        var node = tree.getNodeByKey("root");
+                                        node = tree.getNodeByKey("root");
                                         node.expand();
                                     } else {
-                                        var node = tree.getNodeByKey("root");
+                                        node = tree.getNodeByKey("root");
                                         node.expand();
                                     }
                                 });

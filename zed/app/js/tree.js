@@ -1,4 +1,4 @@
-/*global define, $, _ */
+/*global define, $, zed, _ */
 define(function(require, exports, module) {
     "use strict";
     plugin.consumes = ["eventbus", "goto", "command", "state", "session_manager", "editor", "config"];

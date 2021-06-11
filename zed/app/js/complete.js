@@ -6,7 +6,7 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var Autocomplete = require("./lib/autocomplete").Autocomplete;
+        var Autocomplete = require("/zed/app/js/lib/autocomplete").Autocomplete;
         var command = imports.command;
         var eventbus = imports.eventbus;
         var config = imports.config;

@@ -8,7 +8,7 @@ define(function(require, exports, module) {
 
     function plugin(options, imports, register) {
         var useragent = require("ace/lib/useragent");
-        var fuzzyfind = require("./lib/fuzzyfind");
+        var fuzzyfind = require("/zed/app/js/lib/fuzzyfind.js");
 
         var eventbus = imports.eventbus;
         var keys = imports.keys;

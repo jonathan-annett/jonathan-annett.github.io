@@ -1,0 +1,30 @@
+{
+    
+    "site" : {
+     
+         "root" : "//jonathan-annett.github.io/zed/",
+         
+         "files" : [
+             "/",
+             "/zed/index.html",
+             "/zed/index.js",
+             "/zed/adderall.js"
+          ]
+    },
+
+
+    "github" : [{
+    
+        "url"  : "https://api.github.com/repos/zedapp/zed/git/trees/master?recursive=1",
+        
+         "exclude": [ 
+            
+            { "RegExp": "\\.nw\\.js$" }, 
+            
+            { "RegExp": "\/fs\/node\\.js$" },
+            
+            "/zed/app/package.json"
+
+        ]
+    }]
+}

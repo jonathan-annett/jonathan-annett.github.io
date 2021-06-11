@@ -1,3 +1,4 @@
+/* global define */
 define(function(require, exports, module) {
     var EventEmitter = exports.EventEmitter = function(checked) {
         this._events = {};

@@ -1,3 +1,4 @@
+/* global define */
 define(function(require, exports, module) {
     exports.dirname = function(path) {
         if (path[path.length - 1] === '/') {

@@ -1,3 +1,4 @@
+/* global define, _*/
 define(function(require, exports, module) {
     return {
         binaryStringAsUint8Array: function(str) {

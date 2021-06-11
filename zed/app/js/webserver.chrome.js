@@ -1,9 +1,10 @@
 /**
  * Implements a web server in Chrome
  */
+/* global define, chrome  */
 define(function(require, exports, module) {
     return function() {
-        var fsUtil = require("./fs/util");
+        var fsUtil = require("/zed/app/js/fs/util.js");
 
         var STATUS_CODES = {
             100: 'Continue',

@@ -2,7 +2,7 @@
  * This module implements all key handing within the editor, overriding ACE's
  * own key handlers.
  */
-/*global define, ace, _, zed*/
+/*global define, ace, _, zed, JSON5*/
 define(function(require, exports, module) {
     "use strict";
 
@@ -17,7 +17,7 @@ define(function(require, exports, module) {
 
         var eventbus = imports.eventbus;
 
-        var keys = JSON5.parse(require("text!../config/default/keys.json"));
+        var keys = JSON5.parse(require("text!/zed/app/config/default/keys.json"));
 
 
         var api = {

@@ -1,3 +1,4 @@
+/* global define, $, _, JSON5 */
 define(function(require, exports, module) {
     plugin.consumes = ["eventbus", "command", "config", "editor", "tree"];
     plugin.provides = ["menu"];

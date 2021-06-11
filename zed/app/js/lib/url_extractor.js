@@ -1,3 +1,4 @@
+/* global define */
 define(function(require, exports, module) {
     return {
         extractRepoBranchFromUrl: function(url) {

@@ -1,15 +1,15 @@
 /*global define, chrome, zed */
 define(function(require, exports, module) {
     return function(command) {
-        var fsUtil = require("./fs/util");
-        var architect = require("../dep/architect");
+        var fsUtil = require("/zed/app/js/fs/util");
+        var architect = require("/zed/app/dep/architect.js");
 
         var queueFs = fsUtil.queuedFilesystem();
 
         // Let's instaiate a new architect app with a configfs and the re-expose
         // that service as configfs
         architect.resolveConfig([{
-            packagePath: "./fs/config.chrome",
+            packagePath: "/zed/app/js/fs/config.chrome",
             watchSelf: true
         }], function(err, config) {
             if (err) {

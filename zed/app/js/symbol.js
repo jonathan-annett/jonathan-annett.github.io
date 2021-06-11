@@ -10,7 +10,7 @@ define(function(require, exports, module) {
 
         var eventbus = imports.eventbus;
 
-        var async = require("./lib/async");
+        var async = require("/zed/app/js/lib/async.js");
 
         var LAST_CHAR = String.fromCharCode(255);
 

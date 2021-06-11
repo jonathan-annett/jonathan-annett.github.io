@@ -1,6 +1,7 @@
+/*global define*/
 define(function(require, exports, module) {
 
-require('treehugger/traverse');
+require('/zed/app/config/api/zed/lib/treehugger/traverse.js');
 
 var STRING_TYPE = 'string';
 var NUMBER_TYPE = 'number';

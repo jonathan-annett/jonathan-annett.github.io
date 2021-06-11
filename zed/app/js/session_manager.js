@@ -9,10 +9,10 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var Range = require("ace/range").Range;
-        var async = require("./lib/async");
-        var locator = require("./lib/locator");
-        var opts = require("./lib/options");
+        var Range   = require("ace/range").Range;
+        var async   = require("/zed/app/js/lib/async");
+        var locator = require("/zed/app/js/lib/locator");
+        var opts    = require("/zed/app/js/lib/options");
 
         var config = imports.config;
         var eventbus = imports.eventbus;
@@ -251,8 +251,9 @@ define(function(require, exports, module) {
                 return Promise.reject("No path");
             }
 
+            var session;
             if (api.specialDocs[path]) {
-                var session = api.specialDocs[path];
+                session = api.specialDocs[path];
                 show(session);
                 return Promise.resolve(session);
             }
@@ -291,7 +292,7 @@ define(function(require, exports, module) {
                     path = path.substring(0, path.indexOf("|write"));
                     readOnly = false;
                 }
-                var session = editor.createSession(path, "");
+                session = editor.createSession(path, "");
                 session.readOnly = readOnly;
                 session.dontPersist = true;
                 sessions[path] = session;

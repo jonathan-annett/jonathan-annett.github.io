@@ -1,7 +1,7 @@
 /*global define, zed*/
 define(function(require, exports, module) {
     var Range = require("ace/range").Range;
-    var InlineAnnotation = require("../../lib/inline_annotation");
+    var InlineAnnotation = require("/zed/app/js/lib/inline_annotation.js");
 
     function rangify(range) {
         return Range.fromPoints(range.start, range.end);

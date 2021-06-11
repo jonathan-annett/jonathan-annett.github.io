@@ -1,113 +1,218 @@
-if (typeof process !== "undefined") {
-    require("amd-loader");
-    require("../../setup_paths");
-}
+/*global define*/
+define(function(require, exports, module) {
 
-var parser = require("treehugger/js/parse");
-require('treehugger/traverse');
-var assert = require("assert");
-//var microtime = require('microtime');
+var parser = require("/zed/app/config/api/zed/lib/treehugger/js/acorn_loose.js");
+var tree   = require('/zed/app/config/api/zed/lib/treehugger/tree.js');
 
-module.exports = {
-    "test basic parsing" : function() {
-        assert.equal(parser.parse("hello()").toString(), '[Call(Var("hello"),[])]');
-        assert.equal(parser.parse("if(true) a = 8;").toString(), '[If(Var("true"),Assign(Var("a"),Num("8")),None())]');
-        var node = parser.parse("log(); var b = true; b");
-        node.traverseTopDown('VarDeclInit(x, _)', function(b) {
-            var pos = b.x.getPos();
-            assert.equal(pos.sc, 11);
-            assert.equal(pos.ec, 12);
-            pos = this.getPos();
-            assert.equal(pos.sc, 11);
-            assert.equal(pos.ec, 19);
-        });
-        node = parser.parse("function hello(a, b) { }");
-        node.traverseTopDown('Function(x, fargs, body)', function(b) {
-            var pos = b.x.getPos();
-            assert.equal(pos.sc, 9);
-            assert.equal(pos.ec, 14);
-            pos = b.fargs[0].getPos();
-            assert.equal(pos.sc, 15);
-            assert.equal(pos.ec, 16);
-            pos = b.fargs[1].getPos();
-            assert.equal(pos.sc, 18);
-            assert.equal(pos.ec, 19);
-            pos = b.fargs.getPos();
-            assert.equal(pos.sc, 15);
-        });
-        assert.equal(parser.parse("with(a) { console.log(b); }").toString(), "[With(Var(\"a\"),[Call(PropAccess(Var(\"console\"),\"log\"),[Var(\"b\")])])]");
-        assert.equal(parser.parse("let b = true;").toString(), "[LetDecls([LetDeclInit(\"b\",Var(\"true\"))])]");
-        assert.equal(parser.parse("let b = true, a, c;").toString(), "[LetDecls([LetDeclInit(\"b\",Var(\"true\")),LetDecl(\"a\"),LetDecl(\"c\")])]");
-    },
-    "test parse jquery": function() {
-        var code = require('fs').readFileSync(__dirname+'/../../jquery.js', 'ascii');
-        //var now = microtime.now();
-        parser.parse(code);
-        //console.log("Parsing jQuery took: " + (microtime.now() - now)/1000 + "ms");
-    },
-    "test parse treehugger": function() {
-        var code = require('fs').readFileSync(__dirname+'/../traverse.js', 'ascii');
-        code += require('fs').readFileSync(__dirname+'/../tree.js', 'ascii');
-        code += require('fs').readFileSync(__dirname+'/../js/uglifyparser.js', 'ascii');
-        code += require('fs').readFileSync(__dirname+'/../js/uglifyparser.js', 'ascii');
-        code += require('fs').readFileSync(__dirname+'/../js/infer.js', 'ascii');
-        //var now = microtime.now();
-        parser.parse(code);
-        //console.log("Parsing jQuery took: " + (microtime.now() - now)/1000 + "ms");
-    },
-    "test error recovery" : function() {
-        assert.equal(parser.parse("hello.;").toString(), '[PropAccess(Var("hello"),"✖")]');
-        assert.equal(parser.parse("hello.").toString(), '[PropAccess(Var("hello"),"✖")]');
-        assert.equal(parser.parse("if(hello.) { }").toString(), '[If(PropAccess(Var("hello"),"✖"),Block([]),None())]');
-        assert.equal(parser.parse("while(hello.) { }").toString(), '[While(PropAccess(Var("hello"),"✖"),Block([]))]');
-        // for variants
-        assert.equal(parser.parse("for(var i = 0; i.) { }").toString(), '[For(VarDecls([VarDeclInit("i",Num("0"))]),PropAccess(Var("i"),"✖"),None(),Block([]))]');
-        assert.equal(parser.parse("for(var i = 0; i.)").toString(), '[For(VarDecls([VarDeclInit("i",Num("0"))]),PropAccess(Var("i"),"✖"),None(),Block([]))]');
-        // This produces a funky AST, have to deal with it
-        assert.equal(parser.parse("for(var i = 0; i.\nif(true) {}").toString(), '[For(VarDecls([VarDeclInit("i",Num("0"))]),PropAccess(Var("i"),"✖"),None(),If(Var("true"),Block([]),None()))]');
-        assert.equal(parser.parse("for(var i = 0; i < array.) { }").toString(), '[For(VarDecls([VarDeclInit("i",Num("0"))]),Op("<",Var("i"),PropAccess(Var("array"),"✖")),None(),Block([]))]');
-        assert.equal(parser.parse("for(var i = 0; i < array.)").toString(), '[For(VarDecls([VarDeclInit("i",Num("0"))]),Op("<",Var("i"),PropAccess(Var("array"),"✖")),None(),Block([]))]');
-        assert.equal(parser.parse("for(var i = 0; i < array.length; i.)").toString(), '[For(VarDecls([VarDeclInit("i",Num("0"))]),Op("<",Var("i"),PropAccess(Var("array"),"length")),PropAccess(Var("i"),"✖"),Block([]))]');
-        assert.equal(parser.parse("for(var i = 0; i < array.length; i.);\nalert('hello');").toString(), '[For(VarDecls([VarDeclInit("i",Num("0"))]),Op("<",Var("i"),PropAccess(Var("array"),"length")),PropAccess(Var("i"),"✖"),Block([])),Call(Var("alert"),[String("hello")])]');
-        // for in
-        assert.equal(parser.parse("for(var p in something.) bla()").toString(), '[ForIn(VarDecls([VarDecl("p")]),PropAccess(Var("something"),"✖"),Call(Var("bla"),[]))]');
-        assert.equal(parser.parse("for(var p in something.) bla()").toString(), '[ForIn(VarDecls([VarDecl("p")]),PropAccess(Var("something"),"✖"),Call(Var("bla"),[]))]');
-
-        assert.equal(parser.parse("if(hello.").toString(), '[If(PropAccess(Var("hello"),"✖"),Block([]),None())]');
-        assert.equal(parser.parse("if(hello.after()").toString(), '[If(Call(PropAccess(Var("hello"),"after"),[]),Block([]),None())]');
-        // this produces a funky AST, but we'll have to deal with it
-        assert.equal(parser.parse("if(hello.\nafter()").toString(), '[If(PropAccess(Var(\"hello\"),\"✖\"),Block([]),None())]');
-        assert.equal(parser.parse("while(hello.").toString(), '[While(PropAccess(Var("hello"),"✖"),Block([]))]');
-        assert.equal(parser.parse("if(hello.)").toString(), '[If(PropAccess(Var("hello"),"✖"),Block([]),None())]');
-        assert.equal(parser.parse("while(hello.)").toString(), '[While(PropAccess(Var("hello"),"✖"),Block([]))]');
-
-        assert.equal(parser.parse("switch(hello.)").toString(), '[Switch(PropAccess(Var("hello"),"✖"),[])]');
-        assert.equal(parser.parse("switch(hello.)\nhello();if(true)").toString(), '[Switch(PropAccess(Var("hello"),"✖"),[Case(None(),[Call(Var("hello"),[]),If(Var("true"),Block([]),None())])])]');
-        assert.equal(parser.parse("(function() { hello()").toString(), '[Function("",[],[Call(Var("hello"),[])])]');
-        assert.equal(parser.parse("(function() { hello.").toString(), '[Function("",[],[PropAccess(Var("hello"),"✖")])]');
-        assert.equal(parser.parse("(function() { hello.})();").toString(), '[Call(Function("",[],[PropAccess(Var("hello"),"✖")]),[])]');
-
-        assert.equal(parser.parse("bla(start.);").toString(), '[Call(Var("bla"),[PropAccess(Var("start"),"✖")])]');
-        assert.equal(parser.parse("var Editor = function() { start. }; hello();").toString(), '[VarDecls([VarDeclInit("Editor",Function("",[],[PropAccess(Var("start"),"✖")]))]),Call(Var("hello"),[])]');
-
-        // keywords
-        assert.equal(parser.parse("function").toString(), '[Function("✖",[],[])]');
-        assert.equal(parser.parse("while").toString(), '[While(Var("✖"),Block([]))]');
-        assert.equal(parser.parse("if").toString(), '[If(Var("✖"),Block([]),None())]');
-        assert.equal(parser.parse("for").toString(), '[For(Var("✖"),None(),None(),Block([]))]');
-        assert.equal(parser.parse("do").toString(), '[Do(Block([]),Var("✖"))]');
-        assert.equal(parser.parse("if(").toString(), '[If(Var("✖"),Block([]),None())]');
-        // todo should this be broken if and a function outside?
-        assert.equal(parser.parse("if(hello.\nfunction hello() { return 0; }").toString(), '[If(PropAccess(Var("hello"),"✖"),Function("hello",[],[Return(Num("0"))]),None())]');
-        assert.equal(parser.parse("var\nfunction hello() {}").toString(), '[VarDecls([]),Function("hello",[],[])]');
-    },
-    "test parse literals": function() {
-        assert.equal(parser.parse("true").toString(), '[Var("true")]');
-        assert.equal(parser.parse("15").toString(), '[Num("15")]');
-        assert.equal(parser.parse("15.5").toString(), '[Num("15.5")]');
-    }
+exports.parse = function(s) {
+    var result = parser.parse_dammit(s, {locations: true});
+    var node = exports.transform(result);
+    if(result.error)
+        node.setAnnotation("error", result.error);
+    return node;
 };
 
-if (typeof module !== "undefined" && module === require.main) {
-    require("asyncjs").test.testcase(module.exports).exec();
+
+function setIdPos(n, resultNode) {
+    if(n.loc) {
+        resultNode.setAnnotation("pos", {
+            sl: n.loc.start.line, sc: n.loc.start.column,
+            el: n.loc.end.line, ec: n.loc.end.column
+        });
+    }
+    return resultNode;
 }
+function id(n, val) {
+    var s = tree.string(val || (n && n.name) || "");
+    s.$pos = n && n.loc;
+    return s;
+}
+
+exports.transform = function transform(n) {
+    if (!n) {
+        return tree.cons("None", []);
+    }
+    var nodeName = n.type;
+
+    var resultNode,VarDecls,VarDeclInit,VarDecl;
+
+    switch(nodeName) {
+        case "Program":
+            resultNode = tree.list(n.body.map(transform));
+            break;
+        case "VariableDeclaration":
+            if (n.kind === "var") {
+                VarDecls = "VarDecls", VarDeclInit = "VarDeclInit", VarDecl = "VarDecl";
+            } else if (n.kind === "let") {
+                VarDecls = "LetDecls", VarDeclInit = "LetDeclInit", VarDecl = "LetDecl";
+            } else if (n.kind === "const") {
+                VarDecls = "ConstDecls", VarDeclInit = "ConstDeclInit", VarDecl = "ConstDecl";
+            }
+            resultNode = tree.cons(VarDecls, [tree.list(n.declarations.map(function(varNode) {
+                var idNode = id(varNode.id);
+                if(varNode.init)
+                    return tree.cons(VarDeclInit, [idNode, transform(varNode.init)]);
+                else
+                    return tree.cons(VarDecl, [idNode]);
+            }))]);
+            break;
+        case "num":
+            resultNode = tree.cons("Num", [id(n, n.raw)]);
+            break;
+        case "string":
+            resultNode = tree.cons("String", [id(n, n.value)]);
+            break;
+        case "ExpressionStatement":
+            return transform(n.expression);
+        case "CallExpression":
+            resultNode = tree.cons("Call", [transform(n.callee), tree.list(n.arguments.map(transform))]);
+            break;
+        case "ReturnStatement":
+            resultNode = tree.cons("Return", [transform(n.argument)]);
+            break;
+        case "NewExpression":
+            resultNode = tree.cons("New", [transform(n.callee), tree.list(n.arguments.map(transform))]);
+            break;
+        case "ObjectExpression":
+            resultNode = tree.cons("ObjectInit", [tree.list(n.properties.map(function(propInit) {
+                var key = propInit.key;
+                var result = tree.cons("PropertyInit", [id(key, key.name || key.value), transform(propInit.value)]);
+                result.kind = propInit.kind;
+                return result;
+            }))]);
+            break;
+        case "ArrayExpression":
+            resultNode = tree.cons("Array", [tree.list(n.elements.map(transform))]);
+            break;
+        case "ConditionalExpression":
+            resultNode = tree.cons("TernaryIf", [transform(n.test), transform(n.consequent), transform(n.alternate)]);
+            break;
+        case "LabeledStatement":
+            resultNode = tree.cons("Label", [id(n.label), transform(n.body)]);
+            break;
+        case "AssignmentExpression":
+            if(n.operator != "=") {
+                resultNode = tree.cons("OpAssign", [tree.string(n.operator[0]), transform(n.left), transform(n.right)]);
+            } else {
+                resultNode = tree.cons("Assign", [transform(n.left), transform(n.right)]);
+            }
+            break;
+        case "MemberExpression":
+            resultNode = n.computed
+                ? tree.cons("Index", [transform(n.object), transform(n.property)])
+                : tree.cons("PropAccess", [transform(n.object), id(n.property)]);
+            break;
+        case "Identifier":
+            resultNode = tree.cons("Var", [id(n)]);
+            break;
+        case "ThisExpression":
+            resultNode = tree.cons("Var", [tree.string("this")]);
+            break;
+        case "FunctionDeclaration":
+            // todo this doesn't handle error in id.name, but old parser doen't handle it as well
+            resultNode = tree.cons("Function", [id(n.id), tree.list(n.params.map(function(arg) {
+                return setIdPos(arg, tree.cons("FArg", [id(arg)]));
+            })), tree.list(n.body.body.map(transform))]);
+            break;
+        case "FunctionExpression":
+            var funName = id(n.id);
+            var fargs = tree.list(n.params.map(function(arg) {
+                return setIdPos(arg, tree.cons("FArg", [id(arg)]));
+            }));
+            resultNode = tree.cons("Function", [funName, fargs, tree.list(n.body.body.map(transform))]);
+            break;
+        case "LogicalExpression":
+        case "BinaryExpression":
+            resultNode = tree.cons("Op", [tree.string(n.operator), transform(n.left), transform(n.right)]);
+            break;
+        case "UpdateExpression":
+        case "UnaryExpression":
+            resultNode = tree.cons(n.prefix ? "PrefixOp" : "PostfixOp", [tree.string(n.operator), transform(n.argument)]);
+            break;
+        case "sub":
+            resultNode = tree.cons("Index", [transform(n[1]), transform(n[2])]);
+            break;
+        case "ForStatement":
+            resultNode = tree.cons("For", [transform(n.init), transform(n.test), transform(n.update), transform(n.body)]);
+            break;
+        case "ForInStatement":
+            resultNode = tree.cons("ForIn", [transform(n.left), transform(n.right), transform(n.body)]);
+            break;
+        case "WhileStatement":
+            resultNode = tree.cons("While", [transform(n.test), transform(n.body)]);
+            break;
+        case "DoWhileStatement":
+            resultNode = tree.cons("Do", [transform(n.body), transform(n.test)]);
+            break;
+        case "SwitchStatement":
+            resultNode = tree.cons("Switch", [transform(n.discriminant), tree.list(n.cases.map(function(opt) {
+                return tree.cons("Case", [transform(opt.test), tree.list(opt.consequent.map(transform))]);
+            }))]);
+            break;
+        case "ContinueStatement":
+            resultNode = tree.cons("Continue", [id(n.label)]);
+            break;
+        case "BreakStatement":
+            resultNode = tree.cons("Break", [id(n.label)]);
+            break;
+        case "SequenceExpression":  // todo can we get rid of nesting?
+            resultNode = n.expressions.reduceRight(function(a, b) {
+                return a ? tree.cons("Seq", [transform(b), a]) : transform(b);
+            }, "");
+            break;
+        case "IfStatement":
+            resultNode = tree.cons("If", [transform(n.test), transform(n.consequent), transform(n.alternate)]);
+            break;
+        case "EmptyStatement":
+        case "BlockStatement":
+            resultNode = tree.cons("Block", [tree.list(n.body ? n.body.map(transform) : [])]);
+            break;
+        case "regexp":
+            var val = n.raw, i = val.lastIndexOf("/");
+            resultNode = tree.cons("RegExp", [tree.string(val.slice(1, i)), tree.string(val.substr(i + 1))]);
+            break;
+        case "ThrowStatement":
+            resultNode = tree.cons("Throw", [transform(n.argument)]);
+            break;
+        case "DebuggerStatement":
+            resultNode = tree.cons("Debugger", [transform(n.argument)]);
+            break;
+        case "TryStatement":
+            resultNode = tree.cons("Try", [tree.list(n.block.body.map(transform)),
+                tree.list(n.handler ? [tree.cons("Catch", [
+                    id(n.handler.param), tree.list(n.handler.body.body.map(transform))
+                ])] : []),
+                n.finalizer ? tree.list(n.finalizer.body.map(transform)) : tree.cons("None", [])
+            ]);
+            break;
+        case "WithStatement":
+            resultNode = tree.cons("With", [transform(n.object), tree.list((n.body.body||[]).map(transform))]);
+            break;
+        case "Literal":
+            // old parser never returned atom
+            // resultNode = tree.cons("Atom", []);
+            resultNode = tree.cons("Var", [tree.string(n.value + "")]);
+            break;
+        case "ERROR":
+            resultNode = tree.cons("ERROR", []);
+            break;
+        default:
+            console.log("Not yet supported: "+ nodeName);
+            console.log("Current node: "+ JSON.stringify(n));
+            resultNode = tree.cons(tree.string(nodeName), [tree.string(JSON.stringify(n, function(key, val) {
+                if (key !== "loc")
+                    return val;
+            }, 4))]);
+    }
+
+    resultNode.setAnnotation("origin", n);
+    /*if(n.loc) {
+        resultNode.setAnnotation("pos", {
+            sl: n.loc.start.line, sc: n.loc.start.column,
+            el: n.loc.end.line, ec: n.loc.end.column
+        });
+    }*/
+    resultNode.$pos = n.loc;
+    return resultNode;
+};
+});

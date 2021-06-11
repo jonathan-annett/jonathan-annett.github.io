@@ -1,8 +1,9 @@
+/*global define */ 
 define(function(require, exports, module) {
 "use strict";
 
-var dom = require("ace/lib/dom");
-var AcePopupExisting = require("ace/autocomplete/popup").AcePopup;
+var dom              = require("/zed/app/ace/lib/dom.js");
+var AcePopupExisting = require("/zed/app/ace/autocomplete/popup.js").AcePopup;
 
 // So this is some insane monkey patching magic. We have to override the tokenizer
 // in order to add the icon tokens

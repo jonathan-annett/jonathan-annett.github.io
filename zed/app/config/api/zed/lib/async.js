@@ -1,4 +1,4 @@
-/*global setImmediate: false, setTimeout: false, console: false */
+/*global setImmediate: false, setTimeout: false, console: false, define */
 (function() {
     var async = {};
 
@@ -6,7 +6,7 @@
     var root, previous_async;
 
     root = this;
-    if (root != null) {
+    if (root !== null) {
         previous_async = root.async;
     }
 

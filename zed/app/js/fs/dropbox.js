@@ -5,9 +5,9 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var dropbox = require("../lib/dropbox");
-        var poll_watcher = require("./poll_watcher");
-        var async = require("../lib/async");
+        var dropbox      = require("/zed/app/js/lib/dropbox.js");
+        var poll_watcher = require("/zed/app/js/fs/poll_watcher.js");
+        var async        = require("/zed/app/js/lib/async.js");
         var rootPath = options.rootPath;
 
         var history = imports.history;

@@ -1,6 +1,6 @@
 define(function(require, exports, module) {
-    var Sk = require("./skulpt.min");
-    var tree = require('../tree');
+    var Sk = require("/zed/app/config/api/zed/lib/treehugger/python/skulpt.min.js");
+    var tree = require('/zed/app/config/api/zed/lib/treehugger/tree.js');
 
     function block(body) {
         return tree.cons("Block", [tree.list(body.map(transform))]);

@@ -6,7 +6,7 @@ define(function(require, exports, module) {
 
     function plugin(options, imports, register) {
         var useragent = require("ace/lib/useragent");
-        var opts = require("./lib/options");
+        var opts = require("/zed/app/js/lib/options");
 
         var eventbus = imports.eventbus;
         var editor = imports.editor;

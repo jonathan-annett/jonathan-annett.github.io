@@ -2,18 +2,25 @@
 require.config({
     baseUrl: "js",
     paths: {
-        "text": "../dep/text",
-        "json5": "../dep/json5",
-        "zedb": "../dep/zedb",
-        "async": "../config/api/zed/lib/async",
-        "events": "./lib/emitter"
+        "text":   "/zed/app/dep/text.js",
+        "json5":  "/zed/app/dep/json5.js",
+        "zedb":   "/zed/app/dep/zedb.js",
+        "async":  "/zed/app/config/api/zed/lib/async.js",
+        "events": "/zed/app/js/lib/emitter.js"
     },
 });
 
-window.isNodeWebkit = typeof window.chrome === "undefined";
-
 /* global ace, $, _ */
-require(["../dep/architect", "./lib/options", "./fs_picker", "text!../manual/intro.md"], function(architect, options, fsPicker, introText) {
+require([
+    "/zed/app/dep/architect.js", 
+    "/zed/app/js/lib/options.js",
+    "/zed/app/js/fs_picker", 
+    "text!/zed/app/manual/intro.md"
+    ], function(
+        architect, 
+        options, 
+        fsPicker, 
+        introText) {
     "use strict";
 
     var baseModules = [
@@ -58,11 +65,6 @@ require(["../dep/architect", "./lib/options", "./fs_picker", "text!../manual/int
         "./analytics_tracker",
         "./configfs"];
 
-    if (window.isNodeWebkit) {
-        baseModules.push("./mac_cli_command.nw", "./cli.nw");
-        process.mainModule.exports.init();
-    }
-
     if (options.get("url")) {
         openUrl(options.get("url"));
     } else {
@@ -71,7 +73,7 @@ require(["../dep/architect", "./lib/options", "./fs_picker", "text!../manual/int
 
     function projectPicker() {
         var modules = baseModules.slice();
-        modules.push("./fs/empty");
+        modules.push("/zed/app/js/fs/empty");
         return boot(modules, false).then(function(app) {
             app.getService("open_ui").boot();
         });
@@ -88,7 +90,7 @@ require(["../dep/architect", "./lib/options", "./fs_picker", "text!../manual/int
         catch (function(err) {
             console.log("Error", err);
             var modules = baseModules.slice();
-            modules.push("./fs/empty");
+            modules.push("/zed/app/js/fs/empty");
             boot(modules, false).then(function(zed) {
                 // Remove this project from history
                 zed.getService("history").removeProject(url);

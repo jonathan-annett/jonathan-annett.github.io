@@ -10,9 +10,9 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var async = require("../lib/async");
-        var poll_watcher = require("./poll_watcher");
-        var fsUtil = require("./util");
+        var async        = require("/zed/app/js/lib/async.js");
+        var poll_watcher = require("/zed/app/js/fs/poll_watcher.js");
+        var fsUtil       = require("/zed/app/js/fs/util.js");
 
         var history = imports.history;
 

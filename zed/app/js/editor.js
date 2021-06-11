@@ -1,3 +1,4 @@
+/* global define, zed, $,_  */
 define(function(require, exports, module) {
     "use strict";
 
@@ -7,7 +8,7 @@ define(function(require, exports, module) {
 
     function plugin(options, imports, register) {
         var whitespace = require("ace/ext/whitespace");
-        var font = require("./lib/font");
+        var font       = require("/zed/app/js/lib/font");
 
         var eventbus = imports.eventbus;
         var command = imports.command;

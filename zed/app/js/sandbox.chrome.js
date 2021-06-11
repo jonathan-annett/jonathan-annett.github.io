@@ -12,8 +12,8 @@
 /*global define, $, _ */
 define(function(require, exports, module) {
     return function() {
-        var async = require("./lib/async");
-        var events = require("./lib/events");
+        var async  = require("/zed/app/js/lib/async.js");
+        var events = require("/zed/app/js/lib/events.js");
 
         var id = 0; // global request counter
         var waitingForReply = {}; // global waiting for message registry

@@ -1,4 +1,4 @@
-/*global define, _, nodeRequire */
+/*global define, _, chrome */
 define(function(require, exports, module) {
     return function() {
         var api = {

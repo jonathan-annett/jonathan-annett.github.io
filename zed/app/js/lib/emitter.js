@@ -1,3 +1,4 @@
+/*global define*/
 define(function(require, exports, module) {
     /**
      * Expose `Emitter`.
@@ -13,7 +14,7 @@ define(function(require, exports, module) {
 
     function Emitter(obj) {
         if (obj) return mixin(obj);
-    };
+    }
 
     /**
      * Mixin the emitter properties.
@@ -84,7 +85,7 @@ define(function(require, exports, module) {
         this._callbacks = this._callbacks || {};
 
         // all
-        if (0 == arguments.length) {
+        if (0 === arguments.length) {
             this._callbacks = {};
             return this;
         }

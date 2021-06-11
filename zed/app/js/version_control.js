@@ -1,3 +1,4 @@
+/* global define,zed  */
 define(function(require, exports, module) {
     plugin.consumes = ["fs", "command", "ui", "eventbus"]
     return plugin;

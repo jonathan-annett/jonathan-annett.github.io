@@ -1,3 +1,4 @@
+/*global define*/
 define(function(require, exports, module) {
 
 function inRange(p, pos, exclusive) {
@@ -169,8 +170,9 @@ ConsNode.prototype.getPos = function() {
     // which initially was to help reliability of uglify positions,
     // and now still helps with missing positions while maintaining
     // backward compatibility.
+    var p;
     if (this.$pos && this.$pos.start && this.$pos.end) {
-        var p = this.$pos;
+        p = this.$pos;
         return {sl : p.start.line, sc : p.start.column,
                 el : p.end.line, ec : p.end.column};
     }
@@ -184,7 +186,7 @@ ConsNode.prototype.getPos = function() {
     var hasSc = false;
 
     for (var i = 0; i < this.length; i++) {
-        var p = this[i].getPos();
+        p = this[i].getPos();
 
         if (p) {
             if (p.sl < Number.MAX_VALUE && !hasSl) {

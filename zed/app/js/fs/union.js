@@ -5,14 +5,14 @@
  * Note: currently unionfs overrides file watching behavior and does manual
  *       watching based on content.
  */
-/* global _ */
+/* global _, define */
 define(function(require, exports, module) {
     plugin.provides = ["fs"];
     return plugin;
 
     function plugin(options, imports, register) {
-        var async = require("../lib/async");
-        var poll_watcher = require("./poll_watcher");
+        var async        = require("/zed/app/js/lib/async.js");
+        var poll_watcher = require("/zed/app/js/fs/poll_watcher.js");
         var fileSystems = options.fileSystems;
         var watchSelf = options.watchSelf;
 

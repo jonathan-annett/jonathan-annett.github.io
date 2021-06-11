@@ -1,3 +1,4 @@
+/*global define,chrome */
 define(function(require, exports, module) {
     return function() {
         return new Promise(function(resolve) {

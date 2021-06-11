@@ -1,4 +1,4 @@
-/* global chrome, $ */
+/* global define,chrome, $ */
 define(function(require, exports, module) {
     var sessionCache = {};
 

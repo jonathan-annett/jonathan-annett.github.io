@@ -1,7 +1,8 @@
+/* global define */
 define(function(require, exports, module) {
 
-var tree = require('treehugger/tree');
-require('treehugger/traverse');
+var tree = require('/zed/app/config/api/zed/lib/treehugger/tree.js');
+require('/zed/app/config/api/zed/lib/treehugger/traverse.js');
 
 function startsWithCapital(value) {
   if(value.length === 0) {

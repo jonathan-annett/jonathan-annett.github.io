@@ -1,7 +1,8 @@
+/*global define*/
 define(function(require, exports, module) {
 
-var parser = require("treehugger/js/acorn_loose");
-var tree = require('treehugger/tree');
+var parser = require("/zed/app/config/api/zed/lib/treehugger/js/acorn_loose.js");
+var tree   = require('/zed/app/config/api/zed/lib/treehugger/tree.js');
 
 exports.parse = function(s) {
     var result = parser.parse_dammit(s, {locations: true});

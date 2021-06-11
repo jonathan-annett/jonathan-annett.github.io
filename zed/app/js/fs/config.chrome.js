@@ -1,6 +1,6 @@
-/*global define, chrome */
+/*global define, _, chrome */
 define(function(require, exports, module) {
-    var architect = require("../../dep/architect");
+    var architect = require("/zed/app/dep/architect.js");
     plugin.provides = ["fs"];
     return plugin;
 
@@ -17,13 +17,13 @@ define(function(require, exports, module) {
                             return syncConfig();
                         }
                         getFs({
-                            packagePath: "fs/local",
+                            packagePath: "/zed/app/js/fs/local.js",
                             dir: dir,
                             id: results.configDir,
                             dontRegister: true
                         }).then(function(configLocal) {
                             getFs({
-                                packagePath: "fs/union",
+                                packagePath: "/zed/app/js/fs/union.js",
                                 fileSystems: [configLocal, configStatic],
                                 watchSelf: watchSelf
                             }).then(function(fs) {
@@ -41,7 +41,7 @@ define(function(require, exports, module) {
 
         function staticFs() {
             return getFs({
-                packagePath: "fs/static",
+                packagePath: "/zed/app/js/fs/static.js",
                 url: "config",
                 readOnlyFn: function(path) {
                     return path !== "/.zedstate" && path !== "/user.json" && path !== "/user.css";
@@ -54,12 +54,12 @@ define(function(require, exports, module) {
             staticFs().then(function(configStatic_) {
                 configStatic = configStatic_;
                 return getFs({
-                    packagePath: "./fs/sync",
+                    packagePath: "/zed/app/js/fs/sync.js",
                     namespace: "config"
                 });
             }).then(function(configSync) {
                 return getFs({
-                    packagePath: "fs/union",
+                    packagePath: "/zed/app/js/fs/union.js",
                     fileSystems: [configSync, configStatic],
                     watchSelf: watchSelf
                 });

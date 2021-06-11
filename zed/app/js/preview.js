@@ -41,12 +41,8 @@ define(function(require, exports, module) {
                 eventbus.on("switchsession", delayedUpdate);
             },
             init: function() {
-                var data = "data:text/html," + require("text!../preview.html");
-                if(window.isNodeWebkit) {
-                    previewWrapperEl = $("<div id='preview-wrapper' class='preview-vsplit2-right'><iframe id='preview'>").hide();
-                } else {
+                var data = "data:text/html," + require("text!/zed/app/preview.html");
                     previewWrapperEl = $("<div id='preview-wrapper' class='preview-vsplit2-right'><webview id='preview'>").hide();
-                }
                 $("#editor-wrapper").append(previewWrapperEl);
                 previewEl = $("#preview");
                 previewEl.attr("src", data);

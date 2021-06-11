@@ -8,7 +8,7 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var opts = require("./lib/options");
+        var opts = require("/zed/app/js/lib/options.js");
         var command = imports.command;
         var eventbus = imports.eventbus;
         var openUi = imports.open_ui;

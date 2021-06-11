@@ -5,9 +5,9 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var InlineAnnotation = require("./lib/inline_annotation");
-        var opts = require("./lib/options");
-        var async = require("./lib/async");
+        var InlineAnnotation = require("/zed/app/js/lib/inline_annotation.js");
+        var opts             = require("/zed/app/js/lib/options.js");
+        var async            = require("/zed/app/js/lib/async.js");
 
         var eventbus = imports.eventbus;
         var config = imports.config;
