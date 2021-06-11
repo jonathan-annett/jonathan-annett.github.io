@@ -286,7 +286,7 @@ function matchJS(url) {
     return new Promise(function(resolve,reject) {
   
             if (  /(\.|\/)(jpe?g|png|webp|pdf|svg|gif|ico|js|html|md|css)$/.test(url)) {
-                return caches.match(url).then (resolve).catch(reject);
+                return caches.match(url).then(resolve).catch(reject);
             }
             
             return caches.open(cacheName).then(function(cache) {
@@ -334,7 +334,7 @@ function sw_fetch( e ) {
         
         e.respondWith(
             
-            matchJS(caches,e.request.url).then(function(response) {
+            matchJS(e.request.url).then(function(response) {
                 
                 if (response) {
                     
