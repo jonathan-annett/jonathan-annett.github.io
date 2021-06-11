@@ -2,13 +2,15 @@
     
     "site" : {
      
-         "root" : "//jonathan-annett.github.io/zed/",
+         "root" : "https://jonathan-annett.github.io/zed/",
+         "installed_root" : "https://jonathan-annett.github.io/zed/app/editor.html",
          
          "files" : [
              "/",
              "/zed/index.html",
              "/zed/index.js"
           ]
+          
     },
 
 

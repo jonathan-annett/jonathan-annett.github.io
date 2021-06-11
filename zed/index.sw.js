@@ -8,7 +8,8 @@ file_list_url = "/zed/index.sw.json",
 filesToCache,
 cacheName   = 'zed-pwa',
 version     = 1.0,
-site_domain = self.location.hostname;
+site_root,
+installed_root;
 
 var urlCleanupRegex = /^\/$/, urlCleanupReplace = '/', urlCleanupReplace2 = '/';
 
@@ -231,76 +232,61 @@ self.addEventListener('install', function(e) {
 
 
 
-
-if (true) {
-    
+ 
   self.addEventListener('fetch', function(event) {
+      
+        
         console.log("fetch intercept[",event.request.url,"]");
-        event.respondWith(
+        
+        
+        if (installed_root && site_root === event.request.url ) {
+            
+            event.respondWith(
             // Try the cache
             
+                    caches.match(installed_root).then(function(response) {
+                        if (response) {
+                            console.log(">>>>[",installed_root,response.headers.get('content-length')," bytes]<<<< from cache");
+                            return response;
+                        }
+                        
+                    })
+            );
+     
             
-            caches.match(event.request).then(function(response) {
-                if (response) {
-                    console.log(">>>>[",event.request.url,response.headers.get('content-length')," bytes]<<<< from cache");
-                    return response;
-                }
-                console.log(">>>>[",event.request.url,"]<<<< downloading");
-                return fetch(event.request).then(function(response){
-                    console.log(">>>>[",event.request.url,response.headers.get('content-length')," bytes]<<<< from network");
-                }).catch(function(err){
-                       //Error stuff
-                    console.log("failed fetching",event.request.url,err);
+        } else {
+            
+            event.respondWith(
+                // Try the cache
+                
+                
+                caches.match(event.request).then(function(response) {
                     
+                    if (response) {
+                        
+                        console.log(">>>>[",event.request.url,response.headers.get('content-length')," bytes]<<<< from cache");
+                        return response;
+                    
+                        
+                    }
+                    
+                    console.log(">>>>[",event.request.url,"]<<<< downloading");
+                    return fetch(event.request).then(function(response){
+                        console.log(">>>>[",event.request.url,response.headers.get('content-length')," bytes]<<<< from network");
+                        return response;
+                    }).catch(function(err){
+                           //Error stuff
+                        console.log("failed fetching",event.request.url,err);
+                        
+                    })
+                }).catch(function(err) {
+                    //Error stuff
+                    console.log("failed matching",event.request.url,err);
                 })
-            }).catch(function(err) {
-                //Error stuff
-                console.log("failed matching",event.request.url,err);
-            })
-        );
+            );
+            
+        }
     });  
 
 
-} else {
-
-/* Serve cached content when offline */
-self.addEventListener('fetch', function(e) { 
-    
-  
-   console.log("fetch:",e.request.url );
-  
-  if ( !!locals[ e.request.url ] ) {
-      e.respondWith(
-      
-        caches.match(e.request).then(function(response) {
-          if (response) {
-              console.log("Resolved from cache")
-              return response ;
-          }    
-          console.log("fetching [",cleanURL,"] from remote");
-          return fetch(e.request.url);
-        })
-      );
-
-  } else {
-      const cleanURL = e.request.url.replace(urlCleanupRegex,urlCleanupReplace);
-      const cleanURI = e.request.url.replace(urlCleanupRegex,urlCleanupReplace2);   
-      
-      console.log(`[Service Worker] Fetching resource: ${e.request.url} [ ${cleanURI} ] --->  ${cleanURL}`);
-      e.respondWith(
-          
-        caches.match(cleanURI).then(function(response) {
-          if (response) {
-              console.log("Resolved from cache")
-              return response ;
-          }    
-          console.log("fetching [",cleanURL,"] from remote");
-          return fetch(cleanURL);
-        })
-  );     
-      
-  }
  
-});
-
-}
