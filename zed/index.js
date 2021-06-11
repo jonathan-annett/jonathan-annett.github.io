@@ -73,7 +73,7 @@ function afterInstall(reg) {
     
     console.log("installed");
     
-    messageReceiver(reg.active||reg.waiting,'UPDATE',installerMsg);  
+    messageReceiver(reg.installing || reg.waiting || reg.active ,'UPDATE',installerMsg);  
 
 }
 
