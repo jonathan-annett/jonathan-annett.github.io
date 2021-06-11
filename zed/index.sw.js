@@ -6,7 +6,7 @@ var
 
 file_list_url = "/zed/index.sw.json",
 
-version     = 1.0,
+version     = 1.1,
 
 cacheName   = 'zed-pwa-'+version,
 
