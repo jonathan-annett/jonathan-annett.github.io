@@ -1,15 +1,24 @@
 
-/* global self, importScripts, caches  */
+/* global self, importScripts, caches ,registration,clients ,Response */
 
 
 var 
 
 file_list_url = "/zed/index.sw.json",
-filesToCache,
-cacheName   = 'zed-pwa',
+
 version     = 1.0,
+
+cacheName   = 'zed-pwa-'+version,
+
+filesToCache,
 site_root,
 installed_root;
+
+addEventListener('message',  sw_message );
+addEventListener('install',  sw_install);
+addEventListener('fetch',    sw_fetch_);  
+addEventListener('activate', sw_activate);
+
 
 function downloadJSON(response) { return response.json(); }
 
@@ -105,8 +114,6 @@ function getGithubFileList (github_io_base) {
 }
 
 function getPWAFiles(config_url) {
- 
-
     return new Promise(function(resolveConfig,reject) {
         
             
@@ -140,8 +147,6 @@ function getPWAFiles(config_url) {
                       });
                       
        })
-    
-   
 }
 
 
@@ -183,42 +188,9 @@ function messageSender(NAME,port) {
    };
 }
 
-
-/* Start the service worker and cache all of the app's content */
-
-
-self.addEventListener('message', (event) => {
-    
-    if (!(event.data && event.data.type)) return ;
-    
-    if (event.data.type === 'SKIP_WAITING') {
-        return self.skipWaiting();
-    }
- 
-    if (event.data.type === 'UPDATE') {
-       const msg = messageSender('UPDATE',event.ports[0]);
-       msg.send({files : filesToCache.github});
-       return caches.open(cacheName).then(function(cache) {
-           return Promise.all(filesToCache.github.map(function(url,index){
-                msg.send({loading:index,url:url});
-                       
-                return refreshCache(cache,url).then (function(dl){
-                      msg.send({loaded:index}); 
-                      return Promise.resolve(dl);
-                  })
-                  .catch(function(err){
-                     //Error stuff
-                     console.log("failed adding",url,err);
-                 });
-           }));
-       })
-       
-    }
-});
-
 function refreshCache(cache,url) {
     
-    return new Promise(function(resolve) {
+    return new Promise(function(resolve,reject) {
          cache.match(url).then(function(response) {
              if (response) {
                  const Etag =response.headers.get('Etag')
@@ -229,110 +201,194 @@ function refreshCache(cache,url) {
                  }).then (function(head){
                      const newETag = head.headers.get('Etag');
                   
-                     console.log("HEAD-->",{head,etag :newETag});
-                     if ( Etag !== newETag ) {
-                         console.log("refreshing...",url);
-                         fetch(url).then(resolve)
+                    if ( Etag !== newETag ) {
+                         //console.log("refreshing...",url);
+                         fetch(url).then(resolve).catch(reject);
                          
                      } else {
-                         console.log("unchanged...",url);
+                         //console.log("unchanged...",url);
                           resolve(response);
                      }
-                      
-                    
+
                  });
              } else {
-                 console.log("adding new url",url);
-                 cache.add(url).then(resolve);
+                 //console.log("adding new url",url);
+                 cache.add(url).then(resolve).catch(reject);
              }
          });
     });
 
 }
 
-
- 
-
-self.addEventListener('install', function(e) {
+function updateURLArray(cache,urls,progressUpdate) {
     
-          e.waitUntil(
-              
-              getPWAFiles( file_list_url ).then( function(files){
+    return Promise.all(urls.map(function(url,index){
+         progressUpdate.send({loading:index,url:url});
+                
+         return refreshCache(cache,url).then (function(dl){
+               progressUpdate.send({loaded:index}); 
+               return Promise.resolve(dl);
+           })
+           .catch(function(err){
+              //Error stuff
+              console.log("failed adding",url,err);
+          });
+    }));
+    
+}
+
+function sw_message( e ) {
+    
+    if (!(e.data && e.data.type)) return ;
+    
+    if (e.data.type === 'SKIP_WAITING') {
+        return self.skipWaiting();
+    }
+ 
+    if (e.data.type === 'UPDATE') {
+        
+       const progressUpdate = messageSender('UPDATE',e.ports[0]);
+       const urls = filesToCache.site.concat(filesToCache.github);
+       progressUpdate.send({files : urls});
+       return caches.open(cacheName).then(function(cache) {
+           updateURLArray(cache,urls,progressUpdate)
+             .then (function(){
+                 progressUpdate.send({done : 1});
+             });
+           
+       });
+       
+    }
+}  
+
+function sw_install( e ) {
+    
+    e.waitUntil(
+        
+        getPWAFiles( file_list_url ).then( function(files){
+            
+              filesToCache = files;
+              return caches.open(cacheName).then(function(cache) {
                   
-                    filesToCache = files;
-                    return caches.open(cacheName).then(function(cache) {
-                        
-                        return Promise.all(filesToCache.site.map(function(url,index){
-                             console.log("loading...",url);
-                             return cache.add(url) .catch(function(err){
-                                  //Error stuff
-                                  console.log("failed adding",url,err);
-                              });
-                        }));
-                        
-                    })
-                    
+                  return Promise.all(filesToCache.site.map(function(url,index){
+                       console.log("loading...",url);
+                       return cache.add(url) .catch(function(err){
+                            //Error stuff
+                            console.log("failed adding",url,err);
+                        });
+                  }));
+                  
               })
-          );
-          
-});
+              
+        })
+    );
+}     
 
-
-
-addEventListener('fetch', function(event) {
-      
+function sw_fetch( e ) {
+    
+         
+    console.log("fetch intercept[",e.request.url,"]");
+    
+    
+    if (installed_root && site_root === e.request.url ) {
+        console.log("root detect");
+        e.respondWith(
         
-        console.log("fetch intercept[",event.request.url,"]");
         
-        
-        if (installed_root && site_root === event.request.url ) {
-            
-            event.respondWith(
-            // Try the cache
-            
-                    caches.match(installed_root).then(function(response) {
-                        if (response) {
-                            console.log(">>>>[",installed_root,response.headers.get('content-length')," bytes]<<<< from cache");
-                            return response;
-                        }
-                        
-                    })
-            );
-     
-            
-        } else {
-            
-            event.respondWith(
-                // Try the cache
-                
-                
-                caches.match(event.request).then(function(response) {
-                    
+                caches.match(installed_root).then(function(response) {
                     if (response) {
-                        
-                        console.log(">>>>[",event.request.url,response.headers.get('content-length')," bytes]<<<< from cache");
+                        console.log(">>>>[",installed_root,response.headers.get('content-length')," bytes]<<<< from cache");
                         return response;
-                    
-                        
                     }
                     
-                    console.log(">>>>[",event.request.url,"]<<<< downloading");
-                    return fetch(event.request).then(function(response){
-                        console.log(">>>>[",event.request.url,response.headers.get('content-length')," bytes]<<<< from network");
-                        return response;
-                    }).catch(function(err){
-                           //Error stuff
-                        console.log("failed fetching",event.request.url,err);
-                        
-                    })
-                }).catch(function(err) {
-                    //Error stuff
-                    console.log("failed matching",event.request.url,err);
                 })
-            );
+                
+        );
+ 
+        
+    } else {
+        
+        e.respondWith(
             
-        }
-    });  
+            
+            caches.match(e.request).then(function(response) {
+                
+                if (response) {
+                    
+                    console.log(">>>>[",e.request.url,response.headers.get('content-length')," bytes]<<<< from cache");
+                    return response;
+                
+                    
+                }
+                
+                console.log(">>>>[",e.request.url,"]<<<< downloading");
+                return fetch(e.request).then(function(response){
+                    console.log(">>>>[",e.request.url,response.headers.get('content-length')," bytes]<<<< from network");
+                    return response;
+                }).catch(function(err){
+                       //Error stuff
+                    console.log("failed fetching",e.request.url,err);
+                    
+                })
+            }).catch(function(err) {
+                //Error stuff
+                console.log("failed matching",e.request.url,err);
+            })
+            
+        );
+        
+    }
 
+    
+}
 
+function sw_fetch_( e ) {
+    
+      
+      e.respondWith(new Promise(function (resolve,reject)  {
+        
+         if ( e.request.mode === "navigate" &&
+              e.request.method === "GET" &&
+             registration.waiting ) {
+              
+              return clients.matchAll().then (
+                  
+                  function(x){
+                     if (x.length <2) {
+                         registration.waiting.postMessage({type:'SKIP_WAITING'});
+                         resolve(  new Response("", {headers: {"Refresh": "0"}}) );
+                     } else {
+                         
+                         sw_fetch (e).then(resolve).catch(reject) ;
+                     }
+                  }
+              );
+          
+          }           
+          
+          
+          sw_fetch (e).then(resolve).catch(reject) ;
+
+      }));
+    
+    
+}
+
+function sw_activate ( e) {
+    // delete any old cache versions
+    e.waitUntil(caches.keys().then( function( keys ) {
+      
+         return Promise.all(
+          
+            keys.map( 
+                function ( key ) {
+                 if (key != cacheName) return caches.delete(key);
+                }
+            )
+            
+         );
+      
+    }));
+    
+}
  

@@ -1,16 +1,9 @@
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/zed/index.sw.js').then(function(registration) {
-        navigator.serviceWorker.ready.then(afterInstall);
-  }).catch((error) => {
-    // registration failed
-    console.log('Registration failed with ' + error);
-  });
-}
+const sw_path = '/zed/index.sw.js';
 
 
-function invokeServiceWorkerUpdateFlow(registration) {
-    // TODO implement your own UI notification element
+
+function showRefreshUI(registration) {
+
     let load_new_version = document.getElementById("load_new_version");
     load_new_version.disabled = false;
     const click = function () {
@@ -26,7 +19,7 @@ function invokeServiceWorkerUpdateFlow(registration) {
 
 var installerProgress,progress_message=document.getElementById("progress_message");
 
-function installerMsg(msg){
+function installerMsg(cb,msg){
     if (msg.files) {
        installerProgress =   document.getElementById("progress_container");
        installerProgress.innerHTML= '<progress max="' + msg.files.length + '" value="0"> 0% </progress';
@@ -38,6 +31,10 @@ function installerMsg(msg){
     }
     if (msg.url) {
         progress_message.innerHTML = msg.url;
+    } 
+    
+    if (msg.done) {
+        cb();
     }
 }
 
@@ -70,12 +67,91 @@ function messageReceiver(worker,NAME,cb) {
     }
 }
 
-function afterInstall(reg) {
+function afterInstall(reg,cb) {
     
     console.log("installed");
+    messageReceiver(
+        reg.installing || reg.waiting || reg.active ,
+        'UPDATE',
+        installerMsg.bind(this,cb)
+    );
     
-    messageReceiver(reg.installing || reg.waiting || reg.active ,'UPDATE',installerMsg);  
-
 }
+
+
+
+
+
+
+function onNewServiceWorker(registration, callback) {
+  if (registration.waiting) {
+    // SW is waiting to activate. Can occur if multiple clients open and
+    // one of the clients is refreshed.
+    return callback();
+  }
+
+  function listenInstalledStateChange() {
+    registration.installing.addEventListener('statechange', function(event) {
+      if (event.target.state === 'installed') {
+        // A new service worker is available, inform the user
+        callback();
+      }
+    });
+  }
+
+  if (registration.installing) {
+    return listenInstalledStateChange();
+  }
+
+  // We are currently controlled so a new SW may be found...
+  // Add a listener in case a new SW is found,
+  registration.addEventListener('updatefound', listenInstalledStateChange);
+}
+
+window.addEventListener('load', w_load);
+
+
+
+function w_load ( e ) {
+    
+    
+    var sw_controllerchange_refreshing;
+    function sw_controllerchange(event) {
+      if (sw_controllerchange_refreshing) return; // prevent infinite refresh loop when you use "Update on Reload"
+      sw_controllerchange_refreshing = true;
+      console.log('Controller loaded');
+      window.location.reload();
+    }
+    
+    // When the user asks to refresh the UI, we'll need to reload the window
+    navigator.serviceWorker.addEventListener('controllerchange',sw_controllerchange);
+  
+    navigator.serviceWorker.register( sw_path )
+    .then(function (registration) {
+        // Track updates to the Service Worker.
+      if (!navigator.serviceWorker.controller) {
+        // The window client isn't currently controlled so it's a new service
+        // worker that will activate immediately
+        return;
+      }
+      registration.update();
+  
+      onNewServiceWorker(registration, function() {
+          
+        afterInstall(registration,function(){
+            
+            showRefreshUI(registration);
+            
+        });
+        
+        
+      });
+    });
+    
+    
+}
+
+
+
 
 
