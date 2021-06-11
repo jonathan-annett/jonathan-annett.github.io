@@ -279,23 +279,48 @@ function sw_install( e ) {
 }     
 
 
-function matchJS(cache,url) {
+var matchJSFixes = {};
+
+function matchJS(url) {
     
     return new Promise(function(resolve,reject) {
   
-            if ( /(\.|\/)(jpe?g|png|webp|pdf|svg|gif|ico|js|html|md|css)$/.test(url)) {
-                return cache.match(url).then (resolve).catch(reject);
+            if ( matchJSFixes[url] ||   /(\.|\/)(jpe?g|png|webp|pdf|svg|gif|ico|js|html|md|css)$/.test(url)) {
+                return caches.match(url).then (resolve).catch(reject);
             }
             
-            cache.matchAll([url+'.js',url])
-              .then(function(responses){
-                  if (!responses.some(function(response){
-                     if (response) {
-                         resolve(response);
-                         return true
-                     } 
-                  })) reject();
-              });
+            return caches.open(cacheName).then(function(cache) {
+                cache.matchAll([url+'.js',url])
+                .then(function(responses){
+                    if (!responses.some(function(response){
+                       if (response) {
+                           
+                           
+                           cache.put(url, response).then (function(){
+                                matchJSFixes[url] = true;
+                                
+                               
+                                cache.put(
+                                    
+                                    "/zed/app/.matchFixes", 
+                                    new Response(new Blob([ JSON.stringify(matchJSFixes,undefined,4) ], {
+                                        type: 'application/json'
+                                    }),{ "status" : 200 })
+                                    
+                                    ).then (function(){
+                                        
+                                        
+                                        resolve(response);
+                           
+                                    })
+                           });
+                          
+                           return true; // terminate the some loop
+                       } 
+                    })) reject();
+                });
+            });
+           
 
     });
 }
