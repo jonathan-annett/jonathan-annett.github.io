@@ -1,5 +1,17 @@
-const worker=((l,s,f,w,o,n,W)=>{if(s in w){w[o](l,()=>{W=n[s].register(f);W.then(afterInstall);return W;});}})
-('load','serviceWorker','/zed/install_pwa_sw.js',window,'addEventListener',navigator);
+
+var worker;
+if ('serviceWorker' in navigator) {
+  worker = navigator.serviceWorker.register('/zed/install_pwa_sw.js')
+  .then((reg) => {
+    // registration worked
+    console.log('Registration succeeded. Scope is ' + reg.scope);
+    afterInstall(worker);
+    
+  }).catch((error) => {
+    // registration failed
+    console.log('Registration failed with ' + error);
+  });
+}
 
 
 function invokeServiceWorkerUpdateFlow(registration) {
