@@ -1,4 +1,6 @@
 /*global _ $ ace */
+
+window.boot_zed=function (){
 require.config({
     baseUrl: "js",
     paths: {
@@ -192,3 +194,6 @@ require([
         });
     }
 });
+
+
+};

@@ -1,16 +1,37 @@
+
 <!doctype html>
-<html lang="en">
-<head>
-    <link rel="manifest" href="/zed/app/manifest.json">
-    <link href="/zed/app/css/editor.css" rel="stylesheet" type="text/css">
-</head>
-<body>
-  <div>
-    <h1>Zed PWA</h1>
-    <p id="progress_message"></p>
-    <p id="progress_container"><progress max="100" value="70"> 100% </progress></p>
-    <button id="load_new_version" disabled>load new version</button>
-  </div>
-  <script src="index.js"></script>
-</body>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Zed</title>
+        <link href="/zed/app/css/ui.dynatree.css" rel="stylesheet" type="text/css">
+        <link href="/zed/app/css/editor.css" rel="stylesheet" type="text/css">
+        <style id="window-theme-css" type="text/css"></style>
+        <style id="editor-theme-css" type="text/css"></style>
+        <style id="user-css" type="text/css"></style>
+    </head>
+    <body class="dark custom-scroll non_mac native-chrome">
+        <div id="PWA_BOOT">
+          <h1>Zed PWA</h1>
+          <p id="progress_message"></p>
+          <p id="progress_container"><progress max="100" value="70"> 100% </progress></p>
+          <button id="load_new_version" disabled>load new version</button>
+        </div>
+      
+        <script src="/zed/app/dep/underscore-min.js"></script>
+        <script src="/zed/app/dep/ga-bundle.js"></script>
+        <script src="/zed/app/dep/json5.js"></script>
+        <script src="/zed/app/dep/require.js"></script>
+        <script src="/zed/app/dep/jquery.js"></script>
+        <script src="/zed/app/dep/jquery-binary-ajax.js"></script>
+        <script src="/zed/app/dep/jquery.caret.js"></script>
+        <script src="/zed/app/dep/jquery-ui.js"></script>
+        <script src='/zed/app/dep/jquery.dynatree.min.js'></script>
+        <script src="ace/ace.js"></script>
+        <script src="ace/ext-language_tools.js"></script>
+        <script src="ace/ext-whitespace.js"></script>
+        <script src="ace/keybinding-vim.js"></script>
+        <script src="/zed/app/js/boot.js"></script>
+        <script src="/zed/index.js" defer></script>
+    </body>
 </html>

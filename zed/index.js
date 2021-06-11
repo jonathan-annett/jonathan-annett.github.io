@@ -120,7 +120,7 @@ function w_load ( e ) {
       if (sw_controllerchange_refreshing) return; // prevent infinite refresh loop when you use "Update on Reload"
       sw_controllerchange_refreshing = true;
       console.log('Controller loaded');
-      window.location.replace("/zed/app/editor.html");
+      window.location.reload();
     }
     
     // When the user asks to refresh the UI, we'll need to reload the window
@@ -133,7 +133,7 @@ function w_load ( e ) {
         // The window client isn't currently controlled so it's a new service
         // worker that will activate immediately
         afterInstall(registration,function(){
-            window.location.replace("/zed/app/editor.html");
+            window.boot_zed();
             
         });
         
@@ -142,13 +142,14 @@ function w_load ( e ) {
         return;
       }
       
-       registration.update();
+      registration.update();
   
       onNewServiceWorker(registration, function() {
           
         afterInstall(registration,function(){
             
             showRefreshUI(registration);
+            window.boot_zed();
             
         });
         
