@@ -33,7 +33,7 @@ function installerMsg(cb,msg){
         progress_message.innerHTML = msg.url;
     } 
     
-    if (msg.done) {
+    if (msg.done && cb) {
         cb();
     }
 }
@@ -136,6 +136,9 @@ function w_load ( e ) {
             alert('welcome!');
             
         });
+        
+        
+        navigator.serviceWorker.ready.then(afterInstall);
         return;
       }
       
