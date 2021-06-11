@@ -21,8 +21,7 @@ function get_X_cluded (base,exclusionsList) {
                 
                 console.log('get_X_cluded:literal:',excl);
                 return function(path){ 
-                    console.log(path  ,"vs", (base + excl) ) 
-                    return path === (base + excl) ;
+                    return path === excl ;
                 };
                 
             } else {
