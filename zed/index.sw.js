@@ -4,7 +4,7 @@
 
 var 
 
-file_list_url = "/zed/zedPWA.files.json",
+file_list_url = "/zed/index.sw.json",
 filesToCache,
 cacheName   = 'zed-pwa',
 version     = 1.0,

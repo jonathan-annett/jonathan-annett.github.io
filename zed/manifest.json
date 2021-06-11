@@ -10,8 +10,8 @@
   
   "icons": {
       "128": "/zed/app/Icon.png",
-      "16": "/zed/app/Icon16.png",
-      "48": "/zed/app/Icon48.png"
+      "16":  "/zed/app/Icon16.png",
+      "48":  "/zed/app/Icon48.png"
   },
   
   "start_url": "/zed/app/index.html"
