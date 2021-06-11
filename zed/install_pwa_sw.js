@@ -2,6 +2,7 @@
 /* global self, importScripts, caches  */
 importScripts('adderall.js');
 
+var file_list_url = "/zed/zedPWA.files.json";
 
 var cacheName = 'zed-pwa';
 
@@ -66,7 +67,7 @@ function getGithubFileList (github_io_base) {
     };    
 }
 
-function getPWAFiles(config_url,github_io_base) {
+function getPWAFiles(config_url) {
     
     return new Promise(function(resolveConfig,reject) {
     
@@ -74,7 +75,7 @@ function getPWAFiles(config_url,github_io_base) {
        .then(downloadJSON)
          .then(function(config) { 
            
-          
+           var github_io_base = config.root;
 
            fetch(config.github.url).then(downloadJSON).then(function(github_files){
                
@@ -100,7 +101,7 @@ self.addEventListener('install', function(e) {
         
           e.waitUntil(
               
-              getPWAFiles('/zed/pwa_config.json','//jonathan-annett.github.io/zed/')
+              getPWAFiles( file_list_url )
                  .then(function(files){
                     
                     return caches.open(cacheName).then(function(cache) { 
