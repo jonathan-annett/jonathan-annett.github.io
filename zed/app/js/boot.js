@@ -4,7 +4,7 @@ require.config({
     paths: {
         "text":   "/zed/app/dep/text",
         "json5":  "/zed/app/dep/json5",
-        "zedb":   "/zed/app/dep/zed.js",
+        "zedb":   "/zed/app/dep/zed",
         "async":  "/zed/app/config/api/zed/lib/async",
         "events": "/zed/app/js/lib/emitter"
     },
@@ -73,7 +73,7 @@ require([
 
     function projectPicker() {
         var modules = baseModules.slice();
-        modules.push("/zed/app/js/fs/empty");
+        modules.push("/zed/app/js/fs/empty.js");
         return boot(modules, false).then(function(app) {
             app.getService("open_ui").boot();
         });
@@ -90,7 +90,7 @@ require([
         catch (function(err) {
             console.log("Error", err);
             var modules = baseModules.slice();
-            modules.push("/zed/app/js/fs/empty");
+            modules.push("/zed/app/js/fs/empty.js");
             boot(modules, false).then(function(zed) {
                 // Remove this project from history
                 zed.getService("history").removeProject(url);
