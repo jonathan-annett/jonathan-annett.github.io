@@ -349,32 +349,44 @@ function sw_install( e ) {
 }     
 
 
-var matchJSFixes = {};
+function matchJSFixes () {
+    return matchJSFixes.cache? Promise.resolve(matchJSFixes.cache):
+    new Promise(function(resolve,reject){
+        localforage.getItem('matchJSFixes' ).then(function(value){
+            resolve((matchJSFixes.cache=value||{}));
+        }).catch(reject);
+    });
+}
+
+
 
 function matchJS(url) {
     
     return new Promise(function(resolve,reject) {
-  
-            if (  /(\.|\/)(jpe?g|png|webp|pdf|svg|gif|ico|js|html|md|css)$/.test(url)) {
-                return caches.match(url).then(resolve).catch(reject);
-            }
-            
-            return caches.open(cacheName).then(function(cache) {
-                cache.matchAll([url+'.js',url])
-                .then(function(responses){
-                    if (!responses.some(function(response){
-                       if (response) {
-                            console.log(url,"did not have .js ext");
-                            resolve(response);
-                           
-                          
-                           return true; // terminate the some loop
-                       } 
-                    })) reject();
+        
+        matchJSFixes ().then (function(fixes){
+              
+            caches.match(fixes[url]||url).then(function(default_response){
+                
+                if (default_response) {
+                    return resolve (default_response);
+                }
+                
+                if ( /(\.|\/)(jpe?g|png|webp|pdf|svg|gif|ico|js|html|md|css)$/.test( url ) ) {
+                    return resolve( false ) ;
+                }
+                const url_js = url+".js";
+                caches.match(url_js).then(function(response){
+                    if (response) {
+                        fixes[url]=url_js;
+                        localforage.setItem('matchJSFixes', (matchJSFixes.cache=fixes)).then(function(){
+                             return resolve (response);
+                        });
+                    }
                 });
             });
            
-
+         });
     });
 }
 
