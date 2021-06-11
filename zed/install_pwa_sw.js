@@ -71,7 +71,12 @@ function getGithubFileList (github_io_base) {
                  
                  github_data.tree.filter(
                      
-                     function(item){ return item.type === "blob" && isIncluded(item.path) && ! isExcluded(item.path); }
+                     function(item){ 
+                         
+                         console.log("checking:",item) ;
+                         return item.type === "blob" && isIncluded(item.path) && ! isExcluded(item.path); 
+                         
+                     }
                      
                  ).map(
                      
@@ -109,6 +114,7 @@ function getPWAFiles(config_url) {
                    
                       .then (function(arrayOfFileLists){  
                           
+                              console.log("resolved:",arrayOfFileLists) ;
                               resolveConfig(
                      
                                  
