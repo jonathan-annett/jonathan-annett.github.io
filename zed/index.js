@@ -132,29 +132,26 @@ function w_load ( e ) {
       if (!navigator.serviceWorker.controller) {
         // The window client isn't currently controlled so it's a new service
         // worker that will activate immediately
+        afterInstall(registration,function(){
+            alert('welcome!');
+            
+        });
         return;
       }
       
-      if (registration.installing) {
-          afterInstall(registration,function(){
-              alert('welcome!');
-              
-          });
-      } else {
-         registration.update();
-      
-          onNewServiceWorker(registration, function() {
-              
-            afterInstall(registration,function(){
-                
-                showRefreshUI(registration);
-                
-            });
+       registration.update();
+  
+      onNewServiceWorker(registration, function() {
+          
+        afterInstall(registration,function(){
             
+            showRefreshUI(registration);
             
-          });
-      
-      }
+        });
+        
+        
+      });
+       
     });
     
     
