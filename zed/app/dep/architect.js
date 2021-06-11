@@ -1,4 +1,5 @@
-define(["lib/emitter"], function(events) {
+/* global define */
+define(["/zed/app/js/lib/emitter.js"], function(events) {
     "use strict";
     var EventEmitter = events.EventEmitter;
 
@@ -374,7 +375,7 @@ define(["lib/emitter"], function(events) {
             plugins.forEach(function(plugin) {
                 delete plugin.config;
                 plugin.consumes.forEach(function(name) {
-                    if (unresolved[name] == false) return;
+                    if (unresolved[name] === false) return;
                     if (!unresolved[name]) unresolved[name] = [];
                     unresolved[name].push(plugin.packagePath);
                 });
@@ -384,7 +385,7 @@ define(["lib/emitter"], function(events) {
             });
 
             Object.keys(unresolved).forEach(function(name) {
-                if (unresolved[name] == false) delete unresolved[name];
+                if (unresolved[name] === false) delete unresolved[name];
             });
 
             console.error("Could not resolve dependencies of these plugins:", plugins);
