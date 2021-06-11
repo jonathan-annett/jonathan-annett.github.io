@@ -20,8 +20,10 @@ function get_X_cluded (base,exclusionsList) {
             if (typeof excl === "string" ) { 
                 
                 console.log('get_X_cluded:literal:',excl);
-                console.log(path  ,"vs", (base + excl) ) 
-                return function(path){ return path === (base + excl) ;};
+                return function(path){ 
+                    console.log(path  ,"vs", (base + excl) ) 
+                    return path === (base + excl) ;
+                };
                 
             } else {
                 
