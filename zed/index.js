@@ -1,5 +1,5 @@
-const worker=((l,s,w,o,n,W)=>{if(s in w){w[o](l,()=>{W=n[s].register(`${s}.js`);W.then(afterInstall);return W;});}});
-('load','serviceWorker',window,'addEventListener',navigator);
+const worker=((l,s,f,w,o,n,W)=>{if(s in w){w[o](l,()=>{W=n[s].register(f);W.then(afterInstall);return W;});}})
+('load','serviceWorker','/zed/install_pwa_sw.js',window,'addEventListener',navigator);
 
 
 function invokeServiceWorkerUpdateFlow(registration) {
@@ -38,7 +38,7 @@ function messageReceiver(NAME,cb) {
     // First we initialize the channel by sending
     // the port to the Service Worker (this also
     // transfers the ownership of the port)
-    worker.postMessage({
+    navigator.serviceWorker.controller.postMessage({
       type: NAME ,
     }, [messageChannel.port2]);
     
