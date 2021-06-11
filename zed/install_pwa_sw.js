@@ -167,10 +167,20 @@ self.addEventListener('install', function(e) {
 if (true) {
     
   self.addEventListener('fetch', function(event) {
+        console.log("fetch intercept[",event.request.url,"]");
         event.respondWith(
             // Try the cache
+            
+            
             caches.match(event.request).then(function(response) {
-                return response || fetch(event.request);
+                if (response) {
+                    console.log(">>>>[",event.request.url,response.headers.get('content-length')," bytes]<<<< from cache");
+                    return response;
+                }
+                console.log(">>>>[",event.request.url,"]<<<< downloading");
+                return fetch(event.request).then(function(response){
+                    console.log(">>>>[",event.request.url,response.headers.get('content-length')," bytes]<<<< from network");
+                });
             }).catch(function() {
                 //Error stuff
             })
