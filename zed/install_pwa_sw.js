@@ -31,11 +31,13 @@ function get_X_cluded (exclusionsList) {
     
     const exclusions  = exclusionsList.map(
         function (excl) {
-            if (typeof excl === "string") {
+            if (typeof excl === "string" ) { 
+                console.log('get_X_cluded:literal:',excl);
                 return function(path){ return path===excl;};
             } else {
                 if (typeof excl.RegExp === "string") {
                     const re = new RegExp(excl.RegExp,'');
+                    console.log('get_X_cluded:regex:',re);
                     return re.test.bind(re);
                 } else {
                     return null;
