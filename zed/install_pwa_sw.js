@@ -103,8 +103,12 @@ function getGithubFileList (github_io_base) {
 }
 
 function getPWAFiles(config_url) {
-    
+ 
+
     return new Promise(function(resolveConfig,reject) {
+        
+            
+                    
             console.log("fetching...:",config_url);
             fetch(config_url)
                .then(downloadJSON)
@@ -142,22 +146,64 @@ function getPWAFiles(config_url) {
 }
 
 
+
+
+function messageSender(NAME) {
+   // service-worker.js
+   let messagePort,pending=[];
+   self.addEventListener("message", function(event) {
+     if (event.data && event.data.type === NAME) {
+       messagePort = event.ports[0];
+       if (pending) {
+           pending.forEach(function (msg){
+               messagePort.postMessage({ type : NAME, msg : msg, delayed:true });
+           });
+           pending.splice(0,pending.length)
+           pending=undefined;
+         }
+     }
+   
+
+    
+   }); 
+   
+   return {
+       send : function (msg) {
+           console.log({msg});
+           if (pending) {
+               pending.add(msg);
+           } else {
+               messagePort.postMessage({ type : NAME, msg : msg });
+           }
+       }
+   };
+}
+
+
 /* Start the service worker and cache all of the app's content */
 
 self.addEventListener('install', function(e) {
     
-  
+          const msg = messageSender('INSTALL');
         
           e.waitUntil(
               
               getPWAFiles( file_list_url )
+              
                  .then(function(files){
-                    
+                    msg.send({progress:0,progressTotal:files.length});
                     return caches.open(cacheName).then(function(cache) { 
-                        return Promise.all(files.map(function(url){
+                        return Promise.all(files.map(function(url,index){
                              //console.log("loading...",url);
-                             return cache.add(url).catch(function(err){
-                                     //Error stuff
+                             msg.send({progress:index,progressTotal:files.length,status:'downloading:'+url});
+                             return cache.add(url)
+                             .then(function(x){
+                                 msg.send({progress:index,progressTotal:files.length,status:'downloaded:'+url});
+                                 return x;
+                             })
+                             .catch(function(err){
+                                  //Error stuff
+                                  msg.send({progress:index,progressTotal:files.length,status:'failed:'+url});   
                                   console.log("failed adding",url,err);
                               });
                         }));
