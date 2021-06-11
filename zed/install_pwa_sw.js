@@ -63,8 +63,9 @@ function getGithubFileList (github_io_base) {
   
        return new Promise(function (resolveList,reject) {
 
+           console.log("fetching:",github_config.url);
            fetch(github_config.url).then(downloadJSON).then(function(github_data){
-             
+             console.log("fetched:",github_data);
              return resolveList( 
                  
                  
@@ -93,30 +94,34 @@ function getGithubFileList (github_io_base) {
 function getPWAFiles(config_url) {
     
     return new Promise(function(resolveConfig,reject) {
-    
-    return fetch(config_url)
-       .then(downloadJSON)
-         .then(function(config) { 
-           
-           var github_io_base = config.root;
-           
-           Promise.all( config.github.map( getGithubFileList(github_io_base) ))
-           
-              .then (function(arrayOfFileLists){  
+            console.log("fetching...:",config_url);
+            fetch(config_url)
+               .then(downloadJSON)
+                 .then(function(config) { 
+                   
+                   console.log("fetched...:",config);
+                   
+                   var github_io_base = config.root;
+                   
+                   console.log("github_io_base:",github_io_base);
+                   
+                   Promise.all( config.github.map( getGithubFileList(github_io_base) ))
+                   
+                      .then (function(arrayOfFileLists){  
+                          
+                              resolveConfig(
+                     
+                                 
+                                    config.site.files.concat.apply(config.site.files,arrayOfFileLists)
+                               
+                              );
+                              
+                          })
+                          
+                          
+                      });
+        
                   
-                      resolveConfig(
-             
-                         
-                            config.site.files.concat.apply(config.site.files,arrayOfFileLists)
-                       
-                      );
-                      
-                  })
-                  
-                  
-              });
-
-          
 
            
        })
