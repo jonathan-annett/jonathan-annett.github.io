@@ -63,9 +63,11 @@ function messageReceiver(worker,NAME,cb) {
 }
 
 function afterInstall(reg) {
+    
     console.log("installed");
     
     if (reg.active){
+        
         messageReceiver(reg.active,'UPDATE',function(msg){
        
             console.log(msg);
@@ -73,6 +75,7 @@ function afterInstall(reg) {
             
         });  
     }
+    
 }
 
 
