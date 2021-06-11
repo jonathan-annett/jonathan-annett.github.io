@@ -187,9 +187,9 @@ self.addEventListener('message', (event) => {
        return caches.open(cacheName).then(function(cache) {
            return Promise.all(filesToCache.site.map(function(url,index){
                 console.log("loading...",url);
-                msg.send({loading:index});
+                msg.send({loading:index,url:url});
                 return cache.add(url) 
-                  .then (function(dl){ msg.send({downloaded:index}); return dl;})
+                  .then (function(dl){ msg.send({loaded:index}); return dl;})
                   .catch(function(err){
                      //Error stuff
                      console.log("failed adding",url,err);

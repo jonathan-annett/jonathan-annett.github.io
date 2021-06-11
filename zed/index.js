@@ -23,15 +23,21 @@ function invokeServiceWorkerUpdateFlow(registration) {
     load_new_version.addEventListener('click', click);
 }
 
-var installerProgress;
+var installerProgress,progress_message=document.getElementById("progress_message");
+
 function installerMsg(msg){
-    if (!installerProgress) {
+    if (msg.files) {
        installerProgress =   document.getElementById("progress_container");
-       installerProgress.innerHTML= '<progress max="'+msg.progressTotal+'" value="'+msg.progress+'"> 70% </progress';
+       installerProgress.innerHTML= '<progress max="' + msg.files.length + '" value="0"> 0% </progress';
        installerProgress = installerProgress.children[0];
     } else {
-        installerProgress.progress = msg.progress;
-    }           
+        if (installerProgress && msg.downloaded) {
+            installerProgress.progress = msg.downloaded;
+        }
+    }
+    if (msg.url) {
+        progress_message.innerHTML = msg.url;
+    }
 }
 
 
@@ -51,8 +57,7 @@ function messageReceiver(worker,NAME,cb) {
     // Listen to the response
     messageChannel.port1.onmessage = (event) => {
       // Print the result
-      console.log(event.data.payload);
-      cb(event.data.payload);
+      cb(event.data.msg);
     };
     
     return {
@@ -68,12 +73,7 @@ function afterInstall(reg) {
     
     if (reg.active){
         
-        messageReceiver(reg.active,'UPDATE',function(msg){
-       
-            console.log(msg);
-            
-            
-        });  
+        messageReceiver(reg.active,'UPDATE',installerMsg);  
     }
     
 }
