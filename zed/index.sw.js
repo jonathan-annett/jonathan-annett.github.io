@@ -221,12 +221,14 @@ function refreshCache(cache,url) {
     return new Promise(function(resolve) {
          cache.match(url).then(function(response) {
              if (response) {
-                 console.log("refreshing",url);
+                 const etag = response.headers.get('etag');
+                 
+                 console.log("refreshing",url,etag);
                  fetch(url, {
-                   method: 'HEAD' // *GET, POST, PUT, DELETE, etc.
-                 }).then (function(headX){
-                     
-                     console.log("HEAD-->",{headX});
+                   method: 'GET', // *GET, POST, PUT, DELETE, etc.
+                   headers : {'if-none-match':etag}
+                 }).then (function(got){
+                     console.log("GET-->",{got});
                      resolve(response);
                  });
              } else {
