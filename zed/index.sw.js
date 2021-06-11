@@ -225,15 +225,25 @@ function refreshCache(cache,url) {
                  
                  console.log("refreshing",url,Etag);
                  fetch(url, {
-                   method: 'GET', // *GET, POST, PUT, DELETE, etc.
+                   method: 'HEAD', // *GET, POST, PUT, DELETE, etc.
                    headers : {'If-None-Match':Etag}
-                 }).then (function(got){
-                     console.log("GET-->",{got,headers : got.headers.get('Etag')});
-                     resolve(response);
+                 }).then (function(head){
+                     const newETag = head.headers.get('Etag');
+                  
+                     console.log("HEAD-->",{head,etag :newETag});
+                     if ( head.status===200 && Etag !== newETag ) {
+                         console.log("refreshing...",url);
+                         fetch(url).then(resolve)
+                         
+                     } else {
+                          resolve(response);
+                     }
+                      
+                    
                  });
              } else {
                  console.log("adding new url",url);
-                cache.add(url).then(resolve);
+                 cache.add(url).then(resolve);
              }
          });
     });
