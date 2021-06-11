@@ -44,6 +44,8 @@ function installerMsg(msg){
 
 function messageReceiver(worker,NAME,cb) {
     
+    if (!worker) return;
+    
     // app.js - somewhere in our main app
     const messageChannel = new MessageChannel();
     
@@ -71,11 +73,8 @@ function afterInstall(reg) {
     
     console.log("installed");
     
-    if (reg.active){
-        
-        messageReceiver(reg.active,'UPDATE',installerMsg);  
-    }
-    
+    messageReceiver(reg.active||reg.waiting,'UPDATE',installerMsg);  
+
 }
 
 
