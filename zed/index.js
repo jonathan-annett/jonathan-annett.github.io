@@ -1,7 +1,8 @@
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/zed/index.sw.js')
-  .then(afterInstall).catch((error) => {
+  navigator.serviceWorker.register('/zed/index.sw.js').then(function(registration) {
+        navigator.serviceWorker.ready.then(afterInstall);
+  }).catch((error) => {
     // registration failed
     console.log('Registration failed with ' + error);
   });
