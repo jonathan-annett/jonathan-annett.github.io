@@ -87,21 +87,7 @@ function getGithubFileList (github_io_base) {
        });
        
     };
-           
-   })
     
-    return function (github_data){
-        
-        const isExcluded = get_X_cluded ( github_data.exclude );
-        
-        return github_data.tree.filter(function(item){
-                
-                return item.type === "blob" && ! isExcluded(item.path);
-                
-            }).map(function (item){
-               return github_io_base+item.path; 
-            });
-    };    
 }
 
 function getPWAFiles(config_url) {
