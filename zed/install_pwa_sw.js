@@ -156,7 +156,10 @@ self.addEventListener('install', function(e) {
                     return caches.open(cacheName).then(function(cache) { 
                         return Promise.all(files.map(function(url){
                              //console.log("loading...",url);
-                             return cache.add(url);
+                             return cache.add(url).catch(function(err){
+                                     //Error stuff
+                                  console.log("failed adding",url,err);
+                              });
                         }));
                     })
                     
@@ -180,9 +183,14 @@ if (true) {
                 console.log(">>>>[",event.request.url,"]<<<< downloading");
                 return fetch(event.request).then(function(response){
                     console.log(">>>>[",event.request.url,response.headers.get('content-length')," bytes]<<<< from network");
-                });
-            }).catch(function() {
+                }).catch(function(err){
+                       //Error stuff
+                    console.log("failed fetching",event.request.url,err);
+                    
+                })
+            }).catch(function(err) {
                 //Error stuff
+                console.log("failed matching",event.request.url,err);
             })
         );
     });  
