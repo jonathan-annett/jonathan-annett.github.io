@@ -124,10 +124,7 @@ function getPWAFiles(config_url) {
                           
                           
                       });
-        
-                  
-
-           
+                      
        })
     
    
@@ -177,11 +174,14 @@ function messageSender(NAME,port) {
 
 
 self.addEventListener('message', (event) => {
-    if (event.data === 'SKIP_WAITING') {
+    
+    if (!(event.data && event.data.type)) return ;
+    
+    if (event.data.type === 'SKIP_WAITING') {
         return self.skipWaiting();
     }
  
-    if (event.data === 'UPDATE') {
+    if (event.data.type === 'UPDATE') {
        const msg = messageSender('UPDATE',event.ports[0]);
        msg.send({files : filesToCache.github});
        return caches.open(cacheName).then(function(cache) {
