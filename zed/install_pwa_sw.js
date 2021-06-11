@@ -112,7 +112,7 @@ function getPWAFiles(config_url) {
                    
                    console.log("fetched...:",config);
                    
-                   var github_io_base = config.root;
+                   var github_io_base = config.site.root;
                    
                    console.log("github_io_base:",github_io_base);
                    
