@@ -3,6 +3,8 @@
 
 importScripts("https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js")
 
+importScripts("utils.js")
+
 var 
 
 
@@ -16,21 +18,6 @@ addEventListener('fetch',    sw_fetch_);
 addEventListener('activate', sw_activate);
 
 
-function downloadJSON(response) { return response.json(); }
-function cachedResolve(resolve,fn,x) {
-    const res = function (x) {  return resolve((fn.cached=x));};
-    if (x) {
-       return res(x); 
-    } else {
-       return res;
-    }
-}
-
-function cachedPromise(cacher,promiser){
-    return cacher.cache ? Promise.resolve(cacher.cache) : new Promise(promiser);
-}
-
-
 function getConfig() {
     
     const config_url = "/zed/index.sw.json";
@@ -42,8 +29,6 @@ function getConfig() {
       
     });
 }
-
-
 
 function get_X_cluded (base,exclusionsList) {
     

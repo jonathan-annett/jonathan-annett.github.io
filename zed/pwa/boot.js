@@ -1,7 +1,7 @@
 
 function w_load() {
     
-    const sw_path = '/zed/index.sw.js';
+    const sw_path = '/zed/pwa/sw/background.pwa.js';
     
     
     var 
