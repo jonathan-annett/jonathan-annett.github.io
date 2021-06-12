@@ -38,7 +38,7 @@ var util           = require("ace/autocomplete/util");
 var event          = require("ace/lib/event");
 var lang           = require("ace/lib/lang");
 var snippetManager = require("ace/snippets").snippetManager;
-var AcePopup       = require("/zed/app/lib/ace_popup.js").AcePopup;
+var AcePopup       = require("/zed/app/js/lib/ace_popup.js").AcePopup;
 
 var Autocomplete = function() {
     this.autoInsert = true;
