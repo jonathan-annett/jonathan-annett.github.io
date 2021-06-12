@@ -2,8 +2,15 @@
 function w_load() {
     
     const sw_path = '/zed/index.sw.js';
-    var installerProgress,progress_message=document.getElementById("progress_message");
     
+    
+    var 
+    
+    qs=document.querySelector.bind(document),
+    installerProgress,
+    progress_message=qs("#progress_message");
+    
+        
     betaTesterApproval().then(beta_site).catch(
        function(){
            console.log("site not available");
@@ -29,7 +36,7 @@ function w_load() {
     
     function showRefreshUI(registration) {
     
-        let load_new_version = document.getElementById("load_new_version");
+        let load_new_version = qs("#load_new_version");
         load_new_version.disabled = false;
         const click = function () {
           load_new_version.removeEventListener('click', click);
@@ -45,7 +52,7 @@ function w_load() {
     
     function installerMsg(cb,msg){
         if (msg.files) {
-           installerProgress =   document.getElementById("progress_container");
+           installerProgress =   qs("#progress_container");
            installerProgress.innerHTML= '<progress max="' + msg.files.length + '" value="0"> 0% </progress';
            installerProgress = installerProgress.children[0];
         } else {
@@ -132,6 +139,7 @@ function w_load() {
         if (!window.crypto) {
            return Promise.reject();
         }
+        const [html,keyPRE]   = ["html","html .notbeta pre.key"].map(qs);
         
         return new Promise(function(resolve,reject) {
             const hashAlgo = "SHA-256";
@@ -154,11 +162,13 @@ function w_load() {
                               
                                      if ( config.site.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
                                          console.log("your beta tester approval code:",hashedKeyHex);
-                                         document.querySelector("html").classList.remove("beta");
-                                         document.querySelector("html .notbeta .key").innerHTML=hashedKeyHex;
+                                         html.classList.remove("beta");
+                                         html.classList.add("notbeta");
+                                         keyPRE.innerHTML=hashedKeyHex;
                                          reject();
                                      } else {
-                                         document.querySelector("html").classList.add("beta");
+                                         html.classList.add("beta");
+                                         html.classList.remove("notbeta");
                                          resolve(keyAsHex);
                                      }
                                      
@@ -173,8 +183,9 @@ function w_load() {
                             const unhashedKeyHex = bufferToHex(unhashedKey);
                             return window.crypto.subtle.digest(hashAlgo,unhashedKey).then(function(hashedKey) {
                                  localStorage[localStorageKey] = unhashedKeyHex;
-                                 document.querySelector("html").classList.remove("beta");
-                                 document.querySelector("html .notbeta .key").innerHTML=bufferToHex(hashedKey);
+                                 html.classList.remove("beta");
+                                 html.classList.add("notbeta");
+                                 keyPRE.innerHTML=bufferToHex(hashedKey);
                                  reject();
                             });        
                         });
