@@ -250,31 +250,36 @@ function messageSender(NAME,port) {
 function refreshCache(cache,url) {
     
     return new Promise(function(resolve,reject) {
-         cache.match(url).then(function(response) {
-             if (response) {
-                 const Etag =response.headers.get('Etag')
-                 
-                 fetch(url, {
-                   method: 'HEAD', // *GET, POST, PUT, DELETE, etc.
-                   headers : {'If-None-Match':Etag}
-                 }).then (function(head){
-                     const newETag = head.headers.get('Etag');
-                  
-                    if ( Etag !== newETag ) {
-                         //console.log("refreshing...",url);
-                         fetch(url).then(resolve).catch(reject);
-                         
-                     } else {
-                         //console.log("unchanged...",url);
-                          resolve(response);
-                     }
-
-                 });
-             } else {
-                 //console.log("adding new url",url);
-                 cache.add(url).then(resolve).catch(reject);
-             }
-         });
+         if (url.startsWith("https://")) {
+             
+             cache.add(url).then(resolve).catch(reject); 
+         } else {
+             cache.match(url).then(function(response) {
+                 if (response) {
+                     const Etag =response.headers.get('Etag')
+                     
+                     fetch(url, {
+                       method: 'HEAD', // *GET, POST, PUT, DELETE, etc.
+                       headers : {'If-None-Match':Etag}
+                     }).then (function(head){
+                         const newETag = head.headers.get('Etag');
+                      
+                        if ( Etag !== newETag ) {
+                             //console.log("refreshing...",url);
+                             fetch(url).then(resolve).catch(reject);
+                             
+                         } else {
+                             //console.log("unchanged...",url);
+                              resolve(response);
+                         }
+    
+                     });
+                 } else {
+                     //console.log("adding new url",url);
+                     cache.add(url).then(resolve).catch(reject);
+                 }
+             });
+         }
     });
 
 }
