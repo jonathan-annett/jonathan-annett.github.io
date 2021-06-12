@@ -152,7 +152,7 @@ function w_load() {
                                    const hashedKeyHex = bufferToHex(hashedKeyasBuffer);
                               
                                      if ( config.site.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
-                                         
+                                         console.log("your beta tester approval code:",hashedKeyHex);
                                          reject();
                                          
                                      } else {
