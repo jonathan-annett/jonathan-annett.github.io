@@ -1,3 +1,16 @@
+
+function bootPage(){
+    
+    let file = location.search ? location.search.substr(1): "manifest.json";
+    
+    showFileDifference (
+        
+        "https://raw.githubusercontent.com/zedapp/zed/master/app",
+        "https://jonathan-annett.github.io/zed/app",
+        file
+        );
+}
+
 function diffURLS(url1, url2) {
     
     return new Promise(promised);
