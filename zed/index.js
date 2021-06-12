@@ -154,10 +154,12 @@ function w_load() {
                               
                                      if ( config.site.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
                                          console.log("your beta tester approval code:",hashedKeyHex);
+                                         document.querySelector("html").classList.remove("beta");
+                                         document.querySelector("html .notbeta").innerHTML="beta:"+hashedKeyHex;
                                          reject();
                                          
                                      } else {
-                                         
+                                         document.querySelector("html").classList.add("beta");
                                          resolve(keyAsHex);
                                          
                                      }

@@ -9,13 +9,35 @@
         <style id="window-theme-css" type="text/css"></style>
         <style id="editor-theme-css" type="text/css"></style>
         <style id="user-css" type="text/css"></style>
+        <style>
+            
+            
+            #PWA_BOOT .notbeta {
+               background-image:"/zed/app/Icon.png";
+               background-color:gray;
+            }
+            
+            .beta,
+            html.beta .notbeta{
+                display : none;
+            }
+            
+            
+            html.beta .beta {
+               display : block;
+            }
+            
+        </style>
     </head>
     <body class="dark custom-scroll non_mac native-chrome">
         <div id="PWA_BOOT">
+          <div class="beta">
           <h1>Zed PWA</h1>
           <p id="progress_message"></p>
           <p id="progress_container"><progress max="100" value="70"> 100% </progress></p>
           <button id="load_new_version" disabled>load new version</button>
+          </div>
+          <div class="notbeta"></div>
         </div>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js" integrity="sha512-GkJRKF+k/yzHfJUg9LrNLQhS0jorQe4kES+GHkqtQThCJ5z5A1KwCXH0GYbJApDh/a3ERFvq9xbRJY9mEXzQiA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
