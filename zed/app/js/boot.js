@@ -6,7 +6,7 @@ require.config({
     paths: {
         "text":   "/zed/app/dep/text",
         "json5":  "/zed/app/dep/json5",
-        "zedb":   "/zed/app/dep/zedb",
+        // "zedb":   "/zed/app/dep/zedb",
         "async":  "/zed/app/config/api/zed/lib/async",
         "events": "/zed/app/js/lib/emitter"
     },

@@ -3,7 +3,7 @@ define(function(require, exports, module) {
     return function(eventbus, background) {
         var win = chrome.app.window.current();
 
-        var userAgent = require("ace/lib/useragent.js");
+        var userAgent = require("ace/lib/useragent");
         var opts      = require("/zed/app/js/lib/options.js");
 
         eventbus.declare("windowclose");
