@@ -14,12 +14,12 @@ define(function(require, exports, module) {
         var background = imports.background;
         var menu = imports.menu;
 
-        var options    = require("/zed/app/js/lib/options");
-        var icons      = require("/zed/app/js/lib/icons");
-        var filterList = require("/zed/app/js/lib/filter_list");
-        var dropbox    = require("/zed/app/js/lib/dropbox");
-        var githubUi   = require("/zed/app/js/open/github");
-        var niceName   = require("/zed/app/js/lib/url_extractor").niceName;
+        var options    = require("/zed/app/js/lib/options.js");
+        var icons      = require("/zed/app/js/lib/icons.js");
+        var filterList = require("/zed/app/js/lib/filter_list.js");
+        var dropbox    = require("/zed/app/js/lib/dropbox.js");
+        var githubUi   = require("/zed/app/js/open/github.js");
+        var niceName   = require("/zed/app/js/lib/url_extractor.js").niceName;
         
         var zedb       = require("zedb");
 

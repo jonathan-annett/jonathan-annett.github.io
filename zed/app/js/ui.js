@@ -6,10 +6,10 @@ define(function(require, exports, module) {
     return plugin;
 
     function plugin(options, imports, register) {
-        var AcePopup = require("/zed/app/js/lib/ace_popup").AcePopup;
+        var AcePopup = require("/zed/app/js/lib/ace_popup.js").AcePopup;
         // var AcePopup = require("ace/autocomplete/popup").AcePopup;
-        var path = require("/zed/app/js/lib/path");
-        var keyCode = require("/zed/app/js/lib/key_code");
+        var path    = require("/zed/app/js/lib/path.js");
+        var keyCode = require("/zed/app/js/lib/key_code.js");
 
         var eventbus = imports.eventbus;
 

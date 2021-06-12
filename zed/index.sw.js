@@ -394,10 +394,10 @@ function matchJS(url) {
 
 
 function sw_fetch( request ) {
-    
+     console.log("fetch intercept[", request.url,"]");
     return new Promise(function(resolve,reject){
         
-        console.log("fetch intercept[", request.url,"]");
+       
         
         //getConfig().then(function(cfg) {
             

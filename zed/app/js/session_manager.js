@@ -10,9 +10,9 @@ define(function(require, exports, module) {
 
     function plugin(options, imports, register) {
         var Range   = require("ace/range").Range;
-        var async   = require("/zed/app/js/lib/async");
-        var locator = require("/zed/app/js/lib/locator");
-        var opts    = require("/zed/app/js/lib/options");
+        var async   = require("/zed/app/js/lib/async.js");
+        var locator = require("/zed/app/js/lib/locator.js");
+        var opts    = require("/zed/app/js/lib/options.js");
 
         var config = imports.config;
         var eventbus = imports.eventbus;
