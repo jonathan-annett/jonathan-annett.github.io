@@ -153,7 +153,7 @@ function w_load() {
                                    const hashedKeyHex = bufferToHex(hashedKeyasBuffer);
                               
                                      if ( config.site.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
-                                         console.log("your beta tester approval code:",keyAsHex);
+                                         console.log("your beta tester approval code:",hashedKeyHex);
                                          reject();
                                          
                                      } else {
@@ -170,10 +170,10 @@ function w_load() {
                         var seed = new Uint32Array(seedSize);
                         window.crypto.getRandomValues(seed);
                         return window.crypto.subtle.digest(hashAlgo,seed).then(function(unhashedKey) {
-                            const unhashedSeedHex = bufferToHex(unhashedKey);
+                            const unhashedKeyHex = bufferToHex(unhashedKey);
                             return window.crypto.subtle.digest(hashAlgo,unhashedKey).then(function(hashedKey) {
                                  console.log("your beta tester approval code:",bufferToHex(hashedKey));
-                                 localStorage[localStorageKey] = unhashedSeedHex;
+                                 localStorage[localStorageKey] = unhashedKeyHex;
                                  reject();
                             });        
                         });
