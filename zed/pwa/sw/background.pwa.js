@@ -1,12 +1,12 @@
 
 /* global self, importScripts, caches ,registration,clients ,Response,localforage */
 
-/* global cachedPromise, cachedResolve, downloadJSON  */
+/* global cachedPromise, cachedResolve, downloadJSON, getConfig  */
 
 
 importScripts("https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js")
 
-importScripts("utils.js")
+importScripts("utils.js","config.js")
 const config_url = "/zed/pwa/files.json";
     
 var 
@@ -20,18 +20,6 @@ addEventListener("message",  sw_message );
 addEventListener("install",  sw_install);
 addEventListener("fetch",    sw_fetch_);  
 addEventListener("activate", sw_activate);
-
-
-function getConfig() {
-    
-    return cachedPromise(getConfig,function (resolve,reject){
-        
-        fetch(config_url)
-          .then(downloadJSON)
-            .then(cachedResolve(resolve,getConfig)).catch(reject);
-      
-    });
-}
 
 function get_X_cluded (base,exclusionsList) {
     
@@ -119,8 +107,6 @@ function getGithubFileList (github_io_base) {
     
 }
 
-
-
 function downloadPWAFiles() {
     
     return new Promise(function(resolveConfig,reject) {
@@ -155,7 +141,6 @@ function downloadPWAFiles() {
     })
        
 }
-
 
 function getPWAFiles() {
     const key = '.PWAFiles';
@@ -334,7 +319,6 @@ function sw_install( e ) {
     );
 }     
 
-
 function matchJSFixes () {
     return matchJSFixes.cache? Promise.resolve(matchJSFixes.cache):
     new Promise(function(resolve,reject){
@@ -343,7 +327,6 @@ function matchJSFixes () {
         }).catch(reject);
     });
 }
-
 
 
 function matchJS(url) {
