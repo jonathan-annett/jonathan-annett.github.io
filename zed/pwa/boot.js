@@ -1,7 +1,8 @@
 
+/* global openNamedMessageChannel */
 function w_load() {
     
-    const sw_path    = "/zed/pwa/sw/background.pwa.js";
+    const sw_path    = "/zed/pwa/sw/background.sw.js";
     const config_url = "/zed/pwa/files.json";
         
     
@@ -18,6 +19,244 @@ function w_load() {
            console.log("site not available");
        }    
     ); 
+    
+    
+    function zed_api () {
+        
+        var On='addEventListener';
+        
+        function on_window_close(w, fn) {
+          if (typeof fn === "function" && w && typeof w === "object") {
+            setTimeout(function() {
+              if (w.closed) return fn();
+    
+              try {
+                w[On]("beforeunload", fn);
+              } catch (err) {
+                // console.log(err);
+                var fallback = function() {
+                  if (w.closed) return fn();
+                  setTimeout(fallback, 500, w, fn);
+                };
+                setTimeout(fallback, 500);
+              }
+            }, 1000);
+          }
+        }
+    
+        function on_window_open(w, fn) {
+          if (typeof fn === "function" && w && typeof w === "object") {
+            try {
+              w[On]("load", fn);
+            } catch (err) {
+              setTimeout(fn, 2000, w);
+            }
+          }
+        }
+        
+        function on_window_move (w,fn) {
+          
+           if (typeof fn === "function" && w && typeof w === "object") {
+            try {
+              
+              var
+              last_top=w.screenY,last_left=w.screenX,
+              check = function(){
+                 if(last_left != w.screenX || last_top != w.screenY){
+                    last_left = w.screenX;
+                    last_top = w.screenY; 
+                    fn(last_left,last_top);
+                   }
+              },
+              interval = setInterval(check,500);
+              w("resize", check);
+              w("focus", check);
+              w("blur", check);
+              w.cancel_on_window_move = function(){
+                 if (interval) clearTimeout(interval);
+                 interval=undefined;
+                 w.removeEventListener("resize", check);
+                 w.removeEventListener("focus", check);
+                 w.removeEventListener("blur", check);
+              };
+              
+            } catch (err) {
+               
+            }
+          }
+        }
+        
+        function on_window_size(w,fn) {
+            if (typeof fn === "function" && w && typeof w === "object") {
+                try {
+                  w[On]("resize", function(){
+                    fn(w.outerWidth,w.outerHeight);
+                  });
+                } catch (err) {
+                  console.log(err);
+                }
+              }  
+        }
+    
+        function open_window(
+          url,
+          name,
+          left,
+          top,
+          width,
+          height,
+          size,
+          onClosed,
+          onOpened
+        ) {
+          
+          var pos=open_window.pos_cache[name];
+          if (pos) {
+             left= pos.left || left;
+             top=  pos.top || top;
+            } else {
+            pos = {
+              left:left,
+              top:top
+              };
+            open_window.pos_cache[name] = pos;
+          } 
+            
+          
+            
+          var opts =
+              "toolbar=no, menubar=no, location=no, resizable=" +
+              (size ? "yes" : "no") +
+              "scrollbars=" +
+              (size ? "yes" : "no") +
+              ", top=" +
+              top.toString() +
+              ",left=" +
+              left.toString() +
+              ", width=" +
+              width.toString() +
+              ", height=" +
+              height.toString(),
+            w = window.open(url, name, opts);
+             
+           if (w) {
+             on_window_open(w,onOpened);
+             on_window_close(w,onClosed);
+           }
+            
+           return w;
+        }
+        
+        open_window.pos_cache = {};
+        
+        var api = {
+           workerMessage :null, 
+           openEditor : openEditor,
+           onMessage : onMessage,
+           attach: attach,
+        };
+       
+       
+       
+       function openEditor(title, url, urlPostfix) {
+           urlPostfix = urlPostfix || "";
+           return new Promise(function(resolve, reject) {
+               
+               var win = open_window(
+                 '/zed?url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title) + urlPostfix, 
+                 name,
+                 0,
+                 0,
+                 1024,
+                 768,
+                 true,
+                 undefined,
+                 function(win) {
+                     win.focus();
+                     resolve(win);
+                 }
+               )
+               
+           });
+       }
+       
+       function getOpenProjects () {
+           return new Promise(function(resolve,reject){
+                 api.workerMessage.send({
+                     type : "ZED",
+                     cmd  : "getOpenProjects"
+                 }); 
+           });
+       }
+       
+      function openProject (title, url) {
+           console.log("Going to open", title, url);
+           if (openProjects[url]) {
+               var win = openProjects[url].win;
+               win.focus();
+               win.contentWindow.zed.services.editor.getActiveEditor().focus();
+           } else {
+               openEditor(title, url);
+           }
+       }
+       
+      function registerWindow (title, url, win) {
+           if(!url) {
+               return;
+           }
+           openProjects[url] = {
+               win: win,
+               title: title,
+               lastFocus: new Date()
+           };
+           win.contentWindow.addEventListener('focus', function() {
+               openProjects[url].lastFocus = new Date();
+           });
+           win.onClosed.addListener(function() {
+               delete openProjects[url];
+               saveOpenWindows();
+           });
+           saveOpenWindows();
+       }
+       
+       
+       
+      
+       
+       
+        
+       function getOpenProjects ( ) {
+           return new Promise(function(resolve,reject){
+               
+               
+               
+           });
+       
+       }
+       
+       
+        
+       function attach(msg) {
+           api.workerMessage=msg;
+           return api;
+       }
+       
+       function onMessage (msg){
+           var fn = api[msg.cmd];
+           if (typeof fn==='function') {
+               const retval = fn.apply(this,Array.isArray(msg.args) ? msg.args : [ msg ]);
+               if (retval && retval.send && api.workerMessage) {
+                   api.workerMessage.send(retval);
+               }
+           }
+       }
+       
+       
+       return api;
+       
+        
+        
+    }
    
     function downloadJSON(response) { return response.json(); }
     
@@ -30,10 +269,6 @@ function w_load() {
           
         });
     }
-    
-    
-    
-    
     
     function showRefreshUI(registration) {
     
@@ -49,7 +284,6 @@ function w_load() {
         };
         load_new_version.addEventListener('click', click);
     }
-    
     
     function installerMsg(cb,msg){
         if (msg.files) {
@@ -70,45 +304,29 @@ function w_load() {
         }
     }
     
-    function messageReceiver(worker,NAME,cb) {
-        
-        if (!worker) return;
-        
-        // app.js - somewhere in our main app
-        const messageChannel = new MessageChannel();
-        
-        // First we initialize the channel by sending
-        // the port to the Service Worker (this also
-        // transfers the ownership of the port)
-        worker.postMessage({
-          type: NAME ,
-        }, [messageChannel.port2]);
-        
-        // Listen to the response
-        messageChannel.port1.onmessage = (event) => {
-          // Print the result
-          cb(event.data.msg);
-        };
-        
-        return {
-            done : function () {
-               
-            }
-        }
-    }
+    
     
     function afterInstall(reg,cb) {
         
-        console.log("installed");
-        messageReceiver(
+        const worker = reg.installing || reg.waiting || reg.active;
+        
+        openNamedMessageChannel('UPDATE',worker)
+            .then(function(chan){
+                chan.onmessage(installerMsg.bind(this,cb))
+            }); 
+        
+       
+        /*
+        var api = zed_api();
+        api.attach(messageReceiver(
             reg.installing || reg.waiting || reg.active ,
-            'UPDATE',
-            installerMsg.bind(this,cb)
-        );
+            'ZED',
+            api.onMessage
+        ));*/
+        
         
     }
     
-
     function onNewServiceWorker(registration, callback) {
       if (registration.waiting) {
         // SW is waiting to activate. Can occur if multiple clients open and
@@ -136,7 +354,6 @@ function w_load() {
       registration.addEventListener('updatefound', listenInstalledStateChange);
       return false;
     }
-    
     
     function betaTesterApproval() {
         
@@ -203,8 +420,8 @@ function w_load() {
         });
     }
     
-    //function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
-    //function bufferToText(x) {return new TextEncoder("utf-8").decode(x);}
+    function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
+    function bufferToText(x) {return new TextEncoder("utf-8").decode(x);}
     
     function bufferToHex(buffer) {
         const padding = '00000000';

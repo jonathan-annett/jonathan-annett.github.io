@@ -9,7 +9,7 @@
  * communication. The APIs interfaces are defined in sandbox/interface/zed/*
  * and the Zed side is implemented in sandbox/impl/zed/*.
  */
-/*global define, $, _ */
+/*global define, $, _, zed */
 define(function(require, exports, module) {
     return function() {
         var async  = require("/zed/app/js/lib/async.js");
