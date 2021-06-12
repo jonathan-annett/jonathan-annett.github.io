@@ -263,7 +263,7 @@ function htmlDiffer() {
             end_in_before,
             start_in_after,
             end_in_after);
-            if (match !== null) {
+            if (!!match) {
                 if (
                 start_in_before < match.start_in_before && start_in_after < match.start_in_after) {
                     recursively_find_matching_blocks(
@@ -294,10 +294,10 @@ function htmlDiffer() {
         };
         create_index = function(p) {
             var i, idx, index, len, ref, token;
-            if (p.find_these === null) {
+            if (!p.find_these) {
                 throw new Error("params must have find_these key");
             }
-            if (p.in_these === null) {
+            if (!p.in_these) {
                 throw new Error("params must have in_these key");
             }
             index = {};
