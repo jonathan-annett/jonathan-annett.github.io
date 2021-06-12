@@ -1,4 +1,8 @@
 
+
+document.addEventListener('DOMContentLoaded',bootPage);
+
+
 function bootPage(){
     
     let file = location.search ? location.search.substr(1): "manifest.json";
