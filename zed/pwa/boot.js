@@ -1,8 +1,9 @@
 
 function w_load() {
     
-    const sw_path = '/zed/pwa/sw/background.pwa.js';
-    
+    const sw_path    = "/zed/pwa/sw/background.pwa.js";
+    const config_url = "/zed/pwa/files.json";
+        
     
     var 
     
@@ -21,7 +22,6 @@ function w_load() {
     function downloadJSON(response) { return response.json(); }
     
     function getConfig() {
-        const config_url = "/zed/index.sw.json";
         return new Promise(function (resolve,reject){
             
             fetch(config_url)

@@ -1,26 +1,29 @@
 
 /* global self, importScripts, caches ,registration,clients ,Response,localforage */
 
+/* global cachedPromise, cachedResolve, downloadJSON  */
+
+
 importScripts("https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js")
 
 importScripts("utils.js")
-
+const config_url = "/zed/pwa/files.json";
+    
 var 
 
 
 version     = 1.1,
 
-cacheName   = 'zed-pwa-'+version;
+cacheName   = "zed-pwa-"+version;
 
-addEventListener('message',  sw_message );
-addEventListener('install',  sw_install);
-addEventListener('fetch',    sw_fetch_);  
-addEventListener('activate', sw_activate);
+addEventListener("message",  sw_message );
+addEventListener("install",  sw_install);
+addEventListener("fetch",    sw_fetch_);  
+addEventListener("activate", sw_activate);
 
 
 function getConfig() {
     
-    const config_url = "/zed/index.sw.json";
     return cachedPromise(getConfig,function (resolve,reject){
         
         fetch(config_url)
