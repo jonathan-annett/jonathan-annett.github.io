@@ -12,17 +12,32 @@
         <style>
             
             
+            #PWA_BOOT,
+            #PWA_BOOT .beta
             #PWA_BOOT .notbeta {
-               background-image:"/zed/app/Icon.png";
+               position: absolute;
+               left : 0;
+               top : 0;
+               right:0;
+               bottom:0;
+            }
+            
+            #PWA_BOOT .notbeta {
+               background-image: url('/zed/app/img/Icon.png');;
                background-color:gray;
+               color : white;
+               font-size:22pt;
+               font-family:Monaco;
+               background-repeat: no-repeat;
+               background-attachment: fixed;
+               background-position: center;
             }
             
             .beta,
             html.beta .notbeta{
                 display : none;
             }
-            
-            
+
             html.beta .beta {
                display : block;
             }
@@ -37,7 +52,16 @@
           <p id="progress_container"><progress max="100" value="70"> 100% </progress></p>
           <button id="load_new_version" disabled>load new version</button>
           </div>
-          <div class="notbeta"></div>
+          <div class="notbeta">
+              <p>
+                  This site is in beta.
+                  Contact <a href="https://github.com/jonathan-annett/jonathan-annett.github.io/issues">jonathan-annett</a> and quote this code:
+              </p>
+              <p>
+                  <span>code:</span><pre id="key"></pre>
+              </p>
+              
+          </div>
         </div>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js" integrity="sha512-GkJRKF+k/yzHfJUg9LrNLQhS0jorQe4kES+GHkqtQThCJ5z5A1KwCXH0GYbJApDh/a3ERFvq9xbRJY9mEXzQiA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
