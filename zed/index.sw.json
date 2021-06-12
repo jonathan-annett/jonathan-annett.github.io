@@ -8,6 +8,7 @@
              "/",
              "/zed/index.html",
              "/zed/index.js",
+             "/zed/index.json",
              "https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js"
           ],
           "betaTesterKeys" : ["90cd40a82b12ded776a8cd5bb6010afc90fc13bb6ee63b6d6215a0551a725341"]
