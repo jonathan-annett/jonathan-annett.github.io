@@ -287,7 +287,7 @@ function w_load() {
               html.classList.remove("beta");
               html.classList.remove("notbeta");
               window.boot_zed();
-          };
+          }
            
         });
         
