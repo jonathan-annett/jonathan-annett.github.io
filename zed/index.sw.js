@@ -367,7 +367,7 @@ function matchJS(url) {
                     return resolve (default_response);
                 }
                 
-                if ( /(\.|\/)(jpe?g|png|webp|pdf|svg|gif|ico|js|html|md|css)$/.test( url ) ) {
+                if ( /(\.|\/)(jpe?g|png|webp|pdf|svg|gif|ico|js|json|html|md|css)$/.test( url ) ) {
                     return resolve( false ) ;
                 }
                 const url_js = url+".js";
