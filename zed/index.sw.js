@@ -375,6 +375,7 @@ function matchJS(url) {
                     if (response) {
                         fixes[url]=url_js;
                         localforage.setItem('matchJSFixes', (matchJSFixes.cache=fixes)).then(function(){
+                             console.log("mapped",url,"-->",url_js,"for future requests");
                              return resolve (response);
                         });
                     }
