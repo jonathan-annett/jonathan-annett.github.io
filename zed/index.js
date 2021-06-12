@@ -8,7 +8,8 @@ function w_load() {
     
     qs=document.querySelector.bind(document),
     installerProgress,
-    progress_message=qs("#progress_message");
+    
+    [progress_message, html,keyPRE]   = ["#progress_message", "html","html .notbeta pre.key"].map(qs);
     
         
     betaTesterApproval().then(beta_site).catch(
@@ -139,7 +140,7 @@ function w_load() {
         if (!window.crypto) {
            return Promise.reject();
         }
-        const [html,keyPRE]   = ["html","html .notbeta pre.key"].map(qs);
+        
         
         return new Promise(function(resolve,reject) {
             const hashAlgo = "SHA-256";
@@ -256,6 +257,8 @@ function w_load() {
             // The window client isn't currently controlled so it's a new service
             // worker that will activate immediately
             afterInstall(registration,function(){
+                html.classList.remove("beta");
+                html.classList.remove("notbeta");
                 window.boot_zed();
                 
             });
