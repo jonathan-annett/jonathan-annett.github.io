@@ -3,7 +3,6 @@
     "site" : {
      
          "root" : "https://jonathan-annett.github.io/zed/",
-         "installed_root" : "https://jonathan-annett.github.io/zed/app/editor.html",
          
          "files" : [
              "/",

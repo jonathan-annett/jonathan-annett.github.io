@@ -392,65 +392,44 @@ function sw_fetch( request ) {
         
         console.log("fetch intercept[", request.url,"]");
         
-        getConfig().then(function(cfg) {
+        //getConfig().then(function(cfg) {
             
-            if (cfg.site.installed_root && cfg.site.site_root === request.url ) {
+             
+      
+            
+            matchJS(request.url).then(function(response) {
                 
-                console.log("site root detected");
-               
+                if (response) {
+                    
+                    console.log(">>>>[",request.url,response.headers.get('content-length')," bytes]<<<< from cache");
+                    return resolve(response);
                 
-                caches.match(cfg.site.installed_root).then(function(response) {
                     
-                    if (response) {
-                        console.log(">>>>[",cfg.site.installed_root,response.headers.get('content-length')," bytes]<<<< from cache");
-                        return resolve(response);
-                    }
+                }
+                
+                console.log(">>>>[",request.url,"]<<<< downloading");
+                return fetch(request).then(function(response){
                     
+                    console.log(">>>>[",request.url,response.headers.get('content-length')," bytes]<<<< from network");
+                    return resolve(response);
                     
+                }).catch(function(err){
+                       //Error stuff
+                    console.log("failed downloading", request.url,err);
+                    reject();
                     
                 })
-                        
-              
-         
+            }).catch(function(err) {
+                //Error stuff
+                console.log("failed matching",request.url,err);
+                reject();
                 
-            } else {
-                
-              
-                    
-                    matchJS(request.url).then(function(response) {
-                        
-                        if (response) {
-                            
-                            console.log(">>>>[",request.url,response.headers.get('content-length')," bytes]<<<< from cache");
-                            return resolve(response);
-                        
-                            
-                        }
-                        
-                        console.log(">>>>[",request.url,"]<<<< downloading");
-                        return fetch(request).then(function(response){
-                            
-                            console.log(">>>>[",request.url,response.headers.get('content-length')," bytes]<<<< from network");
-                            return resolve(response);
-                            
-                        }).catch(function(err){
-                               //Error stuff
-                            console.log("failed downloading", request.url,err);
-                            reject();
-                            
-                        })
-                    }).catch(function(err) {
-                        //Error stuff
-                        console.log("failed matching",request.url,err);
-                        reject();
-                        
-                    })
-                    
-              
-                
-            }
+            })
             
-        }).catch(reject);
+      
+                
+           
+       // }).catch(reject);
     
     });
          
