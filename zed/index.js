@@ -157,11 +157,9 @@ function w_load() {
                                          document.querySelector("html").classList.remove("beta");
                                          document.querySelector("html .notbeta .key").innerHTML=hashedKeyHex;
                                          reject();
-                                         
                                      } else {
                                          document.querySelector("html").classList.add("beta");
                                          resolve(keyAsHex);
-                                         
                                      }
                                      
                                 }
@@ -174,8 +172,9 @@ function w_load() {
                         return window.crypto.subtle.digest(hashAlgo,seed).then(function(unhashedKey) {
                             const unhashedKeyHex = bufferToHex(unhashedKey);
                             return window.crypto.subtle.digest(hashAlgo,unhashedKey).then(function(hashedKey) {
-                                 console.log("your beta tester approval code:",bufferToHex(hashedKey));
                                  localStorage[localStorageKey] = unhashedKeyHex;
+                                 document.querySelector("html").classList.remove("beta");
+                                 document.querySelector("html .notbeta .key").innerHTML=bufferToHex(hashedKey);
                                  reject();
                             });        
                         });
