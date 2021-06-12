@@ -10,7 +10,8 @@
              "/zed/index.html",
              "/zed/index.js",
              "//cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js"
-          ]
+          ],
+          "betaTesterKeys" : []
           
     },
 

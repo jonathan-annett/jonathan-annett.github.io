@@ -5,7 +5,6 @@ importScripts("https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localfor
 
 var 
 
-file_list_url = "/zed/index.sw.json",
 
 version     = 1.1,
 
@@ -18,6 +17,19 @@ addEventListener('activate', sw_activate);
 
 
 function downloadJSON(response) { return response.json(); }
+
+function getConfig() {
+    const config_url = "/zed/index.sw.json";
+    return new Promise(function (resolve,reject){
+        
+        fetch(config_url)
+          .then(downloadJSON)
+            .then(resolve).catch(reject);
+      
+    });
+}
+
+
 
 function get_X_cluded (base,exclusionsList) {
     
@@ -106,48 +118,12 @@ function getGithubFileList (github_io_base) {
 }
 
 
-function getConfig(config_url) {
-  const key = '.config';
-  
-  return getConfig.cache ?  Promise.resolve(getConfig.cache) :
-  
-          new Promise(function (resolve,reject){
-      
-      localforage.getItem(key).then(function (cfg) {
-          
-          if (cfg) {
-              console.log("fetched config from localForage");
-              getConfig.cache=cfg;
-              return resolve(cfg);
-          }
-              
-            fetch(config_url)
-              .then(downloadJSON)
-                .then(function(cfg){
-                    
-                    localforage.setItem(key, cfg).then(function () {
-                        console.log("saved config in localForage");
-                        getConfig.cache=cfg;
-                        return resolve(cfg);
-                    });
-                    
-                }).catch(reject);
-          
-      });
-      
-  });
-}
 
-function downloadPWAFiles(config_url) {
+function downloadPWAFiles() {
     
     return new Promise(function(resolveConfig,reject) {
         
-        
-         
-            console.log("fetching...:",config_url);
-            
-            
-            getConfig(config_url)
+            getConfig()
                .then(function(config) { 
                    
                    console.log("fetched...:",config);
@@ -179,7 +155,7 @@ function downloadPWAFiles(config_url) {
 }
 
 
-function getPWAFiles(config_url) {
+function getPWAFiles() {
     const key = '.PWAFiles';
     return getPWAFiles.cache ? Promise.resolve(getPWAFiles) :
     new Promise(function (resolve,reject) {
@@ -190,7 +166,7 @@ function getPWAFiles(config_url) {
                 return resolve(files);
             } else {
                 
-                return downloadPWAFiles(config_url).then(function(files){
+                return downloadPWAFiles().then(function(files){
                     localforage.setItem(key, files).then(function () {
                         console.log("downloaded, saved files in localForage");
                         getPWAFiles.cache=files;
@@ -200,7 +176,7 @@ function getPWAFiles(config_url) {
                 }).catch(reject);
             }
         }).catch(function () {
-             return downloadPWAFiles(config_url).then(function(files){
+             return downloadPWAFiles().then(function(files){
                  localforage.setItem(key, files).then(function () {
                      console.log("downloaded, saved files in localForage");
                      getPWAFiles.cache=files;
@@ -310,7 +286,7 @@ function sw_message( e ) {
     }
  
     if (e.data.type === 'UPDATE') {
-        getPWAFiles( file_list_url ).then( function(filesToCache){
+        getPWAFiles().then( function(filesToCache){
            const progressUpdate = messageSender('UPDATE',e.ports[0]);
           const urls = filesToCache.site.concat(filesToCache.github);
            progressUpdate.send({files : urls});
@@ -330,7 +306,7 @@ function sw_install( e ) {
     
     e.waitUntil(
         
-        getPWAFiles( file_list_url ).then( function(filesToCache){
+        getPWAFiles(  ).then( function(filesToCache){
             
               return caches.open(cacheName).then(function(cache) {
                   
@@ -397,7 +373,7 @@ function sw_fetch( e ) {
     console.log("fetch intercept[",e.request.url,"]");
     
     
-    getConfig(file_list_url).then(function(cfg) {
+    getConfig().then(function(cfg) {
         
         if (cfg.site.installed_root && cfg.site.site_root === e.request.url ) {
             console.log("root detect");
