@@ -113,7 +113,8 @@ function w_load() {
       if (registration.waiting) {
         // SW is waiting to activate. Can occur if multiple clients open and
         // one of the clients is refreshed.
-        return callback();
+        callback();
+        return true;
       }
     
       function listenInstalledStateChange() {
@@ -126,12 +127,14 @@ function w_load() {
       }
     
       if (registration.installing) {
-        return listenInstalledStateChange();
+        listenInstalledStateChange();
+        return true;
       }
     
       // We are currently controlled so a new SW may be found...
       // Add a listener in case a new SW is found,
       registration.addEventListener('updatefound', listenInstalledStateChange);
+      return false;
     }
     
     
@@ -270,7 +273,7 @@ function w_load() {
           
           registration.update();
       
-          onNewServiceWorker(registration, function() {
+          if (onNewServiceWorker(registration, function() {
               
             afterInstall(registration,function(){
                 
@@ -280,7 +283,11 @@ function w_load() {
             });
             
             
-          });
+          })===false) {
+              html.classList.remove("beta");
+              html.classList.remove("notbeta");
+              window.boot_zed();
+          };
            
         });
         
