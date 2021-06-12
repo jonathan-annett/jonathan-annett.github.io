@@ -250,12 +250,9 @@ function messageSender(NAME,port) {
 function refreshCache(cache,url) {
     
     return new Promise(function(resolve,reject) {
-         if (url.startsWith("https://")) {
-             
-             cache.add(url).then(resolve).catch(reject); 
-         } else {
+        
              cache.match(url).then(function(response) {
-                 if (response) {
+                 if (response && response.type !== 'cors' ) {
                      const Etag =response.headers.get('Etag')
                      
                      fetch(url, {
@@ -279,7 +276,7 @@ function refreshCache(cache,url) {
                      cache.add(url).then(resolve).catch(reject);
                  }
              });
-         }
+         
     });
 
 }
