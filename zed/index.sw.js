@@ -17,14 +17,28 @@ addEventListener('activate', sw_activate);
 
 
 function downloadJSON(response) { return response.json(); }
+function cachedResolve(resolve,fn,x) {
+    const res = function (x) {  return resolve((fn.cached=x));};
+    if (x) {
+       return res(x); 
+    } else {
+       return res;
+    }
+}
+
+function cachedPromise(cacher,promiser){
+    return cacher.cache ? Promise.resolve(cacher.cache) : new Promise(promiser);
+}
+
 
 function getConfig() {
+    
     const config_url = "/zed/index.sw.json";
-    return new Promise(function (resolve,reject){
+    return cachedPromise(getConfig,function (resolve,reject){
         
         fetch(config_url)
           .then(downloadJSON)
-            .then(resolve).catch(reject);
+            .then(cachedResolve(resolve,getConfig)).catch(reject);
       
     });
 }
@@ -123,68 +137,73 @@ function downloadPWAFiles() {
     
     return new Promise(function(resolveConfig,reject) {
         
-            getConfig()
-               .then(function(config) { 
-                   
-                   console.log("fetched...:",config);
-                   
-                   var github_io_base = config.site.root;
-                   
-                   console.log("github_io_base:",github_io_base);
-                   
-                   Promise.all( config.github.map( getGithubFileList(github_io_base) ))
-                   
-                      .then (function(arrayOfFileLists){  
-                          
-                              console.log("resolved:",arrayOfFileLists) ;
-                              resolveConfig(
-                                   { 
-                                       site   : config.site.files,
-                                       github : [].concat.apply([],arrayOfFileLists)
-                                   }
-                              );
-                              
-                          })
-                          
+        getConfig()
+           .then(function(config) { 
+               
+               console.log("fetched...:",config);
+               
+               var github_io_base = config.site.root;
+               
+               console.log("github_io_base:",github_io_base);
+               
+               Promise.all( config.github.map( getGithubFileList(github_io_base) ))
+               
+                  .then (function(arrayOfFileLists){  
+                      
+                          console.log("resolved:",arrayOfFileLists) ;
+                          resolveConfig(
+                               { 
+                                   site   : config.site.files,
+                                   github : [].concat.apply([],arrayOfFileLists)
+                               }
+                          );
                           
                       })
-                  .catch(reject);
                       
-       })
+                      
+                  })
+              .catch(reject);
+                  
+    })
        
 }
 
 
 function getPWAFiles() {
     const key = '.PWAFiles';
-    return getPWAFiles.cache ? Promise.resolve(getPWAFiles) :
-    new Promise(function (resolve,reject) {
+    
+    return cachedPromise(getPWAFiles,function (resolve,reject){
         localforage.getItem(key).then(function (files) {
+            
             if (files) {
+                
                 console.log("fetched files from localForage");
-                getPWAFiles.cache=files;
-                return resolve(files);
+                return cachedResolve(resolve,getPWAFiles,files);
+                
             } else {
                 
                 return downloadPWAFiles().then(function(files){
                     localforage.setItem(key, files).then(function () {
                         console.log("downloaded, saved files in localForage");
-                        getPWAFiles.cache=files;
-                        return resolve(files);
+                        return cachedResolve(resolve,getPWAFiles,files);
                     });
 
                 }).catch(reject);
+                
             }
+            
         }).catch(function () {
+            
              return downloadPWAFiles().then(function(files){
                  localforage.setItem(key, files).then(function () {
                      console.log("downloaded, saved files in localForage");
-                     getPWAFiles.cache=files;
-                    return resolve(files);
+                     return cachedResolve(resolve,getPWAFiles,files);
                  });
 
              }).catch(reject);
+             
         })
+        
         
     });
     
@@ -367,63 +386,75 @@ function matchJS(url) {
 }
 
 
-function sw_fetch( e ) {
+function sw_fetch( request ) {
     
-         
-    console.log("fetch intercept[",e.request.url,"]");
-    
-    
-    getConfig().then(function(cfg) {
+    return new Promise(function(resolve,reject){
         
-        if (cfg.site.installed_root && cfg.site.site_root === e.request.url ) {
-            console.log("root detect");
-            e.respondWith(
+        console.log("fetch intercept[", request.url,"]");
+        
+        getConfig().then(function(cfg) {
             
-                    caches.match(cfg.site.installed_root).then(function(response) {
-                        if (response) {
-                            console.log(">>>>[",cfg.site.installed_root,response.headers.get('content-length')," bytes]<<<< from cache");
-                            return response;
-                        }
-                        
-                    })
-                    
-            );
-     
-            
-        } else {
-            
-            e.respondWith(
+            if (cfg.site.installed_root && cfg.site.site_root === request.url ) {
                 
-                matchJS(e.request.url).then(function(response) {
+                console.log("site root detected");
+               
+                
+                caches.match(cfg.site.installed_root).then(function(response) {
                     
                     if (response) {
-                        
-                        console.log(">>>>[",e.request.url,response.headers.get('content-length')," bytes]<<<< from cache");
-                        return response;
-                    
-                        
+                        console.log(">>>>[",cfg.site.installed_root,response.headers.get('content-length')," bytes]<<<< from cache");
+                        return resolve(response);
                     }
                     
-                    console.log(">>>>[",e.request.url,"]<<<< downloading");
-                    return fetch(e.request).then(function(response){
-                        console.log(">>>>[",e.request.url,response.headers.get('content-length')," bytes]<<<< from network");
-                        return response;
-                    }).catch(function(err){
-                           //Error stuff
-                        console.log("failed fetching",e.request.url,err);
+                    
+                    
+                })
+                        
+              
+         
+                
+            } else {
+                
+              
+                    
+                    matchJS(request.url).then(function(response) {
+                        
+                        if (response) {
+                            
+                            console.log(">>>>[",request.url,response.headers.get('content-length')," bytes]<<<< from cache");
+                            return resolve(response);
+                        
+                            
+                        }
+                        
+                        console.log(">>>>[",request.url,"]<<<< downloading");
+                        return fetch(request).then(function(response){
+                            
+                            console.log(">>>>[",request.url,response.headers.get('content-length')," bytes]<<<< from network");
+                            return resolve(response);
+                            
+                        }).catch(function(err){
+                               //Error stuff
+                            console.log("failed downloading", request.url,err);
+                            reject();
+                            
+                        })
+                    }).catch(function(err) {
+                        //Error stuff
+                        console.log("failed matching",request.url,err);
+                        reject();
                         
                     })
-                }).catch(function(err) {
-                    //Error stuff
-                    console.log("failed matching",e.request.url,err);
-                })
+                    
+              
                 
-            );
+            }
             
-        }
-        
+        }).catch(reject);
+    
     });
-
+         
+  
     
 }
 
@@ -447,16 +478,14 @@ function sw_fetch_( e ) {
                      }));
                      
                  } else {
-                    sw_fetch (e)  ;
+                    e.respondWith(sw_fetch(e.request));
                  }
               }
           );
       
       }           
       
-      
-      sw_fetch (e)  ;
-
+      e.respondWith(sw_fetch(e.request));
   }
 
     
