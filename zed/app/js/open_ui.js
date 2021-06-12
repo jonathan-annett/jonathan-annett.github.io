@@ -53,7 +53,7 @@ define(function(require, exports, module) {
                 section: "Zed"
             }, {
                 name: "Configuration",
-                html: "Configuration <img class='tool' data-info='set-config-dir' src='/img/edit.png'>",
+                html: "Configuration <img class='tool' data-info='set-config-dir' src='/zed/app/img/edit.png'>",
                 url: "config:",
                 key: "C"
             }, {
@@ -86,7 +86,7 @@ define(function(require, exports, module) {
             },
             showOpenUi: function() {
                 menu.disabled = true;
-                viewEl = $("<div class='modal-view'><img src='/img/zed-small.png' class='logo'><h1><span class='title'></span><span class='version'>v" + version + "</span></h1><input type='text' id='phrase' placeholder='Filter list'><div id='item-list'></div></div>");
+                viewEl = $("<div class='modal-view'><img src='/zed/app/img/zed-small.png' class='logo'><h1><span class='title'></span><span class='version'>v" + version + "</span></h1><input type='text' id='phrase' placeholder='Filter list'><div id='item-list'></div></div>");
                 $("body").append(viewEl);
                 headerEl = viewEl.find("h1 > span.title");
                 phraseEl = viewEl.find("#phrase");

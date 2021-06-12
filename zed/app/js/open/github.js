@@ -57,7 +57,7 @@ define(function(require, exports, module) {
                 var repos = userRepos.map(function(repo) {
                     return {
                         name: repo.full_name,
-                        html: "<img src='/img/github.png'>" + repo.full_name
+                        html: "<img src='/zed/app/img/github.png'>" + repo.full_name
                     };
                 });
                 return new Promise(function(resolve, reject) {
@@ -103,7 +103,7 @@ define(function(require, exports, module) {
                 var branches = repoBranches.map(function(branch) {
                     return {
                         name: branch.name,
-                        html: "<img src='../img/branch.png'>" + branch.name
+                        html: "<img src='/zed/app/img/branch.png'>" + branch.name
                     };
                 });
                 phraseEl.val("");

@@ -13,7 +13,8 @@ define(function(require, exports, module) {
 
         eventbus.declare("dbavailable");
 
-        var dbName = opts.get("url").replace(/[^\w]+/g, "_");
+        var urlOpt = opts.get("url");
+        var dbName = urlOpt ? urlOpt.replace(/[^\w]+/g, "_") : "";
         var db;
 
         var api = {
