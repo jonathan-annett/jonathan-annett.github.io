@@ -136,11 +136,12 @@ function w_load() {
         return new Promise(function(resolve,reject) {
             const hashAlgo = "SHA-256";
             const seedSize = 512;
+            const localStorageKey = "betaTesterKey";
             
              getConfig().then(function(config){
                 
                 if (config && config.site && config.site.betaTesterKeys) {
-                    const keyAsHex = localStorage.betaTesterKey;
+                    const keyAsHex = localStorage[localStorageKey];
                     if (keyAsHex) {
                         const keyAsBuffer = bufferFromHex(keyAsHex);
                         
@@ -172,7 +173,7 @@ function w_load() {
                             const unhashedSeedHex = bufferToHex(unhashedKey);
                             return window.crypto.subtle.digest(hashAlgo,unhashedKey).then(function(hashedKey) {
                                  console.log("your beta tester approval code:",bufferToHex(hashedKey));
-                                 localStorage.betaTester = unhashedSeedHex;
+                                 localStorage[localStorageKey] = unhashedSeedHex;
                                  reject();
                             });        
                         });
