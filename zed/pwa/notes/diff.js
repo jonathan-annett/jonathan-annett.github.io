@@ -36,7 +36,7 @@ function compareFile(file) {
        fetch(urlbase2+file)
        .then(function(response) { return response.text();})
        .then(function (text2){
-           var diffHtml = global.Diff2Html.html( diff(text1,text2) , {
+           var diffHtml =  Diff2Html.html( diff(text1,text2) , {
                // options here
            });
            document.getElementById('outputdiv').innerHTML = diffHtml;
