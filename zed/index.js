@@ -139,7 +139,7 @@ function w_load() {
             
              getConfig().then(function(config){
                 
-                if (config && config.betaTesterKeys) {
+                if (config && config.site && config.site.betaTesterKeys) {
                     const keyAsHex = localStorage.betaTesterKey;
                     if (keyAsHex) {
                         const keyAsBuffer = bufferFromHex(keyAsHex);
@@ -151,7 +151,7 @@ function w_load() {
                                     
                                    const hashedKeyHex = bufferToHex(hashedKeyasBuffer);
                               
-                                     if ( config.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
+                                     if ( config.site.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
                                          
                                          reject();
                                          
