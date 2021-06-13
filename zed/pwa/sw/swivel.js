@@ -1,10 +1,10 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.swivel = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.swivel = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof no_require=="function"&&no_require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof no_require=="function"&&no_require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(no_require,module,exports){
 module.exports = function atoa (a, n) { return Array.prototype.slice.call(a, n); }
 
-},{}],2:[function(require,module,exports){
+},{}],2:[function(no_require,module,exports){
 'use strict';
 
-var ticky = require('ticky');
+var ticky = no_require('ticky');
 
 module.exports = function debounce (fn, args, ctx) {
   if (!fn) { return; }
@@ -13,11 +13,11 @@ module.exports = function debounce (fn, args, ctx) {
   });
 };
 
-},{"ticky":4}],3:[function(require,module,exports){
+},{"ticky":4}],3:[function(no_require,module,exports){
 'use strict';
 
-var atoa = require('atoa');
-var debounce = require('./debounce');
+var atoa = no_require('atoa');
+var debounce = no_require('./debounce');
 
 module.exports = function emitter (thing, options) {
   var opts = options || {};
@@ -69,7 +69,7 @@ module.exports = function emitter (thing, options) {
   return thing;
 };
 
-},{"./debounce":2,"atoa":1}],4:[function(require,module,exports){
+},{"./debounce":2,"atoa":1}],4:[function(no_require,module,exports){
 var si = typeof setImmediate === 'function', tick;
 if (si) {
   tick = function (fn) { setImmediate(fn); };
@@ -78,12 +78,12 @@ if (si) {
 }
 
 module.exports = tick;
-},{}],5:[function(require,module,exports){
+},{}],5:[function(no_require,module,exports){
 'use strict';
 
-var atoa = require('atoa');
-var serialization = require('./serialization');
-var emitter = require('contra/emitter');
+var atoa = no_require('atoa');
+var serialization = no_require('./serialization');
+var emitter = no_require('contra/emitter');
 
 module.exports = createChannel;
 
@@ -134,7 +134,7 @@ function createChannel () {
   }
 }
 
-},{"./serialization":6,"atoa":1,"contra/emitter":3}],6:[function(require,module,exports){
+},{"./serialization":6,"atoa":1,"contra/emitter":3}],6:[function(no_require,module,exports){
 'use strict';
 
 function serializeError (err) {
@@ -170,11 +170,11 @@ module.exports = {
   emission: emission
 };
 
-},{}],7:[function(require,module,exports){
+},{}],7:[function(no_require,module,exports){
 'use strict';
 
-var page = require('./page');
-var worker = require('./worker');
+var page = no_require('./page');
+var worker = no_require('./worker');
 var api;
 
 if ('serviceWorker' in navigator) {
@@ -197,12 +197,12 @@ function complain () {
 
 module.exports = api;
 
-},{"./page":5,"./worker":8}],8:[function(require,module,exports){
+},{"./page":5,"./worker":8}],8:[function(no_require,module,exports){
 'use strict';
 
-var atoa = require('atoa');
-var serialization = require('./serialization');
-var emitter = require('contra/emitter');
+var atoa = no_require('atoa');
+var serialization = no_require('./serialization');
+var emitter = no_require('contra/emitter');
 
 module.exports = createChannel;
 
