@@ -36,7 +36,12 @@ if (isSw) {
     addEventListener("message", serviceWorkerMaster); 
 }
 
-
+function setTimeoutDebug(timeout,interval,name) {
+    return setTimeout(function(err){
+        console.log(err);
+        timeout();
+    },interval,new Error("firing named timeout:"+name));
+}
 
 function publishNamedFunction (name,fn,worker) {
     
@@ -63,14 +68,14 @@ function publishNamedFunction (name,fn,worker) {
             
             delete requestedFunctions[name];
             publishedFunctions[name]=def;
-            def.onexported_timeout = setTimeout(reject,5000);
+            def.onexported_timeout = setTimeoutDebug(reject,5000,"onexported_timeout");
             
         } else {
             publishedFunctions[name] = def = {
                 port               : messageChannel.port1,
                 fn                 : fn,
                 onexported         : resolve,
-                onexported_timeout : setTimeout(reject,5000)
+                onexported_timeout : setTimeoutDebug(reject,5000,"onexported_timeout")
             };
         }
         
@@ -95,7 +100,7 @@ function publishNamedFunction (name,fn,worker) {
             publishedFunctions[name] = {
                 fn                 : fn,
                 onexported         : resolve,
-                onexported_timeout : setTimeout(reject,5000)
+                onexported_timeout : setTimeoutDebug(reject,5000,"onexported_timeout")
             };
         }
         
@@ -114,7 +119,7 @@ function importPublishedFunction (name,worker) {
         const def = {
            port               : messageChannel.port1,
            onimported         : resolve,
-           onimported_timeout : setTimeout(reject,5000)
+           onimported_timeout : setTimeoutDebug(reject,5000,"onimported_timeout")
         };
         
         def.port.onmessage = onIncomingMessage(def);
@@ -138,7 +143,7 @@ function importPublishedFunction (name,worker) {
         } else {
             neededFunctions[name] = def = {
                 onimport           : function (def){return resolve(remoteHandler (def));},
-                onimported_timeout : setTimeout(reject,5000)
+                onimported_timeout : setTimeoutDebug(reject,5000,"onimported_timeout")
             };
         }
         
@@ -192,8 +197,11 @@ function onIncomingMessage(def){
             if (fn_name &&  def[notify] ) {
                  
                 if (def[notify_timeout]) {
+                    console.log("clearing Timeout:",notify_timeout);
                    clearTimeout(def[notify_timeout]);
                    delete def[notify_timeout];
+                } else {
+                    console.log("!!! Timeout not set:",notify_timeout);
                 }
                 
                 if (verb==="import" && publishedFunctions[ fn_name ] === def) {
