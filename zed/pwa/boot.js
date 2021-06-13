@@ -19,24 +19,24 @@ localforage.ready(function() {
       console.log('Observable destroyed!');
     }
   });
-  localforage.setItem('test1', 'value1').then(function() {
+  localforage.setItem('xtest1', 'xvalue1').then(function() {
     console.log('setItem(\'xtest1\', \'value1\')');
-    return localforage.setItem('test2', 'value2');
+    return localforage.setItem('xtest2', 'value2');
   }).then(function() {
     console.log('setItem(\'xtest2\', \'value2\')');
-    return localforage.setItem('test2', 'value2b');
+    return localforage.setItem('xtest2', 'value2b');
   }).then(function() {
     console.log('setItem(\'xtest2\', \'value2b\')');
-    return localforage.setItem('test2', 'value2b');
+    return localforage.setItem('xtest2', 'value2b');
   }).then(function() {
     console.log('setItem(\'xtest2\', \'value2b\')');
-    return localforage.setItem('test3', 'value3');
+    return localforage.setItem('xtest3', 'value3');
   }).then(function() {
     console.log('setItem(\'xtest3\', \'value3\')');
     subscription.unsubscribe();
     return localforage.setItem('xnotObservedKey', 'notObservedValue');
   }).then(function() {
-    console.log('setItem(\'notObservedKey\', \'notObservedValue\')');
+    console.log('setItem(\'xnotObservedKey\', \'notObservedValue\')');
     return localforage.clear();
   });
 });
