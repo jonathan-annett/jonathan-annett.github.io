@@ -62,21 +62,26 @@ function publishNamedFunction (name,fn,worker) {
             def.port       = messageChannel.port1;
             def.fn         = fn;
             def.onexported = resolve;
+            def.worker     = worker;
+                
             if (def.onexported_timeout) {
                 clearTimeout(def.onexported_timeout);
             }
             
             delete requestedFunctions[name];
-            publishedFunctions[name]=def;
-            def.onexported_timeout = setTimeoutDebug(reject,5000,"onexported_timeout");
+            publishedFunctions[name] = def;
+            def.onexported_timeout   = setTimeoutDebug(reject,5000,"onexported_timeout");
             
         } else {
+            
             publishedFunctions[name] = def = {
+                worker             : worker,
                 port               : messageChannel.port1,
                 fn                 : fn,
                 onexported         : resolve,
                 onexported_timeout : setTimeoutDebug(reject,5000,"onexported_timeout")
             };
+            
         }
         
         def.port.onmessage = onIncomingMessage(def);
@@ -94,7 +99,7 @@ function publishNamedFunction (name,fn,worker) {
             def.fn = fn;
             delete requestedFunctions[name];
             exportedFunctions[name]=def;
-            sendPortData(def.port,{publish:name},"serviceWorkerPublishNamed");
+            sendPortData(def.port,{publish:name},"serviceWorkerPublishNamed",def.worker);
             resolve (def);
         } else {
             publishedFunctions[name] = {
@@ -119,6 +124,7 @@ function importPublishedFunction (name,worker) {
         const def = {
            port               : messageChannel.port1,
            onimported         : resolve,
+           worker             : worker,
            onimported_timeout : setTimeoutDebug(reject,5000,"onimported_timeout")
         };
         
@@ -134,7 +140,7 @@ function importPublishedFunction (name,worker) {
         
         if (def) {
             def.port.onmessage = onIncomingMessage(def);
-            sendPortData(def.port,{import:name},"serviceWorkerImportPublished");
+            sendPortData(def.port,{import:name},"serviceWorkerImportPublished",def.worker);
             if (def.onimported_timeout) {
                 clearTimeout(def.onimported_timeout);
                 delete def.onimported_timeout;
@@ -185,12 +191,12 @@ function getEventData(event) {
 
 function sendPortData(port,data,debug,worker) {
     const json = JSON.stringify(data,undefined,4);
+    console.log(debug+": SENDING>>>>"+json);
     if (worker) {
        worker.postMessage(json,[port]); 
     } else {
        port.postMessage(json);
     }
-    console.log(debug+": SENDING>>>>"+json);
 }
 
 function onIncomingMessage(def){
@@ -255,7 +261,8 @@ function onIncomingMessage(def){
                                    notify:"onresult",
                                    result:result,
                                    id:id},
-                                   "onIncomingMessage/invoke-notifyResult");
+                                   "onIncomingMessage/invoke-notifyResult",
+                                   def.worker);
                             },
                             
                             notifyError = function(err) {
@@ -264,7 +271,8 @@ function onIncomingMessage(def){
                                 notify:"onerror",
                                 result:{message:err.message||err,stack:err.stack||''},
                                 id:id},
-                                "onIncomingMessage/invoke-notifyError");
+                                "onIncomingMessage/invoke-notifyError",
+                                def.worker);
                             };
                             
                             try {
@@ -307,7 +315,7 @@ function serviceWorkerMaster(event){
             // this worker needs this function
             def.port = event.ports[0];
             def.port.onmessage = onIncomingMessage(def);
-            sendPortData(def.port,{imported:event_data.publish},"serviceWorkerMaster");
+            sendPortData(def.port,{imported:event_data.publish},"serviceWorkerMaster",def.worker);
             if (def.onexported) {
                 def.onexported(def);
                 delete def.onexported;
@@ -379,7 +387,6 @@ function promiseWrap(browserPromised,serviceWorkerPromised,worker) {
         } 
     
     }
-    
 }
 
  
