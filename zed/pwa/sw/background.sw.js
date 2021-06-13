@@ -15,7 +15,7 @@ cacheName   = config_url.replace(/\//g,'-').substr(1).replace('.json', '-'+versi
 
 importScripts("https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js");
 
-importScripts("utils.js", "config.js", "install.js", "fetch.js", "message.js", "activate.js");
+importScripts("utils.js", "message.js", "config.js", "install.js", "fetch.js", "activate.js");
 
 addEventListener("message",  sw_message);
 addEventListener("install",  sw_install);
