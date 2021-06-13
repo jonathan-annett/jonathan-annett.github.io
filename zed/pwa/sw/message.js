@@ -84,7 +84,7 @@ function publishNamedFunction (name,fn,worker) {
             
         }
         
-        def.port.onmessage = onIncomingMessage(def);
+        def.port.addEventListener('message',onIncomingMessage(def));
         
         sendPortData(messageChannel.port2,{publish:name}, "browserPublishNamed", worker );
         
@@ -339,7 +339,7 @@ function serviceWorkerMaster(event){
         if (def ) {
             //sw already published this function, which peer is now publishing
             def.port = event.ports[0];
-            def.port.onmessage = onIncomingMessage(def);
+            def.port.addEventListener('message',onIncomingMessage(def));
             def.port.onmessage(event);
             
         } else {
@@ -347,7 +347,7 @@ function serviceWorkerMaster(event){
             requestedFunctions[ event_data.import  ] = def = {
                 port : event.ports[0]
             };
-            def.port.onmessage = onIncomingMessage(def);
+            def.port.addEventListener('message',onIncomingMessage(def));
             console.log("serviceWorkerMaster:",fn_name,"--> requestedFunctions");
         }
 
