@@ -329,7 +329,7 @@ function onIncomingMessage(def){
     return function (event) {
         
         const event_data=getEventData(event);
-        console.log("onIncomingMessage:"+event.data);
+        console.log("onIncomingMessage("+(isSw?"sw":"browser") +"):"+event.data);
         
        ["invoke","complete","import","export"].some(function(verb){
             const notify  = ("on"+verb+"ed").replace(/eed$/,'ed'); 
@@ -489,8 +489,6 @@ function serviceWorkerMaster(event){
     }
 }
 
-
-
 function promiseWrap(browserPromised,serviceWorkerPromised,worker) {
     
     return new Promise(promised);
@@ -524,8 +522,6 @@ function promiseWrap(browserPromised,serviceWorkerPromised,worker) {
     }
 }
 
- 
- 
 function messageSender(NAME,port) {
    // service-worker.js
    if (!isSw) return;
