@@ -1,397 +1,376 @@
+
 /* global self, importScripts, caches ,registration,clients ,Response,localforage, cacheName, BroadcastChannel */
 
 /* global getPWAFiles, updateURLArray */
+ 
+const isSw = typeof self+typeof window+typeof caches+typeof document ==='objectundefinedobjectundefined',
+      
+      isBrowser  = !isSw,
+      
+      sw_message = isSw ? _sw_message : _bad_sw_message,
+      
+      isPromise  = function (p) {
+          return typeof p==='object' && p.constructor === Promise;
+      },
+      
+      toPromise = function (p) {
+          return isPromise(p) ? p : Promise.resolve(p);
+      },
+      
+      toResolver = function (f) {
+          if (f) return f;
+          return function(){return Promise.resolve(); };
+      },
+      
+      //unitilty function to copy arguments into a standard Array
+      cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice),
 
-const isSw = typeof self + typeof window + typeof caches + typeof document === 'objectundefinedobjectundefined',
-
-isBrowser = !isSw,
-
-sw_message = isSw ? _sw_message : _bad_sw_message,
-
-isPromise = function(p) {
-    return typeof p === 'object' && p.constructor === Promise;
-},
-
-toPromise = function(p) {
-    return isPromise(p) ? p : Promise.resolve(p);
-},
-
-toResolver = function(f) {
-    if (f) return f;
-    return function() {
-        return Promise.resolve();
-    };
-},
-
-//unitilty function to copy arguments into a standard Array
-cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice),
-
-publishedFunctions = {}, // functions that are available to be exported to peer
-requestedFunctions = {}, // functions that peer has requested, which were not published
-neededFunctions = {}, // functions that this window/worker needs to import, but haven't been published yet 
-availableFunctions = {}, // functions that this window can import.
-exportedFunctions = {}, // functions that can be called by peer
-importedFunctions = {}; // functions that can call counterpart in peer
-
+      publishedFunctions = {},// functions that are available to be exported to peer
+      requestedFunctions = {},// functions that peer has requested, which were not published
+      neededFunctions    = {},// functions that this window/worker needs to import, but haven't been published yet 
+      availableFunctions = {},// functions that this window can import.
+      exportedFunctions   = {},// functions that can be called by peer
+      importedFunctions  = {};// functions that can call counterpart in peer
+      
 if (isSw) {
-    addEventListener("message", serviceWorkerMaster);
+    addEventListener("message", serviceWorkerMaster); 
 }
 
-function setTimeoutDebug(timeout, interval, name) {
-    return setTimeout(function(err) {
+function setTimeoutDebug(timeout,interval,name) {
+    return setTimeout(function(err){
         console.log(err);
         timeout();
-    }, interval, new Error("firing named timeout:" + name));
+    },interval,new Error("firing named timeout:"+name));
 }
 
 
-function publishNamedFunction(name, fn, worker) {
-
+function publishNamedFunction (name,fn,worker) {
+    
     if (typeof name === 'function') {
         worker = fn;
-        fn = name;
-        name = fn.name;
+        fn     = name;
+        name   = fn.name;
     }
 
-    return promiseWrap(browserPublishNamed, serviceWorkerPublishNamed, worker);
+    return promiseWrap(browserPublishNamed,serviceWorkerPublishNamed,worker);
+    
+    function browserPublishNamed(resolve,reject,worker){
 
-    function browserPublishNamed(resolve, reject, worker) {
-
-
-
-        const broadcastChannel = new BroadcastChannel('fn-' + name);
-
-
-        const messageChannel = new MessageChannel();
-
-        var def = requestedFunctions[name] || publishedFunctions[name];
-        if (def) {
-            def.sendPort = messageChannel.port1;
-            def.recvPort = broadcastChannel;
-            def.fn = fn;
-            def.onexported = resolve;
-            def.worker = worker;
-
-            if (def.onexported_timeout) {
-                clearTimeout(def.onexported_timeout);
+            
+            
+            const broadcastChannel = new BroadcastChannel('fn-'+name);
+            
+            
+            const messageChannel = new MessageChannel();
+            
+            var def = requestedFunctions[name] || publishedFunctions[name];
+            if (def) {
+                def.sendPort   = messageChannel.port1;
+                def.recvPort   = broadcastChannel;
+                def.fn         = fn;
+                def.onexported = resolve;
+                def.worker     = worker;
+                    
+                if (def.onexported_timeout) {
+                    clearTimeout(def.onexported_timeout);
+                }
+                
+                delete requestedFunctions[name];
+                publishedFunctions[name] = def;
+                def.onexported_timeout   = setTimeoutDebug(reject,5000,"onexported_timeout");
+                
+            } else {
+                
+                publishedFunctions[name] = def = {
+                    worker             : worker,
+                    sendPort           : messageChannel.port1,
+                    recvPort           : broadcastChannel,
+                    fn                 : fn,
+                    onexported         : resolve,
+                    onexported_timeout : setTimeoutDebug(reject,5000,"onexported_timeout")
+                };
+                
             }
-
-            delete requestedFunctions[name];
-            publishedFunctions[name] = def;
-            def.onexported_timeout = setTimeoutDebug(reject, 5000, "onexported_timeout");
-
-        } else {
-
-            publishedFunctions[name] = def = {
-                worker: worker,
-                sendPort: messageChannel.port1,
-                recvPort: broadcastChannel,
-                fn: fn,
-                onexported: resolve,
-                onexported_timeout: setTimeoutDebug(reject, 5000, "onexported_timeout")
-            };
-
-        }
-
-        const onmessage = onIncomingMessage(def);
-
-        def.recvPort.addEventListener('message', onmessage);
-
-        sendPortData(def.sendPort, {
-            publish: name
-        }, "browserPublishNamed", worker, messageChannel.port2);
+            
+            const onmessage = onIncomingMessage(def);
+            
+            def.recvPort.addEventListener('message',onmessage);
+            
+            sendPortData(def.sendPort,{publish:name}, "browserPublishNamed", worker, messageChannel.port2 );
 
     }
-
-    function serviceWorkerPublishNamed(resolve, reject) {
+    
+    function serviceWorkerPublishNamed(resolve,reject){
         const def = requestedFunctions[name];
-        const broadcastChannel = new BroadcastChannel('fn-' + name);
-
+        const broadcastChannel = new BroadcastChannel('fn-'+name);
+        
         if (def) {
             const onmessage = onIncomingMessage(def);
-            def.recvPort.addEventListener('message', onmessage);
+            def.recvPort.addEventListener('message',onmessage);
             def.fn = fn;
             delete requestedFunctions[name];
-            exportedFunctions[name] = def;
+            exportedFunctions[name]=def;
             def.sendPort = broadcastChannel;
-            sendPortData(def.sendPort, {
-                publish: name
-            }, "serviceWorkerPublishNamed");
-            resolve(def);
+            sendPortData(def.sendPort,{publish:name},"serviceWorkerPublishNamed");
+            resolve (def);
         } else {
             publishedFunctions[name] = {
-                fn: fn,
-                sendPort: broadcastChannel,
-                onexported: resolve,
-                onexported_timeout: setTimeoutDebug(reject, 5000, "onexported_timeout")
+                fn                 : fn,
+                sendPort           : broadcastChannel,
+                onexported         : resolve,
+                onexported_timeout : setTimeoutDebug(reject,5000,"onexported_timeout")
             };
         }
-
+        
     }
-
-    function browserPublishNamed_legacy(resolve, reject, worker) {
-
+        
+    function browserPublishNamed_legacy(resolve,reject,worker){
+    
 
         const messageChannel = new MessageChannel();
-
+        
         var def = requestedFunctions[name] || publishedFunctions[name];
         if (def) {
-            def.port = messageChannel.port1;
-            def.fn = fn;
+            def.port       = messageChannel.port1;
+            def.fn         = fn;
             def.onexported = resolve;
-            def.worker = worker;
-
+            def.worker     = worker;
+                
             if (def.onexported_timeout) {
                 clearTimeout(def.onexported_timeout);
             }
-
+            
             delete requestedFunctions[name];
             publishedFunctions[name] = def;
-            def.onexported_timeout = setTimeoutDebug(reject, 5000, "onexported_timeout");
-
+            def.onexported_timeout   = setTimeoutDebug(reject,5000,"onexported_timeout");
+            
         } else {
-
+            
             publishedFunctions[name] = def = {
-                worker: worker,
-                port: messageChannel.port1,
-                fn: fn,
-                onexported: resolve,
-                onexported_timeout: setTimeoutDebug(reject, 5000, "onexported_timeout")
+                worker             : worker,
+                port               : messageChannel.port1,
+                fn                 : fn,
+                onexported         : resolve,
+                onexported_timeout : setTimeoutDebug(reject,5000,"onexported_timeout")
             };
-
+            
         }
-
+        
         const onmessage = onIncomingMessage(def);
-        def.port.addEventListener('message', onmessage);
-        sendPortData(def.port, {
-            publish: name
-        }, "browserPublishNamed", worker, messageChannel.port2);
-
+        def.port.addEventListener('message',onmessage);
+        sendPortData(def.port,{publish:name}, "browserPublishNamed", worker, messageChannel.port2 );
+        
     }
-
-    function serviceWorkerPublishNamed_legacy(resolve, reject) {
-
+    
+    function serviceWorkerPublishNamed_legacy(resolve,reject){
+        
         const def = requestedFunctions[name];
-
+        
         if (def) {
             const onmessage = onIncomingMessage(def);
-            def.port.addEventListener('message', onmessage);
+            def.port.addEventListener('message',onmessage);
             def.fn = fn;
             delete requestedFunctions[name];
-            exportedFunctions[name] = def;
-            sendPortData(def.port, {
-                publish: name
-            }, "serviceWorkerPublishNamed");
-            resolve(def);
+            exportedFunctions[name]=def;
+            sendPortData(def.port,{publish:name},"serviceWorkerPublishNamed");
+            resolve (def);
         } else {
             publishedFunctions[name] = {
-                fn: fn,
-                onexported: resolve,
-                onexported_timeout: setTimeoutDebug(reject, 5000, "onexported_timeout")
+                fn                 : fn,
+                onexported         : resolve,
+                onexported_timeout : setTimeoutDebug(reject,5000,"onexported_timeout")
             };
         }
-
+        
     }
 
 }
 
-function importPublishedFunction(name, worker) {
+function importPublishedFunction (name,worker) {
+    
+    return promiseWrap(browserImportPublished,serviceWorkerImportPublished,worker);
+    
+    function browserImportPublished(resolve,reject,worker) {
 
-    return promiseWrap(browserImportPublished, serviceWorkerImportPublished, worker);
 
-    function browserImportPublished(resolve, reject, worker) {
-
-
-        const broadcastChannel = new BroadcastChannel('fn-' + name);
+        const broadcastChannel = new BroadcastChannel('fn-'+name);
         const messageChannel = new MessageChannel();
-
-
+         
+        
         const def = {
-            sendPort: messageChannel.port1,
-            recvPort: broadcastChannel,
-            onimported: resolve,
-            worker: worker,
-            onimported_timeout: setTimeoutDebug(reject, 5000, "onimported_timeout")
+           sendPort           : messageChannel.port1,
+           recvPort           : broadcastChannel,
+           onimported         : resolve,
+           worker             : worker,
+           onimported_timeout : setTimeoutDebug(reject,5000,"onimported_timeout")
         };
-
+        
         const onmessage = onIncomingMessage(def);
-        def.recvPort.addEventListener('message', onmessage);
-
-
-        worker.postMessage(JSON.stringify({
-            import: name
-        }), [messageChannel.port2]);
+        def.recvPort.addEventListener('message',onmessage);
+        
+        
+        worker.postMessage(JSON.stringify({import:name}), [ messageChannel.port2 ]);
 
     }
-
-    function serviceWorkerImportPublished(resolve, reject) {
-
-        const broadcastChannel = new BroadcastChannel('fn-' + name);
-
+    
+    function serviceWorkerImportPublished(resolve,reject){
+        
+        const broadcastChannel = new BroadcastChannel('fn-'+name);
+        
         var def = availableFunctions[name];
-
+        
         if (def) {
             const onmessage = onIncomingMessage(def);
-            def.recvPort.addEventListener('message', onmessage);
+            def.recvPort.addEventListener('message',onmessage);
             def.sendPort = broadcastChannel;
-            sendPortData(def.sendPort, {
-                import: name
-            }, "serviceWorkerImportPublished");
+            sendPortData(def.sendPort,{import:name},"serviceWorkerImportPublished");
             if (def.onimported_timeout) {
                 clearTimeout(def.onimported_timeout);
                 delete def.onimported_timeout;
             }
-            resolve(remoteHandler(def));
+            resolve (remoteHandler (def));
         } else {
             neededFunctions[name] = def = {
-                onimport: function(def) {
-                    return resolve(remoteHandler(def));
-                },
-                sendPort: broadcastChannel,
-                onimported_timeout: setTimeoutDebug(reject, 5000, "onimported_timeout")
+                onimport           : function (def){return resolve(remoteHandler (def));},
+                sendPort           : broadcastChannel,
+                onimported_timeout : setTimeoutDebug(reject,5000,"onimported_timeout")
             };
         }
-
+        
     }
-
-
-    function browserImportPublished_legacy(resolve, reject, worker) {
+    
+    
+    function browserImportPublished_legacy(resolve,reject,worker) {
 
         const messageChannel = new MessageChannel();
-
+        
         const def = {
-            port: messageChannel.port1,
-            onimported: resolve,
-            worker: worker,
-            onimported_timeout: setTimeoutDebug(reject, 5000, "onimported_timeout")
+           port               : messageChannel.port1,
+           onimported         : resolve,
+           worker             : worker,
+           onimported_timeout : setTimeoutDebug(reject,5000,"onimported_timeout")
         };
-
+        
         const onmessage = onIncomingMessage(def);
-        def.port.addEventListener('message', onmessage);
-
-        worker.postMessage(JSON.stringify({
-            import: name
-        }), [messageChannel.port2]);
+        def.port.addEventListener('message',onmessage);
+        
+        worker.postMessage(JSON.stringify({import:name}), [ messageChannel.port2 ]);
 
     }
-
-    function serviceWorkerImportPublished_legacy(resolve, reject) {
-
+    
+    function serviceWorkerImportPublished_legacy(resolve,reject){
+        
         var def = availableFunctions[name];
-
+        
         if (def) {
             const onmessage = onIncomingMessage(def);
-            def.port.addEventListener('message', onmessage);
-            sendPortData(def.port, {
-                import: name
-            }, "serviceWorkerImportPublished");
+            def.port.addEventListener('message',onmessage);
+            sendPortData(def.port,{import:name},"serviceWorkerImportPublished");
             if (def.onimported_timeout) {
                 clearTimeout(def.onimported_timeout);
                 delete def.onimported_timeout;
             }
-            resolve(remoteHandler(def));
+            resolve (remoteHandler (def));
         } else {
             neededFunctions[name] = def = {
-                onimport: function(def) {
-                    return resolve(remoteHandler(def));
-                },
-                onimported_timeout: setTimeoutDebug(reject, 5000, "onimported_timeout")
+                onimport           : function (def){return resolve(remoteHandler (def));},
+                onimported_timeout : setTimeoutDebug(reject,5000,"onimported_timeout")
             };
         }
-
+        
     }
-
-
-    function remoteHandler(def) {
-
-        return function() {
-
-            const id = Date.now().toString(36) + Math.random().toString(36);
-
+ 
+    
+    function remoteHandler (def) {
+        
+        return function ( ) {
+            
+            const id = Date.now().toString(36)+Math.random().toString(36);
+            
             const msg = JSON.stringify({
-                invoke: name,
-                args: cpArgs(arguments),
-                id: id
-            });
-
+                invoke : name,
+                args   : cpArgs(arguments),
+                id     : id
+            } );
+            
             return new Promise(toCallRemote);
-
-            function toCallRemote(resolve, reject) {
-                def.onresult = resolve;
-                def.onerror = reject;
-                def.sendPort.postMessage(msg);
+            
+            function toCallRemote (resolve,reject) {
+               def.onresult = resolve;
+               def.onerror  = reject;
+               def.sendPort.postMessage(msg);
             }
-
+            
         };
     }
-
+    
 }
 
 function getEventData(event) {
-    try {
-        return JSON.parse(event.data);
-    } catch (e) {
-        return {};
-    }
+  try {
+      return JSON.parse(event.data);
+  } catch (e) {
+      return {};
+  }
 }
 
-function sendPortData(port, data, debug, worker, peerPort) {
-    const json = JSON.stringify(data, undefined, 4);
-    console.log(debug + ": SENDING>>>>" + json);
+function sendPortData(port,data,debug,worker,peerPort) {
+    const json = JSON.stringify(data,undefined,4);
+    console.log(debug+": SENDING>>>>"+json);
     if (worker) {
-        worker.postMessage(json, [peerPort]);
+       worker.postMessage(json,[peerPort]); 
     } else {
-        port.postMessage(json);
+       port.postMessage(json);
     }
 }
 
 function onIncomingMessage(def) {
 
     return function(event) {
-
+        
         console.log("onIncomingMessage(" + (isSw ? "sw" : "browser") + "):" + event.data);
-        const
-
-        event_data = getEventData(event),
+        const event_data = getEventData(event),
 
         notifyResult = function(result) {
             sendPortData(
-            def.sendPort, {
-                invoked: name,
-                notify: "onresult",
-                result: result,
-                id: event_data.id
-            },
-                "onIncomingMessage/invoke-notifyResult");
+                def.sendPort, {
+                    invoked : name,
+                    notify  : "onresult",
+                    result  : result,
+                    id      : event_data.id
+                },
+                "onIncomingMessage/invoke-notifyResult"
+            );
         },
 
         notifyError = function(err) {
             sendPortData(
-            def.sendPort, {
-                invoked: name,
-                notify: "onerror",
-                result: {
-                    message: err.message || err,
-                    stack: err.stack || ''
+                def.sendPort, {
+                    invoked : name,
+                    notify  : "onerror",
+                    result  : {
+                        message: err.message || err,
+                        stack: err.stack || ''
+                    },
+                    id      : event_data.id
                 },
-                id: event_data.id
-            },
-                "onIncomingMessage/invoke-notifyError");
+                "onIncomingMessage/invoke-notifyError"
+            );
         };
 
-
+      
 
         ["invoke", "complete", "import", "export"].some(function(verb) {
-
-
+            
+            
             let fn_name = event_data[verb];
             if (fn_name) {
                 switch (verb) {
                     case "invoke":
                         {
 
-
-                            try {
+                    
+                             try {
 
                                 toPromise(
 
@@ -489,13 +468,12 @@ function onIncomingMessage(def) {
     };
 
 }
-
-function serviceWorkerMaster(event) {
+function serviceWorkerMaster(event){
     if (isBrowser) return;
-
-    const event_data = getEventData(event);
-    console.log("serviceWorkerMaster:" + event.data);
-    var fn_name = event_data.publish;
+    
+    const event_data=getEventData(event);
+    console.log("serviceWorkerMaster:"+event.data);
+    var fn_name = event_data.publish; 
     if (fn_name) {
         // peer is publishing a function
         let def = neededFunctions[event_data.publish];
@@ -503,161 +481,152 @@ function serviceWorkerMaster(event) {
             // this worker needs this function
             def.recvPort = event.ports[0];
             const onmessage = onIncomingMessage(def);
-            def.recvPort.addEventListener('message', onmessage);
-            sendPortData(def.sendPort, {
-                import: event_data.publish
-            }, "serviceWorkerMaster");
+            def.recvPort.addEventListener('message',onmessage);
+            sendPortData(def.sendPort,{import:event_data.publish},"serviceWorkerMaster");
             if (def.onexported) {
                 def.onexported(def);
                 delete def.onexported;
             }
             delete neededFunctions[event_data.publish];
-            importedFunctions[event_data.publish] = def;
-            console.log("serviceWorkerMaster:neededFunctions[", fn_name, "]--> importedFunctions");
+            importedFunctions[event_data.publish]=def;
+            console.log("serviceWorkerMaster:neededFunctions[",fn_name,"]--> importedFunctions");
         } else {
-            availableFunctions[event_data.publish] = def = {
-                recvPort: event.ports[0]
+            availableFunctions[ event_data.publish ] = def = {
+               recvPort : event.ports[0]
             };
             const onmessage = onIncomingMessage(def);
-            def.recvPort.addEventListener('message', onmessage);
-            console.log("serviceWorkerMaster:", fn_name, "--> availableFunctions");
+            def.recvPort.addEventListener('message',onmessage);
+            console.log("serviceWorkerMaster:",fn_name,"--> availableFunctions");
         }
     }
-
+    
     fn_name = event_data.import;
     if (event_data.import) {
-
-        let def = publishedFunctions[event_data.import];
-        if (def) {
+        
+        let def = publishedFunctions[ event_data.import ];
+        if (def ) {
             //sw already published this function, which peer is now publishing
             def.recvPort = event.ports[0];
             const onmessage = onIncomingMessage(def);
-            def.recvPort.addEventListener('message', onmessage);
+            def.recvPort.addEventListener('message',onmessage);
             onmessage(event);
-
+            
         } else {
             // peer is requesting a yet to be published function
-            requestedFunctions[event_data.import] = def = {
-                recvPort: event.ports[0]
+            requestedFunctions[ event_data.import  ] = def = {
+                recvPort : event.ports[0]
             };
             const onmessage = onIncomingMessage(def);
-            def.recvPort.addEventListener('message', onmessage);
-            console.log("serviceWorkerMaster:", fn_name, "--> requestedFunctions");
+            def.recvPort.addEventListener('message',onmessage);
+            console.log("serviceWorkerMaster:",fn_name,"--> requestedFunctions");
         }
 
     }
 }
 
-function promiseWrap(browserPromised, serviceWorkerPromised, worker) {
-
+function promiseWrap(browserPromised,serviceWorkerPromised,worker) {
+    
     return new Promise(promised);
-
-    function promised(resolve, reject) {
+    
+    function promised(resolve,reject) {
         if (isBrowser) {
-
+            
             if (!worker) {
                 navigator.serviceWorker.getRegistration().then(chooseRegWorker);
             } else {
-                browserPromised(resolve, reject, worker);
+                browserPromised(resolve,reject,worker);
             }
-
+    
         } else {
             worker = undefined;
-            serviceWorkerPromised(resolve, reject);
+            serviceWorkerPromised(resolve,reject);
         }
-
-
+        
+        
         function chooseRegWorker(registration) {
-            if (registration) {
-                const worker = registration.active || registration.waiting || registration.installing;
+          if(registration){
+                const worker = registration.active  || registration.waiting  || registration.installing;
                 if (worker) {
-                    browserPromised(resolve, reject, worker);
+                   browserPromised(resolve,reject,worker);
                 } else {
-                    reject();
+                   reject();   
                 }
-            }
-        }
-
+          }
+        } 
+    
     }
 }
 
-function messageSender(NAME, port) {
-    // service-worker.js
-    if (!isSw) return;
-
-    let messagePort, pending = [];
-    const boot = function(port) {
-        messagePort = port;
-        if (pending) {
-            pending.forEach(function(msg) {
-                messagePort.postMessage({
-                    type: NAME,
-                    msg: msg,
-                    delayed: true
-                });
-            });
-            pending.splice(0, pending.length);
-            pending = undefined;
-        }
-    },
-    bootstrapper = function(event) {
-        if (event.data && event.data.type === NAME) {
+function messageSender(NAME,port) {
+   // service-worker.js
+   if (!isSw) return;
+    
+   let messagePort,pending=[];
+   const boot = function (port) {
+       messagePort = port; 
+       if (pending) {
+         pending.forEach(function (msg){
+             messagePort.postMessage({ type : NAME, msg : msg, delayed:true });
+         });
+         pending.splice(0,pending.length);
+         pending=undefined;
+       }
+   },
+         bootstrapper = function(event) {
+          if (event.data && event.data.type === NAME) {
             removeEventListener("message", bootstrapper);
             boot(event.ports[0]);
-        }
-    };
-
-    if (port) {
-        boot(port);
-    } else {
-        addEventListener("message", bootstrapper);
-    }
-    var moi = {
-        send: function(msg) {
-            //console.log({msg});
-            if (pending) {
-                pending.push(msg);
-            } else {
-                messagePort.postMessage({
-                    type: NAME,
-                    msg: msg
-                });
-            }
-        },
-        replies: [],
-        reply: function(msg) {
-            // ignore replies until this handler is replaced.
-            moi.replies.push(msg);
-        }
-    };
-    return moi;
+          }
+        };
+   
+   if (port) {
+       boot(port);
+   } else {
+       addEventListener("message", bootstrapper); 
+  }
+   var moi = {
+       send : function (msg) {
+           //console.log({msg});
+           if (pending) {
+               pending.push(msg);
+           } else {
+               messagePort.postMessage({ type : NAME, msg : msg });
+           }
+       },
+       replies : [],
+       reply : function (msg) {
+           // ignore replies until this handler is replaced.
+           moi.replies.push(msg);
+       }
+   };
+   return moi;
 }
 
-function messageReceiver(worker, NAME, cb) {
+function messageReceiver(worker,NAME,cb) {
 
-    // app.js - somewhere in our main app
-
-    if (!worker || isSw) return;
-
+// app.js - somewhere in our main app
+    
+    if (!worker||isSw) return;
+    
     const messageChannel = new MessageChannel();
-
+    
     // First we initialize the channel by sending
     // the port to the Service Worker (this also
     // transfers the ownership of the port)
     worker.postMessage({
-        type: NAME,
+      type: NAME ,
     }, [messageChannel.port2]);
-
+    
     // Listen to the response
-    messageChannel.port1.onmessage = (event) = > {
-        // Print the result
-        cb(event.data.msg);
+    messageChannel.port1.onmessage = (event) => {
+      // Print the result
+      cb(event.data.msg);
     };
-
+    
     return {
-        done: function() {},
-
-        send: function(reply) {
+        done : function () {  },
+        
+        send : function (reply) {
             worker.postMessage(reply, [messageChannel.port2]);
         }
     };
@@ -665,18 +634,18 @@ function messageReceiver(worker, NAME, cb) {
 
 
 
-function _bad_sw_message() {
-    throw new Error("sw_message invoked in non service worker context");
+function _bad_sw_message () {
+    throw new Error ("sw_message invoked in non service worker context");
 }
 
-function _sw_message(e) {
-
-    if (!(e.data && e.data.type)) return;
-
+function _sw_message( e ) {
+    
+    if (!(e.data && e.data.type)) return ;
+    
     if (e.data.type === 'SKIP_WAITING') {
         return self.skipWaiting();
     }
-
-
-
-}
+ 
+   
+   
+}  
