@@ -21,7 +21,7 @@ function loadPage(config) {
             trimStart = config.site.diff.newBase.replace(/\/$/, '') + '/',
             trimFrom = trimStart.length,
             list = files.github.filter(function(f) {
-                return f.startsWith(trimStart);
+                return f.startsWith(trimStart) && f.endsWith(".js") || f.endsWith(".json") || f.endsWith(".css") ;
             }).map(function(f) {
                 return f.substr(trimFrom);
             }),
