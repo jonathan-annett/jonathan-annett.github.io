@@ -14,22 +14,35 @@ function bootPage(){
 function loadPage(config){
      if (config && config.site.diff) {
          
-           getPWAFiles().then (showFirstFile);
+           getPWAFiles().then (function(files){
+               
+               const 
+               trimStart=config.site.diff.newBase,
+               trimFrom=trimStart.length,
+               list = files.github.filter(function(f){
+                   return f.startsWith(trimStart);
+               }).map(function (f){
+                   return f.susbtr(trimFrom)
+               });
+               showFirstFile(config,list)
+           });
 
     }
     
     
-    function showFirstFile(){    
-       let file = location.search ? location.search.substr(1): config.site.diff.default;
-       
-       showFileDifference (
-           config.site.diff.base,
-           config.site.diff.newBase,
-           config.site.diff.linkBase,
-           config.site.diff.newLinkBase,
-           file,
-           0);
-    }
+  
+}
+
+function showFirstFile(config,list){    
+   let file = location.search ? location.search.substr(1): config.site.diff.default;
+   console.log(list);
+   showFileDifference (
+       config.site.diff.base,
+       config.site.diff.newBase,
+       config.site.diff.linkBase,
+       config.site.diff.newLinkBase,
+       file,
+       0);
 }
 
 
