@@ -13,7 +13,7 @@ function bootPage(){
         "https://jonathan-annett.github.io/zed/app",
         
         "https://github.com/zedapp/zed/blob/master/app",
-        "https://github.com/jonathan-annett/jonathan-annett.github.io/zed/app",
+        "https://github.com/jonathan-annett/jonathan-annett.github.io/blob/main/zed/app",
         
         file,
         0);
