@@ -1,11 +1,10 @@
 
-/* global publishNamedFunction, importPublishedFunction, toResolver,localforage */
+/* global localforage,swivel */
 function w_load() {
     
     const sw_path    = "/zed/pwa/sw/background.sw.js";
     const config_url = "/zed/pwa/files.json";
     
- 
     var 
     
     qs=document.querySelector.bind(document),
@@ -286,36 +285,42 @@ function w_load() {
         load_new_version.addEventListener('click', click);
     }
     
-    function updateInstallProgress(cb,msg){
-        if (msg.files) {
-           installerProgress =   qs("#progress_container");
-           installerProgress.innerHTML= '<progress max="' + msg.files.length + '" value="0"> 0% </progress';
-           installerProgress = installerProgress.children[0];
-        } else {
-            if (installerProgress && msg.downloaded) {
-                installerProgress.progress = msg.downloaded;
-            }
-        }
-        if (msg.url) {
-            progress_message.innerHTML = msg.url;
-        } 
-        
-    }
-    
-    
+     
 
     function afterInstall(reg,cb) {
         
         const worker = reg.installing || reg.waiting || reg.active;
         
-        publishNamedFunction(updateInstallProgress,worker).then (function(){
-           console.log('updateInstallProgress imported ok');      
+        
+        swivel.on('updateProgress',function(context,msg){
+            
+            if (msg.files) {
+               installerProgress =   qs("#progress_container");
+               installerProgress.innerHTML= '<progress max="' + msg.files.length + '" value="0"> 0% </progress';
+               installerProgress = installerProgress.children[0];
+            } else {
+                if (installerProgress && msg.downloaded) {
+                    installerProgress.progress = msg.downloaded;
+                }
+            }
+            if (msg.url) {
+                progress_message.innerHTML = msg.url;
+            } 
+            
+        });
+        
+        swivel.on('updateDone',function(context,msg){
+            
+            
+        });
+        
+        swivel.emit('update',{}).then(function(){
+            
+            
         });
         
         
-        publishNamedFunction('updateDone',cb,worker).then (function(){
-           console.log('updateDone imported ok');      
-        });
+        
 
         /*
         var api = zed_api();
@@ -463,17 +468,17 @@ function w_load() {
         
         var sw_controllerchange_refreshing;
         function sw_controllerchange(event) {
-          if (sw_controllerchange_refreshing) return; // prevent infinite refresh loop when you use "Update on Reload"
-          sw_controllerchange_refreshing = true;
-          console.log('Controller loaded');
-          window.location.reload();
+              if (sw_controllerchange_refreshing) return; // prevent infinite refresh loop when you use "Update on Reload"
+              sw_controllerchange_refreshing = true;
+              console.log('Controller loaded');
+              window.location.reload();
         }
         
         // When the user asks to refresh the UI, we'll need to reload the window
         navigator.serviceWorker.addEventListener('controllerchange',sw_controllerchange);
       
-        navigator.serviceWorker.register( sw_path )
-        .then(function (registration) {
+        navigator.serviceWorker.register( sw_path ).then(function (registration) {
+            
             // Track updates to the Service Worker.
           if (!navigator.serviceWorker.controller) {
             // The window client isn't currently controlled so it's a new service

@@ -1,5 +1,4 @@
-/* global getPWAFiles,caches,cacheName   */
-/* global publishNamedFunction, importPublishedFunction,toResolver */
+/* global getPWAFiles,caches,cacheName, swivel   */
 
 function sw_install( e ) {
     
@@ -64,11 +63,11 @@ function updateURLArray(cache,urls) {
     return Promise.all(urls.map(function(url,index){
         
         
-        return toResolver(updateURLArray.progress)({loading:index,url:url}).then (function(){
+        return swivel.broadcast('updateProgress',{loading:index,url:url}).then (function(){
                     
             return refreshCache(cache,url).then (function(dl){
                  
-                return  toResolver(updateURLArray.progress)({loaded:index}).then (function(){
+                return  swivel.broadcast('updateProgress',{loaded:index}).then (function(){
                        
                        
                     return Promise.resolve(dl);
@@ -78,8 +77,7 @@ function updateURLArray(cache,urls) {
          
             })
                 
-        })
-        .catch(function(err){
+        }) .catch(function(err){
               //Error stuff
               console.log("failed adding",url,err);
         });
@@ -94,27 +92,20 @@ function update_cached_files() {
        const urls = filesToCache.site.concat(filesToCache.github);
        
        
-         toResolver(updateURLArray.progress)({files : urls}).then(function(){
+           swivel.broadcast('updateProgress',{files : urls});
            
             return caches.open(cacheName).then(function(cache) {
                 
                 return updateURLArray(cache,urls).then (function(){
                     
-                      return toResolver(updateURLArray.progress)({done : 1});
+                      return swivel.broadcast('updateDone',{});
                       
                 });
             });
-       
-       });
-    
+
     });
 }
 
-publishNamedFunction(update_cached_files);
 
-
-importPublishedFunction ('updateInstallProgress').then (function (updateInstallProgress){
-      
-      updateURLArray.progress = updateInstallProgress;
-});
+swivel.on ('update',update_cached_files);
 
