@@ -19,7 +19,7 @@ importScripts("/zed/pwa/zen-observable.js","/zed/pwa/localforage.js","/zed/pwa/l
 
 importScripts("swivel.js","utils.js",  "config.js", "install.js", "fetch.js", "activate.js");
 
-addEventListener("message",  sw_message);
+//addEventListener("message",  sw_message);
 addEventListener("install",  sw_install);
 addEventListener("fetch",    sw_fetch_);  
 addEventListener("activate", sw_activate);
