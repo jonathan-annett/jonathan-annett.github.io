@@ -1,110 +1,99 @@
-<html>
-    <head>
-        <!-- diff2html files -->
-        <style>
-            
-            @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
-            
-            html,
-            body {
-              font: normal 14px/1.4 sans-serif;
-              background: #f1f1f1;
-            }
-            
-            h4 {
-              font-family: 'Comic Neue', cursive;
-              font-weight: 700;
-              font-size: 26px;
-            }
-            
-            p {
-              margin: 0 0 1rem;
-              font-family: 'Comic Neue', cursive;
-              font-weight: 400;
-              font-size: 20px;
-            }
-            
-            p.bold {
-              font-weight: 700;
-            }
-            
-            .blockquote {
-                  background: rgb(188 188 188 / 30%);
-                border-left: 3px solid black;
-                padding: 0 15px;
-            }
-            
-            table {
-              border-collapse: collapse;
-              width: 100%;
-            }
-            table td {
-              border: 1px solid #ccc;
-            }
-            
-            .card {
-              background: #fff;
-              border: 1px solid #ccc;
-              border-radius: 3px;
-              margin: 1rem;
-              padding: 1rem;
-            }
-            
-            .card .card {
-              margin: 0;
-              flex: 1 0 0;
-            }
-            
-            .row {
-              display: flex;
-              justify-content: space-between;
-              margin-right: -8px;
-            }
-            
-            .col {
-              display: flex;
-              flex: 1 0 0;
-              flex-direction: column;
-              margin-right: 8px;
-            }
-            
-            .current-document ins {
-              background: lightgreen;
-              text-decoration: none;
-            }
-            
-            .current-document del {
-              background: pink;
-            }
-            
-            .system-generated del {
-              visibility: hidden;
-            }
-            
-            .system-generated ins {
-              text-decoration: none;
-            }
-            
-            .system-generated ins ~ del {
-              display: none;
-            }
-            
-        </style>
-    </head>    
-    <body>
-    <div class="card">
-      <div class="row">
-        <div class="col">
-          <h4>Document with changes</h4>
-          <div class="card current-document" id="output"></div>
-        </div>
-        <div class="col">
-          <h4>Original Document</h4>
-          <div class="card system-generated" id="outputNew"></div>
-        </div>
-      </div>
-    </div>
-     <script src="diff.js"></script>
-    </body>
-</html>
 
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <title>jsdifflib demo</title>
+    <link rel="stylesheet" type="text/css" href="diffview.css"/>
+    <script type="text/javascript" src="diffview.js"></script>
+    <script type="text/javascript" src="difflib.js"></script>
+<style type="text/css">
+body {
+    font-size: 12px;
+    font-family: Sans-Serif;
+}
+h2 {
+    margin: 0.5em 0 0.1em;
+    text-align: center;
+}
+.top {
+    text-align: center;
+}
+.textInput {
+    display: block;
+    width: 49%;
+    float: left;
+}
+textarea {
+    width:100%;
+    height:300px;
+}
+label:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+.spacer {
+    margin-left: 10px;
+}
+.viewType {
+    font-size: 16px;
+    clear: both;
+    text-align: center;
+    padding: 1em;
+}
+#diffoutput {
+    width: 100%;
+}
+</style>
+
+<script type="text/javascript">
+
+function diffUsingJS(viewType) {
+    "use strict";
+    var byId = function (id) { return document.getElementById(id); },
+        base = difflib.stringAsLines(byId("baseText").value),
+        newtxt = difflib.stringAsLines(byId("newText").value),
+        sm = new difflib.SequenceMatcher(base, newtxt),
+        opcodes = sm.get_opcodes(),
+        diffoutputdiv = byId("diffoutput"),
+        contextSize = byId("contextSize").value;
+
+    diffoutputdiv.innerHTML = "";
+    contextSize = contextSize || null;
+
+    diffoutputdiv.appendChild(diffview.buildView({
+        baseTextLines: base,
+        newTextLines: newtxt,
+        opcodes: opcodes,
+        baseTextName: "Base Text",
+        newTextName: "New Text",
+        contextSize: contextSize,
+        viewType: viewType
+    }));
+}
+
+</script>
+</head>
+<body>
+    <h1 class="top"><a href="http://github.com/cemerick/jsdifflib">jsdifflib</a> demo</h1>
+    <div class="top">
+        <strong>Context size (optional):</strong> <input type="text" id="contextSize" value="" />
+    </div>
+    <div class="textInput">
+        <h2>Base Text</h2>
+        <textarea id="baseText"></textarea>
+    </div>
+    <div class="textInput spacer">
+        <h2>New Text</h2>
+        <textarea id="newText"></textarea>
+    </div>
+    <div class="viewType">
+        <input type="radio" name="_viewtype" id="sidebyside" onclick="diffUsingJS(0);" /> <label for="sidebyside">Side by Side Diff</label>
+        &nbsp; &nbsp;
+        <input type="radio" name="_viewtype" id="inline" onclick="diffUsingJS(1);" /> <label for="inline">Inline Diff</label>
+    </div>
+    <div id="diffoutput"> </div>
+    <script src="diff.js" defer></script>
+</body>
+</html>
