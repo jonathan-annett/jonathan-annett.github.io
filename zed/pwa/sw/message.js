@@ -43,7 +43,7 @@ function setTimeoutDebug(timeout,interval,name) {
     },interval,new Error("firing named timeout:"+name));
 }
 
-function publishNamedFunction (name,fn) {
+function publishNamedFunction (name,fn,worker) {
     
     if (typeof name === 'function') {
         worker = fn;
@@ -51,7 +51,7 @@ function publishNamedFunction (name,fn) {
         name   = fn.name;
     }
 
-    return promiseWrap(browserPublishNamed,serviceWorkerPublishNamed);
+    return promiseWrap(browserPublishNamed,serviceWorkerPublishNamed,worker);
     
     function browserPublishNamed(resolve,reject,worker){
 
@@ -239,7 +239,6 @@ function onIncomingMessage(def){
                         delete def[ notify ];
                         return true;
                     }
-                    
                     case "complete": {
                         const trigger  = event_data.id;
                         const triggers = event_data.result && def.onresult[ trigger ] ;
@@ -254,28 +253,35 @@ function onIncomingMessage(def){
                         }
                         return true;
                     }
-                    
                     case "invoke" :{
                         
                             const id = event_data.id;
                             
                             const 
                             notifyResult = function(result){
-                                sendPortData(def.port,{
-                                   complete:name,
-                                   notify:"onresult",
-                                   result:result,
-                                   id:id},
-                                   "onIncomingMessage/invoke-notifyResult");
+                                sendPortData(
+                                    def.port,
+                                    {
+                                       complete:name,
+                                       notify:"onresult",
+                                       result:result,
+                                       id:id
+                                    },
+                                   "onIncomingMessage/invoke-notifyResult"
+                                );
                             },
                             
                             notifyError = function(err) {
-                                sendPortData(def.port,{
-                                complete:name,
-                                notify:"onerror",
-                                result:{message:err.message||err,stack:err.stack||''},
-                                id:id},
-                                "onIncomingMessage/invoke-notifyError");
+                                sendPortData(
+                                    def.port,
+                                    {
+                                        complete:name,
+                                        notify:"onerror",
+                                        result:{message:err.message||err,stack:err.stack||''},
+                                        id:id
+                                    },
+                                    "onIncomingMessage/invoke-notifyError"
+                                );
                             };
                             
                             try {
@@ -363,18 +369,36 @@ function serviceWorkerMaster(event){
 
 
 
-function promiseWrap(browserPromised,serviceWorkerPromised) {
+function promiseWrap(browserPromised,serviceWorkerPromised,worker) {
     
     return new Promise(promised);
     
     function promised(resolve,reject) {
         if (isBrowser) {
-            browserPromised(resolve,reject,navigator.serviceWorker.controller);
+            
+            if (!worker) {
+                navigator.serviceWorker.getRegistration().then(chooseRegWorker);
+            } else {
+                browserPromised(resolve,reject,worker);
+            }
     
         } else {
+            worker = undefined;
             serviceWorkerPromised(resolve,reject);
         }
         
+        
+        function chooseRegWorker(registration) {
+          if(registration){
+                const worker = registration.active  || registration.waiting  || registration.installing;
+                if (worker) {
+                   browserPromised(resolve,reject,worker);
+                } else {
+                   reject();   
+                }
+          }
+        } 
+    
     }
 }
 

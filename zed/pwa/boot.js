@@ -1,9 +1,26 @@
 
-/* global publishNamedFunction, importPublishedFunction, toResolver */
+/* global publishNamedFunction, importPublishedFunction, toResolver,localforage */
 function w_load() {
     
     const sw_path    = "/zed/pwa/sw/background.sw.js";
     const config_url = "/zed/pwa/files.json";
+    
+    
+    localforage.ready(function() {
+      var observable = localforage.newObservable();
+      var subscription = observable.subscribe({
+        next: function(args) {
+          console.log('I observe everything', args);
+        },
+        error: function(err) {
+          console.log('Found an error!', err);
+        },
+        complete: function() {
+          console.log('Observable destroyed!');
+        }
+      });
+      
+    });
         
     
     var 
