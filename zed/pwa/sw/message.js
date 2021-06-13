@@ -94,7 +94,7 @@ function publishNamedFunction (name,fn,worker) {
             def.fn = fn;
             delete requestedFunctions[name];
             exportedFunctions[name]=def;
-            def.port.postMessage(JSON.stringify({publish:name}));
+            sendPortData(def.port,{publish:name});
             resolve (def);
         } else {
             publishedFunctions[name] = {
@@ -134,7 +134,7 @@ function importPublishedFunction (name,worker) {
         
         if (def) {
             def.port.onmessage = onIncomingMessage(def);
-            def.port.postMessage(JSON.stringify({import:name}));
+            sendPortData(def.port,{import:name});
             if (def.onimported_timeout) {
                 clearTimeout(def.onimported_timeout);
                 delete def.onimported_timeout;
@@ -183,11 +183,18 @@ function getEventData(event) {
   }
 }
 
+function sendPortData(port,data,debug) {
+    const json = JSON.stringify(data,undefined,4);
+    port.postMessage();
+    console.log(debug+":"+json);
+}
+
 function onIncomingMessage(def){
     
     return function (event) {
         
         const event_data=getEventData(event);
+        console.log("onIncomingMessage:"+event.data);
         
        ["invoke","complete","import","export"].some(function(verb){
             const notify  = "on"+verb+"ed"; 
@@ -206,6 +213,7 @@ function onIncomingMessage(def){
                 
                 if (verb==="import" && publishedFunctions[ fn_name ] === def) {
                     exportedFunctions[ fn_name ] = def;
+                    console.log("onIncomingMessage:publishedFunctions[",fn_name,"]--> exportedFunctions");
                     delete publishedFunctions[ fn_name ];
                 }
                 
@@ -238,19 +246,19 @@ function onIncomingMessage(def){
                             
                             const 
                             notifyResult = function(result){
-                                def.port.postMessage(JSON.stringify({
+                                sendPortData(def.port,{
                                    complete:name,
                                    notify:"onresult",
                                    result:result,
-                                   id:id}));
+                                   id:id});
                             },
                             
                             notifyError = function(err) {
-                                def.port.postMessage(JSON.stringify({
+                                sendPortData(def.port,{
                                 complete:name,
                                 notify:"onerror",
                                 result:{message:err.message||err,stack:err.stack||''},
-                                id:id}));
+                                id:id});
                             };
                             
                             try {
@@ -284,31 +292,33 @@ function serviceWorkerMaster(event){
     if (isBrowser) return;
     
     const event_data=getEventData(event);
-    
-    if (event_data.publish) {
+    console.log("serviceWorkerMaster:"+event.data);
+    var fn_name = event_data.publish; 
+    if (fn_name) {
         // peer is publishing a function
         let def = neededFunctions[event_data.publish];
         if (def) {
             // this worker needs this function
             def.port = event.ports[0];
             def.port.onmessage = onIncomingMessage(def);
-            def.port.postMessage(JSON.stringify({imported:event_data.publish}));
+            sendPortData(def.port,{imported:event_data.publish});
             if (def.onexported) {
                 def.onexported(def);
                 delete def.onexported;
             }
             delete neededFunctions[event_data.publish];
             importedFunctions[event_data.publish]=def;
-            
+            console.log("serviceWorkerMaster:neededFunctions[",fn_name,"]--> importedFunctions");
         } else {
             availableFunctions[ event_data.publish ] = def = {
                port : event.ports[0]
             };
             def.port.onmessage = onIncomingMessage(def);
+            console.log("serviceWorkerMaster:",fn_name,"--> availableFunctions");
         }
     }
     
-    
+    fn_name = event_data.import;
     if (event_data.import) {
         
         let def = publishedFunctions[ event_data.import ];
@@ -324,6 +334,7 @@ function serviceWorkerMaster(event){
                 port : event.ports[0]
             };
             def.port.onmessage = onIncomingMessage(def);
+            console.log("serviceWorkerMaster:",fn_name,"--> requestedFunctions");
         }
 
     }
