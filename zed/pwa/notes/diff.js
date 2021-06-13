@@ -1,9 +1,17 @@
-/* global diffUsingJS*/
+/* global diffUsingJS,difflib,diffview, getConfig*/
 
+
+const sw_path    = "/zed/pwa/sw/background.sw.js";
+const config_url = "/zed/pwa/files.json";
+    
 document.addEventListener('DOMContentLoaded',bootPage);
 
 
 function bootPage(){
+    getConfig().then(loadPage).catch(console.warn.bind(console));
+}
+
+function loadPage(config){
     
     let file = location.search ? location.search.substr(1): "manifest.json";
     
@@ -49,7 +57,7 @@ function loadURLS(url1, url2,link1,link2) {
         })
     }
 
-    function toText(response){ return response.text()}
+   
 }
 
 function showFileDifference(base,newBase,linkBase,newLinkBase,file,viewType) {
@@ -68,7 +76,35 @@ function showFileDifference(base,newBase,linkBase,newLinkBase,file,viewType) {
            
       });                
 }
-    
+
+function diffUsingJS(viewType) {
+    "use strict";
+    var byId = function (id) { return document.getElementById(id); },
+        base = difflib.stringAsLines(byId("baseText").value),
+        newtxt = difflib.stringAsLines(byId("newText").value),
+        sm = new difflib.SequenceMatcher(base, newtxt),
+        opcodes = sm.get_opcodes(),
+        diffoutputdiv = byId("diffoutput"),
+        contextSize = byId("contextSize").value;
+
+    diffoutputdiv.innerHTML = "";
+    contextSize = contextSize || null;
+
+    diffoutputdiv.appendChild(diffview.buildView({
+        baseTextLines: base,
+        newTextLines: newtxt,
+        opcodes: opcodes,
+        baseTextName: "Base Text",
+        newTextName: "New Text",
+        contextSize: contextSize,
+        viewType: viewType
+    }));
+}
+
+
+function toText(response){ return response.text()}
+function downloadJSON(response) { return response.json(); }
+       
     
     
     

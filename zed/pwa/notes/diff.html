@@ -47,33 +47,9 @@ label:hover {
 }
 </style>
 
-<script type="text/javascript">
+<script src="/zed/app/pwa/sw/config.js" ></script>
 
-function diffUsingJS(viewType) {
-    "use strict";
-    var byId = function (id) { return document.getElementById(id); },
-        base = difflib.stringAsLines(byId("baseText").value),
-        newtxt = difflib.stringAsLines(byId("newText").value),
-        sm = new difflib.SequenceMatcher(base, newtxt),
-        opcodes = sm.get_opcodes(),
-        diffoutputdiv = byId("diffoutput"),
-        contextSize = byId("contextSize").value;
-
-    diffoutputdiv.innerHTML = "";
-    contextSize = contextSize || null;
-
-    diffoutputdiv.appendChild(diffview.buildView({
-        baseTextLines: base,
-        newTextLines: newtxt,
-        opcodes: opcodes,
-        baseTextName: "Base Text",
-        newTextName: "New Text",
-        contextSize: contextSize,
-        viewType: viewType
-    }));
-}
-
-</script>
+<script src="diff.js" defer></script>
 </head>
 <body>
     <div class="top">
@@ -93,6 +69,6 @@ function diffUsingJS(viewType) {
         <input type="radio" name="_viewtype" id="inline" onclick="diffUsingJS(1);" /> <label for="inline">Inline Diff</label>
     </div>
     <div id="diffoutput"> </div>
-    <script src="diff.js" defer></script>
+   
 </body>
 </html>
