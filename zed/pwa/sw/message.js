@@ -84,7 +84,8 @@ function publishNamedFunction (name,fn,worker) {
             
         }
         
-        def.port.addEventListener('message',onIncomingMessage(def));
+        const onmessage = onIncomingMessage(def);
+        def.port.addEventListener('message',onmessage);
         sendPortData(def.port,{publish:name}, "browserPublishNamed", worker, messageChannel.port2 );
         
     }
@@ -94,7 +95,8 @@ function publishNamedFunction (name,fn,worker) {
         const def = requestedFunctions[name];
         
         if (def) {
-            def.port.addEventListener('message',onIncomingMessage(def));
+            const onmessage = onIncomingMessage(def);
+            def.port.addEventListener('message',onmessage);
             def.fn = fn;
             delete requestedFunctions[name];
             exportedFunctions[name]=def;
@@ -127,7 +129,8 @@ function importPublishedFunction (name,worker) {
            onimported_timeout : setTimeoutDebug(reject,5000,"onimported_timeout")
         };
         
-        def.port.addEventListener('message',onIncomingMessage(def));
+        const onmessage = onIncomingMessage(def);
+        def.port.addEventListener('message',onmessage);
         
         worker.postMessage(JSON.stringify({import:name}), [ messageChannel.port2 ]);
 
@@ -138,7 +141,8 @@ function importPublishedFunction (name,worker) {
         var def = availableFunctions[name];
         
         if (def) {
-            def.port.addEventListener('message',onIncomingMessage(def));
+            const onmessage = onIncomingMessage(def);
+            def.port.addEventListener('message',onmessage);
             sendPortData(def.port,{import:name},"serviceWorkerImportPublished");
             if (def.onimported_timeout) {
                 clearTimeout(def.onimported_timeout);
@@ -311,7 +315,8 @@ function serviceWorkerMaster(event){
         if (def) {
             // this worker needs this function
             def.port = event.ports[0];
-            def.port.addEventListener('message',onIncomingMessage(def));
+            const onmessage = onIncomingMessage(def);
+            def.port.addEventListener('message',onmessage);
             sendPortData(def.port,{import:event_data.publish},"serviceWorkerMaster");
             if (def.onexported) {
                 def.onexported(def);
@@ -324,7 +329,8 @@ function serviceWorkerMaster(event){
             availableFunctions[ event_data.publish ] = def = {
                port : event.ports[0]
             };
-            def.port.addEventListener('message',onIncomingMessage(def));
+            const onmessage = onIncomingMessage(def);
+            def.port.addEventListener('message',onmessage);
             console.log("serviceWorkerMaster:",fn_name,"--> availableFunctions");
         }
     }
@@ -336,7 +342,8 @@ function serviceWorkerMaster(event){
         if (def ) {
             //sw already published this function, which peer is now publishing
             def.port = event.ports[0];
-            def.port.addEventListener('message',onIncomingMessage(def));
+            const onmessage = onIncomingMessage(def);
+            def.port.addEventListener('message',onmessage);
             def.port.onmessage(event);
             
         } else {
@@ -344,7 +351,8 @@ function serviceWorkerMaster(event){
             requestedFunctions[ event_data.import  ] = def = {
                 port : event.ports[0]
             };
-            def.port.addEventListener('message',onIncomingMessage(def));
+            const onmessage = onIncomingMessage(def);
+            def.port.addEventListener('message',onmessage);
             console.log("serviceWorkerMaster:",fn_name,"--> requestedFunctions");
         }
 
