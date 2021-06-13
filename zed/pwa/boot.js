@@ -6,22 +6,40 @@ function w_load() {
     const config_url = "/zed/pwa/files.json";
     
      
-    localforage.ready(function() {
-      var observable = localforage.newObservable();
-      var subscription = observable.subscribe({
-        next: function(args) {
-          console.log('I observe everything', args);
-        },
-        error: function(err) {
-          console.log('Found an error!', err);
-        },
-        complete: function() {
-          console.log('Observable destroyed!');
-        }
-      });
-      
-    }); 
-        
+localforage.ready(function() {
+  var observable = localforage.newObservable();
+  var subscription = observable.subscribe({
+    next: function(args) {
+      console.log('I observe everything', args);
+    },
+    error: function(err) {
+      console.log('Found an error!', err);
+    },
+    complete: function() {
+      console.log('Observable destroyed!');
+    }
+  });
+  localforage.setItem('test1', 'value1').then(function() {
+    console.log('setItem(\'xtest1\', \'value1\')');
+    return localforage.setItem('test2', 'value2');
+  }).then(function() {
+    console.log('setItem(\'xtest2\', \'value2\')');
+    return localforage.setItem('test2', 'value2b');
+  }).then(function() {
+    console.log('setItem(\'xtest2\', \'value2b\')');
+    return localforage.setItem('test2', 'value2b');
+  }).then(function() {
+    console.log('setItem(\'xtest2\', \'value2b\')');
+    return localforage.setItem('test3', 'value3');
+  }).then(function() {
+    console.log('setItem(\'xtest3\', \'value3\')');
+    subscription.unsubscribe();
+    return localforage.setItem('xnotObservedKey', 'notObservedValue');
+  }).then(function() {
+    console.log('setItem(\'notObservedKey\', \'notObservedValue\')');
+    return localforage.clear();
+  });
+});
     
     var 
     
