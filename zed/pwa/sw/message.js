@@ -95,7 +95,7 @@ function publishNamedFunction (name,fn,worker) {
         const def = requestedFunctions[name];
         
         if (def) {
-            def.port.onmessage = onIncomingMessage(def);
+            def.port.addEventListener('message',onIncomingMessage(def));
             def.fn = fn;
             delete requestedFunctions[name];
             exportedFunctions[name]=def;
@@ -128,7 +128,7 @@ function importPublishedFunction (name,worker) {
            onimported_timeout : setTimeoutDebug(reject,5000,"onimported_timeout")
         };
         
-        def.port.onmessage = onIncomingMessage(def);
+        def.port.addEventListener('message',onIncomingMessage(def));
         
         worker.postMessage(JSON.stringify({import:name}), [messageChannel.port2]);
 
@@ -139,7 +139,7 @@ function importPublishedFunction (name,worker) {
         var def = availableFunctions[name];
         
         if (def) {
-            def.port.onmessage = onIncomingMessage(def);
+            def.port.addEventListener('message',onIncomingMessage(def));
             sendPortData(def.port,{import:name},"serviceWorkerImportPublished",def.worker);
             if (def.onimported_timeout) {
                 clearTimeout(def.onimported_timeout);
@@ -314,7 +314,7 @@ function serviceWorkerMaster(event){
         if (def) {
             // this worker needs this function
             def.port = event.ports[0];
-            def.port.onmessage = onIncomingMessage(def);
+            def.port.addEventListener('message',onIncomingMessage(def));
             sendPortData(def.port,{import:event_data.publish},"serviceWorkerMaster",def.worker);
             if (def.onexported) {
                 def.onexported(def);
@@ -327,7 +327,7 @@ function serviceWorkerMaster(event){
             availableFunctions[ event_data.publish ] = def = {
                port : event.ports[0]
             };
-            def.port.onmessage = onIncomingMessage(def);
+            def.port.addEventListener('message',onIncomingMessage(def));
             console.log("serviceWorkerMaster:",fn_name,"--> availableFunctions");
         }
     }
