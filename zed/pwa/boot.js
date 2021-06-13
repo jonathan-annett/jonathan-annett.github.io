@@ -5,7 +5,7 @@ function w_load() {
     const sw_path    = "/zed/pwa/sw/background.sw.js";
     const config_url = "/zed/pwa/files.json";
     
-    
+    /*
     localforage.ready(function() {
       var observable = localforage.newObservable();
       var subscription = observable.subscribe({
@@ -20,7 +20,7 @@ function w_load() {
         }
       });
       
-    });
+    });*/
         
     
     var 
