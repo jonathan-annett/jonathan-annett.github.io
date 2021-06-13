@@ -315,7 +315,7 @@ function serviceWorkerMaster(event){
             // this worker needs this function
             def.port = event.ports[0];
             def.port.onmessage = onIncomingMessage(def);
-            sendPortData(def.port,{imported:event_data.publish},"serviceWorkerMaster",def.worker);
+            sendPortData(def.port,{import:event_data.publish},"serviceWorkerMaster",def.worker);
             if (def.onexported) {
                 def.onexported(def);
                 delete def.onexported;
