@@ -29,7 +29,7 @@ function loadPage(config) {
             firstFile = location.search ? location.search.substr(1) : config.site.diff.
             default;
 
-            fileSelector.innerHTML = files.map(function(file) {
+            fileSelector.innerHTML = list.map(function(file) {
                 const selected = (file === firstFile) ? ' selected' : '';
                 return '<option' + selected + ' value="' + file + '">' + file + '</option>';
             }).join("\n");
