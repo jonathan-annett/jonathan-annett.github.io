@@ -22,7 +22,7 @@ function loadPage(config){
                list = files.github.filter(function(f){
                    return f.startsWith(trimStart);
                }).map(function (f){
-                   return f.susbtr(trimFrom)
+                   return f.substr(trimFrom)
                });
                showFirstFile(config,list)
            });
