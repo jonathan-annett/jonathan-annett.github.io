@@ -10,12 +10,12 @@
 var 
 
 config_url  = "/zed/pwa/files.json",
-version     = 1.2,
+version     = 1.3,
 cacheName   = config_url.replace(/\//g,'-').substr(1).replace('.json', '-'+version);
 
 
 importScripts("https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js");
-importScripts("/zed/pwa/zen-observable.js","/zed/pwa/localforage-observable.js");
+importScripts("/zed/pwa/zen-observable.js", "/zed/pwa/localforage-observable.js");
 
 
 importScripts("utils.js", "message.js", "config.js", "install.js", "fetch.js", "activate.js");

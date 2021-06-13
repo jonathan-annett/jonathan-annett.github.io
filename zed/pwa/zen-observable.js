@@ -564,4 +564,4 @@ Object.defineProperty(Observable, getSymbol("species"), {
 
 exports.Observable = Observable;
 
-})(window);
+})(typeof window==='object'?window:self);

@@ -495,4 +495,7 @@
     exports.extendPrototypeResult = extendPrototypeResult;
 
     Object.defineProperty(exports, '__esModule', { value: true });
-})(window);
+})(typeof window==='object'?window:self);
+
+
+
