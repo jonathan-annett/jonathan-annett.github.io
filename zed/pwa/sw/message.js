@@ -81,7 +81,7 @@ function publishNamedFunction (name,fn,worker) {
         
         def.port.onmessage = onIncomingMessage(def);
         
-        worker.postMessage(JSON.stringify({publish:name}), [messageChannel.port2] );
+        sendPortData(messageChannel.port2,{publish:name}, "browserPublishNamed", worker );
         
     }
     
@@ -94,7 +94,7 @@ function publishNamedFunction (name,fn,worker) {
             def.fn = fn;
             delete requestedFunctions[name];
             exportedFunctions[name]=def;
-            sendPortData(def.port,{publish:name});
+            sendPortData(def.port,{publish:name},"serviceWorkerPublishNamed");
             resolve (def);
         } else {
             publishedFunctions[name] = {
@@ -134,7 +134,7 @@ function importPublishedFunction (name,worker) {
         
         if (def) {
             def.port.onmessage = onIncomingMessage(def);
-            sendPortData(def.port,{import:name});
+            sendPortData(def.port,{import:name},"serviceWorkerImportPublished");
             if (def.onimported_timeout) {
                 clearTimeout(def.onimported_timeout);
                 delete def.onimported_timeout;
@@ -183,9 +183,13 @@ function getEventData(event) {
   }
 }
 
-function sendPortData(port,data,debug) {
+function sendPortData(port,data,debug,worker) {
     const json = JSON.stringify(data,undefined,4);
-    port.postMessage();
+    if (worker) {
+       worker.postMessage(json,[port]); 
+    } else {
+       port.postMessage(json);
+    }
     console.log(debug+":"+json);
 }
 
@@ -250,7 +254,8 @@ function onIncomingMessage(def){
                                    complete:name,
                                    notify:"onresult",
                                    result:result,
-                                   id:id});
+                                   id:id},
+                                   "onIncomingMessage/invoke-notifyResult");
                             },
                             
                             notifyError = function(err) {
@@ -258,7 +263,8 @@ function onIncomingMessage(def){
                                 complete:name,
                                 notify:"onerror",
                                 result:{message:err.message||err,stack:err.stack||''},
-                                id:id});
+                                id:id},
+                                "onIncomingMessage/invoke-notifyError");
                             };
                             
                             try {
@@ -301,7 +307,7 @@ function serviceWorkerMaster(event){
             // this worker needs this function
             def.port = event.ports[0];
             def.port.onmessage = onIncomingMessage(def);
-            sendPortData(def.port,{imported:event_data.publish});
+            sendPortData(def.port,{imported:event_data.publish},"serviceWorkerMaster");
             if (def.onexported) {
                 def.onexported(def);
                 delete def.onexported;
