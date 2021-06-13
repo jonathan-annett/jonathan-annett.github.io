@@ -1,77 +1,78 @@
-
 <!doctype html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
-    <title>jsdifflib demo</title>
-    <link rel="stylesheet" type="text/css" href="diffview.css"/>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js" integrity="sha512-GkJRKF+k/yzHfJUg9LrNLQhS0jorQe4kES+GHkqtQThCJ5z5A1KwCXH0GYbJApDh/a3ERFvq9xbRJY9mEXzQiA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script type="text/javascript" src="diffview.js"></script>
-    <script type="text/javascript" src="difflib.js"></script>
-    
-    <script src="/zed/pwa/sw/utils.js" ></script>
-    <script src="/zed/pwa/sw/config.js" ></script>
-    
-    <script src="diff.js" defer></script>
-<style type="text/css">
-body {
-    font-size: 12px;
-    font-family: Sans-Serif;
-}
-h2 {
-    margin: 0.5em 0 0.1em;
-    text-align: center;
-}
-.top {
-    text-align: center;
-}
-.textInput {
-    display: block;
-    width: 49%;
-    float: left;
-}
-textarea {
-    width:100%;
-    height:300px;
-}
-label:hover {
-    text-decoration: underline;
-    cursor: pointer;
-}
-.spacer {
-    margin-left: 10px;
-}
-.viewType {
-    font-size: 16px;
-    clear: both;
-    text-align: center;
-    padding: 1em;
-}
-#diffoutput {
-    width: 100%;
-}
-</style>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+        <title>jsdifflib demo</title>
+        <link rel="stylesheet" type="text/css" href="diffview.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js" integrity="sha512-GkJRKF+k/yzHfJUg9LrNLQhS0jorQe4kES+GHkqtQThCJ5z5A1KwCXH0GYbJApDh/a3ERFvq9xbRJY9mEXzQiA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script type="text/javascript" src="diffview.js"></script>
+        <script type="text/javascript" src="difflib.js"></script>
+        <script src="/zed/pwa/sw/utils.js"></script>
+        <script src="/zed/pwa/sw/config.js"></script>
+        <script src="diff.js" defer></script>
+        <style type="text/css">
+            body {
+                font-size: 12px;
+                font-family: Sans-Serif;
+            }
+            h2 {
+                margin: 0.5em 0 0.1em;
+                text-align: center;
+            }
+            .top {
+                text-align: center;
+            }
+            .textInput {
+                display: block;
+                width: 49%;
+                float: left;
+            }
+            textarea {
+                width:100%;
+                height:300px;
+            }
+            label:hover {
+                text-decoration: underline;
+                cursor: pointer;
+            }
+            .spacer {
+                margin-left: 10px;
+            }
+            .viewType {
+                font-size: 16px;
+                clear: both;
+                text-align: center;
+                padding: 1em;
+            }
+            #diffoutput {
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="top"> <strong>File:</strong> 
+            <select name="selectFile" id="selectFile">
+                <option value="loading">...</option>
+            </select> <strong>Context size (optional):</strong> 
+            <input type="text" id="contextSize" value="" />
+        </div>
+        <div class="textInput">
+             <h2 id="baseText_caption">Base Text</h2>
 
-</head>
-<body>
-    <div class="top">
-        <strong>Context size (optional):</strong> <input type="text" id="contextSize" value="" />
-    </div>
-    <div class="textInput">
-        <h2 id="baseText_caption">Base Text</h2>
-        <textarea id="baseText"></textarea>
-    </div>
-    <div class="textInput spacer">
-        <h2 id="newText_caption">New Text</h2>
-        <textarea id="newText"></textarea>
-    </div>
-    <div class="viewType">
-        <input type="radio" name="_viewtype" id="sidebyside" onclick="diffUsingJS(0);" /> <label for="sidebyside">Side by Side Diff</label>
-        &nbsp; &nbsp;
-        <input type="radio" name="_viewtype" id="inline" onclick="diffUsingJS(1);" /> <label for="inline">Inline Diff</label>
-    </div>
-    <div id="diffoutput"> </div>
-   
-</body>
+            <textarea id="baseText"></textarea>
+        </div>
+        <div class="textInput spacer">
+             <h2 id="newText_caption">New Text</h2>
+
+            <textarea id="newText"></textarea>
+        </div>
+        <div class="viewType">
+            <input type="radio" name="_viewtype" id="sidebyside" onclick="diffUsingJS(0);" />
+            <label for="sidebyside">Side by Side Diff</label>&nbsp; &nbsp;
+            <input type="radio" name="_viewtype" id="inline" onclick="diffUsingJS(1);" />
+            <label for="inline">Inline Diff</label>
+        </div>
+        <div id="diffoutput"></div>
+    </body>
 </html>
