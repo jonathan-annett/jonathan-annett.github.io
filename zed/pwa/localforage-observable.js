@@ -1,11 +1,5 @@
-(function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('localforage')) :
-    typeof define === 'function' && define.amd ? define(['exports', 'localforage'], factory) :
-    (factory((global.localforageObservable = {}),global.localforage));
-}(this, (function (exports,localforage) { 'use strict';
-
-    localforage = localforage && localforage.hasOwnProperty('default') ? localforage['default'] : localforage;
-
+/* global localforage, Observable */
+(function(exports){
     var toString = Object.prototype.toString;
     function isDate(value) {
         return toString.call(value) === '[object Date]';
@@ -501,5 +495,4 @@
     exports.extendPrototypeResult = extendPrototypeResult;
 
     Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
+})(window);

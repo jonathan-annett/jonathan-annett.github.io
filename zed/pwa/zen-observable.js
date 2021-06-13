@@ -1,4 +1,4 @@
-/*=esdown=*/(function(fn, name) { if (typeof exports !== 'undefined') fn(exports, module); else if (typeof self !== 'undefined') fn(name === '*' ? self : (name ? self[name] = {} : {})); })(function(exports, module) { 'use strict'; // === Job Queueing ===
+(function(exports){
 var enqueueJob = (function(_) {
 
     // Node
@@ -561,7 +561,7 @@ Object.defineProperty(Observable, getSymbol("species"), {
     configurable: true,
 });
 
+
 exports.Observable = Observable;
 
-
-}, "*");
+})(window);
