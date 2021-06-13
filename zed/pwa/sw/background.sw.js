@@ -56,6 +56,6 @@ localforage.ready(function() {
     return localforage.setItem('notObservedKey', 'notObservedValue');
   }).then(function() {
     console.log('setItem(\'notObservedKey\', \'notObservedValue\')');
-    return localforage.clear();
+    //return localforage.clear();
   });
 });

@@ -37,7 +37,7 @@ localforage.ready(function() {
     return localforage.setItem('xnotObservedKey', 'notObservedValue');
   }).then(function() {
     console.log('setItem(\'xnotObservedKey\', \'notObservedValue\')');
-    return localforage.clear();
+    //return localforage.clear();
   });
 });
     
