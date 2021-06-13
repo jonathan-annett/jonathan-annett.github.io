@@ -207,7 +207,7 @@ function onIncomingMessage(def){
         console.log("onIncomingMessage:"+event.data);
         
        ["invoke","complete","import","export"].some(function(verb){
-            const notify  = "on"+verb+"ed".replace(/eed$/,'ed'); 
+            const notify  = ("on"+verb+"ed").replace(/eed$/,'ed'); 
             const notify_timeout  = notify+"_timeout"; 
             const fn_name = event_data[verb];
             
