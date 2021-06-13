@@ -17,7 +17,7 @@ cacheName   = config_url.replace(/\//g,'-').substr(1).replace('.json', '-'+versi
 importScripts("/zed/pwa/zen-observable.js","/zed/pwa/localforage.js","/zed/pwa/localforage-observable.js");
 
 
-importScripts("swivel.js","utils.js",  "config.js", "install.js", "fetch.js", "activate.js");
+importScripts("swivel.min.js","utils.js",  "config.js", "install.js", "fetch.js", "activate.js");
 
 //addEventListener("message",  sw_message);
 addEventListener("install",  sw_install);
