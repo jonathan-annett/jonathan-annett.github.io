@@ -190,7 +190,7 @@ function sendPortData(port,data,debug,worker) {
     } else {
        port.postMessage(json);
     }
-    console.log(debug+":"+json);
+    console.log(debug+": SENDING>>>>"+json);
 }
 
 function onIncomingMessage(def){
