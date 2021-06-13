@@ -11,27 +11,36 @@ function bootPage(){
         
         "https://raw.githubusercontent.com/zedapp/zed/master/app",
         "https://jonathan-annett.github.io/zed/app",
+        
+        "https://github.com/zedapp/zed/blob/master/app",
+        "https://github.com/jonathan-annett/jonathan-annett.github.io/zed/app",
+        
         file,
         0);
 }
 
-function loadURLS(url1, url2) {
+function loadURLS(url1, url2,link1,link2) {
     
     return new Promise(promised);
     
     function promised(resolve,reject){
         
         const byId = function (id) { return document.getElementById(id); },
-        toElement = function(id) { return function(text) { byId(id).value=text; return Promise.resolve(); }; };
+        toElement = function(id,url) { 
+            return function(text) { 
+                byId(id).value=text; 
+                byId(id+"_caption").innerHTML='<a href="'+url+'">'+url.split('/').pop()+'</a>'; 
+                return Promise.resolve(); }; 
+        };
                 
         fetch(url1)
         .then(toText)
-        .then(toElement("baseText"))
+        .then(toElement("baseText",link1))
         .then(function(){
             
-            fetch(url1)
+            fetch(url2)
                 .then(toText)
-                .then(toElement("newText"))
+                .then(toElement("newText",link2))
                 .then(function(){
                     resolve();
                     
@@ -43,12 +52,15 @@ function loadURLS(url1, url2) {
     function toText(response){ return response.text()}
 }
 
-function showFileDifference(base,newbase,file,viewType) {
+function showFileDifference(base,newBase,linkBase,newLinkBase,file,viewType) {
+    const fixurl = function(base,file){ return 'https://' + (base.replace(/^https:\/\//,'') + '/' + file).replace(/\/\//g,'/'); };
+    const url1 = fixurl(base,file);
+    const url2 = fixurl(newBase,file);
     
-    const url1 = 'https://' + (base.replace(/^https:\/\//,'') + '/' + file).replace(/\/\//g,'/');
-    const url2 = 'https://' + (newbase.replace(/^https:\/\//,'') + '/' + file).replace(/\/\//g,'/');
-    
-    loadURLS(url1, url2) 
+    const link1 = fixurl(linkBase,file);
+    const link2 = fixurl(newLinkBase,file);
+
+    loadURLS(url1, url2, link1,link2) 
     
       .then (function(diffs) {
                   

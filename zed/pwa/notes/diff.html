@@ -76,16 +76,15 @@ function diffUsingJS(viewType) {
 </script>
 </head>
 <body>
-    <h1 class="top"><a href="http://github.com/cemerick/jsdifflib">jsdifflib</a> demo</h1>
     <div class="top">
         <strong>Context size (optional):</strong> <input type="text" id="contextSize" value="" />
     </div>
     <div class="textInput">
-        <h2>Base Text</h2>
+        <h2 id="baseText_caption">Base Text</h2>
         <textarea id="baseText"></textarea>
     </div>
     <div class="textInput spacer">
-        <h2>New Text</h2>
+        <h2 id="newText_caption">New Text</h2>
         <textarea id="newText"></textarea>
     </div>
     <div class="viewType">
