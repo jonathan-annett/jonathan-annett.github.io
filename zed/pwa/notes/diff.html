@@ -6,8 +6,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
     <title>jsdifflib demo</title>
     <link rel="stylesheet" type="text/css" href="diffview.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js" integrity="sha512-GkJRKF+k/yzHfJUg9LrNLQhS0jorQe4kES+GHkqtQThCJ5z5A1KwCXH0GYbJApDh/a3ERFvq9xbRJY9mEXzQiA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script type="text/javascript" src="diffview.js"></script>
     <script type="text/javascript" src="difflib.js"></script>
+    
+    <script src="/zed/pwa/sw/utils.js" ></script>
+    <script src="/zed/pwa/sw/config.js" ></script>
+    
+    <script src="diff.js" defer></script>
 <style type="text/css">
 body {
     font-size: 12px;
@@ -47,10 +53,6 @@ label:hover {
 }
 </style>
 
-<script src="/zed/pwa/sw/utils.js" ></script>
-<script src="/zed/pwa/sw/config.js" ></script>
-
-<script src="diff.js" defer></script>
 </head>
 <body>
     <div class="top">

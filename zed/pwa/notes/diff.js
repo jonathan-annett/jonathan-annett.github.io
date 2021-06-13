@@ -1,4 +1,4 @@
-/* global diffUsingJS,difflib,diffview, getConfig*/
+/* global diffUsingJS,difflib,diffview, getConfig,getPWAFiles */
 
 
 const sw_path    = "/zed/pwa/sw/background.sw.js";
@@ -12,20 +12,26 @@ function bootPage(){
 }
 
 function loadPage(config){
+     if (config && config.diff) {
+         
+           getPWAFiles().then (showFirstFile);
+
+    }
     
-    let file = location.search ? location.search.substr(1): "manifest.json";
     
-    showFileDifference (
-        
-        "https://raw.githubusercontent.com/zedapp/zed/master/app",
-        "https://jonathan-annett.github.io/zed/app",
-        
-        "https://github.com/zedapp/zed/blob/master/app",
-        "https://github.com/jonathan-annett/jonathan-annett.github.io/blob/main/zed/app",
-        
-        file,
-        0);
+    function showFirstFile(){    
+       let file = location.search ? location.search.substr(1): config.diff.default;
+       
+       showFileDifference (
+           config.diff.base,
+           config.diff.newBase,
+           config.diff.linkBase,
+           config.diff.newLinkBase,
+           file,
+           0);
+    }
 }
+
 
 function loadURLS(url1, url2,link1,link2) {
     

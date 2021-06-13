@@ -4,6 +4,18 @@
      
          "root" : "https://jonathan-annett.github.io/zed/",
          
+         "diff" : {
+                     
+             "base"     : "https://raw.githubusercontent.com/zedapp/zed/master/app",
+             "newBase"  : "https://jonathan-annett.github.io/zed/app",
+             
+             "linkBase"    :  "https://github.com/zedapp/zed/blob/master/app",
+             "newLinkBase" :  "https://github.com/jonathan-annett/jonathan-annett.github.io/blob/main/zed/app",
+             
+             "default" : "js/boot.js"
+             
+         },
+         
          "files" : [
              
             "/zed",
