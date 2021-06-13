@@ -1,5 +1,5 @@
 
-/* global openNamedMessageChannel */
+/* global publishNamedFunction, importPublishedFunction, toResolver */
 function w_load() {
     
     const sw_path    = "/zed/pwa/sw/background.sw.js";
@@ -20,7 +20,7 @@ function w_load() {
        }    
     ); 
     
-    
+    /*
     function zed_api () {
         
         var On='addEventListener';
@@ -257,6 +257,7 @@ function w_load() {
         
         
     }
+   */
    
     function downloadJSON(response) { return response.json(); }
     
@@ -285,7 +286,7 @@ function w_load() {
         load_new_version.addEventListener('click', click);
     }
     
-    function installerMsg(cb,msg){
+    function updateInstallProgress(cb,msg){
         if (msg.files) {
            installerProgress =   qs("#progress_container");
            installerProgress.innerHTML= '<progress max="' + msg.files.length + '" value="0"> 0% </progress';
@@ -299,23 +300,23 @@ function w_load() {
             progress_message.innerHTML = msg.url;
         } 
         
-        if (msg.done && cb) {
-            cb();
-        }
     }
     
     
-    
+
     function afterInstall(reg,cb) {
         
         const worker = reg.installing || reg.waiting || reg.active;
         
-        openNamedMessageChannel('UPDATE',worker)
-            .then(function(chan){
-                chan.onmessage(installerMsg.bind(this,cb))
-            }); 
+        publishNamedFunction(updateInstallProgress,worker).then (function(){
+           console.log('updateInstallProgress imported ok');      
+        });
         
-       
+        
+        publishNamedFunction('updateDone',cb,worker).then (function(){
+           console.log('updateDone imported ok');      
+        });
+
         /*
         var api = zed_api();
         api.attach(messageReceiver(
@@ -421,6 +422,7 @@ function w_load() {
     }
     
     function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
+    
     function bufferToText(x) {return new TextEncoder("utf-8").decode(x);}
     
     function bufferToHex(buffer) {

@@ -1,5 +1,5 @@
 
-/* global self, importScripts, caches ,registration,clients ,Response,localforage,cacheName  */    
+/* global self, importScripts, caches ,registration,clients ,Response, localforage, cacheName  */    
 
 
 function matchJSFixes () {

@@ -4,8 +4,23 @@
 /* global getPWAFiles, updateURLArray */
  
 const isSw = typeof self+typeof window+typeof caches+typeof document ==='objectundefinedobjectundefined',
+      
       isBrowser  = !isSw,
+      
       sw_message = isSw ? _sw_message : _bad_sw_message,
+      
+      isPromise  = function (p) {
+          return typeof p==='object' && p.constructor === Promise;
+      },
+      
+      toPromise = function (p) {
+          return isPromise(p) ? p : Promise.resolve(p);
+      },
+      
+      toResolver = function (f) {
+          if (f) return f;
+          return function(){return Promise.resolve(); };
+      },
       
       //unitilty function to copy arguments into a standard Array
       cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice),
@@ -20,6 +35,8 @@ const isSw = typeof self+typeof window+typeof caches+typeof document ==='objectu
 if (isSw) {
     addEventListener("message", serviceWorkerMaster); 
 }
+
+
 
 function publishNamedFunction (name,fn,worker) {
     
@@ -120,7 +137,7 @@ function importPublishedFunction (name,worker) {
             resolve (remoteHandler (def));
         } else {
             neededFunctions[name] = def = {
-                onimport           : function (def){return resolve(remoteHandler (def))},
+                onimport           : function (def){return resolve(remoteHandler (def));},
                 onimported_timeout : setTimeout(reject,5000)
             };
         }
@@ -148,7 +165,7 @@ function importPublishedFunction (name,worker) {
                def.port.postMessage(msg);
             }
             
-        }
+        };
     }
     
 }
@@ -185,7 +202,9 @@ function onIncomingMessage(def){
                 }
                 
                 switch  (verb) {
+                    
                     case "export":
+                        
                     case "import":  {
                         def[ notify ](def);
                         delete def[ notify ];
@@ -206,20 +225,40 @@ function onIncomingMessage(def){
                         return true;
                     }
                     case "invoke" :{
+                        
                             const id = event_data.id;
+                            
+                            const 
+                            notifyResult = function(result){
+                                def.port.postMessage(JSON.stringify({
+                                   complete:name,
+                                   notify:"onresult",
+                                   result:result,
+                                   id:id}));
+                            },
+                            
+                            notifyError = function(err) {
+                                def.port.postMessage(JSON.stringify({
+                                complete:name,
+                                notify:"onerror",
+                                result:{message:err.message||err,stack:err.stack||''},
+                                id:id}));
+                            };
+                            
                             try {
-                                const result = def.fn.apply(this,event_data.args);
-                                def.port.postMessage(JSON.stringify({
-                                    complete:name,
-                                    notify:"onresult",
-                                    result:result,
-                                    id:id}));
+                                
+                                toPromise( 
+                                    
+                                    // function can return a value or a promise  to a value
+                                    def.fn.apply(this,event_data.args||[]) 
+                                    
+                                ) .then(notifyResult)
+                                     .catch (notifyError);
+                                
                             } catch (e) {
-                                def.port.postMessage(JSON.stringify({
-                                    complete:name,
-                                    notify:"onerror",
-                                    result:{message:e.message,stack:e.stack},
-                                    id:id}));
+                                
+                                notifyError(e);
+                                
                             }
                         
                             return true;
@@ -256,7 +295,7 @@ function serviceWorkerMaster(event){
         } else {
             availableFunctions[ event_data.publish ] = def = {
                port : event.ports[0]
-            }
+            };
             def.port.onmessage = onIncomingMessage(def);
         }
     }
@@ -294,7 +333,7 @@ function promiseWrap(browserPromised,serviceWorkerPromised,worker) {
             if (!worker) {
                 navigator.serviceWorker.getRegistration().then(chooseRegWorker);
             } else {
-                browserPromised(resolve,reject,worker)
+                browserPromised(resolve,reject,worker);
             }
     
         } else {
@@ -331,7 +370,7 @@ function messageSender(NAME,port) {
          pending.forEach(function (msg){
              messagePort.postMessage({ type : NAME, msg : msg, delayed:true });
          });
-         pending.splice(0,pending.length)
+         pending.splice(0,pending.length);
          pending=undefined;
        }
    },
@@ -392,7 +431,7 @@ function messageReceiver(worker,NAME,cb) {
         send : function (reply) {
             worker.postMessage(reply, [messageChannel.port2]);
         }
-    }
+    };
 }
 
 
@@ -409,21 +448,6 @@ function _sw_message( e ) {
         return self.skipWaiting();
     }
  
-    if (e.data.type === 'UPDATE') {
-        getPWAFiles().then( function(filesToCache){
-           const progressUpdate = messageSender('UPDATE',e.ports[0]);
-           const urls = filesToCache.site.concat(filesToCache.github);
-           progressUpdate.send({files : urls});
-           return caches.open(cacheName).then(function(cache) {
-               updateURLArray(cache,urls,progressUpdate)
-                 .then (function(){
-                     progressUpdate.send({done : 1});
-                 });
-               
-           });
-       
-        });
-    }
-    
+   
    
 }  
