@@ -1,5 +1,5 @@
 
-/* global self, importScripts, caches ,registration,clients ,Response,localforage, cacheName */
+/* global self, importScripts, caches ,registration,clients ,Response,localforage, cacheName, BroadcastChannel */
 
 /* global getPWAFiles, updateURLArray */
  
@@ -43,6 +43,7 @@ function setTimeoutDebug(timeout,interval,name) {
     },interval,new Error("firing named timeout:"+name));
 }
 
+
 function publishNamedFunction (name,fn,worker) {
     
     if (typeof name === 'function') {
@@ -54,6 +55,77 @@ function publishNamedFunction (name,fn,worker) {
     return promiseWrap(browserPublishNamed,serviceWorkerPublishNamed,worker);
     
     function browserPublishNamed(resolve,reject,worker){
+
+            
+            
+            const broadcastChannel = new BroadcastChannel('fn-'+name);
+            
+            
+            const messageChannel = new MessageChannel();
+            
+            var def = requestedFunctions[name] || publishedFunctions[name];
+            if (def) {
+                def.sendPort   = messageChannel.port1;
+                def.recvPort   = broadcastChannel;
+                def.fn         = fn;
+                def.onexported = resolve;
+                def.worker     = worker;
+                    
+                if (def.onexported_timeout) {
+                    clearTimeout(def.onexported_timeout);
+                }
+                
+                delete requestedFunctions[name];
+                publishedFunctions[name] = def;
+                def.onexported_timeout   = setTimeoutDebug(reject,5000,"onexported_timeout");
+                
+            } else {
+                
+                publishedFunctions[name] = def = {
+                    worker             : worker,
+                    sendPort           : messageChannel.port1,
+                    recvPort           : broadcastChannel,
+                    fn                 : fn,
+                    onexported         : resolve,
+                    onexported_timeout : setTimeoutDebug(reject,5000,"onexported_timeout")
+                };
+                
+            }
+            
+            const onmessage = onIncomingMessage(def);
+            
+            def.recvPort.addEventListener('message',onmessage);
+            
+            sendPortData(def.sendPort,{publish:name}, "browserPublishNamed", worker, messageChannel.port2 );
+
+    }
+    
+    function serviceWorkerPublishNamed(resolve,reject){
+        const def = requestedFunctions[name];
+        const broadcastChannel = new BroadcastChannel('fn-'+name);
+        
+        if (def) {
+            const onmessage = onIncomingMessage(def);
+            def.recvPort.addEventListener('message',onmessage);
+            def.fn = fn;
+            delete requestedFunctions[name];
+            exportedFunctions[name]=def;
+            def.sendPort = broadcastChannel;
+            sendPortData(def.sendPort,{publish:name},"serviceWorkerPublishNamed");
+            resolve (def);
+        } else {
+            publishedFunctions[name] = {
+                fn                 : fn,
+                sendPort           : broadcastChannel,
+                onexported         : resolve,
+                onexported_timeout : setTimeoutDebug(reject,5000,"onexported_timeout")
+            };
+        }
+        
+    }
+        
+    function browserPublishNamed_legacy(resolve,reject,worker){
+    
 
         const messageChannel = new MessageChannel();
         
@@ -90,7 +162,7 @@ function publishNamedFunction (name,fn,worker) {
         
     }
     
-    function serviceWorkerPublishNamed(resolve,reject){
+    function serviceWorkerPublishNamed_legacy(resolve,reject){
         
         const def = requestedFunctions[name];
         
@@ -120,6 +192,56 @@ function importPublishedFunction (name,worker) {
     
     function browserImportPublished(resolve,reject,worker) {
 
+
+        const broadcastChannel = new BroadcastChannel('fn-'+name);
+        const messageChannel = new MessageChannel();
+         
+        
+        const def = {
+           sendPort           : messageChannel.port1,
+           recvPort           : broadcastChannel,
+           onimported         : resolve,
+           worker             : worker,
+           onimported_timeout : setTimeoutDebug(reject,5000,"onimported_timeout")
+        };
+        
+        const onmessage = onIncomingMessage(def);
+        def.recvPort.addEventListener('message',onmessage);
+        
+        
+        worker.postMessage(JSON.stringify({import:name}), [ messageChannel.port2 ]);
+
+    }
+    
+    function serviceWorkerImportPublished(resolve,reject){
+        
+        const broadcastChannel = new BroadcastChannel('fn-'+name);
+        
+        var def = availableFunctions[name];
+        
+        if (def) {
+            const onmessage = onIncomingMessage(def);
+            def.recvPort.addEventListener('message',onmessage);
+            def.sendPort = broadcastChannel;
+            sendPortData(def.sendPort,{import:name},"serviceWorkerImportPublished");
+            if (def.onimported_timeout) {
+                clearTimeout(def.onimported_timeout);
+                delete def.onimported_timeout;
+            }
+            resolve (remoteHandler (def));
+        } else {
+            neededFunctions[name] = def = {
+                onimport           : function (def){return resolve(remoteHandler (def));},
+                sendPort           : broadcastChannel,
+                onimported_timeout : setTimeoutDebug(reject,5000,"onimported_timeout")
+            };
+        }
+        
+    }
+    
+    
+    function browserImportPublished_legacy(resolve,reject,worker) {
+
         const messageChannel = new MessageChannel();
         
         const def = {
@@ -136,7 +258,7 @@ function importPublishedFunction (name,worker) {
 
     }
     
-    function serviceWorkerImportPublished(resolve,reject){
+    function serviceWorkerImportPublished_legacy(resolve,reject){
         
         var def = availableFunctions[name];
         
@@ -157,7 +279,7 @@ function importPublishedFunction (name,worker) {
         }
         
     }
-    
+ 
     
     function remoteHandler (def) {
         
@@ -176,7 +298,7 @@ function importPublishedFunction (name,worker) {
             function toCallRemote (resolve,reject) {
                def.onresult = resolve;
                def.onerror  = reject;
-               def.port.postMessage(msg);
+               def.sendPort.postMessage(msg);
             }
             
         };
@@ -260,7 +382,7 @@ function onIncomingMessage(def){
                             const 
                             notifyResult = function(result){
                                 sendPortData(
-                                    def.port,
+                                    def.sendPort,
                                     {
                                        complete:name,
                                        notify:"onresult",
@@ -273,7 +395,7 @@ function onIncomingMessage(def){
                             
                             notifyError = function(err) {
                                 sendPortData(
-                                    def.port,
+                                    def.sendPort,
                                     {
                                         complete:name,
                                         notify:"onerror",
@@ -322,10 +444,10 @@ function serviceWorkerMaster(event){
         let def = neededFunctions[event_data.publish];
         if (def) {
             // this worker needs this function
-            def.port = event.ports[0];
+            def.recvPort = event.ports[0];
             const onmessage = onIncomingMessage(def);
-            def.port.addEventListener('message',onmessage);
-            sendPortData(def.port,{import:event_data.publish},"serviceWorkerMaster");
+            def.recvPort.addEventListener('message',onmessage);
+            sendPortData(def.sendPort,{import:event_data.publish},"serviceWorkerMaster");
             if (def.onexported) {
                 def.onexported(def);
                 delete def.onexported;
@@ -335,10 +457,10 @@ function serviceWorkerMaster(event){
             console.log("serviceWorkerMaster:neededFunctions[",fn_name,"]--> importedFunctions");
         } else {
             availableFunctions[ event_data.publish ] = def = {
-               port : event.ports[0]
+               recvPort : event.ports[0]
             };
             const onmessage = onIncomingMessage(def);
-            def.port.addEventListener('message',onmessage);
+            def.recvPort.addEventListener('message',onmessage);
             console.log("serviceWorkerMaster:",fn_name,"--> availableFunctions");
         }
     }
@@ -349,18 +471,18 @@ function serviceWorkerMaster(event){
         let def = publishedFunctions[ event_data.import ];
         if (def ) {
             //sw already published this function, which peer is now publishing
-            def.port = event.ports[0];
+            def.recvPort = event.ports[0];
             const onmessage = onIncomingMessage(def);
-            def.port.addEventListener('message',onmessage);
-            def.port.onmessage(event);
+            def.recvPort.addEventListener('message',onmessage);
+            onmessage(event);
             
         } else {
             // peer is requesting a yet to be published function
             requestedFunctions[ event_data.import  ] = def = {
-                port : event.ports[0]
+                recvPort : event.ports[0]
             };
             const onmessage = onIncomingMessage(def);
-            def.port.addEventListener('message',onmessage);
+            def.recvPort.addEventListener('message',onmessage);
             console.log("serviceWorkerMaster:",fn_name,"--> requestedFunctions");
         }
 
