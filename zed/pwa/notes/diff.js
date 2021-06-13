@@ -29,7 +29,7 @@ function loadURLS(url1, url2,link1,link2) {
         toElement = function(id,url) { 
             return function(text) { 
                 byId(id).value=text; 
-                byId(id+"_caption").innerHTML='<a href="'+url+'">'+url.split('/').pop()+'</a>'; 
+                byId(id+"_caption").innerHTML='<a href="'+url+'">'+url.split('://').pop()+'</a>'; 
                 return Promise.resolve(); }; 
         };
                 
