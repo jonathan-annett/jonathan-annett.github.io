@@ -5,42 +5,7 @@ function w_load() {
     const sw_path    = "/zed/pwa/sw/background.sw.js";
     const config_url = "/zed/pwa/files.json";
     
-     
-localforage.ready(function() {
-  var observable = localforage.newObservable();
-  var subscription = observable.subscribe({
-    next: function(args) {
-      console.log('I observe everything', args);
-    },
-    error: function(err) {
-      console.log('Found an error!', err);
-    },
-    complete: function() {
-      console.log('Observable destroyed!');
-    }
-  });
-  localforage.setItem('xtest1', 'xvalue1').then(function() {
-    console.log('setItem(\'xtest1\', \'value1\')');
-    return localforage.setItem('xtest2', 'value2');
-  }).then(function() {
-    console.log('setItem(\'xtest2\', \'value2\')');
-    return localforage.setItem('xtest2', 'value2b');
-  }).then(function() {
-    console.log('setItem(\'xtest2\', \'value2b\')');
-    return localforage.setItem('xtest2', 'value2b');
-  }).then(function() {
-    console.log('setItem(\'xtest2\', \'value2b\')');
-    return localforage.setItem('xtest3', 'value3');
-  }).then(function() {
-    console.log('setItem(\'xtest3\', \'value3\')');
-    subscription.unsubscribe();
-    return localforage.setItem('xnotObservedKey', 'notObservedValue');
-  }).then(function() {
-    console.log('setItem(\'xnotObservedKey\', \'notObservedValue\')');
-    //return localforage.clear();
-  });
-});
-    
+ 
     var 
     
     qs=document.querySelector.bind(document),
