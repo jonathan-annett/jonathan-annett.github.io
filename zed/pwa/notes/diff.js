@@ -26,12 +26,12 @@ function loadURLS(url1, url2) {
                 
         fetch(url1)
         .then(toText)
-        .then(toElement("basetext"))
+        .then(toElement("baseText"))
         .then(function(){
             
             fetch(url1)
                 .then(toText)
-                .then(toElement("newtext"))
+                .then(toElement("newText"))
                 .then(function(){
                     resolve();
                     
