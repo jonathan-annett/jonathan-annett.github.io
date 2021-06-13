@@ -12,7 +12,7 @@ function bootPage(){
 }
 
 function loadPage(config){
-     if (config && config.diff) {
+     if (config && config.site.diff) {
          
            getPWAFiles().then (showFirstFile);
 
@@ -20,13 +20,13 @@ function loadPage(config){
     
     
     function showFirstFile(){    
-       let file = location.search ? location.search.substr(1): config.diff.default;
+       let file = location.search ? location.search.substr(1): config.site.diff.default;
        
        showFileDifference (
-           config.diff.base,
-           config.diff.newBase,
-           config.diff.linkBase,
-           config.diff.newLinkBase,
+           config.site.diff.base,
+           config.site.diff.newBase,
+           config.site.diff.linkBase,
+           config.site.diff.newLinkBase,
            file,
            0);
     }
