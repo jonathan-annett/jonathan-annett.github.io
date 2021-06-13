@@ -43,7 +43,7 @@ function setTimeoutDebug(timeout,interval,name) {
     },interval,new Error("firing named timeout:"+name));
 }
 
-function publishNamedFunction (name,fn,worker) {
+function publishNamedFunction (name,fn) {
     
     if (typeof name === 'function') {
         worker = fn;
@@ -51,7 +51,7 @@ function publishNamedFunction (name,fn,worker) {
         name   = fn.name;
     }
 
-    return promiseWrap(browserPublishNamed,serviceWorkerPublishNamed,worker);
+    return promiseWrap(browserPublishNamed,serviceWorkerPublishNamed);
     
     function browserPublishNamed(resolve,reject,worker){
 
@@ -239,6 +239,7 @@ function onIncomingMessage(def){
                         delete def[ notify ];
                         return true;
                     }
+                    
                     case "complete": {
                         const trigger  = event_data.id;
                         const triggers = event_data.result && def.onresult[ trigger ] ;
@@ -253,6 +254,7 @@ function onIncomingMessage(def){
                         }
                         return true;
                     }
+                    
                     case "invoke" :{
                         
                             const id = event_data.id;
@@ -361,36 +363,18 @@ function serviceWorkerMaster(event){
 
 
 
-function promiseWrap(browserPromised,serviceWorkerPromised,worker) {
+function promiseWrap(browserPromised,serviceWorkerPromised) {
     
     return new Promise(promised);
     
     function promised(resolve,reject) {
         if (isBrowser) {
-            
-            if (!worker) {
-                navigator.serviceWorker.getRegistration().then(chooseRegWorker);
-            } else {
-                browserPromised(resolve,reject,worker);
-            }
+            browserPromised(resolve,reject,navigator.serviceWorker.controller);
     
         } else {
-            worker = undefined;
             serviceWorkerPromised(resolve,reject);
         }
         
-        
-        function chooseRegWorker(registration) {
-          if(registration){
-                const worker = registration.active  || registration.waiting  || registration.installing;
-                if (worker) {
-                   browserPromised(resolve,reject,worker);
-                } else {
-                   reject();   
-                }
-          }
-        } 
-    
     }
 }
 
