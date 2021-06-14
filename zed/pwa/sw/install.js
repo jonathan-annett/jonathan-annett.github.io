@@ -27,7 +27,10 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
      if (channel) {
          channel.onmessage=function(e) {
              if (e.data.summary) {
-                 console.log(e.data.summary)
+                 console.log(e.data.summary);
+                 sw_progress(undefined,101);
+                 if (channel) channel.close();
+                 sw_afterinstall(registration);
              } else {
                 sw_progress(e.data.url,e.data.progress);
              }
@@ -38,23 +41,10 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
      //navSw.addEventListener('controllerchange',sw_controllerchange);
      
      console.log("registering service worker script...");
-     navSw.register( sw_path )
-       .then (whenReady)/*
-       .then (function(registration){
-          console.log("registered.");
-          navSw.ready.then (whenReady);
-       })*/;
-           
-        
-    
+     navSw.register( sw_path );
+
      
 
-     function whenReady (registration) {
-         
-               sw_progress(undefined,101);
-               if (channel) channel.close();
-               sw_afterinstall(registration);
-     }
      
  
 
