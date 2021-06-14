@@ -13,6 +13,8 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
     //invoked from browser context, 
     const navSw = navigator.serviceWorker ;
     
+    var registration;
+    
      if (typeof sw_progress !== 'function') {
          sw_progress = function(url,progress){
               console.log("installing:",url||'',progress,"% complete");
@@ -41,12 +43,7 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
      //navSw.addEventListener('controllerchange',sw_controllerchange);
      
      console.log("registering service worker script...");
-     navSw.register( sw_path );
-
-     
-
-     
- 
+     navSw.register( sw_path ).then (function(reg){registration=reg;});
 
 }
 
