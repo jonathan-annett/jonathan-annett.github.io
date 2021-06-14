@@ -230,6 +230,7 @@ function toInstall (installComplete,installFailed) {
                 console.log({summary});
                 channel.postMessage(summary);
                 closeNotificationChannel();
+                installComplete();
             });
             
         });
