@@ -85,24 +85,34 @@ function promise2errback (p,cb) {
 
 
 function promiseAll2errback (arr,cb) {
+    let 
+    remain  = arr.length,error_count=0,
+    results = new Array(arr.length),
+    errors  = new Array(arr.length);
     
-    
-    
-    Promise.all(arr.map(errToNull))
-       .then(function(arr2){
-           cb(undefined,arr2);
-       });
+    arr.forEach(function(p,index){
         
-    function errToNull(p) {
-        return new Promise(function(resolve){
-            p.then(resolve).catch(nullify);
-            
-            function nullify(){
-                resolve(null);
-            }
-        });
-    }
+       p.then(function(x){
+           returns(undefined,x);
+       }).catch(function(x){
+           returns(x,null);
+       })
+       
+       function returns(err,value){
+          remain--; 
+          results[index]=value;
+          errors[index]=err;
+          if (err) {
+              error_count++;
+          }
+          if (remain===0) {
+              cb(error_count===0?undefined:errors,results)
+          }
+       }
+   
+    });
     
+
 }
 
 function caches_open(cacheName,cb) {
