@@ -255,7 +255,7 @@ function toInstall (installComplete,installFailed) {
                                progress : Math.ceil( (count  / all_files.length) * 100 )
                            });
                            
-                           resolve (response);
+                           cache.match(url).then(resolve).catch(reject);
                            
                        }) .catch(function(err){
                             //Error stuff
