@@ -51,85 +51,12 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
 
      function whenReady (registration) {
          
-        
-     
-               // Track updates to the Service Worker.
-               if (!navSw.controller) {
-                 // The window client isn't currently controlled so it's a new service
-                 // worker that will activate immediately
-                   console.log("service worker was just installed");
-                   return sw_afterinstall(registration);
-                 
-               }
-               
-               console.log("checking for service worker update.");
-               
-               registration.update();
-           
-               console.log("checking if service worker is installing...");
-               if (sw_checknewinstall(registration)===false) {
-                   console.log("service worker was not installing, starting now");
-                   sw_progress(undefined,101);
-                   if (channel) channel.close();
-                   sw_afterstart(registration);
-               }
-               
-    
-    
+               sw_progress(undefined,101);
+               if (channel) channel.close();
+               sw_afterstart(registration);
      }
      
-     
-    function sw_checknewinstall(registration) {
-       if (registration.waiting) {
-             // SW is waiting to activate. Can occur if multiple clients open and
-             // one of the clients is refreshed.
-             console.log("new service worker is available and is waiting.");
-             sw_progress(undefined,101);
-             if (channel) channel.close();
-             sw_afterstart(registration);
-             return true;
-       }
-     
-       if (registration.installing) {
-            sw_updatefound();
-            return true;
-       }
-     
-       // We are currently controlled so a new SW may be found...
-       // Add a listener in case a new SW is found,
-       registration.addEventListener('updatefound', sw_updatefound);
-       return false;
-       
-       
-       function sw_updatefound() {
-            console.log("service worker is installing... will wait for state change to installed..");
-            registration.installing.addEventListener('statechange', sw_statechange);
-       }
-       
-       
-       function sw_statechange(event) {
-         if (event.target.state === 'installed') {
-           // A new service worker is available, inform the user
-            console.log("service worker has installed, calling sw_afterinstall()");
-            sw_progress(undefined,101);
-            if (channel) channel.close();
-            sw_afterinstall(registration);
-         }
-       }
-       
-       
-    }
-     
-     /*
-    function sw_controllerchange(event) {
-        navSw.removeEventListener('controllerchange',sw_controllerchange);
-        console.log('Controller loaded');
-        window.location.reload();
-    }*/
-    
-     
-    
-
+ 
 
 }
 
