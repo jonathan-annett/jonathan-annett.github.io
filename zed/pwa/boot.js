@@ -51,6 +51,8 @@ function w_load() {
                 installerProgress =   qs("#progress_container");
                 installerProgress.innerHTML= '<progress max="100" value="0"> 0% </progress';
                 installerProgress = installerProgress.children[0];
+                
+                qs("#load_new_version").disabled = true;
             } else {
                 if (installerProgress && progress) {
                     installerProgress.value = progress;
@@ -61,7 +63,7 @@ function w_load() {
                 progress_message.innerHTML = url;
             } 
             
-            if (progress>100) {
+            if (progress>=100) {
                 console.log("install complete");
                 installerProgress.progress = 0;
                 progress_message.innerHTML = "install compelete";
