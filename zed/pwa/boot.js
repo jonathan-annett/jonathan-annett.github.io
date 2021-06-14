@@ -518,10 +518,23 @@ function w_load() {
             
             fetch(config_url)
               .then(downloadJSON)
-                .then(resolve).catch(reject);
-          
+                .then(filterConfigComments)
+                  .then(resolve).catch(reject);
+
+
         });
     }
+    
+    function removeJSONArrayComments(txt) {
+        return !txt.startsWith("<--");
+    }
+    
+    function filterConfigComments (config) {
+        config.site.files = config.site.files.filter(removeJSONArrayComments);
+        config.site.betaTesterKeys = config.site.betaTesterKeys.filter(removeJSONArrayComments);
+        return Promise.resolve(config);
+    }
+    
     
     
     // generic tools 

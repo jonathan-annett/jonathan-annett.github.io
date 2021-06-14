@@ -7,7 +7,8 @@ function getConfig() {
         
         fetch(config_url)
           .then(downloadJSON)
-            .then(cachedResolve(resolve,getConfig)).catch(reject);
+            .then(filterConfigComments)
+              .then(cachedResolve(resolve,getConfig)).catch(reject);
       
     });
 }
@@ -98,6 +99,18 @@ function getGithubFileList (github_io_base) {
     };
     
 }
+
+function removeJSONArrayComments(txt) {
+    return !txt.startsWith("<--");
+}
+
+function filterConfigComments (config) {
+    config.site.files = config.site.files.filter(removeJSONArrayComments);
+    config.site.betaTesterKeys = config.site.betaTesterKeys.filter(removeJSONArrayComments);
+    return Promise.resolve(config);
+}
+
+
 
 function downloadPWAFiles() {
     
