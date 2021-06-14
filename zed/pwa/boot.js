@@ -39,7 +39,7 @@ function w_load() {
             
              
 
-             function sw_ready (registration) {
+             function sw_ready (registration,count) {
                  
                  // Track updates to the Service Worker.
                if (!navSw.controller) {
@@ -47,7 +47,9 @@ function w_load() {
                  // worker that will activate immediately
                  console.log("service worker was just installed, waiting for it to finish");
                  //sw_afterstart(registration);
-                 return;
+                
+                 return count === 0  ? false : setTimeout(sw_ready,1000,registration, count===undefined?10:count-1);
+                 
                }
                
                console.log("checking for service worker update.");
