@@ -29,10 +29,4 @@ importScripts(
     "fetch.js", 
     "activate.js"
 );
-
-//addEventListener("message",  sw_message);
-addEventListener("install",  sw_install);
-addEventListener("fetch",    sw_fetch_);  
-addEventListener("activate", sw_activate);
-
  
