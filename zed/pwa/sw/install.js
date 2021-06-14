@@ -216,7 +216,7 @@ function toInstall (installComplete,installFailed) {
             const arrayOfPromisedUrls = all_files.map(addToCacheWithProgress(cache));
 
             promiseAll2errback(arrayOfPromisedUrls,function(err,arrayOfCacheResults){
-                if (err) return installFailed(err);
+                //if (err) return installFailed(err);
                 
                 const summary={progress:100,urls:{}};
                 arrayOfCacheResults.forEach(function(el){
@@ -230,7 +230,10 @@ function toInstall (installComplete,installFailed) {
                 console.log({summary});
                 channel.postMessage(summary);
                 closeNotificationChannel();
-                installComplete();
+                installComplete({
+                    err,
+                    arrayOfCacheResults
+                });
             });
             
         });
