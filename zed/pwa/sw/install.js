@@ -121,13 +121,13 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
    
     
     function doInstall (installComplete,installFailed) {
-        
+        console.log("doInstall()");
         return getPWAFiles(  ).then(install_PWAFiles).then(installComplete).catch(installFailed);
         
         
         
         function install_PWAFiles(filesToCache){
-            
+            return new Promise(function(resolve,reject){
               const channel = openNotificationChannel();
 
               const all_files = filesToCache.site.concat(filesToCache.github);
@@ -135,15 +135,17 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
             
              caches.open(cacheName).then(installFilesList)
                  .then(closeNotificationChannel)
-                  .then (installComplete) 
-                   .catch(installFailed);
+                  .then (resolve) 
+                   .catch(reject);
 
              
              function installFilesList(cache) {
+                  console.log("installFilesList()");
                   return Promise.all(all_files.map(function(url,index){
                  
                               return cache.add(url)
                                   .then(function(x){
+                                      console.log("installing:",url);
                                       channel.postMessage({url:url,progress:Math.ceil((index/all_files.length)*100)});
                                       return Promise.resolve(x);    
                                   }) .catch(function(err){
@@ -155,6 +157,7 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
              
              
              function openNotificationChannel() {
+                 console.log("openNotificationChannel()");
                  return typeof BroadcastChannel === 'function' ? 
                  new BroadcastChannel('installing') : 
                  {  postMessage:function(x){console.log("installed:",x.url,x.progress,"%")},
@@ -164,9 +167,11 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
              
              
              function closeNotificationChannel(){
+                 console.log("closeNotificationChannel()");
                  channel.close();
+                 return Promise.resolve();
              }
-              
+          });  
         }
     
     }
