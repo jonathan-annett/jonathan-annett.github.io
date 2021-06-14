@@ -24,7 +24,7 @@ function sw_activate ( e) {
             )
             
          );
-      
+         clients.claim();
     }));
     
 }
