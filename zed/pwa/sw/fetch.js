@@ -3,8 +3,11 @@
 
 (function (signature,service_worker_sig){
     
-    if (signature===service_worker_sig) addEventListener("fetch",    sw_fetch_);  
-
+    if (signature===service_worker_sig) {
+        console.log("registering sw_fetch_");
+        addEventListener("fetch",    sw_fetch_);  
+    }
+    
     function matchJSFixes () {
         return matchJSFixes.cache? Promise.resolve(matchJSFixes.cache):
         new Promise(function(resolve,reject){

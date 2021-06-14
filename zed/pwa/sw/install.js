@@ -38,8 +38,8 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
            if (!navSw.controller) {
              // The window client isn't currently controlled so it's a new service
              // worker that will activate immediately
-             console.log("service worker was just installed");
-             return sw_afterinstall(registration);
+               console.log("service worker was just installed");
+               return sw_afterinstall(registration);
              
            }
            

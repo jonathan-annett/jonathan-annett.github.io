@@ -6,7 +6,10 @@
  
  (function (signature,service_worker_sig){
      
-    if (signature===service_worker_sig) addEventListener("activate", sw_activate);
+    if (signature===service_worker_sig) {
+        console.log("registering sw_activate");
+        addEventListener("activate",    sw_activate);  
+    }
 
     function sw_activate ( e) {
         // delete any old cache versions
