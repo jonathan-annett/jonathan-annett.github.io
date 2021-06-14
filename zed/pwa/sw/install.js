@@ -11,7 +11,7 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
              };
          }
         
-         const channel = typeof BroadcastChannel === 'function' ? BroadcastChannel('installing') : false;
+         const channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('installing') : false;
          
         
          sw_progress(undefined,0);
@@ -128,7 +128,7 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
                   return new Promise(function (resolve,reject){
                       
                       const channel = typeof BroadcastChannel === 'function' ? 
-                                             BroadcastChannel('installing') : 
+                                             new BroadcastChannel('installing') : 
                                              {  postMessage:function(x){console.log("installed:",x.url,x.progress,"%")},
                                                 close :  function(){},
                                              };
