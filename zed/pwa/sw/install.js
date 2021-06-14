@@ -155,14 +155,14 @@ function loadnew_sw(){
 
 (function (signature,service_worker_sig){
   
-  if (signature===service_worker_sig) {
-      console.log("registering install")
-      addEventListener("install",  sw_install);
-  } else {
-        console.log("not registering install:",signature,"vs",service_worker_sig);
-  }
-  
-  function sw_install( e ) { return e.waitUntil(  new Promise(doInstall)); }
+      if (signature===service_worker_sig) {
+          console.log("registering install");
+          addEventListener("install",  sw_install);
+      } else {
+          console.log("not registering install:",signature,"vs",service_worker_sig);
+      }
+      
+     function sw_install( e ) { return e.waitUntil(  new Promise(doInstall)); }
   
 
     //invoked from service worker context 
@@ -170,7 +170,7 @@ function loadnew_sw(){
     
     function doInstall (installComplete,installFailed) {
         console.log("doInstall()");
-        return getPWAFiles(  ).then(install_PWAFiles).then(installComplete).catch(installFailed);
+        return getPWAFiles(  ).then(install_PWAFiles).then(closeNotificationChannel).catch(installFailed);
         
         
         
@@ -219,7 +219,7 @@ function loadnew_sw(){
                  channel.close();
                  swivel.on('skip-waiting',self.skipWaiting);
                  swivel.on('refresh-files',update_cached_files);
-                 return Promise.resolve();
+                 installComplete();
              }
           });  
         }
@@ -312,6 +312,5 @@ function loadnew_sw(){
         });
     }
 
- 
       
 })(typeof self+typeof WindowClient+typeof SyncManager,'objectfunctionfunction'); 
