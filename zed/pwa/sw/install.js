@@ -22,13 +22,14 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
          
         
          sw_progress(undefined,0);
+         let count = 0;
              
          if (channel) {
              channel.onmessage=function(e) {
                  if (e.data.summary) {
                      console.log(e.data.summary)
                  } else {
-                    sw_progress(e.data.url,e.data.progress);
+                    sw_progress(e.data.url,count++,e.data.progress);
                  }
              };
          }
