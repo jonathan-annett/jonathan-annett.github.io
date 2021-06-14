@@ -31,16 +31,16 @@ function w_load() {
        
         function sw_afterstart(registration){
 
-            html.classList.remove("beta");
-            html.classList.remove("notbeta");
-            window.boot_zed();
+            //html.classList.remove("beta");
+    //        html.classList.remove("notbeta");
+          //  window.boot_zed();
 
         }
          
         
         function sw_afterinstall(registration) {
           
-                showRefreshUI(registration);
+               // showRefreshUI(registration);
                 //window.boot_zed();
         }
         
