@@ -12,7 +12,8 @@ function w_load() {
     
     installerProgress,
     
-    [progress_message, html,keyPRE]   = ["#progress_message", "html","html .notbeta pre.key"].map(qs);
+    [ progress_message,    html,keyPRE,                    refresh_files,   load_new_version]   = 
+    ["#progress_message", "html","html .notbeta pre.key","#refresh_files","#load_new_version"].map(qs);
     
         
     betaTesterApproval().then(beta_site).catch(
