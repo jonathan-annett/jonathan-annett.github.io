@@ -30,8 +30,6 @@
             "/zed/pwa/sw/swivel.min.js",
             "/zed/pwa/sw/utils.js",
             "/zed/pwa/sw/zed.js",
-            "/zed/pwa/sw/zen-observable.js",
-                        
 
             "https://unpkg.com/zen-observable@0.2.1/zen-observable.js", 
             "https://unpkg.com/localforage@1",
