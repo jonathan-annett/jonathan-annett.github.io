@@ -31,21 +31,22 @@ function w_load() {
        
         function sw_afterstart(registration){
 
-            //html.classList.remove("beta");
-    //        html.classList.remove("notbeta");
-          //  window.boot_zed();
+            html.classList.remove("beta");
+            html.classList.remove("notbeta");
+            window.boot_zed();
 
         }
          
         
         function sw_afterinstall(registration) {
           
-               // showRefreshUI(registration);
+               showRefreshUI(registration);
                 //window.boot_zed();
         }
         
         
         function sw_progress(url,progress) {
+            
             if (progress===0) {
                 installerProgress =   qs("#progress_container");
                 installerProgress.innerHTML= '<progress max="100" value="0"> 0% </progress';
@@ -70,17 +71,15 @@ function w_load() {
        
         function showRefreshUI(registration) {
         
-            let load_new_version = qs("#load_new_version");
-            load_new_version.disabled = false;
-            const click = function () {
-              load_new_version.removeEventListener('click', click);
-              load_new_version.disabled = true;  
-              if (registration.waiting) {
-                  // let waiting Service Worker know it should became active
-                  registration.waiting.postMessage('SKIP_WAITING');
-              }
-            };
-            load_new_version.addEventListener('click', click);
+            qs("#load_new_version",function click(e){
+                e.target.removeEventListener('click', click);
+                e.target.disabled = true;  
+                if (registration.waiting) {
+                    // let waiting Service Worker know it should became active
+                    swivel.emit('skip-waiting');
+                }
+            }).disabled = false;
+            
         }
         
         

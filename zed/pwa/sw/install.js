@@ -28,18 +28,18 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
          console.log("loading service worker script...");
          navSw.register( sw_path )
            .then (navSw.ready)
-            .then (sw_ready);
+            .then (whenReady);
         
          
 
-         function sw_ready (registration) {
+         function whenReady (registration) {
              
-             // Track updates to the Service Worker.
+           // Track updates to the Service Worker.
            if (!navSw.controller) {
              // The window client isn't currently controlled so it's a new service
              // worker that will activate immediately
-             console.log("service worker was just installed, waiting for it to finish");
-             sw_afterstart(registration);
+             console.log("service worker was just installed");
+             return sw_afterinstall(registration);
              
            }
            
@@ -56,7 +56,7 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
          }
          
          
-         function sw_checknewinstall(registration) {
+        function sw_checknewinstall(registration) {
            if (registration.waiting) {
                  // SW is waiting to activate. Can occur if multiple clients open and
                  // one of the clients is refreshed.
@@ -95,14 +95,14 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
            }
            
            
-         }
+        }
          
          
-         function sw_controllerchange(event) {
-               navSw.removeEventListener('controllerchange',sw_controllerchange);
-               console.log('Controller loaded');
-               window.location.reload();
-         }
+        function sw_controllerchange(event) {
+            navSw.removeEventListener('controllerchange',sw_controllerchange);
+            console.log('Controller loaded');
+            window.location.reload();
+        }
         
          
         
@@ -174,6 +174,8 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
              function closeNotificationChannel(){
                  console.log("closeNotificationChannel()");
                  channel.close();
+                 swivel.on('skip-waiting',self.skipWaiting);
+                 swivel.on('update-files',update_cached_files);
                  return Promise.resolve();
              }
           });  
