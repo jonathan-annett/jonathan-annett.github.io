@@ -1,5 +1,8 @@
 
 /* global localforage,swivel */
+
+window.addEventListener('load', w_load);
+
 function w_load() {
     
     const sw_path    = "/zed/pwa/sw/background.sw.js";
@@ -7,7 +10,6 @@ function w_load() {
     
     var 
     
-    qs=document.querySelector.bind(document),
     installerProgress,
     
     [progress_message, html,keyPRE]   = ["#progress_message", "html","html .notbeta pre.key"].map(qs);
@@ -18,6 +20,192 @@ function w_load() {
            console.log("site not available");
        }    
     ); 
+    
+    
+        
+    function beta_site (betaTesterKey) {
+        
+        console.log("starting site for beta tester:",betaTesterKey);
+        
+        (function(navSw){if(!navSw)return;
+        
+        
+             navSw.addEventListener('controllerchange',sw_controllerchange);
+             
+             console.log("loading service worker script...");
+             navSw.register( sw_path )
+               .then ( navSw.ready)
+                  .then (sw_ready);
+            
+             
+
+             function sw_ready (registration) {
+                 
+                 // Track updates to the Service Worker.
+               if (!navSw.controller) {
+                 // The window client isn't currently controlled so it's a new service
+                 // worker that will activate immediately
+                 console.log("service worker was just installed, starting now");
+                 sw_afterstart(registration);
+                 return;
+               }
+               
+               console.log("checking for service worker update.");
+               
+               registration.update();
+           
+               console.log("checking if service worker is installing...");
+               if (sw_checknewinstall(registration)===false) {
+                   console.log("service worker was not installing, starting now");
+                   sw_afterstart(registration);
+               }
+                
+             }
+             
+             
+             function sw_checknewinstall(registration) {
+               if (registration.waiting) {
+                     // SW is waiting to activate. Can occur if multiple clients open and
+                     // one of the clients is refreshed.
+                     console.log("new service worker is available and is waiting.");
+                     sw_afterstart(registration);
+                     return true;
+               }
+             
+               if (registration.installing) {
+                    sw_updatefound();
+                    return true;
+               }
+             
+               // We are currently controlled so a new SW may be found...
+               // Add a listener in case a new SW is found,
+               registration.addEventListener('updatefound', sw_updatefound);
+               return false;
+               
+               
+               function sw_updatefound() {
+                    console.log("service worker is installing... will wait for state change to installed..");
+                    registration.installing.addEventListener('statechange', sw_statechange);
+               }
+               
+               
+               function sw_statechange(event) {
+                 if (event.target.state === 'installed') {
+                   // A new service worker is available, inform the user
+                    console.log("service worker has installed, calling sw_afterinstall()");
+                    sw_afterinstall(registration);
+                 }
+               }
+               
+               
+             }
+             
+             
+             function sw_controllerchange(event) {
+                   navSw.removeEventListener('controllerchange',sw_controllerchange);
+                   console.log('Controller loaded');
+                   window.location.reload();
+             }
+            
+             
+            
+        })(navigator.serviceWorker);
+        
+        
+
+        function sw_afterstart(registration){
+            afterInstall(registration,function(){
+                
+                html.classList.remove("beta");
+                html.classList.remove("notbeta");
+                window.boot_zed();
+                
+            });
+            
+        }
+         
+        
+        function sw_afterinstall(registration) {
+          
+            afterInstall(registration,function(){
+                
+                showRefreshUI(registration);
+                window.boot_zed();
+                
+            }); 
+        }
+      
+       
+        
+        function showRefreshUI(registration) {
+        
+            let load_new_version = qs("#load_new_version");
+            load_new_version.disabled = false;
+            const click = function () {
+              load_new_version.removeEventListener('click', click);
+              load_new_version.disabled = true;  
+              if (registration.waiting) {
+                  // let waiting Service Worker know it should became active
+                  registration.waiting.postMessage('SKIP_WAITING');
+              }
+            };
+            load_new_version.addEventListener('click', click);
+        }
+        
+    
+        
+        function afterInstall(reg,cb) {
+            
+            const worker = reg.installing || reg.waiting || reg.active;
+            
+            
+            swivel.on('updateProgress',function(context,msg){
+                
+                if (msg.files) {
+                   installerProgress =   qs("#progress_container");
+                   installerProgress.innerHTML= '<progress max="' + msg.files.length + '" value="0"> 0% </progress';
+                   installerProgress = installerProgress.children[0];
+                } else {
+                    if (installerProgress && msg.downloaded) {
+                        installerProgress.progress = msg.downloaded;
+                    }
+                }
+                if (msg.url) {
+                    progress_message.innerHTML = msg.url;
+                } 
+                
+            });
+            
+            swivel.on('updateDone',function(context,msg){
+                
+                
+            });
+            
+            swivel.emit('update',{}).then(function(){
+                
+                
+            });
+            
+            
+            
+    
+            /*
+            var api = zed_api();
+            api.attach(messageReceiver(
+                reg.installing || reg.waiting || reg.active ,
+                'ZED',
+                api.onMessage
+            ));*/
+            
+            
+        }
+        
+        
+      
+        
+    } 
+
+    
     
     /*
     function zed_api () {
@@ -258,109 +446,7 @@ function w_load() {
     }
    */
    
-    function downloadJSON(response) { return response.json(); }
-    
-    function getConfig() {
-        return new Promise(function (resolve,reject){
-            
-            fetch(config_url)
-              .then(downloadJSON)
-                .then(resolve).catch(reject);
-          
-        });
-    }
-    
-    function showRefreshUI(registration) {
-    
-        let load_new_version = qs("#load_new_version");
-        load_new_version.disabled = false;
-        const click = function () {
-          load_new_version.removeEventListener('click', click);
-          load_new_version.disabled = true;  
-          if (registration.waiting) {
-              // let waiting Service Worker know it should became active
-              registration.waiting.postMessage('SKIP_WAITING');
-          }
-        };
-        load_new_version.addEventListener('click', click);
-    }
-    
-     
-
-    function afterInstall(reg,cb) {
-        
-        const worker = reg.installing || reg.waiting || reg.active;
-        
-        
-        swivel.on('updateProgress',function(context,msg){
-            
-            if (msg.files) {
-               installerProgress =   qs("#progress_container");
-               installerProgress.innerHTML= '<progress max="' + msg.files.length + '" value="0"> 0% </progress';
-               installerProgress = installerProgress.children[0];
-            } else {
-                if (installerProgress && msg.downloaded) {
-                    installerProgress.progress = msg.downloaded;
-                }
-            }
-            if (msg.url) {
-                progress_message.innerHTML = msg.url;
-            } 
-            
-        });
-        
-        swivel.on('updateDone',function(context,msg){
-            
-            
-        });
-        
-        swivel.emit('update',{}).then(function(){
-            
-            
-        });
-        
-        
-        
-
-        /*
-        var api = zed_api();
-        api.attach(messageReceiver(
-            reg.installing || reg.waiting || reg.active ,
-            'ZED',
-            api.onMessage
-        ));*/
-        
-        
-    }
-    
-    function onNewServiceWorker(registration, callback) {
-      if (registration.waiting) {
-        // SW is waiting to activate. Can occur if multiple clients open and
-        // one of the clients is refreshed.
-        callback();
-        return true;
-      }
-    
-      function listenInstalledStateChange() {
-        registration.installing.addEventListener('statechange', function(event) {
-          if (event.target.state === 'installed') {
-            // A new service worker is available, inform the user
-            callback();
-          }
-        });
-      }
-    
-      if (registration.installing) {
-        listenInstalledStateChange();
-        return true;
-      }
-    
-      // We are currently controlled so a new SW may be found...
-      // Add a listener in case a new SW is found,
-      registration.addEventListener('updatefound', listenInstalledStateChange);
-      return false;
-    }
-    
+  
     function betaTesterApproval() {
         
         if (!window.crypto) {
@@ -426,9 +512,42 @@ function w_load() {
         });
     }
     
+    
+    function getConfig() {
+        return new Promise(function (resolve,reject){
+            
+            fetch(config_url)
+              .then(downloadJSON)
+                .then(resolve).catch(reject);
+          
+        });
+    }
+    
+    
+    // generic tools 
+
+    function qs(d,q,f) {
+        let r,O=typeof {},S=typeof O,FN=typeof qs,D=typeof d,Q=typeof q,F=typeof f;
+        if (D+Q+F===S+'number'+O){q=r;}//handle map iterator
+        if (D===S) {f=q;q=d;d=document;D=O;Q=S;F=typeof f}//handle implied d=document
+        if (D+Q===O+S){
+           r = d.querySelector(q);
+           if (r&&typeof r+typeof f===O+FN) {
+                if (f.name.length>0) 
+                   r.addEventListener(f.name,f);
+                else 
+                   f(r);
+            }
+        }
+        return r;
+    }
+    
+    function downloadJSON(response) { return response.json(); }
+
     function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
     
     function bufferToText(x) {return new TextEncoder("utf-8").decode(x);}
+    
     
     function bufferToHex(buffer) {
         const padding = '00000000';
@@ -460,70 +579,10 @@ function w_load() {
         }
         return Uint32Array.from(ui32Array).buffer;
     }    
-    
- 
-    function beta_site (betaTesterKey) {
-        
-        console.log("starting site for beta tester:",betaTesterKey);
-        
-        var sw_controllerchange_refreshing;
-        function sw_controllerchange(event) {
-              if (sw_controllerchange_refreshing) return; // prevent infinite refresh loop when you use "Update on Reload"
-              sw_controllerchange_refreshing = true;
-              console.log('Controller loaded');
-              window.location.reload();
-        }
-        
-        // When the user asks to refresh the UI, we'll need to reload the window
-        navigator.serviceWorker.addEventListener('controllerchange',sw_controllerchange);
-      
-        navigator.serviceWorker.register( sw_path ).then(function (registration) {
-            
-            // Track updates to the Service Worker.
-          if (!navigator.serviceWorker.controller) {
-            // The window client isn't currently controlled so it's a new service
-            // worker that will activate immediately
-            afterInstall(registration,function(){
-                html.classList.remove("beta");
-                html.classList.remove("notbeta");
-                window.boot_zed();
-                
-            });
-            
-            
-            navigator.serviceWorker.ready.then(afterInstall);
-            return;
-          }
-          
-          registration.update();
-      
-          if (onNewServiceWorker(registration, function() {
-              
-            afterInstall(registration,function(){
-                
-                showRefreshUI(registration);
-                window.boot_zed();
-                
-            });
-            
-            
-          })===false) {
-              html.classList.remove("beta");
-              html.classList.remove("notbeta");
-              window.boot_zed();
-          }
-           
-        });
-        
-    } 
-    
-    
 
-   
 }
 
 
-window.addEventListener('load', w_load);
 
 
 
