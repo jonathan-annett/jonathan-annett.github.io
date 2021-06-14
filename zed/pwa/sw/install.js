@@ -130,7 +130,7 @@ if (self.isSw) {
 
 
 function sw_install( e ) { 
-    self.skipWaiting();
+   // self.skipWaiting();
     return e.waitUntil(  new Promise( toInstall )); 
 }
 
