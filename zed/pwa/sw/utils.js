@@ -85,7 +85,14 @@ function promise2errback (p,cb) {
 
 
 function promiseAll2errback (arr,cb) {
-    promise2errback (Promise.all(arr),cb);
+    
+    Promise.all(arr)
+       .then(function(arr2){
+           cb(undefined,arr2);
+       })
+       .catch(function(err){
+            cb(err);
+        });
 }
 
 function caches_open(cacheName,cb) {
