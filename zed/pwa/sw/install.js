@@ -38,14 +38,8 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
              // The window client isn't currently controlled so it's a new service
              // worker that will activate immediately
              console.log("service worker was just installed, waiting for it to finish");
-             //sw_afterstart(registration);
-             if (sw_ready.count === 0) {
-                 return Promise.resolve();
-             } else {
-                 sw_ready.count = sw_ready.count===undefined?10:sw_ready.count-1;
-                 return navSw.ready.then(sw_ready);
-             }
-
+             sw_afterstart(registration);
+             
            }
            
            console.log("checking for service worker update.");
