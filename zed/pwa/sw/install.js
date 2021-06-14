@@ -1,6 +1,6 @@
 /* global 
 
-getPWAFiles_,caches,cacheName, swivel,BroadcastChannel,self,
+getPWAFiles ,caches,cacheName, swivel,BroadcastChannel,self,
 
 caches_open,promise2errback,promiseAll2errback,cache_add
 
@@ -192,7 +192,7 @@ function toInstall (installComplete,installFailed) {
     
     console.log("toInstall()");
     
-    getPWAFiles_(function(err,filesToCache){
+    getPWAFiles(function(err,filesToCache){
         
         if (err) return installFailed(err);
         
@@ -361,7 +361,7 @@ function updateURLArray(cache,urls) {
 
 function update_cached_files() {
   
-     getPWAFiles_(function(err,filesToCache){
+     getPWAFiles(function(err,filesToCache){
         
        if (err) return ;
        

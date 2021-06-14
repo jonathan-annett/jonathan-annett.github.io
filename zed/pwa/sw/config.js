@@ -1,27 +1,36 @@
-/* global cachedPromise, cachedResolve, downloadJSON,config_url, localforage, promise2errback,promiseAll2errback  */
+/* global 
+
+   cachedPromise, cachedResolve, downloadJSON,config_url, 
+   localforage, 
+   promiseToCB,
+   promise2errback, 
+   promiseAll2errback,
+   downloadPWAFiles,
+   getConfig*/
 
 
-function getConfig_(cb){promise2errback(getConfig(),cb);}
-function getConfig() {
-    
-    return cachedPromise(getConfig,function (resolve,reject){
+promiseToCB(
+    function getConfig() {
         
-        fetch(config_url)
-          .then(downloadJSON)
-            .then(filterConfigComments)
-              .then(cachedResolve(resolve,getConfig)).catch(reject);
-      
-    });
-}
+        return cachedPromise(getConfig,function (resolve,reject){
+            
+            fetch(config_url)
+              .then(downloadJSON)
+                .then(filterConfigComments)
+                  .then(cachedResolve(resolve,getConfig)).catch(reject);
+          
+        });
+    }
+);
 
-
-function downloadPWAFiles_(cb) {return promise2errback(downloadPWAFiles(),cb);}
+promiseToCB(
+//function downloadPWAFiles_(cb) {return promise2errback(downloadPWAFiles(),cb);}
 function downloadPWAFiles() {
     
     return new Promise(function(resolveConfig,reject) {
         
         
-        getConfig_(function (err,config){
+        getConfig(function (err,config){
             
            if (err) return reject(err);
            
@@ -53,9 +62,10 @@ function downloadPWAFiles() {
     });
        
 }
+);
 
-
-function getPWAFiles_(cb){promise2errback(getPWAFiles(),cb);}
+promiseToCB(
+//function getPWAFiles_(cb){promise2errback(getPWAFiles(),cb);}
 function getPWAFiles() {
     const key = '.PWAFiles';
     
@@ -95,6 +105,7 @@ function getPWAFiles() {
     });
     
 }
+);
 
 
 function get_X_cluded (base,exclusionsList) {
