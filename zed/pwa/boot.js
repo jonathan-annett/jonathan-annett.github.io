@@ -16,8 +16,8 @@ function w_load() {
     
         
     betaTesterApproval().then(beta_site).catch(
-       function(){
-           console.log("site not available");
+       function(err){
+           console.log("site not available",err);
        }    
     ); 
     
