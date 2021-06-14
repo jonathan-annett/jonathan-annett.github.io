@@ -1,4 +1,10 @@
-/* global getPWAFiles,caches,cacheName, swivel,BroadcastChannel,self   */
+/* global 
+
+getPWAFiles_,caches,cacheName, swivel,BroadcastChannel,self,
+
+caches_open,promise2errback,promiseAll2errback,cache_add
+
+*/
 self.isSw = typeof WindowClient+typeof SyncManager==='functionfunction';
 
 function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
@@ -19,7 +25,11 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
              
          if (channel) {
              channel.onmessage=function(e) {
-                 sw_progress(e.data.url,e.data.progress);
+                 if (e.data.summary) {
+                     console.log(e.data.summary)
+                 } else {
+                    sw_progress(e.data.url,e.data.progress);
+                 }
              };
          }
         
@@ -33,8 +43,7 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
               console.log("registered.");
               
               navSw.ready.then (whenReady);
-               
-               
+
            });
                
             
@@ -179,67 +188,95 @@ function sw_install( e ) { return e.waitUntil(  new Promise( toInstall )); }
 
 
 function toInstall (installComplete,installFailed) {
-    if (!self.isSw) return;
+ 
     
-    console.log("doInstall()");
-    return getPWAFiles(  ).then(install_PWAFiles);
+    console.log("toInstall()");
     
-    function install_PWAFiles(filesToCache){
+    getPWAFiles_(function(err,filesToCache){
+        
+        if (err) return installFailed(err);
+        
         
         console.log(
             "got list:",
             filesToCache.site.length,"site files,",
-            filesToCache.github.length,"github files"
+            filesToCache.github.length,"github files" 
         );
-        
-        return new Promise(function(resolve,reject){
-          const channel = openNotificationChannel();
+       
+         const channel = openNotificationChannel();
+         
+         const all_files = filesToCache.site.concat(filesToCache.github);
+         
+        caches_open(cacheName,function(err,cache){
+            
+            if (err) {
+                closeNotificationChannel();
+                return installFailed(err);
+            }
+            
+            const arrayOfPromisedUrls = all_files.map(addToCacheWithProgress(cache));
 
-          const all_files = filesToCache.site.concat(filesToCache.github);
-          
+            promiseAll2errback(arrayOfPromisedUrls,function(err,arrayOfCacheResults){
+                if (err) return installFailed(err);
+                const summary={};
+                arrayOfCacheResults.forEach(function(el){
+                    if( el && el.url && el.headers) {
+                        summary[el.url] = {
+                            url  : el.url,
+                            Etag : el.headers.get('Etag'),
+                            size : el.headers.get('Content-Length')
+                        };
+                    }
+                });
+                
+                channel.postMessage({summmary:summary,progress:100});
+                       
+                
+                closeNotificationChannel();
+            });
+            
+        });
         
-         caches.open(cacheName).then(installFilesList)
-             .then(closeNotificationChannel)
-              .then (installComplete) 
-               .catch(reject);
-
-         function installFilesList(cache) {
-              console.log("installFilesList()");
-              return Promise.all(all_files.map(function(url,index){
-             
-                  return cache.add(url)
-                      .then(function(x){
-                          
-                          console.log("installing:",url);
-                          channel.postMessage({url:url,progress:Math.ceil((index/all_files.length)*100)});
-                          return Promise.resolve(x); 
-                          
-                      }) .catch(function(err){
-                       //Error stuff
-                       console.log("failed adding",url,err);
-                  });
-               }));
-         }
-         
-         function openNotificationChannel() {
-             console.log("openNotificationChannel()");
-             return typeof BroadcastChannel === 'function' ? 
-             new BroadcastChannel('installing') : 
-             {  postMessage:function(x){console.log("installed:",x.url,x.progress,"%")},
-                close :  function(){},
-             };
-         }
-         
-         function closeNotificationChannel(){
-             console.log("closeNotificationChannel()");
-             channel.close();
-             swivel.on('skip-waiting',self.skipWaiting);
-             swivel.on('refresh-files',update_cached_files);
-             return Promise.resolve();
-         }
-         
-      });  
-    }
+        
+        function addToCacheWithProgress(cache){
+            
+            return addToCache;
+            
+            function addToCache(url,index){
+               return cache.add(url).then(function(x){
+                       
+                       console.log("installing:",url);
+                       channel.postMessage({url:url,progress:Math.ceil((index/all_files.length)*100)});
+                       return Promise.resolve(x); 
+                       
+                   }) .catch(function(err){
+                        //Error stuff
+                        console.log("failed adding",url,err);
+                   });
+            }
+        }
+      
+        function openNotificationChannel() {
+            console.log("openNotificationChannel()");
+            return typeof BroadcastChannel === 'function' ? 
+                new BroadcastChannel('installing') : 
+                {  postMessage:function(x){console.log("installed:",x.url,x.progress,"%")},
+                   close :  function(){},
+                };
+        }
+        
+        function closeNotificationChannel(){
+            console.log("closeNotificationChannel()");
+            channel.close();
+            swivel.on('skip-waiting',self.skipWaiting);
+            swivel.on('refresh-files',update_cached_files);
+        }
+        
+       
+       
+    });
+      
+ 
 
 }
 
@@ -282,8 +319,11 @@ function refreshCache(cache,url) {
 
 }
 
+function updateURLArray_(cache,urls,cb) { return promise2errback(updateURLArray(cache,urls),cb);}
 function updateURLArray(cache,urls) {
     if (!self.isSw) return;
+    
+    
     return Promise.all(urls.map(function(url,index){
         
         
@@ -310,24 +350,24 @@ function updateURLArray(cache,urls) {
 }
 
 function update_cached_files() {
-    if (!self.isSw) return;
-    getPWAFiles().then( function(filesToCache){
+  
+     getPWAFiles_(function(err,filesToCache){
         
-       const urls = filesToCache.site.concat(filesToCache.github);
+       if (err) return ;
        
+       const urls = filesToCache.site.concat(filesToCache.github);
        
            swivel.broadcast('updateProgress',{files : urls});
            
-            return caches.open(cacheName).then(function(cache) {
-                
-                return updateURLArray(cache,urls).then (function(){
-                    
-                      return swivel.broadcast('updateDone',{});
-                      
+           caches_open(cacheName,function(err,cache){
+               if (err) return;
+               
+               updateURLArray_(cache,urls,function(){
+                    swivel.broadcast('updateDone',{});
                 });
-            });
-
+           });
     });
+    
 }
 
       

@@ -1,6 +1,7 @@
-/* global cachedPromise, cachedResolve, downloadJSON,config_url, localforage  */
+/* global cachedPromise, cachedResolve, downloadJSON,config_url, localforage, promise2errback,promiseAll2errback  */
 
 
+function getConfig_(cb){promise2errback(getConfig(),cb);}
 function getConfig() {
     
     return cachedPromise(getConfig,function (resolve,reject){
@@ -11,6 +12,88 @@ function getConfig() {
               .then(cachedResolve(resolve,getConfig)).catch(reject);
       
     });
+}
+
+
+function downloadPWAFiles_(cb) {return promise2errback(downloadPWAFiles(),cb);}
+function downloadPWAFiles() {
+    
+    return new Promise(function(resolveConfig,reject) {
+        
+        
+        getConfig_(function (err,config){
+            
+           if (err) return reject(err);
+           
+           
+            console.log("fetched...:",config);
+            
+            var github_io_base = config.site.root;
+            
+            console.log("github_io_base:",github_io_base);
+            
+            
+            const mapped = config.github.map(getGithubFileList(github_io_base));
+            
+            promiseAll2errback(mapped,function(err,arrayOfFileLists){
+                if (err) return reject(err);
+                
+                console.log("resolved:",arrayOfFileLists) ;
+                resolveConfig({ 
+                     site   : config.site.files,
+                     github : [].concat.apply([],arrayOfFileLists)
+                });
+                
+            });
+            
+            
+        });      
+        
+
+    });
+       
+}
+
+
+function getPWAFiles_(cb){promise2errback(getPWAFiles(),cb);}
+function getPWAFiles() {
+    const key = '.PWAFiles';
+    
+    return cachedPromise(getPWAFiles,function (resolve,reject){
+        localforage.getItem(key).then(function (files) {
+            
+            if (files) {
+                
+                console.log("fetched files from localForage");
+                return cachedResolve(resolve,getPWAFiles,files);
+                
+            } else {
+                
+                return downloadPWAFiles().then(function(files){
+                    localforage.setItem(key, files).then(function () {
+                        console.log("downloaded, saved files in localForage");
+                        return cachedResolve(resolve,getPWAFiles,files);
+                    });
+
+                }).catch(reject);
+                
+            }
+            
+        }).catch(function () {
+            
+             return downloadPWAFiles().then(function(files){
+                 localforage.setItem(key, files).then(function () {
+                     console.log("downloaded, saved files in localForage");
+                     return cachedResolve(resolve,getPWAFiles,files);
+                 });
+
+             }).catch(reject);
+             
+        })
+        
+        
+    });
+    
 }
 
 
@@ -108,81 +191,4 @@ function filterConfigComments (config) {
     config.site.files = config.site.files.filter(removeJSONArrayComments);
     config.site.betaTesterKeys = config.site.betaTesterKeys.filter(removeJSONArrayComments);
     return Promise.resolve(config);
-}
-
-
-
-function downloadPWAFiles() {
-    
-    return new Promise(function(resolveConfig,reject) {
-        
-        getConfig()
-           .then(function(config) { 
-               
-               console.log("fetched...:",config);
-               
-               var github_io_base = config.site.root;
-               
-               console.log("github_io_base:",github_io_base);
-               
-               Promise.all( config.github.map( getGithubFileList(github_io_base) ))
-               
-                  .then (function(arrayOfFileLists){  
-                      
-                          console.log("resolved:",arrayOfFileLists) ;
-                          resolveConfig(
-                               { 
-                                   site   : config.site.files,
-                                   github : [].concat.apply([],arrayOfFileLists)
-                               }
-                          );
-                          
-                      })
-                      
-                      
-                  })
-              .catch(reject);
-                  
-    })
-       
-}
-
-function getPWAFiles() {
-    const key = '.PWAFiles';
-    
-    return cachedPromise(getPWAFiles,function (resolve,reject){
-        localforage.getItem(key).then(function (files) {
-            
-            if (files) {
-                
-                console.log("fetched files from localForage");
-                return cachedResolve(resolve,getPWAFiles,files);
-                
-            } else {
-                
-                return downloadPWAFiles().then(function(files){
-                    localforage.setItem(key, files).then(function () {
-                        console.log("downloaded, saved files in localForage");
-                        return cachedResolve(resolve,getPWAFiles,files);
-                    });
-
-                }).catch(reject);
-                
-            }
-            
-        }).catch(function () {
-            
-             return downloadPWAFiles().then(function(files){
-                 localforage.setItem(key, files).then(function () {
-                     console.log("downloaded, saved files in localForage");
-                     return cachedResolve(resolve,getPWAFiles,files);
-                 });
-
-             }).catch(reject);
-             
-        })
-        
-        
-    });
-    
 }
