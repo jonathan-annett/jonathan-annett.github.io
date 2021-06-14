@@ -230,7 +230,7 @@ function toInstall (installComplete,installFailed) {
                         };
                     }
                 });
-                
+                console.log({summary});
                 channel.postMessage(summary);
                 closeNotificationChannel();
             });
@@ -244,15 +244,27 @@ function toInstall (installComplete,installFailed) {
             return addToCache;
             
             function addToCache(url,index){
-               return cache.add(url).then(function(x){
-                       channel.postMessage({url:url,progress:Math.ceil((count++/all_files.length)*100)});
-                       return Promise.resolve(x); 
-                       
-                   }) .catch(function(err){
-                        //Error stuff
-                        console.log("failed adding",url,err);
-                   });
+                return new Promise(function(res,rej) {
+                    
+                   cache.add(url).then(function(response){
+                           
+                           count ++;
+                           channel.postMessage({
+                               
+                               url:url,
+                               progress:Math.ceil( (count  / all_files.length) * 100 )
+                           });
+                           
+                           return cache.match(url);
+                           
+                       }) .catch(function(err){
+                            //Error stuff
+                            console.log("failed adding",url,err);
+                       });
+                   })
             }
+            
+            
         }
       
         function openNotificationChannel() {
