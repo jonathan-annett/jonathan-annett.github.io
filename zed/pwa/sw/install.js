@@ -26,36 +26,48 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
 
          navSw.addEventListener('controllerchange',sw_controllerchange);
          
-         console.log("loading service worker script...");
+         console.log("registering service worker script...");
          navSw.register( sw_path )
-           .then (navSw.ready)
-            .then (whenReady);
+           .then (function(registration){
+              
+              console.log("registered.");
+              
+              navSw.ready.then (whenReady);
+               
+               
+           });
+               
+            
         
          
 
          function whenReady (registration) {
              
-           // Track updates to the Service Worker.
-           if (!navSw.controller) {
-             // The window client isn't currently controlled so it's a new service
-             // worker that will activate immediately
-               console.log("service worker was just installed");
-               return sw_afterinstall(registration);
-             
-           }
-           
-           console.log("checking for service worker update.");
-           
-           registration.update();
-       
-           console.log("checking if service worker is installing...");
-           if (sw_checknewinstall(registration)===false) {
-               console.log("service worker was not installing, starting now");
-               sw_progress(undefined,101);
-               if (channel) channel.close();
-               sw_afterstart(registration);
-           }
             
+         
+                   // Track updates to the Service Worker.
+                   if (!navSw.controller) {
+                     // The window client isn't currently controlled so it's a new service
+                     // worker that will activate immediately
+                       console.log("service worker was just installed");
+                       return sw_afterinstall(registration);
+                     
+                   }
+                   
+                   console.log("checking for service worker update.");
+                   
+                   registration.update();
+               
+                   console.log("checking if service worker is installing...");
+                   if (sw_checknewinstall(registration)===false) {
+                       console.log("service worker was not installing, starting now");
+                       sw_progress(undefined,101);
+                       if (channel) channel.close();
+                       sw_afterstart(registration);
+                   }
+                   
+        
+        
          }
          
          
@@ -163,21 +175,23 @@ if (self.isSw) {
 }
 
 
-function sw_install( e ) { return e.waitUntil(  new Promise(doInstall)); }
+function sw_install( e ) { return e.waitUntil(  new Promise( toInstall )); }
 
 
-//invoked from service worker context 
-
-
-function doInstall (installComplete,installFailed) {
+function toInstall (installComplete,installFailed) {
     if (!self.isSw) return;
     
     console.log("doInstall()");
     return getPWAFiles(  ).then(install_PWAFiles);
     
-    
-    
     function install_PWAFiles(filesToCache){
+        
+        console.log(
+            "got list:",
+            filesToCache.site.length,"site files,",
+            filesToCache.github.length,"github files"
+        );
+        
         return new Promise(function(resolve,reject){
           const channel = openNotificationChannel();
 
@@ -189,23 +203,23 @@ function doInstall (installComplete,installFailed) {
               .then (installComplete) 
                .catch(reject);
 
-         
          function installFilesList(cache) {
               console.log("installFilesList()");
               return Promise.all(all_files.map(function(url,index){
              
-                          return cache.add(url)
-                              .then(function(x){
-                                  console.log("installing:",url);
-                                  channel.postMessage({url:url,progress:Math.ceil((index/all_files.length)*100)});
-                                  return Promise.resolve(x);    
-                              }) .catch(function(err){
-                               //Error stuff
-                               console.log("failed adding",url,err);
-                          });
+                  return cache.add(url)
+                      .then(function(x){
+                          
+                          console.log("installing:",url);
+                          channel.postMessage({url:url,progress:Math.ceil((index/all_files.length)*100)});
+                          return Promise.resolve(x); 
+                          
+                      }) .catch(function(err){
+                       //Error stuff
+                       console.log("failed adding",url,err);
+                  });
                }));
          }
-         
          
          function openNotificationChannel() {
              console.log("openNotificationChannel()");
@@ -216,7 +230,6 @@ function doInstall (installComplete,installFailed) {
              };
          }
          
-         
          function closeNotificationChannel(){
              console.log("closeNotificationChannel()");
              channel.close();
@@ -224,6 +237,7 @@ function doInstall (installComplete,installFailed) {
              swivel.on('refresh-files',update_cached_files);
              return Promise.resolve();
          }
+         
       });  
     }
 
