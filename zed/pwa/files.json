@@ -21,7 +21,8 @@
             "/zed",
             "/zed/index.html",
             "/zed/pwa/boot.js",
-            "/zed/pwa/files.json","<--this file",
+            "<--/zed/pwa/files.json",           "<--this file, not cached",
+            "<--/zed/pwa/sw/background.sw.js",  "<--service worker file, not cached",
 
             "/zed/pwa/sw/activate.js",
             "/zed/pwa/sw/config.js",
