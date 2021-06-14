@@ -38,13 +38,11 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
          
          console.log("registering service worker script...");
          navSw.register( sw_path )
+           .then (whenReady)/*
            .then (function(registration){
-              
               console.log("registered.");
-              
               navSw.ready.then (whenReady);
-
-           });
+           })*/;
                
             
         
@@ -224,7 +222,6 @@ function toInstall (installComplete,installFailed) {
                 arrayOfCacheResults.forEach(function(el){
                     if( el && el.url && el.headers) {
                         summary.urls[el.url] = {
-                            url  : el.url,
                             Etag : el.headers.get('Etag'),
                             size : el.headers.get('Content-Length')
                         };
