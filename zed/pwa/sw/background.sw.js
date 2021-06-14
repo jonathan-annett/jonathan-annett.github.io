@@ -22,7 +22,7 @@ importScripts(
     "https://unpkg.com/localforage-observable@2.1.1/dist/localforage-observable.js",    
     
 
-    "swivel.min.js",
+    //"swivel.min.js",
     "utils.js",  
     "config.js", 
     "install.js", 

@@ -1,175 +1,197 @@
 /* global 
 
-getPWAFiles ,caches,cacheName, swivel,BroadcastChannel,self,
+getPWAFiles ,caches,cacheName, BroadcastChannel,self,
 
-caches_open,promise2errback,promiseAll2errback,cache_add
+caches_open,promise2errback,promiseAll2errback,cache_add,promiseToCB, CBtoPromise,
+
+updateURLArray
 
 */
 self.isSw = typeof WindowClient+typeof SyncManager==='functionfunction';
 
 function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
     //invoked from browser context, 
-    (function(navSw){
-        if(!navSw)return;
-        
-         if (typeof sw_progress !== 'function') {
-             sw_progress = function(url,progress){
-                  console.log("installing:",url||'',progress,"% complete");
-             };
-         }
-        
-         const channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('installing') : false;
+    const navSw = navigator.serviceWorker ;
+    
+     if (typeof sw_progress !== 'function') {
+         sw_progress = function(url,progress){
+              console.log("installing:",url||'',progress,"% complete");
+         };
+     }
+    
+     const channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('installing') : false;
+     
+    
+     sw_progress(undefined,0);
          
-        
-         sw_progress(undefined,0);
-             
-         if (channel) {
-             channel.onmessage=function(e) {
-                 if (e.data.summary) {
-                     console.log(e.data.summary)
-                 } else {
-                    sw_progress(e.data.url,e.data.progress);
-                 }
-             };
-         }
-        
-
-         navSw.addEventListener('controllerchange',sw_controllerchange);
-         
-         console.log("registering service worker script...");
-         navSw.register( sw_path )
-           .then (whenReady)/*
-           .then (function(registration){
-              console.log("registered.");
-              navSw.ready.then (whenReady);
-           })*/;
-               
-            
-        
-         
-
-         function whenReady (registration) {
-             
-            
-         
-                   // Track updates to the Service Worker.
-                   if (!navSw.controller) {
-                     // The window client isn't currently controlled so it's a new service
-                     // worker that will activate immediately
-                       console.log("service worker was just installed");
-                       return sw_afterinstall(registration);
-                     
-                   }
-                   
-                   console.log("checking for service worker update.");
-                   
-                   registration.update();
-               
-                   console.log("checking if service worker is installing...");
-                   if (sw_checknewinstall(registration)===false) {
-                       console.log("service worker was not installing, starting now");
-                       sw_progress(undefined,101);
-                       if (channel) channel.close();
-                       sw_afterstart(registration);
-                   }
-                   
-        
-        
-         }
-         
-         
-        function sw_checknewinstall(registration) {
-           if (registration.waiting) {
-                 // SW is waiting to activate. Can occur if multiple clients open and
-                 // one of the clients is refreshed.
-                 console.log("new service worker is available and is waiting.");
-                 sw_progress(undefined,101);
-                 if (channel) channel.close();
-                 sw_afterstart(registration);
-                 return true;
-           }
-         
-           if (registration.installing) {
-                sw_updatefound();
-                return true;
-           }
-         
-           // We are currently controlled so a new SW may be found...
-           // Add a listener in case a new SW is found,
-           registration.addEventListener('updatefound', sw_updatefound);
-           return false;
-           
-           
-           function sw_updatefound() {
-                console.log("service worker is installing... will wait for state change to installed..");
-                registration.installing.addEventListener('statechange', sw_statechange);
-           }
-           
-           
-           function sw_statechange(event) {
-             if (event.target.state === 'installed') {
-               // A new service worker is available, inform the user
-                console.log("service worker has installed, calling sw_afterinstall()");
-                sw_progress(undefined,101);
-                if (channel) channel.close();
-                sw_afterinstall(registration);
+     if (channel) {
+         channel.onmessage=function(e) {
+             if (e.data.summary) {
+                 console.log(e.data.summary)
+             } else {
+                sw_progress(e.data.url,e.data.progress);
              }
-           }
+         };
+     }
+    
+
+     //navSw.addEventListener('controllerchange',sw_controllerchange);
+     
+     console.log("registering service worker script...");
+     navSw.register( sw_path )
+       .then (whenReady)/*
+       .then (function(registration){
+          console.log("registered.");
+          navSw.ready.then (whenReady);
+       })*/;
            
+        
+    
+     
+
+     function whenReady (registration) {
+         
+        
+     
+               // Track updates to the Service Worker.
+               if (!navSw.controller) {
+                 // The window client isn't currently controlled so it's a new service
+                 // worker that will activate immediately
+                   console.log("service worker was just installed");
+                   return sw_afterinstall(registration);
+                 
+               }
+               
+               console.log("checking for service worker update.");
+               
+               registration.update();
            
-        }
-         
-         
-        function sw_controllerchange(event) {
-            navSw.removeEventListener('controllerchange',sw_controllerchange);
-            console.log('Controller loaded');
-            window.location.reload();
-        }
-        
-         
-        
-    })(typeof navigator==='object'? navigator.serviceWorker : undefined);
+               console.log("checking if service worker is installing...");
+               if (sw_checknewinstall(registration)===false) {
+                   console.log("service worker was not installing, starting now");
+                   sw_progress(undefined,101);
+                   if (channel) channel.close();
+                   sw_afterstart(registration);
+               }
+               
+    
+    
+     }
+     
+     
+    function sw_checknewinstall(registration) {
+       if (registration.waiting) {
+             // SW is waiting to activate. Can occur if multiple clients open and
+             // one of the clients is refreshed.
+             console.log("new service worker is available and is waiting.");
+             sw_progress(undefined,101);
+             if (channel) channel.close();
+             sw_afterstart(registration);
+             return true;
+       }
+     
+       if (registration.installing) {
+            sw_updatefound();
+            return true;
+       }
+     
+       // We are currently controlled so a new SW may be found...
+       // Add a listener in case a new SW is found,
+       registration.addEventListener('updatefound', sw_updatefound);
+       return false;
+       
+       
+       function sw_updatefound() {
+            console.log("service worker is installing... will wait for state change to installed..");
+            registration.installing.addEventListener('statechange', sw_statechange);
+       }
+       
+       
+       function sw_statechange(event) {
+         if (event.target.state === 'installed') {
+           // A new service worker is available, inform the user
+            console.log("service worker has installed, calling sw_afterinstall()");
+            sw_progress(undefined,101);
+            if (channel) channel.close();
+            sw_afterinstall(registration);
+         }
+       }
+       
+       
+    }
+     
+     /*
+    function sw_controllerchange(event) {
+        navSw.removeEventListener('controllerchange',sw_controllerchange);
+        console.log('Controller loaded');
+        window.location.reload();
+    }*/
+    
+     
+    
+
 
 }
 
 function refresh_sw (sw_progress) {
     return new Promise(function(resolve,reject) {
         
-        (function(navSw){
-        if(!navSw)return reject();
         
-                swivel.on('updateProgress',updateProgress);
-                swivel.on('updateDone',updateDone);
-                swivel.on('refreshing',refreshing);
-                swivel.at(navSw.active).emit('refresh-files');
-                
-                sw_progress(undefined,0);
-                var files,total = 10000000;
-                var p;
-                function updateProgress (x) {
-                    if (x.files) {
-                        files = x.files;
-                        total = x.files.length;
-                    }
-                    p = Math.round((x.index / total)*100); 
-                    sw_progress(undefined,p);
-                }
-                
-                function updateDone (x) {
-                    sw_progress(undefined,101);
-                }
-                
-                function refreshing (x) {
-                    sw_progress(x.url,p);
-                }
-        })(typeof navigator==='object'? navigator.serviceWorker : undefined);
+        const navSw = navigator.serviceWorker ;
+
+        if (typeof sw_progress !== 'function') {
+            sw_progress = function(url,progress){
+                 console.log("installing:",url||'',progress,"% complete");
+            };
+        }
+        
+        const channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('installing') : false;
+        
+        const funcs = {
+            updateProgress:updateProgress,
+            updateDone:updateDone,
+            refreshing:refreshing
+        };
+        
+        channel.onmessage=function(msg){
+            const key = Object.keys(msg)[0];
+            const fn = funcs[key];
+            if (fn) fn(msg[key]);
+        };
+        
+
+        sw_progress(undefined,0);
+        var files,count=0,total = 10000000;
+        var p;
+        
+        
+        function updateProgress (x) {
+            if (x.files) {
+                files = x.files;
+                total = x.files.length;
+                count = 0;
+            }
+            count++;
+            p = Math.round((count / total)*100); 
+            sw_progress(undefined,p);
+        }
+        
+        function updateDone (x) {
+            sw_progress(undefined,101);
+        }
+        
+        function refreshing (x) {
+            sw_progress(x.url,p);
+        }
+        
+        
     });
     
 }
 
 function loadnew_sw(){
     if (!self.isSw) {
-       swivel.emit('skip-waiting');
+       //swivel.emit('skip-waiting');
     }
 }
 
@@ -177,12 +199,13 @@ function loadnew_sw(){
 if (self.isSw) {
     console.log("registering install");
     addEventListener("install",  sw_install);
-    swivel.on('skip-waiting',self.skipWaiting);
-    swivel.on('refresh-files',update_cached_files);
 }
 
 
-function sw_install( e ) { return e.waitUntil(  new Promise( toInstall )); }
+function sw_install( e ) { 
+    self.skipWaiting();
+    return e.waitUntil(  new Promise( toInstall )); 
+}
 
 
 function toInstall (installComplete,installFailed) {
@@ -209,7 +232,7 @@ function toInstall (installComplete,installFailed) {
         caches_open(cacheName,function(err,cache){
             
             if (err) {
-                closeNotificationChannel();
+                closeNotificationChannel(channel);
                 return installFailed(err);
             }
             
@@ -229,7 +252,7 @@ function toInstall (installComplete,installFailed) {
                 });
                 console.log({summary});
                 channel.postMessage(summary);
-                closeNotificationChannel();
+                closeNotificationChannel(channel);
                 installComplete({
                     err,
                     arrayOfCacheResults
@@ -268,21 +291,6 @@ function toInstall (installComplete,installFailed) {
             
         }
       
-        function openNotificationChannel() {
-            console.log("openNotificationChannel()");
-            return typeof BroadcastChannel === 'function' ? 
-                new BroadcastChannel('installing') : 
-                {  postMessage:function(x){console.log("installed:",x.url,x.progress,"%")},
-                   close :  function(){},
-                };
-        }
-        
-        function closeNotificationChannel(){
-            console.log("closeNotificationChannel()");
-            channel.close();
-            swivel.on('skip-waiting',self.skipWaiting);
-            swivel.on('refresh-files',update_cached_files);
-        }
         
        
        
@@ -292,91 +300,108 @@ function toInstall (installComplete,installFailed) {
 
 }
 
-function refreshCache(cache,url) {
+function openNotificationChannel() {
+    console.log("openNotificationChannel()");
+    return typeof BroadcastChannel === 'function' ? 
+        new BroadcastChannel('installing') : 
+        {  postMessage:function(x){console.log("installed:",x.url,x.progress,"%")},
+           close :  function(){},
+        };
+}
+
+function closeNotificationChannel(channel){
+    console.log("closeNotificationChannel()");
+    channel.close();
+}
+
+
+function refreshCache(channel,cache,url) {
 
     return new Promise(function(resolve,reject) {
         
-             cache.match(url).then(function(response) {
-                 if (response && response.type !== 'cors' ) {
-                     const Etag =response.headers.get('Etag')
-                     
-                     fetch(url, {
-                       method: 'HEAD', // *GET, POST, PUT, DELETE, etc.
-                       headers : {'If-None-Match':Etag}
-                     }).then (function(head){
-                         const newETag = head.headers.get('Etag');
-                      
-                        if ( Etag !== newETag ) {
-                             //console.log("refreshing...",url);
-                             swivel.broadcast('refreshing',{url:url})
-                             .then(function(){
-                                fetch(url).then(resolve).catch(reject);
-                              });
-                            
-                             
-                         } else {
-                             //console.log("unchanged...",url);
-                              resolve(response);
-                         }
-    
-                     });
+     cache.match(url).then(function(response) {
+         if (response && response.type !== 'cors' ) {
+             const Etag =response.headers.get('Etag')
+             
+             fetch(url, {
+               method: 'HEAD', // *GET, POST, PUT, DELETE, etc.
+               headers : {'If-None-Match':Etag}
+             }).then (function(head){
+                 const newETag = head.headers.get('Etag');
+              
+                if ( Etag !== newETag ) {
+                    
+                    channel.postMessage({refreshing:{url:url}});
+                    fetch(url).then(resolve).catch(reject);
+
                  } else {
-                     //console.log("adding new url",url);
-                     cache.add(url).then(resolve).catch(reject);
+                     //console.log("unchanged...",url);
+                      resolve(response);
                  }
+
              });
+         } else {
+             //console.log("adding new url",url);
+             cache.add(url).then(resolve).catch(reject);
+         }
+     });
          
     });
 
 }
 
-function updateURLArray_(cache,urls,cb) { return promise2errback(updateURLArray(cache,urls),cb);}
-function updateURLArray(cache,urls) {
-    if (!self.isSw) return;
+CBtoPromise (
     
+    function updateURLArray(channel,cache,urls,cb) {
     
-    return Promise.all(urls.map(function(url,index){
-        
-        
-        return swivel.broadcast('updateProgress',{loading:index,url:url}).then (function(){
-                    
-            return refreshCache(cache,url).then (function(dl){
-                 
-                return  swivel.broadcast('updateProgress',{loaded:index}).then (function(){
-                       
-                       
-                    return Promise.resolve(dl);
-                       
-                });
-    
-         
-            })
-                
-        }) .catch(function(err){
-              //Error stuff
-              console.log("failed adding",url,err);
+        const arrayOfPromisedUrls = urls.map(function(url,index){
+            return new Promise( toRefreshURL );
+            function toRefreshURL(resolve,reject){
+                 refreshCache(channel,cache,url).then (function(response){
+                     channel.postMessage({updateProgress:{index:index,url:url}});
+                     resolve(response);
+                 }).catch(reject);
+            }
         });
-    }));
-    
-}
+        
+        promiseAll2errback(arrayOfPromisedUrls,function(err,arrayOfCacheResults){
+            cb (undefined,{
+                errors:err,
+                results:arrayOfCacheResults
+            });
+        });
+    }
+)
+
+ 
 
 function update_cached_files() {
+    
+     const channel = openNotificationChannel();
   
      getPWAFiles(function(err,filesToCache){
         
-       if (err) return ;
-       
+       if (err) {
+           channel.postMessage({error:err.message||err});
+           closeNotificationChannel(channel);
+           return ;
+       }
        const urls = filesToCache.site.concat(filesToCache.github);
-       
-           swivel.broadcast('updateProgress',{files : urls});
+       channel.postMessage({updateProgress:{files:urls}});
+       caches_open(cacheName,function(err,cache){
            
-           caches_open(cacheName,function(err,cache){
-               if (err) return;
+           if (err) {
                
-               updateURLArray_(cache,urls,function(){
-                    swivel.broadcast('updateDone',{});
-                });
-           });
+               closeNotificationChannel(channel);
+               return ;
+           }
+           
+           updateURLArray(channel,cache,urls,function(err,summary){
+               console.log({summary});
+               channel.postMessage({updateProgress:1});
+               closeNotificationChannel(channel);
+            });
+       });
     });
     
 }
