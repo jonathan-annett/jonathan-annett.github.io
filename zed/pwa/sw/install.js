@@ -53,7 +53,7 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
          
                sw_progress(undefined,101);
                if (channel) channel.close();
-               sw_afterstart(registration);
+               sw_afterinstall(registration);
      }
      
  
