@@ -36,7 +36,7 @@ function w_load() {
              navSw.register( sw_path )
                .then ( function(){
                    
-                   navSw.ready.then (sw_ready);
+                  return  navSw.ready.then (sw_ready);
                    
                });
             
@@ -51,7 +51,7 @@ function w_load() {
                  console.log("service worker was just installed, waiting for it to finish");
                  //sw_afterstart(registration);
                  if (sw_ready.count === 0) {
-                     return;
+                     return Promise.resolve();
                  } else {
                      sw_ready.count = sw_ready.count===undefined?10:sw_ready.count-1;
                      return navSw.ready.then(sw_ready);
