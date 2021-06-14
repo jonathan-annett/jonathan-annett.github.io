@@ -87,12 +87,12 @@ function w_load() {
             qs("#refresh_files",function click(e){
                 e.target.removeEventListener('click', click);
                 e.target.disabled = true;  
-                if (registration.waiting) {
-                    // let waiting Service Worker know it should became active
-                    refresh_sw(sw_progress).then(function(){
-                        e.target.disabled = false;  
-                    });
-                }
+            
+                // let waiting Service Worker know it should became active
+                refresh_sw(sw_progress).then(function(){
+                    e.target.disabled = false;  
+                });
+            
             }).disabled = false;
             
         }
