@@ -112,8 +112,13 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
 
 (function (signature,service_worker_sig){
   
-  if (signature===service_worker_sig) addEventListener("install",  sw_install);
-
+  if (signature===service_worker_sig) {
+      console.log("registering install")
+      addEventListener("install",  sw_install);
+  } else {
+        console.log("not registering install:",signature,"vs",service_worker_sig);
+  }
+  
   function sw_install( e ) { return e.waitUntil(  new Promise(doInstall)); }
   
 
