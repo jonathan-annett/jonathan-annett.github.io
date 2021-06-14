@@ -23,7 +23,10 @@ function sw_activate ( e) {
                 }
             )
             
-         ).then(clients.claim)
+         ).then(function(){
+             clients.claim();
+             return Promise.resolve();
+         })
     }))
     
 }
