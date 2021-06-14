@@ -45,8 +45,8 @@ function w_load() {
                if (!navSw.controller) {
                  // The window client isn't currently controlled so it's a new service
                  // worker that will activate immediately
-                 console.log("service worker was just installed, starting now");
-                 sw_afterstart(registration);
+                 console.log("service worker was just installed, waiting for it to finish");
+                 //sw_afterstart(registration);
                  return;
                }
                
