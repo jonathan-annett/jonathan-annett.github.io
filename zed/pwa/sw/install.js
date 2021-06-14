@@ -170,7 +170,7 @@ function loadnew_sw(){
     
     function doInstall (installComplete,installFailed) {
         console.log("doInstall()");
-        return getPWAFiles(  ).then(install_PWAFiles).then(closeNotificationChannel).catch(installFailed);
+        return getPWAFiles(  ).then(install_PWAFiles);
         
         
         
@@ -183,7 +183,7 @@ function loadnew_sw(){
             
              caches.open(cacheName).then(installFilesList)
                  .then(closeNotificationChannel)
-                  .then (resolve) 
+                  .then (installComplete) 
                    .catch(reject);
 
              
@@ -219,7 +219,7 @@ function loadnew_sw(){
                  channel.close();
                  swivel.on('skip-waiting',self.skipWaiting);
                  swivel.on('refresh-files',update_cached_files);
-                 installComplete();
+                 return Promise.resolve();
              }
           });  
         }
