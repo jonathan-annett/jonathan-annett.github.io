@@ -86,13 +86,23 @@ function promise2errback (p,cb) {
 
 function promiseAll2errback (arr,cb) {
     
-    Promise.all(arr)
+    
+    
+    Promise.all(arr.map(errToNull))
        .then(function(arr2){
            cb(undefined,arr2);
-       })
-       .catch(function(err){
-            cb(err);
+       });
+        
+    function errToNull(p) {
+        return new Promise(function(resolve){
+            p.then(resolve).catch(nullify);
+            
+            function nullify(){
+                resolve(null);
+            }
         });
+    }
+    
 }
 
 function caches_open(cacheName,cb) {
