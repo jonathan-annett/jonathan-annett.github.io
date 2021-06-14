@@ -1,5 +1,5 @@
 
-/* global localforage,swivel,install_sw */
+/* global localforage,swivel,install_sw,refresh_sw,loadnew_sw */
 
 window.addEventListener('load', w_load);
 
@@ -53,7 +53,7 @@ function w_load() {
                 installerProgress.innerHTML= '<progress max="100" value="0"> 0% </progress';
                 installerProgress = installerProgress.children[0];
                 
-                qs("#load_new_version").disabled = true;
+                load_new_version.disabled = true;
             } else {
                 if (installerProgress && progress) {
                     installerProgress.value = progress;
@@ -79,9 +79,21 @@ function w_load() {
                 e.target.disabled = true;  
                 if (registration.waiting) {
                     // let waiting Service Worker know it should became active
-                    swivel.emit('skip-waiting')
+                    loadnew_sw();
+                    
                 }
             }).disabled = !registration.waiting;
+            
+            qs("#refresh_files",function click(e){
+                e.target.removeEventListener('click', click);
+                e.target.disabled = true;  
+                if (registration.waiting) {
+                    // let waiting Service Worker know it should became active
+                    refresh_sw(sw_progress).then(function(){
+                        e.target.disabled = false;  
+                    });
+                }
+            }).disabled = false;
             
         }
         

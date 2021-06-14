@@ -112,6 +112,42 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
 
 }
 
+function refresh_sw (sw_progress) {
+    return new Promise(function(resolve,reject) {
+        swivel.on('updateProgress',updateProgress);
+        swivel.on('updateDone',updateDone);
+        swivel.on('refreshing',refreshing);
+        swivel.emit('refresh-files');
+        
+        sw_progress(undefined,0);
+        var files,total = 10000000;
+        var p;
+        function updateProgress (x) {
+            if (x.files) {
+                files = x.files;
+                total = x.files.length;
+            }
+            p = Math.round((x.index / total)*100); 
+            sw_progress(undefined,p);
+        }
+        
+        function updateDone (x) {
+            sw_progress(undefined,101);
+        }
+        
+        function refreshing (x) {
+            sw_progress(x.url,p);
+        }
+    });
+    
+}
+
+function loadnew_sw(){
+    swivel.emit('skip-waiting');
+}
+
+
+
 (function (signature,service_worker_sig){
   
   if (signature===service_worker_sig) {
@@ -177,7 +213,7 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
                  console.log("closeNotificationChannel()");
                  channel.close();
                  swivel.on('skip-waiting',self.skipWaiting);
-                 swivel.on('update-files',update_cached_files);
+                 swivel.on('refresh-files',update_cached_files);
                  return Promise.resolve();
              }
           });  
@@ -201,7 +237,11 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
                           
                             if ( Etag !== newETag ) {
                                  //console.log("refreshing...",url);
-                                 fetch(url).then(resolve).catch(reject);
+                                 swivel.broadcast('refreshing',{url:url})
+                                 .then(function(){
+                                    fetch(url).then(resolve).catch(reject);
+                                  });
+                                
                                  
                              } else {
                                  //console.log("unchanged...",url);
