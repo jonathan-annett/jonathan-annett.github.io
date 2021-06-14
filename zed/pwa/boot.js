@@ -39,7 +39,7 @@ function w_load() {
          
         
         function sw_afterinstall(registration) {
-          
+               console.log("sw_afterinstall()");
                showRefreshUI(registration);
                 //window.boot_zed();
         }
@@ -76,9 +76,9 @@ function w_load() {
                 e.target.disabled = true;  
                 if (registration.waiting) {
                     // let waiting Service Worker know it should became active
-                    swivel.emit('skip-waiting');
+                    swivel.emit('skip-waiting')
                 }
-            }).disabled = false;
+            }).disabled = !registration.waiting;
             
         }
         
