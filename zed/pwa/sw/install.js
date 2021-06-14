@@ -265,5 +265,4 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
 
  
       
-  
-})(typeof self+typeof location+typeof WindowClient+typeof SyncManager,'objectundefinedfunctionfunction');
+})(typeof self+typeof WindowClient+typeof SyncManager,'objectfunctionfunction'); 

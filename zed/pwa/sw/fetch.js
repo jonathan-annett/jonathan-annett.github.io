@@ -130,5 +130,4 @@
       }
       
   
-})(typeof self+typeof location+typeof WindowClient+typeof SyncManager,'objectundefinedfunctionfunction');
-
+})(typeof self+typeof WindowClient+typeof SyncManager,'objectfunctionfunction'); 
