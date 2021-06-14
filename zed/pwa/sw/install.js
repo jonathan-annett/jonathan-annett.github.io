@@ -28,7 +28,7 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
          console.log("loading service worker script...");
          navSw.register( sw_path )
            .then (navSw.ready)
-           .then (sw_ready);
+            .then (sw_ready);
         
          
 
@@ -114,133 +114,146 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
   
   if (signature===service_worker_sig) addEventListener("install",  sw_install);
 
-  function sw_install( e ) {
-        //invoked from service worker context 
-        e.waitUntil(
-            
-            getPWAFiles(  ).then( function(filesToCache){
-                
-                  return new Promise(function (resolve,reject){
-                      
-                      const channel = typeof BroadcastChannel === 'function' ? 
-                                             new BroadcastChannel('installing') : 
-                                             {  postMessage:function(x){console.log("installed:",x.url,x.progress,"%")},
-                                                close :  function(){},
-                                             };
+  function sw_install( e ) { return e.waitUntil(  new Promise(doInstall)); }
+  
+
+    //invoked from service worker context 
+   
     
-                      const all_files = filesToCache.site.concat(filesToCache.github);
-                      
-                      caches.open(cacheName).then(function(cache) {
-                          
-                          Promise.all(all_files.map(function(url,index){
-                              
-                               return cache.add(url)
-                                   .then(function(x){
-                                       channel.postMessage({url:url,progress:Math.ceil((index/all_files.length)*100)});
-                                       return Promise.resolve(x);    
-                                   }) .catch(function(err){
-                                    //Error stuff
-                                    console.log("failed adding",url,err);
-                               });
-                          })).then(function (all){
-                              
-                              channel.close();
-                              
-                              swivel.on ('update',update_cached_files);
-                              
-                              resolve(all);
-                          });
-                          
-                      })
-                      
-                  });
-                  
-            })
-        );
+    function doInstall (installComplete,installFailed) {
         
-        function refreshCache(cache,url) {
+        return getPWAFiles(  ).then(install_PWAFiles).then(installComplete).catch(installFailed);
+        
+        
+        
+        function install_PWAFiles(filesToCache){
             
-            return new Promise(function(resolve,reject) {
-                
-                     cache.match(url).then(function(response) {
-                         if (response && response.type !== 'cors' ) {
-                             const Etag =response.headers.get('Etag')
-                             
-                             fetch(url, {
-                               method: 'HEAD', // *GET, POST, PUT, DELETE, etc.
-                               headers : {'If-None-Match':Etag}
-                             }).then (function(head){
-                                 const newETag = head.headers.get('Etag');
-                              
-                                if ( Etag !== newETag ) {
-                                     //console.log("refreshing...",url);
-                                     fetch(url).then(resolve).catch(reject);
-                                     
-                                 } else {
-                                     //console.log("unchanged...",url);
-                                      resolve(response);
-                                 }
+              const channel = openNotificationChannel();
+
+              const all_files = filesToCache.site.concat(filesToCache.github);
+              
             
-                             });
-                         } else {
-                             //console.log("adding new url",url);
-                             cache.add(url).then(resolve).catch(reject);
-                         }
-                     });
+             caches.open(cacheName).then(installFilesList)
+                 .then(closeNotificationChannel)
+                  .then (installComplete) 
+                   .catch(installFailed);
+
+             
+             function installFilesList(cache) {
+                  return Promise.all(all_files.map(function(url,index){
                  
-            });
-        
+                              return cache.add(url)
+                                  .then(function(x){
+                                      channel.postMessage({url:url,progress:Math.ceil((index/all_files.length)*100)});
+                                      return Promise.resolve(x);    
+                                  }) .catch(function(err){
+                                   //Error stuff
+                                   console.log("failed adding",url,err);
+                              });
+                   }));
+             }
+             
+             
+             function openNotificationChannel() {
+                 return typeof BroadcastChannel === 'function' ? 
+                 new BroadcastChannel('installing') : 
+                 {  postMessage:function(x){console.log("installed:",x.url,x.progress,"%")},
+                    close :  function(){},
+                 };
+             }
+             
+             
+             function closeNotificationChannel(){
+                 channel.close();
+             }
+              
         }
+    
+    }
+    
+    function refreshCache(cache,url) {
         
-        function updateURLArray(cache,urls) {
+        return new Promise(function(resolve,reject) {
             
-            return Promise.all(urls.map(function(url,index){
-                
-                
-                return swivel.broadcast('updateProgress',{loading:index,url:url}).then (function(){
-                            
-                    return refreshCache(cache,url).then (function(dl){
+                 cache.match(url).then(function(response) {
+                     if (response && response.type !== 'cors' ) {
+                         const Etag =response.headers.get('Etag')
                          
-                        return  swivel.broadcast('updateProgress',{loaded:index}).then (function(){
-                               
-                               
-                            return Promise.resolve(dl);
-                               
-                        });
-            
-                 
-                    })
-                        
-                }) .catch(function(err){
-                      //Error stuff
-                      console.log("failed adding",url,err);
-                });
-            }));
-            
-        }
+                         fetch(url, {
+                           method: 'HEAD', // *GET, POST, PUT, DELETE, etc.
+                           headers : {'If-None-Match':Etag}
+                         }).then (function(head){
+                             const newETag = head.headers.get('Etag');
+                          
+                            if ( Etag !== newETag ) {
+                                 //console.log("refreshing...",url);
+                                 fetch(url).then(resolve).catch(reject);
+                                 
+                             } else {
+                                 //console.log("unchanged...",url);
+                                  resolve(response);
+                             }
         
-        function update_cached_files() {
+                         });
+                     } else {
+                         //console.log("adding new url",url);
+                         cache.add(url).then(resolve).catch(reject);
+                     }
+                 });
+             
+        });
+    
+    }
+    
+    function updateURLArray(cache,urls) {
         
-            getPWAFiles().then( function(filesToCache){
-                
-               const urls = filesToCache.site.concat(filesToCache.github);
-               
-               
-                   swivel.broadcast('updateProgress',{files : urls});
-                   
-                    return caches.open(cacheName).then(function(cache) {
+        return Promise.all(urls.map(function(url,index){
+            
+            
+            return swivel.broadcast('updateProgress',{loading:index,url:url}).then (function(){
                         
-                        return updateURLArray(cache,urls).then (function(){
-                            
-                              return swivel.broadcast('updateDone',{});
-                              
-                        });
+                return refreshCache(cache,url).then (function(dl){
+                     
+                    return  swivel.broadcast('updateProgress',{loaded:index}).then (function(){
+                           
+                           
+                        return Promise.resolve(dl);
+                           
                     });
         
+             
+                })
+                    
+            }) .catch(function(err){
+                  //Error stuff
+                  console.log("failed adding",url,err);
             });
-        }
+        }));
+        
+    }
     
-  }  
+    function update_cached_files() {
+    
+        getPWAFiles().then( function(filesToCache){
+            
+           const urls = filesToCache.site.concat(filesToCache.github);
+           
+           
+               swivel.broadcast('updateProgress',{files : urls});
+               
+                return caches.open(cacheName).then(function(cache) {
+                    
+                    return updateURLArray(cache,urls).then (function(){
+                        
+                          return swivel.broadcast('updateDone',{});
+                          
+                    });
+                });
+    
+        });
+    }
+
+ 
       
   
 })(typeof self+typeof navigator+typeof window+typeof caches,'objectundefinedundefinedobject');
