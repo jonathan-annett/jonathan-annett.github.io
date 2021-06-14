@@ -52,7 +52,7 @@ function w_load() {
                 installerProgress = installerProgress.children[0];
             } else {
                 if (installerProgress && progress) {
-                    installerProgress.progress = progress;
+                    installerProgress.value = progress;
                 }
             }
             
