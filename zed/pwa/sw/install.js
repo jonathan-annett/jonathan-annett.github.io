@@ -219,10 +219,11 @@ function toInstall (installComplete,installFailed) {
 
             promiseAll2errback(arrayOfPromisedUrls,function(err,arrayOfCacheResults){
                 if (err) return installFailed(err);
-                const summary={};
+                
+                const summary={progress:100,urls:{}};
                 arrayOfCacheResults.forEach(function(el){
                     if( el && el.url && el.headers) {
-                        summary[el.url] = {
+                        summary.urls[el.url] = {
                             url  : el.url,
                             Etag : el.headers.get('Etag'),
                             size : el.headers.get('Content-Length')
@@ -230,9 +231,7 @@ function toInstall (installComplete,installFailed) {
                     }
                 });
                 
-                channel.postMessage({summmary:summary,progress:100});
-                       
-                
+                channel.postMessage(summary);
                 closeNotificationChannel();
             });
             
@@ -282,8 +281,7 @@ function toInstall (installComplete,installFailed) {
 }
 
 function refreshCache(cache,url) {
-    if (!self.isSw) return;
-    
+
     return new Promise(function(resolve,reject) {
         
              cache.match(url).then(function(response) {
