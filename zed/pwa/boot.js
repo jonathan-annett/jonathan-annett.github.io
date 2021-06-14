@@ -65,7 +65,6 @@ function w_load() {
             } 
             
             if (progress>=100) {
-                console.log("install complete");
                 installerProgress.progress = 0;
                 progress_message.innerHTML = "install compelete";
             }

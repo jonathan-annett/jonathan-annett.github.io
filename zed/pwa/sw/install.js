@@ -22,14 +22,13 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
          
         
          sw_progress(undefined,0);
-         let count = 0;
              
          if (channel) {
              channel.onmessage=function(e) {
                  if (e.data.summary) {
                      console.log(e.data.summary)
                  } else {
-                    sw_progress(e.data.url,count++,e.data.progress);
+                    sw_progress(e.data.url,e.data.progress);
                  }
              };
          }
@@ -207,6 +206,7 @@ function toInstall (installComplete,installFailed) {
          const channel = openNotificationChannel();
          
          const all_files = filesToCache.site.concat(filesToCache.github);
+         let count = 0;
          
         caches_open(cacheName,function(err,cache){
             
@@ -239,14 +239,13 @@ function toInstall (installComplete,installFailed) {
         
         
         function addToCacheWithProgress(cache){
-            
+          
+
             return addToCache;
             
             function addToCache(url,index){
                return cache.add(url).then(function(x){
-                       
-                       console.log("installing:",url);
-                       channel.postMessage({url:url,progress:Math.ceil((index/all_files.length)*100)});
+                       channel.postMessage({url:url,progress:Math.ceil((count++/all_files.length)*100)});
                        return Promise.resolve(x); 
                        
                    }) .catch(function(err){
