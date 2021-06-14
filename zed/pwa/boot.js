@@ -34,12 +34,15 @@ function w_load() {
              
              console.log("loading service worker script...");
              navSw.register( sw_path )
-               .then ( navSw.ready)
-                  .then (sw_ready);
+               .then ( function(){
+                   
+                   navSw.ready.then (sw_ready);
+                   
+               });
             
              
 
-             function sw_ready (registration,count) {
+             function sw_ready (registration) {
                  
                  // Track updates to the Service Worker.
                if (!navSw.controller) {
@@ -47,9 +50,13 @@ function w_load() {
                  // worker that will activate immediately
                  console.log("service worker was just installed, waiting for it to finish");
                  //sw_afterstart(registration);
-                
-                 return count === 0  ? false : setTimeout(sw_ready,1000,registration, count===undefined?10:count-1);
-                 
+                 if (sw_ready.count === 0) {
+                     return;
+                 } else {
+                     sw_ready.count = sw_ready.count===undefined?10:sw_ready.count-1;
+                     return navSw.ready.then(sw_ready);
+                 }
+
                }
                
                console.log("checking for service worker update.");
