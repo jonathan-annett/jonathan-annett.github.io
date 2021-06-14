@@ -23,8 +23,8 @@ function sw_activate ( e) {
                 }
             )
             
-         );
-    })).then(clients.claim);
+         ).then(clients.claim)
+    }))
     
 }
  
