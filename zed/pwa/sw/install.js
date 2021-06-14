@@ -244,22 +244,22 @@ function toInstall (installComplete,installFailed) {
             return addToCache;
             
             function addToCache(url,index){
-                return new Promise(function(res,rej) {
+                
+                return new Promise(function(resolve,reject) {
                     
                    cache.add(url).then(function(response){
                            
                            count ++;
                            channel.postMessage({
-                               
-                               url:url,
-                               progress:Math.ceil( (count  / all_files.length) * 100 )
+                               url      : url,
+                               progress : Math.ceil( (count  / all_files.length) * 100 )
                            });
                            
-                           return cache.match(url);
+                           resolve (response);
                            
                        }) .catch(function(err){
                             //Error stuff
-                            console.log("failed adding",url,err);
+                            reject(err);
                        });
                    })
             }
