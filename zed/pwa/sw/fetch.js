@@ -130,6 +130,5 @@
       }
       
   
-})(typeof self+typeof navigator+typeof window+typeof caches,'objectundefinedundefinedobject');
-
+})(typeof self+typeof location+typeof WindowClient+typeof SyncManager,'objectundefinedfunctionfunction');
 
