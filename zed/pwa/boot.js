@@ -42,9 +42,9 @@ function w_load() {
                 
                 get_changed_sw().then(function(payload){
                     
-                    const {changed_urls,summary} = payload;
+                    const {changedUrls,details} = payload;
                     
-                    if (changed_urls.length===0) {
+                    if (changedUrls.length===0) {
                     
                        html.classList.remove("register");
                        html.classList.remove("beta");

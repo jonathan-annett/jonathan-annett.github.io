@@ -210,9 +210,11 @@ workerCmd(
                   promiseAll2errback(arrayOfPromisedUrls,function(err,arrayOfHeadResults){
                        if (err) return reject(err);
                        
-                       const changedUrls = arrayOfHeadResults.filter(function(x){return x!==null});
+                       const details = arrayOfHeadResults.filter(function(x){return x!==null});
                        
-                       return resolve({changedUrls,summary});
+                       const payload = {changedUrls:Object.keys(details),details};
+                    
+                       return resolve(payload);
                        
                   });
                          
@@ -230,10 +232,10 @@ workerCmd(
                             method: 'HEAD', // *GET, POST, PUT, DELETE, etc.
                             headers : {'If-None-Match':Etag}
                           }).then (function(head){
-                              const newETag = head.headers.get('Etag');
+                              const newEtag = head.headers.get('Etag');
                            
-                             if ( Etag !== newETag ) {
-                                 resolve(url);
+                             if ( Etag !== newEtag ) {
+                                 resolve({url:url,Etag:Etag,newEtag:newEtag});
                               } else {
                                  resolve(null);
                               }
