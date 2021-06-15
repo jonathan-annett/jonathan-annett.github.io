@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
         <title>jsdifflib demo</title>
         <link rel="stylesheet" type="text/css" href="diffview.css" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js" integrity="sha512-GkJRKF+k/yzHfJUg9LrNLQhS0jorQe4kES+GHkqtQThCJ5z5A1KwCXH0GYbJApDh/a3ERFvq9xbRJY9mEXzQiA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+       <script src="https://unpkg.com/localforage@1.9.0/dist/localforage.js"></script>
         <script type="text/javascript" src="diffview.js"></script>
         <script type="text/javascript" src="difflib.js"></script>
         <script src="/zed/pwa/sw/utils.js"></script>
@@ -74,5 +74,8 @@
             <label for="inline">Inline Diff</label>
         </div>
         <div id="diffoutput"></div>
+        <script>
+            document.addEventListener('DOMContentLoaded', bootDiffPage);
+        </script>
     </body>
 </html>

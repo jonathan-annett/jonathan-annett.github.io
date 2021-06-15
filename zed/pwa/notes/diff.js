@@ -4,10 +4,9 @@
 const sw_path = "/zed/pwa/sw/background.sw.js";
 const config_url = "/zed/pwa/files.json";
 
-document.addEventListener('DOMContentLoaded', bootPage);
 
 
-function bootPage() {
+function bootDiffPage() {
     getConfig().then(loadPage).
     catch (console.warn.bind(console));
 }

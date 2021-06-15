@@ -74,7 +74,7 @@ function w_load() {
                 '<select id="choose_pwa_file">'+
                
                 
-                files.site.map(function(url){
+                files.github.map(function(url){
                     return '<option value="'+url+'">' +url+'</option>';
                 }).join("\n")+
 
