@@ -269,15 +269,15 @@ function workerCmd(cmdName,msgData,handler,worker_handler,THIS) {
                     reject          : _reject
                 };
                 
-                channel.onmessage=function(msg){
+                channel.onmessage=function(e){
                     // filter out other messages
-                    if (msg.id===id) {
+                    if (e.data.id===id) {
                         close_notifier();
-                        delete msg.id;
-                        const key = Object.keys(msg)[0];
+                        delete e.data.id;
+                        const key = Object.keys(e.data)[0];
                         const fn = replies[key];
-                        const payload = msg[key];
-                        delete  msg[key];
+                        const payload = e.data[key];
+                        delete  e.data[key];
                         
                         if (typeof fn==='function') fn(payload);
                     }
