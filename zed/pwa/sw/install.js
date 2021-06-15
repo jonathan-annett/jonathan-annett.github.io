@@ -21,7 +21,7 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
          };
      }
     
-     const channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('installing') : false;
+     let channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('installing') : false;
      
     
      sw_progress(undefined,0);
@@ -31,7 +31,8 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
              if (e.data.summary) {
                  console.log(e.data.summary);
                  sw_progress(undefined,101);
-                 if (channel) channel.close();
+                 channel.close();
+                 channel=undefined;
                  sw_afterinstall(registration);
              } else {
                 sw_progress(e.data.url,e.data.progress);
@@ -43,7 +44,18 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
      //navSw.addEventListener('controllerchange',sw_controllerchange);
      
      console.log("registering service worker script...");
-     navSw.register( sw_path ).then (function(reg){registration=reg;});
+     navSw.register( sw_path ).then (function(reg){
+         
+         if (reg.active) {
+             if (channel) {
+                 channel.close();
+                 channel=undefined;
+             }
+             sw_afterstart(registration);
+         } else {
+             registration=reg;
+         }
+     });
 
 }
 
