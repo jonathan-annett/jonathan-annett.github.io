@@ -202,7 +202,7 @@ workerCmd(
                  
                   const arrayOfPromisedUrls = Object.keys(summary.urls).map(function(url){
 
-                         return fetchChanged(cache,url,summary.urls[url].ETag)
+                         return fetchChanged(cache,url,summary.urls[url].Etag)
                   });
                   
                   
