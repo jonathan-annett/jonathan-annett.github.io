@@ -39,11 +39,16 @@ function w_load() {
             if (registration.waiting) {
                 sw_afterinstall(registration);
             } else {
-                html.classList.remove("register");
-                html.classList.remove("beta");
-                html.classList.remove("notbeta");
-                
-                window.boot_zed();
+                get_changed_sw().then(function(got_changed){
+                   console.log({got_changed});
+                    
+                   html.classList.remove("register");
+                   html.classList.remove("beta");
+                   html.classList.remove("notbeta");
+                   
+                   window.boot_zed();
+                });
+               
             }
 
         }

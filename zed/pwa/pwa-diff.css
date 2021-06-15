@@ -46,6 +46,7 @@ html.beta div.beta {
      background-color: #1c3802;
  }
  
+body, 
 #PWA_BOOT {
     overflow-y:auto;
 }

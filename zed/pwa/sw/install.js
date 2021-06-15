@@ -4,7 +4,7 @@ getPWAFiles ,caches,cacheName, BroadcastChannel,self,
 
 caches_open,promise2errback,promiseAll2errback,cache_add, asCallback, asPromise,
 
-cpArgs,workerCmd
+cpArgs,workerCmd,localforage
 
 */
 self.isSw = typeof WindowClient+typeof SyncManager==='functionfunction';
@@ -189,15 +189,61 @@ workerCmd(
         
 
 workerCmd(
-    'sample_cmd',{},
+    'get_changed_sw',{},
     function pageCode( navSw,replies, resolve, reject, send, id, 
-/* --args-->*/ sw_progress ){
-    
-    
+/* --args-->*/ cb ){
+          
         },
-    function workerCode(msg,resolve,reject,reply) {
+    function workerCode(msg,resolve,reject) {
       
+         localforage.getItem('install-etags').then(function (summary) {
+             
+             caches_open(cacheName,function(err,cache){
+                 
+                  const arrayOfPromisedUrls = Object.keys(summary.urls).map(function(url){
+
+                         return fetchChanged(cache,url,summary.urls[url].ETag)
+                  });
+                  
+                  
+                  promiseAll2errback(arrayOfPromisedUrls,function(err,arrayOfHeadResults){
+                       if (err) return reject(err);
+                       
+                       const changedUrls = arrayOfHeadResults.filter(function(x){return x!==null});
+                       
+                       return resolve({changedUrls});
+                       
+                  });
+                         
+             });
+             
+         });
          
+         
+         function fetchChanged(cache,url,Etag) {
+             if (Etag===null) return Promise.resolve(null);   
+             return new Promise(function(resolve) {
+                  cache.match(url).then(function(response) {
+                      if (response && response.type !== 'cors' ) {
+                          fetch(url, {
+                            method: 'HEAD', // *GET, POST, PUT, DELETE, etc.
+                            headers : {'If-None-Match':Etag}
+                          }).then (function(head){
+                              const newETag = head.headers.get('Etag');
+                           
+                             if ( Etag !== newETag ) {
+                                 resolve(url);
+                              } else {
+                                 resolve(null);
+                              }
+                          });
+                      } else {
+                         resolve(null);
+                      }
+                  });
+             });
+         
+         }
 
     }
 );
@@ -263,10 +309,16 @@ function sw_install( e ) {
                     });
                     channel.postMessage({summary});
                     closeNotificationChannel(channel);
-                    installComplete({
-                        err,
-                        arrayOfCacheResults
+                    
+                    localforage.setItem('install-etags', summary).then(function () {
+                        installComplete({
+                            err,
+                            arrayOfCacheResults
+                        }); 
                     });
+
+                    
+                  
                 });
                 
             });
