@@ -9,52 +9,10 @@
         <style id="window-theme-css" type="text/css"></style>
         <style id="editor-theme-css" type="text/css"></style>
         <style id="user-css" type="text/css"></style>
-        <style>
-            
-            
-            #PWA_BOOT,
-            #PWA_BOOT .beta,
-            #pwa_info,
-            #PWA_BOOT .notbeta {
-               position : absolute;
-               background-color:gray;
-               color  : white;
-               font-size:22pt;
-               font-family:Monaco;
-               left   : 0;
-               top    : 0;
-               width  : 100vw;
-               height : 100vh;
-            }
-            
-            #PWA_BOOT .beta {
-               height : 20vh;
-            }
-            #pwa_info {
-               top    : 20vh;
-               height : 80vh;
-            }
-
-            
-            #PWA_BOOT .notbeta {
-               background-image: url('/zed/app/Icon.png');;
-               background-color:gray;
-                background-repeat: no-repeat;
-               background-attachment: fixed;
-               background-position: center;
-            }
-            
-            div.beta,
-            div.notbeta{
-                display : none;
-            }
-
-            html.notbeta div.notbeta,
-            html.beta div.beta {
-               display : block;
-            }
-
-        </style>
+        
+        
+        <link href="/zed/pwa/notes/diff.css" rel="stylesheet" type="text/css">
+        <link href="/zed/pwa/pwa.css" rel="stylesheet" type="text/css">
     </head>
     <body class="dark custom-scroll non_mac native-chrome">
         <div id="PWA_BOOT">
@@ -89,6 +47,26 @@
           <div id="pwa_info">
              <h1>installed files</h1>
              <div id="installed_files"></div>
+             <div class="top"> 
+             <input type="hidden" id="contextSize" value="" />
+             </div>
+             <div class="textInput">
+                  <h2 id="baseText_caption">Base Text</h2>
+     
+                 <textarea id="baseText"></textarea>
+             </div>
+             <div class="textInput spacer">
+                  <h2 id="newText_caption">New Text</h2>
+     
+                 <textarea id="newText"></textarea>
+             </div>
+             <div class="viewType">
+                 <input type="radio" name="_viewtype" id="sidebyside" onclick="diffUsingJS(0);" />
+                 <label for="sidebyside">Side by Side Diff</label>&nbsp; &nbsp;
+                 <input type="radio" name="_viewtype" id="inline" onclick="diffUsingJS(1);" />
+                 <label for="inline">Inline Diff</label>
+             </div>
+             <div id="diffoutput"></div>
           </div>
         </div>
         
@@ -97,8 +75,9 @@
         <script src="https://unpkg.com/localforage@1.9.0/dist/localforage.js"></script>
         <script src="https://unpkg.com/localforage-observable@2.1.1/dist/localforage-observable.js"></script>
 
-        <script type="text/javascript" src="diffview.js"></script>
-        <script type="text/javascript" src="difflib.js"></script>
+        <script type="text/javascript" src="/zed/pwa/notes/diffview.js"></script>
+        <script type="text/javascript" src="/zed/pwa/notes/difflib.js"></script>
+        <script type="text/javascript" src="/zed/pwa/notes/diff.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js" integrity="sha512-GkJRKF+k/yzHfJUg9LrNLQhS0jorQe4kES+GHkqtQThCJ5z5A1KwCXH0GYbJApDh/a3ERFvq9xbRJY9mEXzQiA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="/zed/index.sw.json" type="application/json"></script><!--for caching only-->

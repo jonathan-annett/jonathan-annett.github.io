@@ -71,7 +71,7 @@ function w_load() {
                 
                 '<div>' +
                 '<label> ZED app related' +
-                '<select id="choose_pwa_file">'+
+                '<select id="selectFile">'+
                
                 
                 files.github.map(function(url){
@@ -83,7 +83,7 @@ function w_load() {
                 '</label>' +
                 '</div>';
                 
-                choose_pwa_file = qs('#choose_pwa_file');
+                choose_pwa_file = qs('#selectFile');
                 choose_app_file = qs('#choose_app_file');
             }
             
