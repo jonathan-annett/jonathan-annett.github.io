@@ -483,7 +483,7 @@ function getGitubCommitHash(user,repo){return asPromise(arguments,function(resol
     
 
        
-    fetch(url)
+    fetch(url,{mode: 'no-cors'})
       .then(toText)
           .then(
               function(text) {
@@ -509,6 +509,8 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
     
     
     getGitubCommitHash(user,repo,function(err,hash){
+        
+        if (err) return reject(err);
         
         const url =  "https://api.github.com/repos/"+user+"/"+repo+"/git/trees/"+hash+"?recursive=1";
         const github_io_base = "https://" +  repo + root.replace(/^\//,'/');
