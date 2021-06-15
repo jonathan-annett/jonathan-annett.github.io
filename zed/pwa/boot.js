@@ -13,7 +13,7 @@ function w_load() {
     installerProgress,
     
     
- 
+    choose_pwa_file,choose_app_file,
     [ progress_message,    html,keyPRE,                    refresh_files,   load_new_version,   pwa_info,    installed_files ]   = 
     ["#progress_message", "html","html .notbeta pre.key","#refresh_files","#load_new_version", "#pwa_info","#installed_files"].map(qs);
     
@@ -52,8 +52,36 @@ function w_load() {
         function sw_progress(url,progress,files) {
             
             if (files) {
-                installed_files.innerHTML = "<pre>"+JSON.stringify(files,undefined,4)+"</pre>"
                 
+                installed_files.innerHTML = 
+                '<div>' +
+                '<label>PWA related'+
+                
+                '<select id="chooseSite">'+
+                
+                files.site.map(function(url){
+                    return '<option value="'+url+'">' +url+'</option>';
+                }).join("\n")+
+                
+                
+                
+                '</select>'+
+                '</label>' +
+                '</div>' +
+                '<div>' +
+                '<select id="chooseSite">'+
+                '<label> ZED app related' +
+                
+                files.site.map(function(url){
+                    return '<option value="'+url+'">' +url+'</option>';
+                }).join("\n")+
+
+                '</label>' +
+                '</select>' +
+                '</div>';
+                
+                choose_pwa_file = qs('#choose_pwa_file');
+                choose_app_file = qs('#choose_app_file');
             }
             
             if (progress===0) {
