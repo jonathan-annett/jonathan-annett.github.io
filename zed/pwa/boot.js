@@ -52,12 +52,8 @@ function w_load() {
                        
                        window.boot_zed();
                     } else {
-                        try {
-                            qs("#diffoutput").innherHTML="<pre>"+JSON.stringify(payload,undefined,4)+"</pre>";
-                          //window.location.replace(changed_urls[0]+"?force="+Math.random().toString(36));
-                        } catch (e) {
-                            
-                        }
+                        qs("#diffoutput").innerHTML="<pre>"+JSON.stringify(payload,undefined,4)+"</pre>";
+                      
                     }
                 });
                
