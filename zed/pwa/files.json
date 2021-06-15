@@ -47,7 +47,7 @@
     
     "github_io" : {
         "user" : "jonathan-annett",
-        "root" : "/zed/",
+        "root" : "/",
         "include" : [
                 { "RegExp": "^zed\/app\\/" } 
             ],
