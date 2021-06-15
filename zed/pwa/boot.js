@@ -80,7 +80,7 @@ function w_load() {
                                 setTimeout(function(){
                                     html.classList.remove("register");
                                     html.classList.add("refreshing");
-                                    window.location.replace(window.location.href+"?refresh="+Math.random().toString(36));
+                                   // window.location.replace(window.location.href+"?refresh="+Math.random().toString(36));
                                 
                                 },10000);
                             });
