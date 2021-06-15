@@ -49,7 +49,7 @@
         "user" : "jonathan-annett",
         "root" : "/zed/",
         "include" : [
-                { "RegExp": "^app\\/" } 
+                { "RegExp": "^zed\/app\\/" } 
             ],
         
          "exclude": [ 
@@ -61,7 +61,7 @@
             { "RegExp": "\\/nw\\/init[1|2].js$" },
             
             
-            "app/package.json"
+            "zed/app/package.json"
 
         ]
         
