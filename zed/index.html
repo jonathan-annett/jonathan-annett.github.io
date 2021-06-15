@@ -15,6 +15,20 @@
         <link href="/zed/pwa/pwa.css" rel="stylesheet" type="text/css">
     </head>
     <body class="dark custom-scroll non_mac native-chrome">
+
+
+        <!-- pwa development entries begin  -->
+      
+        <script src="https://unpkg.com/zen-observable@0.2.1/zen-observable.js"></script>
+        <script src="https://unpkg.com/localforage@1.9.0/dist/localforage.js"></script>
+        <script src="https://unpkg.com/localforage-observable@2.1.1/dist/localforage-observable.js"></script>
+        
+        <script src="/zed/pwa/sw/utils.js" ></script>
+        <script src="/zed/pwa/sw/config.js" ></script>
+        <script type="text/javascript" src="/zed/pwa/notes/diffview.js"></script>
+        <script type="text/javascript" src="/zed/pwa/notes/difflib.js"></script>
+        <script type="text/javascript" src="/zed/pwa/notes/diff.js"></script>
+
         <div id="PWA_BOOT">
           <div class="beta">
           <h1>Zed PWA</h1>
@@ -69,17 +83,8 @@
              <div id="diffoutput"></div>
           </div>
         </div>
-        
-        <!--script src="/zed/pwa/sw/swivel.min.js"></script-->
-        <script src="https://unpkg.com/zen-observable@0.2.1/zen-observable.js"></script>
-        <script src="https://unpkg.com/localforage@1.9.0/dist/localforage.js"></script>
-        <script src="https://unpkg.com/localforage-observable@2.1.1/dist/localforage-observable.js"></script>
-
-        <script type="text/javascript" src="/zed/pwa/notes/diffview.js"></script>
-        <script type="text/javascript" src="/zed/pwa/notes/difflib.js"></script>
-        <script type="text/javascript" src="/zed/pwa/notes/diff.js"></script>
+        <!-- pwa development entries end  -->
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js" integrity="sha512-GkJRKF+k/yzHfJUg9LrNLQhS0jorQe4kES+GHkqtQThCJ5z5A1KwCXH0GYbJApDh/a3ERFvq9xbRJY9mEXzQiA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="/zed/index.sw.json" type="application/json"></script><!--for caching only-->
         <script src="/zed/app/dep/underscore-min.js"></script>
         <script src="/zed/app/dep/ga-bundle.js"></script>
@@ -95,12 +100,14 @@
         <script src="/zed/app/ace/ext-whitespace.js"></script>
         <script src="/zed/app/ace/keybinding-vim.js"></script>
         <script src="/zed/app/js/boot.js"></script>
-        <!--
-        <script src="/zed/pwa/zen-observable.js"></script>
-        <script src="/zed/pwa/localforage.js"></script>
-        <script src="/zed/pwa/localforage-observable.js"></script>
-        -->
+        
+        <!-- pwa files not needed unless development files are removed (see above)
+        
+        <script src="https://unpkg.com/zen-observable@0.2.1/zen-observable.js"></script>
+        <script src="https://unpkg.com/localforage@1.9.0/dist/localforage.js"></script>
+        <script src="https://unpkg.com/localforage-observable@2.1.1/dist/localforage-observable.js"></script>
         <script src="/zed/pwa/sw/utils.js" ></script>
+        -->
         <script src="/zed/pwa/sw/install.js" ></script>
         <script src="/zed/pwa/boot.js" defer></script>
     </body>
