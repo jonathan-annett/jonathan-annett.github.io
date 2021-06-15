@@ -13,6 +13,16 @@
         <link href="/zed/pwa/pwa.css" rel="stylesheet" type="text/css">
         <!-- pwa development entries begin  -->
         <link href="/zed/pwa/notes/diff.css" rel="stylesheet" type="text/css">
+        <style>
+            
+            div.textInput,
+            div.viewType {
+             display : !important none;
+            }
+                         
+            
+        </style>
+        
         <!-- pwa development entries end  -->
     </head>
     <body class="dark custom-scroll non_mac native-chrome">
@@ -37,6 +47,30 @@
           <p id="progress_container"><progress max="100" value="70"> 100% </progress></p>
          <button id="load_new_version" disabled>load new version</button>
          <button id="refresh_files" disabled>refresh files</button>
+             <div id="pwa_info">
+                <h1>installed files</h1>
+                <div id="installed_files"></div>
+                <div class="top"> 
+                <input type="hidden" id="contextSize" value="" />
+                </div>
+                <div class="textInput">
+                     <h2 id="baseText_caption">Base Text</h2>
+        
+                    <textarea id="baseText"></textarea>
+                </div>
+                <div class="textInput spacer">
+                     <h2 id="newText_caption">New Text</h2>
+        
+                    <textarea id="newText"></textarea>
+                </div>
+                <div class="viewType">
+                    <input type="radio" name="_viewtype" id="sidebyside" onclick="diffUsingJS(0);" />
+                    <label for="sidebyside">Side by Side Diff</label>&nbsp; &nbsp;
+                    <input type="radio" name="_viewtype" id="inline" onclick="diffUsingJS(1);" />
+                    <label for="inline">Inline Diff</label>
+                </div>
+                <div id="diffoutput"></div>
+             </div>
           </div>
           <div class="notbeta">
               <p>
@@ -59,30 +93,8 @@
               
               
           </div>
-          <div id="pwa_info">
-             <h1>installed files</h1>
-             <div id="installed_files"></div>
-             <div class="top"> 
-             <input type="hidden" id="contextSize" value="" />
-             </div>
-             <div class="textInput">
-                  <h2 id="baseText_caption">Base Text</h2>
-     
-                 <textarea id="baseText"></textarea>
-             </div>
-             <div class="textInput spacer">
-                  <h2 id="newText_caption">New Text</h2>
-     
-                 <textarea id="newText"></textarea>
-             </div>
-             <div class="viewType">
-                 <input type="radio" name="_viewtype" id="sidebyside" onclick="diffUsingJS(0);" />
-                 <label for="sidebyside">Side by Side Diff</label>&nbsp; &nbsp;
-                 <input type="radio" name="_viewtype" id="inline" onclick="diffUsingJS(1);" />
-                 <label for="inline">Inline Diff</label>
-             </div>
-             <div id="diffoutput"></div>
-          </div>
+          
+         
         </div>
         <!-- pwa development entries end  -->
       

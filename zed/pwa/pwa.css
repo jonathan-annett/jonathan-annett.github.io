@@ -31,11 +31,6 @@
    background-position: center;
 }
 
-div.textInput,
-div.viewType {
- display : !important none;
-}
-             
 
 div.beta,
 div.notbeta {
