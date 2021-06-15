@@ -17,7 +17,7 @@ function w_load() {
     [ progress_message,    html,keyPRE,                    refresh_files,   load_new_version,   pwa_info,    installed_files ]   = 
     ["#progress_message", "html","html .notbeta pre.key","#refresh_files","#load_new_version", "#pwa_info","#installed_files"].map(qs);
     
-        
+    html.classList.add("register");   
     betaTesterApproval().then(beta_site).catch(
        function(err){
            console.log("site not available",err);
@@ -39,6 +39,7 @@ function w_load() {
             if (registration.waiting) {
                 sw_afterinstall(registration);
             } else {
+                html.classList.remove("register");
                 html.classList.remove("beta");
                 html.classList.remove("notbeta");
                 
@@ -50,6 +51,7 @@ function w_load() {
         
         function sw_afterinstall(registration,summary) {
                console.log("sw_afterinstall()");
+               html.classList.remove("register");
                console.log(summary)
                showRefreshUI(registration);
                bootDiffPage() ;
