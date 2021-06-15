@@ -323,6 +323,13 @@ function workerCmd(cmdName,msgData,handler,worker_handler,THIS) {
     
 }
 
+
+function windowCmd(cmdName,msgData,handler,window_handler,THIS) {
+    
+    
+}
+
+
 if (self.isSw) {
     workerCmd.onmessage = function ( e ) {
         if (workerCmd.commands) {
