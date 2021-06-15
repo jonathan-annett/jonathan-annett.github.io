@@ -109,11 +109,6 @@ function w_load() {
                 progress_message.innerHTML = url;
             } 
             
-            if (progress>=100) {
-                installerProgress.progress = 0;
-                progress_message.innerHTML = "install compelete";
-               
-            }
         }
       
        

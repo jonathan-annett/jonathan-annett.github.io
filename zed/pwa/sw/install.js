@@ -252,7 +252,7 @@ function sw_install( e ) {
                 promiseAll2errback(arrayOfPromisedUrls,function(err,arrayOfCacheResults){
                     //if (err) return installFailed(err);
                     
-                    const summary={progress:100,urls:{}};
+                    const summary={urls:{}};
                     arrayOfCacheResults.forEach(function(el){
                         if( el && el.url && el.headers) {
                             summary.urls[el.url] = {
@@ -261,8 +261,7 @@ function sw_install( e ) {
                             };
                         }
                     });
-                    console.log({summary});
-                    channel.postMessage(summary);
+                    channel.postMessage({summary});
                     closeNotificationChannel(channel);
                     installComplete({
                         err,
