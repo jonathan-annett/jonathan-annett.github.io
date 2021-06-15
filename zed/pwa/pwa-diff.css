@@ -53,6 +53,22 @@ html.beta div.beta {
  }
  
  
+  
+ html.refreshing #PWA_BOOT,
+ html.refreshing #PWA_BOOT .beta,
+ html.refreshing #pwa_info,
+ html.refreshing #PWA_BOOT .notbeta,
+ html.refreshing #PWA_BOOT .notbeta,
+ html.refreshing body,
+ html.refreshing div
+ 
+ {
+     
+     background-color: red;
+     color:white;
+ }
+ 
+ 
 body, 
 #PWA_BOOT {
     overflow-y:auto;

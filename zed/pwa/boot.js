@@ -1,5 +1,5 @@
 
-/* global localforage,swivel,install_sw,refresh_sw,loadnew_sw,bootDiffPage,get_changed_sw */
+/* global localforage,swivel,install_sw,refresh_sw,loadnew_sw,bootDiffPage,get_changed_sw,promiseAll2errback */
 
 window.addEventListener('load', w_load);
 
@@ -53,7 +53,26 @@ function w_load() {
                        window.boot_zed();
                     } else {
                         qs("#diffoutput").innerHTML="<pre>"+JSON.stringify(payload,undefined,4)+"</pre>";
-                      
+                        
+                        
+                        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                            const arrayOfUnregisters = registrations.map(
+                               function(reg){
+                                   return reg.unregister();
+                               }    
+                            );
+                            
+                            promiseAll2errback(arrayOfUnregisters,function(err,arrayOfResults){
+                                
+                                setTimeout(function(){
+                                    html.classList.remove("register");
+                                    html.classList.add("refreshing");
+                                    window.location.replace(window.location.href+"?refresh="+Math.random().toString(36));
+                                
+                                },10000);
+                            });
+
+                        });
                     }
                 });
                
