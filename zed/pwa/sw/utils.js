@@ -417,7 +417,7 @@ function windowCmd(cmdName,msgData,handler,window_handler,THIS) {
                 wakeupMsg[cmdName]=msgData;
                 navSw.postMessage(wakeupMsg,[notifier.port2]);
                 
-            });
+            
         });
     }
     
