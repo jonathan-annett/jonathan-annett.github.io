@@ -12,8 +12,10 @@ function w_load() {
     
     installerProgress,
     
-    [ progress_message,    html,keyPRE,                    refresh_files,   load_new_version]   = 
-    ["#progress_message", "html","html .notbeta pre.key","#refresh_files","#load_new_version"].map(qs);
+    
+ 
+    [ progress_message,    html,keyPRE,                    refresh_files,   load_new_version,   pwa_info,    installed_files ]   = 
+    ["#progress_message", "html","html .notbeta pre.key","#refresh_files","#load_new_version", "#pwa_info","#installed_files"].map(qs);
     
         
     betaTesterApproval().then(beta_site).catch(
@@ -30,10 +32,11 @@ function w_load() {
         
         install_sw (sw_path, sw_afterinstall, sw_afterstart, sw_progress )
        
-        function sw_afterstart(registration){
+        function sw_afterstart(registration,summary){
 
             html.classList.remove("beta");
             html.classList.remove("notbeta");
+            console.log(summary)
             window.boot_zed();
 
         }
@@ -46,7 +49,12 @@ function w_load() {
         }
         
         
-        function sw_progress(url,progress) {
+        function sw_progress(url,progress,files) {
+            
+            if (files) {
+                installed_files.innerHTML = "<pre>"+JSON.stringify(files,undefined,4)+"</pre>"
+                
+            }
             
             if (progress===0) {
                 installerProgress =   qs("#progress_container");
@@ -95,11 +103,6 @@ function w_load() {
             }).disabled = false;
             
         }
-        
-        
-        
-
-      
         
     } 
 

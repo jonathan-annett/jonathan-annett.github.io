@@ -28,14 +28,18 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
          
      if (channel) {
          channel.onmessage=function(e) {
-             if (e.data.summary) {
-                 console.log(e.data.summary);
-                 sw_progress(undefined,101);
-                 channel.close();
-                 channel=undefined;
-                 sw_afterinstall(registration);
+             
+             if(e.data.filesToCache) {
+                 sw_progress(undefined,undefined,e.data.filesToCache);
              } else {
-                sw_progress(e.data.url,e.data.progress);
+                 if (e.data.summary) {
+                     sw_progress(undefined,101);
+                     channel.close();
+                     channel=undefined;
+                     sw_afterinstall(registration,e.data.summary);
+                 } else {
+                    sw_progress(e.data.url,e.data.progress);
+                 }
              }
          };
      }
@@ -251,11 +255,11 @@ function sw_install( e ) {
                 filesToCache.github.length,"github files" 
             );
            
-             const channel = openNotificationChannel();
-             
-             const all_files = filesToCache.site.concat(filesToCache.github);
-             let count = 0;
-             
+            const channel = openNotificationChannel();
+            
+            const all_files = filesToCache.site.concat(filesToCache.github);
+            let count = 0;
+            channel.postMessage({filesToCache}); 
             caches_open(cacheName,function(err,cache){
                 
                 if (err) {
