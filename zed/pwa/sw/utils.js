@@ -473,30 +473,14 @@ function get_X_cluded (base,exclusionsList) {
 
 
 function getGitubCommitHash(user,repo){return asPromise(arguments,function(resolve,reject){
-    //https://github.com/jonathan-annett/jonathan-annett.github.io
+    //https://api.github.com/repos/jonathan-annett/jonathan-annett.github.io/deployments
     
-    const url = "https://github.com/"+user+"/"+repo;
-    const user_re=user.replace(/\-/g,'\\-').replace(/\./g,'\\.');
-    const repo_re=repo.replace(/\-/g,'\\-').replace(/\./g,'\\.');
-    
-    const re = RegExp('(?:.*\\/'+user_re+'\\/'+repo_re+'\\/tree\\/)([0-9|a-f]{40})(?:\\\"\\>Permalink\\<\\/a\\>)','s');
-    
-
-       
+    const url = "https://github.com/"+user+"/"+repo+"/deployments";
     fetch(url,{mode: 'no-cors',method:'GET'})
-      .then(toText)
+      .then(downloadJSON)
           .then(
-              function(text) {
-                  
-                  console.log("text.length:"+text.length);
-                  const match = re.exec(text);
-                  console.log("match:"+typeof match);
-                  const hash  = match ? match[1] : false;
-                  console.log("hash:"+hash);
-                  if (hash) return resolve(hash);
-                  
-                  reject();
-                  
+              function(deploymentsArray) {
+                  resolve(deploymentsArray[0].sha);
               }
         ).catch(reject);
 
