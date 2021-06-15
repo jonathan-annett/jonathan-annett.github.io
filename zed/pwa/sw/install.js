@@ -56,9 +56,10 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
                  replyChannel=undefined;
              }
              sw_afterstart(reg);
-         } else {
-             registration=reg;
-         }
+         }  
+             
+         registration=reg;
+         
      });
 
 }
