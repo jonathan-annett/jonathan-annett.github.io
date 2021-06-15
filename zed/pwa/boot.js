@@ -159,8 +159,7 @@ function w_load() {
     } 
 
     
-    
-    /*
+ 
     function zed_api () {
         
         var On='addEventListener';
@@ -397,7 +396,7 @@ function w_load() {
         
         
     }
-   */
+   
    
   
     function betaTesterApproval() {
