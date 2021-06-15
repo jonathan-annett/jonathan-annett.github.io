@@ -508,43 +508,54 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
         
         fetch(url).then(toJSON).then(function(github_data){
 
-          return resolveList( 
-              
-              
-              github_data.tree.filter(
+    
+             const arrayOfHashers =  
+             
+                github_data.tree
+                  .filter( checkInclusions )
+                      .map(hashLocalItem);
                   
-                  function(item){ 
                       
-                      const 
-                      excluded =  isExcluded(item.path),
-                      result = item.type === "blob" && isIncluded(item.path) && !excluded;
-                      return result;
-                  }
-                  
-              ).map(function(item){
-                  return new Promise(function(resolve,reject) {
-                      
-                      caches.match(github_io_base+item.path)
-                         
-                       .then(toArrayBuffer)
+                    
+                promiseAll2errback(arrayOfHashers,function(err,arrayOfResults){
+                                  
+                    if (err) return reject(err);
+                    
+                    return resolveList( arrayOfResults );    
+                                
+                });  
+                
+                function checkInclusions(item){ 
+                
+                    const 
+                    excluded =  isExcluded(item.path),
+                    result = item.type === "blob" && isIncluded(item.path) && !excluded;
+                    return result;
+                }
 
-                       .then(toSha1Hash)
-                      
-                      .then (function (hash){
-                            console.log(item.path,"sha1=",hash);
-                            item.currentHash=hash;
-                            return item; 
-                       })
-                       
-                      .then (resolve)
-                      
-                      .catch(reject);
-                      
-                  });
-              })
-              
-              
-           );
+                function hashLocalItem(item){
+                    return new Promise(function(resolve,reject) {
+                        
+                        caches.match(github_io_base+item.path)
+                           
+                         .then(toArrayBuffer)
+    
+                         .then(toSha1Hash)
+                        
+                        .then (function (hash){
+                              console.log(item.path,"sha1=",hash);
+                              item.currentHash=hash;
+                              return item; 
+                         })
+                         
+                        .then (resolve)
+                        
+                        .catch(reject);
+                        
+                    });
+                }
+               
+               
         
         }).catch(reject);
 
