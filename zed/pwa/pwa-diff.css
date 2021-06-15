@@ -1,3 +1,17 @@
+   
+#PWA_BOOT,
+#PWA_BOOT .beta,
+#pwa_info,
+#PWA_BOOT .notbeta {
+   position : absolute;
+   font-family:Monaco;
+   left   : 0;
+   top    : 0;
+   width  : 100vw;
+   height : 100vh;
+}
+
+
  
 div.beta,
 div.notbeta {
