@@ -479,7 +479,7 @@ function getGitubCommitHash(user,repo){return asPromise(arguments,function(resol
     const user_re=user.replace(/\-/g,'\\-').replace(/\./g,'\\.');
     const repo_re=repo.replace(/\-/g,'\\-').replace(/\./g,'\\.');
     
-    const re = RegExp('(?:.*\\/'+user_re+'\\/'+repo_re+'\\/tree\\/)([0-9|a-f]{40})(?:\\\"\\>Permalink\\<\\/a\\>)','');
+    const re = RegExp('(?:.*\\/'+user_re+'\\/'+repo_re+'\\/tree\\/)([0-9|a-f]{40})(?:\\\"\\>Permalink\\<\\/a\\>)','s');
     
 
        
@@ -488,14 +488,11 @@ function getGitubCommitHash(user,repo){return asPromise(arguments,function(resol
           .then(
               function(text) {
                   
-                  const match = re.exec(
-                      
-                      text.replace(/\n|\r/g,'')
-                      
-                      );
-                  
-                  const hash = match ? match[1]: false;
-                  
+                  console.log("text.length:"+text.length);
+                  const match = re.exec(text);
+                  console.log("match:"+typeof match);
+                  const hash  = match ? match[1] : false;
+                  console.log("hash:"+hash);
                   if (hash) return resolve(hash);
                   
                   reject();
