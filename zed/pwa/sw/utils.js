@@ -476,7 +476,7 @@ function getGitubCommitHash(user,repo){return asPromise(arguments,function(resol
     //https://api.github.com/repos/jonathan-annett/jonathan-annett.github.io/deployments
     
     const url = "https://api.github.com/repos/"+user+"/"+repo+"/deployments";
-    fetch(url,{mode: 'no-cors',method:'GET'})
+    fetch(url)
       .then(downloadJSON)
           .then(
               function(deploymentsArray) {
