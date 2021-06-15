@@ -9,3 +9,29 @@ html.beta div.beta {
    display : block;
 }
 
+ 
+ html.register div.beta div.pwa_info,
+ div.viewType,
+ div.textInput {
+     
+     display:none;
+ }
+ 
+ 
+ 
+ html.register #PWA_BOOT,
+ html.register #PWA_BOOT .beta,
+ html.register #pwa_info,
+ html.register #PWA_BOOT .notbeta,
+ html.register #PWA_BOOT .notbeta,
+ html.register body,
+ html.register div
+ 
+ {
+     
+     background-color: #037b03;
+ }
+ 
+#PWA_BOOT {
+    overflow-y:auto;
+}
