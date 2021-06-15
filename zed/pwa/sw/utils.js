@@ -366,7 +366,7 @@ if (self.isSw) {
                           };
                           
                           
-                          replyChannel.onmessage = sw_message;
+                          replyChannel.onmessage = workerCmd.onmessage;
         
                           cmd.handler(e.data,_resolve,_reject,reply);
                           
