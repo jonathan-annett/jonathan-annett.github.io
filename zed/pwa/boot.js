@@ -40,7 +40,9 @@ function w_load() {
                 sw_afterinstall(registration);
             } else {
                 
-                get_changed_sw().then(function(changed_urls){
+                get_changed_sw().then(function(payload){
+                    
+                    const {changed_urls,summary} = payload;
                     
                     if (changed_urls.length===0) {
                     
@@ -51,7 +53,8 @@ function w_load() {
                        window.boot_zed();
                     } else {
                         try {
-                          window.location.replace(changed_urls[0]+"?force="+Math.random().toString(36));
+                            qs("#diffoutput").innherHTML="<pre>"+JSON.stringify(payload,undefined,4)+"</pre>";
+                          //window.location.replace(changed_urls[0]+"?force="+Math.random().toString(36));
                         } catch (e) {
                             
                         }

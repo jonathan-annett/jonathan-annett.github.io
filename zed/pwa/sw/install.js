@@ -212,7 +212,7 @@ workerCmd(
                        
                        const changedUrls = arrayOfHeadResults.filter(function(x){return x!==null});
                        
-                       return resolve({changedUrls});
+                       return resolve({changedUrls,summary});
                        
                   });
                          
