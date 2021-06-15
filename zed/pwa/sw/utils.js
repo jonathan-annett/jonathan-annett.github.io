@@ -475,7 +475,7 @@ function get_X_cluded (base,exclusionsList) {
 function getGitubCommitHash(user,repo){return asPromise(arguments,function(resolve,reject){
     //https://api.github.com/repos/jonathan-annett/jonathan-annett.github.io/deployments
     
-    const url = "https://github.com/"+user+"/"+repo+"/deployments";
+    const url = "https://api.github.com/repos/"+user+"/"+repo+"/deployments";
     fetch(url,{mode: 'no-cors',method:'GET'})
       .then(downloadJSON)
           .then(
