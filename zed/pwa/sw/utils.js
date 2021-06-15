@@ -475,7 +475,7 @@ function get_X_cluded (base,exclusionsList) {
 function getGitubCommitHash(user,repo){return asPromise(arguments,function(resolve,reject){
     //https://github.com/jonathan-annett/jonathan-annett.github.io
     
-    const url = "https://github.com/"+user+"/";
+    const url = "https://github.com/"+user+"/"+repo;
     const user_re=user.replace(/\-/g,'\\-').replace(/\./g,'\\.');
     const repo_re=repo.replace(/\-/g,'\\-').replace(/\./g,'\\.');
     
