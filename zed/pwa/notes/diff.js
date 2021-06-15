@@ -149,6 +149,3 @@ function toText(response) {
     return response.text()
 }
 
-function downloadJSON(response) {
-    return response.json();
-}

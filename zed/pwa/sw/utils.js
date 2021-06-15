@@ -2,10 +2,14 @@
 
 self.isSw = typeof WindowClient+typeof SyncManager+typeof addEventListener==='functionfunctionfunction';
 
-function downloadJSON(response) { return response.json(); }
+function toJSON(response) { return response.json(); }
 
 
 function toText(response) {  return response.text() }
+
+function toArrayBuffer(response){ return response.arrayBuffer(); }
+
+function toSha1Hash(buffer){ return window.crypto.subtle.digest("SHA-1", buffer); }
 
 function cachedResolve(resolve,fn,x) {
     const res = function (x) {  return resolve((fn.cached=x));};
@@ -477,7 +481,7 @@ function getGitubCommitHash(user,repo){return asPromise(arguments,function(resol
     
     const url = "https://api.github.com/repos/"+user+"/"+repo+"/deployments";
     fetch(url)
-      .then(downloadJSON)
+      .then(toJSON)
           .then(
               function(deploymentsArray) {
                   resolve(deploymentsArray[0].sha);
@@ -502,7 +506,7 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
         const isIncluded = get_X_cluded ( github_io_base, include );
         const isExcluded = get_X_cluded ( github_io_base, exclude );
         
-        fetch(url).then(downloadJSON).then(function(github_data){
+        fetch(url).then(toJSON).then(function(github_data){
 
           return resolveList( 
               
@@ -517,16 +521,27 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
                       return result;
                   }
                   
-              ).map(
-                  
-                  function (item){ 
-                      //console.log("including:",github_io_base+item.path);
-                      return github_io_base+item.path; 
+              ).map(function(item){
+                  return new Promise(function(resolve,reject) {
+                      
+                      caches.match(github_io_base+item.path)
+                         
+                       .then(toArrayBuffer)
 
-                  }
-                  
-                  
-              )
+                       .then(toSha1Hash)
+                      
+                      .then (function (hash){
+                            console.log(item.path,"sha1=",hash);
+                            item.currentHash=hash;
+                            return item; 
+                       })
+                       
+                      .then (resolve)
+                      
+                      .catch(reject);
+                      
+                  });
+              })
               
               
            );

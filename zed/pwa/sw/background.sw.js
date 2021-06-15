@@ -1,7 +1,7 @@
 
 /* global self, importScripts, caches ,registration,clients ,Response,localforage */
 
-/* global cachedPromise, cachedResolve, downloadJSON   */
+/* global cachedPromise, cachedResolve, toJSON   */
 
 /* global getConfig ,getPWAFiles   */
 

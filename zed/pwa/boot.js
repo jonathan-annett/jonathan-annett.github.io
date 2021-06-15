@@ -38,8 +38,10 @@ function w_load() {
             config.github_io.root,
             config.github_io.include,
             config.github_io.exclude,
-            function(list){
-                 console.log({getGithubIOHashlist:list});
+            function(err,list){
+                 if (list) {
+                    console.log({getGithubIOHashlist:list});
+                 }
                  install_sw (sw_path, sw_afterinstall, sw_afterstart, sw_progress )
             });
         
@@ -495,7 +497,7 @@ function w_load() {
         return new Promise(function (resolve,reject){
             
             fetch(config_url)
-              .then(downloadJSON)
+              .then(toJSON)
                 .then(filterConfigComments)
                   .then(resolve).catch(reject);
 
@@ -532,7 +534,7 @@ function w_load() {
         return r;
     }
     
-    function downloadJSON(response) { return response.json(); }
+    function toJSON(response) { return response.json(); }
 
     function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
     

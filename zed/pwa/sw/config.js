@@ -1,6 +1,6 @@
 /* global 
 
-   cachedPromise, cachedResolve, downloadJSON,config_url, 
+   cachedPromise, cachedResolve, toJSON,config_url, 
    localforage, 
    promiseToCB,
    promise2errback, 
@@ -16,7 +16,7 @@ promiseToCB(
         return cachedPromise(getConfig,function (resolve,reject){
             
             fetch(config_url)
-              .then(downloadJSON)
+              .then(toJSON)
                 .then(filterConfigComments)
                   .then(cachedResolve(resolve,getConfig)).catch(reject);
           
@@ -123,7 +123,7 @@ function getGithubFileList (github_io_base) {
   
        return new Promise(function (resolveList,reject) {
 
-           fetch(github_config.url).then(downloadJSON).then(function(github_data){
+           fetch(github_config.url).then(toJSON).then(function(github_data){
 
              return resolveList( 
                  
