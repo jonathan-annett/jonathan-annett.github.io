@@ -537,7 +537,14 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
                     return new Promise(function(resolve,reject) {
                         
                         caches.match(github_io_base+item.path)
-                           
+                         .then (function(response){
+                             if (response===undefined) {
+                                 console.log(github_io_base+item.path,"not found");
+                                 return resolve(item);
+                             }
+                             
+                         })  
+                         
                          .then(toArrayBuffer)
     
                          .then(toSha1Hash)
