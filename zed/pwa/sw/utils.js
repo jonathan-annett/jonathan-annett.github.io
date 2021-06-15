@@ -536,13 +536,9 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
                 function hashLocalItem(item){
                     return new Promise(function(resolve,reject) {
                         
-                        caches.match("/"+item.path)
-                         .then (function(response){
-                             if (response===undefined) {
-                                 console.log(github_io_base+item.path,"not found");
-                                 return resolve(item);
-                             }
-                             
+                        caches.match(github_io_base+item.path).then (function(response){
+                             console.log(response);
+                             return response;
                          })  
                          
                          .then(toArrayBuffer)
