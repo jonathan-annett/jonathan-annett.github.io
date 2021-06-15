@@ -1,5 +1,7 @@
 /* global  caches, BroadcastChannel, self */
 
+self.isSw = typeof WindowClient+typeof SyncManager+typeof addEventListener==='functionfunctionfunction';
+
 function downloadJSON(response) { return response.json(); }
 function cachedResolve(resolve,fn,x) {
     const res = function (x) {  return resolve((fn.cached=x));};
@@ -237,10 +239,10 @@ function workerCmd(cmdName,msgData,handler,worker_handler,THIS) {
             
                 let 
                 
-                // reply channel for worker
-                channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('installing') : false,
+                // reply replyChannel for worker
+                replyChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(cmdName+'_replies') : false,
                 
-                // temp channel that "wakes up" worker and sends the reques
+                // temp replyChannel that "wakes up" worker and sends the reques
                 notifier = new MessageChannel();
                 
                 const 
@@ -252,14 +254,15 @@ function workerCmd(cmdName,msgData,handler,worker_handler,THIS) {
                    id : id  
                 },
                 close_channel = function(){
-                    if (channel) {
-                        channel.close();
-                        channel = undefined;
+                    if (replyChannel) {
+                        replyChannel.close();
+                        replyChannel = undefined;
                     }
                 },
                 close_notifier = function(){
                     if (notifier) {
-                        notifier.close();
+                        notifier.port1.close();
+                        notifier.port2.close();
                         notifier = undefined;
                     }
                 },
@@ -269,7 +272,7 @@ function workerCmd(cmdName,msgData,handler,worker_handler,THIS) {
                     reject          : _reject
                 };
                 
-                channel.onmessage=function(e){
+                replyChannel.onmessage=function(e){
                     // filter out other messages
                     if (e.data.id===id) {
                         close_notifier();
@@ -297,7 +300,7 @@ function workerCmd(cmdName,msgData,handler,worker_handler,THIS) {
                 function send (name,msg) {
                     const replyMsg = {};
                     replyMsg[name] = msg;
-                    channel.postMessage(replyMsg);
+                    replyChannel.postMessage(replyMsg);
                 }
                 
                 // invoke handler, which may add additional reply methods
@@ -320,6 +323,67 @@ function workerCmd(cmdName,msgData,handler,worker_handler,THIS) {
     
 }
 
+if (self.isSw) {
+    workerCmd.onmessage = function ( e ) {
+        if (workerCmd.commands) {
+           
+           const id = e.data.id;
+           if ( id && Object.keys(e.data).length===2) {
+               
+               delete e.data.id;
+               const cmdName = Object.keys(e.data)[0];
+               
+               const cmd = workerCmd.commands[cmdName];
+               if (cmd && typeof cmd.handler==='function') {
+        
+        
+                   e.waitUntil (
+                       
+                      new Promise(function(resolve,reject){
+                          
+                          const
+                          
+                          replyChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(cmdName+'_replies') : false,
+                          
+                          reply = function  (name,msg) {
+                              const wrap = {
+                                  id : id
+                              };
+                              wrap[name]=msg;
+                              replyChannel.postMessage(wrap);
+                              resolve();
+                          },
+                          
+                          _resolve = function(result) {
+                              reply('resolve',result);
+                              replyChannel.close();
+                          },
+                          
+                          _reject = function  (err) {
+                              reply('reject',err);
+                              replyChannel.close();
+                              reject();
+                          };
+                          
+                          
+                          replyChannel.onmessage = sw_message;
+        
+                          cmd.handler(e.data,_resolve,_reject,reply);
+                          
+                      })
+                   
+                   );
+                   
+        
+                   
+               }
+               
+           }
+        }
+    };
+    console.log("registering workerCmd.onmessage");
+    self.addEventListener("message",  workerCmd.onmessage);
+}
  
  
 function promise2errback (p,cb) {

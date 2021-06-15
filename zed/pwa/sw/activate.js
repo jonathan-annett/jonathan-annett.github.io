@@ -1,6 +1,6 @@
 
 /* global self, importScripts, caches ,registration,clients ,Response,localforage,cacheName  */    
-self.isSw = typeof WindowClient+typeof SyncManager==='functionfunction';
+self.isSw = typeof WindowClient+typeof SyncManager+typeof addEventListener==='functionfunctionfunction';
 
  
  

@@ -12,6 +12,11 @@
 }
 
 
+html.register #pwa_info {
+    
+    top : unset;
+}
+
  
 div.beta,
 div.notbeta {
@@ -45,6 +50,7 @@ html.beta div.beta {
      
      background-color: #1c3802;
  }
+ 
  
 body, 
 #PWA_BOOT {

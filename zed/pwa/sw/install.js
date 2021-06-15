@@ -7,7 +7,7 @@ caches_open,promise2errback,promiseAll2errback,cache_add, asCallback, asPromise,
 cpArgs,workerCmd,localforage
 
 */
-self.isSw = typeof WindowClient+typeof SyncManager==='functionfunction';
+self.isSw = typeof WindowClient+typeof SyncManager+typeof addEventListener==='functionfunctionfunction';
 
 function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
     //invoked from browser context, 
@@ -21,21 +21,21 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
          };
      }
     
-     let channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('installing') : false;
+     let replyChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('installing') : false;
      
     
      sw_progress(undefined,0);
          
-     if (channel) {
-         channel.onmessage=function(e) {
+     if (replyChannel) {
+         replyChannel.onmessage=function(e) {
              
              if(e.data.filesToCache) {
                  sw_progress(undefined,undefined,e.data.filesToCache);
              } else {
                  if (e.data.summary) {
                      sw_progress(undefined,101);
-                     channel.close();
-                     channel=undefined;
+                     replyChannel.close();
+                     replyChannel=undefined;
                      sw_afterinstall(registration,e.data.summary);
                  } else {
                     sw_progress(e.data.url,e.data.progress);
@@ -51,9 +51,9 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
      navSw.register( sw_path ).then (function(reg){
          
          if (reg.active) {
-             if (channel) {
-                 channel.close();
-                 channel=undefined;
+             if (replyChannel) {
+                 replyChannel.close();
+                 replyChannel=undefined;
              }
              sw_afterstart(reg);
          } else {
@@ -256,7 +256,6 @@ workerCmd(
 if (self.isSw) {
     console.log("registering install");
     addEventListener("install",  sw_install);
-    addEventListener("message",  sw_message);
 }    
  
 
@@ -377,63 +376,5 @@ function sw_install( e ) {
     }
 }
 
-function sw_message ( e ) {
-    if (workerCmd.commands) {
-        
-        const id = e.data.id;
-        if ( id && Object.keys(e.data).length===2) {
-            
-            delete e.data.id;
-            const cmdName = Object.keys(e.data)[0];
-            
-            const cmd = workerCmd.commands[cmdName];
-            if (cmd && typeof cmd.handler==='function') {
-
-
-                e.waitUntil (
-                    
-                   new Promise(function(resolve,reject){
-                       
-                       const
-                       
-                       channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('installing') : false,
-                       
-                       reply = function  (name,msg) {
-                           const wrap = {
-                               id : id
-                           };
-                           wrap[name]=msg;
-                           channel.postMessage(wrap);
-                           resolve();
-                       },
-                       
-                       _resolve = function(result) {
-                           reply('resolve',result);
-                           channel.close();
-                       },
-                       
-                       _reject = function  (err) {
-                           reply('reject',err);
-                           channel.close();
-                           reject();
-                       };
-                       
-                       
-                       channel.onmessage = sw_message;
-
-                       cmd.handler(e.data,_resolve,_reject,reply);
-                       
-                   })
-                
-                );
-                
-
-                
-            }
-            
-        }
-    }
-}
-
-
+ 
       
