@@ -554,10 +554,12 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
                       
                     
                 promiseAll2errback(arrayOfHashers,function(err,arrayOfResults){
-                                  
-                    if (err) return reject(err);
+
+                     if (arrayOfResults)  return resolveList({err,arrayOfResults });        
+                     
+                     return reject(err);
                     
-                    return resolveList( arrayOfResults );    
+                     
                                 
                 });  
                 
