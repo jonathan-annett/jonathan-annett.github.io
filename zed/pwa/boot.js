@@ -1,6 +1,6 @@
 
 /* global localforage,swivel,install_sw,refresh_sw,loadnew_sw,bootDiffPage,get_changed_sw,promiseAll2errback, 
-
+toJSON,bufferToHex,bufferFromHex,
 getGithubIOHashlist
 */
 
@@ -534,44 +534,7 @@ function w_load() {
         return r;
     }
     
-    function toJSON(response) { return response.json(); }
-
-    function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
-    
-    function bufferToText(x) {return new TextEncoder("utf-8").decode(x);}
-    
-    
-    function bufferToHex(buffer) {
-        const padding = '00000000';
-        const hexCodes = [];
-        const view = new DataView(buffer);
-        if (view.byteLength===0) return '';
-        if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
-    
-        for (let i = 0; i < view.byteLength; i += 4) {
-            // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-            const value = view.getUint32(i);
-            // toString(16) will give the hex representation of the number without padding
-            const stringValue = value.toString(16);
-            // We use concatenation and slice for padding
-            const paddedValue = (padding + stringValue).slice(-padding.length);
-            hexCodes.push(paddedValue);
-        }
-        // Join all the hex strings into one
-        return hexCodes.join("");
-    }
-    
-    function bufferFromHex (hex) {
-        if (hex.length === 0) return new ArrayBuffer(0);
-        if ((hex.length % 8) !== 0 ) throw new Error("incorrent hex length - need multiples of 8 digits");
-        
-        const ui32Array = [];
-        for (let i =0; i < hex.length; i+=8) {
-            ui32Array.push(Number.parseInt("0x"+hex.substr(i,8)));
-        }
-        return Uint32Array.from(ui32Array).buffer;
-    }    
-
+ 
 }
 
 
