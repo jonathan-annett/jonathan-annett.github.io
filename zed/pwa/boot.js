@@ -32,19 +32,27 @@ function w_load() {
         
         install_sw (sw_path, sw_afterinstall, sw_afterstart, sw_progress )
        
-        function sw_afterstart(registration,summary){
+        function sw_afterstart(registration){
+            
+            registration.update();
 
-            html.classList.remove("beta");
-            html.classList.remove("notbeta");
-            console.log(summary)
-            window.boot_zed();
+            if (registration.waiting) {
+                sw_afterinstall(registration);
+            } else {
+                html.classList.remove("beta");
+                html.classList.remove("notbeta");
+                
+                window.boot_zed();
+            }
 
         }
          
         
-        function sw_afterinstall(registration) {
+        function sw_afterinstall(registration,summary) {
                console.log("sw_afterinstall()");
+               console.log(summary)
                showRefreshUI(registration);
+               bootDiffPage() ;
                 //window.boot_zed();
         }
         
@@ -104,7 +112,7 @@ function w_load() {
             if (progress>=100) {
                 installerProgress.progress = 0;
                 progress_message.innerHTML = "install compelete";
-                bootDiffPage() ;
+               
             }
         }
       
