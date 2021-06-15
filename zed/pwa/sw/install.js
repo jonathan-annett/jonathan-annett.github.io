@@ -51,7 +51,7 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
                  channel.close();
                  channel=undefined;
              }
-             sw_afterstart(registration);
+             sw_afterstart(reg);
          } else {
              registration=reg;
          }
