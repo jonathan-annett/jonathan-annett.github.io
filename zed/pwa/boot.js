@@ -1,5 +1,5 @@
 
-/* global localforage,swivel,install_sw,refresh_sw,loadnew_sw,bootDiffPage */
+/* global localforage,swivel,install_sw,refresh_sw,loadnew_sw,bootDiffPage,get_changed_sw */
 
 window.addEventListener('load', w_load);
 
@@ -39,14 +39,23 @@ function w_load() {
             if (registration.waiting) {
                 sw_afterinstall(registration);
             } else {
-                get_changed_sw().then(function(got_changed){
-                   console.log({got_changed});
+                
+                get_changed_sw().then(function(changed_urls){
                     
-                   html.classList.remove("register");
-                   html.classList.remove("beta");
-                   html.classList.remove("notbeta");
-                   
-                   window.boot_zed();
+                    if (changed_urls.length===0) {
+                    
+                       html.classList.remove("register");
+                       html.classList.remove("beta");
+                       html.classList.remove("notbeta");
+                       
+                       window.boot_zed();
+                    } else {
+                        try {
+                          window.location.replace(changed_urls[0]+"?force="+Math.random().toString(36));
+                        } catch (e) {
+                            
+                        }
+                    }
                 });
                
             }
