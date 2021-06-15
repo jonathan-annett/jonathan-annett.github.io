@@ -1,0 +1,11 @@
+ 
+div.beta,
+div.notbeta {
+    display : none;
+}
+
+html.notbeta div.notbeta,
+html.beta div.beta {
+   display : block;
+}
+
