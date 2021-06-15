@@ -240,7 +240,7 @@ workerCmd(
                           }).then (function(head){
                               const newEtag = head.headers.get('Etag');
                            
-                             if ( Etag !== newEtag ) {
+                             if ( !compareGithubEtags(Etag,newEtag) ) {
                                  resolve({url:url,Etag:Etag,newEtag:newEtag});
                               } else {
                                  resolve(null);
@@ -250,6 +250,19 @@ workerCmd(
                          resolve(null);
                       }
                   });
+                  
+                  
+                  //"W/\"60c8a733-b68\"",
+                  const isWeak = /^W\\\"/,fix=/^W\\\".*\-/;
+                  function compareGithubEtags(e1,e2) {
+                     
+                      if (isWeak.test(e1)&&isWeak.test(e2)) {
+                          return e1.replace(fix,'')===e2.replace(fix,'');
+                      } else {
+                          return e1===e2;
+                      }
+                      
+                  }
              });
          
          }
