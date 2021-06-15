@@ -6,7 +6,7 @@
    position : absolute;
    background-color:gray;
    color  : white;
-   font-size:22pt;
+   font-size:18pt;
    font-family:Monaco;
    left   : 0;
    top    : 0;
@@ -31,6 +31,10 @@
    background-position: center;
 }
 
+
+h1,h2 {
+    margin:0;
+}
 
 div.beta,
 div.notbeta {

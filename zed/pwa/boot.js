@@ -1,5 +1,5 @@
 
-/* global localforage,swivel,install_sw,refresh_sw,loadnew_sw */
+/* global localforage,swivel,install_sw,refresh_sw,loadnew_sw,bootDiffPage */
 
 window.addEventListener('load', w_load);
 
@@ -67,9 +67,7 @@ function w_load() {
                 
                 '</select>'+
                 '</label>' +
-                '</div>' +
-                
-                '<div>' +
+          
                 '<label> ZED app related' +
                 '<select id="selectFile">'+
                
