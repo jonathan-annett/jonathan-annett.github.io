@@ -501,7 +501,7 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
         if (err) return reject(err);
         
         const url =  "https://api.github.com/repos/"+user+"/"+repo+"/git/trees/"+hash+"?recursive=1";
-        const github_io_base = "https://" +  repo + root.replace(/^\//,'/');
+        const github_io_base = "https://" +  (repo + root.replace(/^\//,'/')).replace(/\/$/,'')+'/';
         
         const isIncluded = get_X_cluded ( github_io_base, include );
         const isExcluded = get_X_cluded ( github_io_base, exclude );
