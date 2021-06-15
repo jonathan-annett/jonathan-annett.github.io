@@ -1,5 +1,8 @@
 
-/* global localforage,swivel,install_sw,refresh_sw,loadnew_sw,bootDiffPage,get_changed_sw,promiseAll2errback */
+/* global localforage,swivel,install_sw,refresh_sw,loadnew_sw,bootDiffPage,get_changed_sw,promiseAll2errback, 
+
+getGithubIOHashlist
+*/
 
 window.addEventListener('load', w_load);
 
@@ -26,11 +29,21 @@ function w_load() {
     
     
         
-    function beta_site (betaTesterKey) {
+    function beta_site (config) {
         
-        console.log("starting site for beta tester:",betaTesterKey);
+        console.log("starting site for beta tester:",config.testerKey);
         
-        install_sw (sw_path, sw_afterinstall, sw_afterstart, sw_progress )
+        getGithubIOHashlist(
+            config.github_io.user,
+            config.github_io.root,
+            config.github_io.include,
+            config.github_io.exclude,
+            function(list){
+                 console.log({getGithubIOHashlist:list});
+                 install_sw (sw_path, sw_afterinstall, sw_afterstart, sw_progress )
+            });
+        
+       
        
         function sw_afterstart(registration){
             
@@ -173,8 +186,8 @@ function w_load() {
         
     } 
 
-    
- 
+
+
     function zed_api () {
         
         var On='addEventListener';
@@ -412,15 +425,12 @@ function w_load() {
         
     }
    
-   
-  
     function betaTesterApproval() {
         
         if (!window.crypto) {
            return Promise.reject();
         }
-        
-        
+
         return new Promise(function(resolve,reject) {
             const hashAlgo = "SHA-256";
             const seedSize = 512;
@@ -449,7 +459,8 @@ function w_load() {
                                      } else {
                                          html.classList.add("beta");
                                          html.classList.remove("notbeta");
-                                         resolve(keyAsHex);
+                                         config.testerKey = keyAsHex;
+                                         resolve(config);
                                      }
                                      
                                 }
@@ -477,8 +488,8 @@ function w_load() {
             }).catch(reject);
             
         });
+        
     }
-    
     
     function getConfig() {
         return new Promise(function (resolve,reject){
@@ -501,7 +512,6 @@ function w_load() {
         config.site.betaTesterKeys = config.site.betaTesterKeys.filter(removeJSONArrayComments);
         return Promise.resolve(config);
     }
-    
     
     
     // generic tools 

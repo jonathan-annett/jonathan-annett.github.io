@@ -44,8 +44,28 @@
              ]
           
     },
+    
+    "github_io" : {
+        "user" : "jonathan-annett",
+        "root" : "/zed/",
+        "include" : [
+                { "RegExp": "^app\\/" } 
+            ],
+        
+         "exclude": [ 
+            
+            { "RegExp": "\\.nw\\.js$" }, 
+            
+            { "RegExp": "\/fs\\/node\\.js$" },
+            
+            { "RegExp": "\\/nw\\/init[1|2].js$" },
+            
+            
+            "app/package.json"
 
-
+        ]
+        
+    },
     "github" : [{
     
         "url"  : "https://api.github.com/repos/zedapp/zed/git/trees/master?recursive=1",

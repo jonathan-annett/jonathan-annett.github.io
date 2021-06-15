@@ -5,6 +5,7 @@
    promiseToCB,
    promise2errback, 
    promiseAll2errback,
+   get_X_cluded,
    downloadPWAFiles,
    getConfig*/
 
@@ -107,41 +108,6 @@ function getPWAFiles() {
 }
 );
 
-
-function get_X_cluded (base,exclusionsList) {
-    
-    const exclusions  = exclusionsList.map(
-        function (excl) {
-            if (typeof excl === "string" ) { 
-                
-                console.log('get_X_cluded:literal:',excl);
-                return function(path){ 
-                    return path === excl ;
-                };
-                
-            } else {
-                
-                if (typeof excl.RegExp === "string") {
-                    const re = new RegExp(excl.RegExp,'');
-                    console.log('get_X_cluded:regex:',re);
-                    return re.test.bind(re);
-                } else {
-                    return null;
-                }
-                
-            }
-        }   
-    ).filter(function(x){ return x !== null;})
-    
-    const fn =  function  (path) {
-       
-        return exclusions.some(function(test){ return test(path);});
-    };
-    
-    fn.list = exclusionsList;
-    
-    return fn;
-}
 
 function getGithubFileList (github_io_base) {
     

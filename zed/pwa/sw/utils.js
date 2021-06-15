@@ -3,6 +3,10 @@
 self.isSw = typeof WindowClient+typeof SyncManager+typeof addEventListener==='functionfunctionfunction';
 
 function downloadJSON(response) { return response.json(); }
+
+
+function toText(response) {  return response.text() }
+
 function cachedResolve(resolve,fn,x) {
     const res = function (x) {  return resolve((fn.cached=x));};
     if (x) {
@@ -11,6 +15,8 @@ function cachedResolve(resolve,fn,x) {
        return res;
     }
 }
+
+
 
 function cachedPromise(cacher,promiser){
     return cacher.cache ? Promise.resolve(cacher.cache) : new Promise(promiser);
@@ -428,6 +434,128 @@ function windowCmd(cmdName,msgData,handler,window_handler,THIS) {
     return func;
     
 }
+
+
+function get_X_cluded (base,exclusionsList) {
+    
+    const exclusions  = exclusionsList.map(
+        function (excl) {
+            if (typeof excl === "string" ) { 
+                
+                console.log('get_X_cluded:literal:',excl);
+                return function(path){ 
+                    return path === excl ;
+                };
+                
+            } else {
+                
+                if (typeof excl.RegExp === "string") {
+                    const re = new RegExp(excl.RegExp,'');
+                    console.log('get_X_cluded:regex:',re);
+                    return re.test.bind(re);
+                } else {
+                    return null;
+                }
+                
+            }
+        }   
+    ).filter(function(x){ return x !== null;})
+    
+    const fn =  function  (path) {
+       
+        return exclusions.some(function(test){ return test(path);});
+    };
+    
+    fn.list = exclusionsList;
+    
+    return fn;
+}
+
+
+function getGitubCommitHash(user,repo){return asPromise(arguments,function(resolve,reject){
+    //https://github.com/jonathan-annett/jonathan-annett.github.io
+    
+    const url = "https://github.com/"+user+"/";
+    const user_re=user.replace(/\-/g,'\\-').replace(/\./g,'\\.');
+    const repo_re=repo.replace(/\-/g,'\\-').replace(/\./g,'\\.');
+    
+    const re = RegExp('(?:.*\\/'+user_re+'\\/'+repo_re+'\\/tree\\/)([0-9|a-f]{40})(?:\\\"\\>Permalink\\<\\/a\\>)','');
+    
+
+       
+    fetch(url)
+      .then(toText)
+          .then(
+              function(text) {
+                  
+                  const match = re.exec(
+                      
+                      text.replace(/\n|\r/g,'')
+                      
+                      );
+                  
+                  const hash = match ? match[1]: false;
+                  
+                  if (hash) return resolve(hash);
+                  
+                  reject();
+                  
+              }
+        ).catch(reject);
+
+    
+});}
+
+function getGithubIOHashlist(user,root,include,exclude ){return asPromise(arguments,function(resolveList,reject){
+    
+    const repo = user+'.github.io';
+    
+    
+    getGitubCommitHash(user,repo,function(err,hash){
+        
+        const url =  "https://api.github.com/repos/"+user+"/"+repo+"/git/trees/"+hash+"?recursive=1";
+        const github_io_base = "https://" +  repo + root.replace(/^\//,'/');
+        
+        const isIncluded = get_X_cluded ( github_io_base, include );
+        const isExcluded = get_X_cluded ( github_io_base, exclude );
+        
+        fetch(url).then(downloadJSON).then(function(github_data){
+
+          return resolveList( 
+              
+              
+              github_data.tree.filter(
+                  
+                  function(item){ 
+                      
+                      const 
+                      excluded =  isExcluded(item.path),
+                      result = item.type === "blob" && isIncluded(item.path) && !excluded;
+                      return result;
+                  }
+                  
+              ).map(
+                  
+                  function (item){ 
+                      //console.log("including:",github_io_base+item.path);
+                      return github_io_base+item.path; 
+
+                  }
+                  
+                  
+              )
+              
+              
+           );
+        
+        }).catch(reject);
+
+    });
+     
+    
+    
+});}
+
 
 
 if (self.isSw) {
