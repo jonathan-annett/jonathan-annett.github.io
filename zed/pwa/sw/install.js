@@ -210,9 +210,15 @@ workerCmd(
                   promiseAll2errback(arrayOfPromisedUrls,function(err,arrayOfHeadResults){
                        if (err) return reject(err);
                        
-                       const details = arrayOfHeadResults.filter(function(x){return x!==null});
+                       const payload = {changedUrls:[],details:{}};
                        
-                       const payload = {changedUrls:Object.keys(details),details};
+                       arrayOfHeadResults.forEach(function(x){
+                          if (x===null) return;
+                          const u=x.url;
+                          delete x.url;
+                          payload.changedUrls.push(u);
+                          payload.details[u]=x;
+                       });
                     
                        return resolve(payload);
                        
