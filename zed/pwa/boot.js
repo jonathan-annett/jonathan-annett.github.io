@@ -57,7 +57,7 @@ function w_load() {
                 '<div>' +
                 '<label>PWA related'+
                 
-                '<select id="chooseSite">'+
+                '<select id="choose_app_file">'+
                 
                 files.site.map(function(url){
                     return '<option value="'+url+'">' +url+'</option>';
@@ -68,16 +68,19 @@ function w_load() {
                 '</select>'+
                 '</label>' +
                 '</div>' +
+                
                 '<div>' +
-                '<select id="chooseSite">'+
                 '<label> ZED app related' +
+                '<select id="choose_pwa_file">'+
+               
                 
                 files.site.map(function(url){
                     return '<option value="'+url+'">' +url+'</option>';
                 }).join("\n")+
 
+               
+                '</select>' + 
                 '</label>' +
-                '</select>' +
                 '</div>';
                 
                 choose_pwa_file = qs('#choose_pwa_file');
