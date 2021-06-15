@@ -60,8 +60,11 @@
              <div id="pwa_info">
                 <h1>installed files</h1>
                 <div id="installed_files"></div>
-                <div class="top"> 
-                <input type="hidden" id="contextSize" value="" />
+                <div class="top"> <strong>File:</strong> 
+                    <select name="selectFile" id="selectFile">
+                        <option value="loading">...</option>
+                    </select> <strong>Context size (optional):</strong> 
+                    <input type="text" id="contextSize" value="" />
                 </div>
                 <div class="textInput">
                      <h2 id="baseText_caption">Base Text</h2>

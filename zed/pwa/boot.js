@@ -59,7 +59,7 @@ function w_load() {
         
         function sw_progress(url,progress,files) {
             
-            if (files) {
+            if (false && files) {
                 
                 installed_files.innerHTML = 
                 '<div>' +
