@@ -326,6 +326,106 @@ function workerCmd(cmdName,msgData,handler,worker_handler,THIS) {
 
 function windowCmd(cmdName,msgData,handler,window_handler,THIS) {
     
+    if (!self.isSw) {
+        
+        if (!windowCmd.commands) {
+            windowCmd.commands = {};
+        }
+        windowCmd.commands[cmdName] = {
+            handler  : window_handler,
+            msgData  : msgData
+        };
+        return;
+    }
+    
+    function func () {
+        const args = cpArgs(arguments);
+        return asPromise(arguments,function(resolve,reject){
+        
+            
+                let 
+                
+                // reply replyChannel for worker
+                replyChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(cmdName+'_replies') : false,
+                
+                // temp replyChannel that "wakes up" worker and sends the reques
+                notifier = new MessageChannel();
+                
+                const 
+                // poor mans GUID
+                // because replies come back via broadcast,
+                // we need to ensure we are receiving correct reply
+                id = (Date.now().toString(36).substr(4)+Math.random().toString(36)+Math.random().toString(36)).replace(/0+\./g,'-'),
+                wakeupMsg= {
+                   id : id  
+                },
+                close_channel = function(){
+                    if (replyChannel) {
+                        replyChannel.close();
+                        replyChannel = undefined;
+                    }
+                },
+                close_notifier = function(){
+                    if (notifier) {
+                        notifier.port1.close();
+                        notifier.port2.close();
+                        notifier = undefined;
+                    }
+                },
+                // default reply handlers for resolve and reject
+                replies = {
+                    resolve         : _resolve,
+                    reject          : _reject
+                };
+                
+                replyChannel.onmessage=function(e){
+                    // filter out other messages
+                    if (e.data.id===id) {
+                        close_notifier();
+                        delete e.data.id;
+                        const key = Object.keys(e.data)[0];
+                        const fn = replies[key];
+                        const payload = e.data[key];
+                        delete  e.data[key];
+                        
+                        if (typeof fn==='function') fn(payload);
+                    }
+                };
+                
+                // default replies to resolve/reject
+                function _resolve(result) {
+                    close_channel();
+                    resolve(result);
+                }
+                
+                function _reject (err) {
+                    close_channel();
+                    reject(err);
+                }
+                
+                function send (name,msg) {
+                    const replyMsg = {};
+                    replyMsg[name] = msg;
+                    replyChannel.postMessage(replyMsg);
+                }
+                
+                // invoke handler, which may add additional reply methods
+                const handler_args=[navSw,replies, _resolve, _reject, send, id].concat(args);
+                handler.apply(this,  handler_args);
+                
+                // wake up the service worker
+                wakeupMsg[cmdName]=msgData;
+                navSw.postMessage(wakeupMsg,[notifier.port2]);
+                
+            });
+        });
+    }
+    
+    THIS=THIS||this;
+    if (THIS[cmdName]) delete THIS[cmdName];
+    
+    Object.defineProperty(THIS,cmdName,{value:func,enumerable:false,configurable: true});
+    return func;
     
 }
 
