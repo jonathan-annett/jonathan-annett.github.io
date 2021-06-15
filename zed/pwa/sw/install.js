@@ -196,27 +196,7 @@ workerCmd(
     
         },
     function workerCode(msg,resolve,reject,reply) {
-        
-         getPWAFiles(function(err,filesToCache){
-            
-           if (err) {
-               return reject(err);
-           }
-           const urls = filesToCache.site.concat(filesToCache.github);
-           reply({updateProgress:{files:urls}});
-           caches_open(cacheName,function(err,cache){
-               
-               if (err) {
-                   return reject(err);
-               }
-               
-               updateURLArray(reply,cache,urls,function(err,summary){
-                   console.log({summary});
-                   resolve({updateProgress:1});
-                });
-           });
-        });
-        
+      
          
 
     }
