@@ -32,10 +32,13 @@
 }
 
 div.textInput,
-div.viewType,
+div.viewType {
+ display : !important none;
+}
+             
 
 div.beta,
-div.notbeta{
+div.notbeta {
     display : none;
 }
 
