@@ -483,7 +483,7 @@ function getGitubCommitHash(user,repo){return asPromise(arguments,function(resol
     
 
        
-    fetch(url,{mode: 'cors'})
+    fetch(url,{mode: 'no-cors',method:'GET'})
       .then(toText)
           .then(
               function(text) {
