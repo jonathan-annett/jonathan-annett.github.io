@@ -1,4 +1,4 @@
-/* global  caches, BroadcastChannel, self,localforage,githubio_user */
+/* global  caches, BroadcastChannel, self,localforage ,github_io_user, github_io_files */
 
 self.isSw = typeof WindowClient+typeof SyncManager+typeof addEventListener==='functionfunctionfunction';
 
@@ -578,45 +578,106 @@ function get_X_cluded (base,exclusionsList) {
 }
 
 
-function getGitubCommitHash(user,repo){return asPromise(arguments,function(resolve,reject){
+function getGitubCommitHash(user,repo,full){return asPromise(arguments,function(resolve,reject){
     //https://api.github.com/repos/jonathan-annett/jonathan-annett.github.io/deployments?per_page=1
-    
+    full = typeof full==='boolean'&&full;
     const url = "https://api.github.com/repos/"+user+"/"+repo+"/deployments?per_page=1";
     fetch(url)
       .then(toJSON)
           .then(
               function(deploymentsArray) {
-                  resolve(deploymentsArray[0].sha);
+                  resolve(full ? deploymentsArray[0] : deploymentsArray[0].sha);
               }
         ).catch(reject);
 
     
 });}
 
+
+function getGitubCommitFileHashes(user,repo,files) {return asPromise(arguments,function(resolve,reject){
+//  https://api.github.com/repos/jonathan-annett/jonathan-annett.github.io/git/trees/83a18ce10879bcdc1235fecf3dad09e883f5abe7?recursive=1
+    const url_template = ["https://api.github.com/repos/"+user+"/"+repo+"/git/trees/","?recursive=1"];
+    
+    getGitubCommitHash(user,repo,true, function(err,deploy){
+        if (err) return reject(err);
+
+        fetch( url_template.join(deploy.sha) )
+          .then ( toJSON )
+          .then ( function(gitub_data) {
+              const result = {
+                  deploy_sha: deploy.sha,
+                  created_at: deploy.created_at,
+                  updated_at: deploy.updated_at,
+                  hashes : {}
+              };
+              
+              //add the file names in order, so the keys exist in the object that way
+              files.forEach(function(path){
+                  result.hashes[path] = null;
+              });
+              const hashes = [];
+              gitub_data.tree.forEach(function(x){
+                  if ( result.hashes[x.path]===null) {
+                      hashes.push(x.sha)
+                      result.hashes[x.path] = {sha:x.sha,size:x.size};
+                  }
+              });
+              
+              
+              
+              fromBuffertoSha1DigestBuffer( bufferFromHex(hashes.join('')) )
+              
+                 .then ( fromBufferToHex )
+                 
+                  .then (function(groupHash){
+                      
+                      result.files_sha1 = groupHash;
+                      resolve(result);
+                      
+                  }). catch(reject);
+              
+
+             
+              
+          } ).catch(reject); 
+
+
+    });
+    
+});}
+
 function checkGithubIOCommitHash(update) {return asPromise(arguments,function(resolve,reject){
-    const repo = githubio_user+'.github.io';
-    const key  = repo+'.hash';
+    const repo = github_io_user+'.github.io';
+    const key  = repo+'.hashes';
     if (!update && checkGithubIOCommitHash.cache) {
         if (checkGithubIOCommitHash.repo===repo) {
             return resolve(checkGithubIOCommitHash.cache);
         }
     }
     
-    localforage.getItem(key).then(function (localHash) {
-        getGitubCommitHash(githubio_user,repo,function(err,serverHash){
+    localforage.getItem(key).then(function (localData) {
+        getGitubCommitFileHashes(github_io_user, repo, github_io_files, function(err,serverData){
             if (err) {
                 reject(err);
             } else {
-                const changed=localHash!==serverHash, 
-                      result={changed:changed,localHash,serverHash,repo};
+                
+                const changed=localData.files_sha1!==serverData.files_sha1, 
+                      result={changed:changed,localData,serverData,repo};
+                 
                 if (update&&changed) {
-                    localforage.setItem(key,serverHash).then(function () {
+                    
+                    localforage.setItem(key,serverData).then(function () {
                         checkGithubIOCommitHash.cache = result;
+                        console.log("checkGithubIOCommitHash:saved in localforage-->",result);    
                         resolve (result);
                     });
+                    
                 } else {
+                    
                     checkGithubIOCommitHash.cache = result;
+                    console.log("checkGithubIOCommitHash:",result);   
                     resolve (result);
+                    
                 }
             }
         });
@@ -625,7 +686,7 @@ function checkGithubIOCommitHash(update) {return asPromise(arguments,function(re
 });}
 
 function serviceWorkerEvent(eventName,normalEvent,changedEvent) {
-    checkGithubIOCommitHash(function(err,result){
+    checkGithubIOCommitHash(true,function(err,result){
         if (result.changed && result.localHash) {
             if (changedEvent){
                 console.log("site has changed, registering alternate",eventName,"event");

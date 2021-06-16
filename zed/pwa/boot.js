@@ -69,7 +69,7 @@ function w_load() {
                     } else {
                         qs("#diffoutput").innerHTML="<pre>"+JSON.stringify(payload,undefined,4)+"</pre>";
                         
-                        
+                        /*
                         navigator.serviceWorker.getRegistrations().then(function(registrations) {
                             html.classList.remove("registering");
                             html.classList.add("unregistering");
@@ -123,6 +123,8 @@ function w_load() {
                             });
 
                         });
+                        
+                        */
                     }
                 });
                
