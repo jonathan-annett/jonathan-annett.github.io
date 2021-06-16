@@ -630,7 +630,7 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
                          });
                          
                          
-                         return resolveList({err,arrayOfResults });        
+                         return resolveList(result);        
                      }
                      return reject(err);
                     
