@@ -7,9 +7,57 @@ function toJSON(response) { return response.json(); }
 
 function toText(response) {  return response.text() }
 
-function toArrayBuffer(response){ return response.arrayBuffer(); }
+function fromResponseToArrayBuffer(response){ return response.arrayBuffer(); }
 
-function toSha1Hash(buffer){ return window.crypto.subtle.digest("SHA-1", buffer); }
+function fromBuffertoSha1DigestBuffer(buffer){ return window.crypto.subtle.digest("SHA-1", buffer); }
+
+function fromBufferToHex(buffer){ return Promise.resolve ( bufferToHex(buffer) ); }
+
+function viaConsoleLog(prefix,suffix) {
+    return function (whatever) {
+        if (prefix) {
+            if (suffix) {
+                console.log(prefix,whatever,suffix);
+            } else {
+                console.log(prefix,whatever);
+            }
+        } else {
+            if (suffix) {
+                console.log(whatever,suffix);
+            } else {
+                console.log(whatever);
+            }
+        } 
+        
+        return Promise.resolve(whatever);
+    };
+}
+
+function catchViaConsoleLog(reject,prefix,suffix) {
+    
+   return function (err) {
+           
+           const errorText = err ? (err.message || ""+err) : "<undefined error>";
+           if (prefix) {
+               if (suffix) {
+                   console.log(prefix,errorText,suffix);
+               } else {
+                   console.log(prefix,errorText);
+               }
+           } else {
+               if (suffix) {
+                   console.log(errorText,suffix);
+               } else {
+                   console.log(errorText);
+               }
+           } 
+           
+           return reject(err);
+       };
+   
+}
+
+
 
 function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
 
@@ -545,18 +593,45 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
         fetch(url).then(toJSON).then(function(github_data){
 
     
-             const arrayOfHashers =  
-             
-                github_data.tree
-                  .filter( checkInclusions )
-                      .map(hashLocalItem);
-                  
-                      
-                    
-                promiseAll2errback(arrayOfHashers,function(err,arrayOfResults){
+             const 
+                
+                arrrayOfRequests = github_data.tree.filter( checkInclusions ),
+                arrayOfHashers   = arrrayOfRequests.map(hashLocalItem);
 
-                     if (arrayOfResults)  return resolveList({err,arrayOfResults });        
-                     
+                promiseAll2errback(arrayOfHashers,function(arrayOfErrors,arrayOfResults){
+
+                     if (arrayOfResults) {
+                         const result = {
+                             errorCount:0,
+                             resultCount:0,
+                             urlCount: 0,
+                             errors  : {},
+                             results : {}
+                         }
+                         
+                         arrayOfErrors.map(function(err,index){
+                             if (err) {
+                                 const item = arrrayOfRequests[index];
+                                 result.errors[ item.url ] = item;
+                                 delete item.url;
+                                 result.errorCount++;
+                                 result.urlCount++;
+                             }
+                         });
+                         
+                         arrayOfErrors.filter(function(res,index){
+                             if (res) {
+                                 const item = arrrayOfRequests[index];
+                                 result.results[ item.url ] = item;
+                                 delete item.url;
+                                 result.resultCount++;
+                                 result.urlCount++;
+                             }
+                         });
+                         
+                         
+                         return resolveList({err,arrayOfResults });        
+                     }
                      return reject(err);
                     
                      
@@ -574,27 +649,25 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
                 function hashLocalItem(item){
                     return new Promise(function(resolve,reject) {
                         
-                        caches.match(github_io_base+item.path).then (function(response){
-                             console.log(response);
-                             return response;
-                         })  
+                         caches.match(github_io_base+item.path)
                          
-                         .then(toArrayBuffer)
+                         .then ( viaConsoleLog("caches.match= [","]") )
+                         
+                         .then( fromResponseToArrayBuffer )
     
-                         .then(toSha1Hash)
+                         .then( fromBuffertoSha1DigestBuffer )
                         
-                        .then (function (hash){
-                              hash = bufferToHex(hash);
-                              //console.log(item.path,"sha1=",hash);
-                              item.currentHash=hash;
-                              return item; 
-                         })
+                         .then ( fromBufferToHex )
                          
-                        .then (resolve)
-                        
-                        .catch(reject);
+                         .then ( viaConsoleLog("sha1 digest --> [","]") )
+                         
+                         .then ( resolve )
+
+                         .catch( catchViaConsoleLog(reject,"error hashing cache item [","], url = "+item.url) );
                         
                     });
+                    
+                   
                 }
                
                
