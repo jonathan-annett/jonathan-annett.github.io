@@ -657,37 +657,42 @@ function checkGithubIOCommitHash(update) {return asPromise(arguments,function(re
     const key  = repo+'.hashes';
     if (checkGithubIOCommitHash.cache) {
         if (checkGithubIOCommitHash.repo===repo) {
-            return resolve(checkGithubIOCommitHash.cache);
+            return checkGithubIOCommitHash.cache.then(resolve);
         }
     }
     
-    localforage.getItem(key).then(function (localData) {
-        getGitubCommitFileHashes(github_io_user, repo, github_io_files, function(err,serverData){
-            if (err) {
-                reject(err);
-            } else {
-                
-                const changed=localData.files_sha1!==serverData.files_sha1, 
-                      result={changed:changed,localData,serverData,repo};
-                 
-                if ((update&&changed)||!localData) {
-                    
-                    localforage.setItem(key,serverData).then(function () {
-                        checkGithubIOCommitHash.cache = result;
-                        console.log("checkGithubIOCommitHash:saved in localforage-->",result);    
-                        resolve (result);
-                    });
-                    
+    checkGithubIOCommitHash.cache = new Promise(function(resolve,reject){
+        localforage.getItem(key).then(function (localData) {
+            getGitubCommitFileHashes(github_io_user, repo, github_io_files, function(err,serverData){
+                if (err) {
+                    reject(err);
                 } else {
                     
-                    checkGithubIOCommitHash.cache = result;
-                    console.log("checkGithubIOCommitHash:",result);   
-                    resolve (result);
-                    
+                    const changed=localData.files_sha1!==serverData.files_sha1, 
+                          result={changed:changed,localData,serverData,repo};
+                     
+                    if ((update&&changed)||!localData) {
+                        
+                        localforage.setItem(key,serverData).then(function () {
+                            checkGithubIOCommitHash.cache = result;
+                            console.log("checkGithubIOCommitHash:saved in localforage-->",result);    
+                            resolve (result);
+                        });
+                        
+                    } else {
+                        
+                        checkGithubIOCommitHash.cache = result;
+                        console.log("checkGithubIOCommitHash:",result);   
+                        resolve (result);
+                        
+                    }
                 }
-            }
+            });
         });
     });
+    
+    checkGithubIOCommitHash.cache.then(resolve);
+    
     
 });}
 
