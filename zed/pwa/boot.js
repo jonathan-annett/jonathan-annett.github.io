@@ -82,7 +82,7 @@ function w_load() {
                                 setTimeout(function(){
                                     html.classList.remove("register");
                                     html.classList.add("refreshing");
-                                     window.location.replace(window.location.href);
+                                   //  window.location.replace(window.location.href);
 
                                 },10000);
                             });
