@@ -637,6 +637,7 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
                          arrayOfErrors.forEach(function(err,index){
                              if (err) {
                                  const [item,path] = reparse(index);
+                                 item.error = err.message || err;
                                  result.errors[ path ] = item;
                                  result.errorCount++;
                                  result.urlCount++;
