@@ -11,10 +11,20 @@ function fromResponseToArrayBuffer(response){ return response.arrayBuffer(); }
 
 function fromBuffertoSha1DigestBuffer(buffer){ return window.crypto.subtle.digest("SHA-1", buffer); }
 
-function fromBufferToHex(buffer){ return Promise.resolve ( bufferToHex(buffer) ); }
+function fromBufferToHex(buffer){ 
+    return new Promise(function (resolve,reject){
+        try {
+            const hex = bufferToHex(buffer);
+            resolve(hex);
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
 
 
 function viaConsoleX(via,x,prefix,suffix) {
+    
     return function (whatever) {
         if (prefix) {
             if (suffix) {
@@ -31,6 +41,7 @@ function viaConsoleX(via,x,prefix,suffix) {
         } 
         return via(whatever);
     };
+    
 }
 
 
