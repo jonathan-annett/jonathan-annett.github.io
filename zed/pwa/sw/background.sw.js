@@ -19,6 +19,7 @@ github_io_files = [
     "zed/pwa/sw/background.sw.js",
     "zed/pwa/sw/config.js",
     "zed/pwa/sw/fetch.js",
+    "zed/pwa/sw/rusha.min.js",
     "zed/pwa/sw/install.js",
     "zed/pwa/sw/utils.js"].sort(),
     
@@ -35,7 +36,7 @@ importScripts(
     "https://unpkg.com/localforage-observable@2.1.1/dist/localforage-observable.js",    
     
 
-    //"swivel.min.js",
+    "rusha.min.js",
     "utils.js",  
     "config.js", 
     "install.js", 

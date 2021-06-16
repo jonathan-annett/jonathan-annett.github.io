@@ -1,4 +1,4 @@
-/* global  caches, BroadcastChannel, self,localforage ,github_io_user, github_io_files */
+/* global  caches, BroadcastChannel, self,localforage ,github_io_user, github_io_files, Rusha */
 
 self.isSw = typeof WindowClient+typeof SyncManager+typeof addEventListener==='functionfunctionfunction';
 
@@ -8,7 +8,13 @@ function toText(response) {  return response.text() }
 
 function fromResponseToArrayBuffer(response){ return response.arrayBuffer(); }
 
-function fromBuffertoSha1DigestBuffer(buffer){ return window.crypto.subtle.digest("SHA-1", buffer); }
+
+
+function fromBuffertoSha1DigestBuffer(buffer){ 
+        return self.isSw ? Rusha.createHash().update(buffer).digest() 
+                         : window.crypto.subtle.digest("SHA-1", buffer); 
+    
+}
 
 function fromBufferToHex(buffer){ 
     return new Promise(function (resolve,reject){
