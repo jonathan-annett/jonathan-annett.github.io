@@ -30,13 +30,18 @@ function sw_activate ( e) {
     
 }
 
-function sw_activate_changed () {
-    self.registration.unregister()
-    .then(function() {
-      return self.clients.matchAll();
-    })
-    .then(function(clients) {
-      clients.forEach(client => client.navigate(client.url))
-    });
+function sw_activate_changed (e) {
+    
+    e.waitUntil(
+        Promise.timeout(500) 
+            .then(self.registration.unregister)
+            
+             .then(self.clients.matchAll)
+               .then(function(clients) {
+                   clients.forEach(function(client){ client.navigate(client.url);})
+                })
+        
+    );
+    
 }
  

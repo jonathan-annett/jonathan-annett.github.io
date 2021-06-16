@@ -945,6 +945,18 @@ function promiseAll2errback (arr,cb) {
 
 }
 
+
+Promise.prototype.delay = function(t) {
+    return this.then(function(v) {
+        return new Promise(function(resolve) { 
+            setTimeout(function(){resolve(v);},t);
+        });
+    });
+}
+
+Promise.timeout = function (t, v) { return Promise.resolve(v).delay(t);}
+
+
 function caches_open(cacheName,cb) {
    return promise2errback(caches.open(cacheName),cb);
 }

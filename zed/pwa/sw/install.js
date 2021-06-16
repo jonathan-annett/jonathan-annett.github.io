@@ -297,7 +297,6 @@ function sw_install( e ) {
             
             if (err) return installFailed(err);
             
-            
             console.log(
                 "got list:",
                 filesToCache.site.length,"site files,",
@@ -346,7 +345,6 @@ function sw_install( e ) {
                 
             });
             
-            
             function addToCacheWithProgress(cache){
               
     
@@ -376,9 +374,6 @@ function sw_install( e ) {
                 
             }
           
-            
-           
-           
         });
           
      
