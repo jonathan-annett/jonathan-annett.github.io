@@ -615,34 +615,38 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
              const 
                 
                 arrrayOfRequests = github_data.tree.filter( checkInclusions ),
-                arrayOfHashers   = arrrayOfRequests.map(hashLocalItem);
+                arrayOfHashers   = arrrayOfRequests.map(hashLocalItem),
+                reparse = function (index) {
+                    const item = JSON.parse(JSON.stringify(arrrayOfRequests[index]));
+                    const path = item.path;
+                    delete item.path;
+                    return [ item, path ];
+                };
 
                 promiseAll2errback(arrayOfHashers,function(arrayOfErrors,arrayOfResults){
 
                      if (arrayOfResults) {
                          const result = {
-                             errorCount:0,
-                             resultCount:0,
-                             urlCount: 0,
-                             errors  : {},
-                             results : {}
+                             errorCount  : 0,
+                             resultCount : 0,
+                             urlCount    : 0,
+                             errors      : {},
+                             results     : {}
                          }
                          
-                         arrayOfErrors.map(function(err,index){
+                         arrayOfErrors.forEach(function(err,index){
                              if (err) {
-                                 const item = arrrayOfRequests[index];
-                                 result.errors[ item.url ] = item;
-                                 delete item.url;
+                                 const [item,path] = reparse(index);
+                                 result.errors[ path ] = item;
                                  result.errorCount++;
                                  result.urlCount++;
                              }
                          });
                          
-                         arrayOfErrors.filter(function(res,index){
+                         arrayOfErrors.forEach(function(res,index){
                              if (res) {
-                                 const item = arrrayOfRequests[index];
-                                 result.results[ item.url ] = item;
-                                 delete item.url;
+                                 const [item,path ] = reparse(index);
+                                 result.results[ path ] = item;
                                  result.resultCount++;
                                  result.urlCount++;
                              }
@@ -670,7 +674,7 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
                         
                          caches.match(github_io_base+item.path)
                          
-                         .then ( viaConsoleInfo("caches.match("+item.url+")-->[","]") )
+                         .then ( viaConsoleInfo("caches.match("+item.path+")-->[","]") )
                          
                          .then( fromResponseToArrayBuffer )
     
@@ -682,7 +686,7 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
                          
                          .then ( resolve )
 
-                         .catch( rejectViaConsoleWarn(reject,"error hashing cache item "+item.url+" [","]") );
+                         .catch( rejectViaConsoleWarn(reject,"error hashing cache item "+item.path+" [","]") );
                         
                     });
                     
