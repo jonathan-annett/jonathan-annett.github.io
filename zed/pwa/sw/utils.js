@@ -643,9 +643,10 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
                              }
                          });
                          
-                         arrayOfErrors.forEach(function(res,index){
-                             if (res) {
+                         arrayOfResults.forEach(function(currentHash,index){
+                             if (currentHash) {
                                  const [item,path ] = reparse(index);
+                                 item.newHash = currentHash;
                                  result.results[ path ] = item;
                                  result.resultCount++;
                                  result.urlCount++;
