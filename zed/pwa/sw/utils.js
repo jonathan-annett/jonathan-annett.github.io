@@ -655,7 +655,7 @@ function getGitubCommitFileHashes(user,repo,files) {return asPromise(arguments,f
 function checkGithubIOCommitHash(update) {return asPromise(arguments,function(resolve,reject){
     const repo = github_io_user+'.github.io';
     const key  = repo+'.hashes';
-    if (!update && checkGithubIOCommitHash.cache) {
+    if (checkGithubIOCommitHash.cache) {
         if (checkGithubIOCommitHash.repo===repo) {
             return resolve(checkGithubIOCommitHash.cache);
         }
@@ -670,7 +670,7 @@ function checkGithubIOCommitHash(update) {return asPromise(arguments,function(re
                 const changed=localData.files_sha1!==serverData.files_sha1, 
                       result={changed:changed,localData,serverData,repo};
                  
-                if (update&&changed) {
+                if ((update&&changed)||!localData) {
                     
                     localforage.setItem(key,serverData).then(function () {
                         checkGithubIOCommitHash.cache = result;
