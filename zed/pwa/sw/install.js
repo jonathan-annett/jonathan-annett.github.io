@@ -68,7 +68,7 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
 
 workerCmd(
     'refresh_sw',{},
-    function pageCode( navSw,replies, resolve, reject, send, id, 
+    function pageCode( replies, resolve, reject, send, id, 
 /* --args-->*/ sw_progress ){
 
         replies.updateProgress = updateProgress;
@@ -186,13 +186,17 @@ workerCmd(
         
        
         
+    },
+    
+    function localCode() {
+        //nothing  happens if worker tries to call refresh_sw()
     }
 );     
         
 
 workerCmd(
     'get_changed_sw',{},
-    function pageCode( navSw,replies, resolve, reject, send, id, 
+    function pageCode( replies, resolve, reject, send, id, 
 /* --args-->*/ cb ){
           
         },
@@ -268,7 +272,9 @@ workerCmd(
          
          }
 
-    }
+    },
+
+    true//let worker call get_changed_sw() 
 );
 
 

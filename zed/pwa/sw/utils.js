@@ -215,6 +215,17 @@ function asCallback (args,wrap,no_err) {
 }
 
 
+Promise.prototype.delay = function(t) {
+    return this.then(function(v) {
+        return new Promise(function(resolve) { 
+            setTimeout(function(){resolve(v);},t);
+        });
+    });
+}
+
+Promise.timeout = function (t, v) { return Promise.resolve(v).delay(t);}
+
+
 function cbPromiseTest(){
     /*global sampleFunc1,sampleFunc2*/
     
@@ -333,21 +344,61 @@ function findWorker() {return asPromise(arguments,function(resolve,reject){
     
 });}
  
-
-function workerCmd(cmdName,msgData,handler,worker_handler,THIS) {
+function workerCmd(cmdName,msgData,callHandler,invocationHandler,localInvHandler,THIS) {
+    THIS=THIS||this;
     
     if (self.isSw) {
+        
         if (!workerCmd.commands) {
             workerCmd.commands = {};
         }
         workerCmd.commands[cmdName] = {
-            handler  : worker_handler,
+            handler  : invocationHandler,
             msgData  : msgData
         };
-        return;
+        
+        if (localInvHandler===true) {
+            // allow local calls via simulated channel
+            if (THIS[cmdName]) delete THIS[cmdName];
+            
+            Object.defineProperty(
+                THIS,
+                cmdName, {  
+                    value        : localInvocationWrapper.bind(THIS,invocationHandler),
+                    enumerable   : false,
+                    configurable : true
+                
+                }
+            );
+        
+            
+           
+        } else {
+            
+            if (typeof localInvHandler==='function') {
+                // provide alternate code if invoked locally
+                if (THIS[cmdName]) delete THIS[cmdName];
+                Object.defineProperty(
+                    THIS,
+                    cmdName,
+                    {  
+                        value        : localInvHandler,
+                        enumerable   : false,
+                        configurable : true
+                    
+                    }
+                );
+            }
+            
+        }
+    } else {
+        if (THIS[cmdName]) delete THIS[cmdName];
+        Object.defineProperty(THIS,cmdName,{value:localCallWrapper,enumerable:false,configurable: true});
     }
     
-    function func () {
+    return THIS[cmdName];
+    
+    function localCallWrapper () {
         const args = cpArgs(arguments);
         return asPromise(arguments,function(resolve,reject){
         
@@ -421,9 +472,9 @@ function workerCmd(cmdName,msgData,handler,worker_handler,THIS) {
                     replyChannel.postMessage(replyMsg);
                 }
                 
-                // invoke handler, which may add additional reply methods
-                const handler_args=[navSw,replies, _resolve, _reject, send, id].concat(args);
-                handler.apply(this,  handler_args);
+                // invoke callHandler, which may add additional reply methods
+                const handler_args=[replies, _resolve, _reject, send, id].concat(args);
+                callHandler.apply(this,  handler_args);
                 
                 // wake up the service worker
                 wakeupMsg[cmdName]=msgData;
@@ -432,74 +483,222 @@ function workerCmd(cmdName,msgData,handler,worker_handler,THIS) {
             });
         });
     }
-    
-    THIS=THIS||this;
-    if (THIS[cmdName]) delete THIS[cmdName];
-    
-    Object.defineProperty(THIS,cmdName,{value:func,enumerable:false,configurable: true});
-    return func;
+
     
 }
 
-
-function windowCmd(cmdName,msgData,handler,window_handler,THIS) {
+function localInvocationWrapper(invocationHandler,data,replies){
+ 
+     return asPromise(arguments,function(resolve,reject){
+     
+         replies = replies || {};
+         replies.resolve  = _resolve;
+         replies.reject   = _reject;
+         
+         function reply(data) {
+             // filter out other messages
+                 delete data.id;
+                 const key = Object.keys(data)[0];
+                 const fn = replies[key];
+                 const payload = data[key];
+                 delete  data[key];
+                 if (typeof fn==='function') fn(payload);
+             
+         }
     
-    if (!self.isSw) {
+         invocationHandler(data,_resolve,_reject,reply);
+         
+         function _resolve(x) {
+             resolve(x);
+         }
+         function _reject(x) {
+             reject(x);
+         }
         
-        if (!windowCmd.commands) {
-            windowCmd.commands = {};
+     });
+     
+} 
+
+if (self.isSw) {
+    workerCmd.onmessage = function ( e ) {
+        if (workerCmd.commands) {
+           
+           const id = e.data.id;
+           if ( id && Object.keys(e.data).length===2) {
+               
+               delete e.data.id;
+               const cmdName = Object.keys(e.data)[0];
+               
+               const cmd = workerCmd.commands[cmdName];
+               if (cmd && typeof cmd.handler==='function') {
+        
+        
+                   e.waitUntil (
+                       
+                      new Promise(function(resolve,reject){
+                          
+                          const
+                          
+                          replyChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(cmdName+'_replies') : false,
+                          
+                          reply = function  (name,msg) {
+                              const wrap = {
+                                  id : id
+                              };
+                              wrap[name]=msg;
+                              replyChannel.postMessage(wrap);
+                              resolve();
+                          },
+                          
+                          _resolve = function(result) {
+                              reply('resolve',result);
+                              replyChannel.close();
+                          },
+                          
+                          _reject = function  (err) {
+                              reply('reject',err);
+                              replyChannel.close();
+                              reject();
+                          };
+                          
+                          
+                          replyChannel.onmessage = workerCmd.onmessage;
+        
+                          cmd.handler(e.data,_resolve,_reject,reply);
+                          
+                      })
+                   
+                   );
+                   
+        
+                   
+               }
+               
+           }
         }
-        windowCmd.commands[cmdName] = {
-            handler  : window_handler,
-            msgData  : msgData
+    };
+    serviceWorkerEvent("message",  workerCmd.onmessage,false);
+}
+ 
+ 
+
+function windowCmd(cmdName,msgData,callHandler,invocationHandler,localInvHandler,THIS) {
+    THIS=THIS||this;  
+    
+          
+    if (!self.isSw) {
+         // windows keep their message channel active  
+         const messageChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(cmdName+'_invocation') : false;
+  
+         messageChannel.onmessage=function(e){ 
+            
+            const id = e.data.id;
+            // filter out other messages
+            if (id && e.data[cmdName]) {
+                delete e.data.id;
+                
+                const  
+                reply = function  (name,msg) {
+                    const wrap = {
+                        id : id
+                    };
+                    wrap[name]=msg;
+                    messageChannel.postMessage(wrap);
+                },
+                
+                _resolve = function(result) {
+                    reply('resolve',result);
+                },
+                
+                _reject = function  (err) {
+                    reply('reject',err);
+                };
+                
+                
+                invocationHandler(e.data,_resolve,_reject,reply);
+               
+            }
         };
-        return;
+        
+        if (localInvHandler===true) {
+            // allow local calls via simulated channel
+            if (THIS[cmdName]) delete THIS[cmdName];
+            
+            Object.defineProperty(
+                THIS,
+                cmdName, {  
+                    value        : localInvocationWrapper.bind(THIS,invocationHandler),
+                    enumerable   : false,
+                    configurable : true
+                
+                }
+            );
+        
+            
+           
+        } else {
+            
+            if (typeof localInvHandler==='function') {
+                // provide alternate code if invoked locally
+                if (THIS[cmdName]) delete THIS[cmdName];
+                Object.defineProperty(
+                    THIS,
+                    cmdName,
+                    {  
+                        value        : localInvHandler,
+                        enumerable   : false,
+                        configurable : true
+                    
+                    }
+                );
+            }
+            
+        }
+        
+        
+         return;
     }
     
-    function func () {
+
+    if (THIS[cmdName]) delete THIS[cmdName];
+    
+    Object.defineProperty(THIS,cmdName,{value:localCallWrapper,enumerable:false,configurable: true});
+    
+    return THIS[cmdName];
+    
+    function localCallWrapper () {
         const args = cpArgs(arguments);
         return asPromise(arguments,function(resolve,reject){
         
-            
-                let 
-                
-                // reply replyChannel for worker
-                replyChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(cmdName+'_replies') : false,
-                
-                // temp replyChannel that "wakes up" worker and sends the reques
-                notifier = new MessageChannel();
-                
+   
                 const 
+                //worker opens channel per call
+                messageChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(cmdName+'_invocation') : false,
+  
+                
                 // poor mans GUID
                 // because replies come back via broadcast,
                 // we need to ensure we are receiving correct reply
                 id = (Date.now().toString(36).substr(4)+Math.random().toString(36)+Math.random().toString(36)).replace(/0+\./g,'-'),
-                wakeupMsg= {
+                cmdMsg= {
                    id : id  
                 },
+                
                 close_channel = function(){
-                    if (replyChannel) {
-                        replyChannel.close();
-                        replyChannel = undefined;
+                    if (messageChannel) {
+                        messageChannel.close();
                     }
                 },
-                close_notifier = function(){
-                    if (notifier) {
-                        notifier.port1.close();
-                        notifier.port2.close();
-                        notifier = undefined;
-                    }
-                },
+                
                 // default reply handlers for resolve and reject
                 replies = {
                     resolve         : _resolve,
                     reject          : _reject
                 };
                 
-                replyChannel.onmessage=function(e){
+                messageChannel.onmessage=function(e){
                     // filter out other messages
                     if (e.data.id===id) {
-                        close_notifier();
                         delete e.data.id;
                         const key = Object.keys(e.data)[0];
                         const fn = replies[key];
@@ -524,29 +723,22 @@ function windowCmd(cmdName,msgData,handler,window_handler,THIS) {
                 function send (name,msg) {
                     const replyMsg = {};
                     replyMsg[name] = msg;
-                    replyChannel.postMessage(replyMsg);
+                    messageChannel.postMessage(replyMsg);
                 }
                 
-                // invoke handler, which may add additional reply methods
-                const handler_args=[navSw,replies, _resolve, _reject, send, id].concat(args);
-                handler.apply(this,  handler_args);
+                // invoke callHandler, which may add additional reply methods
+                const handler_args=[replies, _resolve, _reject, send, id].concat(args);
+                callHandler.apply(this,  handler_args);
                 
-                // wake up the service worker
-                wakeupMsg[cmdName]=msgData;
-                navSw.postMessage(wakeupMsg,[notifier.port2]);
+                // send message to client
+                cmdMsg[cmdName]=msgData;
+                messageChannel.postMessage(cmdMsg);
                 
             
         });
     }
     
-    THIS=THIS||this;
-    if (THIS[cmdName]) delete THIS[cmdName];
-    
-    Object.defineProperty(THIS,cmdName,{value:func,enumerable:false,configurable: true});
-    return func;
-    
 }
-
 
 function get_X_cluded (base,exclusionsList) {
     
@@ -583,7 +775,6 @@ function get_X_cluded (base,exclusionsList) {
     return fn;
 }
 
-
 function getGitubCommitHash(user,repo,full){return asPromise(arguments,function(resolve,reject){
     //https://api.github.com/repos/jonathan-annett/jonathan-annett.github.io/deployments?per_page=1
     full = typeof full==='boolean'&&full;
@@ -598,7 +789,6 @@ function getGitubCommitHash(user,repo,full){return asPromise(arguments,function(
 
     
 });}
-
 
 function getGitubCommitFileHashes(user,repo,files) {return asPromise(arguments,function(resolve,reject){
 //  https://api.github.com/repos/jonathan-annett/jonathan-annett.github.io/git/trees/83a18ce10879bcdc1235fecf3dad09e883f5abe7?recursive=1
@@ -653,6 +843,7 @@ function getGitubCommitFileHashes(user,repo,files) {return asPromise(arguments,f
 });}
 
 function checkGithubIOCommitHash() {return asPromise(arguments,function(resolve,reject){
+    
     const repo = github_io_user+'.github.io';
     const key  = repo+'.hashes';
     if (checkGithubIOCommitHash.cache) {
@@ -703,6 +894,7 @@ function checkGithubIOCommitHash() {return asPromise(arguments,function(resolve,
 
 function serviceWorkerEvent(eventName,normalEvent,changedEvent) {
     if (normalEvent||changedEvent) {
+        console.log("registering installation handler for",eventName,"event");
         var handler = function (e) {
           const setHandler = function(hnd,resolve) {
               let waitUntilPromise;
@@ -758,7 +950,6 @@ function serviceWorkerEvent(eventName,normalEvent,changedEvent) {
 function getGithubIOHashlist(user,root,include,exclude ){return asPromise(arguments,function(resolveList,reject){
     
     const repo = user+'.github.io';
-    
     
     getGitubCommitHash(user,repo,function(err,hash){
         
@@ -862,82 +1053,14 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
 
     });
      
-    
-    
 });}
 
 
-
-if (self.isSw) {
-    workerCmd.onmessage = function ( e ) {
-        if (workerCmd.commands) {
-           
-           const id = e.data.id;
-           if ( id && Object.keys(e.data).length===2) {
-               
-               delete e.data.id;
-               const cmdName = Object.keys(e.data)[0];
-               
-               const cmd = workerCmd.commands[cmdName];
-               if (cmd && typeof cmd.handler==='function') {
-        
-        
-                   e.waitUntil (
-                       
-                      new Promise(function(resolve,reject){
-                          
-                          const
-                          
-                          replyChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(cmdName+'_replies') : false,
-                          
-                          reply = function  (name,msg) {
-                              const wrap = {
-                                  id : id
-                              };
-                              wrap[name]=msg;
-                              replyChannel.postMessage(wrap);
-                              resolve();
-                          },
-                          
-                          _resolve = function(result) {
-                              reply('resolve',result);
-                              replyChannel.close();
-                          },
-                          
-                          _reject = function  (err) {
-                              reply('reject',err);
-                              replyChannel.close();
-                              reject();
-                          };
-                          
-                          
-                          replyChannel.onmessage = workerCmd.onmessage;
-        
-                          cmd.handler(e.data,_resolve,_reject,reply);
-                          
-                      })
-                   
-                   );
-                   
-        
-                   
-               }
-               
-           }
-        }
-    };
-    serviceWorkerEvent("message",  workerCmd.onmessage,false);
-}
- 
- 
 function promise2errback (p,cb) {
     toPromise(p).then(function(r){
         cb (undefined,r);
     }).catch(cb);
 }
-
-
-
 
 function promiseAll2errback (arr,cb) {
     let 
@@ -969,17 +1092,6 @@ function promiseAll2errback (arr,cb) {
     
 
 }
-
-
-Promise.prototype.delay = function(t) {
-    return this.then(function(v) {
-        return new Promise(function(resolve) { 
-            setTimeout(function(){resolve(v);},t);
-        });
-    });
-}
-
-Promise.timeout = function (t, v) { return Promise.resolve(v).delay(t);}
 
 
 function caches_open(cacheName,cb) {
