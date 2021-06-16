@@ -7,7 +7,6 @@ btn.onclick = function(){
 
 
 
-
 // generic tools 
 
 function qs(d,q,f) {
