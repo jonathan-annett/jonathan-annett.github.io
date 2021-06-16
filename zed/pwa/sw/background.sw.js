@@ -31,12 +31,12 @@ cacheName   = config_url.replace(/\//g,'-').substr(1).replace('.json', '-'+versi
 importScripts(
     //"/zed/pwa/zen-observable.js","/zed/pwa/localforage.js","/zed/pwa/localforage-observable.js"
 
+    "rusha.min.js",
     "https://unpkg.com/zen-observable@0.2.1/zen-observable.js", 
     "https://unpkg.com/localforage@1.9.0/dist/localforage.js",
     "https://unpkg.com/localforage-observable@2.1.1/dist/localforage-observable.js",    
     
 
-    "rusha.min.js",
     "utils.js",  
     "config.js", 
     "install.js", 
