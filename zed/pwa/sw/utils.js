@@ -679,14 +679,12 @@ function checkGithubIOCommitHash() {return asPromise(arguments,function(resolve,
                     if ( changed || !localData ) {
                         
                         localforage.setItem(key,serverData).then(function () {
-                            checkGithubIOCommitHash.cache = result;
                             console.log("checkGithubIOCommitHash:saved in localforage-->",result);    
                             resolve (result);
                         });
                         
                     } else {
                         
-                        checkGithubIOCommitHash.cache = result;
                         console.log("checkGithubIOCommitHash:",result);   
                         resolve (result);
                         
