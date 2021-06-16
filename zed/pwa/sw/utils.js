@@ -709,7 +709,7 @@ function serviceWorkerEvent(eventName,normalEvent,changedEvent) {
           const setHandler = function(hnd,resolve) {
               let waitUntilPromise;
               handler=hnd;
-             
+              
               e.waitUntil=function(capture) {
                   waitUntilPromise=capture;
               };
@@ -721,7 +721,7 @@ function serviceWorkerEvent(eventName,normalEvent,changedEvent) {
               }
           };
         
-           e.WaitUntil (
+           e.waitUntil (
                
                new Promise(function( resolve,reject) {
                     
