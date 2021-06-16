@@ -1,7 +1,6 @@
-
-(function(){
-
-    function windowTools() {
+/*global self*/
+(function(whoami,exports,Lib){const n = Lib.name,x=whoami==="Window"&&exports[n]===undefined?Object.defineProperty(exports,n,{value:Lib(),enumerable:true,configurable:true}):undefined;})(typeof self==="object"&&self.constructor.name||"Nobody",self,
+   function wTools() {
     
             var On='addEventListener';
             
@@ -265,6 +264,4 @@
             }
     
     }
-
-
-})();
+);
