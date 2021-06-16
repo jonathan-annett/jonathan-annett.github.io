@@ -19,7 +19,7 @@ github_io_files = [
     "zed/pwa/sw/background.sw.js",
     "zed/pwa/sw/config.js",
     "zed/pwa/sw/fetch.js",
-    "zed/pwa/sw/rusha.min.js",
+    "zed/pwa/sw/rusha.js",
     "zed/pwa/sw/install.js",
     "zed/pwa/sw/utils.js"].sort(),
     
@@ -31,7 +31,7 @@ cacheName   = config_url.replace(/\//g,'-').substr(1).replace('.json', '-'+versi
 importScripts(
     //"/zed/pwa/zen-observable.js","/zed/pwa/localforage.js","/zed/pwa/localforage-observable.js"
 
-    "rusha.min.js",
+    "rusha.js",
     "https://unpkg.com/zen-observable@0.2.1/zen-observable.js", 
     "https://unpkg.com/localforage@1.9.0/dist/localforage.js",
     "https://unpkg.com/localforage-observable@2.1.1/dist/localforage-observable.js",    
