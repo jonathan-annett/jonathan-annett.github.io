@@ -15,19 +15,18 @@ function fromBufferToHex(buffer){ return Promise.resolve ( bufferToHex(buffer) )
 
 
 function viaConsoleX(via,x,prefix,suffix) {
-    const stack = new Error().stack.split("\n").slice(2);
     return function (whatever) {
         if (prefix) {
             if (suffix) {
-                console[x](prefix,whatever,suffix,stack);
+                console[x](prefix,whatever,suffix);
             } else {
-                console[x](prefix,whatever,stack);
+                console[x](prefix,whatever);
             }
         } else {
             if (suffix) {
-                console[x](whatever,suffix,stack);
+                console[x](whatever,suffix);
             } else {
-                console[x](whatever,stack);
+                console[x](whatever);
             }
         } 
         return via(whatever);
