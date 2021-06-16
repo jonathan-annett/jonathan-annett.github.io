@@ -4,7 +4,7 @@ getPWAFiles ,caches,cacheName, BroadcastChannel,self,
 
 caches_open,promise2errback,promiseAll2errback,cache_add, asCallback, asPromise,
 
-cpArgs,workerCmd,localforage
+cpArgs,workerCmd,localforage,serviceWorkerEvent
 
 */
 self.isSw = typeof WindowClient+typeof SyncManager+typeof addEventListener==='functionfunctionfunction';
@@ -45,8 +45,6 @@ function install_sw (sw_path, sw_afterinstall,sw_afterstart,sw_progress) {
      }
     
 
-     //navSw.addEventListener('controllerchange',sw_controllerchange);
-     
      console.log("registering service worker script...");
      navSw.register( sw_path ).then (function(reg){
          
@@ -279,8 +277,9 @@ workerCmd(
 
 
 if (self.isSw) {
-    console.log("registering install");
-    addEventListener("install",  sw_install);
+
+    serviceWorkerEvent("install",  sw_install, sw_install_changed );
+    
 }    
  
 
@@ -402,4 +401,6 @@ function sw_install( e ) {
 }
 
  
-      
+function sw_install_changed (e) {
+    self.skipWaiting();
+}      

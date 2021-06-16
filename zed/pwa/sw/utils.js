@@ -1,9 +1,8 @@
-/* global  caches, BroadcastChannel, self */
+/* global  caches, BroadcastChannel, self,localforage,githubio_user */
 
 self.isSw = typeof WindowClient+typeof SyncManager+typeof addEventListener==='functionfunctionfunction';
 
 function toJSON(response) { return response.json(); }
-
 
 function toText(response) {  return response.text() }
 
@@ -580,9 +579,9 @@ function get_X_cluded (base,exclusionsList) {
 
 
 function getGitubCommitHash(user,repo){return asPromise(arguments,function(resolve,reject){
-    //https://api.github.com/repos/jonathan-annett/jonathan-annett.github.io/deployments
+    //https://api.github.com/repos/jonathan-annett/jonathan-annett.github.io/deployments?per_page=1
     
-    const url = "https://api.github.com/repos/"+user+"/"+repo+"/deployments";
+    const url = "https://api.github.com/repos/"+user+"/"+repo+"/deployments?per_page=1";
     fetch(url)
       .then(toJSON)
           .then(
@@ -593,6 +592,55 @@ function getGitubCommitHash(user,repo){return asPromise(arguments,function(resol
 
     
 });}
+
+function checkGithubIOCommitHash(update) {return asPromise(arguments,function(resolve,reject){
+    const repo = githubio_user+'.github.io';
+    const key  = repo+'.hash';
+    if (!update && checkGithubIOCommitHash.cache) {
+        if (checkGithubIOCommitHash.repo===repo) {
+            return resolve(checkGithubIOCommitHash.cache);
+        }
+    }
+    
+    localforage.getItem(key).then(function (localHash) {
+        getGitubCommitHash(githubio_user,repo,function(err,serverHash){
+            if (err) {
+                reject(err);
+            } else {
+                const changed=localHash!==serverHash, 
+                      result={changed:changed,localHash,serverHash,repo};
+                if (update&&changed) {
+                    localforage.setItem(key,serverHash).then(function () {
+                        checkGithubIOCommitHash.cache = result;
+                        resolve (result);
+                    });
+                } else {
+                    checkGithubIOCommitHash.cache = result;
+                    resolve (result);
+                }
+            }
+        });
+    });
+    
+});}
+
+function serviceWorkerEvent(eventName,normalEvent,changedEvent) {
+    checkGithubIOCommitHash(function(err,result){
+        if (result.changed && result.localHash) {
+            if (changedEvent){
+                console.log("site has changed, registering alternate",eventName,"event");
+                self.addEventListener(eventName,changedEvent);
+            } else {
+                console.log("site has changed, not registering ",eventName,"event");
+            }
+        } else {
+            if (normalEvent) {
+                console.log("registering",eventName,"event");
+                self.addEventListener(eventName,normalEvent)
+            }
+        }
+    });
+}
 
 function getGithubIOHashlist(user,root,include,exclude ){return asPromise(arguments,function(resolveList,reject){
     
@@ -765,8 +813,7 @@ if (self.isSw) {
            }
         }
     };
-    console.log("registering workerCmd.onmessage");
-    self.addEventListener("message",  workerCmd.onmessage);
+    serviceWorkerEvent("message",  workerCmd.onmessage,false);
 }
  
  

@@ -1,11 +1,10 @@
 
-/* global self, importScripts, caches ,registration,clients ,Response, localforage, cacheName  */    
-self.isSw = typeof WindowClient+typeof SyncManager==='functionfunction';
+/* global self, importScripts, caches ,registration,clients ,Response, localforage, cacheName, serviceWorkerEvent */    
+self.isSw = typeof WindowClient+typeof SyncManager+typeof addEventListener==='functionfunctionfunction';
 
  
 if (self.isSw) {
-    console.log("registering sw_fetch_");
-    addEventListener("fetch",    sw_fetch_);  
+    serviceWorkerEvent("fetch",    sw_fetch_, false);  
 }
 
 function matchJSFixes () {

@@ -10,6 +10,7 @@
 var 
 
 config_url  = "/zed/pwa/files.json",
+githubio_user = "jonathan-annett",
 version     = 1.3,
 cacheName   = config_url.replace(/\//g,'-').substr(1).replace('.json', '-'+version);
 
