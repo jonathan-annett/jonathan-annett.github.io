@@ -704,30 +704,57 @@ function checkGithubIOCommitHash() {return asPromise(arguments,function(resolve,
 });}
 
 function serviceWorkerEvent(eventName,normalEvent,changedEvent) {
-    checkGithubIOCommitHash(function(err,result){
-        if (err) {
-            console.log(err);
-            return ;
-        }
+    if (normalEvent||changedEvent) {
+        var handler = function (e) {
+          const setHandler = function(hnd,resolve) {
+              let waitUntilPromise;
+              handler=hnd;
+             
+              e.waitUntil=function(capture) {
+                  waitUntilPromise=capture;
+              };
+              handler(e);
+              if (waitUntilPromise) {
+                  waitUntilPromise.then(resolve);
+              } else {
+                  resolve();
+              }
+          };
         
-        if ( result.changed && result.localHash ) {
-            
-            if (changedEvent){
-                console.log("site has changed, registering alternate",eventName,"event");
-                self.addEventListener(eventName,changedEvent);
-            } else {
-                console.log("site has changed, not registering ",eventName,"event");
-            }
-            
-        } else {
-            
-            if (normalEvent) {
-                console.log("registering",eventName,"event");
-                self.addEventListener(eventName,normalEvent)
-            }
-            
-        }
-    });
+           e.WaitUntil (
+               
+               new Promise(function( resolve,reject) {
+                    
+                   checkGithubIOCommitHash(function(err,result){
+                       if (err) {
+                           console.log(err);
+                           return reject(err);
+                       }
+                      
+                       if ( result.changed && result.localHash ) {
+                           
+                           if (changedEvent){
+                               console.log("site has changed, registering alternate",eventName,"event");
+                               setHandler(changedEvent,resolve);
+                           } else {
+                               console.log("site has changed, not registering ",eventName,"event");
+                               return resolve();
+                           }
+                           
+                       } else {
+                           
+                           if (normalEvent) {
+                               console.log("registering",eventName,"event");
+                               setHandler(normalEvent,resolve);
+                           }
+                       }
+                   })
+               })
+           ) 
+        };
+        
+        self.addEventListener(eventName,function (e){ return handler (e) ; });
+    }
 }
 
 function getGithubIOHashlist(user,root,include,exclude ){return asPromise(arguments,function(resolveList,reject){
