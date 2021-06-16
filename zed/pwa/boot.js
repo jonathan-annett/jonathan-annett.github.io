@@ -73,26 +73,41 @@ function w_load() {
                         navigator.serviceWorker.getRegistrations().then(function(registrations) {
                             html.classList.remove("registering");
                             html.classList.add("unregistering");
+                            
+                            console.log("there are ",registrations.length,"registrations to check...")
                             const arrayOfUnregisters = registrations.map(
+                                
                                function(reg,index){
                                
                                    return new Promise(function(resolve,reject){
                                        
                                        setTimeout(function(){
-                                           console.log("unregistering:",reg);
-                                           
-                                           reg.unregister()
-                                           
-                                              .then(function(){
-                                                  console.log("unregistered:",reg);
-                                                  resolve();
-                                               })
+                                           const worker = reg.active || reg.waiting || reg.installing || reg.controller;
+                                           if (worker) {
                                                
-                                                 .catch(reject);
-                                           
+                                               if(worker.scriptURL.endsWith(sw_path)){
+                                                   
+                                                    console.log("unregistering:",worker.scriptURL );
+                                               
+                                                
+                                                    reg.unregister().then(function(){
+                                                        
+                                                          console.log("unregistered:",reg);
+                                                          resolve();
+                                                          
+                                                    }).catch(reject);
+                                                    
+                                               } else {
+                                                   console.log("NOT unregistering",worker.scriptURL);
+                                                   resolve();
+                                               }
+                                           } else {
+                                               console.log("NOT unregistering",reg,"can't determine script path (no worker instance)");
+                                               resolve();
+                                           }
                                        },1000*(index+1));
                                    
-                                    });
+                                   });
                                
                                }    
                             );
