@@ -652,26 +652,31 @@ function getGitubCommitFileHashes(user,repo,files) {return asPromise(arguments,f
     
 });}
 
-function checkGithubIOCommitHash(update) {return asPromise(arguments,function(resolve,reject){
+function checkGithubIOCommitHash() {return asPromise(arguments,function(resolve,reject){
     const repo = github_io_user+'.github.io';
     const key  = repo+'.hashes';
     if (checkGithubIOCommitHash.cache) {
-        if (checkGithubIOCommitHash.repo===repo) {
-            return checkGithubIOCommitHash.cache.then(resolve);
-        }
+   
+        return checkGithubIOCommitHash.cache.then(resolve).catch(reject);
+    
     }
     
     checkGithubIOCommitHash.cache = new Promise(function(resolve,reject){
+        
         localforage.getItem(key).then(function (localData) {
+            
             getGitubCommitFileHashes(github_io_user, repo, github_io_files, function(err,serverData){
+                
                 if (err) {
+                    
                     reject(err);
+                    
                 } else {
                     
-                    const changed=localData.files_sha1!==serverData.files_sha1, 
+                    const changed=localData &&(localData.files_sha1!==serverData.files_sha1), 
                           result={changed:changed,localData,serverData,repo};
                      
-                    if ((update&&changed)||!localData) {
+                    if ( changed || !localData ) {
                         
                         localforage.setItem(key,serverData).then(function () {
                             checkGithubIOCommitHash.cache = result;
@@ -688,28 +693,39 @@ function checkGithubIOCommitHash(update) {return asPromise(arguments,function(re
                     }
                 }
             });
+            
         });
+        
     });
     
-    checkGithubIOCommitHash.cache.then(resolve);
+    checkGithubIOCommitHash.cache.then(resolve).catch(reject);
     
     
 });}
 
 function serviceWorkerEvent(eventName,normalEvent,changedEvent) {
-    checkGithubIOCommitHash(true,function(err,result){
-        if (result.changed && result.localHash) {
+    checkGithubIOCommitHash(function(err,result){
+        if (err) {
+            console.log(err);
+            return ;
+        }
+        
+        if ( result.changed && result.localHash ) {
+            
             if (changedEvent){
                 console.log("site has changed, registering alternate",eventName,"event");
                 self.addEventListener(eventName,changedEvent);
             } else {
                 console.log("site has changed, not registering ",eventName,"event");
             }
+            
         } else {
+            
             if (normalEvent) {
                 console.log("registering",eventName,"event");
                 self.addEventListener(eventName,normalEvent)
             }
+            
         }
     });
 }
