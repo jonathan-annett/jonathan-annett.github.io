@@ -32,7 +32,7 @@ function w_load() {
     function beta_site (config) {
         
         console.log("starting site for beta tester:",config.testerKey);
-        
+        /*
         getGithubIOHashlist(
             config.github_io.user,
             config.github_io.root,
@@ -42,10 +42,10 @@ function w_load() {
                  if (list) {
                     console.log({getGithubIOHashlist:list});
                  }
-                 install_sw (sw_path, sw_afterinstall, sw_afterstart, sw_progress )
-            });
+                
+            });*/
         
-       
+        install_sw (sw_path, sw_afterinstall, sw_afterstart, sw_progress )
        
         function sw_afterstart(registration){
             
