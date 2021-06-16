@@ -13,50 +13,58 @@ function fromBuffertoSha1DigestBuffer(buffer){ return window.crypto.subtle.diges
 
 function fromBufferToHex(buffer){ return Promise.resolve ( bufferToHex(buffer) ); }
 
-function viaConsoleLog(prefix,suffix) {
+
+function viaConsoleX(via,x,prefix,suffix) {
     return function (whatever) {
         if (prefix) {
             if (suffix) {
-                console.log(prefix,whatever,suffix);
+                console[x](prefix,whatever,suffix);
             } else {
-                console.log(prefix,whatever);
+                console[x](prefix,whatever);
             }
         } else {
             if (suffix) {
-                console.log(whatever,suffix);
+                console[x](whatever,suffix);
             } else {
-                console.log(whatever);
+                console[x](whatever);
             }
         } 
-        
-        return Promise.resolve(whatever);
+        return via(whatever);
     };
 }
 
-function catchViaConsoleLog(reject,prefix,suffix) {
-    
-   return function (err) {
-           
-           const errorText = err ? (err.message || ""+err) : "<undefined error>";
-           if (prefix) {
-               if (suffix) {
-                   console.log(prefix,errorText,suffix);
-               } else {
-                   console.log(prefix,errorText);
-               }
-           } else {
-               if (suffix) {
-                   console.log(errorText,suffix);
-               } else {
-                   console.log(errorText);
-               }
-           } 
-           
-           return reject(err);
-       };
-   
+
+function viaConsoleInfo(prefix,suffix) {
+    return viaConsoleX(Promise.resolve,"info",prefix,suffix);
 }
 
+function viaConsoleWarn(prefix,suffix) {
+    return viaConsoleX(Promise.resolve,"warn",prefix,suffix);
+}
+
+function viaConsoleError(prefix,suffix) {
+    return viaConsoleX(Promise.resolve,"error",prefix,suffix);
+}
+
+function viaConsoleLog(prefix,suffix) {
+    return viaConsoleX(Promise.resolve,"log",prefix,suffix);
+}
+
+function rejectViaConsoleWarn(reject,prefix,suffix) {
+    return viaConsoleX(reject,"warn",prefix,suffix);
+}
+
+function rejectViaConsoleInfo(reject,prefix,suffix) {
+    return viaConsoleX(reject,"info",prefix,suffix);
+}
+
+function rejectViaConsoleError(reject,prefix,suffix) {
+    return viaConsoleX(reject,"error",prefix,suffix);
+}
+
+function rejectViaConsoleLog(reject,prefix,suffix) {
+    return viaConsoleX(reject,"log",prefix,suffix);
+}
 
 
 function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
@@ -651,7 +659,7 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
                         
                          caches.match(github_io_base+item.path)
                          
-                         .then ( viaConsoleLog("caches.match= [","]") )
+                         .then ( viaConsoleInfo("caches.match("+item.url+")-->[","]") )
                          
                          .then( fromResponseToArrayBuffer )
     
@@ -659,11 +667,11 @@ function getGithubIOHashlist(user,root,include,exclude ){return asPromise(argume
                         
                          .then ( fromBufferToHex )
                          
-                         .then ( viaConsoleLog("sha1 digest --> [","]") )
+                         .then ( viaConsoleInfo("sha1 digest --> [","]") )
                          
                          .then ( resolve )
 
-                         .catch( catchViaConsoleLog(reject,"error hashing cache item [","], url = "+item.url) );
+                         .catch( rejectViaConsoleWarn(reject,"error hashing cache item "+item.url+" [","]") );
                         
                     });
                     
