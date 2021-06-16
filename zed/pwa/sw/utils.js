@@ -11,7 +11,7 @@ function fromResponseToArrayBuffer(response){ return response.arrayBuffer(); }
 
 
 function fromBuffertoSha1DigestBuffer(buffer){ 
-        return self.isSw ? Rusha.createHash().update(buffer).digest() 
+        return self.isSw ? Promise.resolve(Rusha.createHash().update(buffer).digest()) 
                          : window.crypto.subtle.digest("SHA-1", buffer); 
     
 }
