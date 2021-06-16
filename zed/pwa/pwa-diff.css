@@ -29,7 +29,7 @@ html.beta div.beta {
 }
 
  
- html.register div.beta div.pwa_info,
+ html.registering div.beta div.pwa_info,
  div.viewType,
  div.textInput {
      
@@ -38,13 +38,13 @@ html.beta div.beta {
  
  
  
- html.register #PWA_BOOT,
- html.register #PWA_BOOT .beta,
- html.register #pwa_info,
- html.register #PWA_BOOT .notbeta,
- html.register #PWA_BOOT .notbeta,
- html.register body,
- html.register div
+ html.registering #PWA_BOOT,
+ html.registering #PWA_BOOT .beta,
+ html.registering #pwa_info,
+ html.registering #PWA_BOOT .notbeta,
+ html.registering #PWA_BOOT .notbeta,
+ html.registering body,
+ html.registering div
  
  {
      
@@ -54,19 +54,37 @@ html.beta div.beta {
  
  
   
- html.refreshing #PWA_BOOT,
- html.refreshing #PWA_BOOT .beta,
- html.refreshing #pwa_info,
- html.refreshing #PWA_BOOT .notbeta,
- html.refreshing #PWA_BOOT .notbeta,
- html.refreshing body,
- html.refreshing div
+ html.unregistering #PWA_BOOT,
+ html.unregistering #PWA_BOOT .beta,
+ html.unregistering #pwa_info,
+ html.unregistering #PWA_BOOT .notbeta,
+ html.unregistering #PWA_BOOT .notbeta,
+ html.unregistering body,
+ html.unregistering div
  
  {
      
      background-color: red;
      color:white;
  }
+ 
+ 
+  
+  
+ html.unregistered #PWA_BOOT,
+ html.unregistered #PWA_BOOT .beta,
+ html.unregistered #pwa_info,
+ html.unregistered #PWA_BOOT .notbeta,
+ html.unregistered #PWA_BOOT .notbeta,
+ html.unregistered body,
+ html.unregistered div
+ 
+ {
+     
+     background-color: blue;
+     color:white;
+ }
+ 
  
  
 body, 

@@ -20,7 +20,7 @@ function w_load() {
     [ progress_message,    html,keyPRE,                    refresh_files,   load_new_version,   pwa_info,    installed_files ]   = 
     ["#progress_message", "html","html .notbeta pre.key","#refresh_files","#load_new_version", "#pwa_info","#installed_files"].map(qs);
     
-    html.classList.add("register");   
+    html.classList.add("registering");   
     betaTesterApproval().then(beta_site).catch(
        function(err){
            console.log("site not available",err);
@@ -61,7 +61,7 @@ function w_load() {
                     
                     if (changedUrls.length===0) {
                     
-                       html.classList.remove("register");
+                       html.classList.remove("registering");
                        html.classList.remove("beta");
                        html.classList.remove("notbeta");
                        
@@ -71,19 +71,39 @@ function w_load() {
                         
                         
                         navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                            html.classList.remove("registering");
+                            html.classList.add("unregistering");
                             const arrayOfUnregisters = registrations.map(
-                               function(reg){
-                                   return reg.unregister();
+                               function(reg,index){
+                               
+                                   return new Promise(function(resolve,reject){
+                                       
+                                       setTimeout(function(){
+                                           console.log("unregistering:",reg);
+                                           
+                                           reg.unregister()
+                                           
+                                              .then(function(){
+                                                  console.log("unregistered:",reg);
+                                                  resolve();
+                                               })
+                                               
+                                                 .catch(reject);
+                                           
+                                       },1000*(index+1));
+                                   
+                                    });
+                               
                                }    
                             );
+                            
                             
                             promiseAll2errback(arrayOfUnregisters,function(err,arrayOfResults){
                                 
                                 setTimeout(function(){
-                                    html.classList.remove("register");
-                                    html.classList.add("refreshing");
+                                   
                                    //  window.location.replace(window.location.href);
-
+                                    html.classList.add("unregistered");
                                 },10000);
                             });
 
@@ -98,7 +118,7 @@ function w_load() {
         
         function sw_afterinstall(registration,summary) {
                console.log("sw_afterinstall()");
-               html.classList.remove("register");
+               html.classList.remove("registering");
                console.log(summary)
                showRefreshUI(registration);
                bootDiffPage() ;
