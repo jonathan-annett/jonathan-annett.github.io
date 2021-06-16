@@ -39,26 +39,26 @@ function viaConsoleX(via,x,prefix,suffix) {
                 console[x](whatever);
             }
         } 
-        return via(whatever);
+        return via?via(whatever):Promise.resolve(whatever);
     };
     
 }
 
 
 function viaConsoleInfo(prefix,suffix) {
-    return viaConsoleX(Promise.resolve,"info",prefix,suffix);
+    return viaConsoleX(false,"info",prefix,suffix);
 }
 
 function viaConsoleWarn(prefix,suffix) {
-    return viaConsoleX(Promise.resolve,"warn",prefix,suffix);
+    return viaConsoleX(false,"warn",prefix,suffix);
 }
 
 function viaConsoleError(prefix,suffix) {
-    return viaConsoleX(Promise.resolve,"error",prefix,suffix);
+    return viaConsoleX(false,"error",prefix,suffix);
 }
 
 function viaConsoleLog(prefix,suffix) {
-    return viaConsoleX(Promise.resolve,"log",prefix,suffix);
+    return viaConsoleX(false,"log",prefix,suffix);
 }
 
 function rejectViaConsoleWarn(reject,prefix,suffix) {
