@@ -89,7 +89,7 @@
                     function resavePos() {
                         meta.lastTouch = Date.now();
                         open_windows.meta_dirty = true;
-                        savePos(url,win.screenX,win.screenY,win.outerWidth,win.outerHeight);
+                        savePos(url,win.screenX,win.screenY,win.innerWidth,win.innerHeight);
                     }
                 }
                 
@@ -260,7 +260,7 @@
             if (typeof fn === "function" && w && typeof w === "object") {
                 try {
                   w[On]("resize", function(){
-                    fn(w.outerWidth,w.outerHeight);
+                    fn(w.innerWidth,w.innerHeight);
                   });
                 } catch (err) {
                   console.log(err);
@@ -288,7 +288,7 @@
             cb = typeof cb==='function'?cb:function(storeName){};
             const isWindow  = typeof w+typeof left+typeof top === 'objectundefinedundefined' && w.constructor.name==="Window";
             const storeName = storageName (isWindow ? w.location.href : w);
-            const settings  = isWindow ? {left  : w.screenX, top : w.screenY, width: w.outerWidth, height: w.outerHeight} : typeof left+typeof top+typeof width+typeof height === 'numbernumbernumbernumber' ? { left : left, top: top, width:width, height : height }: false;
+            const settings  = isWindow ? {left  : w.screenX, top : w.screenY, width: w.innerWidth, height: w.innerHeight} : typeof left+typeof top+typeof width+typeof height === 'numbernumbernumbernumber' ? { left : left, top: top, width:width, height : height }: false;
             if (typeof storeName+ typeof settings === 'stringobject' && storeName.length>0) {
                 setKey(
                     storeName,
@@ -322,8 +322,8 @@
                        M.win.title  = meta.win.document.title;
                        M.win.left   = meta.win.screenX;
                        M.win.top    = meta.win.screenY;
-                       M.win.width  = meta.win.outerWidth;
-                       M.win.height = meta.win.outerHeight;
+                       M.win.width  = meta.win.innerWidth;
+                       M.win.height = meta.win.innerHeight;
                    } catch (e) {
                        meta.cross=true;
                    }
@@ -395,7 +395,7 @@
                          w.moveTo(left,top);
                       }
                       
-                      if (!meta.cross && typeof width+typeof height==='numbernumber' && (w.outerWidth!==width || w.outerHeight!==height) ) {
+                      if (!meta.cross && typeof width+typeof height==='numbernumber' && (w.innerWidth!==width || w.innerHeight!==height) ) {
                          w.resizeTo(width,height);
                       }
                       saveOpenWindows(onOpened,[w,wid,meta]);
