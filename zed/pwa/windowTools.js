@@ -74,14 +74,13 @@
                         on_window_move (win,resavePos);
                         
                         on_window_size (win,resavePos);
-                        
-                        
-                    
                     }
                     
-                    events.open.forEach(function(fn){
-                        fn(win,wid,meta);
-                    });
+                    events.open.forEach(
+                        
+                        function(fn){ fn(win,wid,meta); }
+                        
+                    );
                     
                     function resavePos(){
                         savePos(url,win.screenX,win.screenY,win.outerWidth,win.outerHeight);
@@ -324,7 +323,11 @@
         ) {
           // sync return is a string refering to future open window.
           const wid = windowId();
-          const doOpen = function () {
+          const doOpen = function (pos) {
+                left   = pos.left   || left;
+                top    = pos.top    || top;
+                width  = pos.width  || width;
+                height = pos.height || height;
                  
               var opts =
                  "toolbar=no,menubar=no,location=no"+
@@ -374,11 +377,9 @@
           loadPos( url, function (pos){
                 
                 if (pos) {
-                   left = pos.left || left;
-                   top  = pos.top  || top;
-                   doOpen();
+                   doOpen(pos);
                 } else {
-                   savePos(url,left,top,width,height,doOpen); 
+                   savePos(url,left,top,width,height,function (){doOpen,{left,top,width,height}}); 
                 }
                
           } );
