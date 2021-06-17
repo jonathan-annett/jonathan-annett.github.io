@@ -71,16 +71,24 @@
                             win.document.title=title;
                         }
                     
-                        on_window_move (win,function(){
-                            savePos(url,win.screenX,win.screenY,win.outerWidth,win.outerHeight);
-                        });
+                        on_window_move (win,resavePos);
+                        
+                        on_window_size (win,resavePos);
+                        
+                        
                     
                     }
                     
                     events.open.forEach(function(fn){
                         fn(win,wid,meta);
                     });
+                    
+                    function resavePos(){
+                        savePos(url,win.screenX,win.screenY,win.outerWidth,win.outerHeight);
+                    }
                 }
+                
+               
                 
                 
                 function onClose(win,wid,meta){
