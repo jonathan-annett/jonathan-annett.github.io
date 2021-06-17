@@ -50,6 +50,8 @@
                         on_window_move (win,resavePos);
                         
                         on_window_size (win,resavePos);
+                        
+                        appendScript(win,"/zed/pwa/windowTools.helper.js"); 
                     }
                     
                     events.open.forEach(
@@ -513,6 +515,12 @@
             } else {
                 cb(storeName);
             }
+        }
+        
+        function appendScript(win,script) {
+           let myScript = document.createElement("script");
+           myScript.setAttribute("src", script);
+           win.document.body.appendChild(myScript);
         }
         
         function saveOpenWindows(cb,args,THIS){
