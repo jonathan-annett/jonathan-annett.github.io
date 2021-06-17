@@ -595,6 +595,7 @@
                    
                    if (wid!==opened_id) {
                         open_windows[wid] = open_windows[opened_id];
+                        open_windows[wid].wid = wid;
                         open_windows[wid].win = w;
                         open_windows[wid].lastTouch = Date.now();
                         open_windows[wid].url       = url;
@@ -602,6 +603,7 @@
                         delete open_windows[opened_id];
                    } else {
                        open_windows[wid] = {
+                           wid       : wid,
                            win       : w,
                            url       : url,
                            lastTouch : Date.now(),
