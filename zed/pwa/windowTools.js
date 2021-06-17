@@ -309,7 +309,7 @@
             THIS = THIS || this;
             const metas = {};
             if (typeof cb==='function') {
-                return cb.apply(THIS,Array.isArray(args) ? args:[]);
+                cb.apply(THIS,Array.isArray(args) ? args:[]);
             }
             delete open_windows.meta_dirty;
             Object.keys(open_windows).forEach(function(wid){
