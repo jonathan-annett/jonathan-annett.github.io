@@ -38,7 +38,6 @@
                 
                 function onOpen(win,wid,meta){
                     
-                    
                     if (!meta.cross) {
                         
                         if (title) {
@@ -52,9 +51,7 @@
                     }
                     
                     events.open.forEach(
-                        
                         function(fn){ fn(win,wid,meta); }
-
                     );
                     
                     function resavePos() {
@@ -63,7 +60,6 @@
                         savePos(url,win.screenX,win.screenY,win.outerWidth,win.outerHeight);
                     }
                 }
-                
 
                 function onClose(win,wid,meta){
                     events.close.forEach(function(fn){
@@ -379,15 +375,24 @@
                if (w) {
                    // if a name was specified, and it was reactivated instead of opened, it will be located 
                    // by getWindowId(w), otherwise, make up a new window id
-                   const opened_id = getWindowId(w)||windowId();
-                   const meta = open_windows[opened_id] = {
-                       win       : w,
-                       lastTouch : Date.now(),
-                       cross     : false
-                   }; 
+                   const opened_id = getWindowId(w)||wid;
+                   
+                   if (wid!==opened_id) {
+                        open_windows[wid] = open_windows[opened_id];
+                        open_windows[wid].win = w;
+                        open_windows[wid].lastTouch = Date.now();
+                        delete open_windows[opened_id];
+                   } else {
+                       open_windows[wid] = {
+                           win       : w,
+                           lastTouch : Date.now(),
+                           cross     : false,
+                       }; 
+                   }
+                   const meta = open_windows[wid];
                    
                    try {
-                       w.wid = opened_id;
+                       w.wid = wid;
                    } catch (e) {
                        meta.cross=true;
                    }
