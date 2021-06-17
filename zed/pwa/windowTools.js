@@ -234,8 +234,8 @@
                 if (tagged) return tagged;
                 const located = open_windows [ 
                     Object.keys(open_windows).find(
-                          function (meta){
-                              return meta.win === win;
+                          function (wid){
+                              return open_windows[wid].win === win;
                           }    
                     )
                ];
@@ -597,10 +597,13 @@
                         open_windows[wid] = open_windows[opened_id];
                         open_windows[wid].win = w;
                         open_windows[wid].lastTouch = Date.now();
+                        open_windows[wid].url       = url;
+                        
                         delete open_windows[opened_id];
                    } else {
                        open_windows[wid] = {
                            win       : w,
+                           url       : url,
                            lastTouch : Date.now(),
                            cross     : false,
                        }; 
