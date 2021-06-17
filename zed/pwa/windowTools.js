@@ -7,9 +7,9 @@
         On     = 'addEventListener',
         Off    = 'removeEventListener',
         events = {
-            open  : [],
-            close : [],
-            setKey   : [],
+            open   : [],
+            close  : [],
+            setKey : [],
         },
         open_windows = {},
         lib = {
@@ -79,7 +79,7 @@
                     events.open.forEach(
                         
                         function(fn){ fn(win,wid,meta); }
-                        
+
                     );
                     
                     function resavePos(){
@@ -94,6 +94,7 @@
                     events.close.forEach(function(fn){
                         fn(w,wid,meta);
                     });
+                    
                     delete open_windows[wid];
                 } 
                  
@@ -215,6 +216,8 @@
                  w[Off]("focus", check);
                  w[Off]("blur", check);
               };
+              
+              w[On]("beforeunload",w.cancel_on_window_move);
               
             } catch (err) {
                
