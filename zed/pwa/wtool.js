@@ -9,7 +9,7 @@ btn.onclick = function(){
 
 wTools.on("setKey",monitor);
 
-window.on("storage",monitor);
+window.addEventListener("storage",monitor);
 
 function monitor(){
     var info={};
