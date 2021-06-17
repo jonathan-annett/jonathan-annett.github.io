@@ -1,6 +1,6 @@
 /*global self*/
 (function(whoami,exports,Lib,libArgs){const n = Lib.name,x=whoami==="Window"&&exports[n]===undefined?Object.defineProperty(exports,n,{value:Lib.apply(this,libArgs),enumerable:true,configurable:true}):undefined;})(typeof self==="object"&&self.constructor.name||"Nobody",self,
-   function wTools(setKey,getKey) {
+   function wTools(setKey_,getKey) {
     
         const 
         
@@ -8,7 +8,8 @@
         Off    = 'removeEventListener',
         events = {
             open  : [],
-            close : []
+            close : [],
+            setKey   : [],
         },
         open_windows = {},
         lib = {
@@ -116,6 +117,16 @@
         };
          
         return lib;
+        
+        function setKey(k,v,cb) {
+            setKey_(k,v,function(err){
+                if (err) return cb (err);
+                events.open.forEach(function(fn){
+                    fn(k,v);
+                });
+                cb ();
+            });
+        }
          
         function windowId() {
             return[
