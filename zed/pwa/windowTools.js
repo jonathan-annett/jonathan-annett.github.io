@@ -235,8 +235,10 @@
         function loadPos(url,cb) {
             getKey(storageName(url),function(err,v){
                 if (err) return cb ({
-                    left : undefined,
-                    top  : undefined
+                    left   : undefined,
+                    top    : undefined,
+                    width  : undefined,
+                    height : undefined
                 });
                 cb(v);
             })
@@ -318,7 +320,7 @@
           const doOpen = function () {
                  
               var opts =
-                 "toolbar=no, menubar=no,location=no"+
+                 "toolbar=no,menubar=no,location=no"+
                  ",resizable=" + (size ? "yes" : "no") +
                  ",scrollbars=" + (size ? "yes" : "no") +
                  (typeof top==='number'    ? ",top="    + top+",screenY="    + top    : "" )+
@@ -347,6 +349,10 @@
                    on_window_open  (w,function(){
                       if (!meta.cross && typeof left+typeof top==='numbernumber' && (w.screenX!==left || w.screenY!==top) ) {
                          w.moveTo(left,top);
+                      }
+                      
+                      if (!meta.cross && typeof width+typeof height==='numbernumber' && (w.outerWidth!==width || w.outerHeight!==height) ) {
+                         w.resizeTo(width,height);
                       }
                       saveOpenWindows(onOpened,[w,wid,meta]);
                    });
@@ -408,8 +414,12 @@
     },[
         function setKey(k,v,cb) {
             try { 
-                 localStorage.setItem(k,JSON.stringify(v));
-                 //setTimeout(cb,0);
+                 const json = JSON.stringify(v);
+                 localStorage.setItem(k,json);
+                 if (self.localforage) {
+                     self.localforage.setItem(k,v,function(){});
+                 }
+                  //setTimeout(cb,0);
                  cb();
              } catch (e) {
                  //setTimeout(cb,0,e);
