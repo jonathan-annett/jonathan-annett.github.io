@@ -7,7 +7,7 @@ btn.onclick = function(){
 };
 
 
-window.addEventListener("storage",function(){
+wTools.on("setKey",function(){
     var info={};
     Object.keys(localStorage).forEach(function(k){
         
