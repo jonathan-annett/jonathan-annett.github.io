@@ -307,13 +307,13 @@
           const doOpen = function () {
                  
               var opts =
-                 "toolbar=no, menubar=no, location=no"+
-                 ", resizable=" + (size ? "yes" : "no") +
-                 ", scrollbars=" + (size ? "yes" : "no") +
-                 (typeof top==='number'    ? ", top="    + top.toString()   : "" )+
-                 (typeof left==='number'   ? ", left="   + left.toString()  : "" )+
-                 (typeof width==='number'  ? ", width="  + width.toString() : "" )+
-                 (typeof height==='number' ? ", height=" + height.toString(): "" ),
+                 "toolbar=no, menubar=no,location=no"+
+                 ",resizable=" + (size ? "yes" : "no") +
+                 ",scrollbars=" + (size ? "yes" : "no") +
+                 (typeof top==='number'    ? ",top="    + top+",screenY="    + top    : "" )+
+                 (typeof left==='number'   ? ",left="   + left+",screenX="   +  left  : "" )+
+                 (typeof width==='number'  ? ",width="  + width  : "" )+
+                 (typeof height==='number' ? ",height=" + height : "" ),
                  
                // if a name is specified, use that, otherwise make up a random name
                w = window.open(url, name||"w_"+wid, opts);
