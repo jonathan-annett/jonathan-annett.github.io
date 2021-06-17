@@ -79,7 +79,7 @@
                 const meta = open_windows [wid];
                 if (!meta.fs_api) {
                     
-                    meta.fs_api = makeFullScreenApi(meta.win);
+                    meta.fs_api = makeFullScreenApi(meta.win.document.body);
                     meta.fs_api.isMaximized = function () {
                         return   meta.win.screenX===0&&
                                  meta.win.screenY===0&&
