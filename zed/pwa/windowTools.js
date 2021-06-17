@@ -589,12 +589,6 @@
              });
         }
         
-        function barHeight() {
-            const  actualHeight = window.innerHeight;
-            const  elementHeight = window.document.getElementById('control-height').clientHeight;
-            return elementHeight - actualHeight;
-        }
-
     },[
         function setKey(k,v,cb) {
             try { 
