@@ -2,6 +2,8 @@
 (function(whoami,exports,Lib,libArgs){const n = Lib.name,x=whoami==="Window"&&exports[n]===undefined?Object.defineProperty(exports,n,{value:Lib.apply(this,libArgs),enumerable:true,configurable:true}):undefined;})(typeof self==="object"&&self.constructor.name||"Nobody",self,
    function wTools(setKey_,getKey) {
     
+    
+        var saveIntervalId,saveInterval=10000;
         const 
         
         On     = 'addEventListener',
@@ -11,7 +13,9 @@
             close  : [],
             setKey : [],
         },
-        open_windows = {},
+        open_windows = {
+            meta_dirty : false,
+        },
         lib = {
             open : function ( url,
                               name,
@@ -82,7 +86,9 @@
 
                     );
                     
-                    function resavePos(){
+                    function resavePos() {
+                        meta.lastTouch = Date.now();
+                        open_windows.meta_dirty = true;
                         savePos(url,win.screenX,win.screenY,win.outerWidth,win.outerHeight);
                     }
                 }
@@ -94,7 +100,7 @@
                     events.close.forEach(function(fn){
                         fn(w,wid,meta);
                     });
-                    
+                    open_windows.meta_dirty = true;
                     delete open_windows[wid];
                 } 
                  
@@ -122,6 +128,30 @@
                   }
               }
         };
+        
+        Object.defineProperties(lib,{
+            savePollInterval : {
+                get : function () {
+                    return saveInterval;
+                },
+                set : function (v) {
+                    saveInterval = v;
+                    clearInterval (saveIntervalId);
+                    saveIntervalId = (
+                       saveInterval===0 ? undefined : setInterval(checkSaveMetaPoller,saveInterval)
+                     );
+                      
+                }
+            }
+        });
+        
+        saveIntervalId = setInterval(checkSaveMetaPoller,saveInterval);
+        
+        function checkSaveMetaPoller() {
+            if (open_windows.meta_dirty) {
+              saveOpenWindows();
+            }
+        }
          
         return lib;
         
@@ -276,7 +306,10 @@
             
             THIS = THIS || this;
             const metas = {};
-           
+            if (typeof cb==='function') {
+                return cb.apply(THIS,Array.isArray(args) ? args:[]);
+            }
+            delete open_windows.meta_dirty;
             Object.keys(open_windows).forEach(function(wid){
                const meta = open_windows[wid];
                if (meta.win.closed) {
@@ -306,9 +339,6 @@
                metas,
                function(){
                    
-                   if (typeof cb==='function') {
-                       return cb.apply(THIS,Array.isArray(args) ? args:[]);
-                   }
                    
                }
             );
