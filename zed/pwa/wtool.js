@@ -7,7 +7,7 @@ btn.onclick = function(){
 };
 
 
-window.on("storage",function(){
+window.addEventListener("storage",function(){
     var info={};
     Object.keys(localStorage).forEach(function(k){
         
