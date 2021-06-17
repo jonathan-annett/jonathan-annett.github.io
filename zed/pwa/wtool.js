@@ -3,7 +3,7 @@
 var [btn, url, title] = ["button","#url", "#title"].map(qs);
 
 btn.onclick = function(){
-    wTools.open2(url,title);
+    wTools.open2(url.value,title.value);
 };
 
 
