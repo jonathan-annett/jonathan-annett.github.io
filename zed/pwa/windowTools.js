@@ -4,6 +4,7 @@
     
     
         var 
+        
         deltaWidth=0,
         deltaHeight=0,
         deltaLeft=0,
@@ -72,6 +73,46 @@
                 
                 return wid;
                  
+            },
+            
+            fs_api : function (wid){
+                const meta = open_windows [wid];
+                if (!meta.fs_api) {
+                    
+                    meta.fs_api = makeFullScreenApi(meta.win);
+                    meta.fs_api.isMaximized = function () {
+                        return   meta.win.screenX===0&&
+                                 meta.win.screenY===0&&
+                                 meta.win.outerWidth===screen.availWidth&&
+                                 meta.win.outerHeight===screen.availHeight;
+                                            
+                    };
+                    
+                    meta.fs_api.restore = meta.fs_api.isMaximized() 
+                        ? function(){}
+                        : restoreCapturedState.bind(this,winRestoreCapture(meta));
+                        
+                    meta.fs_api.maximize = function () {
+                        
+                        if (!meta.fs_api.isMaximized()) {
+                            meta.fs_api.restore = restoreCapturedState.bind(this,winRestoreCapture(meta));
+                            meta.win.moveTo(0,0);
+                            meta.win.resizeTo(screen.availWidth,screen.availHeight);
+                        }
+
+                    };
+                   meta.fs_api.minimize = function () {
+                       
+                       if (!meta.fs_api.isMaximized()) {
+                           meta.fs_api.restore = restoreCapturedState.bind(this,winRestoreCapture(meta));
+                       }
+                       meta.win.moveTo(0,0);
+                       meta.win.resizeTo(300,32);
+                       meta.win.moveTo(screen.availWidth-300,screen.availHeight-32);
+                   };
+                }
+                    
+                return meta.fs_api;
             },
             
             promise : {
@@ -161,6 +202,7 @@
             
             
             },
+            
             close : function (wid,cb) {
                 const meta = open_windows[wid];
                 if (meta) {
@@ -176,6 +218,31 @@
             
             getWindow : function(wid) {
                 return open_windows [wid];
+            },
+            
+            getMetaForURL : function(url) {
+                return open_windows [ 
+                    Object.keys(open_windows).find(
+                          function (meta){
+                              return meta.url === url;
+                          }    
+                    )
+               ];
+            },
+            getMetaForWindow : function(win) {
+                const tagged = open_windows[win.wid];
+                if (tagged) return tagged;
+                const located = open_windows [ 
+                    Object.keys(open_windows).find(
+                          function (meta){
+                              return meta.win === win;
+                          }    
+                    )
+               ];
+               if (located) {
+                   located.win.wid = located.wid;
+                   return located;
+               }
             },
             
             on : function (e,fn) {
@@ -229,6 +296,33 @@
                 
             }
         };
+        
+        function winRestoreCapture (meta) {
+            const win = meta.win;
+            const cmds = [
+              meta,
+              [ win.moveTo,   [0,0]   ],
+              [ win.resizeTo, [win.outerWidth,win.outerHeight] ]
+            ];
+            if (!(win.screenX===0&&win.screenY===0)) {
+               cmds.push([ win.moveTo,  [win.screenX,win.screenY]   ]);
+            }
+            return cmds;
+        }
+        
+        function restoreCapturedState(cmds) {
+            const 
+            win=cmds[0].win,
+            len=cmds.length;
+            for(var i = 1; i < len; i++) {
+                var x = cmds[i];
+                x[0].apply(win,x[1]);
+                x[1].splice(0,2);
+                x.splice(0,2);
+            }
+            cmds[0].fs_api.restore=function(){};
+            cmds.splice(0,len);
+        }
         
         Object.defineProperties(lib,{
             
@@ -449,6 +543,7 @@
                }
                Object.keys(meta).forEach(function(key){
                   if (key==="win") return;
+                  if (key==="fs_api") return;
                   M[key]=meta[key];
                });
            });
@@ -588,6 +683,104 @@
                   }
              });
         }
+        
+        
+  
+      
+      function makeFullScreenApi(element, cb) {
+        var notify = function(evs, isFs) {
+            evs.forEach(function(fn) {
+              fn(element, isFs);
+            });
+          },
+          fs_api = {
+            isFullscreen: function() {
+              return false;
+            },
+            exitFullscreen: function() {
+              if (document.exitFullscreen) {
+                document.exitFullscreen();
+              } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+              } else if (document.webkitCancelFullScreen) {
+                document.webkitCancelFullScreen();
+              } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+              }
+            },
+            __events: {
+              enter: [],
+              exit: [],
+              toggle: []
+            },
+            on: function(e, f) {
+              var fns = fs_api.__events[e];
+              if (
+                typeof f === "function" &&
+                typeof fns === "object" &&
+                fns.constructor === Array &&
+                fns.indexOf(f) < 0
+              ) {
+                fns.push(f);
+              }
+            }
+          },
+          setNotifiers = function(ev, flag) {
+            fs_api.isFullscreen = function() {
+              return !!document[flag];
+            };
+              document.addEventListener(
+                ev,
+                function() {
+                  var isFs = fs_api.isFullscreen();
+                  notify(isFs ? fs_api.__events.enter : fs_api.__events.exit, isFs);
+                  notify(fs_api.__events.toggle, isFs);
+                },
+                false
+              );
+          };
+    
+        if (element.requestFullscreen) {
+          fs_api.enterFullscreen = function() {
+            var attempts = 0,
+              fallback = 50;
+            var tryit = function() {
+              element.requestFullscreen().catch(function(err) {
+                if (attempts++ < 3) {
+                  fallback *= 2;
+                  setTimeout(tryit, fallback);
+                }
+              });
+            };
+            tryit();
+          };
+          setNotifiers("fullscreenchange", "fullscreen");
+        } else if (element.msRequestFullscreen) {
+          fs_api.enterFullscreen = function() {
+            return element.msRequestFullscreen();
+          };
+          setNotifiers("msfullscreenchange", "msFullscreenElement");
+        } else if (element.mozRequestFullScreen) {
+          fs_api.enterFullscreen = function() {
+            return element.mozRequestFullScreen();
+          };
+          setNotifiers("mozfullscreenchange", "mozFullScreen");
+        } else if (element.webkitRequestFullscreen) {
+          fs_api.enterFullscreen = function() {
+            return element.webkitRequestFullscreen();
+          };
+          setNotifiers("webkitfullscreenchange", "webkitIsFullScreen");
+        } else {
+          fs_api.enterFullscreen = console.log.bind(
+            console,
+            "Fullscreen API is not supported"
+          );
+          fs_api.exitFullscreen = fs_api.enterFullscreen;
+        }
+        if (typeof cb === "function") cb(fs_api);
+        return fs_api;
+      }
+    
         
     },[
         function setKey(k,v,cb) {

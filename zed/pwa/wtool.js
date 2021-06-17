@@ -1,9 +1,35 @@
 /* global wTools*/
 
-var [btn, url, title,wleft,wtop,textarea] = ["button","#url", "#title","#left","#top","textarea"].map(qs);
+var [ 
+    btnOpen, btnMax, btnMin, btnRestore,
 
-btn.onclick = function(){
+    url, title,wleft,wtop,textarea] = [
+    "#btnOpen", "#btnMax", "#btnMin", "#btnRestore",
+    "#url", "#title","#left","#top","textarea"
+    
+].map(qs);
+
+btnOpen.onclick = function(){
     wTools.open(url.value,title.value,Number.parseInt(wleft.value)||0,Number.parseInt(wtop.value)||0);
+};
+
+btnMax.onclick = function(){
+    const meta = wTools.getMetaForURL(url.value);
+    if (meta) {
+        wTools.fs_api(meta.wid).maximize();
+    }
+ };
+btnMin.onclick = function(){
+    const meta = wTools.getMetaForURL(url.value);
+    if (meta) {
+        wTools.fs_api(meta.wid).minimize();
+    }
+};
+btnRestore.onclick = function(){
+    const meta = wTools.getMetaForURL(url.value);
+    if (meta) {
+        wTools.fs_api(meta.wid).restore();
+    }
 };
 
 
