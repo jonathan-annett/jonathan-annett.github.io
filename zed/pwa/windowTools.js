@@ -223,8 +223,8 @@
             getMetaForURL : function(url) {
                 return open_windows [ 
                     Object.keys(open_windows).find(
-                          function (meta){
-                              return meta.url === url;
+                          function (wid){
+                              return open_windows[wid].url === url;
                           }    
                     )
                ];
