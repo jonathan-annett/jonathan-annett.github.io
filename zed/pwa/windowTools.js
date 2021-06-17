@@ -4,7 +4,6 @@
 
         if ( typeof windowToolsHelperStorageEvent === 'function' ) {
             windowToolsHelperStorageEvent.disable();
-            return windowToolsHelperStorageEvent;
         }
         
         const minimizedHeight = 30;
