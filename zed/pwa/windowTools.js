@@ -372,10 +372,10 @@
                  "toolbar=no,menubar=no,location=no"+
                  ",resizable=" + (size ? "yes" : "no") +
                  ",scrollbars=" + (size ? "yes" : "no") +
-                 (typeof top==='number'    ? ",top="    + (top+deltaTop).toString()+     ",screenY="    + top    : "" )+
-                 (typeof left==='number'   ? ",left="   + (left+deltaLeft).toString()+   ",screenX="   +  left  : "" )+
-                 (typeof width==='number'  ? ",width="  + (width+deltaWidth).toString()   : "" )+
-                 (typeof height==='number' ? ",height=" + (height+deltaHeight).toString() : "" ),
+                 (typeof top==='number'    ? ",top="    + (top-deltaTop).toString()+     ",screenY="    + top    : "" )+
+                 (typeof left==='number'   ? ",left="   + (left-deltaLeft).toString()+   ",screenX="   +  left  : "" )+
+                 (typeof width==='number'  ? ",width="  + (width-deltaWidth).toString()   : "" )+
+                 (typeof height==='number' ? ",height=" + (height-deltaHeight).toString() : "" ),
                  
                // if a name is specified, use that, otherwise make up a random name
                w = window.open(url, name||"w_"+wid, opts);
