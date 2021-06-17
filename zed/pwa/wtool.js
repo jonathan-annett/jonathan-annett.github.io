@@ -3,9 +3,9 @@
 var [ 
     btnOpen, btnMax, btnMin, btnRestore,
 
-    url, title,wleft,wtop,textarea] = [
+    url, title,wleft,wtop,textarea,select] = [
     "#btnOpen", "#btnMax", "#btnMin", "#btnRestore",
-    "#url", "#title","#left","#top","textarea"
+    "#url", "#title","#left","#top","textarea","select"
     
 ].map(qs);
 
@@ -33,12 +33,27 @@ btnRestore.onclick = function(){
 };
 
 
+monitor();
+
 wTools.on("setKey",monitor);
 
 window.addEventListener("storage",monitor);
 
+var lastOpen="";
 function monitor(){
     var info={};
+    var currentOpen = localStorage.getItem("windowTools.openWindows");
+    if (currentOpen!==lastOpen) {
+        lastOpen=currentOpen;
+        const openWindows = JSON.parse(currentOpen);
+        const selected = select.value;
+        select.innerHTML = Object.keys(openWindows).map(function(wid){
+            const meta = openWindows[wid];
+            return '<option '+(selected===wid?'selected ':'')+'href="'+wid+'">'+meta.url+'</option>';
+        }).join("\n");
+        
+        
+    }
     Object.keys(localStorage).forEach(function(k){
         
         if (k.startsWith("windowTools.")){
