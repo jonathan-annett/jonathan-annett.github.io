@@ -1,6 +1,8 @@
 /*global self*/
 
 
+
+
 self.addEventListener('storage',function(){
     const wid = window.wid;
     if (wid) {
