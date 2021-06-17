@@ -1,8 +1,9 @@
+/* global wTools*/
 
-var [btn,inp] = ["button","input"].map(qs);
+var [btn, url, title] = ["button","#url", "#title"].map(qs);
 
 btn.onclick = function(){
-  alert(inp.value)  ;
+    wTools.open2(url,title);
 };
 
 

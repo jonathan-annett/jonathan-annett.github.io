@@ -104,6 +104,33 @@
                   }  
             }
             
+            function storageName (url) {
+                return typeof name==='string' ? "windowTools.pos@"+url : false; 
+            }
+            
+            function loadPos(url) {
+                const json = localStorage.getItem(storageName(url));
+                if (json) {
+                    try {
+                        return JSON.parse(json);
+                    } catch (e) {
+                    }
+                }
+                return {
+                    left : undefined,
+                    top  : undefined
+                }
+            }
+            
+            function savePos(w,left,top) {
+                const isWindow  = typeof w+typeof left+typeof top === 'objectundefinedundefined' && w.constructor.name==="Window";
+                const storeName = storageName (isWindow ? w.location.href : w);
+                const settings  = isWindow ? {left  : w.screenX, top : w.screenY} : typeof left+typeof top === 'numbernumber' ? { left : left, top: top }: false;
+                if (typeof storeName+ typeof settings === 'stringobject' && storeName.length>0) {
+                    localStorage.setItem( storeName, JSON.stringify(settings) );
+                }
+            }
+            
             function open_window(
               url,
               name,
@@ -116,32 +143,23 @@
               onOpened
             ) {
               
-              var pos = open_window.pos_cache[ name ];
+              var pos = loadPos( url );
               
               if (pos) {
-                 left= pos.left || left;
-                 top=  pos.top || top;
-                } else {
-                pos = {
-                  left:left,
-                  top:top
-                  };
-                open_window.pos_cache[name] = pos;
+                 left = pos.left || left;
+                 top  =  pos.top  || top;
+              } else {
+                  savePos(url,left,top); 
               } 
                 
                var opts =
-                  "toolbar=no, menubar=no, location=no, resizable=" +
-                  (size ? "yes" : "no") +
-                  "scrollbars=" +
-                  (size ? "yes" : "no") +
-                  ", top=" +
-                  top.toString() +
-                  ",left=" +
-                  left.toString() +
-                  ", width=" +
-                  width.toString() +
-                  ", height=" +
-                  height.toString(),
+                  "toolbar=no, menubar=no, location=no"+
+                  ", resizable=" + (size ? "yes" : "no") +
+                  ", scrollbars=" + (size ? "yes" : "no") +
+                  (typeof top==='number'    ? ", top="    + top.toString()   : "" )+
+                  (typeof left==='number'   ? ", left="   + left.toString()  : "" )+
+                  (typeof width==='number'  ? ", width="  + width.toString() : "" )+
+                  (typeof height==='number' ? ", height=" + height.toString(): "" ),
                   
                 // if a name is specified, use that, otherwise make up a random name
                 w = window.open(url, name||"w_"+windowId(), opts);
@@ -159,7 +177,7 @@
                 }
                 
                 try {
-                    w.wid = wid;
+                    w.wid = opened_id;
                 } catch (e) {
                     // this will fail if the window is cross origin.
                 }
@@ -167,7 +185,6 @@
                 return w;// return then actual window.
             }
             
-            open_window.pos_cache = {};
             open_window.open_windows = {};
             
             function getWindowId(w){
@@ -204,17 +221,16 @@
             var events = {
                 open  : [],
                 close : []
-            };
+            }, 
             
-            
-            return {
-                open : function (url,
-                                 name,
-                                 left,
-                                 top,
-                                 width,
-                                 height,
-                                 size) {
+            lib = {
+                open : function ( url,
+                                  name,
+                                  left,
+                                  top,
+                                  width,
+                                  height,
+                                  size ) {
                     let w = open_window(
                       url,
                       name,
@@ -240,7 +256,38 @@
                     
                    return getWindowId(w);
                 },
-                
+                open2 : function ( url, title ) {
+                    let w = open_window(
+                      url,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      function (w){
+                          const wid = getWindowId(w)
+                          events.closed.forEach(function(fn){
+                              fn(w,wid);
+                          });
+                          delete open_window.open_windows[wid];
+                      } ,
+                      function (w){
+                          const wid = getWindowId(w);
+                          if (title) {
+                              try {
+                                  if (w.document.title!==title)
+                                  w.document.title=title;
+                              } catch(e) { /* cross origin */}
+                          }
+                          events.open.forEach(function(fn){
+                              fn(w,wid);
+                          });
+                      } 
+                    );
+                    
+                     
+                },
                 getWindow : function(wid) {
                     return open_window.open_windows [wid];
                 },
@@ -261,7 +308,10 @@
                           }
                       }
                   }
-            }
+            };
+            
+            
+            return lib;
     
     }
 );
