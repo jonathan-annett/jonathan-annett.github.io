@@ -3,7 +3,12 @@
    function wTools(setKey_,getKey) {
     
     
-        var saveIntervalId,saveInterval=10000;
+        var 
+        deltaWidth=0,
+        deltaHeight=0,
+        deltaLeft=0,
+        deltaTop=0,
+        saveIntervalId,saveInterval=10000;
         const 
         
         On     = 'addEventListener',
@@ -367,10 +372,10 @@
                  "toolbar=no,menubar=no,location=no"+
                  ",resizable=" + (size ? "yes" : "no") +
                  ",scrollbars=" + (size ? "yes" : "no") +
-                 (typeof top==='number'    ? ",top="    + top+",screenY="    + top    : "" )+
-                 (typeof left==='number'   ? ",left="   + left+",screenX="   +  left  : "" )+
-                 (typeof width==='number'  ? ",width="  + width  : "" )+
-                 (typeof height==='number' ? ",height=" + height : "" ),
+                 (typeof top==='number'    ? ",top="    + (top+deltaTop).toString()+     ",screenY="    + top    : "" )+
+                 (typeof left==='number'   ? ",left="   + (left+deltaLeft).toString()+   ",screenX="   +  left  : "" )+
+                 (typeof width==='number'  ? ",width="  + (width+deltaWidth).toString()   : "" )+
+                 (typeof height==='number' ? ",height=" + (height+deltaHeight).toString() : "" ),
                  
                // if a name is specified, use that, otherwise make up a random name
                w = window.open(url, name||"w_"+wid, opts);
@@ -392,12 +397,18 @@
 
                    on_window_open  (w,function(){
                       if (!meta.cross && typeof left+typeof top==='numbernumber' && (w.screenX!==left || w.screenY!==top) ) {
+                         deltaTop=w.screenY-top;
+                         deltaLeft=w.screenX-left;
+                         console.log("delta top",deltaTop);
+                         console.log("delta left",deltaLeft);
                          w.moveTo(left,top);
                       }
                       
                       if (!meta.cross && typeof width+typeof height==='numbernumber' && (w.outerWidth!==width || w.outerHeight!==height) ) {
-                         console.log("delta width",w.outerWidth-width);
-                         console.log("delta height",w.outerHeight-height);
+                         deltaWidth=w.outerWidth-width;
+                         deltaHeight=w.outerHeight-height;
+                         console.log("delta width",deltaWidth);
+                         console.log("delta height",deltaHeight);
                          w.resizeTo(width,height);
                       }
                       saveOpenWindows(onOpened,[w,wid,meta]);
