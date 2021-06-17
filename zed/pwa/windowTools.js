@@ -396,6 +396,8 @@
                       }
                       
                       if (!meta.cross && typeof width+typeof height==='numbernumber' && (w.outerWidth!==width || w.outerHeight!==height) ) {
+                         console.log("delta width",w.outerWidth-width);
+                         console.log("delta height",w.outerHeight-height);
                          w.resizeTo(width,height);
                       }
                       saveOpenWindows(onOpened,[w,wid,meta]);
