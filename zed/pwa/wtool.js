@@ -7,7 +7,11 @@ btn.onclick = function(){
 };
 
 
-wTools.on("setKey",function(){
+wTools.on("setKey",monitor);
+
+window.on("storage",monitor);
+
+function monitor(){
     var info={};
     Object.keys(localStorage).forEach(function(k){
         
@@ -17,7 +21,7 @@ wTools.on("setKey",function(){
         
     });
     textarea.value = JSON.stringify(info,undefined,4);
-});
+}
 
 
 // generic tools 
