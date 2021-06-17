@@ -1,14 +1,75 @@
-/*global self,windowToolsHelperStorageEvent */
+/*global self,windowToolsHelperStorageEvent,windowToolsHelperBeforeUnloadEvent */
 (function(whoami,exports,Lib,libArgs){const n = Lib.name,x=whoami==="Window"&&exports[n]===undefined?Object.defineProperty(exports,n,{value:Lib.apply(this,libArgs),enumerable:true,configurable:true}):undefined;})(typeof self==="object"&&self.constructor.name||"Nobody",self,
    function wTools(setKey_,getKey) {
-    
-    
-    
-        if (typeof windowToolsHelperStorageEvent==='function' ) {
-            self.removeEventListener('storage',windowToolsHelperStorageEvent);
+
+        if ( typeof windowToolsHelperStorageEvent === 'function' ) {
+            windowToolsHelperStorageEvent.disable();
+            return windowToolsHelperStorageEvent;
         }
-    
+        
+        const minimizedHeight = 30;
+        const minimizedWidth  = 130;
+        const minimizedLeft   = screen.availWidth-minimizedWidth;
+        const minimizedTop    = screen.availHeight-minimizedHeight;
+        
+        
+        const maximizedHeight = screen.availHeight-4;
+        const maximizedWidth  = screen.availWidth-4;
+        const maximizedLeft   = 2;
+        const maximizedTop    = 2;
+        
+        
+        const win_moveTo = 0;
+        const win_resizeTo = 1;
+        
+        
+        const maximizedPosition = [
+            [ win_moveTo,    [ maximizedLeft,  maximizedTop ]   ],
+            [ win_resizeTo,  [ maximizedWidth, maximizedHeight ]  ]
+        ];
+        
+        const maximizedPositionJSON = JSON.stringify(maximizedPosition);
+        
+        const minimizedPosition = [
+            
+            [ win_moveTo,    [ minimizedLeft,minimizedTop ]   ],
+            [ win_resizeTo,  [ minimizedWidth, minimizedHeight ]  ]
+            
+        ];
+        const minimizedPositionJSON = JSON.stringify(minimizedPosition);
+        
+
+        const getMaximizedPosition = function (win) { return [
+            win,
+            [ win.moveTo,    [ maximizedLeft,  maximizedTop ]   ],
+            [ win.resizeTo,  [ maximizedWidth, maximizedHeight ]  ]
+            
+        ];};
+        
+        const getIsMaximized = function (win) { 
+            return win.screenX===maximizedLeft&&
+                   win.screenY===maximizedTop&&
+                   win.outerWidth===maximizedWidth&&
+                   win.outerHeight===maximizedHeight;
+
+        };
+        
+        const getMinimizedPosition = function (win) { return [
+            win,
+            [ win.moveTo,    [ minimizedLeft,  minimizedTop ]   ],
+            [ win.resizeTo,  [ minimizedWidth, minimizedHeight ]  ]
+            
+        ];};
+        
+        const getIsMinimized = function (win) { 
+            return win.screenX===minimizedLeft&&
+                   win.screenY===minimizedTop&&
+                   win.outerWidth===minimizedWidth&&
+                   win.outerHeight===minimizedHeight;
+        };
+     
         var 
+        
         
         deltaWidth=0,
         deltaHeight=0,
@@ -24,9 +85,58 @@
             close  : [],
             setKey : [],
         },
-        open_windows = {
-            meta_dirty : false,
-        },
+        open_windows = (function () {
+            
+            const json = localStorage.getItem("windowTools.openWindows");
+            if (json) {
+                const prev = JSON.parse(json);
+                delete prev.meta_dirty;
+                var tracking = [];
+                Object.keys(prev).forEach(
+                  function (wid) {
+                     const meta = prev[wid];
+                     meta.win = "remote";
+                     const moveTrackingKey = "windowTools.cmd."+wid+".position.tracking";
+                     tracking.push(wid);
+                     localStorage.setItem(moveTrackingKey,'1');
+                  }
+                );
+                if (tracking.length) {
+                    
+                    window.addEventListener('storage',function(){
+                       tracking.forEach(function(wid){
+                           const meta = open_windows[wid];
+                           const moveTrackingUpdateKey = "windowTools.cmd."+wid+".position.tracking.update";
+                           const json = localStorage.getItem(moveTrackingUpdateKey);
+                           if (json) {
+                                localStorage.removeItem(moveTrackingUpdateKey);
+                                if (meta) {
+                                    decodeRemotePos(json,function(err,left,top,width,height){
+                                        if (err) return;
+                                        meta.left   = left;
+                                        meta.top    = top;
+                                        meta.width  = width;
+                                        meta.height = height;
+                                        
+                                        savePos(meta.url,left,top,width,height);
+                                        open_windows.meta_dirty=true;
+                                    });
+                                }
+                           }
+                       });
+                       
+                       
+                        
+                    });
+                    
+                }
+                return prev;
+                
+            }
+            
+            return {    };
+        })(),
+        
         lib = {
             
             open : function ( url, title,left,top, width,height ) {
@@ -82,47 +192,100 @@
                  
             },
             
-            fs_api : function (wid){
-                const meta = open_windows [wid];
-                if (!meta.fs_api) {
-                    
-                    meta.fs_api = makeFullScreenApi(meta.win.document.body);
-                    meta.fs_api.isMaximized = function () {
-                        return   meta.win.screenX===0&&
-                                 meta.win.screenY===0&&
-                                 meta.win.outerWidth===screen.availWidth&&
-                                 meta.win.outerHeight===screen.availHeight;
-                                            
-                    };
-                    
-                    meta.fs_api.restore = meta.fs_api.isMaximized() 
-                        ? function(){}
-                        : restoreCapturedState.bind(this,winRestoreCapture(meta));
-                        
-                    meta.fs_api.maximize = function () {
-                        
-                        if (!meta.fs_api.isMaximized()) {
-                            meta.fs_api.restore = restoreCapturedState.bind(this,winRestoreCapture(meta));
-                            meta.win.moveTo(0,0);
-                            meta.win.resizeTo(screen.availWidth,screen.availHeight);
-                        }
-
-                    };
-                   meta.fs_api.minimize = function () {
-                       
-                       if (!meta.fs_api.isMaximized()) {
-                           meta.fs_api.restore = restoreCapturedState.bind(this,winRestoreCapture(meta));
-                       }
-                       meta.win.moveTo(0,0);
-                       meta.win.resizeTo(300,32);
-                       meta.win.moveTo(screen.availWidth-300,screen.availHeight-32);
-                   };
-                }
-                    
-                return meta.fs_api;
+            isFullscreen: function (wid) {
+               const meta = open_windows[wid];
+               if (meta) { 
+                  if (meta.win==="remote") {
+                      return !!localStorage.getItem("windowTools.cmd."+wid+".fullscreen");
+                  } else {
+                      return meta.win.fs_api.isFullscreen();
+                  }
+               }
             },
             
-            promise : {
+            exitFullscreen: function (wid) {
+               const meta = open_windows[wid];
+               if (meta) { 
+                  if (meta.win==="remote") {
+                      return !!localStorage.setItem("windowTools.cmd."+wid+".exitFullscreen",'1');
+                  } else {
+                      return meta.win.fs_api.exitFullscreen();
+                  }
+               }
+            },
+            
+            enterFullscreen: function (wid) {
+               const meta = open_windows[wid];
+               if (meta) { 
+                  if (meta.win==="remote") {
+                      return !!localStorage.setItem("windowTools.cmd."+wid+".enterFullscreen",'1');
+                  } else {
+                      return meta.win.fs_api.enterFullscreen();
+                  }
+               }
+            },
+            
+            isMaximized :function (wid) {
+                
+                const meta = open_windows[wid];
+                if (meta) { 
+                   if (meta.win==="remote") {
+                       remoteMaximize(wid,function(err,restoreInfo){
+                           if (restoreInfo) {
+                              meta.restore=restoreInfo;
+                           }
+                       });
+                   } else {
+                       return getIsMaximized(meta.win);
+                   }
+                }
+                  
+                
+            },
+            
+            maximize: function (wid) {
+                
+                
+                
+                const meta = open_windows[wid];
+                if (meta) { 
+                   if (meta.win==="remote") {
+                       remoteMaximize(wid,function(err,restoreInfo){
+                           if (restoreInfo) {
+                              meta.restore=restoreInfo;
+                           }
+                       });
+                   } else {
+                       maximize(wid,function(err,restoreInfo){
+                            if (restoreInfo) {
+                               meta.restore=restoreInfo;
+                            }
+                        });
+                    }
+                }
+                
+            },
+            
+            minimize: function (wid) {
+                const meta = open_windows[wid];
+                if (meta) { 
+                   if (meta.win==="remote") {
+                       remoteMinimize(wid,function(err,restoreInfo){
+                                              if (restoreInfo) {
+                                                 meta.restore=restoreInfo;
+                                              }
+                                          });
+                   } else {
+                       minimize(wid,function(err,restoreInfo){
+                            if (restoreInfo) {
+                                meta.restore=restoreInfo;
+                            }
+                        });
+                    }
+                }
+            },
+            
+           promise : {
                 
                open : function (opt){
                     const {url, title,left,top, width,height} = opt;
@@ -213,8 +376,13 @@
             close : function (wid,cb) {
                 const meta = open_windows[wid];
                 if (meta) {
-                    meta.win.close();
-                    return typeof cb==='function'?cb(undefined,meta):meta;
+                    if (meta.win==="remote") {
+                       remoteClose (wid,savePos,cb);
+                       
+                    } else {
+                       meta.win.close();
+                       return typeof cb==='function'?cb(undefined,meta):meta;
+                    }
                 }
                 const err = new Error("window "+wid+" not found");
                 if (typeof cb==='function') {
@@ -231,17 +399,20 @@
                 return open_windows [ 
                     Object.keys(open_windows).find(
                           function (wid){
+                              if (wid==="meta_dirty") return false;
                               return open_windows[wid].url === url;
                           }    
                     )
                ];
             },
+            
             getMetaForWindow : function(win) {
                 const tagged = open_windows[win.wid];
                 if (tagged) return tagged;
                 const located = open_windows [ 
                     Object.keys(open_windows).find(
                           function (wid){
+                              if (wid==="meta_dirty") return false;
                               return open_windows[wid].win === win;
                           }    
                     )
@@ -304,32 +475,7 @@
             }
         };
         
-        function winRestoreCapture (meta) {
-            const win = meta.win;
-            const cmds = [
-              meta,
-              [ win.moveTo,   [0,0]   ],
-              [ win.resizeTo, [win.outerWidth,win.outerHeight] ]
-            ];
-            if (!(win.screenX===0&&win.screenY===0)) {
-               cmds.push([ win.moveTo,  [win.screenX,win.screenY]   ]);
-            }
-            return cmds;
-        }
-        
-        function restoreCapturedState(cmds) {
-            const 
-            win=cmds[0].win,
-            len=cmds.length;
-            for(var i = 1; i < len; i++) {
-                var x = cmds[i];
-                x[0].apply(win,x[1]);
-                x[1].splice(0,2);
-                x.splice(0,2);
-            }
-            cmds[0].fs_api.restore=function(){};
-            cmds.splice(0,len);
-        }
+
         
         Object.defineProperties(lib,{
             
@@ -343,8 +489,11 @@
             history : {
                 get : function () {
                     return Object.keys(open_windows).map(function (wid) {
+                        if (wid==="meta_dirty") return null;
                         return open_windows[wid];
-                    }).sort (function(a,b){
+                    }).filter(
+                        function (x) { return x!==null;}
+                    ).sort (function(a,b){
                           return a.lastTouch - b.lastTouch;
                     }) ;
                 }
@@ -537,13 +686,16 @@
             }
             delete open_windows.meta_dirty;
             Object.keys(open_windows).forEach(function(wid){
+                if (wid==="meta_dirty") return;
                const meta = open_windows[wid];
-               if (meta.win.closed) {
-                   delete open_windows[wid];
-                   return;
+               if (meta.win!=="remote") {
+                   if (meta.win.closed) {
+                       delete open_windows[wid];
+                       return;
+                   }
                }
                const M = metas[wid]={win:{}};
-                   if (!meta.cross) {
+                   if (!meta.cross&&meta.win!=="remote") {
                    try {
                        M.win.title  = meta.win.document.title;
                        M.win.left   = meta.win.screenX;
@@ -685,6 +837,7 @@
             
             // ok so do it the hard way
             return Object.keys(open_windows).find(function(wid){
+                  if (wid==="meta_dirty") return;
                   const meta = open_windows[wid];
                   if ( meta.win===w ) {
                     
@@ -704,101 +857,372 @@
         
         
   
+
       
-      function makeFullScreenApi(element, cb) {
-        var notify = function(evs, isFs) {
-            evs.forEach(function(fn) {
-              fn(element, isFs);
-            });
-          },
-          fs_api = {
-            isFullscreen: function() {
-              return false;
-            },
-            exitFullscreen: function() {
-              if (document.exitFullscreen) {
-                document.exitFullscreen();
-              } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
-              } else if (document.webkitCancelFullScreen) {
-                document.webkitCancelFullScreen();
-              } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
-              }
-            },
-            __events: {
-              enter: [],
-              exit: [],
-              toggle: []
-            },
-            on: function(e, f) {
-              var fns = fs_api.__events[e];
-              if (
-                typeof f === "function" &&
-                typeof fns === "object" &&
-                fns.constructor === Array &&
-                fns.indexOf(f) < 0
-              ) {
-                fns.push(f);
-              }
-            }
-          },
-          setNotifiers = function(ev, flag) {
-            fs_api.isFullscreen = function() {
-              return !!document[flag];
-            };
-              document.addEventListener(
-                ev,
-                function() {
-                  var isFs = fs_api.isFullscreen();
-                  notify(isFs ? fs_api.__events.enter : fs_api.__events.exit, isFs);
-                  notify(fs_api.__events.toggle, isFs);
-                },
-                false
-              );
-          };
-    
-        if (element.requestFullscreen) {
-          fs_api.enterFullscreen = function() {
-            var attempts = 0,
-              fallback = 50;
-            var tryit = function() {
-              element.requestFullscreen().catch(function(err) {
-                if (attempts++ < 3) {
-                  fallback *= 2;
-                  setTimeout(tryit, fallback);
-                }
-              });
-            };
-            tryit();
-          };
-          setNotifiers("fullscreenchange", "fullscreen");
-        } else if (element.msRequestFullscreen) {
-          fs_api.enterFullscreen = function() {
-            return element.msRequestFullscreen();
-          };
-          setNotifiers("msfullscreenchange", "msFullscreenElement");
-        } else if (element.mozRequestFullScreen) {
-          fs_api.enterFullscreen = function() {
-            return element.mozRequestFullScreen();
-          };
-          setNotifiers("mozfullscreenchange", "mozFullScreen");
-        } else if (element.webkitRequestFullscreen) {
-          fs_api.enterFullscreen = function() {
-            return element.webkitRequestFullscreen();
-          };
-          setNotifiers("webkitfullscreenchange", "webkitIsFullScreen");
-        } else {
-          fs_api.enterFullscreen = console.log.bind(
-            console,
-            "Fullscreen API is not supported"
-          );
-          fs_api.exitFullscreen = fs_api.enterFullscreen;
-        }
-        if (typeof cb === "function") cb(fs_api);
-        return fs_api;
+      function captureWinPosition (meta,cb) {
+          const win = meta.win;
+          const cmds = [
+            meta,
+            [ win.moveTo,   [0,0]   ],
+            [ win.resizeTo, [win.outerWidth,win.outerHeight] ]
+          ];
+          if (!(win.screenX===0&&win.screenY===0)) {
+             cmds.push([ win.moveTo,  [win.screenX,win.screenY]   ]);
+          }
+          return typeof cb==='function'?cb(cmds):cmds;
       }
+      
+
+      function restoreCapturedState(cmds,cb) {
+          const 
+          win=cmds[0].win,
+          len=cmds.length;
+          for(var i = 1; i < len; i++) {
+              var x = cmds[i];
+              x[0].apply(win,x[1]);
+              x[1].splice(0,2);
+              x.splice(0,2);
+          }
+          cmds[0].fs_api.restore=function(){};
+          cmds.splice(0,len);
+          if (typeof cb==='function') cb();
+      }
+      
+      
+      function stringifyWindowPosition (meta,cb) {
+        const CB=function (err,left,top,width,height){
+            if (err) return cb (err);
+            
+            meta.left   = left;
+            meta.top    = top;
+            meta.width  = width;
+            meta.height = height;
+
+            const cmds = [
+              meta,
+              [ 0,   [0,0]   ],
+              [ 1, [meta.width,meta.height] ]
+            ];
+            if (!(meta.left===0&&meta.top===0)) {
+               cmds.push([ 0,  [meta.left,meta.top]  ]);
+            }
+            return cb(JSON.stringify(cmds));
+        };
+        if (meta.win==="remote") {
+            remoteGetPosition(meta.wid,CB);
+        } else {
+            CB(undefined,
+               meta.win.screenX,
+               meta.win.screenY,
+               meta.win.outerWidth,
+               meta.win.outerHeight
+            );
+        }
+        
+    }
     
+      function parseWindowPosition(json,meta,cb){
+            const win=meta.win;
+            if (win==="remote") {
+                  restoreRemotePosition(meta.wid,json,cb);          
+            } else {
+                const 
+                cmds =JSON.parse(json),
+                fn=[win.moveTo,win.resizeTo],
+                len=cmds.length;
+                for(var i = 0; i < len; i++) {
+                    var x = cmds[i];
+                    fn[ x[0] ].apply(win,x[1]);
+                    x[1].splice(0,2);
+                    x.splice(0,2);
+                }
+                cb();
+            }
+        
+      }
+      
+      
+      
+      function decodeRemotePos(json,cb) {
+          let left,top,width,height;
+          try{
+              JSON.parse(json).forEach(function(x){
+                  switch (x[0]) {
+                     case win_moveTo://"moveTo" : 
+                        left = x[1][0];
+                        top  = x[1][1];
+                        break;
+                     case win_resizeTo://"resizeTo":
+                        width  = x[1][0];
+                        height = x[1][1];
+                      break;
+                  }
+              });
+              cb(undefined,left,top,width,height);
+          } catch(e) {
+              cb(e);
+          }
+      }
+      
+      function remoteClose(wid,cb) {
+          const meta = open_windows[wid];
+          if (!meta) return;
+          
+          const closeKey  = "windowTools.cmd."+wid+".close";
+          const closedKey = "windowTools.cmd."+wid+".closed";
+         
+          self.addEventListener('storage',waitClosed);
+          var tmrId;
+          function waitClosed(force) {
+               
+               const json = localStorage.getItem(closedKey);
+               if (json) {
+                   
+                  if (tmrId) {
+                      clearTimeout(tmrId);
+                      tmrId=undefined;
+                  } 
+                  self.removeEventListener('storage',waitClosed);
+                  localStorage.removeItem(closedKey);
+                  decodeRemotePos(json,function(err,left,top,width,height){
+                      savePos(meta.url,left,top,width,height,function(){
+                          delete open_windows[wid];
+                          open_windows.meta_dirty = true;
+                          if (typeof cb==='function') cb();
+                      });
+                  });
+               }
+               if (force===true) {
+                   throw new Error("remote close failed");
+               }
+          }
+          
+          localStorage.setItem(closeKey,"1");
+          
+          tmrId = setTimeout(function(){
+              clearTimeout(tmrId);
+              tmrId = undefined;
+              waitClosed(true);
+          },5000);
+      
+      }
+      
+      
+      function restoreRemotePosition ( wid,json_cmd,  cb){
+          const meta = open_windows[wid];
+          if (!meta) return;
+          
+          const positionKey    = "windowTools.cmd."+wid+".position";
+          const positionReplyKey    = "windowTools.cmd."+wid+".position.reply";
+          
+          self.addEventListener('storage',waitMoved);
+          
+      
+          var tmrId;
+          function waitMoved(timeout) {
+               const json = localStorage.getItem(positionReplyKey);
+               if (json) {
+                   
+                  if (tmrId) {
+                      clearTimeout(tmrId);
+                      tmrId=undefined;
+                  } 
+                  self.removeEventListener('storage',waitMoved);
+                  
+                  decodeRemotePos(json,function(err,left,top,width,height){
+                      if (err) return cb (err);
+                      meta.lastTouch = Date.now();
+                      open_windows.meta_dirty = true;
+                      savePos(meta.url,left,top,width,height,function () {
+                          cb (undefined,left,top,width,height);
+                      });
+                  });
+               }
+               if (timeout===true) {
+                   return cb( new Error("restoreRemotePosition timed out"));
+               }
+          }
+          
+          localStorage.setItem(positionKey,json_cmd);
+          
+          tmrId = setTimeout(function(){
+              clearTimeout(tmrId);
+              tmrId = undefined;
+              waitMoved(true);
+          },5000);
+      }
+          
+     function remoteReposition(wid,left,top,width,height,cb) {
+        
+        if (!open_windows[wid]) return cb (new Error("window "+wid+" not found"));
+        
+        const cmd = [
+            [ 0,   [0,0] ],
+            [ 1, [width,height] ]
+        ];
+        
+        if (!( left===0 && top ===0 )) {
+            cmd.add ([ 0,   [left,top] ]);
+        }
+        
+        restoreRemotePosition ( wid,JSON.stringify(cmd),  cb)
+    }
+
+    
+     function remoteGetPosition(wid,cb) {
+         
+         const meta = open_windows[wid];
+         if (!meta) return;
+     
+         const reportPositionKey  = "windowTools.cmd."+wid+".reportPosition";
+         const reportPositionReplyKey  = "windowTools.cmd."+wid+".reportPosition.reply";
+         
+        self.addEventListener('storage',waitPosition);
+        
+    
+        var tmrId;
+        function waitPosition(timedout) {
+             
+             const json = localStorage.getItem(reportPositionReplyKey);
+             if (json) {
+                if (tmrId) {
+                    clearTimeout(tmrId);
+                    tmrId=undefined;
+                } 
+                self.removeEventListener('storage',waitPosition);
+                localStorage.removeItem(reportPositionReplyKey);  
+                decodeRemotePos(json,cb);
+             }
+             if (timedout===true) {
+                 throw new Error("remote close failed");
+             }
+        }
+        
+        localStorage.setItem(reportPositionKey,'1');
+        
+        tmrId = setTimeout(function(){
+            clearTimeout(tmrId);
+            tmrId = undefined;
+            waitPosition(true);
+        },5000);
+    
+    }
+    
+     function remoteMaximize (wid,cb) {
+         
+         const meta = open_windows[wid];
+         if (!meta) return;
+         
+         
+         remoteReposition(
+             wid,0,0,screen.availWidth,screen.availHeight,
+             function (err,prevLeft,prevTop,prevWidth,prevHeight) {
+                 if ( 0===prevLeft&&
+                      0===prevTop&&
+                      screen.availWidth===prevWidth&&
+                      screen.availHeight===prevHeight
+                   ) return cb ();// was already maximized
+                 
+                 // send previous position back as restore command
+                 cb (undefined,[
+                    [ win_moveTo,  [ 0,0 ]                 ],
+                    [ win_resizeTo,[ prevWidth,prevHeight] ],
+                    [ win_moveTo,  [ prevLeft,prevTop]     ]
+                ]);
+             });
+     } 
+     
+     
+             
+     function maximize (wid,cb) {
+        
+        const meta = open_windows[wid];
+        if (!meta) return;
+        
+        
+        const 
+        
+        prevLeft  = meta.win.screenX,
+        prevTop   = meta.win.screenY,
+        prevWidth = meta.win.outerWidth,
+        prevHeight= meta.win.outerHeight;
+        
+        restoreCapturedState(getMaximizedPosition(meta.win));
+        
+        if ( 0===prevLeft &&
+             0===prevTop  &&
+             screen.availWidth===prevWidth&&
+             screen.availHeight===prevHeight
+          ) return cb ();// was already maximized
+        
+        // send previous position back as restore command
+        cb (undefined,[
+           [ win_moveTo,  [ 0,0 ]                 ],
+           [ win_resizeTo,[ prevWidth,prevHeight] ],
+           [ win_moveTo,  [ prevLeft,prevTop]     ]
+       ]);
+    } 
+        
+             
+     function minimize (wid,cb) {
+         
+         const meta = open_windows[wid];
+         if (!meta) return;
+         
+         
+         const 
+         
+         prevLeft  = meta.win.screenX,
+         prevTop   = meta.win.screenY,
+         prevWidth = meta.win.outerWidth,
+         prevHeight= meta.win.outerHeight;
+         
+         restoreCapturedState(getMinimizedPosition(meta.win));
+         
+         if ( minimizedLeft   === prevLeft &&
+              minimizedTop    === prevTop &&
+              minimizedWidth  === prevWidth&&
+              minimizedHeight === prevHeight
+           ) return cb ();// was already maximized
+         
+         // send previous position back as restore command
+         cb (undefined,[
+            [ win_moveTo,  [ 0,0 ]                 ],
+            [ win_resizeTo,[ prevWidth,prevHeight] ],
+            [ win_moveTo,  [ prevLeft,prevTop]     ]
+        ]);
+     }     
+         
+     function remoteMinimize (wid,cb) {
+         
+         const meta = open_windows[wid];
+         if (!meta) return;
+         
+         const 
+         
+         newLeft   = screen.availWidth-minimizedWidth,
+         newTop    = screen.availHeight-minimizedHeight;
+
+         remoteReposition(
+             wid,newLeft,newTop,minimizedWidth,minimizedHeight,
+             function (err,prevLeft,prevTop,prevWidth,prevHeight) {
+                 if ( newLeft         === prevLeft&&
+                      newTop          === prevTop&&
+                      minimizedWidth  === prevWidth&&
+                      minimizedHeight === prevHeight
+                   ) return cb ();// was already maximized
+                 
+                 // send previous position back as restore command
+                 cb (undefined,[
+                     
+                    [ win_moveTo,   [0,0]                  ],
+                    [ win_resizeTo, [prevWidth,prevHeight] ],
+                    [ win_moveTo,   [prevLeft,prevTop]     ]
+                    
+                ]);
+             });
+     } 
+        
         
     },[
         function setKey(k,v,cb) {
