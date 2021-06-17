@@ -121,7 +121,7 @@
         function setKey(k,v,cb) {
             setKey_(k,v,function(err){
                 if (err) return cb (err);
-                events.open.forEach(function(fn){
+                events.setKey.forEach(function(fn){
                     fn(k,v);
                 });
                 cb ();
