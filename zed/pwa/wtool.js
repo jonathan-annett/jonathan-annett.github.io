@@ -16,9 +16,7 @@ wTools.on("setKey",function(){
         }
         
     });
-    
     textarea.value = JSON.stringify(info,undefined,4);
-    
 });
 
 

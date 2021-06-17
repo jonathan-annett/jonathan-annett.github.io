@@ -2,11 +2,17 @@
     
     <head>
         <script src="windowTools.js"></script>
-        
+        <style>
+            #control-height {
+                height: 100vh;
+                width: 0;
+                position: absolute;
+            }
+        </style>
     </head>
     
     <body>
-        
+        <div id="control-height"></div>
         
         <label> url
            <input type="text" id="url" value="/zed/pwa/files.json" placeholder="url"\>
