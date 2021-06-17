@@ -337,7 +337,7 @@
                       if (!meta.cross && typeof left+typeof top==='numbernumber' && (w.screenX!==left || w.screenY!==top) ) {
                          w.moveTo(left,top);
                       }
-                      saveOpenWindows.bind(onOpened,[w,wid,meta]);
+                      saveOpenWindows(onOpened,[w,wid,meta]);
                    });
                    
                    on_window_close (w,saveOpenWindows.bind(this,onClosed,[w,wid,meta]));
