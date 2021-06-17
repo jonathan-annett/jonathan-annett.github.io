@@ -3,7 +3,7 @@
 var [btn, url, title,wleft,wtop,textarea] = ["button","#url", "#title","#left","#top","textarea"].map(qs);
 
 btn.onclick = function(){
-    wTools.open2(url.value,title.value,wleft,wtop);
+    wTools.open2(url.value,title.value,Number.parseInt(wleft.value)||0,Number.parseInt(wtop.value)||0);
 };
 
 
