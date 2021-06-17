@@ -285,7 +285,7 @@
         }
         
         function savePos(w,left,top,width,height,cb) {
-            cb = typeof cb==='function'?cb:function(storeName){console.log(storeName,"updated")};
+            cb = typeof cb==='function'?cb:function(storeName){};
             const isWindow  = typeof w+typeof left+typeof top === 'objectundefinedundefined' && w.constructor.name==="Window";
             const storeName = storageName (isWindow ? w.location.href : w);
             const settings  = isWindow ? {left  : w.screenX, top : w.screenY, width: w.outerWidth, height: w.outerHeight} : typeof left+typeof top+typeof width+typeof height === 'numbernumbernumbernumber' ? { left : left, top: top, width:width, height : height }: false;
