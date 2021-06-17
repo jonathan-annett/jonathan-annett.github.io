@@ -22,6 +22,7 @@
             meta_dirty : false,
         },
         lib = {
+            
             open : function ( url, title,left,top, width,height ) {
                 
                 const wid = openWindow(
@@ -73,6 +74,93 @@
                  
             },
             
+            promise : {
+                
+               open : function (opt){
+                    const {url, title,left,top, width,height} = opt;
+                    
+                    return new Promise( function(resolve,reject) {
+                        const wid = openWindow(
+                          url,
+                          undefined,
+                          left,
+                          top,
+                          width,
+                          height,
+                          undefined,
+                          onClose,
+                          onOpen 
+                        );
+                        
+                        function onOpen(win,wid,meta){
+                            
+                            if (!meta.cross) {
+                                
+                                if (title) {
+                                    if (win.document.title!==title)
+                                    win.document.title=title;
+                                }
+                            
+                                on_window_move (win,resavePos);
+                                
+                                on_window_size (win,resavePos);
+                                
+                                resolve(meta);
+                            }
+                            
+                            events.open.forEach(
+                                function(fn){ fn(win,wid,meta); }
+                            );
+                            
+                            function resavePos() {
+                                meta.lastTouch = Date.now();
+                                open_windows.meta_dirty = true;
+                                savePos(url,win.screenX,win.screenY,win.outerWidth,win.outerHeight);
+                            }
+                        }
+        
+                        function onClose(win,wid,meta){
+                            events.close.forEach(function(fn){
+                                fn(win,wid,meta);
+                            });
+                            open_windows.meta_dirty = true;
+                            delete open_windows[wid];
+                        }
+                    
+                });
+            },
+            
+            
+               close : function (wid) {
+                   
+                    return new Promise(function (resolve,reject){
+                        
+                        const meta = open_windows[wid];
+                        if (meta) {
+                            lib.on("close",onClose);
+                            meta.win.close();
+                             
+                        } else {
+                            reject();
+                        }
+                        
+                        function onClose(win,wid_,meta) {
+                            if (wid===wid_) {
+                                lib.off("close",onClose);
+                                return resolve();
+                            }
+                        }
+                        
+                    });
+                   
+                   
+                    
+                    
+                   
+               },
+            
+            
+            },
             close : function (wid,cb) {
                 const meta = open_windows[wid];
                 if (meta) {
@@ -106,7 +194,40 @@
                           i = handlers.indexOf(fn);
                       }
                   }
-              }
+              },
+              
+            setDB : function ( setter, getter ) {
+                if (typeof setter+typeof getter==='functionfunction') {
+                    if (setter.length===3 && getter===2) {
+                      setKey_ = setter;
+                      getKey  = getter;
+                    } else {
+                       if (setter.length===2 && getter===1) {
+                         setKey_ = function (k,v,cb) { 
+                            
+                             cb(); 
+                             try {
+                                 setter(k,v);
+                             } catch (e) {
+                                 return cb(e);
+                             }
+                             cb();
+                             
+                         },
+                         getKey  = function (k,cb) {
+                             var result;
+                             try {
+                                 result = getter(k);
+                             } catch (e) {
+                                 cb(e);
+                             }
+                             cb(undefined,result);
+                         };
+                       } 
+                    }
+                }
+                
+            }
         };
         
         Object.defineProperties(lib,{
