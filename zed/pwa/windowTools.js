@@ -215,6 +215,7 @@
                  w[Off]("resize", check);
                  w[Off]("focus", check);
                  w[Off]("blur", check);
+                 w[Off]("beforeunload",w.cancel_on_window_move);
               };
               
               w[On]("beforeunload",w.cancel_on_window_move);
