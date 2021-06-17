@@ -426,7 +426,7 @@
                 if (pos) {
                    doOpen(pos);
                 } else {
-                   savePos(url,left,top,width,height,function (){doOpen({left,top,width,height}})); 
+                   savePos(url,left,top,width,height,function (){doOpen({left,top,width,height});}); 
                 }
                
           } );
