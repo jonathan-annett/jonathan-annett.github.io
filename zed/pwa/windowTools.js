@@ -45,14 +45,14 @@
                 
                return getWindowId(w);
             },
-            open2 : function ( url, title,left,top ) {
+            open2 : function ( url, title,left,top, width,height ) {
                 let w = openWindow(
                   url,
                   undefined,
                   left,
                   top,
-                  undefined,
-                  undefined,
+                  width,
+                  height,
                   undefined,
                   onClose,
                   onOpen 
@@ -71,8 +71,8 @@
                             win.document.title=title;
                         }
                     
-                        on_window_move (win,function(left,top){
-                            savePos(url,left,top);
+                        on_window_move (win,function(){
+                            savePos(url,win.screenX,win.screenY,win.outerWidth,win.outerHeight);
                         });
                     
                     }
@@ -87,7 +87,6 @@
                     events.close.forEach(function(fn){
                         fn(w,wid,meta);
                     });
-                    savePos(w);
                     delete open_windows[wid];
                 } 
                  
@@ -244,11 +243,11 @@
             })
         }
         
-        function savePos(w,left,top,cb) {
+        function savePos(w,left,top,width,height,cb) {
             cb = typeof cb==='function'?cb:function(storeName){console.log(storeName,"updated")};
             const isWindow  = typeof w+typeof left+typeof top === 'objectundefinedundefined' && w.constructor.name==="Window";
             const storeName = storageName (isWindow ? w.location.href : w);
-            const settings  = isWindow ? {left  : w.screenX, top : w.screenY} : typeof left+typeof top === 'numbernumber' ? { left : left, top: top }: false;
+            const settings  = isWindow ? {left  : w.screenX, top : w.screenY, width: w.outerWidth, height: w.outerHeight} : typeof left+typeof top+typeof width+typeof height === 'numbernumbernumbernumber' ? { left : left, top: top, width:width, height : height }: false;
             if (typeof storeName+ typeof settings === 'stringobject' && storeName.length>0) {
                 setKey(
                     storeName,
@@ -371,7 +370,7 @@
                    top  = pos.top  || top;
                    doOpen();
                 } else {
-                   savePos(url,left,top,doOpen); 
+                   savePos(url,left,top,width,height,doOpen); 
                 }
                
           } );
