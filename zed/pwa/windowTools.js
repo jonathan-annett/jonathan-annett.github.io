@@ -392,16 +392,20 @@
         function setKey(k,v,cb) {
             try { 
                  localStorage.setItem(k,JSON.stringify(v));
-                 setTimeout(cb,0);
+                 //setTimeout(cb,0);
+                 cb();
              } catch (e) {
-                 setTimeout(cb,0,e);
+                 //setTimeout(cb,0,e);
+                 cb(e)
              }
         },
         function getKey(k,cb) {
             try {
-               setTimeout(cb,0,undefined,JSON.parse(localStorage.getItem(k)));
+               //setTimeout(cb,0,undefined,JSON.parse(localStorage.getItem(k)));
+               cb (undefined,JSON.parse(localStorage.getItem(k)));
             } catch (e) {
-               setTimeout(cb,0,e);
+               //setTimeout(cb,0,e);
+               cb(e)
             }
         }
     ]
