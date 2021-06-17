@@ -22,40 +22,9 @@
             meta_dirty : false,
         },
         lib = {
-            open : function ( url,
-                              name,
-                              left,
-                              top,
-                              width,
-                              height,
-                              size ) {
-                let w = openWindow(
-                  url,
-                  name,
-                  left,
-                  top,
-                  width,
-                  height,
-                  size,
-                  function (w){
-                      const wid = getWindowId(w)
-                      events.closed.forEach(function(fn){
-                          fn(w,wid);
-                      });
-                      delete open_windows[wid];
-                  } ,
-                  function (w){
-                      const wid = getWindowId(w);
-                      events.open.forEach(function(fn){
-                          fn(w,wid);
-                      });
-                  } 
-                );
+            open : function ( url, title,left,top, width,height ) {
                 
-               return getWindowId(w);
-            },
-            open2 : function ( url, title,left,top, width,height ) {
-                let w = openWindow(
+                const wid = openWindow(
                   url,
                   undefined,
                   left,
@@ -66,9 +35,6 @@
                   onClose,
                   onOpen 
                 );
-                
-                const wid  = getWindowId(w);
-                const meta = open_windows[wid];
                 
                 function onOpen(win,wid,meta){
                     
@@ -98,17 +64,30 @@
                     }
                 }
                 
-               
-                
-                
+
                 function onClose(win,wid,meta){
                     events.close.forEach(function(fn){
-                        fn(w,wid,meta);
+                        fn(win,wid,meta);
                     });
                     open_windows.meta_dirty = true;
                     delete open_windows[wid];
-                } 
+                }
+                
+                return wid;
                  
+            },
+            
+            close : function (wid,cb) {
+                const meta = open_windows[wid];
+                if (meta) {
+                    meta.win.close();
+                    return typeof cb==='function'?cb(undefined,meta):meta;
+                }
+                const err = new Error("window "+wid+" not found");
+                if (typeof cb==='function') {
+                    return cb(err);
+                }
+                throw err;
             },
             
             getWindow : function(wid) {
@@ -135,6 +114,24 @@
         };
         
         Object.defineProperties(lib,{
+            
+            openWindow : {
+                value      : openWindow,
+                configurable : true,
+                writable     : false,
+                enumerable   : true
+            },
+            
+            history : {
+                get : function () {
+                    return Object.keys(open_windows).map(function (wid) {
+                        return open_windows[wid];
+                    }).sort (function(a,b){
+                          return a.lastTouch - b.lastTouch;
+                    }) ;
+                }
+            },
+            
             savePollInterval : {
                 get : function () {
                     return saveInterval;
