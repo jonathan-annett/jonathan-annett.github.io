@@ -1,7 +1,12 @@
-/*global self*/
+/*global self,windowToolsHelperStorageEvent */
 (function(whoami,exports,Lib,libArgs){const n = Lib.name,x=whoami==="Window"&&exports[n]===undefined?Object.defineProperty(exports,n,{value:Lib.apply(this,libArgs),enumerable:true,configurable:true}):undefined;})(typeof self==="object"&&self.constructor.name||"Nobody",self,
    function wTools(setKey_,getKey) {
     
+    
+    
+        if (typeof windowToolsHelperStorageEvent==='function' ) {
+            self.removeEventListener('storage',windowToolsHelperStorageEvent);
+        }
     
         var 
         

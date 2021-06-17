@@ -1,10 +1,14 @@
 /*global self*/
 
 
+self.addEventListener('storage',windowToolsHelperStorageEvent);
 
-
-self.addEventListener('storage',function(){
+function windowToolsHelperStorageEvent(){
+    
     const wid = window.wid;
+    const winRestoreCapture= windowToolsHelperStorageEvent.winRestoreCapture;
+    const restoreCapturedState = windowToolsHelperStorageEvent.restoreCapturedState;
+    
     if (wid) {
         const positonKey    = "windowTools.cmd."+wid+".positonArgs";
         const positonArgs   = localStorage.getItem(positonKey);
@@ -30,11 +34,13 @@ self.addEventListener('storage',function(){
             }
         }
     }
-});
+    
+    
 
+}
 
-
-function winRestoreCapture () {
+    
+windowToolsHelperStorageEvent.winRestoreCapture = function() {
     const win = window;
     const cmds = [
       [ "moveTo",   [0,0]   ],
@@ -44,9 +50,9 @@ function winRestoreCapture () {
        cmds.push([ "moveTo",  [win.screenX,win.screenY]   ]);
     }
     return cmds;
-}
+};
 
-function restoreCapturedState(cmds) {
+windowToolsHelperStorageEvent.restoreCapturedState = function (cmds) {
     const 
     win=window,
     len=cmds.length;
@@ -57,4 +63,4 @@ function restoreCapturedState(cmds) {
         x.splice(0,2);
     }
     cmds.splice(0,len);
-}
+};
