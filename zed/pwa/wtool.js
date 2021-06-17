@@ -1,11 +1,25 @@
 /* global wTools*/
 
-var [btn, url, title] = ["button","#url", "#title"].map(qs);
+var [btn, url, title,wleft,wtop,textarea] = ["button","#url", "#title","#left","#top","textarea"].map(qs);
 
 btn.onclick = function(){
-    wTools.open2(url.value,title.value);
+    wTools.open2(url.value,title.value,wleft,wtop);
 };
 
+
+window.on("storage",function(){
+    var info={};
+    Object.keys(localStorage).forEach(function(k){
+        
+        if (k.startsWith("windowTools.")){
+            info[k]=JSON.parse(localStorage.getItem(k));
+        }
+        
+    });
+    
+    textarea.value = JSON.stringify(info,undefined,4);
+    
+});
 
 
 // generic tools 
