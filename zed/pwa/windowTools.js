@@ -71,9 +71,7 @@
                         }
                     
                         on_window_move (win,function(left,top){
-                            savePos(url,left,top,function(){
-                                
-                            });
+                            savePos(url,left,top);
                         });
                     
                     }
@@ -234,6 +232,7 @@
         }
         
         function savePos(w,left,top,cb) {
+            cb = typeof cb==='function'?cb:function(storeName){console.log(storeName,"updated")};
             const isWindow  = typeof w+typeof left+typeof top === 'objectundefinedundefined' && w.constructor.name==="Window";
             const storeName = storageName (isWindow ? w.location.href : w);
             const settings  = isWindow ? {left  : w.screenX, top : w.screenY} : typeof left+typeof top === 'numbernumber' ? { left : left, top: top }: false;
@@ -242,11 +241,11 @@
                     storeName,
                     settings,
                     function () {
-                        cb();
+                        cb(storeName);
                     }
                 );
             } else {
-                cb();
+                cb(storeName);
             }
         }
         
