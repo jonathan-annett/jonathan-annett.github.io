@@ -334,8 +334,8 @@
                        meta.cross=true;
                    }
 
-                   on_window_open  (w,saveOpenWindows.bind(this,onOpened,w,wid,meta));
-                   on_window_close (w,saveOpenWindows.bind(this,onClosed,w,wid,meta));
+                   on_window_open  (w,saveOpenWindows.bind(this,onOpened,[w,wid,meta]));
+                   on_window_close (w,saveOpenWindows.bind(this,onClosed,[w,wid,meta]));
                    
                } else {
                    saveOpenWindows();  
