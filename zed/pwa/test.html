@@ -102,7 +102,7 @@
            var result;
            localStorage.addEventListener(replyKey,waitForReply);
            console.log("assigning invocation",invocationId);
-           localStorage.setItem({
+           localStorage.setItem(
                    key,
                    JSON.stringify({invocationId:invocationId,args:args})
            );
