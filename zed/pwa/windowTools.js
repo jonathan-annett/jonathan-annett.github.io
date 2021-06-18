@@ -2,15 +2,10 @@
 /*global self,localforage*/
 
 (function (B,O0,T){
-    let boot = function(oo) {
-       if (O0.length===0){
-          T();
-       } else {
-           console.log(O0);
-           setTimeout(boot,10,O0.filter(function(x){ return !B[x];}));
-       }
-   }
-   boot();
+    let boot = function(d) {d = d.filter(function(x){ return !B[x];});
+       if (d.length){ console.log(d); return setTimeout(boot,10,d); }
+       T();
+    };boot(O0);
 })(self,['wToolsLib'],function (){
     
     
