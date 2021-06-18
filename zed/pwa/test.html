@@ -18,34 +18,37 @@
        Storage.prototype.addEventListener = function (key,fn) {
          const storage = this;
          if (typeof fn!=='function') return;
-         const config = events [key] || (events [key] = 
+         const config = events [key] || 
          
-         (function(key,cfg){
-            
-            cfg.listener = function () {
-                
-                const data = storage.getItem(key);
-                if (data===cfg.last) {
-                    return;
-                }
-                
-                if (data!==undefined) {
-                    if (cfg.last===undefined) {
-                       fn({mode:'new',data:data});
-                       cfg.last=data;
-                    } else {
-                       cfg.last=data;
-                       fn({mode:'change',data:data,previous:cfg.last});
-                    }
-                } else {
-                    fn({mode:'remove',previous:cfg.last});
-                    delete cfg.last;
-                }
-                
-            };             
-            window.addEventListener('storage',cfg.listener);
-
-         })(key,{ fns : [], last : storage.getItem(key) });
+                    (events [key] = (function(key,cfg){
+                                    
+                                    cfg.listener = function () {
+                                        
+                                        const data = storage.getItem(key);
+                                        if (data===cfg.last) {
+                                            return;
+                                        }
+                                        
+                                        if (data!==undefined) {
+                                            if (cfg.last===undefined) {
+                                               fn({mode:'new',data:data});
+                                               cfg.last=data;
+                                            } else {
+                                               cfg.last=data;
+                                               fn({mode:'change',data:data,previous:cfg.last});
+                                            }
+                                        } else {
+                                            fn({mode:'remove',previous:cfg.last});
+                                            delete cfg.last;
+                                        }
+                                        
+                                    };             
+                                    window.addEventListener('storage',cfg.listener);
+                                    
+                                    
+                                    retur cfg;
+                        
+                                 })(key,{ fns : [], last : storage.getItem(key) }));
 
          config.fns.push(fn);
          
