@@ -1,16 +1,11 @@
 /*global self */
 /*global self,localforage*/
 
-(function (B,O0,T){
-    let boot = function(d) {d = d.filter(function(x){ return !B[x];});
-       if (d.length){ console.log(d); return setTimeout(boot,10,d); }
-       T();
-    };boot(O0);
-})(self,['wToolsLib'],function (){
-    
-    
-(function(L,o,a,d){let u,n=a[L]&&a[L].name,x=n&&o[n]===u?Object.defineProperty(o,n,{value:a[L].apply(this,d[L].map(function (f){return f();})),enumerable:!0,configurable:!0}):u;})(typeof self==="object"&&self.constructor.name||"x",self,
+(function (B,O0,T){                      let boot = function(d) {d=d.filter(function(x){return!B[x];});if (d.length){return setTimeout(boot,10,d);}T();};boot(O0);})(self,
+['wToolsLib'],                           function (){(function(L,o,a,d){let u,n=a[L]&&a[L].name,x=n&&o[n]===u?Object.defineProperty(o,n,{value:a[L].apply(this,d[L].map(function (f){return f();})),enumerable:!0,configurable:!0}):u;})(typeof self==="object"&&self.constructor.name||"x",self,
+
   { 
+      
     Window : function wTools(setKey_,getKey, wToolsLib ) {
         
 
@@ -582,15 +577,22 @@
         () => wToolsRemote
           
       ],
-      ServiceWorkerGlobalScope :[
+      ServiceWorkerGlobalScope : [
           () => setForageKey,
           () => getForageKey,
           () => wToolsRemote
             
         ],
     }
+    
 );      
 
+
+/*
+
+local imports - these functions are available to the other modules declared in this file
+
+*/
 
     function setLocalKey(k,v,cb) {
         try { 
@@ -618,7 +620,6 @@
              cb();
          }).catch(cb);
     }
-    
     
     function getForageKey(k,cb) {
         self.localforage.getItem(k).then(function(v){
@@ -1233,7 +1234,6 @@
           
          
     }
-    
     
     function on_window_open_poller (w,fn, interval) {
         if (w.closed) return ;
