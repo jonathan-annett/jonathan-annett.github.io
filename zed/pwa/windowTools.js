@@ -15,20 +15,24 @@
         
 
                  const { 
-                     minimizedHeight,
-                     minimizedWidth,
-                     minimizedLeft,
-                     minimizedTop,
-                     maximizedHeight,
-                     maximizedWidth,
-                     maximizedLeft,
-                     maximizedTop,
+                     
+                     
+                     consts : {
+                         minimizedHeight,
+                         minimizedWidth,
+                         minimizedLeft,
+                         minimizedTop,
+                         maximizedHeight,
+                         maximizedWidth,
+                         maximizedLeft,
+                         maximizedTop,
+                         
+                         maximizedPosition,maximizedPositionJSON,
+                         minimizedPosition,minimizedPositionJSON
+                     },
                      
                      win_moveTo,
                      win_resizeTo,
-                     maximizedPosition,maximizedPositionJSON,
-                     minimizedPosition,minimizedPositionJSON,
-                     
                      
                      
                      windowId
