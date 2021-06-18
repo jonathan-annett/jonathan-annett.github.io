@@ -7,42 +7,131 @@
 <body>
     
     <input type="text" value="1">
-    <button>increment</button>
+    <button>call</button>
     <script>
     
     
-     
-        const data = localStorage.getItem("test-debug");
-        
-        if (!data) {
-           localStorage.setItem("test-debug",'1'); 
-        } else {
-           document.querySelector("input").value = data;
-        }
-    
-       function increment(){
-           
-           const data = localStorage.getItem("test-debug");
-           
-           if (data) {
-               
-               let dataNum = Number.parseInt(data)||1;
-               
-               document.querySelector("input").value = data;
-               
-               dataNum++;
-               
-               localStorage.setItem("test-debug",dataNum.toString());
-               
-               
-           }
-       }
-    
-        window.onstorage = increment;
-        
-        document.querySelector("button").onclick = increment;
+    var cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice);
+
+       var events = {};
+       
+       Storage.prototype.addEventListener = function (key,fn) {
+         const storage = this;
+         if (typeof fn!=='function') return;
+         const config = events [key] || (events [key] = 
+         
+         (function(key,cfg){
+            
+            cfg.listener = function () {
                 
-        
+                const data = storage.getItem(key);
+                if (data===cfg.last) {
+                    return;
+                }
+                
+                if (data!==undefined) {
+                    if (cfg.last===undefined) {
+                       fn({mode:'new',data:data});
+                       cfg.last=data;
+                    } else {
+                       cfg.last=data;
+                       fn({mode:'change',data:data,previous:cfg.last});
+                    }
+                } else {
+                    fn({mode:'remove',previous:cfg.last});
+                    delete cfg.last;
+                }
+                
+            };             
+            window.addEventListener('storage',cfg.listener);
+
+         })(key,{ fns : [], last : storage.getItem(key) });
+
+         config.fns.push(fn);
+         
+           
+       };
+       Storage.prototype.removeEventListener = function (key,fn) {
+         const storage = this;
+         if (typeof fn!=='function') return;
+         
+         const config = events [key];
+         
+         if (!config) return;
+         
+         const ix = config.fns.indexOf(fn);
+         if (ix>=0) {
+            config.fns.splice(ix,1);
+         }
+         
+         if (config.fns.length===0) {
+             delete config.fns;
+             window.removeEventListener('storage',config.listener);
+             delete config.listener;
+             delete events [key];
+         }
+
+       };
+       
+       
+       function makeSyncStorageFunction (key,fn,THIS) {
+           THIS=THIS||this;
+           localStorage.addEventListener(key,function(event) {
+               if (event.mode==="new") {
+                   const params = JSON.parse(event.data);
+                   const result = fn.apply(THIS,params.args);
+                   console.log("assigning result",result);
+                   localStorage.setItem(
+                       key+"."+params.invocationId,
+                       JSON.stringify({result:result})
+                   );
+                   localStorage.removeItem(key);
+               }
+           });
+       } 
+       
+       
+       function callSyncStorageFunction (key) {
+           const args = cpArgs(arguments,1);
+           const params = JSON.parse(event.data);
+           const result = fn.apply(THIS,params.args);
+           const invocationId = Math.random().toString(36);
+           const replyKey = key+"."+invocationId;
+           var result;
+           localStorage.addEventListener(replyKey,waitForReply);
+           console.log("assigning invocation",invocationId);
+           localStorage.setItem({
+                   key,
+                   JSON.stringify({invocationId:invocationId,args:args})
+           );
+           console.log("returning result",result);
+           return result;
+           
+           function waitForReply(result) {
+               if (event.mode==='new') {
+                   result = JSON.parse(event.data).result;
+                   console.log("assigned result",result);
+                   localStorage.removeItem(replyKey);
+                   localStorage.addEventListener(replyKey,waitForReply);
+               }
+           }
+
+           
+       } 
+       
+       
+       makeSyncStorageFunction ("test-func",function(a,b,c){
+          return a+b+c;           
+       },THIS);
+       
+       
+       document.querySelector("button").onclick = function () {
+           
+           document.querySelector("input").value = callSyncStorageFunction ("test-func",1,2,3).toString();
+           
+       };
+       
+      
         
     </script>
     
