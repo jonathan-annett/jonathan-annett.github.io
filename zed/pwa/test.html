@@ -80,7 +80,7 @@
        function makeSyncStorageFunction (key,fn,THIS) {
            THIS=THIS||this;
            localStorage.addEventListener(key,function(event) {
-               if (event.mode==="new") {
+               if (event.mode!=="remove") {
                    const params = JSON.parse(event.data);
                    const result = fn.apply(THIS,params.args);
                    console.log("assigning result",result);
@@ -109,7 +109,7 @@
            return result;
            
            function waitForReply(result) {
-               if (event.mode==='new') {
+               if (event.mode!=='remove') {
                    result = JSON.parse(event.data).result;
                    console.log("assigned result",result);
                    localStorage.removeItem(replyKey);
