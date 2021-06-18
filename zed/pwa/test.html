@@ -1,0 +1,41 @@
+<html>
+    
+<head>
+    
+</head>
+
+<body>
+    
+    <input type="text" value="1">
+    <button></button>
+    <script>
+    
+    
+       function increment(){
+           
+           const data = localStorage.getItem("test-debug");
+           
+           if (data) {
+               
+               const dataNum = Number.parse(data)||1;
+               
+               document.querySelector("input").value = data;
+               
+               dataNum++;
+               
+               localStorage.setItem("test-debug-out",dataNum.toString());
+               
+               
+           }
+       }
+    
+        window.onstorage = increment;
+        
+        document.querySelector("button").onclick = increment;
+                
+        
+        
+    </script>
+    
+</body>
+</html>
