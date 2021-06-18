@@ -98,26 +98,32 @@
            const args = cpArgs(arguments,1);
            const invocationId = Math.random().toString(36);
            const replyKey = key+"."+invocationId;
-           var result,done;
-           localStorage.addEventListener(replyKey,waitForReply);
+           var result;
+          
            console.log("assigning invocation",invocationId);
            localStorage.setItem(
                    key,
                    JSON.stringify({invocationId:invocationId,args:args})
            );
            
-           sleep(500,function () {return done;});
+           sleep(500,waitForReply);
            console.log("returning result",result);
            
            return result;
            
-           function waitForReply(event) {
-               if (event.mode!=='remove') {
-                   result = JSON.parse(event.data).result;
-                   console.log("assigned result",result);
-                   localStorage.removeItem(replyKey);
-                   localStorage.addEventListener(replyKey,waitForReply);
-                   done=true;
+           function waitForReply() {
+               const data = localStorage.getItem(replyKey);
+               if (data) {
+                   try {
+                      result = JSON.parse(data).result;
+                      console.log("assigned result",result);
+                      return true;
+                   } catch (e) {
+                       
+                   } finally {
+                       localStorage.removeItem(replyKey);
+                   }
+                   
                }
            }
 
