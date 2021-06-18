@@ -97,7 +97,6 @@
        function callSyncStorageFunction (key) {
            const args = cpArgs(arguments,1);
            const params = JSON.parse(event.data);
-           const result = fn.apply(THIS,params.args);
            const invocationId = Math.random().toString(36);
            const replyKey = key+"."+invocationId;
            var result;
