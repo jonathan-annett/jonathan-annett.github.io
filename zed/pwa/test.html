@@ -29,8 +29,8 @@
                                             return;
                                         }
                                         
-                                        if (data!==undefined) {
-                                            if (cfg.last===undefined) {
+                                        if (data!==null) {
+                                            if (cfg.last===null) {
                                                fn({mode:'new',data:data});
                                                cfg.last=data;
                                             } else {
