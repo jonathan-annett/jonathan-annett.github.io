@@ -9,7 +9,7 @@
     <input type="text" value="1">
     <button>call</button>
     <script>
-    
+ 
     
     var cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice);
 
@@ -96,7 +96,6 @@
        
        function callSyncStorageFunction (key) {
            const args = cpArgs(arguments,1);
-           const params = JSON.parse(event.data);
            const invocationId = Math.random().toString(36);
            const replyKey = key+"."+invocationId;
            var result;
