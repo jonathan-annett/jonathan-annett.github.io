@@ -105,6 +105,8 @@
                    key,
                    JSON.stringify({invocationId:invocationId,args:args})
            );
+           
+           sleep(500,function () {return done;});
            console.log("returning result",result);
            
            return result;
@@ -134,7 +136,17 @@
            
        };
        
-      
+      function sleep(ms,f) {
+        var start = new Date().getTime(), expire = start + ms;
+        while (new Date().getTime() < expire) {
+            
+            if (typeof f === 'funciton' &&  fn() ) {
+                return ;
+            }
+            
+        }
+        return;
+      }
         
     </script>
     
