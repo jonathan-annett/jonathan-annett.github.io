@@ -105,14 +105,11 @@
                    key,
                    JSON.stringify({invocationId:invocationId,args:args})
            );
-           while (!done) {
-               waitForReply(); 
-           }
            console.log("returning result",result);
            
            return result;
            
-           function waitForReply() {
+           function waitForReply(event) {
                if (event.mode!=='remove') {
                    result = JSON.parse(event.data).result;
                    console.log("assigned result",result);
