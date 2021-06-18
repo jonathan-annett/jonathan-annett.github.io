@@ -1,9 +1,22 @@
-/*global self, wToolsLib  */
+/*global self */
 /*global self,localforage*/
-(function(L,o,a,d){let u,n=a[L]&&a[L].name,x=n&&o[n]===u?Object.defineProperty(o,n,{value:a[L].apply(this,d[L]),enumerable:!0,configurable:!0}):u;})(typeof self==="object"&&self.constructor.name||"x",self,
+
+(function (B,O0,T){let boot = function(oo) {
+       if (O0.length===0){
+          T();
+       } else {
+           console.log(O0);
+           setTimeout(boot,10,O0.filter(function(x){ return !B[x];}));
+       }
+   }
+})(self,['wToolsLib'],function (){
+    
+    
+(function(L,o,a,d){let u,n=a[L]&&a[L].name,x=n&&o[n]===u?Object.defineProperty(o,n,{value:a[L].apply(this,d[L].map(function (f){return f();})),enumerable:!0,configurable:!0}):u;})(typeof self==="object"&&self.constructor.name||"x",self,
   { 
-    Window : function wTools(setKey_,getKey) {
-         
+    Window : function wTools(setKey_,getKey, wToolsLib ) {
+        
+
                  const { 
                      minimizedHeight,
                      minimizedWidth,
@@ -77,47 +90,13 @@
                      if (json) {
                          const prev = JSON.parse(json);
                          delete prev.meta_dirty;
-                         var tracking = [];
                          Object.keys(prev).forEach(
                            function (wid) {
                               const meta = prev[wid];
-                              meta.win = "remote";
-                              const moveTrackingKey = "windowTools.cmd."+wid+".position.tracking";
-                              tracking.push(wid);
-                              localStorage.setItem(moveTrackingKey,'1');
+                              meta.win   = wToolsRemote(meta,wToolsLib);
                            }
                          );
-                         if (tracking.length) {
-                             
-                             window.addEventListener('storage',function(){
-                                tracking.forEach(function(wid){
-                                    const meta = open_windows[wid];
-                                    const moveTrackingUpdateKey = "windowTools.cmd."+wid+".position.tracking.update";
-                                    const json = localStorage.getItem(moveTrackingUpdateKey);
-                                    if (json) {
-                                         localStorage.removeItem(moveTrackingUpdateKey);
-                                         if (meta) {
-                                             decodeRemotePos(json,function(err,left,top,width,height){
-                                                 if (err) return;
-                                                 meta.left   = left;
-                                                 meta.top    = top;
-                                                 meta.width  = width;
-                                                 meta.height = height;
-                                                 
-                                                 savePos(meta.url,left,top,width,height);
-                                                 open_windows.meta_dirty=true;
-                                             });
-                                         }
-                                    }
-                                });
-                                
-                                
-                                 
-                             });
-                             
-                         }
                          return prev;
-                         
                      }
                      
                      return {    };
@@ -147,12 +126,20 @@
                                      if (win.document.title!==title)
                                      win.document.title=title;
                                  }
+                                 
+                                 if (win.wToolsLib) {
+                                     meta.win = win.wToolsLib;
+                                     meta.win.on('move',resavePos);
+                                     meta.win.on('size',resavePos);
+                                 } else {
+                                     appendScript(win,"/zed/pwa/windowTools.helper.js",function(){
+                                         meta.win = win.wToolsLib;
+                                         meta.win.on('move',resavePos);
+                                         meta.win.on('size',resavePos);
+                                     }); 
+                                 }
                              
-                                 on_window_move (win,resavePos);
-                                 
-                                 on_window_size (win,resavePos);
-                                 
-                                 appendScript(win,"/zed/pwa/windowTools.helper.js"); 
+
                              }
                              
                              events.open.forEach(
@@ -162,7 +149,7 @@
                              function resavePos() {
                                  meta.lastTouch = Date.now();
                                  open_windows.meta_dirty = true;
-                                 savePos(url,win.screenX,win.screenY,win.outerWidth,win.outerHeight);
+                                 savePos(url,meta.win.left,meta.win.top,meta.win.width,meta.win.height);
                              }
                          }
          
@@ -178,197 +165,13 @@
                           
                      },
                      
-                     isFullscreen: function (wid) {
-                        const meta = open_windows[wid];
-                        if (meta) { 
-                           if (meta.win==="remote") {
-                               return !!localStorage.getItem("windowTools.cmd."+wid+".fullscreen");
-                           } else {
-                               return meta.win.fs_api.isFullscreen();
-                           }
-                        }
-                     },
-                     
-                     exitFullscreen: function (wid) {
-                        const meta = open_windows[wid];
-                        if (meta) { 
-                           if (meta.win==="remote") {
-                               return !!localStorage.setItem("windowTools.cmd."+wid+".exitFullscreen",'1');
-                           } else {
-                               return meta.win.fs_api.exitFullscreen();
-                           }
-                        }
-                     },
-                     
-                     enterFullscreen: function (wid) {
-                        const meta = open_windows[wid];
-                        if (meta) { 
-                           if (meta.win==="remote") {
-                               return !!localStorage.setItem("windowTools.cmd."+wid+".enterFullscreen",'1');
-                           } else {
-                               return meta.win.fs_api.enterFullscreen();
-                           }
-                        }
-                     },
-                     
-                     isMaximized :function (wid) {
-                         
-                         const meta = open_windows[wid];
-                         if (meta) { 
-                            if (meta.win==="remote") {
-                                remoteMaximize(wid,function(err,restoreInfo){
-                                    if (restoreInfo) {
-                                       meta.restore=restoreInfo;
-                                    }
-                                });
-                            } else {
-                                return getIsMaximized(meta.win);
-                            }
-                         }
-                           
-                         
-                     },
-                     
-                     maximize: function (wid) {
-                         
-                         
-                         
-                         const meta = open_windows[wid];
-                         if (meta) { 
-                            if (meta.win==="remote") {
-                                remoteMaximize(wid,function(err,restoreInfo){
-                                    if (restoreInfo) {
-                                       meta.restore=restoreInfo;
-                                    }
-                                });
-                            } else {
-                                maximize(wid,function(err,restoreInfo){
-                                     if (restoreInfo) {
-                                        meta.restore=restoreInfo;
-                                     }
-                                 });
-                             }
-                         }
-                         
-                     },
-                     
-                     minimize: function (wid) {
-                         const meta = open_windows[wid];
-                         if (meta) { 
-                            if (meta.win==="remote") {
-                                remoteMinimize(wid,function(err,restoreInfo){
-                                                       if (restoreInfo) {
-                                                          meta.restore=restoreInfo;
-                                                       }
-                                                   });
-                            } else {
-                                minimize(wid,function(err,restoreInfo){
-                                     if (restoreInfo) {
-                                         meta.restore=restoreInfo;
-                                     }
-                                 });
-                             }
-                         }
-                     },
-                     
-                    promise : {
-                         
-                        open : function (opt){
-                             const {url, title,left,top, width,height} = opt;
-                             
-                             return new Promise( function(resolve,reject) {
-                                 const wid = openWindow(
-                                   url,
-                                   undefined,
-                                   left,
-                                   top,
-                                   width,
-                                   height,
-                                   undefined,
-                                   onClose,
-                                   onOpen 
-                                 );
-                                 
-                                 function onOpen(win,wid,meta){
-                                     
-                                     if (!meta.cross) {
-                                         
-                                         if (title) {
-                                             if (win.document.title!==title)
-                                             win.document.title=title;
-                                         }
-                                     
-                                         on_window_move (win,resavePos);
-                                         
-                                         on_window_size (win,resavePos);
-                                         
-                                         resolve(meta);
-                                     }
-                                     
-                                     events.open.forEach(
-                                         function(fn){ fn(win,wid,meta); }
-                                     );
-                                     
-                                     function resavePos() {
-                                         meta.lastTouch = Date.now();
-                                         open_windows.meta_dirty = true;
-                                         savePos(url,win.screenX,win.screenY,win.outerWidth,win.outerHeight);
-                                     }
-                                 }
-                 
-                                 function onClose(win,wid,meta){
-                                     events.close.forEach(function(fn){
-                                         fn(win,wid,meta);
-                                     });
-                                     open_windows.meta_dirty = true;
-                                     delete open_windows[wid];
-                                 }
-                             
-                         });
-                     },
-                     
-                     
-                        close : function (wid) {
-                            
-                             return new Promise(function (resolve,reject){
-                                 
-                                 const meta = open_windows[wid];
-                                 if (meta) {
-                                     lib.on("close",onClose);
-                                     meta.win.close();
-                                      
-                                 } else {
-                                     reject();
-                                 }
-                                 
-                                 function onClose(win,wid_,meta) {
-                                     if (wid===wid_) {
-                                         lib.off("close",onClose);
-                                         return resolve();
-                                     }
-                                 }
-                                 
-                             });
-                            
-                            
-                             
-                             
-                            
-                        },
-                     
-                     
-                     },
-                     
                      close : function (wid,cb) {
                          const meta = open_windows[wid];
                          if (meta) {
-                             if (meta.win==="remote") {
-                                remoteClose (wid,savePos,cb);
-                                
-                             } else {
-                                meta.win.close();
-                                return typeof cb==='function'?cb(undefined,meta):meta;
+                             if (typeof cb==='function') {
+                                 meta.win.on('close',cb);
                              }
+                             return meta.win.close();
                          }
                          const err = new Error("window "+wid+" not found");
                          if (typeof cb==='function') {
@@ -377,7 +180,7 @@
                          throw err;
                      },
                      
-                     getWindow : function(wid) {
+                     getMeta : function(wid) {
                          return open_windows [wid];
                      },
                      
@@ -520,99 +323,7 @@
                      });
                  }
                   
-             
-                 
-                 function on_window_close_poller (w,fn, interval) {
-                     if (w.closed) return fn();
-                     interval = interval || 500;
-                     setTimeout(on_window_close_poller, interval, w, fn, interval);
-                 }
-                 
-                 function on_window_close(w, fn) {
-                   if (typeof fn === "function" && w && typeof w === "object") {
-                     setTimeout(function() {
-                       if (w.closed) return fn(w);
-                 
-                       try {
-                         w[On]("beforeunload", function(){fn(w);});// this will throw for cross domain windows
-                       } catch (err) {
-                         on_window_close_poller(w,fn,500);
-                       }
-                     }, 1000);
-                   }
-                 }
-                 
-                 function on_window_open_poller (w,fn, interval) {
-                     if (w.closed) return ;
                      
-                     if (w.length>1) {
-                         return fn (w);
-                     }
-                     if (interval) {
-                         return setTimeout(fn, interval, w);   
-                     }
-                     return setTimeout(on_window_open_poller, 400, w, fn, 1500);
-                 }
-                 
-                 function on_window_open(w, fn) {
-                   if (typeof fn === "function" && w && typeof w === "object") {
-                     
-                     try {
-                       w[On]("load", function(){fn(w);});// this will throw for cross domain windows
-                     } catch (err) {
-                       //wait until 1 subfram exiss or 2 seconds, whatever happens first
-                       setTimeout(on_window_open_poller, 100, w, fn);
-                     }
-                   }
-                 }
-                 
-                 function on_window_move (w,fn) {
-                   
-                    if (typeof fn === "function" && w && typeof w === "object") {
-                     try {
-                       
-                       var
-                       last_top=w.screenY,last_left=w.screenX,
-                       check = function(){
-                          if(last_left != w.screenX || last_top != w.screenY){
-                             last_left = w.screenX;
-                             last_top = w.screenY; 
-                             fn(last_left,last_top);
-                            }
-                       },
-                       interval = setInterval(check,500);
-                       w[On]("resize", check);
-                       w[On]("focus", check);
-                       w[On]("blur", check);
-                       w.cancel_on_window_move = function(){
-                          if (interval) clearTimeout(interval);
-                          interval=undefined;
-                          w[Off]("resize", check);
-                          w[Off]("focus", check);
-                          w[Off]("blur", check);
-                          w[Off]("beforeunload",w.cancel_on_window_move);
-                       };
-                       
-                       w[On]("beforeunload",w.cancel_on_window_move);
-                       
-                     } catch (err) {
-                        
-                     }
-                   }
-                 }
-                 
-                 function on_window_size(w,fn) {
-                     if (typeof fn === "function" && w && typeof w === "object") {
-                         try {
-                           w[On]("resize", function(){
-                             fn(w.outerWidth,w.outerHeight);
-                           });
-                         } catch (err) {
-                           console.log(err);
-                         }
-                       }  
-                 }
-                 
                  function storageName (url) {
                      return typeof name==='string' ? "windowTools.pos@"+url : false; 
                  }
@@ -647,10 +358,31 @@
                      }
                  }
                  
-                 function appendScript(win,script) {
-                    let myScript = document.createElement("script");
-                    myScript.setAttribute("src", script);
-                    win.document.body.appendChild(myScript);
+                 
+                 function appendScript(win,scriptUrl,cb) {
+                    if (typeof win==='string') {
+                        cb=scriptUrl;
+                        scriptUrl=win;
+                        win=window;
+                    }
+                    let promise,scriptElement = win.document.createElement("script");
+                    scriptElement.type = "text/javascript"; 
+                    win.document.body.appendChild(scriptElement);
+                    if (typeof cb==='function') {
+                        scriptElement.addEventListener('load',function(){
+                            return cb (undefined,scriptElement);
+                        });
+                        scriptElement.addEventListener('error',cb);
+                    } else {
+                        promise = new Promise(function(resolve,reject){
+                            scriptElement.addEventListener('load',function(){
+                               resolve(scriptElement); 
+                            });
+                            scriptElement.addEventListener('error',reject);
+                        });  
+                    }
+                    scriptElement.setAttribute("src", scriptUrl);
+                    return promise;
                  }
                  
                  function saveOpenWindows(cb,args,THIS){
@@ -778,8 +510,7 @@
                                saveOpenWindows(onOpened,[w,wid,meta]);
                             });
                             
-                            on_window_close (w,saveOpenWindows.bind(this,onClosed,[w,wid,meta]));
-                            
+
                         } else {
                             saveOpenWindows();  
                         }
@@ -831,375 +562,6 @@
                       });
                  }
                  
-                 
-           
-         
-               
-               function captureWinPosition (meta,cb) {
-                   const win = meta.win;
-                   const cmds = [
-                     meta,
-                     [ win.moveTo,   [0,0]   ],
-                     [ win.resizeTo, [win.outerWidth,win.outerHeight] ]
-                   ];
-                   if (!(win.screenX===0&&win.screenY===0)) {
-                      cmds.push([ win.moveTo,  [win.screenX,win.screenY]   ]);
-                   }
-                   return typeof cb==='function'?cb(cmds):cmds;
-               }
-               
-         
-               function restoreCapturedState(cmds,cb) {
-                   const 
-                   win=cmds[0].win,
-                   len=cmds.length;
-                   for(var i = 1; i < len; i++) {
-                       var x = cmds[i];
-                       x[0].apply(win,x[1]);
-                       x[1].splice(0,2);
-                       x.splice(0,2);
-                   }
-                   cmds[0].fs_api.restore=function(){};
-                   cmds.splice(0,len);
-                   if (typeof cb==='function') cb();
-               }
-               
-               
-               function stringifyWindowPosition (meta,cb) {
-                 const CB=function (err,left,top,width,height){
-                     if (err) return cb (err);
-                     
-                     meta.left   = left;
-                     meta.top    = top;
-                     meta.width  = width;
-                     meta.height = height;
-         
-                     const cmds = [
-                       meta,
-                       [ 0,   [0,0]   ],
-                       [ 1, [meta.width,meta.height] ]
-                     ];
-                     if (!(meta.left===0&&meta.top===0)) {
-                        cmds.push([ 0,  [meta.left,meta.top]  ]);
-                     }
-                     return cb(JSON.stringify(cmds));
-                 };
-                 if (meta.win==="remote") {
-                     remoteGetPosition(meta.wid,CB);
-                 } else {
-                     CB(undefined,
-                        meta.win.screenX,
-                        meta.win.screenY,
-                        meta.win.outerWidth,
-                        meta.win.outerHeight
-                     );
-                 }
-                 
-             }
-             
-               function parseWindowPosition(json,meta,cb){
-                     const win=meta.win;
-                     if (win==="remote") {
-                           restoreRemotePosition(meta.wid,json,cb);          
-                     } else {
-                         const 
-                         cmds =JSON.parse(json),
-                         fn=[win.moveTo,win.resizeTo],
-                         len=cmds.length;
-                         for(var i = 0; i < len; i++) {
-                             var x = cmds[i];
-                             fn[ x[0] ].apply(win,x[1]);
-                             x[1].splice(0,2);
-                             x.splice(0,2);
-                         }
-                         cb();
-                     }
-                 
-               }
-               
-               
-               
-               function decodeRemotePos(json,cb) {
-                   let left,top,width,height;
-                   try{
-                       JSON.parse(json).forEach(function(x){
-                           switch (x[0]) {
-                              case win_moveTo://"moveTo" : 
-                                 left = x[1][0];
-                                 top  = x[1][1];
-                                 break;
-                              case win_resizeTo://"resizeTo":
-                                 width  = x[1][0];
-                                 height = x[1][1];
-                               break;
-                           }
-                       });
-                       cb(undefined,left,top,width,height);
-                   } catch(e) {
-                       cb(e);
-                   }
-               }
-               
-               function remoteClose(wid,cb) {
-                   const meta = open_windows[wid];
-                   if (!meta) return;
-                   
-                   const closeKey  = "windowTools.cmd."+wid+".close";
-                   const closedKey = "windowTools.cmd."+wid+".closed";
-                  
-                   self.addEventListener('storage',waitClosed);
-                   var tmrId;
-                   function waitClosed(force) {
-                        
-                        const json = localStorage.getItem(closedKey);
-                        if (json) {
-                            
-                           if (tmrId) {
-                               clearTimeout(tmrId);
-                               tmrId=undefined;
-                           } 
-                           self.removeEventListener('storage',waitClosed);
-                           localStorage.removeItem(closedKey);
-                           decodeRemotePos(json,function(err,left,top,width,height){
-                               savePos(meta.url,left,top,width,height,function(){
-                                   delete open_windows[wid];
-                                   open_windows.meta_dirty = true;
-                                   if (typeof cb==='function') cb();
-                               });
-                           });
-                        }
-                        if (force===true) {
-                            throw new Error("remote close failed");
-                        }
-                   }
-                   
-                   localStorage.setItem(closeKey,"1");
-                   
-                   tmrId = setTimeout(function(){
-                       clearTimeout(tmrId);
-                       tmrId = undefined;
-                       waitClosed(true);
-                   },5000);
-               
-               }
-               
-               
-               function restoreRemotePosition ( wid,json_cmd,  cb){
-                   const meta = open_windows[wid];
-                   if (!meta) return;
-                   
-                   const positionKey    = "windowTools.cmd."+wid+".position";
-                   const positionReplyKey    = "windowTools.cmd."+wid+".position.reply";
-                   
-                   self.addEventListener('storage',waitMoved);
-                   
-               
-                   var tmrId;
-                   function waitMoved(timeout) {
-                        const json = localStorage.getItem(positionReplyKey);
-                        if (json) {
-                            
-                           if (tmrId) {
-                               clearTimeout(tmrId);
-                               tmrId=undefined;
-                           } 
-                           self.removeEventListener('storage',waitMoved);
-                           
-                           decodeRemotePos(json,function(err,left,top,width,height){
-                               if (err) return cb (err);
-                               meta.lastTouch = Date.now();
-                               open_windows.meta_dirty = true;
-                               savePos(meta.url,left,top,width,height,function () {
-                                   cb (undefined,left,top,width,height);
-                               });
-                           });
-                        }
-                        if (timeout===true) {
-                            return cb( new Error("restoreRemotePosition timed out"));
-                        }
-                   }
-                   
-                   localStorage.setItem(positionKey,json_cmd);
-                   
-                   tmrId = setTimeout(function(){
-                       clearTimeout(tmrId);
-                       tmrId = undefined;
-                       waitMoved(true);
-                   },5000);
-               }
-                   
-              function remoteReposition(wid,left,top,width,height,cb) {
-                 
-                 if (!open_windows[wid]) return cb (new Error("window "+wid+" not found"));
-                 
-                 const cmd = [
-                     [ 0,   [0,0] ],
-                     [ 1, [width,height] ]
-                 ];
-                 
-                 if (!( left===0 && top ===0 )) {
-                     cmd.add ([ 0,   [left,top] ]);
-                 }
-                 
-                 restoreRemotePosition ( wid,JSON.stringify(cmd),  cb)
-             }
-         
-             
-              function remoteGetPosition(wid,cb) {
-                  
-                  const meta = open_windows[wid];
-                  if (!meta) return;
-              
-                  const reportPositionKey  = "windowTools.cmd."+wid+".reportPosition";
-                  const reportPositionReplyKey  = "windowTools.cmd."+wid+".reportPosition.reply";
-                  
-                 self.addEventListener('storage',waitPosition);
-                 
-             
-                 var tmrId;
-                 function waitPosition(timedout) {
-                      
-                      const json = localStorage.getItem(reportPositionReplyKey);
-                      if (json) {
-                         if (tmrId) {
-                             clearTimeout(tmrId);
-                             tmrId=undefined;
-                         } 
-                         self.removeEventListener('storage',waitPosition);
-                         localStorage.removeItem(reportPositionReplyKey);  
-                         decodeRemotePos(json,cb);
-                      }
-                      if (timedout===true) {
-                          throw new Error("remote close failed");
-                      }
-                 }
-                 
-                 localStorage.setItem(reportPositionKey,'1');
-                 
-                 tmrId = setTimeout(function(){
-                     clearTimeout(tmrId);
-                     tmrId = undefined;
-                     waitPosition(true);
-                 },5000);
-             
-             }
-             
-              function remoteMaximize (wid,cb) {
-                  
-                  const meta = open_windows[wid];
-                  if (!meta) return;
-                  
-                  
-                  remoteReposition(
-                      wid,0,0,screen.availWidth,screen.availHeight,
-                      function (err,prevLeft,prevTop,prevWidth,prevHeight) {
-                          if ( 0===prevLeft&&
-                               0===prevTop&&
-                               screen.availWidth===prevWidth&&
-                               screen.availHeight===prevHeight
-                            ) return cb ();// was already maximized
-                          
-                          // send previous position back as restore command
-                          cb (undefined,[
-                             [ win_moveTo,  [ 0,0 ]                 ],
-                             [ win_resizeTo,[ prevWidth,prevHeight] ],
-                             [ win_moveTo,  [ prevLeft,prevTop]     ]
-                         ]);
-                      });
-              } 
-              
-              
-                      
-              function maximize (wid,cb) {
-                 
-                 const meta = open_windows[wid];
-                 if (!meta) return;
-                 
-                 
-                 const 
-                 
-                 prevLeft  = meta.win.screenX,
-                 prevTop   = meta.win.screenY,
-                 prevWidth = meta.win.outerWidth,
-                 prevHeight= meta.win.outerHeight;
-                 
-                 restoreCapturedState(getMaximizedPosition(meta.win));
-                 
-                 if ( 0===prevLeft &&
-                      0===prevTop  &&
-                      screen.availWidth===prevWidth&&
-                      screen.availHeight===prevHeight
-                   ) return cb ();// was already maximized
-                 
-                 // send previous position back as restore command
-                 cb (undefined,[
-                    [ win_moveTo,  [ 0,0 ]                 ],
-                    [ win_resizeTo,[ prevWidth,prevHeight] ],
-                    [ win_moveTo,  [ prevLeft,prevTop]     ]
-                ]);
-             } 
-                 
-                      
-              function minimize (wid,cb) {
-                  
-                  const meta = open_windows[wid];
-                  if (!meta) return;
-                  
-                  
-                  const 
-                  
-                  prevLeft  = meta.win.screenX,
-                  prevTop   = meta.win.screenY,
-                  prevWidth = meta.win.outerWidth,
-                  prevHeight= meta.win.outerHeight;
-                  
-                  restoreCapturedState(getMinimizedPosition(meta.win));
-                  
-                  if ( minimizedLeft   === prevLeft &&
-                       minimizedTop    === prevTop &&
-                       minimizedWidth  === prevWidth&&
-                       minimizedHeight === prevHeight
-                    ) return cb ();// was already maximized
-                  
-                  // send previous position back as restore command
-                  cb (undefined,[
-                     [ win_moveTo,  [ 0,0 ]                 ],
-                     [ win_resizeTo,[ prevWidth,prevHeight] ],
-                     [ win_moveTo,  [ prevLeft,prevTop]     ]
-                 ]);
-              }     
-                  
-              function remoteMinimize (wid,cb) {
-                  
-                  const meta = open_windows[wid];
-                  if (!meta) return;
-                  
-                  const 
-                  
-                  newLeft   = screen.availWidth-minimizedWidth,
-                  newTop    = screen.availHeight-minimizedHeight;
-         
-                  remoteReposition(
-                      wid,newLeft,newTop,minimizedWidth,minimizedHeight,
-                      function (err,prevLeft,prevTop,prevWidth,prevHeight) {
-                          if ( newLeft         === prevLeft&&
-                               newTop          === prevTop&&
-                               minimizedWidth  === prevWidth&&
-                               minimizedHeight === prevHeight
-                            ) return cb ();// was already maximized
-                          
-                          // send previous position back as restore command
-                          cb (undefined,[
-                              
-                             [ win_moveTo,   [0,0]                  ],
-                             [ win_resizeTo, [prevWidth,prevHeight] ],
-                             [ win_moveTo,   [prevLeft,prevTop]     ]
-                             
-                         ]);
-                      });
-              } 
-                 
-                 
              },
       
     ServiceWorkerGlobalScope : function wTools(setKey_,getKey) {
@@ -1213,44 +575,689 @@
   },
   {
       Window : [
-        function setKey(k,v,cb) {
-            try { 
-                 const json = JSON.stringify(v);
-                 localStorage.setItem(k,json);
-                 if (self.localforage) {
-                     self.localforage.setItem(k,v,function(){});
-                 }
-                  //setTimeout(cb,0);
-                 cb();
-             } catch (e) {
-                 //setTimeout(cb,0,e);
-                 cb(e)
-             }
-        },
-        function getKey(k,cb) {
-            try {
-               //setTimeout(cb,0,undefined,JSON.parse(localStorage.getItem(k)));
-               cb (undefined,JSON.parse(localStorage.getItem(k)));
-            } catch (e) {
-               //setTimeout(cb,0,e);
-               cb(e)
-            }
-        }
+        () => setLocalKey,
+        () => getLocalKey,
+        () => self.wToolsLib,
+        () => wToolsRemote
           
       ],
       ServiceWorkerGlobalScope :[
-          function setKey(k,v,cb) {
-               self.localforage.setItem(k,v).then(function(){
-                   cb();
-               }).catch(cb);
-          },
-          function getKey(k,cb) {
-              self.localforage.getItem(k).then(function(v){
-                  cb(undefined,v);
-              }).catch(cb);
-          }
+          () => setForageKey,
+          () => getForageKey,
+          () => wToolsRemote
             
         ],
     }
 );      
-      
+
+
+    function setLocalKey(k,v,cb) {
+        try { 
+             const json = JSON.stringify(v);
+             localStorage.setItem(k,json);
+             if (self.localforage) {
+                 self.localforage.setItem(k,v,function(){});
+             }
+             cb();
+         } catch (e) {
+             cb(e)
+         }
+    }
+    
+    function getLocalKey(k,cb) {
+        try {
+           cb (undefined,JSON.parse(localStorage.getItem(k)));
+        } catch (e) {
+           cb(e)
+        }
+    }
+    
+    function setForageKey(k,v,cb) {
+         self.localforage.setItem(k,v).then(function(){
+             cb();
+         }).catch(cb);
+    }
+    
+    
+    function getForageKey(k,cb) {
+        self.localforage.getItem(k).then(function(v){
+            cb(undefined,v);
+        }).catch(cb);
+    }
+    
+    function wToolsRemote(meta,wToolsLib) {
+        
+        const On="addEventListener";
+        const Off="removeEventListener";
+        var cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice);
+        
+        var positionKey;             
+        var positionReplyKey;        
+        var reportPositionKey;       
+        var reportPositionReplyKey;
+        
+        var closeKey;                
+        var closedKey;  
+        var moveTrackingKey;        
+        var moveTrackingUpdateKey;
+        
+        var setWindowStateKey;
+        var getWindowStateKey;
+        
+        var dbStorageKeyPrefix,dbStorageKeyPrefixLength;
+        
+        setWid(meta.wid);
+        
+        const libEvents = {
+            
+            move       : [],
+            size       : [],
+            minimized  : [],
+            maximized  : [],
+            restored   : [],
+            fullscreen : [],
+            closed     : [],
+            state      : []
+        };
+        
+        const Hysteresis={};   
+        
+    
+        
+        const { 
+            minimizedHeight,
+            minimizedWidth,
+            minimizedLeft,
+            minimizedTop,
+            maximizedHeight,
+            maximizedWidth,
+            maximizedLeft,
+            maximizedTop,
+            
+            win_moveTo,
+            win_resizeTo,
+            maximizedPosition,maximizedPositionJSON,
+            minimizedPosition,minimizedPositionJSON,
+            
+            
+            
+            windowId
+            
+        } = wToolsLib;
+        
+        
+        const {
+            setForageKey   ,
+            getForageKey   ,
+            removeForageKey   ,
+            getForageKeys     ,
+            setLocalKey       ,
+            getLocalKey       ,
+            removeLocalKey    ,
+            getLocalKeys      ,
+            getDB   ,
+            setDB 
+    
+        } = wToolsLib.dbEngine(filterLocalKeys,convertStorageToLocalKey,convertLocalToStorageKey);
+        
+         var lib = {
+             win_moveTo              : win_moveTo,
+             win_resizeTo            : win_resizeTo,
+             stringifyWindowPosition : stringifyWindowPosition,
+             parseWindowPosition     : parseWindowPosition,
+             on                      : addLibEvent,
+             off                     : removeLibEvent,
+             param                   : getUrlParam,
+             
+             
+             storageKeys : {},
+             windowState : {
+                 
+             },
+             
+             
+             restoreStateStack : []
+         };
+         
+         Object.defineProperties(lib,{
+              wid : {
+                  get : getWid,
+                  set : setWid,
+                  enumerable : true
+              },
+              urlParams : {
+                  get : getUrlVars,
+                  enumerable : true
+              },
+              getKeys :  {
+                  value : typeof localforage==='undefined' ? getLocalKeys : getForageKeys,
+                  writable    : false,
+                  enumerable  : true,
+                  configurage :true,
+              },
+              getKey :  {
+                  value : typeof localforage==='undefined' ? getLocalKey : getForageKey,
+                  writable    : false,
+                  enumerable  : true,
+                  configurage :true,
+              },
+              setKey :  {
+                  value : typeof localforage==='undefined' ? setLocalKey : setForageKey,
+                  writable    : false,
+                  enumerable  : true,
+                  configurage :true,
+              },
+              
+              removeKey : {
+                  value       : typeof localforage==='undefined' ? removeLocalKey : removeForageKey,
+                  writable    : false,
+                  enumerable  : true,
+                  configurage :true,
+              },
+              getDB :  {
+                  value       : getDB,
+                  writable    : false,
+                  enumerable  : true,
+                  configurage :true,
+              },
+              setDB : {
+                  value       : setDB,
+                  writable    : false,
+                  enumerable  : true,
+                  configurage : true,
+              },
+              close : {
+                  value       : doClose,
+                  writable    : false,
+                  enumerable  : true,
+                  configurage : true,
+              }
+         });
+         
+         Object.defineProperties(lib.storageKeys,{
+             positionKey             : { get : function () {return positionKey;},            enumerable : true},
+             positionReplyKey        : { get : function () {return positionReplyKey;},       enumerable : true},
+             reportPositionKey       : { get : function () {return reportPositionKey;},      enumerable : true},
+             reportPositionReplyKey  : { get : function () {return reportPositionReplyKey;}, enumerable : true},
+             closeKey                : { get : function () {return closeKey;},               enumerable : true},
+             closedKey               : { get : function () {return closedKey;},              enumerable : true},
+             
+             moveTrackingKey         : { get : function () {return moveTrackingKey;},        enumerable : true},
+             moveTrackingUpdateKey   : { get : function () {return moveTrackingUpdateKey;},  enumerable : true},
+             
+             setWindowStateKey       : { get : function () {return setWindowStateKey;},      enumerable : true},
+             getWindowStateKey       : { get : function () {return getWindowStateKey;},     enumerable : true},
+         
+             dbStorageKeyPrefix      : { get : function () {return dbStorageKeyPrefix;},     enumerable : true},
+        
+         });
+         
+         Object.defineProperties(lib.windowState,{
+              maximized : {
+                  get        : getIsMaximized,
+                  set        : setIsMaximized,
+                  enumerable : true
+              },
+              minimized : {
+                  get        : getIsMinimized,
+                  set        : setIsMinimized,
+                  enumerable : true
+              },
+              
+              fullscreen : {
+                  
+                  get        : getIsFullscreen,
+                  set        : setIsFullscreen,
+                  enumerable : true
+              },
+              
+              position : {
+                  get        : stringifyWindowPosition,
+                  set        : parseWindowPosition,
+                  enumerable : false
+              },
+              state  : {
+                  get        : getWindowState ,
+                  set        : setWindowState,       
+                  enumerable : false
+              },
+              
+             verboseState  : {
+                  get        : getVerobseState,
+                  set        : setVerobseState,
+                  enumerable : false
+             }
+         });
+            
+         return lib;
+         
+         
+         // getWid() returns the  value assigned to window.wid (it's the setter for lib.wid)
+         function getWid() {
+             return meta.wid;
+         }
+     
+         // setWid() used to assign a new window id (also updates the storageKeys for this window (it's the getter for lib.wid)
+         function setWid(id) {
+             meta.wid=id;
+             positionKey             = "windowTools.cmd."+id+".position";
+             positionReplyKey        = "windowTools.cmd."+id+".position.reply";
+             reportPositionKey       = "windowTools.cmd."+id+".reportPosition";
+             reportPositionReplyKey  = "windowTools.cmd."+id+".reportPosition.reply";
+             closeKey                = "windowTools.cmd."+id+".close";
+             closedKey               = "windowTools.cmd."+id+".closed";
+             moveTrackingKey         = "windowTools.cmd."+id+".position.tracking";
+             moveTrackingUpdateKey   = "windowTools.cmd."+id+".position.tracking.update";
+             
+             setWindowStateKey       = "windowTools.cmd."+id+".position.tracking.state";
+             getWindowStateKey       = "windowTools.cmd."+id+".position.tracking.getState";
+             
+             dbStorageKeyPrefix      = "windowTools.cmd."+id+".db.kvStore.";
+             dbStorageKeyPrefixLength = dbStorageKeyPrefix.length;
+             
+         }
+         
+         
+         // add a handler for THIS window - move,size,minimized,maximized, restored, fulscreen(true/false),state, closed
+         function addLibEvent (e,fn) {
+             if (typeof e==='string'+typeof fn==='stringfunction') {
+                 const fns = libEvents[e];
+                 if (Array.isArray(fns)) {
+                     if ( fns.indexOf(fn) < 0 ) {
+                         fns.push(fn);
+                     }
+                 }
+             }
+         }
+         
+         // remove previously added handler for THIS window
+         function removeLibEvent (e,fn) {
+            if (typeof e==='string'+typeof fn==='stringfunction') {
+                const fns = libEvents[e];
+                if (Array.isArray(fns)) {
+                    const ix = fns.indexOf(fn);
+                    if (ix >=0 ) {
+                       fns.splice(ix,1);
+                    }
+                }
+            }
+         }
+         
+         // emit an event for this window
+         function emitLibEvent (e) {
+             if (typeof e==='string') {
+                 const fns = libEvents[e], args = cpArgs(arguments,1);
+                 if (Array.isArray(fns)) {
+                     fns.forEach(function(fn) {
+                         fn.apply(this,args);
+                     });
+                 }
+             }
+         }
+         
+         // emit an event for this window, after h msec (replaces any pending events issued via emitLibEventwithHysteresis() for "e")
+         function emitLibEventwithHysteresis (h,e) {
+             if (typeof e==='string') {
+                 const fns = libEvents[e];
+                 if (Array.isArray(fns)) {
+                     
+                     if (Hysteresis[e]) {
+                         clearTimeout(Hysteresis[e]);
+                     }
+                     const args = cpArgs(arguments,2);
+                     Hysteresis[e] = setTimeout(
+                       function () {
+                           delete Hysteresis[e];
+                           fns.forEach(function(fn) {
+                               fn.apply(this,args);
+                           });
+                       },h);
+                 }
+             }
+         }
+         
+         
+         function refreshPosition(capture) {
+             const json = localStorage.getItem(moveTrackingUpdateKey);
+             if (json) {
+                 localStorage.removeItem(moveTrackingUpdateKey);
+                 parseWindowPosition(json,capture);
+                 return json;
+             }
+         }
+         
+         // returns getIsMaximized() true/false indicating if this window is currently maximized (getter for lib.windowState.maximized)
+         function getIsMaximized() {
+             refreshPosition();
+             return meta.left===maximizedLeft&&
+                    meta.top===maximizedTop&&
+                    meta.width===maximizedWidth&&
+                    meta.height===maximizedHeight;
+         }
+         
+         // setIsMaximized(true/false) lets you maximize/restore the window
+         function setIsMaximized(v) {
+            
+             if (typeof v==="boolean") {
+                 const isTracking=!!localStorage.getItem(moveTrackingKey);
+                 if (v) {
+                     if (!getIsMaximized()){
+                         lib.restoreStateStack.push( lib.windowState.position );
+                         lib.windowState.position = maximizedPositionJSON; 
+                         emitLibEvent('maximized');
+                         
+                     }
+                     if ( isTracking ) {
+                         localStorage.setItem(setWindowStateKey,'maximized');
+                     }
+                 } else {
+                     let emit=false;
+                     while (getIsMaximized()) {
+                         const json = lib.restoreStateStack.pop();
+                         if (typeof json==='string') {
+                             emit=true;
+                             lib.windowState.position = json;
+                         } else {
+                             break;
+                         }
+                     }
+                     if (emit) emitLibEvent('restored');
+                     
+                     if ( isTracking) {
+                         localStorage.setItem(setWindowStateKey,'normal');
+                     }
+                 }
+             } else {
+                 throw new Error ("maximized should be boolean");
+             }
+         }
+         
+         // getIsMinimized() returns true/false indicating if this window is currently minimized (getter for lib.windowState.minimized)
+         function getIsMinimized() {
+             refreshPosition();
+             return meta.left===minimizedLeft&&
+                    meta.top===minimizedTop&&
+                    meta.width===minimizedWidth&&
+                    meta.height===minimizedHeight;
+         }
+         
+         // setIsMinimized(true/false) lets you minimize/restore the window
+         function setIsMinimized(v) {
+             if (typeof v==="boolean") {
+                 const isTracking=!!localStorage.getItem(moveTrackingKey);
+                if (v) {
+                    if (!getIsMinimized()){
+                        lib.restoreStateStack.push( lib.windowState.position );
+                        lib.windowState.position = minimizedPositionJSON ; 
+                        emitLibEvent('minimized');
+                    }
+                    if ( isTracking ) {
+                        localStorage.setItem(setWindowStateKey,'minimized');
+                    }
+                } else {
+                    let emit=false;
+                    while (getIsMinimized()) {
+                        
+                        const json = lib.restoreStateStack.pop();
+                        if (typeof json==='string') {
+                            emit=true;
+                            lib.windowState.position = json;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (emit) emitLibEvent('restored');
+                    if ( isTracking ) {
+                        localStorage.setItem(setWindowStateKey,'normal');
+                    }
+                } 
+             } else {
+                 throw new Error ("minimized should be boolean");
+             }
+         }
+         
+         
+         // getIsFullscreen() returns true/false indicating if this window is currently fullscreen (getter for lib.windowState.fullscreen)
+         function getIsFullscreen (){
+             return localStorage.getItem(setWindowStateKey)==="fullscreen";
+         }
+         
+         // setIsFullscreen(true/false) lets you enter/exit fullscreen
+         function setIsFullscreen (v){
+             // can't set fullscreen remotely
+         }
+         
+         
+         // getWindowState() returns a string indicating window state
+         function getWindowState() { 
+                return getIsFullscreen() ? 'fullscreen' :
+                       getIsMaximized()  ? 'maximized'  : 
+                       getIsMinimized()  ? 'minimized'  : 
+                                           'normal'; 
+         }
+         
+         
+         // getWindowState() takes a string to set window state
+         function setWindowState(v) {
+             if (typeof v === 'string') {
+                 switch (v) {
+                     case "fullscreen" : 
+                         if (getIsMaximized()) setIsMaximized(false);
+                         if (getIsMinimized()) setIsMinimized(false);
+                         return  setIsFullscreen(true);
+                    case "maximized" : 
+                        if (getIsFullscreen()) setIsFullscreen(false);
+                        if (getIsMinimized()) setIsMinimized(false);
+                        return  setIsMaximized(true);
+                    case "minimized" : 
+                        if (getIsFullscreen()) setIsFullscreen(false);
+                        if (getIsMaximized())  setIsMaximized(false);
+                        return  setIsMinimized(true);
+                    default:
+                        if (getIsFullscreen()) setIsFullscreen(false);
+                        if (getIsMaximized())  setIsMaximized(false);
+                        if (getIsMinimized())  setIsMinimized(false);
+                 }
+             } else {
+                   throw new Error ("state should be string");  
+             }
+         }
+         
+         
+         // getVerobseState() returns a string indicating window state with verbose info
+         function getVerobseState () { 
+             const restore =  
+             
+                 (  lib.restoreStateStack.length>0) ? 
+                        (function(X){ return " (restores to "+X[1][0]+"x"+X[1][1]+" @ "+X[2][0]+","+X[2][1]+")" })
+                        (lib.restoreStateStack.slice(-1)[0]
+                 ) : '' ;
+             
+             if (getIsMaximized()) return "maximized"+restore;
+             if (getIsMinimized()) return "minimized"+restore;
+             
+             return "normal ("+meta.width+"x"+meta.height+" @ "+meta.left+","+meta.top+")"; 
+             
+         }
+         
+         // setVerobseState() takes a string to set window state
+         function setVerobseState(v) {
+             
+             if (typeof v === 'string') {
+                    const isTracking=!!localStorage.getItem(moveTrackingKey);
+                    if (["maximized","minimized","fullscreen"].some(function(state){
+                        if (  v===state || v.replace(/\s/g,'').startsWith( state+"(" ) ){
+                            lib.windowState.state = state;
+                            return true;
+                        }
+                        
+                    })) return ;
+                    
+                    if (v==="normal") {
+                        lib.windowState.state = v;
+                        return ;
+                    }
+                    
+                    if ( v.replace(/\s/g,'').startsWith( "normal(" ) ){
+                         const parts = v.split ('@').map(function(x,index){
+                             const subparts = x.split('(')[1].split(')')[0].trim().split(index===0?"x":",");
+                             
+                             return [ Number.parseInt(subparts[0]),Number.parseInt(subparts[1]) ];
+                         });
+                         
+                         const [ [width,height] , [left, top] ] = parts;
+                         
+                         if ( isNaN(width) || isNaN(height) || isNaN(left) || isNaN(top)) {
+                             // ignore garbage co-ords
+                             lib.windowState.state = "normal";
+                             return;
+                         }
+                         
+                         lib.windowState.position = JSON.stringify([
+                           [  win_moveTo,   [ maximizedLeft,maximizedTop ] ],
+                           [  win_resizeTo, [ width,height ]   ],
+                           [  win_moveTo,   [ left,top ]       ],  
+                         ]);
+                         
+                         if ( isTracking ) {
+                             localStorage.setItem(setWindowStateKey,lib.windowState.state);
+                         }
+                        
+                    }
+                    
+     
+             } else {
+                 throw new Error ("verboseState should be string");  
+     
+             }
+     
+         }
+             
+         
+             
+             
+         // used to get param strings passed to this window
+         function getUrlParam(parameter, defaultvalue){
+             if(meta.url.indexOf(parameter) > -1){
+                 var result,ignore=meta.url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+                     if (!result&&key===parameter) {
+                         result = value;
+                     }
+                 });
+                 return result;
+             }
+             return defaultvalue;
+         }
+         
+         // used to get all params passed to this window's url, as an object
+         function getUrlVars() {
+             var vars = {},ignore = meta.url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+                 vars[key] = value;
+             });
+             return vars;
+         }
+          
+          
+         //internal func intened to be passed to Array.prototype.filter
+         function filterLocalKeys(k) {
+             return k.startsWith(dbStorageKeyPrefix);
+         }
+         
+         //internal func intened to be passed to Array.prototype.map
+         function convertStorageToLocalKey(k) {
+             return k.substr(dbStorageKeyPrefixLength);
+         }
+         
+         //internal func intened to be passed to Array.prototype.map (or used as key for localStorage/localforage getItem etc)
+         function convertLocalToStorageKey(k) {
+             return dbStorageKeyPrefix+k;
+         }
+         
+         
+        //  stringifyWindowPosition() returns a JSON payload than can be passed into 
+        //    parseWindowPosition() to restore the window location  
+         function stringifyWindowPosition (sliceFrom) {
+             // we basically proxy the change tracked updates from the remote window.
+             // there are a few optumisations however....
+             sliceFrom = sliceFrom||0;
+             const capture = [ null, null ];
+             const json = refreshPosition();
+             // if refreshPosition is a strig, its the latest json payload updating the co-ods
+             // unless caller wants an abreviated slice, that's exactly what is being asked for,
+             if ( (typeof json==='string') && ( sliceFrom === 0) ) return json;
+             
+             // either data hasn't changed, or caller wants a slice, so restringify
+             
+             const cmds = [
+               [ win_moveTo,   [maximizedLeft,maximizedTop]   ],
+               [ win_resizeTo, [meta.width,meta.height] ]
+             ];
+             if (!(meta.left===maximizedLeft&&meta.top===maximizedTop)) {
+                cmds.push([ win_moveTo,  [ meta.left, meta.top  ]  ]);
+             }
+             return JSON.stringify(cmds.slice(sliceFrom));
+         }
+     
+         // parseWindowPosition() takes a JSON payload created by stringifyWindowPosition() 
+         // it restores the window position to how it was when stringifyWindowPosition() was invoked
+         function parseWindowPosition(json,capture){
+             const 
+             w={},
+             cmds =JSON.parse(json),
+             fn=[w_moveTo,w_resizeTo],
+             len=cmds.length;
+             for(var i = 0; i < len; i++) {
+                 var x = cmds[i];
+                 if (capture) capture[ x[0] ] = x[1];
+                 fn[ x[0] ].apply(w,x[1]);
+                 x[1].splice(0,2);
+                 x.splice(0,2);
+             }
+             
+             function w_moveTo (left,top){
+                 meta.left = left;
+                 meta.top = top;
+             }
+             
+             function w_resizeTo (width,height) {
+                 meta.width=width;
+                 meta.height=height;
+             }
+         }
+         
+         
+         function doClose(){
+             localStorage.setItem(closeKey,'1');
+         }
+          
+         
+    }
+    
+    
+    function on_window_open_poller (w,fn, interval) {
+        if (w.closed) return ;
+        
+        if (w.length>1) {
+            return fn (w);
+        }
+        if (interval) {
+            return setTimeout(fn, interval, w);   
+        }
+        return setTimeout(on_window_open_poller, 400, w, fn, 1500);
+    }
+    
+    function on_window_open(w, fn) {
+      if (typeof fn === "function" && w && typeof w === "object") {
+        
+        try {
+          w.addEventListener("load", function(){fn(w);});// this will throw for cross domain windows
+        } catch (err) {
+          //wait until 1 subfram exiss or 2 seconds, whatever happens first
+          setTimeout(on_window_open_poller, 100, w, fn);
+        }
+      }
+    }
+    
+
+
+});
