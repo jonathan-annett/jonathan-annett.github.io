@@ -1,7 +1,8 @@
 /*global self */
 /*global self,localforage*/
 
-(function (B,O0,T){let boot = function(oo) {
+(function (B,O0,T){
+    let boot = function(oo) {
        if (O0.length===0){
           T();
        } else {
@@ -9,6 +10,7 @@
            setTimeout(boot,10,O0.filter(function(x){ return !B[x];}));
        }
    }
+   boot();
 })(self,['wToolsLib'],function (){
     
     
