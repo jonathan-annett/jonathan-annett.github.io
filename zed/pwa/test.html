@@ -11,6 +11,15 @@
     <script>
     
     
+     
+        const data = localStorage.getItem("test-debug");
+        
+        if (!data) {
+           localStorage.setItem("test-debug",'1'; 
+        } else {
+           document.querySelector("input").value = data;
+        }
+    
        function increment(){
            
            const data = localStorage.getItem("test-debug");
@@ -23,7 +32,7 @@
                
                dataNum++;
                
-               localStorage.setItem("test-debug-out",dataNum.toString());
+               localStorage.setItem("test-debug",dataNum.toString());
                
                
            }
