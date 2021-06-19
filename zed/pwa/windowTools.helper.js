@@ -9,7 +9,7 @@
 
         //const w=window;
         
-        const keynames_  = "positionKey,positionReplyKey,reportPositionKey,reportPositionReplyKey,closeKey,closedKey,moveTrackingKey,moveTrackingUpdateKey,setWindowStateKey,getWindowStateKey,dbStorageKeyPrefix,dbStorageKeyPrefixLength"; 
+        const keynames_  = "positionKey,positionReplyKey,reportPositionKey,reportPositionReplyKey,closeKey,closedKey,moveTrackingKey,moveTrackingUpdateKey,setWindowStateKey,getWindowStateKey,dbStorageKeyPrefix,dbStorageKeyPrefixLength,ping"; 
         const keynames=keynames_.split(",");
         
         setWid(window.wid || createWindowId() );
@@ -84,6 +84,8 @@
              restoreStateStack   : readOnlyValue([]),
              windowState         : readOnlyGetter(getWindowState.bind(this,lib,'windowState')),
              
+             
+             
              on                  : readOnlyValue(addLibEvent),
              off                 : readOnlyValue(removeLibEvent),
              addEventListener    : readOnlyValue(addLibEvent),
@@ -96,7 +98,10 @@
              
              getDB               : readOnlyValue(getDB),
              setDB               : readOnlyValue(setDB),
+             
              close               : readOnlyValue(window.close.bind(window)),
+             
+             ping                : readOnlyValue(doPing),
              
         });
         
@@ -363,8 +368,7 @@
                                           'normal'; 
         }
         
-        
-        // getState() takes a string to set window state
+            // getState() takes a string to set window state
         function setState(v) {
             if (typeof v === 'string') {
                 switch (v) {
@@ -389,6 +393,17 @@
                   throw new Error ("state should be string");  
             }
         }
+        
+        
+        
+        function doPing (cb) {
+            if (typeof cb!=='function' || window.closed) return;
+            setTimeout(cb,1,!window.closed);
+        }
+        
+        
+       
+
         
         
         // getVerboseState() returns a string indicating window state with verbose info
@@ -468,7 +483,8 @@
                 const k=lib.storageKeys,
                     positionKey=k.positionKey,
                     closeKey=k.closeKey,
-                    reportPositionKey=k.reportPositionKey ;
+                    reportPositionKey=k.reportPositionKey,
+                    ping=k.ping;
                 const positionArgs   = localStorage.getItem(positionKey);
                 
                 checkTracking(); 
@@ -492,7 +508,12 @@
                             beforeunloadEvent();
                             localStorage.removeItem(closeKey);
                             window.close();
-                        }
+                        }  else {
+                             const pingArgs = localStorage.getItem(ping);
+                             if (pingArgs) {
+                                 localStorage.removeItem(ping);
+                             }
+                         }
                     }
                 }
             }
@@ -1076,8 +1097,6 @@
             };
         }
             
-        
-  
         function readOnlyGetter(getter) {
             return {
                         get          : getter,
@@ -1085,10 +1104,7 @@
                         configurable : true,
             };
         }
-        
-        
-  
-        
+    
         function readWriteGetSetter(getter,setter) {
             return {
                         get          : getter,
@@ -1182,6 +1198,14 @@
                    return getSKNames()[keyname];
                 });
            });
+           
+           
+           sks.__readOnlyValue('cleanupStorage',cleanupStorage);
+           
+           function cleanupStorage() {
+               keynames.forEach(localStorage.removeItem.bind(localStorage));
+           }
+            
            return cloneReadOnly(sks,inside,named);
         }
         
@@ -1196,6 +1220,9 @@
                 verboseState  : readWriteGetSetter(getVerboseState,setVerboseState),
            });
         }
+        
+        
+        
         
         function getApi (inside,named) {
             

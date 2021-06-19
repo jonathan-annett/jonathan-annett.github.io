@@ -47,6 +47,15 @@ multiLoad(__ml1(),['wToolsLib'],function(){__ml2(__ml3(),__ml4(),
                            function (wid) {
                               const meta = prev[wid];
                               meta.win   = wToolsRemote(meta,wToolsLib);
+                              meta.win.ping(function (stillAlive){
+                                  if (stillAlive) return;
+                                  
+                                  meta.storageKeys.cleanupStorage();
+                                  delete open_windows [meta.wid];
+                                  
+                                  nukeMeta(meta);
+                                  
+                              });
                            }
                          );
                          return prev;
@@ -483,6 +492,32 @@ multiLoad(__ml1(),['wToolsLib'],function(){__ml2(__ml3(),__ml4(),
                       });
                  }
                  
+                 
+                 
+                 function nukeMeta ( meta ) {
+                     if (typeof meta === 'object') {
+                         nuke(meta.win.consts);
+                         nuke(meta.win.storageKeys);
+                         nuke(meta.win.urlParams);
+                         nuke(meta.win.restoreStateStack);
+                         nuke(meta.win.windowState);
+                         nuke(meta.win);
+                         nuke(meta);
+                     }
+                     function nuke(obj){
+                         if (typeof obj === 'object') {
+                             if (Array.isArray(obj)) {
+                                obj.forEach(nuke);   
+                             } else {
+                                 Object.keys(obj).forEach(function(k){
+                                     delete obj[k];
+                                 });
+                              }
+                         }                 
+                     }
+                 }
+                  
+                 
              },
       
     ServiceWorkerGlobalScope : function wTools(setKey_,getKey) {
@@ -693,6 +728,7 @@ local imports - these functions are available to the other modules declared in t
               getDB               : readOnlyValue(getDB),
               setDB               : readOnlyValue(setDB),
               close               : readOnlyValue(doClose),
+              ping                : readOnlyValue(doPing),
               
          });
         
@@ -1098,6 +1134,34 @@ local imports - these functions are available to the other modules declared in t
          }
           
           
+        function doPing (cb) {
+            
+            if (typeof cb!=='function') return;
+            
+            const 
+            
+            ping = lib.storageKeys.ping,
+            tmr = setTimeout(function(){
+                window.removeEventListener('storage',CB);
+                cb(false);
+            },5000);
+            
+            localStorage.removeItem(ping);
+            window.addEventListener('storage',CB);
+            localStorage.setItem(ping,'1');
+            
+            function CB() {
+                if (localStorage.setItem(ping==='1')) return ;
+                clearTimeout(tmr);
+                window.removeEventListener('storage',CB);
+                cb(true);
+            }
+            
+              
+         }
+         
+         
+        
           
           //////
           
