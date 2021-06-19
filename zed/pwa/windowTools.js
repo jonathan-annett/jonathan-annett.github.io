@@ -37,14 +37,14 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                  },
                  open_windows = (function () {
                      
-                     const json = localStorage.getItem("windowTools.openWindows");
+                     const json = getKey("windowTools.openWindows");
                      if (json) {
                          const prev = JSON.parse(json);
                          delete prev.meta_dirty;
                          Object.keys(prev).forEach(
                            function (wid) {
                               const meta = prev[wid];
-                              meta.win   = wToolsRemote(meta,wToolsLib);
+                              meta.win   = wToolsRemote(meta,wToolsLib,setKey,getKey);
                               meta.win.ping(function (stillAlive){
                                   if (stillAlive) return;
                                   
@@ -613,6 +613,7 @@ local imports - these functions are available to the other modules declared in t
     }
     
     function setHybridKey(k,v,cb) {
+        cb = typeof cb==='function' ? cb : function(e){if (e) throw e;};
         setHybridKey_(k,v,function(err,hybrid){
             if (err) return cb(err);
             setLocalKey(k,hybrid,cb);
@@ -630,47 +631,51 @@ local imports - these functions are available to the other modules declared in t
     }
     
     function getHybridKey(k,cb) {
-        
-        if (typeof localforage==='undefined') {
-            // ignore stamps, just return stored value
-            return getLocalKey(k,function(err,local){
-                if (err) return cb(err);
-                cb(undefined,local[0]);
-            });
-        }
-        getForageKey(k,function(err,hybrid){
-            if (err||!hybrid) {
-                getLocalKey(k,function(err,local){
-                   if (err) return cb(err);
-                   setForageKey(k,local,function(){
-                      cb(undefined,local[0]);
-                   });
-                });
-            } else {
-                getLocalKey(k,function(err,local){
-                   if (err||!local) {
-                       setLocalKey(k,hybrid,function(err){
-                           if (err) return cb(err);
-                           return cb(undefined,hybrid[0]);
-                       });
-                       
-                   } else {
-                       
-                       if (local[1]===hybrid[1]) {
-                           return cb(undefined,local[0]);
-                       }
-                        
-                       // was updated by forage (so update local)
-                       setLocalKey(k,hybrid,function(){
-                           return cb(undefined,hybrid[0]);
-                       });
-                   }
+        if (typeof cb==='function') {
+            if (typeof localforage==='undefined') {
+                // ignore stamps, just return stored value
+                return getLocalKey(k,function(err,local){
+                    if (err) return cb(err);
+                    cb(undefined,local[0]);
                 });
             }
-        });
+            return getForageKey(k,function(err,hybrid){
+                if (err||!hybrid) {
+                    getLocalKey(k,function(err,local){
+                       if (err) return cb(err);
+                       setForageKey(k,local,function(){
+                          cb(undefined,local[0]);
+                       });
+                    });
+                } else {
+                    getLocalKey(k,function(err,local){
+                       if (err||!local) {
+                           setLocalKey(k,hybrid,function(err){
+                               if (err) return cb(err);
+                               return cb(undefined,hybrid[0]);
+                           });
+                           
+                       } else {
+                           
+                           if (local[1]===hybrid[1]) {
+                               return cb(undefined,local[0]);
+                           }
+                            
+                           // was updated by forage (so update local)
+                           setLocalKey(k,hybrid,function(){
+                               return cb(undefined,hybrid[0]);
+                           });
+                       }
+                    });
+                }
+            });
+        }
+        // sync request
+        const local = localStorage.getItem(k);
+        if (local) return JSON.parse(local)[0];
     }
     
-    function wToolsRemote(meta,wToolsLib) {
+    function wToolsRemote(meta,wToolsLib,setKey,getKey) {
         
         const 
         
@@ -827,7 +832,7 @@ local imports - these functions are available to the other modules declared in t
          function refreshPosition(capture) {
              const moveTrackingUpdateKey=lib.storageKeys.moveTrackingUpdateKey;
                  
-             const json = localStorage.getItem(moveTrackingUpdateKey);
+             const json = getKey(moveTrackingUpdateKey);
              if (json) {
                  localStorage.removeItem(moveTrackingUpdateKey);
                  parseWindowPosition(json,capture);
@@ -851,7 +856,7 @@ local imports - these functions are available to the other modules declared in t
             
              if (typeof v==="boolean") {
                  const c = lib.consts,k=lib.storageKeys;
-                 const isTracking=!!localStorage.getItem(k.moveTrackingKey);
+                 const isTracking=!!getKey(k.moveTrackingKey);
                  if (v) {
                      if (!getIsMaximized()){
                          lib.restoreStateStack.push( lib.windowState.position );
@@ -860,7 +865,7 @@ local imports - these functions are available to the other modules declared in t
                          
                      }
                      if ( isTracking ) {
-                         localStorage.setItem(k.setWindowStateKey,'maximized');
+                         setKey(k.setWindowStateKey,'maximized');
                      }
                  } else {
                      let emit=false;
@@ -876,7 +881,7 @@ local imports - these functions are available to the other modules declared in t
                      if (emit) emitLibEvent('restored');
                      
                      if ( isTracking) {
-                         localStorage.setItem(k.setWindowStateKey,'normal');
+                         setKey(k.setWindowStateKey,'normal');
                      }
                  }
              } else {
@@ -898,7 +903,7 @@ local imports - these functions are available to the other modules declared in t
          function setIsMinimized(v) {
              if (typeof v==="boolean") {
                  const c = lib.consts,k=lib.storageKeys;
-                 const isTracking=!!localStorage.getItem(k.moveTrackingKey);
+                 const isTracking=!!getKey(k.moveTrackingKey);
                 if (v) {
                     if (!getIsMinimized()){
                         lib.restoreStateStack.push( lib.windowState.position );
@@ -906,7 +911,7 @@ local imports - these functions are available to the other modules declared in t
                         emitLibEvent('minimized');
                     }
                     if ( isTracking ) {
-                        localStorage.setItem(k.setWindowStateKey,'minimized');
+                        setKey(k.setWindowStateKey,'minimized');
                     }
                 } else {
                     let emit=false;
@@ -922,7 +927,7 @@ local imports - these functions are available to the other modules declared in t
                     }
                     if (emit) emitLibEvent('restored');
                     if ( isTracking ) {
-                        localStorage.setItem(k.setWindowStateKey,'normal');
+                        setKey(k.setWindowStateKey,'normal');
                     }
                 } 
              } else {
@@ -933,7 +938,7 @@ local imports - these functions are available to the other modules declared in t
          
          // getIsFullscreen() returns true/false indicating if this window is currently fullscreen (getter for lib.windowState.fullscreen)
          function getIsFullscreen (){
-             return localStorage.getItem(lib.storageKeys.setWindowStateKey)==="fullscreen";
+             return getKey(lib.storageKeys.setWindowStateKey)==="fullscreen";
          }
          
          // setIsFullscreen(true/false) lets you enter/exit fullscreen
@@ -999,7 +1004,7 @@ local imports - these functions are available to the other modules declared in t
              
              if (typeof v === 'string') {
                     const c = lib.consts,k=lib.storageKeys;
-                    const isTracking=!!localStorage.getItem(k.moveTrackingKey);
+                    const isTracking=!!getKey(k.moveTrackingKey);
                     if (["maximized","minimized","fullscreen"].some(function(state){
                         if (  v===state || v.replace(/\s/g,'').startsWith( state+"(" ) ){
                             lib.windowState.state = state;
@@ -1035,7 +1040,7 @@ local imports - these functions are available to the other modules declared in t
                          ]);
                          
                          if ( isTracking ) {
-                             localStorage.setItem(k.setWindowStateKey,lib.windowState.state);
+                             setKey(k.setWindowStateKey,lib.windowState.state);
                          }
                         
                     }
@@ -1143,7 +1148,7 @@ local imports - these functions are available to the other modules declared in t
          
          
          function doClose(){
-             localStorage.setItem(lib.storageKeys.closeKey,'1');
+             setKey(lib.storageKeys.closeKey,'1');
          }
           
           
@@ -1161,10 +1166,10 @@ local imports - these functions are available to the other modules declared in t
             
             localStorage.removeItem(ping);
             window.addEventListener('storage',CB);
-            localStorage.setItem(ping,'1');
+            setKey(ping,'1');
             
             function CB() {
-                if (localStorage.setItem(ping==='1')) return ;
+                if (setKey(ping==='1')) return ;
                 clearTimeout(tmr);
                 window.removeEventListener('storage',CB);
                 cb(true);
