@@ -1,10 +1,8 @@
-/*global self */
-/*global self,localforage,multiLoad,__ml1,__ml2,__ml3,__ml4*/
+/*global self,localforage */
 
-multiLoad(__ml1(),['wToolsLib'],function(){__ml2(__ml3(),__ml4(),
-
-//(function (B,O0,T){                      let boot = function(d) {d=d.filter(function(x){return!B[x];});if (d.length){return setTimeout(boot,10,d);}T();};boot(O0);})(self,
-//['wToolsLib'],                           function (){(function(L,o,a,d){let u,n=a[L]&&a[L].name,x=n&&o[n]===u?Object.defineProperty(o,n,{value:a[L].apply(this,d[L].map(function (f){return f();})),enumerable:!0,configurable:!0}):u;})(typeof self==="object"&&self.constructor.name||"x",self,
+/*global multiLoad,__ml1,__ml2,__ml3,__ml4,ml*/
+//multiLoad(__ml1(),['wToolsLib'],function(){__ml2( __ml3(), __ml4(),
+ml(0,ml(1),['wToolsLib'],function(){ml(2,ml(3),ml(4),
 
   { 
       

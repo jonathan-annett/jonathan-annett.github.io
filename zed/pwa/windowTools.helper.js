@@ -1,5 +1,8 @@
-/*global self,localforage*/
-(function(L,o,a,d){let u,n=a[L]&&a[L].name,x=n&&o[n]===u?Object.defineProperty(o,n,{value:a[L].apply(this,d[L]),enumerable:!0,configurable:!0}):u;})(typeof self==="object"&&self.constructor.name||"x",self,
+/*global self,localforage, ml*/
+/*global multiLoad,__ml1,__ml2,__ml3,__ml4*/
+//multiLoad(__ml1(),[],function(){__ml2(__ml3(),__ml4(),
+ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
+
   { 
       Window : function wToolsLib() {
         const cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice);
@@ -1268,6 +1271,11 @@
       Window : [],
       ServiceWorkerGlobalScope : [],
   }
-);
+  
+);      
+
+
+
+});
 
 

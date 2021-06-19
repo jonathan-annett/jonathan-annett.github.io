@@ -1,7 +1,47 @@
 <html>
     
     <head>
-        <script>const multiLoad=function(e,t,n){let f=function(t){if((t=t.filter(function(t){return!e[t]})).length)return setTimeout(f,10,t);n()};f(t)},__ml2=function(e,t,n,f){let o,u=n[e]&&n[e].name;u&&t[u]===o&&Object.defineProperty(t,u,{value:n[e].apply(this,f[e].map(function(e){return e()})),enumerable:!0,configurable:!0})},__ml3=function(){return"object"==typeof self&&self.constructor.name||"x"},__ml1=function(){return"object"==typeof self&&self||{}},__ml4=function(){return"object"==typeof self&&self};</script>
+        <script>
+            
+            //const multiLoad=function(e,t,n){let f=function(t){if((t=t.filter(function(t){return!e[t]})).length)return setTimeout(f,10,t);n()};f(t)},__ml2=function(e,t,n,f){let o,u=n[e]&&n[e].name;u&&t[u]===o&&Object.defineProperty(t,u,{value:n[e].apply(this,f[e].map(function(e){return e()})),enumerable:!0,configurable:!0})},__ml3=function(){return"object"==typeof self&&self.constructor.name||"x"},__ml1=function(){return"object"==typeof self&&self||{}},__ml4=function(){return"object"==typeof self&&self};
+            
+                function ml(x,L, o, a, d){
+                    
+                    switch (x) {
+                        case 0: return boot(L,o,a,d);
+                        case 1: return typeof self === "object" && self||{};
+                        case 2: return mod(L,o,a,d);
+                        case 3: return typeof self === "object" && self.constructor.name || "x";
+                        case 4: return typeof self === "object" && self;
+                    }
+                    
+                    function boot(L,o,a,d) {
+                        let strap = function(d) {
+                            d = d.filter(function(x) {
+                                return !L[x];
+                            });
+                            if (d.length) {
+                                return setTimeout(strap, 10, d);
+                            }
+                            a();
+                        };
+                        boot(o);
+                    }
+                    
+                    function mod(L,o,a,d) {
+                        let u, n = a[L] && a[L].name, x = n && o[n] === u ? Object.defineProperty(o, n, {
+                            value: a[L].apply(this, d[L].map(function(f) {
+                                return f();
+                            })),
+                            enumerable: !0,
+                            configurable: !0
+                        }) : u;
+                    }
+                    
+                
+                }            
+                            
+            </script>
 
         <style>
             
