@@ -1192,7 +1192,7 @@ local imports - these functions are available to the other modules declared in t
             tmr = setTimeout(function(){
                 window.removeEventListener('storage',CB);
                 cb(false);
-            },5000);
+            },500);
             
             localStorage.removeItem(ping);
             window.addEventListener('storage',CB);
