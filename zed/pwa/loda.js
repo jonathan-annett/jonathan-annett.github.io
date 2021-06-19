@@ -176,12 +176,10 @@ function ml(x,L, o, a, d, s){
         case 4: return typeof self === "object" && self;
         case 5: 
             if (!L.ml) L.ml=ml.bind(L);
-            return ml(0,L,o,a,d,s);
+            return ml.call(L,0,L,o,a,d,s);
         case 6:      // L o         a                                                            d 
-            return ml(5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d);
+            return ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d);
     }
-    
-    
 }
 
 //ml(6,win,mod,url,cb)
