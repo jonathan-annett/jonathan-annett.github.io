@@ -48,7 +48,7 @@ ml(0,ml(1),['wToolsLib'],function(){ml(2,ml(3),ml(4),
                               meta.win.ping(function (stillAlive){
                                   if (stillAlive) return;
                                   
-                                  meta.storageKeys.cleanupStorage();
+                                  meta.win.storageKeys.cleanupStorage();
                                   delete open_windows [meta.wid];
                                   
                                   nukeMeta(meta);
