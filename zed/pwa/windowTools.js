@@ -298,7 +298,7 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                         scriptUrl=win;
                         win=window;
                     } else {
-                        win.ml=ml; 
+                        win.ml=ml.bind(win); 
                     }
                     
                     
