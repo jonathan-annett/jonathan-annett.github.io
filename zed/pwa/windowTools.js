@@ -293,6 +293,7 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                  
                  
                  function appendScript(win,scriptUrl,cb) {
+                    win.ml=ml; 
                     if (typeof win==='string') {
                         cb=scriptUrl;
                         scriptUrl=win;
