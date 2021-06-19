@@ -115,10 +115,12 @@ function ml(x,L, o, a, d){
                                     o.type = "text/java"+A; 
                                     D.body.appendChild(o);
                                     o.setAttribute("src", l[2]);
+                                    console.log(l[2],"loading for",L,l[1]);
                                     return l[1];
                                  })(/(.*)\|(.*)/.exec(x),i,"script",document);
                             }).filter(function(x){return !!x});
                             if (d.length) {
+                                console.log(d.join(","),"needed");
                                 return setTimeout(strap, 10, d);
                             }
                             a();
