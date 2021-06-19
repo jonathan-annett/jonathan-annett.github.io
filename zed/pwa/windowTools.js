@@ -660,6 +660,8 @@ local imports - these functions are available to the other modules declared in t
         
         var lib = { };
          
+         setWid(meta.wid);
+         
          Object.defineProperties(lib,{
               //api: not implemented
               
@@ -691,7 +693,7 @@ local imports - these functions are available to the other modules declared in t
               
          });
         
-         setWid(meta.wid);
+        
          
          return lib;
          
