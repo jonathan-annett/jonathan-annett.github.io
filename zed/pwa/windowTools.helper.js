@@ -252,7 +252,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 if (v) {
                     if (!getIsMaximized()){
                         lib.restoreStateStack.push( lib.windowState.position );
-                        lib.windowState.position = maximizedPositionJSON; 
+                        lib.windowState.position = maximizedPosition; 
                         emitLibEvent('maximized');
                         
                     }
@@ -298,7 +298,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                if (v) {
                    if (!getIsMinimized()){
                        lib.restoreStateStack.push( lib.windowState.position );
-                       lib.windowState.position = minimizedPositionJSON ; 
+                       lib.windowState.position = minimizedPosition ; 
                        emitLibEvent('minimized');
                    }
                    if ( isTracking ) {
@@ -1185,9 +1185,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 
                 maximizedPosition      : readOnlyValue (maximizedPosition),
                 minimizedPosition      : readOnlyValue (minimizedPosition),
-                maximizedPositionJSON  : readOnlyValue (maximizedPositionJSON),
-                minimizedPositionJSON  : readOnlyValue (minimizedPositionJSON),
-                
+
            });
         }
         
