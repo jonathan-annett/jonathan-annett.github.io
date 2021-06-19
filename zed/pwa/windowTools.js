@@ -626,7 +626,7 @@ local imports - these functions are available to the other modules declared in t
         
         const { On,Off, cpArgs, readOnlyValue, readOnlyGetter, readWriteGetSetter } = wToolsLib.api;
         
-        setWid(meta.wid);
+       
         
         const libEvents = {
             
@@ -691,7 +691,8 @@ local imports - these functions are available to the other modules declared in t
               
          });
         
-          
+         setWid(meta.wid);
+         
          return lib;
          
          
