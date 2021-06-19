@@ -1,160 +1,57 @@
 <html>
     
 <head>
+    <script>
+    function ml(x,L, o, a, d, s){
+        switch (x) {
+            case 0: 
+                return (function(L,o,a,d) {
+                            let strap = function(m) {
+                                m = m.map(function(x,i) {
+                                    return (function(l,o,A,D) {
+                                        if (!l) return L[x]?false:x;
+                                        o = D.createElement(A);
+                                        o.type = "text/java"+A; 
+                                        D.body.appendChild(o);
+                                        if(d)d(o);
+                                        o.setAttribute("src", l[2]);
+                                        return l[1];
+                                     })(/(.*)\|(.*)/.exec(x),i,"script",this.document);
+                                }).filter(function(x){return !!x});
+                                if (m.length) {
+                                    return setTimeout(strap, m.length*10, m);
+                                }
+                                a();
+                            };
+                            strap(o);
+                        })(L,o,a,d);
+            case 1: return typeof self === "object" && self||{};
+            case 2: return (function(L,o,a,d) {
+                                let u, n = a[L] && a[L].name, x = n && o[n] === u ? Object.defineProperty(o, n, {
+                                    value: a[L].apply(this, d[L].map(function(f) {
+                                        return f();
+                                    })),
+                                    enumerable: !0,
+                                    configurable: !0
+                                }) : u;
+                            })(L,o,a,d);
+            case 3: return typeof self === "object" && self.constructor.name || "x";
+            case 4: return typeof self === "object" && self;
+            case 5: 
+                if (!L.ml) L.ml=ml.bind(L);
+                return ml.call(L,0,L,o,a,d,s);
+            case 6:      // L o         a                                                            d 
+                return ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d);
+        }
+    }
     
+       </script>
+        
 </head>
 
 <body>
-    
-    <input type="text" value="1">
-    <button>call</button>
-    <script>
- 
-    
-    var cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice);
-
-       var events = {};
-       
-       Storage.prototype.addEventListener = function (key,fn) {
-         const storage = this;
-         if (typeof fn!=='function') return;
-         const config = events [key] || 
-         
-                    (events [key] = (function(key,cfg){
-                                    
-                                    cfg.listener = function () {
-                                        
-                                        const data = storage.getItem(key);
-                                        if (data===cfg.last) {
-                                            return;
-                                        }
-                                        
-                                        if (data!==null) {
-                                            if (cfg.last===null) {
-                                               fn({mode:'new',data:data});
-                                               cfg.last=data;
-                                            } else {
-                                               cfg.last=data;
-                                               fn({mode:'change',data:data,previous:cfg.last});
-                                            }
-                                        } else {
-                                            fn({mode:'remove',previous:cfg.last});
-                                            delete cfg.last;
-                                        }
-                                        
-                                    };             
-                                    window.addEventListener('storage',cfg.listener);
-                                    
-                                    
-                                    return cfg;
-                        
-                                 })(key,{ fns : [], last : storage.getItem(key) }));
-
-         config.fns.push(fn);
-         
-           
-       };
-       Storage.prototype.removeEventListener = function (key,fn) {
-         const storage = this;
-         if (typeof fn!=='function') return;
-         
-         const config = events [key];
-         
-         if (!config) return;
-         
-         const ix = config.fns.indexOf(fn);
-         if (ix>=0) {
-            config.fns.splice(ix,1);
-         }
-         
-         if (config.fns.length===0) {
-             delete config.fns;
-             window.removeEventListener('storage',config.listener);
-             delete config.listener;
-             delete events [key];
-         }
-
-       };
-       
-       
-       function makeSyncStorageFunction (key,fn,THIS) {
-           THIS=THIS||this;
-           localStorage.addEventListener(key,function(event) {
-               if (event.mode!=="remove") {
-                   const params = JSON.parse(event.data);
-                   const result = fn.apply(THIS,params.args);
-                   console.log("assigning result",result);
-                   localStorage.setItem(
-                       key+"."+params.invocationId,
-                       JSON.stringify({result:result})
-                   );
-                   localStorage.removeItem(key);
-               }
-           });
-       } 
-       
-       
-       function callSyncStorageFunction (key) {
-           const args = cpArgs(arguments,1);
-           const invocationId = Math.random().toString(36);
-           const replyKey = key+"."+invocationId;
-           var result;
-          
-           console.log("assigning invocation",invocationId);
-           localStorage.setItem(
-                   key,
-                   JSON.stringify({invocationId:invocationId,args:args})
-           );
-           
-           sleep(500,waitForReply);
-           console.log("returning result",result);
-           
-           return result;
-           
-           function waitForReply() {
-               const data = localStorage.getItem(replyKey);
-               if (data) {
-                   try {
-                      result = JSON.parse(data).result;
-                      console.log("assigned result",result);
-                      return true;
-                   } catch (e) {
-                       
-                   } finally {
-                       localStorage.removeItem(replyKey);
-                   }
-                   
-               }
-           }
-
-           
-       } 
-       
-       
-       makeSyncStorageFunction ("test-func",function(a,b,c){
-          return a+b+c;           
-       });
-       
-       
-       document.querySelector("button").onclick = function () {
-           
-           document.querySelector("input").value = callSyncStorageFunction ("test-func",1,2,3);
-           
-       };
-       
-      function sleep(ms,f) {
-        var start = new Date().getTime(), expire = start + ms;
-        while (new Date().getTime() < expire) {
-            
-            if (typeof f === 'funciton' &&  fn() ) {
-                return ;
-            }
-            
-        }
-        return;
-      }
-        
-    </script>
-    
+    <script src="windowTools.helper.js" defer></script>
+    <h1>hello world</h1>
+    But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?
 </body>
 </html>
