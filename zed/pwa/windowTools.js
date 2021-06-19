@@ -711,12 +711,7 @@ local imports - these functions are available to the other modules declared in t
          function setWid(id) {
              meta.wid=id;
              delete lib.storageKeys;
-             Object.defineProperty (lib,'storageKeys',{
-                 get          : wToolsLib.api.createKeyNames.bind (this,id,lib,'storageKeys'),
-                 writable     : false,
-                 enumerable   : true,
-                 configurable : true,                 
-             });
+             Object.defineProperty (lib,'storageKeys',readOnlyGetter(wToolsLib.api.createKeyNames.bind (this,id,lib,'storageKeys')));
          }
           
          
