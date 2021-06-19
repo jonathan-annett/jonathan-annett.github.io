@@ -121,7 +121,7 @@ function ml(x,L, o, a, d){
             }
             a();
         };
-        boot(o);
+        strap(o);
     }
     
     function mod(L,o,a,d) {
