@@ -37,9 +37,8 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                  },
                  open_windows = (function () {
                      
-                     const json = getKey("windowTools.openWindows");
-                     if (json) {
-                         const prev = JSON.parse(json);
+                     const prev = getKey("windowTools.openWindows");
+                     if (prev) {
                          delete prev.meta_dirty;
                          Object.keys(prev).forEach(
                            function (wid) {
@@ -832,11 +831,11 @@ local imports - these functions are available to the other modules declared in t
          function refreshPosition(capture) {
              const moveTrackingUpdateKey=lib.storageKeys.moveTrackingUpdateKey;
                  
-             const json = getKey(moveTrackingUpdateKey);
-             if (json) {
+             const pos = getKey(moveTrackingUpdateKey);
+             if (pos) {
                  localStorage.removeItem(moveTrackingUpdateKey);
-                 parseWindowPosition(json,capture);
-                 return json;
+                 parseWindowPosition(pos,capture);
+                 return pos;
              }
          }
          
@@ -1033,11 +1032,11 @@ local imports - these functions are available to the other modules declared in t
                              return;
                          }
                          
-                         lib.windowState.position = JSON.stringify([
+                         lib.windowState.position = [
                            [  c.win_moveTo,   [ c.maximizedLeft,c.maximizedTop ] ],
                            [  c.win_resizeTo, [ width,height ]   ],
                            [  c.win_moveTo,   [ left,top ]       ],  
-                         ]);
+                         ];
                          
                          if ( isTracking ) {
                              setKey(k.setWindowStateKey,lib.windowState.state);
@@ -1094,9 +1093,9 @@ local imports - these functions are available to the other modules declared in t
          }
          
          
-        //  stringifyWindowPosition() returns a JSON payload than can be passed into 
+        //  serializeWindowPosition() returns a JSON payload than can be passed into 
         //    parseWindowPosition() to restore the window location  
-         function stringifyWindowPosition (sliceFrom) {
+         function serializeWindowPosition (sliceFrom) {
              // we basically proxy the change tracked updates from the remote window.
              // there are a few optumisations however....
              sliceFrom = sliceFrom||0;
@@ -1116,15 +1115,14 @@ local imports - these functions are available to the other modules declared in t
              if (!(meta.left===c.maximizedLeft&&meta.top===c.maximizedTop)) {
                 cmds.push([ c.win_moveTo,  [ meta.left, meta.top  ]  ]);
              }
-             return JSON.stringify(cmds.slice(sliceFrom));
+             return cmds.slice(sliceFrom);
          }
      
-         // parseWindowPosition() takes a JSON payload created by stringifyWindowPosition() 
-         // it restores the window position to how it was when stringifyWindowPosition() was invoked
-         function parseWindowPosition(json,capture){
+         // parseWindowPosition() takes a JSON payload created by serializeWindowPosition() 
+         // it restores the window position to how it was when serializeWindowPosition() was invoked
+         function parseWindowPosition(cmds,capture){
              const 
              w={},
-             cmds =JSON.parse(json),
              fn=[w_moveTo,w_resizeTo],
              len=cmds.length;
              for(var i = 0; i < len; i++) {
@@ -1206,7 +1204,7 @@ local imports - these functions are available to the other modules declared in t
                  },
                  
                  position : {
-                     get        : stringifyWindowPosition,
+                     get        : serializeWindowPosition,
                      set        : parseWindowPosition,
                      enumerable : false
                  },

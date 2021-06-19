@@ -34,17 +34,14 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             [ win_moveTo,    [ maximizedLeft,  maximizedTop ]     ],
             [ win_resizeTo,  [ maximizedWidth, maximizedHeight ]  ]
         ];
-        
-        const maximizedPositionJSON = JSON.stringify(maximizedPosition);
-        
+
         const minimizedPosition = [
             
             [ win_moveTo,    [ minimizedLeft,minimizedTop ]   ],
             [ win_resizeTo,  [ minimizedWidth, minimizedHeight ]  ]
             
         ];
-        const minimizedPositionJSON = JSON.stringify(minimizedPosition);
-
+        
         const libEvents = {
             
             move       : [],
@@ -459,11 +456,11 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                             return;
                         }
                         
-                        lib.windowState.position = JSON.stringify([
+                        lib.windowState.position = [
                           [  win_moveTo,   [ maximizedLeft,maximizedTop ] ],
                           [  win_resizeTo, [ width,height ]   ],
                           [  win_moveTo,   [ left,top ]       ],  
-                        ]);
+                        ];
                         
                         if ( isTracking ) {
                             localStorage.setItem(setWindowStateKey,lib.windowState.state);
@@ -492,7 +489,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 
                 checkTracking(); 
         
-                const position = stringifyWindowPosition (window,-2);
+                const position = serializeWindowPosition (window,-2);
     
                 if (positionArgs) {
                     parseWindowPosition(window,positionArgs);
@@ -561,14 +558,15 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             });
             const k = lib.storageKeys;
             if (!!localStorage.getItem(k.moveTrackingKey)) {
-                localStorage.setItem(k.closedKey,stringifyWindowPosition(window,-2));
+                localStorage.setItem(k.closedKey,serializeWindowPosition(window,-2));
             }
         }
     
-        //  stringifyWindowPosition() returns a JSON payload than can be passed into 
+        //  serializeWindowPosition() returns a JSON payload than can be passed into 
         //    parseWindowPosition() to restore the window location  
         
-        function stringifyWindowPosition (w,sliceFrom) {
+        function serializeWindowPosition (w,sliceFrom) {
+            sliceFrom=sliceFrom||0;
             const cmds = [
               [ win_moveTo,   [maximizedLeft,maximizedTop]   ],
               [ win_resizeTo, [w.outerWidth,w.outerHeight] ]
@@ -576,14 +574,13 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             if (!(w.screenX===maximizedLeft&&w.screenY===maximizedTop)) {
                cmds.push([ win_moveTo,  [w.screenX,w.screenY]  ]);
             }
-            return JSON.stringify(cmds.slice(sliceFrom||0));
+            return sliceFrom===0?cmds:cmds.slice(sliceFrom);
         }
     
-        // parseWindowPosition() takes a JSON payload created by stringifyWindowPosition() 
-        // it restores the window position to how it was when stringifyWindowPosition() was invoked
-        function parseWindowPosition(w,json,capture){
+        // parseWindowPosition() takes a JSON payload created by serializeWindowPosition() 
+        // it restores the window position to how it was when serializeWindowPosition() was invoked
+        function parseWindowPosition(w,cmds,capture){
             const 
-            cmds =JSON.parse(json),
             fn=[w.moveTo,w.resizeTo],
             len=cmds.length;
             for(var i = 0; i < len; i++) {
@@ -1217,7 +1214,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 maximized     : readWriteGetSetter(getIsMaximized,setIsMaximized),
                 minimized     : readWriteGetSetter(getIsMinimized,setIsMinimized),
                 fullscreen    : readWriteGetSetter(getIsFullscreen,setIsFullscreen),
-                position      : readWriteGetSetter(stringifyWindowPosition.bind(this,window),
+                position      : readWriteGetSetter(serializeWindowPosition.bind(this,window),
                                                    parseWindowPosition.bind(this,window)),
                 state         : readWriteGetSetter(getState ,setState),       
                 verboseState  : readWriteGetSetter(getVerboseState,setVerboseState),
