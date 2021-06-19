@@ -48,9 +48,9 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                               meta.win.ping(function (stillAlive){
                                   if (stillAlive) return;
                                   
-                                  meta.win.storageKeys.cleanupStorage();
                                   delete open_windows [meta.wid];
-                                  
+                                  cleanupStorage(meta.wid);
+                                  delete meta.win;
                                   nukeMeta(meta);
                                   
                               });
@@ -491,7 +491,27 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                  }
                  
                  
+                 function cleanupStorage(wid) {
+                     
+                     const keys = wToolsLib.api.getStorageKeys(wToolsLib.api.createKeyNames(wid));
+                     
+                     keys.cleanupStorage();
+                     
+                     nuke ( keys );
+                     
+                 }
                  
+                 function nuke(obj){
+                         if (typeof obj === 'object') {
+                             if (Array.isArray(obj)) {
+                                obj.forEach(nuke);   
+                             } else {
+                                 Object.keys(obj).forEach(function(k){
+                                     delete obj[k];
+                                 });
+                              }
+                         }                 
+                  }
                  function nukeMeta ( meta ) {
                      if (typeof meta === 'object') {
                          nuke(meta.win.consts);
@@ -502,17 +522,7 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                          nuke(meta.win);
                          nuke(meta);
                      }
-                     function nuke(obj){
-                         if (typeof obj === 'object') {
-                             if (Array.isArray(obj)) {
-                                obj.forEach(nuke);   
-                             } else {
-                                 Object.keys(obj).forEach(function(k){
-                                     delete obj[k];
-                                 });
-                              }
-                         }                 
-                     }
+                     
                  }
                   
                  
