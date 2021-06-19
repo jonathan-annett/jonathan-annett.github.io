@@ -111,11 +111,11 @@ function ml(x,L, o, a, d){
                             d = d.filter(function(x,i) {
                                 return (function(l,o,A,D) {
                                     if (!l) return !L[x];
-                                    d[o]=l[0];
+                                    d[o]=l[1];
                                     o = D.createElement(A);
                                     o.type = "text/java"+A; 
                                     D.body.appendChild(o);
-                                    o.setAttribute("src", l[1]);
+                                    o.setAttribute("src", l[2]);
                                     return true;
                                  })(/(.*)\|(.*)/.exec(x),i,"script",document);
                             });
