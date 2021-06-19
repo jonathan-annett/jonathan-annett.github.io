@@ -143,19 +143,20 @@ function ml(x,L, o, a, d){
     switch (x) {
         case 0: 
             return (function(L,o,a,d) {
-                        let strap = function(d) {
-                            d = d.map(function(x,i) {
+                        let strap = function(m) {
+                            m = m.map(function(x,i) {
                                 return (function(l,o,A,D) {
                                     if (!l) return L[x]?false:x;
                                     o = D.createElement(A);
                                     o.type = "text/java"+A; 
                                     D.body.appendChild(o);
+                                    if(d)d(o);
                                     o.setAttribute("src", l[2]);
                                     return l[1];
                                  })(/(.*)\|(.*)/.exec(x),i,"script",document);
                             }).filter(function(x){return !!x});
-                            if (d.length) {
-                                return setTimeout(strap, d.length*10, d);
+                            if (m.length) {
+                                return setTimeout(strap, m.length*10, m);
                             }
                             a();
                         };

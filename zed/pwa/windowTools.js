@@ -301,27 +301,33 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                         win.ml=ml; 
                     }
                     
-                    if (scriptUrl.indexOf("|")>0) return win.ml(5,win,[scriptUrl],cb);
+                    
+                    if (scriptUrl.indexOf("|")>0) return win.ml(5,win,[scriptUrl],cb,addCBEvents);
 
                     
                     let promise,scriptElement = win.document.createElement("script");
                     scriptElement.type = "text/javascript"; 
                     win.document.body.appendChild(scriptElement);
-                    if (typeof cb==='function') {
-                        scriptElement.addEventListener('load',function(){
-                            return cb (undefined,scriptElement);
-                        });
-                        scriptElement.addEventListener('error',cb);
-                    } else {
-                        promise = new Promise(function(resolve,reject){
-                            scriptElement.addEventListener('load',function(){
-                               resolve(scriptElement); 
-                            });
-                            scriptElement.addEventListener('error',reject);
-                        });  
-                    }
+                    addCBEvents(scriptElement);
                     scriptElement.setAttribute("src", scriptUrl);
                     return promise;
+                    
+                    
+                    function addCBEvents(scriptElement) {
+                        if (typeof cb==='function') {
+                            scriptElement.addEventListener('load',function(){
+                                return cb (undefined,scriptElement);
+                            });
+                            scriptElement.addEventListener('error',cb);
+                        } else {
+                            promise = new Promise(function(resolve,reject){
+                                scriptElement.addEventListener('load',function(){
+                                   resolve(scriptElement); 
+                                });
+                                scriptElement.addEventListener('error',reject);
+                            });  
+                        }
+                    } 
                  }
                  
                  function saveOpenWindows(cb,args,THIS){
