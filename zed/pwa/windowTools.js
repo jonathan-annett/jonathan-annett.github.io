@@ -304,16 +304,25 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                     }
                     
                     
-                    if (scriptUrl.indexOf("|")>0) return win.ml(5,win,[scriptUrl],function(){
-                        console.log("script launched via ml");
-                    },addCBEvents.bind(this,function(err){
-                        console.log("script error via ml:",err);
-                        if (err) return cb (err);
-                    }),function(w,nm,mod){
-                        console.log("loaded",nm,"into",w.location.href,":",typeof mod);
-                        cb(undefined,mod);
-                    });
-
+                    if (scriptUrl.indexOf("|")>0) { 
+                        
+                       let [mod,url] = scriptUrl.split("|");
+                       return win.ml(6,win,mod,url,addCBEvents.bind(this,function(err){
+                          
+                           if (err) {
+                               console.log("script error via ml:",err);
+                               return cb (err);
+                           } else {
+                               console.log("script",url,"loaded, runniing now, expecting:",mod);
+                           }
+                           
+                       }),
+                        function(m){
+                            console.log("got",mod,"from",url,"into",win.location.href,":",typeof m);
+                            cb(undefined,m);
+                            
+                        });
+                    } 
                     
                     let promise,scriptElement = win.document.createElement("script");
                     scriptElement.type = "text/javascript"; 

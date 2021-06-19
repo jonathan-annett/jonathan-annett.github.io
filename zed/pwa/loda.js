@@ -98,46 +98,46 @@ local imports - these functions are available to the other modules declared in t
 
 
 
-function ml(x,L,o,a,d){switch(x){case 0:return function(L,o,a,d){let e=function(d){if((d=d.map(function(x,e){let l,o,A,D;return l=/(.*)\|(.*)/.exec(x),o=e,A="script",D=document,l?((o=D.createElement(A)).type="text/java"+A,D.body.appendChild(o),o.setAttribute("src",l[2]),l[1]):!L[x]&&x}).filter(function(x){return!!x})).length)return setTimeout(e,10*d.length,d);a()};e(o)}(L,o,a);case 1:return"object"==typeof self&&self||{};case 2:return function(L,o,a,d){let e=a[L]&&a[L].name;e&&void 0===o[e]&&Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(function(e){return e()})),enumerable:!0,configurable:!0})}(L,o,a,d);case 3:return"object"==typeof self&&self.constructor.name||"x";case 4:return"object"==typeof self&&self;case 5:return L.ml=ml,ml(0,L,o,a,d)}}
+function ml(x,L,o,a,d,s){switch(x){case 0:return function(L,o,a,d){let e=function(t){if((t=t.map(function(x,e){let l,o,A,D;return l=/(.*)\|(.*)/.exec(x),o=e,A="script",D=this.document,l?((o=D.createElement(A)).type="text/java"+A,D.body.appendChild(o),d&&d(o),o.setAttribute("src",l[2]),l[1]):!L[x]&&x}).filter(function(x){return!!x})).length)return setTimeout(e,10*t.length,t);a()};e(o)}(L,o,a,d);case 1:return"object"==typeof self&&self||{};case 2:return function(L,o,a,d){let e=a[L]&&a[L].name;e&&void 0===o[e]&&Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(function(e){return e()})),enumerable:!0,configurable:!0}),s&&s(L,e,o[e])}(L,o,a,d);case 3:return"object"==typeof self&&self.constructor.name||"x";case 4:return"object"==typeof self&&self;case 5:return L.ml||(L.ml=ml.bind(L)),ml(0,L,o,a,d,s)}}
 
-function ml(x, L, o, a, d) {
+function ml(x, L, o, a, d, s) {
     switch (x) {
         case 0:
             return function(L, o, a, d) {
-                let e = function(d) {
-                    if ((d = d.map(function(x, e) {
+                let e = function(t) {
+                    if ((t = t.map(function(x, e) {
                         let l, o, A, D;
-                        return l = /(.*)\|(.*)/.exec(x), o = e, A = "script", D = document, l ? ((o = D.createElement(A)).type = "text/java" + A, D.body.appendChild(o), o.setAttribute("src", l[2]), l[1]) : !L[x] && x
+                        return l = /(.*)\|(.*)/.exec(x), o = e, A = "script", D = this.document, l ? ((o = D.createElement(A)).type = "text/java" + A, D.body.appendChild(o), d && d(o), o.setAttribute("src", l[2]), l[1]) : !L[x] && x;
+                        
                     }).filter(function(x) {
                         return !!x
-                    })).length) return setTimeout(e, 10 * d.length, d);
+                    })).length) return setTimeout(e, 10 * t.length, t);
                     a()
                 };
                 e(o)
-            }(L, o, a);
+            }(L, o, a, d);
         case 1:
             return "object" == typeof self && self || {};
         case 2:
             return function(L, o, a, d) {
-                let e = a[L] && a[L].name;
-                e && void 0 === o[e] && Object.defineProperty(o, e, {
+                let e, t = a[L] && a[L].name;
+                t && o[t] === e && Object.defineProperty(o, t, {
                     value: a[L].apply(this, d[L].map(function(e) {
                         return e()
                     })),
                     enumerable: !0,
                     configurable: !0
-                })
+                });
+                s && s(L, t, o[t])
             }(L, o, a, d);
         case 3:
             return "object" == typeof self && self.constructor.name || "x";
         case 4:
-            return "object" == typeof self && self
-        case 5: 
-            L.ml=ml;
-            return ml(0,L,o,a,d);
+            return "object" == typeof self && self;
+        case 5:
+            return L.ml || (L.ml = ml.bind(L)), ml(0, L, o, a, d, s)
     }
 }
-
 // src
 function ml(x,L, o, a, d, s){
     switch (x) {
@@ -171,18 +171,24 @@ function ml(x,L, o, a, d, s){
                                 enumerable: !0,
                                 configurable: !0
                             }) : u;
-                            if(s)s(L,n,o[n]);
                         })(L,o,a,d);
         case 3: return typeof self === "object" && self.constructor.name || "x";
         case 4: return typeof self === "object" && self;
         case 5: 
             if (!L.ml) L.ml=ml.bind(L);
             return ml(0,L,o,a,d,s);
+        case 6:      // L o         a                                                            d 
+            return ml(5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d);
     }
     
     
 }
 
+//ml(6,win,mod,url,cb)
+               //L o a   d   s  
+function loadMod(w,m,url,evs,cb){
+  ml(5,w,[m+"|"+url],function(){ml(2,"x",w,{x:cb},{x:[function(){return w[m];}]})});
+}
 
 ml(0,ml(1),['dep3'],function(){ml(2,ml(3),ml(4),
 
