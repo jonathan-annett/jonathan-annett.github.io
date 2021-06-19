@@ -1219,7 +1219,9 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
            });
         }
         
-        
+        function safeWrapNullCB(cb) {
+            return typeof cb==='function' ? cb : function(e){if (e) throw e;};
+        }
         
         
         function getApi (inside,named) {
@@ -1245,6 +1247,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 readOnlyGetter           : readOnlyValue(readOnlyGetter),
                 readOnlyValue            : readOnlyValue(readOnlyValue),
                 readWriteGetSetter       : readOnlyValue(readWriteGetSetter),
+                safeWrapNullCB           : readOnlyValue(safeWrapNullCB),
                 
                 On                       : readOnlyValue(On),
                 Off                      : readOnlyValue(Off),

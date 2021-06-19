@@ -15,7 +15,8 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                      readOnlyValue, 
                      readOnlyGetter, 
                      readWriteGetSetter,
-                     createWindowId
+                     createWindowId,
+                     safeWrapNullCB
 
                  } = wToolsLib.api.setPrimary().api;
          
@@ -242,8 +243,12 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                  return lib;
                  
                  function setKey(k,v,cb) {
+                     cb = safeWrapNullCB(cb);
                      setKey_(k,v,function(err){
-                         if (err) return cb (err);
+                         if (err) {
+                             if (typeof cb==='function') return cb (err);
+                                                         throw err;
+                         }
                          events.setKey.forEach(function(fn){
                              fn(k,v);
                          });
@@ -612,7 +617,7 @@ local imports - these functions are available to the other modules declared in t
     }
     
     function setHybridKey(k,v,cb) {
-        cb = typeof cb==='function' ? cb : function(e){if (e) throw e;};
+        cb = safeWrapNullCB(cb);
         setHybridKey_(k,v,function(err,hybrid){
             if (err) return cb(err);
             setLocalKey(k,hybrid,cb);
@@ -673,6 +678,11 @@ local imports - these functions are available to the other modules declared in t
         const local = localStorage.getItem(k);
         if (local) return JSON.parse(local)[0];
     }
+    
+    function safeWrapNullCB(cb) {
+        return typeof cb==='function' ? cb : function(e){if (e) throw e;};
+    }
+    
     
     function wToolsRemote(meta,wToolsLib,setKey,getKey) {
         
