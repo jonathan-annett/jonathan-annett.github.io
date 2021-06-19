@@ -1,8 +1,10 @@
 /*global self */
-/*global self,localforage*/
+/*global self,localforage,multiLoad,__ml1,__ml2,__ml3,__ml4*/
 
-(function (B,O0,T){                      let boot = function(d) {d=d.filter(function(x){return!B[x];});if (d.length){return setTimeout(boot,10,d);}T();};boot(O0);})(self,
-['wToolsLib'],                           function (){(function(L,o,a,d){let u,n=a[L]&&a[L].name,x=n&&o[n]===u?Object.defineProperty(o,n,{value:a[L].apply(this,d[L].map(function (f){return f();})),enumerable:!0,configurable:!0}):u;})(typeof self==="object"&&self.constructor.name||"x",self,
+multiLoad(__ml1(),['wToolsLib'],function(){__ml2(__ml3(),__ml4(),
+
+//(function (B,O0,T){                      let boot = function(d) {d=d.filter(function(x){return!B[x];});if (d.length){return setTimeout(boot,10,d);}T();};boot(O0);})(self,
+//['wToolsLib'],                           function (){(function(L,o,a,d){let u,n=a[L]&&a[L].name,x=n&&o[n]===u?Object.defineProperty(o,n,{value:a[L].apply(this,d[L].map(function (f){return f();})),enumerable:!0,configurable:!0}):u;})(typeof self==="object"&&self.constructor.name||"x",self,
 
   { 
       
@@ -10,58 +12,15 @@
         
 
                  const { 
-                     
-                     
-                     consts : {
-                         minimizedHeight,
-                         minimizedWidth,
-                         minimizedLeft,
-                         minimizedTop,
-                         maximizedHeight,
-                         maximizedWidth,
-                         maximizedLeft,
-                         maximizedTop,
-                         
-                         maximizedPosition,maximizedPositionJSON,
-                         minimizedPosition,minimizedPositionJSON
-                     },
-                     
-                     win_moveTo,
-                     win_resizeTo,
-                     
-                     
-                     windowId
-                     
-                 } = wToolsLib.setPrimary();
+                     On,Off,
+                     cpArgs,
+                     readOnlyValue, 
+                     readOnlyGetter, 
+                     readWriteGetSetter,
+                     createWindowId
+
+                 } = wToolsLib.api.setPrimary().api;
          
-                 const getMaximizedPosition = function (win) { return [
-                     win,
-                     [ win.moveTo,    [ maximizedLeft,  maximizedTop ]   ],
-                     [ win.resizeTo,  [ maximizedWidth, maximizedHeight ]  ]
-                     
-                 ];};
-                 
-                 const getIsMaximized = function (win) { 
-                     return win.screenX===maximizedLeft&&
-                            win.screenY===maximizedTop&&
-                            win.outerWidth===maximizedWidth&&
-                            win.outerHeight===maximizedHeight;
-         
-                 };
-                 
-                 const getMinimizedPosition = function (win) { return [
-                     win,
-                     [ win.moveTo,    [ minimizedLeft,  minimizedTop ]   ],
-                     [ win.resizeTo,  [ minimizedWidth, minimizedHeight ]  ]
-                     
-                 ];};
-                 
-                 const getIsMinimized = function (win) { 
-                     return win.screenX===minimizedLeft&&
-                            win.screenY===minimizedTop&&
-                            win.outerWidth===minimizedWidth&&
-                            win.outerHeight===minimizedHeight;
-                 };
               
                  var 
                  
@@ -73,8 +32,6 @@
                  saveIntervalId,saveInterval=10000;
                  const 
                  
-                 On     = 'addEventListener',
-                 Off    = 'removeEventListener',
                  events = {
                      open   : [],
                      close  : [],
@@ -226,38 +183,6 @@
                            }
                        },
                        
-                     setDB : function ( setter, getter ) {
-                         if (typeof setter+typeof getter==='functionfunction') {
-                             if (setter.length===3 && getter===2) {
-                               setKey_ = setter;
-                               getKey  = getter;
-                             } else {
-                                if (setter.length===2 && getter===1) {
-                                  setKey_ = function (k,v,cb) { 
-                                     
-                                      cb(); 
-                                      try {
-                                          setter(k,v);
-                                      } catch (e) {
-                                          return cb(e);
-                                      }
-                                      cb();
-                                      
-                                  },
-                                  getKey  = function (k,cb) {
-                                      var result;
-                                      try {
-                                          result = getter(k);
-                                      } catch (e) {
-                                          cb(e);
-                                      }
-                                      cb(undefined,result);
-                                  };
-                                } 
-                             }
-                         }
-                         
-                     }
                  };
                  
          
@@ -439,7 +364,7 @@
                    onOpened
                  ) {
                    // sync return is a string refering to future open window.
-                   const wid = windowId();
+                   const wid = createWindowId();
                    const doOpen = function (pos) {
                          left   = pos.left   || left;
                          top    = pos.top    || top;
@@ -571,15 +496,15 @@
   },
   {
       Window : [
-        () => setLocalKey,
-        () => getLocalKey,
+        () => setHybridKey,
+        () => getHybridKey,
         () => self.wToolsLib,
         () => wToolsRemote
           
       ],
       ServiceWorkerGlobalScope : [
-          () => setForageKey,
-          () => getForageKey,
+          () => setHybridKey_,
+          () => getHybridKey_,
           () => wToolsRemote
             
         ],
@@ -627,26 +552,79 @@ local imports - these functions are available to the other modules declared in t
         }).catch(cb);
     }
     
+    function setHybridKey_(k,v,cb) {
+        
+        const hybrid = [v, typeof localforage==='undefined' ? 0 : Math.random()+Date.now()];
+        if (typeof localforage==='undefined') {
+            return cb(undefined,hybrid);
+        }
+        setForageKey(k,hybrid,function(err){
+            if (err) return cb(err);
+            cb(undefined,hybrid);
+        });
+    }
+    
+    function setHybridKey(k,v,cb) {
+        setHybridKey_(k,v,function(err,hybrid){
+            if (err) return cb(err);
+            setLocalKey(k,hybrid,cb);
+        });
+    }
+    
+    function getHybridKey_(k,cb) {
+        if (typeof localforage==='undefined') {
+            return cb();
+        }
+        getForageKey(k,function(err,hybrid){
+            if (err) return cb(err);
+            cb(undefined,hybrid[0]);
+        });
+    }
+    
+    function getHybridKey(k,cb) {
+        
+        if (typeof localforage==='undefined') {
+            // ignore stamps, just return stored value
+            return getLocalKey(k,function(err,local){
+                if (err) return cb(err);
+                cb(undefined,local[0]);
+            });
+        }
+        getForageKey(k,function(err,hybrid){
+            if (err||!hybrid) {
+                getLocalKey(k,function(err,local){
+                   if (err) return cb(err);
+                   setForageKey(k,local,function(){
+                      cb(undefined,local[0]);
+                   });
+                });
+            } else {
+                getLocalKey(k,function(err,local){
+                   if (err||!local) {
+                       setLocalKey(k,hybrid,function(err){
+                           if (err) return cb(err);
+                           return cb(undefined,hybrid[0]);
+                       });
+                       
+                   } else {
+                       
+                       if (local[1]===hybrid[1]) {
+                           return cb(undefined,local[0]);
+                       }
+                        
+                       // was updated by forage (so update local)
+                       setLocalKey(k,hybrid,function(){
+                           return cb(undefined,hybrid[0]);
+                       });
+                   }
+                });
+            }
+        });
+    }
+    
     function wToolsRemote(meta,wToolsLib) {
         
-        const On="addEventListener";
-        const Off="removeEventListener";
-        var cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice);
-        
-        var positionKey;             
-        var positionReplyKey;        
-        var reportPositionKey;       
-        var reportPositionReplyKey;
-        
-        var closeKey;                
-        var closedKey;  
-        var moveTrackingKey;        
-        var moveTrackingUpdateKey;
-        
-        var setWindowStateKey;
-        var getWindowStateKey;
-        
-        var dbStorageKeyPrefix,dbStorageKeyPrefixLength;
+        const { On,Off, cpArgs, readOnlyValue, readOnlyGetter, readWriteGetSetter } = wToolsLib.api;
         
         setWid(meta.wid);
         
@@ -664,30 +642,8 @@ local imports - these functions are available to the other modules declared in t
         
         const Hysteresis={};   
         
-    
         
-        const { 
-            minimizedHeight,
-            minimizedWidth,
-            minimizedLeft,
-            minimizedTop,
-            maximizedHeight,
-            maximizedWidth,
-            maximizedLeft,
-            maximizedTop,
-            
-            win_moveTo,
-            win_resizeTo,
-            maximizedPosition,maximizedPositionJSON,
-            minimizedPosition,minimizedPositionJSON,
-            
-            
-            
-            windowId
-            
-        } = wToolsLib;
-        
-        
+
         const {
             setForageKey   ,
             getForageKey   ,
@@ -700,137 +656,42 @@ local imports - these functions are available to the other modules declared in t
             getDB   ,
             setDB 
     
-        } = wToolsLib.dbEngine(filterLocalKeys,convertStorageToLocalKey,convertLocalToStorageKey);
+        } = wToolsLib.api.dbEngine(filterLocalKeys,convertStorageToLocalKey,convertLocalToStorageKey);
         
-         var lib = {
-             win_moveTo              : win_moveTo,
-             win_resizeTo            : win_resizeTo,
-             stringifyWindowPosition : stringifyWindowPosition,
-             parseWindowPosition     : parseWindowPosition,
-             on                      : addLibEvent,
-             off                     : removeLibEvent,
-             param                   : getUrlParam,
-             
-             
-             storageKeys : {},
-             windowState : {
-                 
-             },
-             
-             
-             restoreStateStack : []
-         };
+        var lib = { };
          
          Object.defineProperties(lib,{
-              wid : {
-                  get : getWid,
-                  set : setWid,
-                  enumerable : true
-              },
-              urlParams : {
-                  get : getUrlVars,
-                  enumerable : true
-              },
-              getKeys :  {
-                  value : typeof localforage==='undefined' ? getLocalKeys : getForageKeys,
-                  writable    : false,
-                  enumerable  : true,
-                  configurage :true,
-              },
-              getKey :  {
-                  value : typeof localforage==='undefined' ? getLocalKey : getForageKey,
-                  writable    : false,
-                  enumerable  : true,
-                  configurage :true,
-              },
-              setKey :  {
-                  value : typeof localforage==='undefined' ? setLocalKey : setForageKey,
-                  writable    : false,
-                  enumerable  : true,
-                  configurage :true,
-              },
+              //api: not implemented
               
-              removeKey : {
-                  value       : typeof localforage==='undefined' ? removeLocalKey : removeForageKey,
-                  writable    : false,
-                  enumerable  : true,
-                  configurage :true,
-              },
-              getDB :  {
-                  value       : getDB,
-                  writable    : false,
-                  enumerable  : true,
-                  configurage :true,
-              },
-              setDB : {
-                  value       : setDB,
-                  writable    : false,
-                  enumerable  : true,
-                  configurage : true,
-              },
-              close : {
-                  value       : doClose,
-                  writable    : false,
-                  enumerable  : true,
-                  configurage : true,
-              }
+              //fs_api: not implemented
+              
+              wid                 : readWriteGetSetter(getWid,setWid),
+              consts              : readOnlyValue(wToolsLib.consts),
+              
+              storageKeys         : readOnlyGetter(wToolsLib.api.createKeyNames.bind (this,meta.wid,lib,'storageKeys')),
+              param               : readOnlyValue(wToolsLib.api.getUrlParam.bind(this,meta.url)),
+              
+              urlParams           : readOnlyGetter(wToolsLib.api.getUrlVars.bind(this,meta.url,lib,'urlParams')), 
+              restoreStateStack   : readOnlyValue([]),
+              windowState         : readOnlyGetter(getWindowState.bind(this,lib,'windowState')),
+              on                  : readOnlyValue(addLibEvent),
+              off                 : readOnlyValue(removeLibEvent),
+              addEventListener    : readOnlyValue(addLibEvent),
+              removeEventListener : readOnlyValue(removeLibEvent),
+              
+              //dbEngine : not implemented
+              
+              getKeys             : readOnlyValue(typeof localforage==='undefined' ? getLocalKeys : getForageKeys),
+              getKey              : readOnlyValue(typeof localforage==='undefined' ? getLocalKey : getForageKey),
+              setKey              : readOnlyValue(typeof localforage==='undefined' ? setLocalKey : setForageKey),
+              removeKey           : readOnlyValue(typeof localforage==='undefined' ? removeLocalKey : removeForageKey),
+              getDB               : readOnlyValue(getDB),
+              setDB               : readOnlyValue(setDB),
+              close               : readOnlyValue(doClose),
+              
          });
-         
-         Object.defineProperties(lib.storageKeys,{
-             positionKey             : { get : function () {return positionKey;},            enumerable : true},
-             positionReplyKey        : { get : function () {return positionReplyKey;},       enumerable : true},
-             reportPositionKey       : { get : function () {return reportPositionKey;},      enumerable : true},
-             reportPositionReplyKey  : { get : function () {return reportPositionReplyKey;}, enumerable : true},
-             closeKey                : { get : function () {return closeKey;},               enumerable : true},
-             closedKey               : { get : function () {return closedKey;},              enumerable : true},
-             
-             moveTrackingKey         : { get : function () {return moveTrackingKey;},        enumerable : true},
-             moveTrackingUpdateKey   : { get : function () {return moveTrackingUpdateKey;},  enumerable : true},
-             
-             setWindowStateKey       : { get : function () {return setWindowStateKey;},      enumerable : true},
-             getWindowStateKey       : { get : function () {return getWindowStateKey;},     enumerable : true},
-         
-             dbStorageKeyPrefix      : { get : function () {return dbStorageKeyPrefix;},     enumerable : true},
         
-         });
-         
-         Object.defineProperties(lib.windowState,{
-              maximized : {
-                  get        : getIsMaximized,
-                  set        : setIsMaximized,
-                  enumerable : true
-              },
-              minimized : {
-                  get        : getIsMinimized,
-                  set        : setIsMinimized,
-                  enumerable : true
-              },
-              
-              fullscreen : {
-                  
-                  get        : getIsFullscreen,
-                  set        : setIsFullscreen,
-                  enumerable : true
-              },
-              
-              position : {
-                  get        : stringifyWindowPosition,
-                  set        : parseWindowPosition,
-                  enumerable : false
-              },
-              state  : {
-                  get        : getWindowState ,
-                  set        : setWindowState,       
-                  enumerable : false
-              },
-              
-             verboseState  : {
-                  get        : getVerobseState,
-                  set        : setVerobseState,
-                  enumerable : false
-             }
-         });
-            
+          
          return lib;
          
          
@@ -839,25 +700,19 @@ local imports - these functions are available to the other modules declared in t
              return meta.wid;
          }
      
-         // setWid() used to assign a new window id (also updates the storageKeys for this window (it's the getter for lib.wid)
+         // setWid() used to assign a new window id (also updates the storage key names for this window (it's the getter for lib.wid)
+         // setWid() assigns a new id for this window
          function setWid(id) {
              meta.wid=id;
-             positionKey             = "windowTools.cmd."+id+".position";
-             positionReplyKey        = "windowTools.cmd."+id+".position.reply";
-             reportPositionKey       = "windowTools.cmd."+id+".reportPosition";
-             reportPositionReplyKey  = "windowTools.cmd."+id+".reportPosition.reply";
-             closeKey                = "windowTools.cmd."+id+".close";
-             closedKey               = "windowTools.cmd."+id+".closed";
-             moveTrackingKey         = "windowTools.cmd."+id+".position.tracking";
-             moveTrackingUpdateKey   = "windowTools.cmd."+id+".position.tracking.update";
-             
-             setWindowStateKey       = "windowTools.cmd."+id+".position.tracking.state";
-             getWindowStateKey       = "windowTools.cmd."+id+".position.tracking.getState";
-             
-             dbStorageKeyPrefix      = "windowTools.cmd."+id+".db.kvStore.";
-             dbStorageKeyPrefixLength = dbStorageKeyPrefix.length;
-             
+             delete lib.storageKeys;
+             Object.defineProperty (lib,'storageKeys',{
+                 get          : wToolsLib.api.createKeyNames.bind (this,id,lib,'storageKeys'),
+                 writable     : false,
+                 enumerable   : true,
+                 configurable : true,                 
+             });
          }
+          
          
          
          // add a handler for THIS window - move,size,minimized,maximized, restored, fulscreen(true/false),state, closed
@@ -920,6 +775,8 @@ local imports - these functions are available to the other modules declared in t
          
          
          function refreshPosition(capture) {
+             const moveTrackingUpdateKey=lib.storageKeys.moveTrackingUpdateKey;
+                 
              const json = localStorage.getItem(moveTrackingUpdateKey);
              if (json) {
                  localStorage.removeItem(moveTrackingUpdateKey);
@@ -931,26 +788,29 @@ local imports - these functions are available to the other modules declared in t
          // returns getIsMaximized() true/false indicating if this window is currently maximized (getter for lib.windowState.maximized)
          function getIsMaximized() {
              refreshPosition();
-             return meta.left===maximizedLeft&&
-                    meta.top===maximizedTop&&
-                    meta.width===maximizedWidth&&
-                    meta.height===maximizedHeight;
+             const c = lib.consts;
+             return  meta.left===c.maximizedLeft&&
+                     meta.top===c.maximizedTop&&
+                     meta.width===c.maximizedWidth&&
+                     meta.height===c.maximizedHeight;
+     
          }
          
          // setIsMaximized(true/false) lets you maximize/restore the window
          function setIsMaximized(v) {
             
              if (typeof v==="boolean") {
-                 const isTracking=!!localStorage.getItem(moveTrackingKey);
+                 const c = lib.consts,k=lib.storageKeys;
+                 const isTracking=!!localStorage.getItem(k.moveTrackingKey);
                  if (v) {
                      if (!getIsMaximized()){
                          lib.restoreStateStack.push( lib.windowState.position );
-                         lib.windowState.position = maximizedPositionJSON; 
+                         lib.windowState.position = c.maximizedPositionJSON; 
                          emitLibEvent('maximized');
                          
                      }
                      if ( isTracking ) {
-                         localStorage.setItem(setWindowStateKey,'maximized');
+                         localStorage.setItem(k.setWindowStateKey,'maximized');
                      }
                  } else {
                      let emit=false;
@@ -966,7 +826,7 @@ local imports - these functions are available to the other modules declared in t
                      if (emit) emitLibEvent('restored');
                      
                      if ( isTracking) {
-                         localStorage.setItem(setWindowStateKey,'normal');
+                         localStorage.setItem(k.setWindowStateKey,'normal');
                      }
                  }
              } else {
@@ -976,25 +836,27 @@ local imports - these functions are available to the other modules declared in t
          
          // getIsMinimized() returns true/false indicating if this window is currently minimized (getter for lib.windowState.minimized)
          function getIsMinimized() {
-             refreshPosition();
-             return meta.left===minimizedLeft&&
-                    meta.top===minimizedTop&&
-                    meta.width===minimizedWidth&&
-                    meta.height===minimizedHeight;
+            refreshPosition();
+            const c = lib.consts;
+            return meta.left===c.minimizedLeft&&
+                    meta.top===c.minimizedTop&&
+                    meta.width===c.minimizedWidth&&
+                    meta.height===c.minimizedHeight;
          }
          
          // setIsMinimized(true/false) lets you minimize/restore the window
          function setIsMinimized(v) {
              if (typeof v==="boolean") {
-                 const isTracking=!!localStorage.getItem(moveTrackingKey);
+                 const c = lib.consts,k=lib.storageKeys;
+                 const isTracking=!!localStorage.getItem(k.moveTrackingKey);
                 if (v) {
                     if (!getIsMinimized()){
                         lib.restoreStateStack.push( lib.windowState.position );
-                        lib.windowState.position = minimizedPositionJSON ; 
+                        lib.windowState.position = c.minimizedPositionJSON ; 
                         emitLibEvent('minimized');
                     }
                     if ( isTracking ) {
-                        localStorage.setItem(setWindowStateKey,'minimized');
+                        localStorage.setItem(k.setWindowStateKey,'minimized');
                     }
                 } else {
                     let emit=false;
@@ -1010,7 +872,7 @@ local imports - these functions are available to the other modules declared in t
                     }
                     if (emit) emitLibEvent('restored');
                     if ( isTracking ) {
-                        localStorage.setItem(setWindowStateKey,'normal');
+                        localStorage.setItem(k.setWindowStateKey,'normal');
                     }
                 } 
              } else {
@@ -1021,7 +883,7 @@ local imports - these functions are available to the other modules declared in t
          
          // getIsFullscreen() returns true/false indicating if this window is currently fullscreen (getter for lib.windowState.fullscreen)
          function getIsFullscreen (){
-             return localStorage.getItem(setWindowStateKey)==="fullscreen";
+             return localStorage.getItem(lib.storageKeys.setWindowStateKey)==="fullscreen";
          }
          
          // setIsFullscreen(true/false) lets you enter/exit fullscreen
@@ -1030,8 +892,8 @@ local imports - these functions are available to the other modules declared in t
          }
          
          
-         // getWindowState() returns a string indicating window state
-         function getWindowState() { 
+         // getState() returns a string indicating window state
+         function getState() { 
                 return getIsFullscreen() ? 'fullscreen' :
                        getIsMaximized()  ? 'maximized'  : 
                        getIsMinimized()  ? 'minimized'  : 
@@ -1039,8 +901,8 @@ local imports - these functions are available to the other modules declared in t
          }
          
          
-         // getWindowState() takes a string to set window state
-         function setWindowState(v) {
+         // getState() takes a string to set window state
+         function setState(v) {
              if (typeof v === 'string') {
                  switch (v) {
                      case "fullscreen" : 
@@ -1066,8 +928,8 @@ local imports - these functions are available to the other modules declared in t
          }
          
          
-         // getVerobseState() returns a string indicating window state with verbose info
-         function getVerobseState () { 
+         // getVerboseState() returns a string indicating window state with verbose info
+         function getVerboseState () { 
              const restore =  
              
                  (  lib.restoreStateStack.length>0) ? 
@@ -1082,11 +944,12 @@ local imports - these functions are available to the other modules declared in t
              
          }
          
-         // setVerobseState() takes a string to set window state
-         function setVerobseState(v) {
+         // setVerboseState() takes a string to set window state
+         function setVerboseState(v) {
              
              if (typeof v === 'string') {
-                    const isTracking=!!localStorage.getItem(moveTrackingKey);
+                    const c = lib.consts,k=lib.storageKeys;
+                    const isTracking=!!localStorage.getItem(k.moveTrackingKey);
                     if (["maximized","minimized","fullscreen"].some(function(state){
                         if (  v===state || v.replace(/\s/g,'').startsWith( state+"(" ) ){
                             lib.windowState.state = state;
@@ -1116,13 +979,13 @@ local imports - these functions are available to the other modules declared in t
                          }
                          
                          lib.windowState.position = JSON.stringify([
-                           [  win_moveTo,   [ maximizedLeft,maximizedTop ] ],
-                           [  win_resizeTo, [ width,height ]   ],
-                           [  win_moveTo,   [ left,top ]       ],  
+                           [  c.win_moveTo,   [ c.maximizedLeft,c.maximizedTop ] ],
+                           [  c.win_resizeTo, [ width,height ]   ],
+                           [  c.win_moveTo,   [ left,top ]       ],  
                          ]);
                          
                          if ( isTracking ) {
-                             localStorage.setItem(setWindowStateKey,lib.windowState.state);
+                             localStorage.setItem(k.setWindowStateKey,lib.windowState.state);
                          }
                         
                     }
@@ -1162,17 +1025,17 @@ local imports - these functions are available to the other modules declared in t
           
          //internal func intened to be passed to Array.prototype.filter
          function filterLocalKeys(k) {
-             return k.startsWith(dbStorageKeyPrefix);
+             return k.startsWith(lib.storageKeys.dbStorageKeyPrefix);
          }
          
          //internal func intened to be passed to Array.prototype.map
          function convertStorageToLocalKey(k) {
-             return k.substr(dbStorageKeyPrefixLength);
+             return k.substr(lib.storageKeys.dbStorageKeyPrefixLength);
          }
          
          //internal func intened to be passed to Array.prototype.map (or used as key for localStorage/localforage getItem etc)
          function convertLocalToStorageKey(k) {
-             return dbStorageKeyPrefix+k;
+             return lib.storageKeys.dbStorageKeyPrefix+k;
          }
          
          
@@ -1189,13 +1052,14 @@ local imports - these functions are available to the other modules declared in t
              if ( (typeof json==='string') && ( sliceFrom === 0) ) return json;
              
              // either data hasn't changed, or caller wants a slice, so restringify
-             
+             const c = lib.consts,k=lib.storageKeys;
+                 
              const cmds = [
-               [ win_moveTo,   [maximizedLeft,maximizedTop]   ],
-               [ win_resizeTo, [meta.width,meta.height] ]
+               [ c.win_moveTo,   [c.maximizedLeft,c.maximizedTop]   ],
+               [ c.win_resizeTo, [meta.width,meta.height] ]
              ];
-             if (!(meta.left===maximizedLeft&&meta.top===maximizedTop)) {
-                cmds.push([ win_moveTo,  [ meta.left, meta.top  ]  ]);
+             if (!(meta.left===c.maximizedLeft&&meta.top===c.maximizedTop)) {
+                cmds.push([ c.win_moveTo,  [ meta.left, meta.top  ]  ]);
              }
              return JSON.stringify(cmds.slice(sliceFrom));
          }
@@ -1229,9 +1093,54 @@ local imports - these functions are available to the other modules declared in t
          
          
          function doClose(){
-             localStorage.setItem(closeKey,'1');
+             localStorage.setItem(lib.storageKeys.closeKey,'1');
          }
           
+          
+          
+          //////
+          
+          
+          function getWindowState(inside,named){
+             return wToolsLib.api.cloneReadOnly({},inside,named,{
+                 
+                maximized : {
+                     get        : getIsMaximized,
+                     set        : setIsMaximized,
+                     enumerable : true
+                 },
+                 minimized : {
+                     get        : getIsMinimized,
+                     set        : setIsMinimized,
+                     enumerable : true
+                 },
+                 
+                 fullscreen : {
+                     
+                     get        : getIsFullscreen,
+                     set        : setIsFullscreen,
+                     enumerable : true
+                 },
+                 
+                 position : {
+                     get        : stringifyWindowPosition,
+                     set        : parseWindowPosition,
+                     enumerable : false
+                 },
+                 state  : {
+                     get        : getState ,
+                     set        : setState,       
+                     enumerable : false
+                 },
+                 
+                verboseState  : {
+                     get        : getVerboseState,
+                     set        : setVerboseState,
+                     enumerable : false
+                }
+             
+             });
+          }
          
     }
     

@@ -2,28 +2,17 @@
 (function(L,o,a,d){let u,n=a[L]&&a[L].name,x=n&&o[n]===u?Object.defineProperty(o,n,{value:a[L].apply(this,d[L]),enumerable:!0,configurable:!0}):u;})(typeof self==="object"&&self.constructor.name||"x",self,
   { 
       Window : function wToolsLib() {
+        const cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice);
+        objectSetterHelpers();
         const On="addEventListener";
         const Off="removeEventListener";
-        var cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice);
 
-        const w=window;
+        //const w=window;
         
-        var positionKey;             
-        var positionReplyKey;        
-        var reportPositionKey;       
-        var reportPositionReplyKey;
+        const keynames_  = "positionKey,positionReplyKey,reportPositionKey,reportPositionReplyKey,closeKey,closedKey,moveTrackingKey,moveTrackingUpdateKey,setWindowStateKey,getWindowStateKey,dbStorageKeyPrefix,dbStorageKeyPrefixLength"; 
+        const keynames=keynames_.split(",");
         
-        var closeKey;                
-        var closedKey;  
-        var moveTrackingKey;        
-        var moveTrackingUpdateKey;
-        
-        var setWindowStateKey;
-        var getWindowStateKey;
-        
-        var dbStorageKeyPrefix,dbStorageKeyPrefixLength;
-
-        setWid(w.wid || windowId() );
+        setWid(window.wid || createWindowId() );
 
         const win_moveTo      = 0;
         const win_resizeTo    = 1;   
@@ -39,7 +28,7 @@
         const maximizedTop    = 2;
         
         const maximizedPosition = [
-            [ win_moveTo,    [ maximizedLeft,  maximizedTop ]   ],
+            [ win_moveTo,    [ maximizedLeft,  maximizedTop ]     ],
             [ win_resizeTo,  [ maximizedWidth, maximizedHeight ]  ]
         ];
         
@@ -66,49 +55,7 @@
         };
         const Hysteresis={};   
         
-        var lib = {
-            setPrimary              : setPrimary,
-            win_moveTo              : win_moveTo,
-            win_resizeTo            : win_resizeTo,
-            fs_api                  : w.fs_api,
-            stringifyWindowPosition : stringifyWindowPosition,
-            parseWindowPosition     : parseWindowPosition,
-            windowId                : windowId,
-            on                      : addLibEvent,
-            off                     : removeLibEvent,
-            param                   : getUrlParam,
-            
-            
-            dbEngine                : dbEngine,
-            
-            
-            consts : {
-                
-                win_moveTo              : win_moveTo,
-                win_resizeTo            : win_resizeTo,
-                minimizedHeight         : minimizedHeight,
-                minimizedWidth          : minimizedWidth,
-                minimizedLeft           : minimizedLeft,
-                minimizedTop            : minimizedTop,
-                maximizedHeight         : maximizedHeight,
-                maximizedWidth          : maximizedWidth,
-                maximizedLeft           : maximizedLeft,
-                maximizedTop            : maximizedTop,
-            
-                maximizedPosition       : maximizedPosition,
-                minimizedPosition       : minimizedPosition,
-                
-                maximizedPositionJSON   : maximizedPositionJSON,
-                minimizedPositionJSON   : minimizedPositionJSON,
-            },
-            storageKeys : {},
-            windowState : {
-                
-            },
-            
-            
-            restoreStateStack : []
-        };
+        var lib = {  };
 
         const {
             setForageKey   ,
@@ -123,135 +70,52 @@
             setDB 
 
         } = dbEngine(filterLocalKeys,convertStorageToLocalKey,convertLocalToStorageKey);
-
+        
         
         Object.defineProperties(lib,{
-             wid : {
-                 get : getWid,
-                 set : setWid,
-                 enumerable : true
-             },
-             urlParams : {
-                 get : getUrlVars,
-                 enumerable : true
-             },
-             getKeys :  {
-                 value : typeof localforage==='undefined' ? getLocalKeys : getForageKeys,
-                 writable    : false,
-                 enumerable  : true,
-                 configurage :true,
-             },
-             getKey :  {
-                 value : typeof localforage==='undefined' ? getLocalKey : getForageKey,
-                 writable    : false,
-                 enumerable  : true,
-                 configurage :true,
-             },
-             setKey :  {
-                 value : typeof localforage==='undefined' ? setLocalKey : setForageKey,
-                 writable    : false,
-                 enumerable  : true,
-                 configurage :true,
-             },
-             
-             removeKey : {
-                 value       : typeof localforage==='undefined' ? removeLocalKey : removeForageKey,
-                 writable    : false,
-                 enumerable  : true,
-                 configurage :true,
-             },
-             getDB :  {
-                 value       : getDB,
-                 writable    : false,
-                 enumerable  : true,
-                 configurage :true,
-             },
-             setDB : {
-                 value       : setDB,
-                 writable    : false,
-                 enumerable  : true,
-                 configurage : true,
-             },
-             
-             close : {
-                value       : w.close.bind(w),
-                writable    : false,
-                enumerable  : true,
-                configurage : true,                 
-                 
-             }
-        });
-        
-        Object.defineProperties(lib.storageKeys,{
-            positionKey             : { get : function () {return positionKey;},            enumerable : true},
-            positionReplyKey        : { get : function () {return positionReplyKey;},       enumerable : true},
-            reportPositionKey       : { get : function () {return reportPositionKey;},      enumerable : true},
-            reportPositionReplyKey  : { get : function () {return reportPositionReplyKey;}, enumerable : true},
-            closeKey                : { get : function () {return closeKey;},               enumerable : true},
-            closedKey               : { get : function () {return closedKey;},              enumerable : true},
             
-            moveTrackingKey         : { get : function () {return moveTrackingKey;},        enumerable : true},
-            moveTrackingUpdateKey   : { get : function () {return moveTrackingUpdateKey;},  enumerable : true},
-            
-            setWindowStateKey       : { get : function () {return setWindowStateKey;},      enumerable : true},
-            getWindowStateKey       : { get : function () {return getWindowStateKey;},     enumerable : true},
-        
-            dbStorageKeyPrefix      : { get : function () {return dbStorageKeyPrefix;},     enumerable : true},
-
-        });
-        
-        Object.defineProperties(lib.windowState,{
-             maximized : {
-                 get        : getIsMaximized,
-                 set        : setIsMaximized,
-                 enumerable : true
-             },
-             minimized : {
-                 get        : getIsMinimized,
-                 set        : setIsMinimized,
-                 enumerable : true
-             },
+             api                 : readOnlyGetter(getApi.bind(this,lib,"api")),
+             fs_api              : readOnlyValue(makeFullScreenApi(window.document.body)),
+             wid                 : readWriteGetSetter(getWid,setWid),
+             consts              : readOnlyGetter(getConsts.bind(this,lib,'consts')),
+             storageKeys         : readOnlyGetter(getStorageKeys.bind(this,createKeyNames.bind(this,window.wid),lib,'storageKeys')),
+             param               : readOnlyValue(getUrlParam.bind(this,window.location.href)),
+             urlParams           : readOnlyGetter(getUrlVars.bind(this,window.location.href,lib,'urlParams')), 
+             restoreStateStack   : readOnlyValue([]),
+             windowState         : readOnlyGetter(getWindowState.bind(this,lib,'windowState')),
              
-             fullscreen : {
-                 
-                 get        : getIsFullscreen,
-                 set        : setIsFullscreen,
-                 enumerable : true
-             },
+             on                  : readOnlyValue(addLibEvent),
+             off                 : readOnlyValue(removeLibEvent),
+             addEventListener    : readOnlyValue(addLibEvent),
+             removeEventListener : readOnlyValue(removeLibEvent),
              
-             position : {
-                 get        : stringifyWindowPosition,
-                 set        : parseWindowPosition,
-                 enumerable : false
-             },
-             state  : {
-                 get        : getWindowState ,
-                 set        : setWindowState,       
-                 enumerable : false
-             },
+             getKeys             : readOnlyValue(typeof localforage==='undefined' ? getLocalKeys   : getForageKeys),
+             getKey              : readOnlyValue(typeof localforage==='undefined' ? getLocalKey    : getForageKey),
+             setKey              : readOnlyValue(typeof localforage==='undefined' ? setLocalKey    : setForageKey),
+             removeKey           : readOnlyValue(typeof localforage==='undefined' ? removeLocalKey : removeForageKey),
              
-            verboseState  : {
-                 get        : getVerobseState,
-                 set        : setVerobseState,
-                 enumerable : false
-            }
+             getDB               : readOnlyValue(getDB),
+             setDB               : readOnlyValue(setDB),
+             close               : readOnlyValue(window.close.bind(window)),
+             
         });
         
-       
-        
-        var remove_move_emitter = on_window_move (function () {
-            emitLibEventwithHysteresis(100,'move',[w.screenX,w.screenY]);
+        var remove_move_emitter = on_window_move (window,function () {
+            emitLibEventwithHysteresis(100,'move',[window.screenX,window.screenY]);
         });
         
-        var remove_size_emitter = on_window_size (function () {
-            emitLibEventwithHysteresis(500,'size',[w.outerWidth,w.outerHeight]);
+        var remove_size_emitter = on_window_size (window,function () {
+            emitLibEventwithHysteresis(500,'size',[window.outerWidth,window.outerHeight]);
         });
         
-         w[On]('storage',      storageEvent);
-         w[On]('beforeunload', beforeunloadEvent);
-         w.fs_api = makeFullScreenApi(w.document.body);
+         window[On]('storage',      storageEvent);
+         window[On]('beforeunload', beforeunloadEvent);
+         
 
         return lib;
+        
+        
+        
             
         // add a handler for THIS window - move,size,minimized,maximized, restored, fulscreen(true/false),state, closed
         function addLibEvent (e,fn) {
@@ -311,44 +175,75 @@
             }
         }
             
-        // setWid() used to assign a new window id (also updates the storageKeys for this window (it's the getter for lib.wid)
+            
+        // setWid() assigns a new id for this window
         function setWid(id) {
-            w.wid=id;
-            positionKey             = "windowTools.cmd."+id+".position";
-            positionReplyKey        = "windowTools.cmd."+id+".position.reply";
-            reportPositionKey       = "windowTools.cmd."+id+".reportPosition";
-            reportPositionReplyKey  = "windowTools.cmd."+id+".reportPosition.reply";
-            closeKey                = "windowTools.cmd."+id+".close";
-            closedKey               = "windowTools.cmd."+id+".closed";
-            moveTrackingKey         = "windowTools.cmd."+id+".position.tracking";
-            moveTrackingUpdateKey   = "windowTools.cmd."+id+".position.tracking.update";
-            
-            setWindowStateKey       = "windowTools.cmd."+id+".position.tracking.state";
-            getWindowStateKey       = "windowTools.cmd."+id+".position.tracking.getState";
-            
-            dbStorageKeyPrefix      = "windowTools.cmd."+id+".db.kvStore.";
-            dbStorageKeyPrefixLength = dbStorageKeyPrefix.length;
-            
+            window.wid=id;
+            setStorageKeyNamesForWid(id);
         }
          
         // getWid() returns the  value assigned to window.wid (it's the setter for lib.wid)
         function getWid() {
-            return w.wid;
+            return window.wid;
         }
+        
+        function setWid_returns (retval,returnKeys) {
+            switch (typeof returnKeys) {
+                
+                case 'function' : return returnKeys(retval);
+                
+                case 'object': 
+                    
+                    if (Array.isArray(returnKeys)) {
+                        
+                       returnKeys.forEach(function(el,index) {
+                           returnKeys[index]=retval[el];
+                       });
+                       
+                       keynames.forEach(function(k){ delete retval[k]; });
+                       
+                    } else {
+                        
+                       keynames.forEach(function(k){ 
+                           returnKeys[k]= retval[k];
+                           delete retval[k]; 
+                       });
+                       
+                    }
+                return returnKeys;
+            }
+            return retval;
+        }
+        
+        function createKeyNames (id,inside,named) {
+            const keyPrefix = "windowTools@"+id+".";
+            const sks = {};
+            keynames.forEach(function (k) {
+               sks.__readOnlyValue(k,keyPrefix+k);
+            });
+            return cloneReadOnly(sks,inside,named);
+        }
+        
+        function setStorageKeyNamesForWid(id,returnKeys) {
+            const retval = createKeyNames(id);
+            return returnKeys ? setWid_returns (retval,returnKeys) : undefined;
+        }
+
         
         // returns getIsMaximized() true/false indicating if this window is currently maximized (getter for lib.windowState.maximized)
         function getIsMaximized() { 
-            return w.screenX===maximizedLeft&&
-                   w.screenY===maximizedTop&&
-                   w.outerWidth===maximizedWidth&&
-                   w.outerHeight===maximizedHeight;
+            return window.screenX===maximizedLeft&&
+                   window.screenY===maximizedTop&&
+                   window.outerWidth===maximizedWidth&&
+                   window.outerHeight===maximizedHeight;
         }
         
         // setIsMaximized(true/false) lets you maximize/restore the window
         function setIsMaximized(v) {
            
             if (typeof v==="boolean") {
-                const isTracking=!!localStorage.getItem(moveTrackingKey);
+                const k=lib.storageKeys;
+                const isTracking=!!localStorage.getItem(k.moveTrackingKey);
                 if (v) {
                     if (!getIsMaximized()){
                         lib.restoreStateStack.push( lib.windowState.position );
@@ -357,7 +252,7 @@
                         
                     }
                     if ( isTracking ) {
-                        localStorage.setItem(setWindowStateKey,'maximized');
+                        localStorage.setItem(k.setWindowStateKey,'maximized');
                     }
                 } else {
                     let emit=false;
@@ -373,7 +268,7 @@
                     if (emit) emitLibEvent('restored');
                     
                     if ( isTracking) {
-                        localStorage.setItem(setWindowStateKey,'normal');
+                        localStorage.setItem(k.setWindowStateKey,'normal');
                     }
                 }
             } else {
@@ -383,16 +278,18 @@
         
         // getIsMinimized() returns true/false indicating if this window is currently minimized (getter for lib.windowState.minimized)
         function getIsMinimized() {
-            return w.screenX===minimizedLeft&&
-                   w.screenY===minimizedTop&&
-                   w.outerWidth===minimizedWidth&&
-                   w.outerHeight===minimizedHeight;
+            return window.screenX===minimizedLeft&&
+                   window.screenY===minimizedTop&&
+                   window.outerWidth===minimizedWidth&&
+                   window.outerHeight===minimizedHeight;
         }
         
         // setIsMinimized(true/false) lets you minimize/restore the window
         function setIsMinimized(v) {
             if (typeof v==="boolean") {
-                const isTracking=!!localStorage.getItem(moveTrackingKey);
+                const k=lib.storageKeys,setWindowStateKey=k.setWindowStateKey ;
+                
+                const isTracking=!!localStorage.getItem(k.moveTrackingKey);
                if (v) {
                    if (!getIsMinimized()){
                        lib.restoreStateStack.push( lib.windowState.position );
@@ -427,24 +324,26 @@
         
         // getIsFullscreen() returns true/false indicating if this window is currently fullscreen (getter for lib.windowState.fullscreen)
         function getIsFullscreen (){
-            return w.fs_api.isFullscreen();
+            return window.fs_api.isFullscreen();
         }
         
         // setIsFullscreen(true/false) lets you enter/exit fullscreen
         function setIsFullscreen (v){
             if (typeof v==="boolean") {
-               const isTracking=!!localStorage.getItem(moveTrackingKey);
+               const k=lib.storageKeys,setWindowStateKey=k.setWindowStateKey ;
+                
+               const isTracking=!!localStorage.getItem(k.moveTrackingKey);
                if (v) {
-                   if (!w.fs_api.isFullscreen()){
-                       w.fs_api.enterFullscreen();
+                   if (!window.fs_api.isFullscreen()){
+                       window.fs_api.enterFullscreen();
                        emitLibEvent('fullscreen',true);
                    }
                    if ( isTracking ) {
                        localStorage.setItem(setWindowStateKey,'fullscreen');
                    }
                } else {
-                   if (w.fs_api.isFullscreen()){
-                       w.fs_api.exitFullscreen();
+                   if (window.fs_api.isFullscreen()){
+                       window.fs_api.exitFullscreen();
                        emitLibEvent('fullscreen',false);
                    }
                    if ( isTracking ) {
@@ -456,8 +355,8 @@
             }
         }
         
-        // getWindowState() returns a string indicating window state
-        function getWindowState() { 
+        // getState() returns a string indicating window state
+        function getState() { 
                return getIsFullscreen() ? 'fullscreen' :
                       getIsMaximized()  ? 'maximized'  : 
                       getIsMinimized()  ? 'minimized'  : 
@@ -465,8 +364,8 @@
         }
         
         
-        // getWindowState() takes a string to set window state
-        function setWindowState(v) {
+        // getState() takes a string to set window state
+        function setState(v) {
             if (typeof v === 'string') {
                 switch (v) {
                     case "fullscreen" : 
@@ -492,8 +391,8 @@
         }
         
         
-        // getVerobseState() returns a string indicating window state with verbose info
-        function getVerobseState () { 
+        // getVerboseState() returns a string indicating window state with verbose info
+        function getVerboseState () { 
             const restore =  
             
                 (  lib.restoreStateStack.length>0) ? 
@@ -504,15 +403,16 @@
             if (getIsMaximized()) return "maximized"+restore;
             if (getIsMinimized()) return "minimized"+restore;
             
-            return "normal ("+w.outerWidth+"x"+w.outerHeight+" @ "+w.screenX+","+w.screenY+")"; 
+            return "normal ("+window.outerWidth+"x"+window.outerHeight+" @ "+window.screenX+","+window.screenY+")"; 
             
         }
         
-        // setVerobseState() takes a string to set window state
-        function setVerobseState(v) {
+        // setVerboseState() takes a string to set window state
+        function setVerboseState(v) {
             
             if (typeof v === 'string') {
-                   const isTracking=!!localStorage.getItem(moveTrackingKey);
+                   const k=lib.storageKeys,setWindowStateKey=k.setWindowStateKey ;
+                   const isTracking=!!localStorage.getItem(k.moveTrackingKey);
                    if (["maximized","minimized","fullscreen"].some(function(state){
                        if (  v===state || v.replace(/\s/g,'').startsWith( state+"(" ) ){
                            lib.windowState.state = state;
@@ -564,30 +464,34 @@
         //storageEvent () is called by window.onstorage whenever storage changes
         function storageEvent (){
             
-            if (w.wid) {
+            if (window.wid) {
+                const k=lib.storageKeys,
+                    positionKey=k.positionKey,
+                    closeKey=k.closeKey,
+                    reportPositionKey=k.reportPositionKey ;
                 const positionArgs   = localStorage.getItem(positionKey);
                 
                 checkTracking(); 
         
-                const position = stringifyWindowPosition (-2);
+                const position = stringifyWindowPosition (window,-2);
     
                 if (positionArgs) {
-                    parseWindowPosition(positionArgs);
-                    localStorage.setItem(positionReplyKey,position);
+                    parseWindowPosition(window,positionArgs);
+                    localStorage.setItem(k.positionReplyKey,position);
                     localStorage.removeItem(positionKey);
                 } else {
                     const reportPositionArgs = localStorage.getItem(reportPositionKey);
                     
                        
                     if (reportPositionArgs) {
-                       localStorage.setItem(reportPositionReplyKey,position);
+                       localStorage.setItem(k.reportPositionReplyKey,position);
                        localStorage.removeItem(reportPositionKey);
                     } else {
                         const closeArgs = localStorage.getItem(closeKey);
                         if (closeArgs) {
                             beforeunloadEvent();
                             localStorage.removeItem(closeKey);
-                            w.close();
+                            window.close();
                         }
                     }
                 }
@@ -597,7 +501,7 @@
         
         // checkTracking() is called by storageEvent()
         function checkTracking(){
-            if ( !!localStorage.getItem(moveTrackingKey) ) {
+            if ( !!localStorage.getItem(lib.storageKeys.moveTrackingKey) ) {
                 addLibEvent('move',updatePositionTracking);
                 addLibEvent('size',updatePositionTracking);
             } else {
@@ -608,19 +512,19 @@
         
         // updatePositionTracking() is an event called in delayed reaction to move (100 ms) and size (500 ms)
         function updatePositionTracking (){
-            
+          const k = lib.storageKeys;
           localStorage.setItem(
-              moveTrackingUpdateKey,lib.windowState.position
+              k.moveTrackingUpdateKey,lib.windowState.position
           );
           
-          localStorage.setItem(setWindowStateKey,lib.windowState.state);
+          localStorage.setItem(k.setWindowStateKey,lib.windowState.state);
           
         }
         
         //beforeunloadEvent () is called by window.onbefore before the window is closed
         function beforeunloadEvent(){
-            w[Off]('storage',      storageEvent);
-            w[Off]('beforeunload', beforeunloadEvent);
+            window[Off]('storage',      storageEvent);
+            window[Off]('beforeunload', beforeunloadEvent);
             
             remove_move_emitter();remove_move_emitter=function(){};
             remove_size_emitter();remove_size_emitter=function(){};
@@ -631,16 +535,16 @@
                 fns.splice(0,fns.length);
                 delete libEvents[e];
             });
-            
-            if (!!localStorage.getItem(moveTrackingKey)) {
-                localStorage.setItem(closedKey,stringifyWindowPosition(-2));
+            const k = lib.storageKeys;
+            if (!!localStorage.getItem(k.moveTrackingKey)) {
+                localStorage.setItem(k.closedKey,stringifyWindowPosition(window,-2));
             }
         }
     
         //  stringifyWindowPosition() returns a JSON payload than can be passed into 
         //    parseWindowPosition() to restore the window location  
         
-        function stringifyWindowPosition (sliceFrom) {
+        function stringifyWindowPosition (w,sliceFrom) {
             const cmds = [
               [ win_moveTo,   [maximizedLeft,maximizedTop]   ],
               [ win_resizeTo, [w.outerWidth,w.outerHeight] ]
@@ -653,7 +557,7 @@
     
         // parseWindowPosition() takes a JSON payload created by stringifyWindowPosition() 
         // it restores the window position to how it was when stringifyWindowPosition() was invoked
-        function parseWindowPosition(json,capture){
+        function parseWindowPosition(w,json,capture){
             const 
             cmds =JSON.parse(json),
             fn=[w.moveTo,w.resizeTo],
@@ -677,7 +581,7 @@
         
         // internal function to track window movements
         // returns a function that will remove the handler.
-        function on_window_move(fn) {
+        function on_window_move(w,fn) {
              
               if (typeof fn === "function") {
                try {
@@ -721,7 +625,7 @@
         
         // internal function to track window resizing
         // returns a function that will remove the handler.
-        function on_window_size(fn) {
+        function on_window_size(w,fn) {
             
             if (typeof fn === "function") {
                try {
@@ -841,10 +745,10 @@
         }
         
         // makes a quasi-guid to id the window
-        function windowId() {
+        function createWindowId() {
             return[
              Math.random,
-             function (){ return (windowId.last ? windowId.last + Math.random() : Math.random() ) },
+             function (){ return (createWindowId.last ? createWindowId.last + Math.random() : Math.random() ) },
              Math.random,
              Date.now,
              Math.random
@@ -853,11 +757,26 @@
             }).join('_');
         }
         
+        // read only object property swizzler
+        function cloneReadOnly(obj,inside,named,props) {
+            if (typeof obj+typeof props==='objectobject') {
+                Object.defineProperties(obj,props);
+            }
+            if (typeof obj+typeof inside+typeof named ==='objectobjectfunction') {
+                
+                try {
+                    inside.__readOnlyValue(named,obj);
+                } catch(e) {
+                    
+                }
+            }
+            return obj;
+        }
         
         // used to get param strings passed to this window
-        function getUrlParam(parameter, defaultvalue){
-            if(w.location.href.indexOf(parameter) > -1){
-                var result,ignore=w.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        function getUrlParam(href,parameter, defaultvalue){
+            if(href.indexOf(parameter) > -1){
+                var result,ignore=href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
                     if (!result&&key===parameter) {
                         result = value;
                     }
@@ -868,29 +787,28 @@
         }
         
         // used to get all params passed to this window's url, as an object
-        function getUrlVars() {
-            var vars = {},ignore = w.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-                vars[key] = value;
+        function getUrlVars(href,inside,named) {
+            const props = {},ignore = href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+                props[key]=readOnlyValue(decodeURIComponent(value));
             });
-            return vars;
+            return cloneReadOnly({},inside,named,props);
         }
         
         //internal func intened to be passed to Array.prototype.filter
         function filterLocalKeys(k) {
-            return k.startsWith(dbStorageKeyPrefix);
+            return k.startsWith(lib.storageKeys.dbStorageKeyPrefix);
         }
         
         //internal func intened to be passed to Array.prototype.map
         function convertStorageToLocalKey(k) {
-            return k.substr(dbStorageKeyPrefixLength);
+            return k.substr(lib.storageKeys.dbStorageKeyPrefixLength);
         }
         
         //internal func intened to be passed to Array.prototype.map (or used as key for localStorage/localforage getItem etc)
         function convertLocalToStorageKey(k) {
-            return dbStorageKeyPrefix+k;
+            return lib.storageKeys.dbStorageKeyPrefix+k;
         }
         
-
         
         function dbEngine(filterLocalKeys,convertStorageToLocalKey,convertLocalToStorageKey) {
             
@@ -1144,22 +1062,177 @@
                 return x;
             }
             
-            
-       
+ 
             
             
         }
-    
         
+        function readOnlyValue(v) {
+            return {
+                        value        : v,
+                        writable     : false,
+                        enumerable   : true,
+                        configurable : true,
+            };
+        }
+            
+        
+  
+        function readOnlyGetter(getter) {
+            return {
+                        get          : getter,
+                        enumerable   : true,
+                        configurable : true,
+            };
+        }
+        
+        
+  
+        
+        function readWriteGetSetter(getter,setter) {
+            return {
+                        get          : getter,
+                        set          : setter,
+                        enumerable   : true,
+                        configurable : true,
+            };
+        } 
+        
+        function objectSetterHelpers() {
+            if (!Object.prototype.__readOnlyValue)
+              Object.defineProperty(Object.prototype,'__readOnlyValue',{value : 
+        
+                    function(k,v){
+                        delete this[k];
+                        Object.defineProperty(this,k,{
+                                    value        : v,
+                                    writable     : false,
+                                    enumerable   : true,
+                                    configurable : true,
+                        });
+                    },
+                    
+                    writable     : true,
+                    enumerable   : false,
+                    configurable : true,
+            });
+            if (!Object.prototype.__readOnlyGetter)
+              Object.defineProperty(Object.prototype,'__readOnlyGetter',{value : 
+        
+                    function(k,g) {
+                        delete this[k];
+                        Object.defineProperty(this,k,{
+                                    get          : g,
+                                    enumerable   : true,
+                                    configurable : true,
+                        });
+                    },
+                    
+                    writable     : true,
+                    enumerable   : false,
+                    configurable : true,
+            });
+            if (!Object.prototype.__readWriteGetSetter)
+               Object.defineProperty(Object.prototype,'__readWriteGetSetter',{value : 
+        
+                    function(k,g,s) {
+                        delete this[k];
+                        Object.defineProperty(this,k,{
+                                    get          : g,
+                                    set          : s,
+                                    enumerable   : true,
+                                    configurable : true,
+                        });
+                    },
+                    
+                    writable     : true,
+                    enumerable   : false,
+                    configurable : true,
+            });
+        }
+        
+        function getConsts(inside,named){
+            return cloneReadOnly({},inside,named,{    
+                
+                win_moveTo             : readOnlyValue (win_moveTo),
+                win_resizeTo           : readOnlyValue (win_resizeTo),
+                       
+                minimizedHeight        : readOnlyValue (minimizedHeight),
+                minimizedWidth         : readOnlyValue (minimizedWidth),
+                minimizedLeft          : readOnlyValue (minimizedLeft),
+                minimizedTop           : readOnlyValue (minimizedTop),
+                       
+                maximizedHeight        : readOnlyValue (maximizedHeight),
+                maximizedWidth         : readOnlyValue (maximizedWidth),
+                maximizedLeft          : readOnlyValue (maximizedLeft),
+                maximizedTop           : readOnlyValue (maximizedTop),
+                
+                maximizedPosition      : readOnlyValue (maximizedPosition),
+                minimizedPosition      : readOnlyValue (minimizedPosition),
+                maximizedPositionJSON  : readOnlyValue (maximizedPositionJSON),
+                minimizedPositionJSON  : readOnlyValue (minimizedPositionJSON),
+                
+           });
+        }
+        
+        function getStorageKeys(getSKNames,inside,named){
+           const sks={};  
+           keynames.forEach(function(keyname) {
+                sks.__readOnlyGetter(keyname,function() {
+                   return getSKNames()[keyname];
+                });
+           });
+           return cloneReadOnly(sks,inside,named);
+        }
+        
+        function getWindowState(inside,named){
+           return cloneReadOnly({},inside,named,{
+                maximized     : readWriteGetSetter(getIsMaximized,setIsMaximized),
+                minimized     : readWriteGetSetter(getIsMinimized,setIsMinimized),
+                fullscreen    : readWriteGetSetter(getIsFullscreen,setIsFullscreen),
+                position      : readWriteGetSetter(stringifyWindowPosition.bind(this,window),
+                                                   parseWindowPosition.bind(this,window)),
+                state         : readWriteGetSetter(getState ,setState),       
+                verboseState  : readWriteGetSetter(getVerboseState,setVerboseState),
+           });
+        }
+        
+        function getApi (inside,named) {
+            
+            return cloneReadOnly({},inside,named,{
+                
+                dbEngine                 : readOnlyValue(dbEngine),
+                filterLocalKeys          : readOnlyValue(filterLocalKeys),
+                convertStorageToLocalKey : readOnlyValue(convertStorageToLocalKey),
+                convertLocalToStorageKey : readOnlyValue(convertLocalToStorageKey),
+                getUrlVars               : readOnlyValue(getUrlVars),
+                getUrlParam              : readOnlyValue(getUrlParam),
+                createWindowId           : readOnlyValue(createWindowId),
+                makeFullScreenApi        : readOnlyValue(makeFullScreenApi),
+                on_window_move           : readOnlyValue(on_window_move),
+                on_window_size           : readOnlyValue(on_window_size),
+                createKeyNames           : readOnlyValue(createKeyNames),
+                cloneReadOnly            : readOnlyValue(cloneReadOnly),
+                getConsts                : readOnlyValue(getConsts),
+                getStorageKeys           : readOnlyValue(getStorageKeys),
+                setPrimary               : readOnlyValue(setPrimary),
+                cpArgs                   : readOnlyValue(cpArgs),
+                readOnlyGetter           : readOnlyValue(readOnlyGetter),
+                readOnlyValue            : readOnlyValue(readOnlyValue),
+                readWriteGetSetter       : readOnlyValue(readWriteGetSetter),
+                
+                On                       : readOnlyValue(On),
+                Off                      : readOnlyValue(Off),
+                
+
+            });
+        }
 
     },
       
  
       ServiceWorkerGlobalScope : function wToolsLib() {
-          const lib = {}
-          
-          
-          
+          const lib = {};
           return lib;
       },
       
