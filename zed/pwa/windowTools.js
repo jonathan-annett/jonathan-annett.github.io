@@ -624,7 +624,11 @@ local imports - these functions are available to the other modules declared in t
     
     function wToolsRemote(meta,wToolsLib) {
         
-        const { On,Off, cpArgs, readOnlyValue, readOnlyGetter, readWriteGetSetter } = wToolsLib.api;
+        const 
+        
+        lib = { },
+        
+        { On,Off, cpArgs, readOnlyValue, readOnlyGetter, readWriteGetSetter } = wToolsLib.api;
         
        
         
@@ -658,9 +662,8 @@ local imports - these functions are available to the other modules declared in t
     
         } = wToolsLib.api.dbEngine(filterLocalKeys,convertStorageToLocalKey,convertLocalToStorageKey);
         
-        var lib = { };
-         
-         setWid(meta.wid);
+          
+          setWid(meta.wid);
          
          Object.defineProperties(lib,{
               //api: not implemented
