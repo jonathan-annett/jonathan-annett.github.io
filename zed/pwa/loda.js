@@ -306,3 +306,51 @@ local imports - these functions are available to the other modules declared in t
 
 
 
+ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
+
+    {
+
+        Window: function dep3() {
+            
+            const lib = {
+                
+                acme : "widgets"
+                
+            };
+            
+            
+
+            return lib;
+        },
+
+        ServiceWorkerGlobalScope: function dep3() {
+            const lib = "hello sw world";
+
+            return lib;
+        },
+
+    }, {
+        Window: [
+
+           
+        ],
+        ServiceWorkerGlobalScope: [
+
+
+        ],
+    }
+
+    );
+
+
+    /*
+
+local imports - these functions are available to the other modules declared in this file
+
+*/
+ 
+
+});
+
+
+
