@@ -93,7 +93,7 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                                      meta.win.on('move',resavePos);
                                      meta.win.on('size',resavePos);
                                  } else {
-                                     appendScript(win,"/zed/pwa/windowTools.helper.js",function(){
+                                     appendScript(win,"wToolsLib|/zed/pwa/windowTools.helper.js",function(){
                                          meta.win = win.wToolsLib;
                                          meta.win.on('move',resavePos);
                                          meta.win.on('size',resavePos);
@@ -293,12 +293,17 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                  
                  
                  function appendScript(win,scriptUrl,cb) {
-                    win.ml=ml; 
                     if (typeof win==='string') {
                         cb=scriptUrl;
                         scriptUrl=win;
                         win=window;
+                    } else {
+                        win.ml=ml; 
                     }
+                    
+                    if (scriptUrl.indexOf("|")>0) return win.ml(5,[scriptUrl],cb);
+
+                    
                     let promise,scriptElement = win.document.createElement("script");
                     scriptElement.type = "text/javascript"; 
                     win.document.body.appendChild(scriptElement);
