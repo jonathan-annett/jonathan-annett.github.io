@@ -2,7 +2,7 @@
 
 /*global multiLoad,__ml1,__ml2,__ml3,__ml4,ml*/
 //multiLoad(__ml1(),['wToolsLib'],function(){__ml2( __ml3(), __ml4(),
-ml(0,ml(1),['wToolsLib'],function(){ml(2,ml(3),ml(4),
+ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml(4),
 
   { 
       
