@@ -52,10 +52,11 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                                   cleanupStorage(meta.wid);
                                   delete meta.win;
                                   nukeMeta(meta);
-                                  
+                                  prev.meta_dirty = true;
                               });
                            }
                          );
+                        
                          return prev;
                      }
                      
@@ -497,30 +498,34 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                      
                      keys.cleanupStorage();
                      
-                     nuke ( keys );
+                     nukeMeta ( keys );
                      
                  }
                  
-                 function nuke(obj){
-                         if (typeof obj === 'object') {
-                             if (Array.isArray(obj)) {
-                                obj.forEach(nuke);   
-                             } else {
-                                 Object.keys(obj).forEach(function(k){
-                                     delete obj[k];
-                                 });
-                              }
-                         }                 
-                  }
+                
                  function nukeMeta ( meta ) {
                      if (typeof meta === 'object') {
-                         nuke(meta.win.consts);
-                         nuke(meta.win.storageKeys);
-                         nuke(meta.win.urlParams);
-                         nuke(meta.win.restoreStateStack);
-                         nuke(meta.win.windowState);
-                         nuke(meta.win);
+                         if (typeof meta.win === 'object') {
+                             nuke(meta.win.consts);
+                             nuke(meta.win.storageKeys);
+                             nuke(meta.win.urlParams);
+                             nuke(meta.win.restoreStateStack);
+                             nuke(meta.win.windowState);
+                             nuke(meta.win);
+                         }
                          nuke(meta);
+                     }
+                     
+                     function nuke(obj){
+                            if (typeof obj === 'object') {
+                                if (Array.isArray(obj)) {
+                                   obj.forEach(nuke);   
+                                } else {
+                                    Object.keys(obj).forEach(function(k){
+                                        delete obj[k];
+                                    });
+                                 }
+                            }                 
                      }
                      
                  }
