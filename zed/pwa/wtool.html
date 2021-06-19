@@ -38,7 +38,7 @@
                 case 3: return typeof self === "object" && self.constructor.name || "x";
                 case 4: return typeof self === "object" && self;
                 case 5: 
-                    L.ml=ml;
+                    if (!L.ml) L.ml=ml.bind(L);
                     return ml(0,L,o,a,d);
             }
             

@@ -153,7 +153,7 @@ function ml(x,L, o, a, d){
                                     if(d)d(o);
                                     o.setAttribute("src", l[2]);
                                     return l[1];
-                                 })(/(.*)\|(.*)/.exec(x),i,"script",document);
+                                 })(/(.*)\|(.*)/.exec(x),i,"script",this.document);
                             }).filter(function(x){return !!x});
                             if (m.length) {
                                 return setTimeout(strap, m.length*10, m);
@@ -175,13 +175,12 @@ function ml(x,L, o, a, d){
         case 3: return typeof self === "object" && self.constructor.name || "x";
         case 4: return typeof self === "object" && self;
         case 5: 
-            L.ml=ml;
+            if (!L.ml) L.ml=ml.bind(L);
             return ml(0,L,o,a,d);
     }
     
     
 }
-
 
 
 ml(0,ml(1),['dep3'],function(){ml(2,ml(3),ml(4),
