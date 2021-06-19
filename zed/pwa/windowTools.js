@@ -301,7 +301,7 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                         win.ml=ml; 
                     }
                     
-                    if (scriptUrl.indexOf("|")>0) return win.ml(5,[scriptUrl],cb);
+                    if (scriptUrl.indexOf("|")>0) return win.ml(5,win,[scriptUrl],cb);
 
                     
                     let promise,scriptElement = win.document.createElement("script");
