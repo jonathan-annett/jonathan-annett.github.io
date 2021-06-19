@@ -139,7 +139,7 @@ function ml(x, L, o, a, d) {
 }
 
 // src
-function ml(x,L, o, a, d){
+function ml(x,L, o, a, d, s){
     switch (x) {
         case 0: 
             return (function(L,o,a,d) {
@@ -171,6 +171,7 @@ function ml(x,L, o, a, d){
                                 enumerable: !0,
                                 configurable: !0
                             }) : u;
+                            if(s)s(L,n,o[n]);
                         })(L,o,a,d);
         case 3: return typeof self === "object" && self.constructor.name || "x";
         case 4: return typeof self === "object" && self;
