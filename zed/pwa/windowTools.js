@@ -93,7 +93,9 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                                      meta.win.on('move',resavePos);
                                      meta.win.on('size',resavePos);
                                  } else {
-                                     appendScript(win,"wToolsLib|/zed/pwa/windowTools.helper.js",function(){
+                                     appendScript(win,"wToolsLib|/zed/pwa/windowTools.helper.js",function(err,wToolsLibx){
+                                         if (err) throw err;
+                                         console.log(wToolsLibx,win.wToolsLib);
                                          meta.win = win.wToolsLib;
                                          meta.win.on('move',resavePos);
                                          meta.win.on('size',resavePos);
@@ -304,18 +306,24 @@ ml(0,ml(1),['wToolsLib|/zed/pwa/windowTools.helper.js'],function(){ml(2,ml(3),ml
                     
                     if (scriptUrl.indexOf("|")>0) return win.ml(5,win,[scriptUrl],function(){
                         console.log("script launched via ml");
-                    },addCBEvents);
+                    },addCBEvents.bind(this,function(err){
+                        console.log("script error via ml:",err);
+                        if (err) return cb (err);
+                    }),function(w,nm,mod){
+                        console.log("loaded",nm,"into",w.location.href,":",typeof mod);
+                        cb(undefined,mod);
+                    });
 
                     
                     let promise,scriptElement = win.document.createElement("script");
                     scriptElement.type = "text/javascript"; 
                     win.document.body.appendChild(scriptElement);
-                    addCBEvents(scriptElement);
+                    addCBEvents(cb,scriptElement);
                     scriptElement.setAttribute("src", scriptUrl);
                     return promise;
                     
                     
-                    function addCBEvents(scriptElement) {
+                    function addCBEvents(cb,scriptElement) {
                         if (typeof cb==='function') {
                             scriptElement.addEventListener('load',function(){
                                 return cb (undefined,scriptElement);
