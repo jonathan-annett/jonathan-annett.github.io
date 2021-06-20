@@ -75,7 +75,7 @@ function ml(x,L, o, a, d, s){
        s:(d,S)=>{s = d.createElement(S);s.type = "text/java"+S; return d.body.appendChild(s);},
        
        //z.p = prefetch script to bust cache, and then load call c() which assigns url to src attribute of script element
-       p:(u,c)=>{return typeof fetch===t[1]?fetch(u+'?c='+Math.random()).then(c):c();},
+       p:(u,c)=>{return typeof fetch===t[d||1]?fetch(u+'?c='+Math.random()).then(c):c();},
        
        //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
        r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(u),
