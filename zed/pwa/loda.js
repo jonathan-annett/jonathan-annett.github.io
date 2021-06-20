@@ -430,3 +430,46 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
 
 
+
+
+
+function ml(x,L, o, a, d, s){
+    switch (x) {
+        case 0: 
+            return (function(L,o,a,d) {
+                        let strap = function(m) {
+                            m = m.map(function(x,i) {
+                                return (function(l,o,D) {
+                                    if (!l) return L[x]?false:x;
+                                    o = ml(7,D,"script");
+                                    if(d)d(o);
+                                    ml(8,l[2],o.setAttribute.bind(o,"src",l[2]));
+                                    return l[1];
+                                 })(/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(x),i,this.document);
+                            }).filter(function(x){return !!x});
+                            if (m.length) {
+                                return setTimeout(strap, m.length*10, m);
+                            }
+                            a();
+                        };
+                        strap(o);
+                    })(L,o,a,d);
+        case 1: return typeof self === "object" && self||{};
+        case 2: return (function(L,o,a,d) {
+                            let u, n = a[L] && a[L].name, x = n && o[n] === u ? Object.defineProperty(o, n, {
+                                value: a[L].apply(this, d[L].map(function(f) {
+                                    return f();
+                                })),
+                                enumerable: !0,
+                                configurable: !0
+                            }) : u;
+                        })(L,o,a,d);
+        case 3: return typeof self === "object" && self.constructor.name || "x";
+        case 4: return typeof self === "object" && self;
+        case 5: if (!L.ml) L.ml=ml.bind(L);return ml.call(L,0,L,o,a,d,s);
+        case 6: return ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d);
+        case 7: s = L.createElement(o);s.type = "text/java"+o; return L.body.appendChild(s);
+        case 8: return typeof fetch===typeof ml?fetch(L+'?c='+Math.random()).then(o):o();
+        
+    }
+}
