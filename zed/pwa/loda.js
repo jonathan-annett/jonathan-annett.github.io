@@ -560,4 +560,93 @@ function mlx(x,L, o, a, d, s){
     };
     return z[x](L,o,a,d,s);
 }
+
+
+function ml(x,L,o,a,d,s){let e,t=[{},ml,"",e].map(e=>typeof e),n={1:()=>n[4]()||{},2:(L,o,a,d,e,m)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===t[2]+t[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(n.x)),enumerable:!0,configurable:!0}):m},3:()=>n[4]().constructor.name||"x",4:()=>typeof self===t[0]&&self,x:e=>e()};return(e=typeof n[x]===t[1]?n[x](L,o,a,d,s):n)!==n?e:(e={0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,10*t.length,t):a(),u:(x,t)=>(t=e.r(x))?(s=e.s(this.document,"script"),d&&d(s),e.p(t[2],s.setAttribute.bind(s,"src",t[2])),t[1]):!L[x]&&x,y:x=>!!x,s:(d,e)=>((s=d.createElement(e)).type="text/java"+e,d.body.appendChild(s)),p:(e,n)=>typeof fetch===t[1]?fetch(e+"?c="+Math.random()).then(n):n(),r:e=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(e),5:()=>(L.ml||(L.ml=ml.bind(L)),ml.call(L,0,L,o,a,d,s)),6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o]}]})},d)})[x](L,o,a,d,s)}
+
+function ml(x,L, o, a, d, s){
+    let
+    z,
+    t=[{},ml,'',z].map((G)=>typeof G),
+    c = {
+        // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
+        1:()=>c[4]()||{},
+        
+        // ml(2)-->c[2](L,o,a,d,e,r) 
+        
+        // L = "Window", "ServiceWorkerGlobalScope" (result of ml(1)--> c[1]
+        // o = exports (ie self ie window)
+        // a = dictionary of dependants per window type
+        // d = array of loaded dependants 
+        // e = unuused argument doubles as a variable
+        // r = undefined
+        2:(L,o,a,d,e,r)=>{
+                e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
+                value: a[L].apply(this, d[L].map(c.x)),
+                enumerable: !0,
+                configurable: !0
+            }) : r;
+        },
+        
+        // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
+        3:()=>c[4]().constructor.name || "x",
+        
+        // ml(1)->c[1] = resolve to self or undefined
+        4:()=>typeof self === t[0] && self,
+        
+        //c.x = map iterator to execure every function in an array of functions
+        //      (used to resolve each loaded module)
+        x:(f)=>f(),
+          
+    };
+    z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
+    
+    if (z!==c)return z;
+        
+    z = {
+        
+       //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
+       //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
+       0:()=>z.l(o),
+       
+       //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
+       l:(u)=>{
+             u = u.map(z.u).filter(z.y);
+             return u.length?setTimeout(z.l, u.length*10, u):a();
+       },
+
+       //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
+       u:(x,R)=>{
+             R=z.r(x);
+             if (!R) return L[x]?false:x;
+             s = z.s(this.document,"script");
+             if(d)d(s);
+             z.p(R[2],s.setAttribute.bind(s,"src",R[2]));
+             return R[1];
+       },
+       
+       //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
+       y:(x)=>!!x,
+      
+         
+       //z.s = create and append empty script element
+       s:(d,S)=>{s = d.createElement(S);s.type = "text/java"+S; return d.body.appendChild(s);},
+       
+       //z.p = prefetch script to bust cache, and then load call c() which assigns url to src attribute of script element
+       p:(u,c)=>{return typeof fetch===t[1]?fetch(u+'?c='+Math.random()).then(c):c();},
+       
+       //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
+       r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(u),
+       
+        
+       //experimental, probably buggy, extra script loader. needs some work
+       5:()=>{if (!L.ml) L.ml=ml.bind(L);return ml.call(L,0,L,o,a,d,s);},
+       
+       //experimental, probably buggy, extra script loader. needs some work
+       6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]});},d)
+  
+    };
+    return z[x](L,o,a,d,s);
+    
+}
   
