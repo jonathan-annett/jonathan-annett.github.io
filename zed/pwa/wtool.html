@@ -4,19 +4,19 @@
         <script>
     //   function ml(x,L,o,a,d,s){switch(x){case 0:return function(L,o,a,d){let e=function(t){if((t=t.map(function(x,e){let l,o,A,D;return l=/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(x),o=e,A="script",D=this.document,l?((o=D.createElement(A)).type="text/java"+A,D.body.appendChild(o),d&&d(o),o.setAttribute("src",l[2]),l[1]):!L[x]&&x}).filter(function(x){return!!x})).length)return setTimeout(e,10*t.length,t);a()};e(o)}(L,o,a,d);case 1:return"object"==typeof self&&self||{};case 2:return function(L,o,a,d){let e,t=a[L]&&a[L].name;t&&o[t]===e&&Object.defineProperty(o,t,{value:a[L].apply(this,d[L].map(function(e){return e()})),enumerable:!0,configurable:!0})}(L,o,a,d);case 3:return"object"==typeof self&&self.constructor.name||"x";case 4:return"object"==typeof self&&self;case 5:return L.ml||(L.ml=ml.bind(L)),ml.call(L,0,L,o,a,d,s);case 6:return ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o]}]})},d)}}
 
-     function ml(x,L, o, a, d, s){
+     function mlx(x,L, o, a, d, s){
          switch (x) {
              case 0: 
                  return (function(L,o,a,d) {
                              let strap = function(m) {
                                  m = m.map(function(x,i) {
-                                     return (function(l,o,D) {
+                                     return (function(l,D) {
                                          if (!l) return L[x]?false:x;
-                                         o = ml(7,D,"script");
-                                         if(d)d(o);
+                                         s = ml(7,D,"script");
+                                         if(d)d(s);
                                          ml(8,l[2],o.setAttribute.bind(o,"src",l[2]));
                                          return l[1];
-                                      })(/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(x),i,this.document);
+                                      })(ml(9,x),this.document);
                                  }).filter(function(x){return !!x});
                                  if (m.length) {
                                      return setTimeout(strap, m.length*10, m);
@@ -41,10 +41,52 @@
              case 6: return ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d);
              case 7: s = L.createElement(o);s.type = "text/java"+o; return L.body.appendChild(s);
              case 8: return typeof fetch===typeof ml?fetch(L+'?c='+Math.random()).then(o):o();
+             case 9: return /([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(L);
              
          }
      }
      
+     function ml(x,L, o, a, d, s){
+         const z = {
+             0:(L,o,a,d)=>{
+                         let Z = function(m) {
+                             m = m.map(function(x,i) {
+                                 return (function(l,D) {
+                                     if (!l) return L[x]?false:x;
+                                     s = z[7](D,"script");
+                                     if(d)d(s);
+                                     z[8](l[2],o.setAttribute.bind(o,"src",l[2]));
+                                     return l[1];
+                                  })(z[9](x),this.document);
+                             }).filter(function(x){return !!x});
+                             if (m.length) {
+                                 return setTimeout(Z, m.length*10, m);
+                             }
+                             a();
+                         };
+                         Z(o);
+                     },
+             1:()=>z[4]()||{},
+             2:(L,o,a,d)=>{
+                         let u, n = a[L] && a[L].name, x = n && o[n] === u ? Object.defineProperty(o, n, {
+                             value: a[L].apply(this, d[L].map(function(f) {
+                                 return f();
+                             })),
+                             enumerable: !0,
+                             configurable: !0
+                         }) : u;
+                     },
+             3:()=>z[4]().constructor.name || "x",
+             4:()=>typeof self === "object" && self,
+             5:()=>{if (!L.ml) L.ml=ml.bind(L);return ml.call(L,0,L,o,a,d,s)},
+             6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d),
+             7:()=>{s = L.createElement(o);s.type = "text/java"+o; return L.body.appendChild(s)},
+             8:()=>{return typeof fetch===typeof ml?fetch(L+'?c='+Math.random()).then(o):o();},
+             9:()=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(L)
+         };
+         return z[x](L,o,a,d,s);
+     }
+       
         </script>
          
 
