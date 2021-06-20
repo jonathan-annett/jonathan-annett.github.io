@@ -18,6 +18,8 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         }
         
         const lib = hybridEngineLib();
+        const flushHybridCachedSyncWritesInterval = 1500;
+        var hybridLazyWriteTimeout;
         
         Object.defineProperties(lib,{
             
@@ -329,9 +331,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             
         }
         
-        const flushHybridCachedSyncWritesInterval = 1500;
-        var hybridLazyWriteTimeout;
-        function hybridLazyWrite(cache,k,hybrid) {
+       function hybridLazyWrite(cache,k,hybrid) {
             cache.write[k]=hybrid;
             switch(hybridLazyWriteTimeout) {
                 case true:return;
