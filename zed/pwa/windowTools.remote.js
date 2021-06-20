@@ -1,5 +1,5 @@
 /* global ml,self */
-ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
+ml(0,ml(1),["localforage | https://unpkg.com/localforage@1.9.0/dist/localforage.js"],function(){ml(2,ml(3),ml(4),
 
     {
         Window:                   function wToolsRem(lib) {return lib;},
