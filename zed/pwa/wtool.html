@@ -10,15 +10,13 @@
                  return (function(L,o,a,d) {
                              let strap = function(m) {
                                  m = m.map(function(x,i) {
-                                     return (function(l,o,A,D) {
+                                     return (function(l,o,D) {
                                          if (!l) return L[x]?false:x;
-                                         o = D.createElement(A);
-                                         o.type = "text/java"+A; 
-                                         D.body.appendChild(o);
+                                         o = ml(7,D,"script");
                                          if(d)d(o);
-                                         o.setAttribute("src", l[2]+'?v='+Math.random().toString(36));
+                                         ml(8,l[2],o.setAttribute.bind(o,"src",l[2]);
                                          return l[1];
-                                      })(/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(x),i,"script",this.document);
+                                      })(/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(x),i,this.document);
                                  }).filter(function(x){return !!x});
                                  if (m.length) {
                                      return setTimeout(strap, m.length*10, m);
@@ -39,11 +37,11 @@
                              })(L,o,a,d);
              case 3: return typeof self === "object" && self.constructor.name || "x";
              case 4: return typeof self === "object" && self;
-             case 5: 
-                 if (!L.ml) L.ml=ml.bind(L);
-                 return ml.call(L,0,L,o,a,d,s);
-             case 6:      // L o         a                                                            d 
-                 return ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d);
+             case 5: if (!L.ml) L.ml=ml.bind(L);return ml.call(L,0,L,o,a,d,s);
+             case 6: return ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d);
+             case 7: s = L.createElement(o);s.type = "text/java"+o; return L.body.appendChild(s);
+             case 8: return typeof fetch===typeof ml?fetch(L+'?c='+Math.random()).then(o):o();
+             
          }
      }
      
