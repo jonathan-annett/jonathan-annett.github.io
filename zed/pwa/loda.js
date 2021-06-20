@@ -98,16 +98,15 @@ local imports - these functions are available to the other modules declared in t
 
 
 
-function ml(x,L,o,a,d,s){switch(x){case 0:return function(L,o,a,d){let e=function(t){if((t=t.map(function(x,e){let l,o,A,D;return l=/(.*)\|(.*)/.exec(x),o=e,A="script",D=this.document,l?((o=D.createElement(A)).type="text/java"+A,D.body.appendChild(o),d&&d(o),o.setAttribute("src",l[2]),l[1]):!L[x]&&x}).filter(function(x){return!!x})).length)return setTimeout(e,10*t.length,t);a()};e(o)}(L,o,a,d);case 1:return"object"==typeof self&&self||{};case 2:return function(L,o,a,d){let e=a[L]&&a[L].name;e&&void 0===o[e]&&Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(function(e){return e()})),enumerable:!0,configurable:!0}),s&&s(L,e,o[e])}(L,o,a,d);case 3:return"object"==typeof self&&self.constructor.name||"x";case 4:return"object"==typeof self&&self;case 5:return L.ml||(L.ml=ml.bind(L)),ml(0,L,o,a,d,s)}}
+function ml(x,L,o,a,d,s){switch(x){case 0:return function(L,o,a,d){let e=function(t){if((t=t.map(function(x,e){let l,o,A,D;return l=/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(x),o=e,A="script",D=this.document,l?((o=D.createElement(A)).type="text/java"+A,D.body.appendChild(o),d&&d(o),o.setAttribute("src",l[2]),l[1]):!L[x]&&x}).filter(function(x){return!!x})).length)return setTimeout(e,10*t.length,t);a()};e(o)}(L,o,a,d);case 1:return"object"==typeof self&&self||{};case 2:return function(L,o,a,d){let e,t=a[L]&&a[L].name;t&&o[t]===e&&Object.defineProperty(o,t,{value:a[L].apply(this,d[L].map(function(e){return e()})),enumerable:!0,configurable:!0})}(L,o,a,d);case 3:return"object"==typeof self&&self.constructor.name||"x";case 4:return"object"==typeof self&&self;case 5:return L.ml||(L.ml=ml.bind(L)),ml.call(L,0,L,o,a,d,s);case 6:return ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o]}]})},d)}}
 
 function ml(x, L, o, a, d, s) {
     switch (x) {
         case 0:
             return function(L, o, a, d) {
                 let e = function(t) {
-                    if ((t = t.map(function(x, e) {
-                        let l, o, A, D;
-                        return l = /(.*)\|(.*)/.exec(x), o = e, A = "script", D = this.document, l ? ((o = D.createElement(A)).type = "text/java" + A, D.body.appendChild(o), d && d(o), o.setAttribute("src", l[2]), l[1]) : !L[x] && x;
+                    if ((t = t.map(function(x, e) {let l, o, A, D;
+                        return l = /([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(x), o = e, A = "script", D = this.document, l ? ((o = D.createElement(A)).type = "text/java" + A, D.body.appendChild(o), d && d(o), o.setAttribute("src", l[2]), l[1]) : !L[x] && x
                         
                     }).filter(function(x) {
                         return !!x
@@ -127,15 +126,24 @@ function ml(x, L, o, a, d, s) {
                     })),
                     enumerable: !0,
                     configurable: !0
-                });
-                s && s(L, t, o[t])
+                })
             }(L, o, a, d);
         case 3:
             return "object" == typeof self && self.constructor.name || "x";
         case 4:
             return "object" == typeof self && self;
         case 5:
-            return L.ml || (L.ml = ml.bind(L)), ml(0, L, o, a, d, s)
+            return L.ml || (L.ml = ml.bind(L)), ml.call(L, 0, L, o, a, d, s);
+        case 6:
+            return ml.call(L, 5, L, [o + "|" + a], function() {
+                ml(2, "x", L, {
+                    x: s
+                }, {
+                    x: [function() {
+                        return L[o]
+                    }]
+                })
+            }, d)
     }
 }
 // src
@@ -153,7 +161,7 @@ function ml(x,L, o, a, d, s){
                                     if(d)d(o);
                                     o.setAttribute("src", l[2]);
                                     return l[1];
-                                 })(/(.*)\|(.*)/.exec(x),i,"script",this.document);
+                                 })(/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(x),i,"script",this.document);
                             }).filter(function(x){return !!x});
                             if (m.length) {
                                 return setTimeout(strap, m.length*10, m);
@@ -392,6 +400,31 @@ local imports - these functions are available to the other modules declared in t
 
 */
  
+
+});
+
+
+
+/* global ml,self */
+ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
+
+    {
+        Window:                   function libname(lib) {return lib;},
+        ServiceWorkerGlobalScope: function libname(lib) {return lib;},
+    }, (()=>{  return{
+        Window:                   [ () => aLib ()     ],
+        ServiceWorkerGlobalScope: [ () => aLib ()     ],
+    };
+      
+      function aLib () {
+          const lib = {};
+          
+          return lib;
+      }
+      
+    })()
+
+    );
 
 });
 
