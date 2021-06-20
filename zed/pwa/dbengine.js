@@ -329,6 +329,27 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             
         }
         
+        const flushHybridCachedSyncWritesInterval = 1500;
+        var hybridLazyWriteTimeout;
+        function hybridLazyWrite(cache,k,hybrid) {
+            cache.write[k]=hybrid;
+            switch(hybridLazyWriteTimeout) {
+                case true:return;
+                case undefined:break;
+                default:clearTimeout(hybridLazyWriteTimeout);
+            }
+            hybridLazyWriteTimeout=setTimeout(
+                function(){
+                    hybridLazyWriteTimeout=true;
+                    flushHybridCachedSyncWrites(function(){
+                        hybridLazyWriteTimeout=undefined;
+                    });
+                },
+                flushHybridCachedSyncWritesInterval
+            );
+            
+        }
+        
         function setHybridKey(k,v,keepInCache,cb) {
             let cbok=typeof keepInCache==='function';
             if (cbok) {
@@ -340,10 +361,10 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             if (!cbok) {
                 const hybrid=hybridData(v);
                 if (keepInCache) {
-                    cache.read[k]=cache.write[k]=hybrid;
+                    hybridLazyWrite(cache,k,cache.read[k]=hybrid);
                 } else {
                   delete cache.read[k];
-                  cache.write[k]=hybrid;
+                  hybridLazyWrite(cache,k,hybrid);
                 } 
                 return;
             }
