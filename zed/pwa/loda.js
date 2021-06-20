@@ -430,80 +430,35 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
 
 
-
-
-
-function ml(x,L, o, a, d, s){
-    switch (x) {
-        case 0: 
-            return (function(L,o,a,d) {
-                        let strap = function(m) {
-                            m = m.map(function(x,i) {
-                                return (function(l,o,D) {
-                                    if (!l) return L[x]?false:x;
-                                    o = ml(7,D,"script");
-                                    if(d)d(o);
-                                    ml(8,l[2],o.setAttribute.bind(o,"src",l[2]));
-                                    return l[1];
-                                 })(/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(x),i,this.document);
-                            }).filter(function(x){return !!x});
-                            if (m.length) {
-                                return setTimeout(strap, m.length*10, m);
-                            }
-                            a();
-                        };
-                        strap(o);
-                    })(L,o,a,d);
-        case 1: return typeof self === "object" && self||{};
-        case 2: return (function(L,o,a,d) {
-                            let u, n = a[L] && a[L].name, x = n && o[n] === u ? Object.defineProperty(o, n, {
-                                value: a[L].apply(this, d[L].map(function(f) {
-                                    return f();
-                                })),
-                                enumerable: !0,
-                                configurable: !0
-                            }) : u;
-                        })(L,o,a,d);
-        case 3: return typeof self === "object" && self.constructor.name || "x";
-        case 4: return typeof self === "object" && self;
-        case 5: if (!L.ml) L.ml=ml.bind(L);return ml.call(L,0,L,o,a,d,s);
-        case 6: return ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d);
-        case 7: s = L.createElement(o);s.type = "text/java"+o; return L.body.appendChild(s);
-        case 8: return typeof fetch===typeof ml?fetch(L+'?c='+Math.random()).then(o):o();
-        
-    }
-}
-
-
-function ml(x,L,o,a,d,s){const t={0:(L,o,a,d)=>{let e=function(n){if((n=n.map(function(x,e){var l,D;return l=t[9](x),D=this.document,l?(s=t[7](D,"script"),d&&d(s),t[8](l[2],s.setAttribute.bind(s,"src",l[2])),l[1]):!L[x]&&x;}).filter(function(x){return!!x})).length)return setTimeout(e,10*n.length,n);a()};e(o)},1:()=>t[4]()||{},2:(L,o,a,d)=>{let t,e=a[L]&&a[L].name;e&&o[e]===t&&Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(function(t){return t()})),enumerable:!0,configurable:!0})},3:()=>t[4]().constructor.name||"x",4:()=>"object"==typeof self&&self,5:()=>(L.ml||(L.ml=ml.bind(L)),ml.call(L,0,L,o,a,d,s)),6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o]}]})},d),7:(d,t)=>((s=d.createElement(t)).type="text/java"+t,d.body.appendChild(s)),8:(t,e)=>typeof fetch==typeof ml?fetch(t+"?c="+Math.random()).then(e):e(),9:t=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(t)};return t[x](L,o,a,d,s)}
-
+//minified-beautified
 function ml(x, L, o, a, d, s) {
-    const t = {
-        0: (L, o, a, d) => {
-            let e = function(n) {
-                if ((n = n.map(function(x, e) {var l, D;
-                    return l = t[9](x), D = this.document, l ? (s = t[7](D, "script"), d && d(s), t[8](l[2], s.setAttribute.bind(s, "src", l[2])), l[1]) : !L[x] && x;
-                    
-                }).filter(function(x) {
-                    return !!x
-                })).length) return setTimeout(e, 10 * n.length, n);
-                a()
-            };
-            e(o)
-        },
-        1: () => t[4]() || {},
-        2: (L, o, a, d) => {
-            let t, e = a[L] && a[L].name;
-            e && o[e] === t && Object.defineProperty(o, e, {
-                value: a[L].apply(this, d[L].map(function(t) {
-                    return t()
-                })),
+    ml.h = ml.h || {};
+    let e, t = [{},
+    ml, "", e].map(e => typeof e), m = {
+        1: () => m[4]() || {},
+        2: (L, o, a, d, e, n) => {
+            e = typeof(e = a[L] && a[L].name) + typeof o[e] === t[2] + t[3] ? Object.defineProperty(o, e, {
+                value: a[L].apply(this, d[L].map(m.x)),
                 enumerable: !0,
                 configurable: !0
-            })
+            }) : n
         },
-        3: () => t[4]().constructor.name || "x",
-        4: () => "object" == typeof self && self,
+        3: () => m[4]().constructor.name || "x",
+        4: () => typeof self === t[0] && self,
+        x: e => e(),
+        r: () => Math.random().toString(36).substr(-8)
+    };
+    return (e = typeof m[x] === t[1] ? m[x](L, o, a, d, s) : m) !== m ? e : (e = {
+        0: () => e.l(o),
+        l: t => (t = t.map(e.u).filter(e.y)).length ? setTimeout(e.l, 10 * t.length, t) : a(),
+        u: (x, t) => (t = e.r(x)) ? (s = e.s(this.document, "script"), d && d(s), e.p(t[2], s.setAttribute.bind(s, "src")), t[1]) : !L[x] && x,
+        y: x => !! x,
+        s: (d, e) => ((s = d.createElement(e)).type = "text/java" + e, d.body.appendChild(s)),
+        p: (e, l, n, L, r, c) => (n = m.r(), L = (t => l(e + "?v=" + m)), r = (t => L(ml.h[e] = t)), c = (() => r(n)), ml.h[e] ? r(ml.h[e]) : typeof fetch === t[1] ? fetch(e, {
+            method: "HEAD"
+        }).then(e => r(e.headers.get("Etag") || n)).
+        catch (c) : c()),
+        r: e => /([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(e),
         5: () => (L.ml || (L.ml = ml.bind(L)), ml.call(L, 0, L, o, a, d, s)),
         6: () => ml.call(L, 5, L, [o + "|" + a], function() {
             ml(2, "x", L, {
@@ -513,58 +468,17 @@ function ml(x, L, o, a, d, s) {
                     return L[o]
                 }]
             })
-        }, d),
-        7: (d, t) => ((s = d.createElement(t)).type = "text/java" + t, d.body.appendChild(s)),
-        8: (t, e) => typeof fetch == typeof ml ? fetch(t + "?c=" + Math.random()).then(e) : e(),
-        9: t => /([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(t)
-    };
-    return t[x](L, o, a, d, s)
-}
-function mlx(x,L, o, a, d, s){
-    const z = {
-        0:(L,o,a,d)=>{
-                    let Z = function(m) {
-                        m = m.map(function(x,i) {
-                            return (function(l,D) {
-                                if (!l) return L[x]?false:x;
-                                s = z[7](D,"script");
-                                if(d)d(s);
-                                z[8](l[2],s.setAttribute.bind(s,"src",l[2]));
-                                return l[1];
-                             })(z[9](x),this.document);
-                        }).filter(function(x){return !!x});
-                        if (m.length) {
-                            return setTimeout(Z, m.length*10, m);
-                        }
-                        a();
-                    };
-                    Z(o);
-                },
-        1:()=>z[4]()||{},
-        2:(L,o,a,d)=>{
-                    let u, n = a[L] && a[L].name, x = n && o[n] === u ? Object.defineProperty(o, n, {
-                        value: a[L].apply(this, d[L].map(function(f) {
-                            return f();
-                        })),
-                        enumerable: !0,
-                        configurable: !0
-                    }) : u;
-                },
-        3:()=>z[4]().constructor.name || "x",
-        4:()=>typeof self === "object" && self,
-        5:()=>{if (!L.ml) L.ml=ml.bind(L);return ml.call(L,0,L,o,a,d,s)},
-        6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d),
-        7:(d,S)=>{s = d.createElement(S);s.type = "text/java"+S; return d.body.appendChild(s)},
-        8:(u,c)=>{return typeof fetch===typeof ml?fetch(u+'?c='+Math.random()).then(c):c();},
-        9:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(u)
-    };
-    return z[x](L,o,a,d,s);
+        }, d)
+    })[x](L, o, a, d, s)
 }
 
+//minified
+function ml(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=[{},ml,"",e].map(e=>typeof e),m={1:()=>m[4]()||{},2:(L,o,a,d,e,n)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===t[2]+t[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(m.x)),enumerable:!0,configurable:!0}):n},3:()=>m[4]().constructor.name||"x",4:()=>typeof self===t[0]&&self,x:e=>e(),r:()=>Math.random().toString(36).substr(-8)};return(e=typeof m[x]===t[1]?m[x](L,o,a,d,s):m)!==m?e:(e={0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,10*t.length,t):a(),u:(x,t)=>(t=e.r(x))?(s=e.s(this.document,"script"),d&&d(s),e.p(t[2],s.setAttribute.bind(s,"src")),t[1]):!L[x]&&x,y:x=>!!x,s:(d,e)=>((s=d.createElement(e)).type="text/java"+e,d.body.appendChild(s)),p:(e,l,n,L,r,c)=>(n=m.r(),L=(t=>l(e+"?v="+m)),r=(t=>L(ml.h[e]=t)),c=(()=>r(n)),ml.h[e]?r(ml.h[e]):typeof fetch===t[1]?fetch(e,{method:"HEAD"}).then(e=>r(e.headers.get("Etag")||n)).catch(c):c()),r:e=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(e),5:()=>(L.ml||(L.ml=ml.bind(L)),ml.call(L,0,L,o,a,d,s)),6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o]}]})},d)})[x](L,o,a,d,s)}
 
-function ml(x,L,o,a,d,s){let e,t=[{},ml,"",e].map(e=>typeof e),n={1:()=>n[4]()||{},2:(L,o,a,d,e,m)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===t[2]+t[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(n.x)),enumerable:!0,configurable:!0}):m},3:()=>n[4]().constructor.name||"x",4:()=>typeof self===t[0]&&self,x:e=>e()};return(e=typeof n[x]===t[1]?n[x](L,o,a,d,s):n)!==n?e:(e={0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,10*t.length,t):a(),u:(x,t)=>(t=e.r(x))?(s=e.s(this.document,"script"),d&&d(s),e.p(t[2],s.setAttribute.bind(s,"src",t[2])),t[1]):!L[x]&&x,y:x=>!!x,s:(d,e)=>((s=d.createElement(e)).type="text/java"+e,d.body.appendChild(s)),p:(e,n)=>typeof fetch===t[1]?fetch(e+"?c="+Math.random()).then(n):n(),r:e=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(e),5:()=>(L.ml||(L.ml=ml.bind(L)),ml.call(L,0,L,o,a,d,s)),6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o]}]})},d)})[x](L,o,a,d,s)}
 
+// source
 function ml(x,L, o, a, d, s){
+    ml.h=ml.h||{};//create history db if none exists
     let
     z,
     t=[{},ml,'',z].map((G)=>typeof G),
@@ -597,6 +511,7 @@ function ml(x,L, o, a, d, s){
         //c.x = map iterator to execure every function in an array of functions
         //      (used to resolve each loaded module)
         x:(f)=>f(),
+        r:()=>Math.random().toString(36).substr(-8)
           
     };
     z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
@@ -621,7 +536,7 @@ function ml(x,L, o, a, d, s){
              if (!R) return L[x]?false:x;
              s = z.s(this.document,"script");
              if(d)d(s);
-             z.p(R[2],s.setAttribute.bind(s,"src",R[2]));
+             z.p(R[2],s.setAttribute.bind(s,"src"));
              return R[1];
        },
        
@@ -632,8 +547,22 @@ function ml(x,L, o, a, d, s){
        //z.s = create and append empty script element
        s:(d,S)=>{s = d.createElement(S);s.type = "text/java"+S; return d.body.appendChild(s);},
        
-       //z.p = prefetch script to bust cache, and then load call c() which assigns url to src attribute of script element
-       p:(u,c)=>{return typeof fetch===t[1]?fetch(u+'?c='+Math.random()).then(c):c();},
+       //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
+       p:(u,l/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
+           r=c.r();//prepare a random version number (in case we need it)
+           L=(v)=>l(u+"?v="+c);                 // load script with version
+           V=(v)=>L(ml.h[u]=v);                 // save version v in history, load script with version
+           R=()=>V(r);                          // save random verison in history, load scipt with random version
+           return (ml.h[u] ?                     // does url exist in history? 
+                      V(ml.h[u])                  //yes = load script using version from history
+                    : ( typeof fetch===t[1] ?    // did Gretchen make fetch happen ? 
+                          fetch(u,{method: 'HEAD'}) // yes= fetch header and 
+                            .then((h)=>V(h.headers.get("Etag")||r)) // use etag as version, or random if no etag
+                            .catch(R)                               // if fetch(HEAD) fails,use random version
+                        : R())                     // Gretchen didn't make fetch happen. so random.
+                  );                 
+           
+       },
        
        //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
        r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(u),
@@ -649,4 +578,5 @@ function ml(x,L, o, a, d, s){
     return z[x](L,o,a,d,s);
     
 }
+
   
