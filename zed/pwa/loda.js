@@ -475,10 +475,52 @@ function ml(x,L, o, a, d, s){
 }
 
 
+function ml(x,L,o,a,d,s){const t={0:(L,o,a,d)=>{let e=function(n){if((n=n.map(function(x,e){var l,D;return l=t[9](x),D=this.document,l?(s=t[7](D,"script"),d&&d(s),t[8](l[2],s.setAttribute.bind(s,"src",l[2])),l[1]):!L[x]&&x;}).filter(function(x){return!!x})).length)return setTimeout(e,10*n.length,n);a()};e(o)},1:()=>t[4]()||{},2:(L,o,a,d)=>{let t,e=a[L]&&a[L].name;e&&o[e]===t&&Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(function(t){return t()})),enumerable:!0,configurable:!0})},3:()=>t[4]().constructor.name||"x",4:()=>"object"==typeof self&&self,5:()=>(L.ml||(L.ml=ml.bind(L)),ml.call(L,0,L,o,a,d,s)),6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o]}]})},d),7:(d,t)=>((s=d.createElement(t)).type="text/java"+t,d.body.appendChild(s)),8:(t,e)=>typeof fetch==typeof ml?fetch(t+"?c="+Math.random()).then(e):e(),9:t=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(t)};return t[x](L,o,a,d,s)}
 
-
-
-function ml(x,L, o, a, d, s){
+function ml(x, L, o, a, d, s) {
+    const t = {
+        0: (L, o, a, d) => {
+            let e = function(n) {
+                if ((n = n.map(function(x, e) {var l, D;
+                    return l = t[9](x), D = this.document, l ? (s = t[7](D, "script"), d && d(s), t[8](l[2], s.setAttribute.bind(s, "src", l[2])), l[1]) : !L[x] && x;
+                    
+                }).filter(function(x) {
+                    return !!x
+                })).length) return setTimeout(e, 10 * n.length, n);
+                a()
+            };
+            e(o)
+        },
+        1: () => t[4]() || {},
+        2: (L, o, a, d) => {
+            let t, e = a[L] && a[L].name;
+            e && o[e] === t && Object.defineProperty(o, e, {
+                value: a[L].apply(this, d[L].map(function(t) {
+                    return t()
+                })),
+                enumerable: !0,
+                configurable: !0
+            })
+        },
+        3: () => t[4]().constructor.name || "x",
+        4: () => "object" == typeof self && self,
+        5: () => (L.ml || (L.ml = ml.bind(L)), ml.call(L, 0, L, o, a, d, s)),
+        6: () => ml.call(L, 5, L, [o + "|" + a], function() {
+            ml(2, "x", L, {
+                x: s
+            }, {
+                x: [function() {
+                    return L[o]
+                }]
+            })
+        }, d),
+        7: (d, t) => ((s = d.createElement(t)).type = "text/java" + t, d.body.appendChild(s)),
+        8: (t, e) => typeof fetch == typeof ml ? fetch(t + "?c=" + Math.random()).then(e) : e(),
+        9: t => /([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(t)
+    };
+    return t[x](L, o, a, d, s)
+}
+function mlx(x,L, o, a, d, s){
     const z = {
         0:(L,o,a,d)=>{
                     let Z = function(m) {
@@ -487,7 +529,7 @@ function ml(x,L, o, a, d, s){
                                 if (!l) return L[x]?false:x;
                                 s = z[7](D,"script");
                                 if(d)d(s);
-                                z[8](l[2],o.setAttribute.bind(o,"src",l[2]));
+                                z[8](l[2],s.setAttribute.bind(s,"src",l[2]));
                                 return l[1];
                              })(z[9](x),this.document);
                         }).filter(function(x){return !!x});
@@ -512,9 +554,10 @@ function ml(x,L, o, a, d, s){
         4:()=>typeof self === "object" && self,
         5:()=>{if (!L.ml) L.ml=ml.bind(L);return ml.call(L,0,L,o,a,d,s)},
         6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d),
-        7:()=>{s = L.createElement(o);s.type = "text/java"+o; return L.body.appendChild(s)},
-        8:()=>{return typeof fetch===typeof ml?fetch(L+'?c='+Math.random()).then(o):o();},
-        9:()=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(L)
+        7:(d,S)=>{s = d.createElement(S);s.type = "text/java"+S; return d.body.appendChild(s)},
+        8:(u,c)=>{return typeof fetch===typeof ml?fetch(u+'?c='+Math.random()).then(c):c();},
+        9:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(u)
     };
     return z[x](L,o,a,d,s);
 }
+  
