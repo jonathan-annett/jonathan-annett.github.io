@@ -10,6 +10,10 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
     };
       function hybridStorageEngine (libFilter) {
           
+         const flushHybridCachedSyncWritesInterval = 1500;
+         var hybridLazyWriteTimeout;
+         
+          
         switch (libFilter){
             case "localStorage" : return localStorageLib();
             case "localforage"  : return localforageLib();
@@ -18,9 +22,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         }
         
         const lib = hybridEngineLib();
-        const flushHybridCachedSyncWritesInterval = 1500;
-        var hybridLazyWriteTimeout;
-        
+         
         Object.defineProperties(lib,{
             
             localStorage : {
