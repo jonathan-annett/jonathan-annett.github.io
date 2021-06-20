@@ -1,4 +1,4 @@
-/* global ml,self */
+/* global ml,self,localforage */
 ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
     {
@@ -856,7 +856,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         function localStorageLib(){
             const lib = {};
             Object.defineProperties(lib,{
-                getKey    : { value : setLocalKey,    writable:false, enumerable:true,  configurable:true },
+                getKey    : { value : getLocalKey,    writable:false, enumerable:true,  configurable:true },
                 setKey    : { value : setLocalKey,    writable:false, enumerable:true,  configurable:true },
                 removeKey : { value : removeLocalKey, writable:false, enumerable:true,  configurable:true },
                 getKeys   : { value : getLocalKeys,   writable:false, enumerable:true,  configurable:true },
@@ -874,7 +874,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         function localforageLib(){
             const lib = {};
             Object.defineProperties(lib,{
-                getKey    : { value : setForageKey,    writable:false, enumerable:true, configurable:true },
+                getKey    : { value : getForageKey,    writable:false, enumerable:true, configurable:true },
                 setKey    : { value : setForageKey,    writable:false, enumerable:true, configurable:true },
                 removeKey : { value : removeForageKey, writable:false, enumerable:true, configurable:true },
                 getKeys   : { value : getForageKeys,   writable:false, enumerable:true, configurable:true },
@@ -892,7 +892,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         function swHybridEngine() {
             const lib = {};
             Object.defineProperties(lib,{
-                getKey    : { value : setHybridKey_,    writable:false, enumerable:true, configurable:true },
+                getKey    : { value : getHybridKey_,    writable:false, enumerable:true, configurable:true },
                 setKey    : { value : setHybridKey_,    writable:false, enumerable:true, configurable:true },
                 removeKey : { value : removeHybridKey_, writable:false, enumerable:true, configurable:true },
                 getKeys   : { value : getHybridKeys_,   writable:false, enumerable:true, configurable:true },
@@ -912,7 +912,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             const lib = {};
             
             Object.defineProperties(lib,{
-                getKey    : { value : setHybridKey,    writable:false, enumerable:true, configurable:true },
+                getKey    : { value : getHybridKey,    writable:false, enumerable:true, configurable:true },
                 setKey    : { value : setHybridKey,    writable:false, enumerable:true, configurable:true },
                 removeKey : { value : removeHybridKey, writable:false, enumerable:true, configurable:true },
                 getKeys   : { value : getHybridKeys,   writable:false, enumerable:true, configurable:true },
