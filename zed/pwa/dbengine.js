@@ -85,27 +85,45 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                 
                 function dbProxy(engine) {
                     
-                    var 
-                    
-                    ev = {};
-                    
-                    events(ev,[
-                        
-                        "create", // new items only
-                        "change", // new items, or when value changes
-                        "set",    // new items, changes, or assigned (even if value doesn't change)
-                        "get",    // when value is accessed
-                        "remove"  // when value is removed
-                        ]);
+           
                     
                     return function (prefix) {
                         
+                        var 
+                        
+                        ev = {}, cleanupEvents,eventNames = [
+                            
+                            "create", // new items only
+                            "change", // new items, or when value changes
+                            "set",    // new items, changes, or assigned (even if value doesn't change)
+                            "get",    // when value is accessed
+                            "remove"  // when value is removed
+                            ];
+                        
+                        events(ev,eventNames);
+                            
+                    
                         const cb = engine.__sync ? undefined : function (){} ;
                         if (!!prefix) {
                             // supplying a prefix will create a proxied object under the current prefix.
                             // not supplying a prefix will create a proxied object over the entire engine.
                             if (typeof prefix+typeof keyprefix ==="stringstring") {
                                 engine = newEngine(engine.__mode,keyprefix+prefix);
+                                
+                                Object.defineProperties(ev,{
+    
+                                    getKeys   : { value : engine.getKeys,   writable:false, enumerable:true,  configurable:true },
+                                    clear     : { value : engine.clear,     writable:false, enumerable:true,  configurable:true },
+
+                                }); 
+                                
+                                cleanupEvents = ev.removeAllEventTypes;
+                                delete ev.removeAllEventTypes;
+                                delete ev.addEventType;
+                                delete ev.removeEventType;
+                                
+                                window.addEventListener('storage',doLocalStorageEvent);
+                                
                             } else {
                                 throw new Error ("unsupported prefix strategy");
                             }
@@ -164,6 +182,19 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                                 });
                                 return value;
                             }
+                        }
+                        
+                        function doLocalStorageEvent(e){
+                           
+                        }
+                        
+                        function cleanupProxy() {
+                             window.removeEventListener('storage',doLocalStorageEvent);
+                             cleanupEvents();
+                             eventNames.push("getKeys","clear");
+                             while (eventNames.length>0) {
+                                 delete ev[eventNames.pop()];
+                             }
                         }
                         
                         return new Proxy({},{

@@ -1,4 +1,4 @@
-/* global ml,self */
+/* global ml,self,caches */
 ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
 
     {
@@ -92,13 +92,51 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                 }
                 return r;
             }
+            
+            
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.register('./wtool.js')
+              .then((reg) => {
+                // registration worked
+                console.log('Registration succeeded. Scope is ' + reg.scope);
+              }).catch((error) => {
+                // registration failed
+                console.log('Registration failed with ' + error);
+              });
+            }
 
             return lib;
         },
 
         ServiceWorkerGlobalScope: function dep3() {
             const lib = "hello sw world";
-
+            self.addEventListener("install",function(e){
+                self.addEventListener('install', (event) => {
+                  event.waitUntil(
+                    caches.open('v1').then((cache) => {
+                      return cache.addAll([
+                        './wtool.html',
+                        './test.html',
+                        
+                      ]);
+                    })
+                  );
+                });
+                
+            });
+            
+            self.addEventListener("activate",function(e){
+                console.log("activate");
+            });
+            
+            self.addEventListener("fetch",function(event){
+                console.log("fetch",event.request.url);
+                event.respondWith(
+                  caches.match(event.request).then((response) => {
+                    return response || fetch(event.request);
+                  })
+                );
+            });
             return lib;
         },
 
