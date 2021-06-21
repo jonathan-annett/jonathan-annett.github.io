@@ -597,7 +597,7 @@ function ml(x,L, o, a, d, s){
                // convert array of responses --> array of etags,compare
                z.k( z.E(R) );
                
-           })
+           });
        },
        
        //z.E(h,x) = map array of responses to array of etags
@@ -625,6 +625,7 @@ function ml(x,L, o, a, d, s){
     return z[x](L,o,a,d,s);
     
 }
+
 
 
 
