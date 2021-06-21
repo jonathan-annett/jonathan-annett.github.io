@@ -10,8 +10,8 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                 Window:                   [ ()=> hybridStorageEngine, ()=> self.libEvents ],
                 ServiceWorkerGlobalScope: [ ()=> hybridStorageEngine, ()=> self.libEvents ],
             };
-        
-        
+            
+
         function hybridStorageEngine (events) {
             return function (libFilter,keyprefix) {
                   
@@ -79,6 +79,10 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
         
                 return lib;
                 
+                function newEngine (mode,prefix) {
+                    return hybridStorageEngine(events)(mode,prefix);
+                }
+                
                 function dbProxy(engine) {
                     
                     var 
@@ -94,7 +98,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                             // supplying a prefix will create a proxied object under the current prefix.
                             // not supplying a prefix will create a proxied object over the entire engine.
                             if (typeof prefix+typeof keyprefix ==="stringstring") {
-                                engine = hybridStorageEngine(engine.__mode,keyprefix+prefix);
+                                engine = newEngine(engine.__mode,keyprefix+prefix);
                             } else {
                                 throw new Error ("unsupported prefix strategy");
                             }

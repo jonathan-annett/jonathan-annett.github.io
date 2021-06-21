@@ -21,8 +21,8 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
         const win_resizeTo    = 1;   
         const minimizedHeight = 30;
         const minimizedWidth  = 130;
-        const minimizedLeft   = screen.availWidth-minimizedWidth;
-        const minimizedTop    = screen.availHeight-minimizedHeight;
+        const minimizedLeft   = screen.availWidth  - minimizedWidth;
+        const minimizedTop    = screen.availHeight - minimizedHeight;
         
         
         const maximizedHeight = screen.availHeight-4;
@@ -36,10 +36,8 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
         ];
 
         const minimizedPosition = [
-            
             [ win_moveTo,    [ minimizedLeft,minimizedTop ]   ],
             [ win_resizeTo,  [ minimizedWidth, minimizedHeight ]  ]
-            
         ];
         
         var lib = {  };
@@ -50,7 +48,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
             emitLibEvent,               
             emitLibEventwithHysteresis,
             removeAllEventTypes,
-        } = events (lib,["maximized","minimized","restored","fullscreen","closed",]);
+        } = events (lib,["maximized","minimized","restored","fullscreen","closed"]);
 
         const {
             setForageKey   ,
