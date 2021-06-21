@@ -115,6 +115,23 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                         return engine.__sync ? engine.getKeys() : [];
                     },
                     
+                    getOwnPropertyDescriptor : function (target, property) {
+                          const desc = {
+                            enumerable: true,
+                            configurable: true,
+                          };
+                          
+                          if ( engine.__sync ) {
+                              if (  engine.getKeys().indexOf(property) < 0 ) {
+                                  return undefined;
+                              }
+                              
+                              desc.value  = engine.getKey(property);
+                          }
+                          
+                          return desc;
+                    },
+                    
                     has: function(target, property) {
                         return engine.__sync ? engine.getKeys()[property] : false;
                     }
