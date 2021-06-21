@@ -4,7 +4,7 @@
         <script>
 
 //minified
-function ml2(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=[{},ml,"",e].map(e=>typeof e),m={1:()=>m[4]()||{},2:(L,o,a,d,e,n)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===t[2]+t[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(m.x)),enumerable:!0,configurable:!0}):n},3:()=>m[4]().constructor.name||"x",4:()=>typeof self===t[0]&&self,x:e=>e(),r:()=>Math.random().toString(36).substr(-8)};return(e=typeof m[x]===t[1]?m[x](L,o,a,d,s):m)!==m?e:(e={0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,10*t.length,t):a(),u:(x,t)=>(t=e.r(x))?(s=e.s(this.document,"script"),d&&d(s),e.p(t[2],s.setAttribute.bind(s,"src")),t[1]):!L[x]&&x,y:x=>!!x,s:(d,e)=>((s=d.createElement(e)).type="text/java"+e,d.body.appendChild(s)),p:(e,l,n,L,r,c)=>(n=m.r(),L=(t=>l(e+"?v="+t)),r=(t=>L(ml.h[e]=t.replace(/[\"\/\\\-]*/g,""))),c=(()=>r(n)),ml.h[e]?r(ml.h[e]):typeof fetch===t[1]?fetch(e,{method:"HEAD"}).then(e=>r(e.headers.get("Etag")||n)).catch(c):c()),r:e=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(e),5:()=>(L.ml||(L.ml=ml.bind(L)),ml.call(L,0,L,o,a,d,s)),6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o]}]})},d)})[x](L,o,a,d,s)}
+function ml2(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=[{},ml,"",e].map(e=>typeof e),m={1:()=>m[4]()||{},2:(L,o,a,d,e,n)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===t[2]+t[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(m.x)),enumerable:!0,configurable:!0}):n},3:()=>m[4]().constructor.name||"x",4:()=>typeof self===t[0]&&self,x:e=>e(),r:()=>Math.random().toString(36).substr(-8)};return(e=typeof m[x]===t[1]?m[x](L,o,a,d,s):m)!==m?e:(e={0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,10*t.length,t):a(),u:(x,t)=>(t=e.r(x))?(s=e.s(this.document,"script"),d&&d(s),e.p(t[2],s.setAttribute.bind(s,"src")),t[1]):!L[x]&&x,y:x=>!!x,s:(d,e)=>((s=d.createElement(e)).type="text/java"+e,d.body.appendChild(s)),p:(n,l,r,L,c,p)=>(r=m.r(),L=(e=>l(n+"?v="+e)),c=(t=>L(e.v(n,t))),p=(()=>c(r)),ml.h[n]?c(ml.h[n]):typeof fetch===t[1]?fetch(n,{method:"HEAD"}).then(e=>c(e.headers.get("Etag")||r)).catch(p):p()),v:(e,t)=>ml.h[e]=t.replace(/[\"\/\\\-]*/g,""),r:e=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),5:()=>(L.ml||(L.ml=ml.bind(L)),ml.call(L,0,L,o,a,d,s)),6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o]}]})},d)})[x](L,o,a,d,s)}
 
 // source
 function ml(x,L, o, a, d, s){
@@ -80,9 +80,9 @@ function ml(x,L, o, a, d, s){
        //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
        p:(u,l/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
            r=c.r();//prepare a random version number (in case we need it)
-           L=(v)=>l(u+"?v="+v); // load script with version
-           V=(v)=>L(ml.h[u]=v.replace(/[\"\/\\\-]*/g,''));// save version v in history, load script with version
-           R=()=>V(r);                          // save random verison in history, load scipt with random version
+           L=(v)=>l(u+"?v="+v);                  // load script with version
+           V=(v)=>L(z.v(u,v));                   // save version v in history, load script with version
+           R=()=>V(r);                           // save random verison in history, load scipt with random version
            return (ml.h[u] ?                     // does url exist in history? 
                       V(ml.h[u])                  //yes = load script using version from history
                     : ( typeof fetch===t[1] ?    // did Gretchen make fetch happen ? 
@@ -94,8 +94,9 @@ function ml(x,L, o, a, d, s){
            
        },
        
+       v:(u,v)=>(ml.h[u]=v.replace(/[\"\/\\\-]*/g,'')), 
        //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
-       r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(u),
+       r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
        
         
        //experimental, probably buggy, extra script loader. needs some work
