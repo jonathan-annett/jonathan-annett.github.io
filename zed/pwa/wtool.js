@@ -93,17 +93,7 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                 return r;
             }
             
-            
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.register('./wtool.js')
-              .then((reg) => {
-                // registration worked
-                console.log('Registration succeeded. Scope is ' + reg.scope);
-              }).catch((error) => {
-                // registration failed
-                console.log('Registration failed with ' + error);
-              });
-            }
+            ml(9,'./wtool.js');
 
             return lib;
         },
