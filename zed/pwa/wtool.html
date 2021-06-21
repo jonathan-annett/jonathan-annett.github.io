@@ -199,8 +199,8 @@
                 'main|wtool.js',
                 ],()=>{ml(2,ml(3),ml(4),
             
-                { Window: (main)=>{ml("K");return main;} }, 
-                { Window: [ () => self.main ] }
+                { Window: (main)=>main }, 
+                { Window: [ () =>{ml.bind("K"); return self.main;} ] }
                 
                
             
