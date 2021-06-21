@@ -1,5 +1,5 @@
 /* global ml,self */
-ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
+ml(0,ml(1),['wTools|/zed/pwa/windowTools.js'],function(){ml(2,ml(3),ml(4),
 
     {
 
