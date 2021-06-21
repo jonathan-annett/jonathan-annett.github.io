@@ -63,7 +63,8 @@ function ml(x,L, o, a, d, s){
        u:(x,R)=>{
              R=z.r(x);
              if (!R) return L[x]?false:x;
-             return importScripts(R[1]);
+             importScripts(R[2]);
+             return R[1];
        },
        
        //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
