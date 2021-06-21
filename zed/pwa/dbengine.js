@@ -89,7 +89,14 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                     
                     ev = {};
                     
-                    events(ev,["create","change","remove"]);
+                    events(ev,[
+                        
+                        "create", // new items only
+                        "change", // new items, or when value changes
+                        "set",    // new items, changes, or assigned (even if value doesn't change)
+                        "get",    // when value is accessed
+                        "remove"  // when value is removed
+                        ]);
                     
                     return function (prefix) {
                         
@@ -123,17 +130,21 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                         }
                         
                         function doSet (property,value,cb) {
-                            if (ev.events.create.length+ev.events.change.length===0) {
+                            if (ev.events.create.length+ev.events.change.length+ev.events.set.length===0) {
                                engine.setKey(property,value,cb);
                             } else {
                                 engine.getKey(property,function(err,old){
                                     engine.setKey(property,value,function(err){
                                         if (!err) {
                                             if (old) {
-                                               ev.emitLibEvent("change",property,value,old);
+                                                if (value!==old) {
+                                                   ev.emitLibEvent("change",property,value,old);
+                                                }
                                             } else {
                                                 ev.emitLibEvent("create",property,value);
+                                                ev.emitLibEvent("change",property,value,old);
                                             }
+                                            ev.emitLibEvent("set",property,value);
                                         }
                                         if (typeof cb==='function') {
                                            cb.apply(this,arguments);
@@ -143,12 +154,24 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                             }
                         }
                         
+                        function doGet(property,value) {
+                            if (ev.events.create.remove===0) {
+                                return value;
+                            } else {
+                                ev.events.emitLibEvent("remove",property,value,
+                                function newValue(v){
+                                   value=v;  
+                                });
+                                return value;
+                            }
+                        }
+                        
                         return new Proxy({},{
                             get : function(target, property, receiver) {
                                 
                                 if (property==="_") return ev;
                                 
-                                return engine.getKey(property,cb);
+                                return doGet(property, engine.getKey(property,cb));
                             },
                             set : function(target, property, value) {
                                 if (value===null) {
