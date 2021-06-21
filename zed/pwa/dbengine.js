@@ -114,7 +114,9 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                                         if (!err) {
                                             ev.events.emitLibEvent("remove",property,old);
                                         }
-                                        cb.apply(this,arguments);
+                                        if (typeof cb==='function') {
+                                            cb.apply(this,arguments);
+                                        }
                                     });
                                 });
                             }
@@ -133,7 +135,9 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                                                 ev.emitLibEvent("create",property,value);
                                             }
                                         }
-                                        cb.apply(this,arguments);
+                                        if (typeof cb==='function') {
+                                           cb.apply(this,arguments);
+                                        }
                                     });
                                 });
                             }
