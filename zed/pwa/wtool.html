@@ -45,21 +45,12 @@
         -->
         <script>
             
-            ml(0,ml(1),['main|wtool.js'],function(){ml(2,ml(3),ml(4),
+            ml(0,ml(1),['main|wtool.js'],()=>{ml(2,ml(3),ml(4),
             
-                {
+                { Window: (main)=>main }, 
+                { Window: [ () => self.main ] }
             
-                    Window: function page(main) {
-                        return main;
-                    }
-            
-                }, {
-                    Window: [
-                        () => self.main
-                    ]
-                }
-            
-                );
+            );
             
 
             });
