@@ -123,7 +123,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                           
                           if ( engine.__sync ) {
                               desc.value  = engine.getKey(property);
-                              if (!desec.value) return undefined;
+                              if (!desc.value) return undefined;
                           }
                           
                           return desc;
