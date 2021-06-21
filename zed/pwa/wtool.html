@@ -43,7 +43,28 @@
         <!--
         <script src="windowTools.helper.js" ></script>
         -->
-        <script src="wtool.js" defer></script>
+        <script>
+            
+            ml(0,ml(1),['main|wtool.js'],function(){ml(2,ml(3),ml(4),
+            
+                {
+            
+                    Window: function page(main) {
+                        return main;
+                    }
+            
+                }, {
+                    Window: [
+                        () => self.main
+                    ]
+                }
+            
+                );
+            
+
+            });
+            
+        </script>
     </body>
     
 </html>
