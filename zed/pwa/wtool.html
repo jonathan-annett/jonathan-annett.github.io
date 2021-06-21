@@ -4,10 +4,9 @@
         <script>
 
 //minified
-function ml2(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=[{},ml,"",e].map(e=>typeof e),m={1:()=>m[4]()||{},2:(L,o,a,d,e,n)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===t[2]+t[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(m.x)),enumerable:!0,configurable:!0}):n},3:()=>m[4]().constructor.name||"x",4:()=>typeof self===t[0]&&self,x:e=>e(),r:()=>Math.random().toString(36).substr(-8)};return(e=typeof m[x]===t[1]?m[x](L,o,a,d,s):m)!==m?e:(e={0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,10*t.length,t):a(),u:(x,t)=>(t=e.r(x))?(s=e.s(this.document,"script"),d&&d(s),e.p(t[2],s.setAttribute.bind(s,"src")),t[1]):!L[x]&&x,y:x=>!!x,s:(d,e)=>((s=d.createElement(e)).type="text/java"+e,d.body.appendChild(s)),p:(n,l,r,L,c,p)=>(r=m.r(),L=(e=>l(n+"?v="+e)),c=(t=>L(e.v(n,t))),p=(()=>c(r)),ml.h[n]?c(ml.h[n]):typeof fetch===t[1]?fetch(n,{method:"HEAD"}).then(e=>c(e.headers.get("Etag")||r)).catch(p):p()),v:(e,t)=>ml.h[e]=t.replace(/[\"\/\\\-]*/g,""),r:e=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),5:()=>(L.ml||(L.ml=ml.bind(L)),ml.call(L,0,L,o,a,d,s)),6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o]}]})},d)})[x](L,o,a,d,s)}
-
+function ml(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=[{},ml,"",e].map(e=>typeof e),m={1:()=>m[4]()||{},2:(L,o,a,d,e,n)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===t[2]+t[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(m.x)),enumerable:!0,configurable:!0}):n},3:()=>m[4]().constructor.name||"x",4:()=>typeof self===t[0]&&self,x:e=>e(),r:()=>Math.random().toString(36).substr(-8)};return(e=typeof m[x]===t[1]?m[x](L,o,a,d,s):m)!==m?e:(e={0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,t.length+1,t):a(),u:(x,t)=>(t=e.r(x))?(s=e.s(this.document,"script"),d&&d(s),e.p(t[2],s.setAttribute.bind(s,"src")),t[1]):!L[x]&&x,y:x=>!!x,s:(d,e)=>((s=d.createElement(e)).type="text/java"+e,d.body.appendChild(s)),p:(n,l,r,L,c,p)=>(r=m.r(),L=(e=>l(n+"?v="+e)),c=(t=>L(e.v(n,t))),p=(()=>c(r)),ml.h[n]?c(ml.h[n]):typeof fetch===t[1]?fetch(n,{method:"HEAD"}).then(e=>c(e.headers.get("Etag")||r)).catch(p):p()),v:(e,t)=>ml.h[e]=t.replace(/[\"\/\\\-]*/g,""),r:e=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),5:()=>(L.ml||(L.ml=ml.bind(L)),ml.call(L,0,L,o,a,d,s)),6:()=>ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o]}]})},d)})[x](L,o,a,d,s)}
 // source
-function ml(x,L, o, a, d, s){
+function ml2(x,L, o, a, d, s){
     ml.h=ml.h||{};//create history db if none exists
     let
     z,
@@ -57,7 +56,7 @@ function ml(x,L, o, a, d, s){
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u)=>{
              u = u.map(z.u).filter(z.y);
-             return u.length?setTimeout(z.l, u.length*10, u):a();
+             return u.length?setTimeout(z.l, u.length+1, u):a();
        },
 
        //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
@@ -109,6 +108,7 @@ function ml(x,L, o, a, d, s){
     return z[x](L,o,a,d,s);
     
 }
+
         </script>
          
 
