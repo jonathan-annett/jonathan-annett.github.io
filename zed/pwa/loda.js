@@ -684,6 +684,29 @@ function ml(x,L, o, a, d, s){
 
 
 
+/* global ml,self */
+ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
+
+    {
+        Window:                   function moduleName(lib) {return lib;},
+        ServiceWorkerGlobalScope: function moduleName(lib) {return lib;},
+    }, (()=>{  return{
+        Window:                   [ () => aLib ()     ],
+        ServiceWorkerGlobalScope: [ () => aLib ()     ],
+    };
+      
+      function aLib (libFilter) {
+          const lib = {};
+          
+          return lib;
+      }
+      
+    })()
+
+    );
+
+});
+
 
 
 

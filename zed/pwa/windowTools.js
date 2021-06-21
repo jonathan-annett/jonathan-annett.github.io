@@ -7,8 +7,8 @@ ml(0,ml(1),[
 
   { 
       
-    Window : function wTools(db, wToolsLib ) {
-        
+    Window : function wTools(dbengine, wToolsLib ) {
+                 const db      = dbengine("hybrid");
                  const setKey_ = db.setKey;
                  const getKey  = db.getKey;
                  const { 
@@ -570,8 +570,10 @@ ml(0,ml(1),[
                  
              },
       
-    ServiceWorkerGlobalScope : function wTools(db,wToolsLib) {
+    ServiceWorkerGlobalScope : function wTools(dbengine,wToolsLib) {
           const lib = {};
+          
+          const db = dbengine ("sw"); 
           
           return lib;
     },

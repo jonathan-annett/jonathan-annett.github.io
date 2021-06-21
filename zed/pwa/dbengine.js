@@ -5,12 +5,35 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         Window:                   function dbengine(lib) {return lib;},
         ServiceWorkerGlobalScope: function dbengine(lib) {return lib;},
     }, (()=>{  return{
-        Window:                   [ () => hybridStorageEngine ("hybrid") ],
-        ServiceWorkerGlobalScope: [ () => hybridStorageEngine ("sw")     ],
+        Window:                   [ () => hybridStorageEngine ],
+        ServiceWorkerGlobalScope: [ () => hybridStorageEngine  ],
     };
-      function hybridStorageEngine (libFilter) {
+      function hybridStorageEngine (libFilter,keyprefix) {
           
          const flushHybridCachedSyncWritesInterval = 1500;
+         const keyprefix_length = keyprefix ? keyprefix.length : 0;
+         const prefixes = !!keyprefix;
+         const generalizeKey = typeof keyprefix === 'string' ? function (k){return keyprefix+k;} :
+                             typeof keyprefix === 'function' ? keyprefix : function (k){return k;};
+
+        const localizeKey = typeof keyprefix === 'string' ? function (k){return k.substring(keyprefix_length);} :
+                              typeof keyprefix === 'function' ? function (k,x,y) {
+                                  return keyprefix(k,x,y,"generalize");
+                              } : function (k){return k;};
+        
+        const filterKeys   = typeof keyprefix === 'string' ? function (k){return k.startsWith(keyprefix);} :
+                              typeof keyprefix === 'function' ? function (k,index,arr) {
+                                  return keyprefix(k,index,arr,"filter");
+                              } : function (k){return true;};
+                              
+                              
+        const removedKeySuffix = '-@';
+
+
+        const localStorageKeyKiller =  localStorage.removeItem.bind(localStorage);
+        const localForageKeyKiller  =  localforage.removeItem.bind(localforage);
+
+
          var hybridLazyWriteTimeout;
          
           
@@ -18,7 +41,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             case "localStorage" : return localStorageLib();
             case "localforage"  : return localforageLib();
             case "sw"           : return swHybridEngine();
-            case "hybrid"       : return hybridEngineLib() 
+            case "hybrid"       : return hybridEngineLib();
         }
         
         const lib = hybridEngineLib();
@@ -52,38 +75,53 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         return lib;
         
         function dbProxy(engine) {
-            const cb = engine.__sync ? undefined : function (){} ;
-            return new Proxy({},{
-                get : function(target, property, receiver) {
-                    return engine.getKey(property,cb);
-                },
-                set : function(target, property, value) {
-                    if (value===null) {
-                       engine.removeKey(property,cb);
+            
+            return function (prefix) {
+                
+                const cb = engine.__sync ? undefined : function (){} ;
+                if (!!prefix) {
+                    // supplying a prefix will create a proxied object under the current prefix.
+                    // not supplying a prefix will create a proxied object over the entire engine.
+                    if (typeof prefix+typeof keyprefix ==="stringstring") {
+                        engine = hybridStorageEngine(engine.__mode,keyprefix+prefix);
                     } else {
-                       engine.setKey(property,value,cb);
+                        throw new Error ("unsupported prefix strategy");
                     }
-                    return true;
-                },
-                
-                deleteProperty: function (target, property) {
-                    engine.removeKey(property,cb);
-                    return true;
-                },
-                
-                defineProperty: function(target, property, descriptor) {
-                    return !(property.startsWith('-@') || typeof descriptor.value==='undefined');
-                },
-                
-                ownKeys: function(target) {
-                    return engine.__sync ? engine.getKeys() : [];
-                },
-                
-                has: function(target, property) {
-                    return engine.__sync ? engine.getKeys()[property] : false;
                 }
                 
-            });
+                return new Proxy({},{
+                    get : function(target, property, receiver) {
+                        return engine.getKey(property,cb);
+                    },
+                    set : function(target, property, value) {
+                        if (value===null) {
+                           engine.removeKey(property,cb);
+                        } else {
+                           engine.setKey(property,value,cb);
+                        }
+                        return true;
+                    },
+                    
+                    deleteProperty: function (target, property) {
+                        engine.removeKey(property,cb);
+                        return true;
+                    },
+                    
+                    defineProperty: function(target, property, descriptor) {
+                        return !(property.endsWith(removedKeySuffix) || typeof descriptor.value==='undefined');
+                    },
+                    
+                    ownKeys: function(target) {
+                        return engine.__sync ? engine.getKeys() : [];
+                    },
+                    
+                    has: function(target, property) {
+                        return engine.__sync ? engine.getKeys()[property] : false;
+                    }
+                    
+                });
+                
+            }
         }
     
         
@@ -94,7 +132,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             const syncAsync=function(){
                 try { 
                      const json = JSON.stringify(v);
-                     localStorage.setItem(k,json);
+                     localStorage.setItem(generalizeKey(k),json);
                      return cbok ? cb() : cb;
                  } catch (e) {
                      if (cbok) return cb(e)
@@ -113,7 +151,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             const syncAsync=function(){
                 try {
                   //note: JSON.parse(null) returns null, so no need to check for no data scenario
-                  const data=JSON.parse(localStorage.getItem(k));
+                  const data=JSON.parse(localStorage.getItem(generalizeKey(k)));
                   return cbok ? cb(undefined,data) : data;
                 } catch (e) {
                   if (cbok) return cb(e);
@@ -124,15 +162,17 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         }
         
         function removeLocalKey(k,cb) {
+            
             // this function is localforage-agnostic, and can be called synchronusly or async (you can supply a callback)
             // this function is also cache-agnostic. existing data WILL be removed from localStorage as a result of this call
             
             const cbok=typeof cb==='function';
+            const genkey=generalizeKey(k);
             const syncAsync=function(){
                 try { 
-                     const existed=!!localStorage.getItem(k);
+                     const existed=!!localStorage.getItem(genkey);
                      if (existed) {
-                         localStorage.removeItem(k);
+                         localStorage.removeItem(genkey);
                      }
                      return cbok ? cb(undefined,existed) : existed;
                  } catch (e) {
@@ -149,7 +189,8 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             const cbok=typeof cb==='function';
             const syncAsync=function(){
                 const keys = Object.keys(localStorage);
-                return cbok ? cb (keys) : keys;
+                const retkeys = prefixes ? keys.filter(filterKeys).map(localizeKey) : keys;
+                return cbok ? cb (retkeys) : retkeys;
             };
             return cbok ? setTimeout(syncAsync,0) : syncAsync();        
         }
@@ -157,7 +198,11 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         function clearLocal(cb) {
             const cbok=typeof cb==='function';
             const syncAsync=function(){
-                localStorage.clear();
+                if (prefixes) {
+                   Object.keys(localStorage).filter(filterKeys).forEach(localStorageKeyKiller); 
+                } else {
+                   localStorage.clear();
+                }
                 return cbok ? cb () : undefined;
             };
             return cbok ? setTimeout(syncAsync,0) : syncAsync();           
@@ -169,7 +214,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             // this function is localStorage-agnostic, and MUST be called asynchronusly (you MUST supply a callback)
             // this function is also cache-agnostic. data WILL be written to localforage as a result of this call
             if (typeof cb !=='function') throw new Error('no callback supplied');
-            self.localforage.setItem(k,v).then(function(){
+            self.localforage.setItem(generalizeKey(k),v).then(function(){
                  cb();
              }).catch(cb);
         }
@@ -179,7 +224,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             // this function is also cache-agnostic. data WILL be read from localforage as a result of this call
             if (typeof cb !=='function') throw new Error('no callback supplied');
             
-            self.localforage.getItem(k).then(function(v){
+            self.localforage.getItem(generalizeKey(k)).then(function(v){
                 cb(undefined,v);
             }).catch(cb);
         }
@@ -187,10 +232,11 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         function removeForageKey(k,cb) {
             // this function is localStorage-agnostic, and MUST be called asynchronusly (you MUST supply a callback)
             // this function is also cache-agnostic. existing data WILL be removed from localforage as a result of this call
+            const genkey = generalizeKey(k);
             if (typeof cb !=='function') throw new Error('no callback supplied');
-            self.localforage.getItem(k).then(function(v){
+            self.localforage.getItem(genkey).then(function(v){
                 
-                return v===null ? cb(undefined,false) : self.localforage.removeItem(k).then(function(){
+                return v===null ? cb(undefined,false) : self.localforage.removeItem(genkey).then(function(){
                     cb(undefined,true);
                 }).catch(cb) ;
                 
@@ -202,8 +248,8 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             // this function is also cache-agnostic. keys returned will be actual keys from localforage as a result of this call
             if (typeof cb !=='function') throw new Error('no callback supplied');
             localforage.keys().then(function(keys) {
-                // An array of all the key names.
-                cb(undefined,keys);
+                // An array of all the key names, localized (ie no prefixes and/or demangled)
+                cb(undefined,keys.filter(filterKeys).map(localizeKey));
             }).catch(cb);
     
         }
@@ -211,11 +257,16 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         function clearForage(cb) {
             const cbok=typeof cb==='function';
             const syncAsync=function(){
-                localforage.clear().then(function() {
-                    if (cbok) cb();
+                
+                const promise = prefixes ? Promise.all(Object.keys(localStorage).filter(filterKeys).map(localForageKeyKiller))
+                                         : localforage.clear();
+                                         
+                promise.then(function() {
+                        if (cbok) cb();
                 }).catch(function(err) {
                     if (cbok) cb(err); else throw err;
                 });
+                
             };
             return cbok ? setTimeout(syncAsync,0) : syncAsync();             
         }
@@ -238,7 +289,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         }
         
         function hybridData(v){
-           return [v, typeof localforage==='undefined' ? 0 : Math.random()+Date.now()];
+           return [v, typeof localforage==='undefined' ? 0 : Date.now()];
         }
         
         function setHybridKey_(k,v,cb) {
@@ -284,7 +335,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 setHybridKey_(k,null,function(deletedHybrid){
                    if (err) return cb (err);
                    // save a copy of the deleted record using same timestamp as deletion flag.
-                   setForageKey('-@'+k,[ existingHybrid, deletedHybrid[1] ],function(){
+                   setForageKey(k+removedKeySuffix,[ existingHybrid, deletedHybrid[1] ],function(){
                       if (err) return cb (err);
                       cb(undefined,true);
                    });
@@ -307,18 +358,22 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 return cb();
             }        
             
-            getHybridKeys_(function(err,keys){
-                const notAlreadyDeleted = keys.filter(function(k){
-                    if ( k.startsWith("-@") ) return false;
-                    return keys.indexOf("-@"+k) < 0;
+            getHybridKeys_(function(err,localizedKeys){
+                // getHybridKeys_ removes any prefixes from the keys (the list is intended for end user consumption)
+                const notAlreadyDeleted = localizedKeys.filter(function(k){
+                    if ( k.endsWith(removedKeySuffix) ) return false;
+                    return localizedKeys.indexOf(k+removedKeySuffix) < 0;
                 }),proms=[], flag = hybridData(null),stamp=flag[1];
                 
-                notAlreadyDeleted.forEach(function(k){
+                notAlreadyDeleted.forEach(function(localizedKey){
+                    // notAlreadyDeleted contains locallized keys (ie possibly without a prefix)
+                    // so we need to generalize them using generalizeKey(), which will mangle or aadd needed prefix
                     proms.push(new Promise(function(resolve,reject){
-                        localforage.getItem(k).then (function(item){
+                        const genkey = generalizeKey(localizedKey);
+                        localforage.getItem(genkey).then (function(item){
                          
-                           localforage.setItem(k,flag).then (function(){
-                               localforage.setItem("-@"+k,[ item, stamp,"clear"]).then (function(){
+                           localforage.setItem(genkey,flag).then (function(){
+                               localforage.setItem(genkey+removedKeySuffix,[ item, stamp,"clear"]).then (function(){
                                    resolve();
                                });
                            });
@@ -326,7 +381,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                     }));
     
                 });
-                Promise.all(proms).then(function(k){
+                Promise.all(proms).then(function(){
                     cb();
                 }).catch (cb);
                 
@@ -438,7 +493,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                     
                    if (err) return cb(err);
                    setForageKey(k,data,function(){
-                       removeForageKey('-@'+k,function(){//make sure it's not flagged for deletion
+                       removeForageKey(k+removedKeySuffix,function(){//make sure it's not flagged for deletion
                          cb(undefined,data[0]);
                        });
                    });
@@ -448,7 +503,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             
             function updateForageOnly(data) {
                setForageKey(k,data,function(err){
-                   removeForageKey('-@'+k,function(){//make sure it's not flagged for deletion
+                   removeForageKey(k+removedKeySuffix,function(){//make sure it's not flagged for deletion
                       if (err) return cb (err);
                       cb(undefined,data[0]);
                    });
@@ -466,7 +521,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 if (hybrid[0]===null) {
                     // localforage deleted the data - remove the delete flag and also anything in local/cache
                     return removeForageKey(k,function(){
-                        removeForageKey('-@'+k,function(){//make sure it's not flagged for deletion
+                        removeForageKey(k+removedKeySuffix,function(){//make sure it's not flagged for deletion
                             removeLocalKey(k,function(){
                                 delete cache.read[k];
                                 delete cache.write[k];
@@ -523,7 +578,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                                return cb();
                            }
                            setForageKey(k,local,function(err){
-                               removeForageKey('-@'+k,function(){//make sure it's not flagged for deletion
+                               removeForageKey(k+removedKeySuffix,function(){//make sure it's not flagged for deletion
                                   if (err) console.log(err); // log, but otherwise ingore any errors in writing to localforage
                                   if (keepInCache) {
                                        cache.read[k]=local;
@@ -626,8 +681,9 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             
             
             function getSyncWhenNothingIsCached() {
+                const genkey = generalizeKey(k);
                 // sync request
-                const json = localStorage.getItem(k);
+                const json = localStorage.getItem(genkey);
                 if (json) {
                     const local = JSON.parse(json); 
                     if (keepInCache) {
@@ -651,14 +707,15 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         }
         
         function removeHybridKey(k,cb) {
+            const genkey = generalizeKey(k);
             const cbok=typeof cb==='function',forageok=typeof localforage!=='undefined';
             
             if (cbok){
                 if (forageok) {
                    return removeForageKey(k,function(err,existed){
                        if (err) return cb(err);
-                       return removeForageKey('-@'+k,function(){
-                           localStorage.removeItem(k);
+                       return removeForageKey(k+removedKeySuffix,function(){
+                           localStorage.removeItem(genkey);
                            return cb (undefined,existed);
                        });
                    });
@@ -667,7 +724,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 }
             } else {
                 
-               const existed = !!localStorage.getItem(k);
+               const existed = !!localStorage.getItem(genkey);
                if (existed) {
                     localStorage.removeItem(k);
                }
@@ -693,8 +750,9 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 function (key){
                     return new Promise(function(resolve){
                         // merely reading the key asyncronously will flush any write status
-                        // out to localforage/localStoage
-                        getHybridKey(key,function(err,x){
+                        // out to localforage/localStorage
+                        // (note - we localize the key here - remove prefix or de-mangle, since getHybridKey works on localized keys )
+                        getHybridKey(localizeKey(key),function(err,x){
                            resolve(err?null:x);
                         });
                     });
@@ -727,7 +785,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 flushHybridCachedSyncWrites(function (err){
                     if (err) return cb(err);
                     
-                    // next get a list of localforage keys
+                    // next get a list of localforage keys - these are all localized, so any direct api storage access needs to pass the key through generalizeKey()
                     return getForageKeys(function(err,forKeys_){
                         if (err) return cb(err);
                         
@@ -736,20 +794,21 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                         if (!forKeys_) return getLocalKeys (cb);
                         
                         const notFlagged = function(k){
-                           if (k.startsWith("-@")) return false;
+                           if (k.endsWith(removedKeySuffix)) return false;
                         };
                         const notDeleted = function(k,i,arr){
-                           return forKeys_.indexOf("-@" + k) < 0;
+                           return forKeys_.indexOf(k+removedKeySuffix) < 0;
                         };
                         const isDeleted = function(k,i,arr){
-                           return forKeys_.indexOf("-@" + k) >= 0;
+                           return forKeys_.indexOf(k + removedKeySuffix) >= 0;
                         };
                         const removeForages=function (list,cb) {
                             if (list.length===0) return cb(undefined,list);
                             const proms = [];
-                            list.forEach(function (k){
-                                proms.push(localforage.removeItem(k));
-                                proms.push(localforage.removeItem('-@'+k));
+                            list.forEach(function (key){
+                                const genkey = generalizeKey(key);
+                                proms.push(localforage.removeItem(genkey));
+                                proms.push(localforage.removeItem(genkey+removedKeySuffix));
                             });
                             Promise.all(proms).then(function(){
                                 return cb (undefined,list)
@@ -763,7 +822,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                                const localDeletes = commonDeleted.map(function(k){
                                   return {
                                       key:k,
-                                      data:JSON.parse(localStorage.getItem(k))
+                                      data:JSON.parse(localStorage.getItem(generalizeKey(k)))
                                   }
                                });
                                const keep = [];
@@ -771,7 +830,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                                Promise.all(
                                    
                                    localDeletes.map(function(k){
-                                        return localforage.getItem(k);
+                                        return localforage.getItem(generalizeKey(k));
                                    })
                                    
                                ).then (function(forageDeletes) {
@@ -779,15 +838,16 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                                    
                                   const proms = [];
                                   localDeletes.forEach(function (local,index){
-                                     
+                                        const genkey = generalizeKey(local.key);
                                        if (forageDeletes[index][1] >= local.data[1]) {
-                                           localStorage.removeItem(local.key);
-                                           proms.push(localforage.removeItem(local.key));
+                                           
+                                           localStorage.removeItem(genkey);
+                                           proms.push(localforage.removeItem(genkey));
                                        } else {
-                                           proms.push(localforage.setItem(local.key,local.data));   
+                                           proms.push(localforage.setItem(genkey,local.data));   
                                            keep.push(local.key);
                                        }
-                                       proms.push(localforage.removeItem('-@'+local.key,function(){}));
+                                       proms.push(localforage.removeItem(genkey+removedKeySuffix,function(){}));
                                        
                                   });
                                   
@@ -816,7 +876,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                         const forage_keys = forKeys_.filter(notFlagged);
                         
                         // get localStorage keys (none of these will be flagged, as that only happens in localforage)
-                        const local_keys = Object.keys(localStorage);
+                        const local_keys = getLocStoreKeys();
                         
                         // determine forage keys not in local
                         const notInLocal =  forage_keys.filter(function(k){ return local_keys.indexOf(k)<0; });
@@ -861,25 +921,35 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             } else {
                 
                 // since this is a synchronous call, all we can do is report the localStorage keys.
-                
-                return Object.keys(localStorage);
+                return getLocStoreKeys();
+            }
+            
+            function getLocStoreKeys() {
+                const keys = Object.keys(localStorage);
+                return prefixes ? keys.filter(filterKeys).map(localizeKey) : keys; 
             }
     
         }
         
         function clearHybrid(cb) {
             const cbok=typeof cb==='function';
-            const syncAsync=function(){
-                localStorage.clear();
-                localforage.clear().then(function() {
-                    if (cbok) cb();
-                }).catch(function(err) {
-                    if (cbok) cb(err); else throw err;
+            clearLocal(function(err){
+                if (err) return errs(err);
+                clearForage(function(err){
+                    if (err) return errs(err);
+                    if (cbok) {
+                        cb();
+                    }
                 });
-            };
-            return cbok ? setTimeout(syncAsync,0) : syncAsync();            
+            });
+            
+            function errs(err) {
+                if (cbok) {
+                    return cb(err);
+                }
+                throw err;
+            }
         }
-        
         
         function localStorageLib(){
             const lib = {};
@@ -890,10 +960,11 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 getKeys   : { value : getLocalKeys,   writable:false, enumerable:true,  configurable:true },
                 clear     : { value : clearLocal,     writable:false, enumerable:true,  configurable:true },
                 __sync    : { value : true,           writable:false, enumerable:false, configurable:true },
+                __mode    : { value : "localStorage", writable:false, enumerable:false, configurable:true },
                 
             });
             Object.defineProperties(lib,{
-                __proxy   : { value : dbProxy(lib),   writable:false, enumerable:false, configurable:true },
+                proxy   : { value : dbProxy(lib),   writable:false, enumerable:true, configurable:true },
             })
             return lib;
     
@@ -902,15 +973,17 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         function localforageLib(){
             const lib = {};
             Object.defineProperties(lib,{
-                getKey    : { value : getForageKey,    writable:false, enumerable:true, configurable:true },
-                setKey    : { value : setForageKey,    writable:false, enumerable:true, configurable:true },
-                removeKey : { value : removeForageKey, writable:false, enumerable:true, configurable:true },
-                getKeys   : { value : getForageKeys,   writable:false, enumerable:true, configurable:true },
-                clear     : { value : clearForage,     writable:false, enumerable:true, configurable:true },
+                getKey    : { value : getForageKey,    writable:false, enumerable:true,  configurable:true },
+                setKey    : { value : setForageKey,    writable:false, enumerable:true,  configurable:true },
+                removeKey : { value : removeForageKey, writable:false, enumerable:true,  configurable:true },
+                getKeys   : { value : getForageKeys,   writable:false, enumerable:true,  configurable:true },
+                clear     : { value : clearForage,     writable:false, enumerable:true,  configurable:true },
                 __sync    : { value : false,           writable:false, enumerable:false, configurable:true },
+                __mode    : { value : "localforage",   writable:false, enumerable:false, configurable:true },
+    
             });
             Object.defineProperties(lib,{
-                __proxy   : { value : dbProxy(lib),   writable:false, enumerable:false, configurable:true },
+                proxy   : { value : dbProxy(lib),   writable:false, enumerable:true, configurable:true },
             })
             
             return lib;
@@ -920,17 +993,19 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         function swHybridEngine() {
             const lib = {};
             Object.defineProperties(lib,{
-                getKey    : { value : getHybridKey_,    writable:false, enumerable:true, configurable:true },
-                setKey    : { value : setHybridKey_,    writable:false, enumerable:true, configurable:true },
-                removeKey : { value : removeHybridKey_, writable:false, enumerable:true, configurable:true },
-                getKeys   : { value : getHybridKeys_,   writable:false, enumerable:true, configurable:true },
-                clear     : { value : clearHybrid_,     writable:false, enumerable:true, configurable:true },
-                
-                __sync    : { value : false,     writable:false, enumerable:false, configurable:true },
+                getKey    : { value : getHybridKey_,    writable:false, enumerable:true, configurable:true  },
+                setKey    : { value : setHybridKey_,    writable:false, enumerable:true, configurable:true  },
+                removeKey : { value : removeHybridKey_, writable:false, enumerable:true, configurable:true  },
+                getKeys   : { value : getHybridKeys_,   writable:false, enumerable:true, configurable:true  },
+                clear     : { value : clearHybrid_,     writable:false, enumerable:true, configurable:true  },
+                __sync    : { value : false,            writable:false, enumerable:false, configurable:true },
+                __mode    : { value : "sw",             writable:false, enumerable:false, configurable:true },
+    
             });
             Object.defineProperties(lib,{
-                __proxy   : { value : dbProxy(lib),   writable:false, enumerable:false, configurable:true },
+                proxy   : { value : dbProxy(lib),   writable:false, enumerable:true, configurable:true },
             })
+            
             
             return lib;
     
@@ -940,18 +1015,19 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             const lib = {};
             
             Object.defineProperties(lib,{
-                getKey    : { value : getHybridKey,    writable:false, enumerable:true, configurable:true },
-                setKey    : { value : setHybridKey,    writable:false, enumerable:true, configurable:true },
-                removeKey : { value : removeHybridKey, writable:false, enumerable:true, configurable:true },
-                getKeys   : { value : getHybridKeys,   writable:false, enumerable:true, configurable:true },
-                clear     : { value : clearHybrid,     writable:false, enumerable:true, configurable:true },
-                
-                __sync    : { value : true,     writable:false, enumerable:false, configurable:true },
+                getKey    : { value : getHybridKey,    writable:false, enumerable:true,  configurable:true },
+                setKey    : { value : setHybridKey,    writable:false, enumerable:true,  configurable:true },
+                removeKey : { value : removeHybridKey, writable:false, enumerable:true,  configurable:true },
+                getKeys   : { value : getHybridKeys,   writable:false, enumerable:true,  configurable:true },
+                clear     : { value : clearHybrid,     writable:false, enumerable:true,  configurable:true },
+                __sync    : { value : true,            writable:false, enumerable:false, configurable:true },
+                __mode    : { value : "hybrid",        writable:false, enumerable:false, configurable:true },
         
             });
             Object.defineProperties(lib,{
-                __proxy   : { value : dbProxy(lib),   writable:false, enumerable:false, configurable:true },
+                proxy   : { value : dbProxy(lib),   writable:false, enumerable:true, configurable:true },
             })
+            
             return lib;
         }
     
@@ -962,26 +1038,3 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
 });
 
-
-/* global ml,self */
-ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
-
-    {
-        Window:                   function dbengine(lib) {return lib;},
-        ServiceWorkerGlobalScope: function dbengine(lib) {return lib;},
-    }, (()=>{  return{
-        Window:                   [ () => aLib ()     ],
-        ServiceWorkerGlobalScope: [ () => aLib ()     ],
-    };
-      
-      function aLib (libFilter) {
-          const lib = {};
-          
-          return lib;
-      }
-      
-    })()
-
-    );
-
-});
