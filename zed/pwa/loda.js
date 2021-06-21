@@ -556,6 +556,10 @@ function ml(x,L, o, a, d, s){
        //z.s = create and append empty script element
        s:(d,S)=>{s = d.createElement(S);s.type = "text/java"+S; return d.body.appendChild(s);},
        
+       //z.U() = history as an array of urls
+       U:()=>Object.keys(ml.h),
+
+       
        //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
        p:(u,l/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
            r=c.r();//prepare a random version number (in case we need it)
@@ -566,12 +570,51 @@ function ml(x,L, o, a, d, s){
                       V(ml.h[u])                  //yes = load script using version from history
                     : ( typeof fetch===z.F ?    // did Gretchen make fetch happen ? 
                           fetch(u,{method: 'HEAD'}) // yes= fetch header and 
-                            .then((h)=>V(h.headers.get("Etag")||r)) // use etag as version, or random if no etag
+                            .then((h)=>V(z.e(h,r))) // use etag as version, or random if no etag
                             .catch(R)                               // if fetch(HEAD) fails,use random version
                         : R())                     // Gretchen didn't make fetch happen. so random.
                   );                 
            
        },
+       //z.e = resolve to etag in r.header or d (default)
+       e:(r,d)=>r.headers.get("Etag")||d,
+       //z.H= fetch HEAD response for all history urls 
+       H:(cb)=>Promise.all(z.U().map((u)=>fetch(u,{method:'HEAD'}))).then(cb).catch(cb),
+       //z.j = compare array of etags(a) with previous array(ml.e) and return number of matches
+       j:(a)=>a.reduce((n,e,i)=>e===ml.e[i]?n+1:n,0),
+       k:(a)=>{
+           if ( z.j(a) < a.length) {
+              console.log("changes:",ml.U() ); 
+              console.log("changes:",a      ); 
+              console.log("changes:",ml.e   ); 
+           }
+           ml.e=a;
+       },
+       q:()=>{
+           //get an array of responses as R
+           z.H((R)=>{
+               if(!Array.isArray(R))return;
+               // convert array of responses --> array of etags,compare
+               z.k( z.E(R) );
+               
+           })
+       },
+       
+       //z.E(h,x) = map array of responses to array of etags
+       E:(R)=>R.map((r,i)=>z.e(r,ml.h[i])),
+       K:()=>{
+           //get an array of responses as R
+           z.H((R)=>{
+               if(!Array.isArray(R))return;
+               // convert array of responses --> array of etags into ml.e
+               ml.e=z.E(R);
+               setInterval(z.q,5000);
+           });
+           
+           
+       },
+       
+      
        
        V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
        v:(u,v)=>(ml.h[u]=v.replace(/[\"\/\\\-]*/g,'')), 
