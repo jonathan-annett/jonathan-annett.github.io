@@ -112,6 +112,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             const cbok = typeof cb==='function';
             const syncAsync=function(){
                 try {
+                  //note: JSON.parse(null) returns null, so no need to check for no data scenario
                   const data=JSON.parse(localStorage.getItem(k));
                   return cbok ? cb(undefined,data) : data;
                 } catch (e) {
@@ -517,6 +518,10 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                         getLocalKey(k,function(err,local){
                            if (err) return cb(err); // something is possibly wrong with json etc
                            
+                           if (!local) {
+                               // key does not exist.
+                               return cb();
+                           }
                            setForageKey(k,local,function(err){
                                removeForageKey('-@'+k,function(){//make sure it's not flagged for deletion
                                   if (err) console.log(err); // log, but otherwise ingore any errors in writing to localforage
