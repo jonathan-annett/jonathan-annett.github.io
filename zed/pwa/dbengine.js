@@ -35,10 +35,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                 const removedKeySuffix = '-@';
         
         
-                const localStorageKeyKiller =  localStorage.removeItem.bind(localStorage);
-                const localForageKeyKiller  =  localforage.removeItem.bind(localforage);
-        
-        
+                
                  var hybridLazyWriteTimeout;
                  
                   
@@ -249,7 +246,12 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                     };
                     
                 }
-            
+                
+                
+                function localStorageKeyKiller (key) {
+                     return localStorage.removeItem(key);
+                }
+                
                 
                 function setLocalKey(k,v,cb) {
                     // this function is localforage-agnostic, and can be called synchronusly or async (can supply a callback)
@@ -333,6 +335,12 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                     };
                     return cbok ? setTimeout(syncAsync,0) : syncAsync();           
                 }
+                
+                
+                function localForageKeyKiller  (key) {
+                    return localforage.removeItem(key);
+                }
+        
                 
                 function setForageKey(k,v,cb) {
                     // this function is localStorage-agnostic, and MUST be called asynchronusly (you MUST supply a callback)
