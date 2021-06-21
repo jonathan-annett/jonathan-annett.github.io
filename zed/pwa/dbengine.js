@@ -741,9 +741,11 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         }
         
         function flushHybridCachedSyncWrites(cb) {
+            
             if (typeof cb !=='function') throw new Error('no callback supplied');
             
             const cache=hybridCache().write,keys = Object.keys(cache);
+            // keys in cache are already localized.
             if(keys.length===0) return setTimeout(cb,0);
             
             Promise.all(keys.map(
@@ -751,8 +753,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                     return new Promise(function(resolve){
                         // merely reading the key asyncronously will flush any write status
                         // out to localforage/localStorage
-                        // (note - we localize the key here - remove prefix or de-mangle, since getHybridKey works on localized keys )
-                        getHybridKey(localizeKey(key),function(err,x){
+                        getHybridKey(key,function(err,x){
                            resolve(err?null:x);
                         });
                     });
