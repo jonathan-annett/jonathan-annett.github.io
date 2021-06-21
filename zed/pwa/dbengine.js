@@ -122,11 +122,8 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                           };
                           
                           if ( engine.__sync ) {
-                              if (  engine.getKeys().indexOf(property) < 0 ) {
-                                  return undefined;
-                              }
-                              
                               desc.value  = engine.getKey(property);
+                              if (!desec.value) return undefined;
                           }
                           
                           return desc;
