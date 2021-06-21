@@ -544,7 +544,7 @@ function ml(x,L, o, a, d, s){
              R=z.r(x);
              if (!R) return L[x]?false:x;
              s = z.s(this.document,"script");
-             if(d)d(s);C
+             if(d)d(s);
              z.p(R[2],s.setAttribute.bind(s,"src"));
              return R[1];
        },
@@ -576,7 +576,7 @@ function ml(x,L, o, a, d, s){
            
        },
        //z.e = resolve to etag in r.header or d (default)
-       e:(r,d)=>r.headers.get("Etag")||d,
+       e:(r,d)=>r.headers.get("Etag").replace(/[\"\/\\\-]*/g,'')||d,
        //z.H= fetch HEAD response for all history urls 
        H:(cb)=>Promise.all(z.U().map((u)=>fetch(u,{method:'HEAD'}))).then(cb).catch(cb),
        //z.j = compare array of etags(a) with previous array(ml.e) and return number of matches
@@ -616,7 +616,7 @@ function ml(x,L, o, a, d, s){
       
        
        V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
-       v:(u,v)=>(ml.h[u]=v.replace(/[\"\/\\\-]*/g,'')), 
+       v:(u,v)=>(ml.h[u]=v), 
        //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
        r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u)
        
