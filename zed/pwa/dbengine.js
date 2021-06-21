@@ -102,13 +102,13 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                         
                         
                         function doRemove (property,cb) {
-                            if (ev.create.remove===0) {
+                            if (ev.events.create.remove===0) {
                                 engine.removeKey(property,cb);
                             } else {
                                 engine.getKey(property,function(err,old){
                                     engine.removeKey(property,function(){
                                         if (!err) {
-                                            ev.emitLibEvent("remove",property,old);
+                                            ev.events.emitLibEvent("remove",property,old);
                                         }
                                         cb.apply(this,arguments);
                                     });
@@ -117,7 +117,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                         }
                         
                         function doSet (property,value,cb) {
-                            if (ev.create.length+ev.create.length===0) {
+                            if (ev.events.create.length+ev.events.create.length===0) {
                                engine.setKey(property,value,cb);
                             } else {
                                 engine.getKey(property,function(err,old){
