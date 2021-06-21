@@ -1,10 +1,10 @@
 /*global self,localforage, ml*/
 /*global multiLoad,__ml1,__ml2,__ml3,__ml4*/
 //multiLoad(__ml1(),[],function(){__ml2(__ml3(),__ml4(),
-ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
+ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
 
   { 
-      Window : function wToolsLib() {
+      Window : function wToolsLib(events) {
         const cpArgs = Array.prototype.slice.call.bind(Array.prototype.slice);
         objectSetterHelpers();
         const On="addEventListener";
@@ -42,20 +42,15 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             
         ];
         
-        const libEvents = {
-            
-            move       : [],
-            size       : [],
-            minimized  : [],
-            maximized  : [],
-            restored   : [],
-            fullscreen : [],
-            closed     : [],
-            state      : []
-        };
-        const Hysteresis={};   
-        
         var lib = {  };
+        
+        const {
+            addLibEvent,
+            removeLibEvent,           
+            emitLibEvent,               
+            emitLibEventwithHysteresis,
+            removeAllEventTypes,
+        } = events (lib,["maximized","minimized","restored","fullscreen","closed",]);
 
         const {
             setForageKey   ,
@@ -120,67 +115,6 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
         return lib;
         
         
-        
-            
-        // add a handler for THIS window - move,size,minimized,maximized, restored, fulscreen(true/false),state, closed
-        function addLibEvent (e,fn) {
-            if (typeof e==='string'+typeof fn==='stringfunction') {
-                const fns = libEvents[e];
-                if (Array.isArray(fns)) {
-                    if ( fns.indexOf(fn) < 0 ) {
-                        fns.push(fn);
-                    }
-                }
-            }
-        }
-        
-        // remove previously added handler for THIS window
-        function removeLibEvent (e,fn) {
-           if (typeof e==='string'+typeof fn==='stringfunction') {
-               const fns = libEvents[e];
-               if (Array.isArray(fns)) {
-                   const ix = fns.indexOf(fn);
-                   if (ix >=0 ) {
-                      fns.splice(ix,1);
-                   }
-               }
-           }
-        }
-        
-        // emit an event for this window
-        function emitLibEvent (e) {
-            if (typeof e==='string') {
-                const fns = libEvents[e], args = cpArgs(arguments,1);
-                if (Array.isArray(fns)) {
-                    fns.forEach(function(fn) {
-                        fn.apply(this,args);
-                    });
-                }
-            }
-        }
-        
-        // emit an event for this window, after h msec (replaces any pending events issued via emitLibEventwithHysteresis() for "e")
-        function emitLibEventwithHysteresis (h,e) {
-            if (typeof e==='string') {
-                const fns = libEvents[e];
-                if (Array.isArray(fns)) {
-                    
-                    if (Hysteresis[e]) {
-                        clearTimeout(Hysteresis[e]);
-                    }
-                    const args = cpArgs(arguments,2);
-                    Hysteresis[e] = setTimeout(
-                      function () {
-                          delete Hysteresis[e];
-                          fns.forEach(function(fn) {
-                              fn.apply(this,args);
-                          });
-                      },h);
-                }
-            }
-        }
-            
-            
         // setWid() assigns a new id for this window
         function setWid(id) {
             window.wid=id;
@@ -551,11 +485,10 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             remove_size_emitter();remove_size_emitter=function(){};
             emitLibEvent('closed');
             // dump all events, (alllowing garbage collection of functions)
-            Object.keys(libEvents).forEach(function(e){
-                const fns = libEvents[e];
-                fns.splice(0,fns.length);
-                delete libEvents[e];
-            });
+            
+            
+            removeAllEventTypes();
+            
             const k = lib.storageKeys;
             if (!!localStorage.getItem(k.moveTrackingKey)) {
                 localStorage.setItem(k.closedKey,serializeWindowPosition(window,-2));
@@ -1266,8 +1199,8 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
       
   },
   {
-      Window : [],
-      ServiceWorkerGlobalScope : [],
+      Window                   : [ ()=>self.libEvents ],
+      ServiceWorkerGlobalScope : [ ()=>self.libEvents ],
   }
   
 );      
