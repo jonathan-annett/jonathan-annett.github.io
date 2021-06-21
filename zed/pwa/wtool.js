@@ -100,33 +100,37 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
 
         ServiceWorkerGlobalScope: function dep3() {
             const lib = "hello sw world";
-            self.addEventListener("install",function(e){
-                self.addEventListener('install', (event) => {
-                  event.waitUntil(
-                    caches.open('v1').then((cache) => {
-                      return cache.addAll([
-                        './wtool.html',
-                        './test.html',
-                        
-                      ]);
-                    })
-                  );
-                });
+            const prom = ml(8,"install",function(e){
+                console.log("install called again?");
+            });
+            console.log(prom);
+            if (Array.isArray(prom) && prom.length===1) {
+                    if (Array.isArray(prom[0]) && prom[0].length===2) {
+                    const [resolve,reject] = prom[0];
+                    if (typeof prom[0][0] === 'function') {
+                        console.log("install complete");
+                        resolve();
+                    }
+                }
+            }
+            
+            ml(8,"activate",function(event){
+                console.log("activate event");
                 
             });
             
-            self.addEventListener("activate",function(e){
-                console.log("activate");
+            ml(8,"message",function(event){
+                console.log("message event:",event.data);
+                                
             });
             
-            self.addEventListener("fetch",function(event){
-                console.log("fetch",event.request.url);
-                event.respondWith(
-                  caches.match(event.request).then((response) => {
-                    return response || fetch(event.request);
-                  })
-                );
+            
+            ml(8,"fetch",function(event){
+                console.log("fetch event:",event.request.url);
+                event.respondWith(fetch(event.request));
             });
+            
+            
             return lib;
         },
 

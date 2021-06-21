@@ -1,12 +1,13 @@
 // source -sw version 
-/* global self,importScripts*/
+/* global self,importScripts,caches*/
 function ml(x,L, o, a, d, s){
     ml.h=ml.h||{};//create history db if none exists
     let
+    C=console,
     z,
     // "t" contains an array of types - object,function,string,undefined
     // used for comparisions later
-    t=[{},ml,'',z].map((G)=>typeof G),
+    t=[C,ml,'',z].map((G)=>typeof G),
     // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
     // any constants/worker functions they need. also contains some code used later by z
     // note that z doubles as a proxy for "undefined" in the type array "t" above 
@@ -39,6 +40,7 @@ function ml(x,L, o, a, d, s){
         //c.x = map iterator to execure every function in an array of functions
         //      (used to resolve each loaded module)
         x:(f)=>f(),
+        l:C.log.bind(C),
         r:()=>Math.random().toString(36).substr(-8)
           
     };
@@ -117,10 +119,33 @@ function ml(x,L, o, a, d, s){
        v:(u,v)=>(ml.h[u]=v), 
        //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
        r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
-       9:(L)=>importScripts( new URL(location).searchParams.get('ml')  ),
+       
+       a:'addEventListener',
+       p:[],// boot strap promise catcher array
+       
+       //wrap event E to call X, whhich is stored as z[E]
+       G:(E,X)=>{z[E]=X;return (e)=>z[E](e)},
+       
+       
+       //install final event handler,and return captured promise for install event
+       8:(E,f)=>{
+           z[E]=f;
+           return z.p.splice(0,z.p.length);
+       },
+       
+       //z.I = install initial event handler wrapper 
+       I:(S,E,X)=>S[z.a](E,z.G(E,X||(e)=>{c.l(E,e.data);})), 
+       
+       9:(S)=>{
+                z.I(S,'install',(e)=>e.waitUntil(new Promise((r,R)=>z.p.push([r,R]))));
+                z.I(S,'activate');
+                z.I(S,'fetch',(e)=>fetch(e.request));
+                z.I(S,'message');
+                importScripts( new URL(location).searchParams.get('ml') );
+       }
     };
     return z[x]?z[x](L,o,a,d,s):undefined;
 }
-ml(9);
+ml(9,self);
 
   
