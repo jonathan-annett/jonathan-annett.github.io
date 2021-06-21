@@ -121,23 +121,23 @@ function ml(x,L, o, a, d, s){
        r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
        
        a:'addEventListener',
-       p:[],// boot strap promise catcher array
        
        //wrap event E to call X, whhich is stored as z[E]
-       G:(E,X)=>{z[E]=X;return (e)=>z[E](e);},
+       G:(E,X)=>{ml[E]=X;return (e)=>ml[E](e);},
        
        
        //install final event handler,and return captured promise for install event
        8:(E,f)=>{
-           z[E]=f;
-           return z.p.splice(0,z.p.length);
+           ml[E]=f;
+           return ml.p.splice(0,ml.p.length);
        },
        
        //z.I = install initial event handler wrapper 
        I:(S,E,X)=>S[z.a](E,z.G(E,X?X:(e)=>{c.l(E,e.data);})), 
        
        9:(S)=>{
-                z.I(S,'install',(e)=>e.waitUntil(new Promise((r,R)=>z.p.push([r,R]))));
+                ml.p=[];
+                z.I(S,'install',(e)=>e.waitUntil(new Promise((r,R)=>ml.p.push([r,R]))));
                 z.I(S,'activate');
                 z.I(S,'fetch',(e)=>fetch(e.request));
                 z.I(S,'message');
