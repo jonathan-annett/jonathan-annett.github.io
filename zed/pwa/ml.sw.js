@@ -134,7 +134,7 @@ function ml(x,L, o, a, d, s){
        },
        
        //z.I = install initial event handler wrapper 
-       I:(S,E,X)=>S[z.a](E,z.G(E,X||(e)=>{c.l(E,e.data);})), 
+       I:(S,E,X)=>S[z.a](E,z.G(E,X?X:(e)=>{c.l(E,e.data);})), 
        
        9:(S)=>{
                 z.I(S,'install',(e)=>e.waitUntil(new Promise((r,R)=>z.p.push([r,R]))));
