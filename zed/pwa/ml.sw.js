@@ -124,7 +124,7 @@ function ml(x,L, o, a, d, s){
        p:[],// boot strap promise catcher array
        
        //wrap event E to call X, whhich is stored as z[E]
-       G:(E,X)=>{z[E]=X;return (e)=>z[E](e)},
+       G:(E,X)=>{z[E]=X;return (e)=>z[E](e);},
        
        
        //install final event handler,and return captured promise for install event

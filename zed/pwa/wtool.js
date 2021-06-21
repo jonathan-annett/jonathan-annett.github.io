@@ -100,36 +100,49 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
 
         ServiceWorkerGlobalScope: function dep3() {
             const lib = "hello sw world";
-            const prom = ml(8,"install",function(e){
-                console.log("install called again?");
-            });
-            console.log(prom);
-            if (Array.isArray(prom) && prom.length===1) {
-                    if (Array.isArray(prom[0]) && prom[0].length===2) {
-                    const [resolve,reject] = prom[0];
-                    if (typeof prom[0][0] === 'function') {
-                        console.log("install complete");
-                        resolve();
-                    }
-                }
-            }
             
-            ml(8,"activate",function(event){
-                console.log("activate event");
+            waitForInstall(function(){
+                
+                ml(8,"activate",function(event){
+                    console.log("activate event");
+                    
+                });
+                
+                ml(8,"message",function(event){
+                    console.log("message event:",event.data);
+                                    
+                });
+                
+                
+                ml(8,"fetch",function(event){
+                    console.log("fetch event:",event.request.url);
+                    event.respondWith(fetch(event.request));
+                });
                 
             });
             
-            ml(8,"message",function(event){
-                console.log("message event:",event.data);
-                                
-            });
+            
+            function installEventStub() {
+                console.log("install called again?");
+            }
             
             
-            ml(8,"fetch",function(event){
-                console.log("fetch event:",event.request.url);
-                event.respondWith(fetch(event.request));
-            });
-            
+            function waitForInstall(cb) {
+                const prom = ml(8,"install",installEventStub);
+                console.log(prom);
+                if (Array.isArray(prom) && prom.length===1) {
+                        if (Array.isArray(prom[0]) && prom[0].length===2) {
+                        const [resolve,reject] = prom[0];
+                        if (typeof prom[0][0] === 'function') {
+                            console.log("install complete");
+                            resolve();
+                            return cb();
+                        }
+                    }
+                }
+                console.log("waiting...");
+                setTimeout(waitForInstall,1000,cb);
+            }
             
             return lib;
         },
