@@ -119,7 +119,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                                 engine.getKey(property,function(err,old){
                                     engine.removeKey(property,function(){
                                         if (!err) {
-                                            ev.events.emitLibEvent("remove",property,old);
+                                            ev.emitLibEvent("remove",property,old);
                                         }
                                         if (typeof cb==='function') {
                                             cb.apply(this,arguments);
@@ -158,7 +158,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                             if (ev.events.create.remove===0) {
                                 return value;
                             } else {
-                                ev.events.emitLibEvent("remove",property,value,
+                                ev.emitLibEvent("get",property,value,
                                 function newValue(v){
                                    value=v;  
                                 });
