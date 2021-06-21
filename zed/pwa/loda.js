@@ -640,11 +640,12 @@ function ml(x,L, o, a, d, s){
        V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
        v:(u,v)=>(ml.h[u]=v), 
        //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
-       r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u)
-       
+       r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+       w:'serviceWorker',
+       W:'navigator',
+       9:(L)=>L&&z.w in self[z.W]&&self[z.W][z.w].register('./ml.sw.js?ml=' + encodeURIComponent(L))
     };
-    return z[x](L,o,a,d,s);
-    
+    return z[x]?z[x](L,o,a,d,s):undefined;
 }
 
 
@@ -789,13 +790,13 @@ function ml(x,L, o, a, d, s){
        V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
        v:(u,v)=>(ml.h[u]=v), 
        //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
-       r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u)
-       
+       r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+       w:'serviceWorker',
+       W:'navigator',
+       9:(L)=>(z.w in self[z.W]?(L?self[z.W][z.w].register('./ml.sw.js?ml=' + encodeURIComponent(L)):undefined):importScripts( new URL(location).searchParams.get('ml')  )) ,
     };
-    return z[x](L,o,a,d,s);
-    
+    return z[x]?z[x](L,o,a,d,s):undefined;
 }
-
 
 
 

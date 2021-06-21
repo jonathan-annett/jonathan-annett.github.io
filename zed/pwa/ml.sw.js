@@ -63,38 +63,15 @@ function ml(x,L, o, a, d, s){
        u:(x,R)=>{
              R=z.r(x);
              if (!R) return L[x]?false:x;
-             s = z.s(this.document,"script");
-             if(d)d(s);
-             z.p(R[2],s.setAttribute.bind(s,"src"));
-             return R[1];
+             return importScripts(R[1]);
        },
        
        //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
        y:(x)=>!!x,
          
-       //z.s = create and append empty script element
-       s:(d,S)=>{s = d.createElement(S);s.type = "text/java"+S; return d.body.appendChild(s);},
-       
        //z.U() = history as an array of urls
        U:()=>Object.keys(ml.h),
 
-       
-       //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
-       p:(u,l/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
-           r=c.r();//prepare a random version number (in case we need it)
-           L=(v)=>l(z.V(u,v));                  // load script with version
-           V=(v)=>L(z.v(u,v));                   // save version v in history, load script with version
-           R=()=>V(r);                           // save random verison in history, load scipt with random version
-           return (ml.h[u] ?                     // does url exist in history? 
-                      V(ml.h[u])                  //yes = load script using version from history
-                    : ( typeof fetch===z.F ?    // did Gretchen make fetch happen ? 
-                          fetch(u,{method: 'HEAD'}) // yes= fetch header and 
-                            .then((h)=>V(z.e(h,r))) // use etag as version, or random if no etag
-                            .catch(R)                               // if fetch(HEAD) fails,use random version
-                        : R())                     // Gretchen didn't make fetch happen. so random.
-                  );                 
-           
-       },
        //z.e = resolve to etag in r.header or d (default)
        e:(r,d)=>r.headers.get("Etag").replace(/[\"\/\\\-]*/g,'')||d,
        //z.H= fetch HEAD response for all history urls 
@@ -139,9 +116,7 @@ function ml(x,L, o, a, d, s){
        v:(u,v)=>(ml.h[u]=v), 
        //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
        r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
-       w:'serviceWorker',
-       W:'navigator',
-       9:(L)=>(z.w in self[z.W]?(L?self[z.W][z.w].register('./ml.sw.js?ml=' + encodeURIComponent(L)):undefined):importScripts( new URL(location).searchParams.get('ml')  )) ,
+       9:(L)=>importScripts( new URL(location).searchParams.get('ml')  ),
     };
     return z[x]?z[x](L,o,a,d,s):undefined;
 }
