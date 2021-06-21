@@ -50,6 +50,7 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
             window.addEventListener("storage",monitor);
             
             var lastOpen="";
+            
             function monitor(){
                 var info={};
                 var currentOpen = localStorage.getItem("windowTools.openWindows");
@@ -74,7 +75,6 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                 textarea.value = JSON.stringify(info,undefined,4);
             }
             
-            
             // generic tools 
             
             function qs(d,q,f) {
@@ -92,8 +92,6 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                 }
                 return r;
             }
-            
-            
 
             return lib;
         },
