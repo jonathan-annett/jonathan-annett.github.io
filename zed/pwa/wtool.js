@@ -170,7 +170,9 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                 
                 ml(8,"messages",{
                     
-                    ping:function(msg,cb){ console.log(msg); return cb("pong");
+                    ping:function(msg,cb){ 
+                        console.log(msg); 
+                       return cb("pong");
                     
                 }});
                 
