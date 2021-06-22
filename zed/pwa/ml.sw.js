@@ -132,7 +132,7 @@ function ml(x,L, o, a, d, s){
        
        9:(S)=>{
                 ml.p=[];
-                z.I(S,'install',(e)=>e.waitUntil(new Promise((r,R)=>ml.p.push([r,R]))));
+                z.I(S,'install',(e)=>self.skipWaiting());
                 z.I(S,'activate');
                 z.I(S,'fetch',(e)=>fetch(e.request));
                 z.I(S,'message');

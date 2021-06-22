@@ -102,7 +102,7 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
         ServiceWorkerGlobalScope: function dep3() {
             const lib = "hello sw world";
             
-            waitForInstall(function(){
+           // waitForInstall(function(){
                 
                 ml(8,"activate",function(event){
                     console.log("activate event");
@@ -120,7 +120,7 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                     event.respondWith(fetch(event.request));
                 });
                 
-            });
+           // });
             
             
             function installEventStub() {
