@@ -392,7 +392,7 @@ function browserSource () {
                  R=z.r(x);
                  if (!R) return L[x]?false:x;
                  // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
-                 if (R[2]&&R[2]!==c[3]()) return false; 
+                 if (R[2]&&R[2]!==(d||c[3]())) return false; 
                  s = z.s(this.document,"script");
                  if(d)d(s);
                  z.p(R[3],s.setAttribute.bind(s,"src"));
@@ -422,15 +422,13 @@ function browserSource () {
                                 .then((h)=>V(z.e(h,r))) // use etag as version, or random if no etag
                                 .catch(R)                               // if fetch(HEAD) fails,use random version
                             : R())                     // Gretchen didn't make fetch happen. so random.
-                      );                 
-               
+                      );
            },
            //z.e = resolve to etag in r.header or d (default)
            e:(r,d)=>r.headers.get("Etag").replace(/[\"\/\\\-]*/g,'')||d,
            
-           
            V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
-           v:(u,v)=>(ml.h[u]=v), 
+           v:(u,v)=>(ml.h[u]=v),
            //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
            r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
            w:'serviceWorker',
@@ -503,7 +501,7 @@ function serviceWorkerMinPretty () {
     ml(9, self);
 }
 
-function serviceWorkerMinSource () {
+function serviceWorkerSource () {
     
     var self,importScripts;
     
@@ -600,7 +598,7 @@ function serviceWorkerMinSource () {
                  R=z.r(x);
                  if (!R) return L[x]?false:x;
                  // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
-                 if (R[2]&&R[2]!==c[3]()) return false; 
+                 if (R[2]&&R[2]!==(d||c[3]())) return false; 
                  importScripts(R[3]);
                  return R[1];
            },

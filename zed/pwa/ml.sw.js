@@ -90,7 +90,7 @@ function ml(x,L, o, a, d, s){
              R=z.r(x);
              if (!R) return L[x]?false:x;
              // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
-             if (R[2]&&R[2]!==c[3]()) return false; 
+             if (R[2]&&R[2]!==(d||c[3]())) return false; 
              importScripts(R[3]);
              return R[1];
        },
@@ -138,4 +138,3 @@ function ml(x,L, o, a, d, s){
     return z[x]?z[x](L,o,a,d,s):undefined;
 }
 ml(9,self);
-
