@@ -362,7 +362,8 @@ function browserSource () {
                                       if (!w) delete S[t];
                                       return R;
                                      }
-                               ]})
+                               ]},
+                             c[3]())
                 );
             },
             //c.r() = a random id generator
@@ -569,7 +570,8 @@ function serviceWorkerSource () {
                                      if (!w) delete S[t];
                                      return R;
                                     }
-                              ]})
+                              ]},
+                            c[3]())
                );
            },
             //c.r() = a random id generator
