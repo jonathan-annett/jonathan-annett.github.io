@@ -1,4 +1,4 @@
-/* global ml,self,caches */
+/* global ml,self,caches,BroadcastChannel */
 ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
 
     {
@@ -94,13 +94,19 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                 return r;
             }
             
-            ml(9,'./wtool.js');
+            ml(9,'./wtool.js',[
+               function ping (msg,reply) {
+                   
+                   reply("pong");
+               }    
+                
+            ]);
             
             
             
             setInterval(function(){
                 
-                sendMessage("hello",function(err,reply){
+                sendMessage("ping",{hello:"world",when:new Date(),also:Math.random()},function(err,reply){
                    console.log({err,reply});  
                 });
                 
@@ -128,37 +134,25 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
             });}
              
             
-            function sendMessage(message,cb) {
-              // This wraps the message posting/response in a promise, which will
-              // resolve if the response doesn't contain an error, and reject with
-              // the error if it does. If you'd prefer, it's possible to call
-              // controller.postMessage() and set up the onmessage handler
-              // independently of a promise, but this is a convenient wrapper.
+            function sendMessage(cmd,data,cb) {
                 return new Promise(function(resolve, reject) {
-                var messageChannel = new MessageChannel();
-                const pingName = "reply_"+Math.random().toString(36).substr(-8);
-                const channel = new BroadcastChannel(pingName);
-                
-                 channel.onmessage = function(e) {
-                      console.log('Received', e.data);
-                      // Close the channel when you're done.
-                      channel.close();
-                      messageChannel.close();
-                      resolve(e.data);
-                };
-                
-                // This sends the message data as well as transferring
-                // messageChannel.port2 to the service worker.
-                // The service worker can then use the transferred port to reply
-                // via postMessage(), which will in turn trigger the onmessage
-                // handler on messageChannel.port1.
-                // See
-                // https://html.spec.whatwg.org/multipage/workers.html#dom-worker-postmessage
-                
-                findWorker().then(function(worker){
-                    worker.postMessage({message:message,pingChannel:pingName}, [messageChannel.port2]);
-                    }).then(function(x){cb(undefined,x)}).catch(cb);
-                }).catch(cb);
+                    var messageChannel = new MessageChannel();
+                    const replyName = "reply_"+Math.random().toString(36).substr(-8);
+                    const channel = new BroadcastChannel(replyName);
+                    
+                     channel.onmessage = function(e) {
+                          console.log('Received', e.data);
+                          // Close the channel when you're done.
+                          channel.close();
+                          messageChannel.port1.close();
+                          messageChannel.port2.close();
+                          resolve(e.data);
+                    };
+                    
+                    findWorker().then(function(worker){
+                        worker.postMessage({m:cmd,r:replyName,data:data}, [messageChannel.port2]);
+                        }).then(function(x){cb(undefined,x)}).catch(cb);
+                    }).catch(cb);
             }
 
             return lib;
@@ -174,26 +168,11 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                     
                 });
                 
-                ml(8,"message",function(event){
-                  
+                ml(8,"messages",{
                     
-                    if (event.data.pingChannel){ 
-                        
-                        const channel = new BroadcastChannel(event.data.pingChannel);
-                        
-                        // Send a message on "my_bus".
-                        channel.postMessage('pong');
-                        
-                        // Listen for messages on "my_bus".
-                        channel.onmessage = function(e) {
-                              console.log('Received', e.data);
-                              // Close the channel when you're done.
-                              channel.close();
-                        };
-                        
-                        
-                    }                
-                });
+                    ping:function(msg,cb){ console.log(msg); return cb("pong");
+                    
+                }});
                 
                 
                 ml(8,"fetch",function(event){

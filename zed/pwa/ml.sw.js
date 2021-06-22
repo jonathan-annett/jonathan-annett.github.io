@@ -1,6 +1,6 @@
     
 // source -sw version 
-/* global self,importScripts */
+/* global self,importScripts,BroadcastChannel */
 function ml(x,L, o, a, d, s){
     ml.h=ml.h||{};//create history db if none exists
     let
@@ -8,7 +8,8 @@ function ml(x,L, o, a, d, s){
     z,
     // "t" contains an array of types - object,function,string,undefined
     // used for comparisions later
-    t=[C,ml,'',z,x].map((G)=>typeof G),
+    T=(G)=>typeof G,
+    t=[C,ml,'',z,x].map(T),
     // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
     // any constants/worker functions they need. also contains some code used later by z
     // note that z doubles as a proxy for "undefined" in the type array "t" above 
@@ -129,13 +130,24 @@ function ml(x,L, o, a, d, s){
        
        //z.I = install initial event handler wrapper 
        I:(S,E,X)=>S.addEventListener(E,z.G(E,X?X:(e)=>{c.l(E,e.data);})), 
-       
+       m:'message',
        9:(S)=>{
                 ml.p=[];
                 z.I(S,'install',(e)=>self.skipWaiting());
                 z.I(S,'activate');
                 z.I(S,'fetch',(e)=>fetch(e.request));
-                z.I(S,'message');
+                z.I(S,z.m,(e,r,m,c,d,M)=>{
+                    d=e.data;m=ml[z.m+'s'];r=m&&d.m;
+                    if (r){ 
+                        r=m[r];
+                        r=T(r)===t[1]&&r(d,((x)=>M=x));
+                        if (r){
+                          c = new BroadcastChannel(d.r);
+                          c.postMessage(M||r);
+                          c.close();
+                        }
+                    }
+                });
                 importScripts( new URL(location).searchParams.get('ml') );
        }
     };
