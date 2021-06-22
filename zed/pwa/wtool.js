@@ -94,13 +94,7 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                 return r;
             }
             
-            ml(9,'./wtool.js',[
-               function ping (msg,reply) {
-                   
-                   reply("pong");
-               }    
-                
-            ]);
+            ml(9,'./wtool.js');
             
             
             
@@ -163,21 +157,23 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
             
         
                 
-                ml(8,"activate",function(event){
+                ml.register("activate",function(event){
+                    
                     console.log("activate event");
                     
                 });
                 
-                ml(8,"messages",{
+                ml.register("messages",{
                     
                     ping:function(msg,cb){ 
+                        
                         console.log(msg); 
                        return cb("pong");
                     
                 }});
                 
                 
-                ml(8,"fetch",function(event){
+                ml.register("fetch",function(event){
                     console.log("fetch event:",event.request.url);
                     event.respondWith(fetch(event.request));
                 });

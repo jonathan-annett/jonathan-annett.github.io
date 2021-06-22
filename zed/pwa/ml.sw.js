@@ -154,3 +154,4 @@ function ml(x,L, o, a, d, s){
     return z[x]?z[x](L,o,a,d,s):undefined;
 }
 ml(9,self);
+ml.register=ml.bind(self,8);

@@ -1,5 +1,11 @@
-/* global ml,self,localforage, Rusha */
-ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],function(){ml(2,ml(3),ml(4),
+/* global ml,self,localforage, Rusha,dbLocalStorage,dbCommonLib */
+ml(0,ml(1),[
+
+'libEvents|events.js',
+'Rusha@ServiceWorkerGlobalScope|sw/rusha.js',
+'dbCommonLib | dbengine.common.js ' ,
+'dbLocalStorage | dbengine.localStorage.js'
+],function(){ml(2,ml(3),ml(4),
 
     {
         Window:                   function dbengine(lib,evs,sha1) {return lib(evs,sha1);},
@@ -17,28 +23,32 @@ ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],
             return function (libMode,keyprefix) {
                  
                  const fromBuffertoSha1DigestBuffer = sha1; 
-                 const flushHybridCachedSyncWritesInterval = 1500;
-                 const keyprefix_length = keyprefix ? keyprefix.length : 0;
-                 const prefixes = !!keyprefix;
-                 const generalizeKey = typeof keyprefix === 'string' ? function (k){return keyprefix+k;} :
-                                     typeof keyprefix === 'function' ? keyprefix : function (k){return k;};
-        
-                const localizeKey = typeof keyprefix === 'string' ? function (k){return k.substring(keyprefix_length);} :
-                                      typeof keyprefix === 'function' ? function (k,x,y) {
-                                          return keyprefix(k,x,y,"generalize");
-                                      } : function (k){return k;};
-                
-                const filterKeys   = typeof keyprefix === 'string' ? function (k){return k.startsWith(keyprefix);} :
-                                      typeof keyprefix === 'function' ? function (k,index,arr) {
-                                          return keyprefix(k,index,arr,"filter");
-                                      } : function (k){return true;};
-                                      
-                                      
-                const removedKeySuffix = '-@';
-        
-        
-                
+                 
                  var hybridLazyWriteTimeout;
+                 
+                 
+                 
+                    
+                 const { keyprefix_length,
+                         prefixes,
+                         flushHybridCachedSyncWritesInterval,
+                         generalizeKey,
+                         localizeKey,
+                         filterKeys,
+                         removedKeySuffix } = dbCommonLib(keyprefix); 
+                 
+                 
+                 const {
+             
+                         localStorageKeyKiller,
+                         setLocalKey,
+                         getLocalKey,
+                         removeLocalKey,
+                         getLocalKeys,
+                         clearLocal
+                         
+                 } = dbLocalStorage(keyprefix);
+                 
                  
                   
                 switch (libMode){
@@ -75,6 +85,7 @@ ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],
             
                 });
                 
+  
         
                 return lib;
                 
@@ -395,6 +406,8 @@ ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],
                 }
                 
                 
+                /*
+                
                 function localStorageKeyKiller (key) {
                      return localStorage.removeItem(key);
                 }
@@ -483,6 +496,7 @@ ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],
                     return cbok ? setTimeout(syncAsync,0) : syncAsync();           
                 }
                 
+                */
                 
                 function localForageKeyKiller  (key) {
                     return localforage.removeItem(key);
