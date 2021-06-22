@@ -363,7 +363,7 @@ function browserSource () {
                                       return R;
                                      }
                                ]}),
-                    c[3]()
+                    'T'
                 );
             },
             //c.r() = a random id generator
@@ -571,7 +571,7 @@ function serviceWorkerSource () {
                                      return R;
                                     }
                               ]}),
-                   c[3]()
+                   'T'
                );
            },
             //c.r() = a random id generator
