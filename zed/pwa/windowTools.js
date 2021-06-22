@@ -1,13 +1,13 @@
 /*global self,ml*/
 ml(0,ml(1),[
-    'wToolsLib    | /zed/pwa/windowTools.helper.js',
-    'dbengine     | /zed/pwa/dbengine.js',
-    'wToolsRemote | /zed/pwa/windowTools.remote.js'
+    'wToolsLib | /zed/pwa/windowTools.helper.js',
+    'dbengine  | /zed/pwa/dbengine.js',
+    'wToolsRem | /zed/pwa/windowTools.remote.js'
 ],function(){ml(2,ml(3),ml(4),
 
   { 
       
-    Window : function wTools(dbengine, wToolsLib, wToolsRemote ) {
+    Window : function wTools(dbengine, wToolsLib ) {
                  const db      = dbengine("hybrid");
                  const setKey_ = db.setKey;
                  const getKey  = db.getKey;
@@ -570,7 +570,7 @@ ml(0,ml(1),[
                  
              },
       
-    ServiceWorkerGlobalScope : function wTools(dbengine,wToolsLib,wToolsRemote) {
+    ServiceWorkerGlobalScope : function wTools(dbengine,wToolsLib) {
           const lib = {};
           
           const db = dbengine ("sw"); 
