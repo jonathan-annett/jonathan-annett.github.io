@@ -43,7 +43,7 @@ function ml(x,L, o, a, d, s){
         x:(f)=>f(),
         l:C.log.bind(C),
         //c.L = loader hoist function (called when first argument to ml is a string)
-       L:(S,R,t,w)=>{
+        L:(S,R,t,w)=>{
            // ml("/path/to/mod.js",function(mod){...}) 
            //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ }
            // ml("/path/to/mod.js",function(mod){...},window,"modName") 
@@ -51,23 +51,26 @@ function ml(x,L, o, a, d, s){
            w=!!o;
            S=w?o:{};  // S=dummy self, contains "t" temporarily
                   // R=holder for S.t between deletion and return
-           t=a||'t';
+           R=c.r(x)||[x,'t',0,x];// [fullurl,tempname,ignored,url]
+           t=a||R[1];
            return ml(
                0,S,[
-               t+"@T|"+x],
+               t+"@T|"+R[3]],
                ()=>ml(  2,'T',S,
                        {T:L},
                        {T:[()=>{ R=S[t];
                                  if (!w) delete S[t];
                                  return R;
                                 }
-                          ]}
-                        ),
-                'T'
+                          ]}),
+               'T'
            );
-       },
-        //c.r() = a random id generator
-        r:()=>Math.random().toString(36).substr(-8)
+        },
+        
+        //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
+        //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
+        r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+        
           
     };
     z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
@@ -89,7 +92,7 @@ function ml(x,L, o, a, d, s){
 
        //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
        u:(x,R)=>{
-             R=z.r(x);
+             R=c.r(x);
              if (!R) return L[x]?false:x;
              // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
              if (R[2]&&R[2]!==(d||c[3]())) return false; 
@@ -110,11 +113,10 @@ function ml(x,L, o, a, d, s){
        V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
        //z.v saves the version tag into version history (also acts as flag for "i've seen this module")
        v:(u,v)=>(ml.h[u]=v), 
-       //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
-       //z.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
-       r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
-    
        
+       //z.r() = a random id generator
+       r:()=>Math.random().toString(36).substr(-8),
+           
        //wrap event E to call X, whhich is stored as z[E]
        G:(E,X)=>{ml[E]=X;return (e)=>ml[E](e);},
        

@@ -238,51 +238,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
 function browserMinPretty () {
     return ml;
-    function ml(x, L, o, a, d, s) {
-        ml.h = ml.h || {};
-        let e, t = console,
-            r = [t, ml, "", e, x].map(e => typeof e),
-            m = r[4] === r[2] ? "L" : x,
-            n = {
-                1: () => n[4]() || {},
-                2: (L, o, a, d, e, t) => {
-                    e = typeof(e = a[L] && a[L].name) + typeof o[e] === r[2] + r[3] ? Object.defineProperty(o, e, {
-                        value: a[L].apply(this, d[L].map(n.x)),
-                        enumerable: !0,
-                        configurable: !0
-                    }) : t
-                },
-                3: () => n[4]().constructor.name || "x",
-                4: () => typeof self === r[0] && self,
-                x: e => e(),
-                l: t.log.bind(t),
-                L: (e, t, r, m) => ml(0, e = (m = !!o) ? o : {}, [(r = a || "t") + "@T|" + x], () => ml(2, "T", e, {
-                    T: L
-                }, {
-                    T: [() => (t = e[r], m || delete e[r], t)]
-                }), "T"),
-                r: () => Math.random().toString(36).substr(-8)
-            };
-        return (e = typeof n[m] === r[1] ? n[m](L, o, a, d, s) : n) !== n ? e : (e = {
-            F: ml.fetch || !1,
-            0: () => e.l(o),
-            l: t => (t = t.map(e.u).filter(e.y)).length ? setTimeout(e.l, t.length + 1, t) : a(),
-            u: (x, t) => (t = e.r(x)) ? (!t[2] || t[2] === (d || n[3]())) && (s = e.s(this.document, "script"), e.p(t[3], s.setAttribute.bind(s, "src")), t[1]) : !L[x] && x,
-            y: x => !!x,
-            s: (d, e) => ((s = d.createElement(e)).type = "text/java" + e, d.body.appendChild(s)),
-            U: () => Object.keys(ml.h),
-            p: (t, l, r, L, m, c) => (r = n.r(), L = (r => l(e.V(t, r))), m = (r => L(e.v(t, r))), c = (() => m(r)), ml.h[t] ? m(ml.h[t]) : typeof fetch === e.F ? fetch(t, {
-                method: "HEAD"
-            }).then(t => m(e.e(t, r))).catch(c) : c()),
-            e: (e, d) => e.headers.get("Etag").replace(/[\"\/\\\-]*/g, "") || d,
-            V: (t, r) => e.F ? t + "?v=" + r : t,
-            v: (e, t) => ml.h[e] = t,
-            r: e => /([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),
-            w: "serviceWorker",
-            W: "navigator",
-            9: L => L && e.w in self[e.W] && self[e.W][e.w].register("./ml.sw.js?ml=" + encodeURIComponent(L))
-        })[x] ? e[x](L, o, a, d, s) : void 0
-    }
+   
 }
 
 
@@ -290,7 +246,7 @@ function browserMin () {
     return ml;
 /*
 <script>//*/    
-    function ml(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=console,r=[t,ml,"",e,x].map(e=>typeof e),m=r[4]===r[2]?"L":x,n={1:()=>n[4]()||{},2:(L,o,a,d,e,t)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===r[2]+r[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(n.x)),enumerable:!0,configurable:!0}):t},3:()=>n[4]().constructor.name||"x",4:()=>typeof self===r[0]&&self,x:e=>e(),l:t.log.bind(t),L:(e,t,r,m)=>ml(0,e=(m=!!o)?o:{},[(r=a||"t")+"@T|"+x],()=>ml(2,"T",e,{T:L},{T:[()=>(t=e[r],m||delete e[r],t)]}),"T"),r:()=>Math.random().toString(36).substr(-8)};return(e=typeof n[m]===r[1]?n[m](L,o,a,d,s):n)!==n?e:(e={F:ml.fetch||!1,0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,t.length+1,t):a(),u:(x,t)=>(t=e.r(x))?(!t[2]||t[2]===(d||n[3]()))&&(s=e.s(this.document,"script"),e.p(t[3],s.setAttribute.bind(s,"src")),t[1]):!L[x]&&x,y:x=>!!x,s:(d,e)=>((s=d.createElement(e)).type="text/java"+e,d.body.appendChild(s)),U:()=>Object.keys(ml.h),p:(t,l,r,L,m,c)=>(r=n.r(),L=(r=>l(e.V(t,r))),m=(r=>L(e.v(t,r))),c=(()=>m(r)),ml.h[t]?m(ml.h[t]):typeof fetch===e.F?fetch(t,{method:"HEAD"}).then(t=>m(e.e(t,r))).catch(c):c()),e:(e,d)=>e.headers.get("Etag").replace(/[\"\/\\\-]*/g,"")||d,V:(t,r)=>e.F?t+"?v="+r:t,v:(e,t)=>ml.h[e]=t,r:e=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),w:"serviceWorker",W:"navigator",9:L=>L&&e.w in self[e.W]&&self[e.W][e.w].register("./ml.sw.js?ml="+encodeURIComponent(L))})[x]?e[x](L,o,a,d,s):void 0}
+
 //</script>
     
 }
@@ -352,10 +308,11 @@ function browserSource () {
                 w=!!o;
                 S=w?o:{};  // S=dummy self, contains "t" temporarily
                        // R=holder for S.t between deletion and return
-                t=a||'t';
+                R=c.r(x)||[x,'t',0,x];// [fullurl,tempname,ignored,url]
+                t=a||R[1];
                 return ml(
                     0,S,[
-                    t+"@T|"+x],
+                    t+"@T|"+R[3]],
                     ()=>ml(  2,'T',S,
                             {T:L},
                             {T:[()=>{ R=S[t];
@@ -366,8 +323,10 @@ function browserSource () {
                     'T'
                 );
             },
-            //c.r() = a random id generator
-            r:()=>Math.random().toString(36).substr(-8)
+            //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
+            //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
+            r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+           
             
         };
         // here X will be 5 if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x
@@ -390,7 +349,7 @@ function browserSource () {
     
            //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
            u:(x,R)=>{
-                 R=z.r(x);
+                 R=c.r(x);
                  if (!R) return L[x]?false:x;
                  // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
                  if (R[2]&&R[2]!==(d||c[3]())) return false; 
@@ -411,7 +370,7 @@ function browserSource () {
            
            //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
            p:(u,l/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
-               r=c.r();//prepare a random version number (in case we need it)
+               r=z.r();//prepare a random version number (in case we need it)
                L=(v)=>l(z.V(u,v));                  // load script with version
                V=(v)=>L(z.v(u,v));                   // save version v in history, load script with version
                R=()=>V(r);                           // save random verison in history, load scipt with random version
@@ -427,10 +386,12 @@ function browserSource () {
            //z.e = resolve to etag in r.header or d (default)
            e:(r,d)=>r.headers.get("Etag").replace(/[\"\/\\\-]*/g,'')||d,
            
+           //z.r() = a random id generator
+            r:()=>Math.random().toString(36).substr(-8),
+            
+           
            V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
            v:(u,v)=>(ml.h[u]=v),
-           //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
-           r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
            w:'serviceWorker',
            W:'navigator',
            9:(L)=>L&&z.w in self[z.W]&&self[z.W][z.w].register('./ml.sw.js?ml=' + encodeURIComponent(L))
@@ -445,8 +406,7 @@ function serviceWorkerMin () {
     var self,importScripts;
     return ml;
     
-    function ml(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=console,m=[t,ml,"",e,x].map(e=>typeof e),r={1:()=>r[4]()||{},2:(L,o,a,d,e,t)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===m[2]+m[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(r.x)),enumerable:!0,configurable:!0}):t},3:()=>r[4]().constructor.name||"x",4:()=>typeof self===m[0]&&self,x:e=>e(),l:t.log.bind(t),L:(e,t,m,r)=>ml(0,e=(r=!!o)?o:{},[(m=a||"t")+"@T|"+x],()=>ml(2,"T",e,{T:L},{T:[()=>(t=e[m],r||delete e[m],t)]}),"T"),r:()=>Math.random().toString(36).substr(-8)};return(e=typeof r[x]===m[1]?r[x](L,o,a,d,s):r)!==r?e:(e={F:ml.fetch||!1,0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,t.length+1,t):a(),u:(x,t)=>(t=e.r(x))?(!t[2]||t[2]===(d||r[3]()))&&(importScripts(t[3]),t[1]):!L[x]&&x,y:x=>!!x,U:()=>Object.keys(ml.h),e:(e,d)=>e.headers.get("Etag").replace(/[\"\/\\\-]*/g,"")||d,V:(t,m)=>e.F?t+"?v="+m:t,v:(e,t)=>ml.h[e]=t,r:e=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),G:(e,t)=>(ml[e]=t,t=>ml[e](t)),8:(e,t)=>(ml[e]=t,ml.p.splice(0,ml.p.length)),I:(t,m,n)=>t.addEventListener(m,e.G(m,n||(e=>{r.l(m,e.data)}))),9:t=>{ml.p=[],e.I(t,"install",e=>e.waitUntil(new Promise((e,t)=>ml.p.push([e,t])))),e.I(t,"activate"),e.I(t,"fetch",e=>fetch(e.request)),e.I(t,"message"),importScripts(new URL(location).searchParams.get("ml"))}})[x]?e[x](L,o,a,d,s):void 0}
-    ml(9,self);
+
 }
 
 
@@ -454,52 +414,7 @@ function serviceWorkerMinPretty () {
     var self,importScripts;
     
     return ml;
-    function ml(x, L, o, a, d, s) {
-        ml.h = ml.h || {};
-        let e, t = console,
-            m = [t, ml, "", e, x].map(e => typeof e),
-            r = {
-                1: () => r[4]() || {},
-                2: (L, o, a, d, e, t) => {
-                    e = typeof(e = a[L] && a[L].name) + typeof o[e] === m[2] + m[3] ? Object.defineProperty(o, e, {
-                        value: a[L].apply(this, d[L].map(r.x)),
-                        enumerable: !0,
-                        configurable: !0
-                    }) : t
-                },
-                3: () => r[4]().constructor.name || "x",
-                4: () => typeof self === m[0] && self,
-                x: e => e(),
-                l: t.log.bind(t),
-                L: (e, t, m, r) => ml(0, e = (r = !!o) ? o : {}, [(m = a || "t") + "@T|" + x], () => ml(2, "T", e, {
-                    T: L
-                }, {
-                    T: [() => (t = e[m], r || delete e[m], t)]
-                }), "T"),
-                r: () => Math.random().toString(36).substr(-8)
-            };
-        return (e = typeof r[x] === m[1] ? r[x](L, o, a, d, s) : r) !== r ? e : (e = {
-            F: ml.fetch || !1,
-            0: () => e.l(o),
-            l: t => (t = t.map(e.u).filter(e.y)).length ? setTimeout(e.l, t.length + 1, t) : a(),
-            u: (x, t) => (t = e.r(x)) ? (!t[2] || t[2] === (d || r[3]())) && (importScripts(t[3]), t[1]) : !L[x] && x,
-            y: x => !!x,
-            U: () => Object.keys(ml.h),
-            e: (e, d) => e.headers.get("Etag").replace(/[\"\/\\\-]*/g, "") || d,
-            V: (t, m) => e.F ? t + "?v=" + m : t,
-            v: (e, t) => ml.h[e] = t,
-            r: e => /([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),
-            G: (e, t) => (ml[e] = t, t => ml[e](t)),
-            8: (e, t) => (ml[e] = t, ml.p.splice(0, ml.p.length)),
-            I: (t, m, n) => t.addEventListener(m, e.G(m, n || (e => {
-                r.l(m, e.data)
-            }))),
-            9: t => {
-                ml.p = [], e.I(t, "install", e => e.waitUntil(new Promise((e, t) => ml.p.push([e, t])))), e.I(t, "activate"), e.I(t, "fetch", e => fetch(e.request)), e.I(t, "message"), importScripts(new URL(location).searchParams.get("ml"))
-            }
-        })[x] ? e[x](L, o, a, d, s) : void 0
-    }
-    ml(9, self);
+
 }
 
 function serviceWorkerSource () {
@@ -552,7 +467,7 @@ function serviceWorkerSource () {
             x:(f)=>f(),
             l:C.log.bind(C),
             //c.L = loader hoist function (called when first argument to ml is a string)
-           L:(S,R,t,w)=>{
+            L:(S,R,t,w)=>{
                // ml("/path/to/mod.js",function(mod){...}) 
                //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ }
                // ml("/path/to/mod.js",function(mod){...},window,"modName") 
@@ -560,10 +475,11 @@ function serviceWorkerSource () {
                w=!!o;
                S=w?o:{};  // S=dummy self, contains "t" temporarily
                       // R=holder for S.t between deletion and return
-               t=a||'t';
+               R=c.r(x)||[x,'t',0,x];// [fullurl,tempname,ignored,url]
+               t=a||R[1];
                return ml(
                    0,S,[
-                   t+"@T|"+x],
+                   t+"@T|"+R[3]],
                    ()=>ml(  2,'T',S,
                            {T:L},
                            {T:[()=>{ R=S[t];
@@ -573,9 +489,12 @@ function serviceWorkerSource () {
                               ]}),
                    'T'
                );
-           },
-            //c.r() = a random id generator
-            r:()=>Math.random().toString(36).substr(-8)
+            },
+            
+            //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
+            //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
+            r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+            
               
         };
         z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
@@ -597,7 +516,7 @@ function serviceWorkerSource () {
     
            //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
            u:(x,R)=>{
-                 R=z.r(x);
+                 R=c.r(x);
                  if (!R) return L[x]?false:x;
                  // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
                  if (R[2]&&R[2]!==(d||c[3]())) return false; 
@@ -618,11 +537,10 @@ function serviceWorkerSource () {
            V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
            //z.v saves the version tag into version history (also acts as flag for "i've seen this module")
            v:(u,v)=>(ml.h[u]=v), 
-           //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
-           //z.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
-           r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
-        
            
+           //z.r() = a random id generator
+           r:()=>Math.random().toString(36).substr(-8),
+               
            //wrap event E to call X, whhich is stored as z[E]
            G:(E,X)=>{ml[E]=X;return (e)=>ml[E](e);},
            
