@@ -1,201 +1,4 @@
-/*global self */
-/*global self,localforage*/
-
-const multiLoad= function (B, O0, T) {
-    let boot = function(d) {
-        d = d.filter(function(x) {
-            return !B[x];
-        });
-        if (d.length) {
-            return setTimeout(boot, 10, d);
-        }
-        T();
-    };
-    boot(O0);
-},__ml2=function (L, o, a, d) {
-    let u, n = a[L] && a[L].name, x = n && o[n] === u ? Object.defineProperty(o, n, {
-        value: a[L].apply(this, d[L].map(function(f) {
-            return f();
-        })),
-        enumerable: !0,
-        configurable: !0
-    }) : u;
-},__ml3=function  () {
-   return typeof self === "object" && self.constructor.name || "x";
-},__ml1=function  () {
-   return typeof self === "object" && self||{};
-},__ml4=function  () {
-   return typeof self === "object" && self;
-};
-
-
-multiLoad(__ml1(),['wToolsLib'],function(){__ml2(__ml3(),__ml4(),
-
-    {
-
-        Window: function wTools(setKey_, getKey, wToolsLib) {
-
-
-        },
-
-        ServiceWorkerGlobalScope: function wTools(setKey_, getKey) {
-            const lib = {}
-
-
-
-            return lib;
-        },
-
-    }, {
-        Window: [
-
-        function() {
-            return 0;
-        },
-
-        function() {
-            return 0;
-        },
-
-        function() {
-            return self.wToolsLib;
-        },
-
-        function() {
-            return 0;
-        }
-
-        ],
-        ServiceWorkerGlobalScope: [
-
-        function() {
-            return 0;
-        },
-
-        function() {
-            return 0;
-        },
-
-        function() {
-            return 0;
-        }
-
-        ],
-    }
-
-    );
-
-
-    /*
-
-local imports - these functions are available to the other modules declared in this file
-
-*/
-
-
-});
-
-
-
-
-function ml(x,L,o,a,d,s){switch(x){case 0:return function(L,o,a,d){let e=function(t){if((t=t.map(function(x,e){let l,o,A,D;return l=/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(x),o=e,A="script",D=this.document,l?((o=D.createElement(A)).type="text/java"+A,D.body.appendChild(o),d&&d(o),o.setAttribute("src",l[2]),l[1]):!L[x]&&x}).filter(function(x){return!!x})).length)return setTimeout(e,10*t.length,t);a()};e(o)}(L,o,a,d);case 1:return"object"==typeof self&&self||{};case 2:return function(L,o,a,d){let e,t=a[L]&&a[L].name;t&&o[t]===e&&Object.defineProperty(o,t,{value:a[L].apply(this,d[L].map(function(e){return e()})),enumerable:!0,configurable:!0})}(L,o,a,d);case 3:return"object"==typeof self&&self.constructor.name||"x";case 4:return"object"==typeof self&&self;case 5:return L.ml||(L.ml=ml.bind(L)),ml.call(L,0,L,o,a,d,s);case 6:return ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o]}]})},d)}}
-
-function ml(x, L, o, a, d, s) {
-    switch (x) {
-        case 0:
-            return function(L, o, a, d) {
-                let e = function(t) {
-                    if ((t = t.map(function(x, e) {let l, o, A, D;
-                        return l = /([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(x), o = e, A = "script", D = this.document, l ? ((o = D.createElement(A)).type = "text/java" + A, D.body.appendChild(o), d && d(o), o.setAttribute("src", l[2]), l[1]) : !L[x] && x
-                        
-                    }).filter(function(x) {
-                        return !!x
-                    })).length) return setTimeout(e, 10 * t.length, t);
-                    a()
-                };
-                e(o)
-            }(L, o, a, d);
-        case 1:
-            return "object" == typeof self && self || {};
-        case 2:
-            return function(L, o, a, d) {
-                let e, t = a[L] && a[L].name;
-                t && o[t] === e && Object.defineProperty(o, t, {
-                    value: a[L].apply(this, d[L].map(function(e) {
-                        return e()
-                    })),
-                    enumerable: !0,
-                    configurable: !0
-                })
-            }(L, o, a, d);
-        case 3:
-            return "object" == typeof self && self.constructor.name || "x";
-        case 4:
-            return "object" == typeof self && self;
-        case 5:
-            return L.ml || (L.ml = ml.bind(L)), ml.call(L, 0, L, o, a, d, s);
-        case 6:
-            return ml.call(L, 5, L, [o + "|" + a], function() {
-                ml(2, "x", L, {
-                    x: s
-                }, {
-                    x: [function() {
-                        return L[o]
-                    }]
-                })
-            }, d)
-    }
-}
-// src
-function ml(x,L, o, a, d, s){
-    switch (x) {
-        case 0: 
-            return (function(L,o,a,d) {
-                        let strap = function(m) {
-                            m = m.map(function(x,i) {
-                                return (function(l,o,A,D) {
-                                    if (!l) return L[x]?false:x;
-                                    o = D.createElement(A);
-                                    o.type = "text/java"+A; 
-                                    D.body.appendChild(o);
-                                    if(d)d(o);
-                                    o.setAttribute("src", l[2]);
-                                    return l[1];
-                                 })(/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.]+)/.exec(x),i,"script",this.document);
-                            }).filter(function(x){return !!x});
-                            if (m.length) {
-                                return setTimeout(strap, m.length*10, m);
-                            }
-                            a();
-                        };
-                        strap(o);
-                    })(L,o,a,d);
-        case 1: return typeof self === "object" && self||{};
-        case 2: return (function(L,o,a,d) {
-                            let u, n = a[L] && a[L].name, x = n && o[n] === u ? Object.defineProperty(o, n, {
-                                value: a[L].apply(this, d[L].map(function(f) {
-                                    return f();
-                                })),
-                                enumerable: !0,
-                                configurable: !0
-                            }) : u;
-                        })(L,o,a,d);
-        case 3: return typeof self === "object" && self.constructor.name || "x";
-        case 4: return typeof self === "object" && self;
-        case 5: 
-            if (!L.ml) L.ml=ml.bind(L);
-            return ml.call(L,0,L,o,a,d,s);
-        case 6:      // L o         a                                                            d 
-            return ml.call(L,5,L,[o+"|"+a],function(){ml(2,"x",L,{x:s},{x:[function(){return L[o];}]})},d);
-    }
-}
-
-//ml(6,win,mod,url,cb)
-               //L o a   d   s  
-function loadMod(w,m,url,evs,cb){
-  ml(5,w,[m+"|"+url],function(){ml(2,"x",w,{x:cb},{x:[function(){return w[m];}]})});
-}
-
+ 
 ml(0,ml(1),['dep3'],function(){ml(2,ml(3),ml(4),
 
     {
@@ -291,9 +94,6 @@ local imports - these functions are available to the other modules declared in t
 });
 
 
-
-
-
 ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
     {
@@ -356,7 +156,6 @@ local imports - these functions are available to the other modules declared in t
 
 
 
-
 ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
     {
@@ -404,8 +203,7 @@ local imports - these functions are available to the other modules declared in t
 });
 
 
-
-/* global ml,self */
+ 
 ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
     {
@@ -434,368 +232,394 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
 
 //minified-beautified
-function ml(x, L, o, a, d, s) {
-    ml.h = ml.h || {};
-    let e, t = [{},
-    ml, "", e].map(e => typeof e), r = {
-        1: () => r[4]() || {},
-        2: (L, o, a, d, e, m) => {
-            e = typeof(e = a[L] && a[L].name) + typeof o[e] === t[2] + t[3] ? Object.defineProperty(o, e, {
-                value: a[L].apply(this, d[L].map(r.x)),
-                enumerable: !0,
-                configurable: !0
-            }) : m
-        },
-        3: () => r[4]().constructor.name || "x",
-        4: () => typeof self === t[0] && self,
-        x: e => e(),
-        r: () => Math.random().toString(36).substr(-8)
-    };
-    return (e = typeof r[x] === t[1] ? r[x](L, o, a, d, s) : r) !== r ? e : (e = {
-        F: ml.fetch || !1,
-        0: () => e.l(o),
-        l: t => (t = t.map(e.u).filter(e.y)).length ? setTimeout(e.l, t.length + 1, t) : a(),
-        u: (x, t) => (t = e.r(x)) ? (s = e.s(this.document, "script"), d && d(s), e.p(t[2], s.setAttribute.bind(s, "src")), t[1]) : !L[x] && x,
-        y: x => !! x,
-        s: (d, e) => ((s = d.createElement(e)).type = "text/java" + e, d.body.appendChild(s)),
-        U: () => Object.keys(ml.h),
-        p: (t, l, m, L, h, c) => (m = r.r(), L = (r => l(e.V(t, r))), h = (r => L(e.v(t, r))), c = (() => h(m)), ml.h[t] ? h(ml.h[t]) : typeof fetch === e.F ? fetch(t, {
-            method: "HEAD"
-        }).then(t => h(e.e(t, m))).
-        catch (c) : c()),
-        e: (e, d) => e.headers.get("Etag").replace(/[\"\/\\\-]*/g, "") || d,
-        H: t => Promise.all(e.U().map(e => fetch(e, {
-            method: "HEAD"
-        }))).then(t).
-        catch (t),
-        j: a => a.reduce((e, t, r) => t === ml.e[r] ? e + 1 : e, 0),
-        k: a => {
-            e.j(a) < a.length && (console.log("changes:", ml.U()), console.log("changes:", a), console.log("changes:", ml.e)), ml.e = a
-        },
-        q: () => {
-            e.H(t => {
-                Array.isArray(t) && e.k(e.E(t))
-            })
-        },
-        E: t => t.map((t, r) => e.e(t, ml.h[r])),
-        K: () => {
-            e.H(t => {
-                Array.isArray(t) && (ml.e = e.E(t), setInterval(e.q, 5e3))
-            })
-        },
-        V: (t, r) => e.F ? t + "?v=" + r : t,
-        v: (e, t) => ml.h[e] = t,
-        r: e => /([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e)
-    })[x](L, o, a, d, s)
+
+
+function browserMinPretty () {
+    return ml;
+    function ml(x, L, o, a, d, s) {
+        ml.h = ml.h || {};
+        let e, t = console,
+            r = [t, ml, "", e, x].map(e => typeof e),
+            m = r[4] === r[2] ? "L" : x,
+            n = {
+                1: () => n[4]() || {},
+                2: (L, o, a, d, e, t) => {
+                    e = typeof(e = a[L] && a[L].name) + typeof o[e] === r[2] + r[3] ? Object.defineProperty(o, e, {
+                        value: a[L].apply(this, d[L].map(n.x)),
+                        enumerable: !0,
+                        configurable: !0
+                    }) : t
+                },
+                3: () => n[4]().constructor.name || "x",
+                4: () => typeof self === r[0] && self,
+                x: e => e(),
+                l: t.log.bind(t),
+                L: (e, t) => ml(0, e = {}, ["t@T|" + x], () => ml(2, "T", e, {
+                    T: L
+                }, {
+                    T: [() => (t = e.t, delete e.t, t)]
+                })),
+                r: () => Math.random().toString(36).substr(-8)
+            };
+        return (e = typeof n[m] === r[1] ? n[m](L, o, a, d, s) : n) !== n ? e : (e = {
+            F: ml.fetch || !1,
+            0: () => e.l(o),
+            l: t => (t = t.map(e.u).filter(e.y)).length ? setTimeout(e.l, t.length + 1, t) : a(),
+            u: (x, t) => (t = e.r(x)) ? (!t[2] || t[2] === n[3]()) && (s = e.s(this.document, "script"), d && d(s), e.p(t[3], s.setAttribute.bind(s, "src")), t[1]) : !L[x] && x,
+            y: x => !!x,
+            s: (d, e) => ((s = d.createElement(e)).type = "text/java" + e, d.body.appendChild(s)),
+            U: () => Object.keys(ml.h),
+            p: (t, l, r, L, m, c) => (r = n.r(), L = (r => l(e.V(t, r))), m = (r => L(e.v(t, r))), c = (() => m(r)), ml.h[t] ? m(ml.h[t]) : typeof fetch === e.F ? fetch(t, {
+                method: "HEAD"
+            }).then(t => m(e.e(t, r))).catch(c) : c()),
+            e: (e, d) => e.headers.get("Etag").replace(/[\"\/\\\-]*/g, "") || d,
+            V: (t, r) => e.F ? t + "?v=" + r : t,
+            v: (e, t) => ml.h[e] = t,
+            r: e => /([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),
+            w: "serviceWorker",
+            W: "navigator",
+            9: L => L && e.w in self[e.W] && self[e.W][e.w].register("./ml.sw.js?ml=" + encodeURIComponent(L))
+        })[x] ? e[x](L, o, a, d, s) : void 0
+    }
 }
 
 
-
-
-
-
-
+function browserMin () {
+    return ml;
 /*
-<script>//*/
-function ml(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=[{},ml,"",e].map(e=>typeof e),r={1:()=>r[4]()||{},2:(L,o,a,d,e,m)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===t[2]+t[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(r.x)),enumerable:!0,configurable:!0}):m},3:()=>r[4]().constructor.name||"x",4:()=>typeof self===t[0]&&self,x:e=>e(),r:()=>Math.random().toString(36).substr(-8)};return(e=typeof r[x]===t[1]?r[x](L,o,a,d,s):r)!==r?e:(e={F:ml.fetch||!1,0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,t.length+1,t):a(),u:(x,t)=>(t=e.r(x))?(s=e.s(this.document,"script"),d&&d(s),e.p(t[2],s.setAttribute.bind(s,"src")),t[1]):!L[x]&&x,y:x=>!!x,s:(d,e)=>((s=d.createElement(e)).type="text/java"+e,d.body.appendChild(s)),U:()=>Object.keys(ml.h),p:(t,l,m,L,h,c)=>(m=r.r(),L=(r=>l(e.V(t,r))),h=(r=>L(e.v(t,r))),c=(()=>h(m)),ml.h[t]?h(ml.h[t]):typeof fetch===e.F?fetch(t,{method:"HEAD"}).then(t=>h(e.e(t,m))).catch(c):c()),e:(e,d)=>e.headers.get("Etag").replace(/[\"\/\\\-]*/g,"")||d,H:t=>Promise.all(e.U().map(e=>fetch(e,{method:"HEAD"}))).then(t).catch(t),j:a=>a.reduce((e,t,r)=>t===ml.e[r]?e+1:e,0),k:a=>{e.j(a)<a.length&&(console.log("changes:",ml.U()),console.log("changes:",a),console.log("changes:",ml.e)),ml.e=a},q:()=>{e.H(t=>{Array.isArray(t)&&e.k(e.E(t))})},E:t=>t.map((t,r)=>e.e(t,ml.h[r])),K:()=>{e.H(t=>{Array.isArray(t)&&(ml.e=e.E(t),setInterval(e.q,5e3))})},V:(t,r)=>e.F?t+"?v="+r:t,v:(e,t)=>ml.h[e]=t,r:e=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e)})[x](L,o,a,d,s)}
+<script>//*/    
+    function ml(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=console,r=[t,ml,"",e,x].map(e=>typeof e),m=r[4]===r[2]?"L":x,n={1:()=>n[4]()||{},2:(L,o,a,d,e,t)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===r[2]+r[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(n.x)),enumerable:!0,configurable:!0}):t},3:()=>n[4]().constructor.name||"x",4:()=>typeof self===r[0]&&self,x:e=>e(),l:t.log.bind(t),L:(e,t)=>ml(0,e={},["t@T|"+x],()=>ml(2,"T",e,{T:L},{T:[()=>(t=e.t,delete e.t,t)]})),r:()=>Math.random().toString(36).substr(-8)};return(e=typeof n[m]===r[1]?n[m](L,o,a,d,s):n)!==n?e:(e={F:ml.fetch||!1,0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,t.length+1,t):a(),u:(x,t)=>(t=e.r(x))?(!t[2]||t[2]===n[3]())&&(s=e.s(this.document,"script"),d&&d(s),e.p(t[3],s.setAttribute.bind(s,"src")),t[1]):!L[x]&&x,y:x=>!!x,s:(d,e)=>((s=d.createElement(e)).type="text/java"+e,d.body.appendChild(s)),U:()=>Object.keys(ml.h),p:(t,l,r,L,m,c)=>(r=n.r(),L=(r=>l(e.V(t,r))),m=(r=>L(e.v(t,r))),c=(()=>m(r)),ml.h[t]?m(ml.h[t]):typeof fetch===e.F?fetch(t,{method:"HEAD"}).then(t=>m(e.e(t,r))).catch(c):c()),e:(e,d)=>e.headers.get("Etag").replace(/[\"\/\\\-]*/g,"")||d,V:(t,r)=>e.F?t+"?v="+r:t,v:(e,t)=>ml.h[e]=t,r:e=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),w:"serviceWorker",W:"navigator",9:L=>L&&e.w in self[e.W]&&self[e.W][e.w].register("./ml.sw.js?ml="+encodeURIComponent(L))})[x]?e[x](L,o,a,d,s):void 0}
 //</script>
-
-
-// source -prod version (no precaches )
-function ml(x,L, o, a, d, s){
-    ml.h=ml.h||{};//create history db if none exists
-    let
-    z,
-    // "t" contains an array of types - object,function,string,undefined
-    // used for comparisions later
-    t=[{},ml,'',z].map((G)=>typeof G),
-    // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
-    // any constants/worker functions they need. also contains some code used later by z
-    // note that z doubles as a proxy for "undefined" in the type array "t" above 
-    c = {
-        // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
-        1:()=>c[4]()||{},
-        
-        // ml(2)-->c[2](L,o,a,d,e,r) 
-        
-        // L = "Window", "ServiceWorkerGlobalScope" (result of ml(1)--> c[1]
-        // o = exports (ie self ie window)
-        // a = dictionary of dependants per window type
-        // d = array of loaded dependants 
-        // e = unuused argument doubles as a variable
-        // r = undefined
-        2:(L,o,a,d,e,r)=>{
-                e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
-                value: a[L].apply(this, d[L].map(c.x)),
-                enumerable: !0,
-                configurable: !0
-            }) : r;
-        },
-        
-        // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
-        3:()=>c[4]().constructor.name || "x",
-        
-        // ml(1)->c[1] = resolve to self or undefined
-        4:()=>typeof self === t[0] && self,
-        
-        //c.x = map iterator to execure every function in an array of functions
-        //      (used to resolve each loaded module)
-        x:(f)=>f(),
-        r:()=>Math.random().toString(36).substr(-8)
-          
-    };
-    z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
     
-    if (z!==c)return z;
+}
+
+function browserSource () {
+    return ml;
+    
+    // source - browser version
+    /*global self*/
+    function ml(x,L, o, a, d, s){
+        ml.h=ml.h||{};//create history db if none exists
+        let
+        C=console,//shortcut for console
+        z,
+        // "t" contains an array of types - object,function,string,undefined
+        // used for comparisions later
+        t=[C,ml,'',z,x].map((G)=>typeof G),
+        X=t[4]===t[2]?'L':x,//X =: x is string ? 6, otherwise x
+        // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
+        // any constants/worker functions they need. also contains some code used later by z
+        // note that z doubles as a proxy for "undefined" in the type array "t" above 
+        c = {// holder for "constants", also a few holds outer scope commands, common functions
+            // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
+            1:()=>c[4]()||{},
+            
+            // ml(2)-->c[2](L,o,a,d,e,r) 
+            
+            // L = "Window", "ServiceWorkerGlobalScope" (result of ml(1)--> c[1]
+            // o = exports (ie self ie window)
+            // a = dictionary of dependants per window type
+            // d = array of loaded dependants 
+            // e = unuused argument doubles as a variable
+            // r = undefined
+            2:(L,o,a,d,e,r)=>{
+                    e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
+                    value: a[L].apply(this, d[L].map(c.x)),
+                    enumerable: !0,
+                    configurable: !0
+                }) : r;
+            },
+            
+            // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
+            3:()=>c[4]().constructor.name || "x",
+            
+            // ml(1)->c[1] = resolve to self or undefined
+            4:()=>typeof self === t[0] && self,
+            
+            //c.x = map iterator to execure every function in an array of functions
+            //      (used to resolve each loaded module)
+            x:(f)=>f(),
+            //c.l = console.log shortcut
+            l:C.log.bind(C),
+            //c.L = loader hoist function (called when first argument to ml is a string)
+            L:(S,R)=>{
+                // ml("/path/to/mod.js",function(mod){...}) 
+                //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ }
+                S={};  // S=dummy self, contains "t" temporarily
+                       // R=holder for S.t between deletion and return
+                return ml(0,S,["t@T|"+x],()=>ml(2,'T',S,{T:L},{T:[()=>{R=S.t;delete S.t;return R;}]}));
+            },
+            //c.r() = a random id generator
+            r:()=>Math.random().toString(36).substr(-8)
+            
+        };
+        // here X will be 5 if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x
+        z=typeof c[X]===t[1]?c[X](L,o,a,d,s):c;// if c[X] resolves to a function, execute it, putting result in z, otherwise set z to c
         
-    z = {
-       F:ml.fetch||false,// F:t[1] = use fetch, F:false,  = don't use fetch
-       
-       //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
-       //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
-       0:()=>z.l(o),
-       
-       //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
-       l:(u)=>{
-             u = u.map(z.u).filter(z.y);
-             return u.length?setTimeout(z.l, u.length+1, u):a();
-       },
-
-       //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
-       u:(x,R)=>{
-             R=z.r(x);
-             if (!R) return L[x]?false:x;
-             s = z.s(this.document,"script");
-             if(d)d(s);
-             z.p(R[2],s.setAttribute.bind(s,"src"));
-             return R[1];
-       },
-       
-       //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
-       y:(x)=>!!x,
-         
-       //z.s = create and append empty script element
-       s:(d,S)=>{s = d.createElement(S);s.type = "text/java"+S; return d.body.appendChild(s);},
-       
-       //z.U() = history as an array of urls
-       U:()=>Object.keys(ml.h),
-
-       
-       //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
-       p:(u,l/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
-           r=c.r();//prepare a random version number (in case we need it)
-           L=(v)=>l(z.V(u,v));                  // load script with version
-           V=(v)=>L(z.v(u,v));                   // save version v in history, load script with version
-           R=()=>V(r);                           // save random verison in history, load scipt with random version
-           return (ml.h[u] ?                     // does url exist in history? 
-                      V(ml.h[u])                  //yes = load script using version from history
-                    : ( typeof fetch===z.F ?    // did Gretchen make fetch happen ? 
-                          fetch(u,{method: 'HEAD'}) // yes= fetch header and 
-                            .then((h)=>V(z.e(h,r))) // use etag as version, or random if no etag
-                            .catch(R)                               // if fetch(HEAD) fails,use random version
-                        : R())                     // Gretchen didn't make fetch happen. so random.
-                  );                 
+        if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
+            
+        z = {
+           F:ml.fetch||false,// F:t[1] = use fetch, F:false,  = don't use fetch
            
-       },
-       //z.e = resolve to etag in r.header or d (default)
-       e:(r,d)=>r.headers.get("Etag").replace(/[\"\/\\\-]*/g,'')||d,
-       //z.H= fetch HEAD response for all history urls 
-       H:(cb)=>Promise.all(z.U().map((u)=>fetch(u,{method:'HEAD'}))).then(cb).catch(cb),
-       //z.j = compare array of etags(a) with previous array(ml.e) and return number of matches
-       j:(a)=>a.reduce((n,e,i)=>e===ml.e[i]?n+1:n,0),
-       k:(a)=>{
-           if ( z.j(a) < a.length) {
-              console.log("changes:",ml.U() ); 
-              console.log("changes:",a      ); 
-              console.log("changes:",ml.e   ); 
-           }
-           ml.e=a;
-       },
-       q:()=>{
-           //get an array of responses as R
-           z.H((R)=>{
-               if(!Array.isArray(R))return;
-               // convert array of responses --> array of etags,compare
-               z.k( z.E(R) );
+           //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
+           //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
+           0:()=>z.l(o),
+           
+           //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
+           l:(u)=>{
+                 u = u.map(z.u).filter(z.y);
+                 return u.length?setTimeout(z.l, u.length+1, u):a();
+           },
+    
+           //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
+           u:(x,R)=>{
+                 R=z.r(x);
+                 if (!R) return L[x]?false:x;
+                 // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
+                 if (R[2]&&R[2]!==c[3]()) return false; 
+                 s = z.s(this.document,"script");
+                 if(d)d(s);
+                 z.p(R[3],s.setAttribute.bind(s,"src"));
+                 return R[1];
+           },
+           
+           //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
+           y:(x)=>!!x,
+             
+           //z.s = create and append empty script element
+           s:(d,S)=>{s = d.createElement(S);s.type = "text/java"+S; return d.body.appendChild(s);},
+           
+           //z.U() = history as an array of urls
+           U:()=>Object.keys(ml.h),
+    
+           
+           //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
+           p:(u,l/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
+               r=c.r();//prepare a random version number (in case we need it)
+               L=(v)=>l(z.V(u,v));                  // load script with version
+               V=(v)=>L(z.v(u,v));                   // save version v in history, load script with version
+               R=()=>V(r);                           // save random verison in history, load scipt with random version
+               return (ml.h[u] ?                     // does url exist in history? 
+                          V(ml.h[u])                  //yes = load script using version from history
+                        : ( typeof fetch===z.F ?    // did Gretchen make fetch happen ? 
+                              fetch(u,{method: 'HEAD'}) // yes= fetch header and 
+                                .then((h)=>V(z.e(h,r))) // use etag as version, or random if no etag
+                                .catch(R)                               // if fetch(HEAD) fails,use random version
+                            : R())                     // Gretchen didn't make fetch happen. so random.
+                      );                 
                
-           });
-       },
-       
-       //z.E(h,x) = map array of responses to array of etags
-       E:(R)=>R.map((r,i)=>z.e(r,ml.h[i])),
-       K:()=>{
-           //get an array of responses as R
-           z.H((R)=>{
-               if(!Array.isArray(R))return;
-               // convert array of responses --> array of etags into ml.e
-               ml.e=z.E(R);
-               setInterval(z.q,5000);
-           });
+           },
+           //z.e = resolve to etag in r.header or d (default)
+           e:(r,d)=>r.headers.get("Etag").replace(/[\"\/\\\-]*/g,'')||d,
            
            
-       },
-       
-      
-       
-       V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
-       v:(u,v)=>(ml.h[u]=v), 
-       //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
-       r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
-       w:'serviceWorker',
-       W:'navigator',
-       9:(L)=>L&&z.w in self[z.W]&&self[z.W][z.w].register('./ml.sw.js?ml=' + encodeURIComponent(L))
-    };
-    return z[x]?z[x](L,o,a,d,s):undefined;
+           V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
+           v:(u,v)=>(ml.h[u]=v), 
+           //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
+           r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+           w:'serviceWorker',
+           W:'navigator',
+           9:(L)=>L&&z.w in self[z.W]&&self[z.W][z.w].register('./ml.sw.js?ml=' + encodeURIComponent(L))
+        };
+        return z[x]?z[x](L,o,a,d,s):undefined;
+    }
+
 }
 
 
-
-
-// source -sw version (no precaches )
-function ml(x,L, o, a, d, s){
-    ml.h=ml.h||{};//create history db if none exists
-    let
-    z,
-    // "t" contains an array of types - object,function,string,undefined
-    // used for comparisions later
-    t=[{},ml,'',z].map((G)=>typeof G),
-    // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
-    // any constants/worker functions they need. also contains some code used later by z
-    // note that z doubles as a proxy for "undefined" in the type array "t" above 
-    c = {
-        // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
-        1:()=>c[4]()||{},
-        
-        // ml(2)-->c[2](L,o,a,d,e,r) 
-        
-        // L = "Window", "ServiceWorkerGlobalScope" (result of ml(1)--> c[1]
-        // o = exports (ie self ie window)
-        // a = dictionary of dependants per window type
-        // d = array of loaded dependants 
-        // e = unuused argument doubles as a variable
-        // r = undefined
-        2:(L,o,a,d,e,r)=>{
-                e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
-                value: a[L].apply(this, d[L].map(c.x)),
-                enumerable: !0,
-                configurable: !0
-            }) : r;
-        },
-        
-        // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
-        3:()=>c[4]().constructor.name || "x",
-        
-        // ml(1)->c[1] = resolve to self or undefined
-        4:()=>typeof self === t[0] && self,
-        
-        //c.x = map iterator to execure every function in an array of functions
-        //      (used to resolve each loaded module)
-        x:(f)=>f(),
-        r:()=>Math.random().toString(36).substr(-8)
-          
-    };
-    z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
+function serviceWorkerMin () {
+    var self,importScripts;
+    return ml;
     
-    if (z!==c)return z;
+    function ml(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=console,m=[t,ml,"",e,x].map(e=>typeof e),r={1:()=>r[4]()||{},2:(L,o,a,d,e,t)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===m[2]+m[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(r.x)),enumerable:!0,configurable:!0}):t},3:()=>r[4]().constructor.name||"x",4:()=>typeof self===m[0]&&self,x:e=>e(),l:t.log.bind(t),L:(e,t)=>ml(0,e={},["t@T|"+x],()=>ml(2,"T",e,{T:L},{T:[()=>(t=e.t,delete e.t,t)]})),r:()=>Math.random().toString(36).substr(-8)};return(e=typeof r[x]===m[1]?r[x](L,o,a,d,s):r)!==r?e:(e={F:ml.fetch||!1,0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,t.length+1,t):a(),u:(x,t)=>(t=e.r(x))?(!t[2]||t[2]===r[3]())&&(importScripts(t[3]),t[1]):!L[x]&&x,y:x=>!!x,U:()=>Object.keys(ml.h),e:(e,d)=>e.headers.get("Etag").replace(/[\"\/\\\-]*/g,"")||d,V:(t,m)=>e.F?t+"?v="+m:t,v:(e,t)=>ml.h[e]=t,r:e=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),G:(e,t)=>(ml[e]=t,t=>ml[e](t)),8:(e,t)=>(ml[e]=t,ml.p.splice(0,ml.p.length)),I:(t,m,n)=>t.addEventListener(m,e.G(m,n||(e=>{r.l(m,e.data)}))),9:t=>{ml.p=[],e.I(t,"install",e=>e.waitUntil(new Promise((e,t)=>ml.p.push([e,t])))),e.I(t,"activate"),e.I(t,"fetch",e=>fetch(e.request)),e.I(t,"message"),importScripts(new URL(location).searchParams.get("ml"))}})[x]?e[x](L,o,a,d,s):void 0}ml(9,self);
+}
+
+
+function serviceWorkerMinPretty () {
+    var self,importScripts;
+    
+    return ml;
+    function ml(x, L, o, a, d, s) {
+        ml.h = ml.h || {};
+        let e, t = console,
+            m = [t, ml, "", e, x].map(e => typeof e),
+            r = {
+                1: () => r[4]() || {},
+                2: (L, o, a, d, e, t) => {
+                    e = typeof(e = a[L] && a[L].name) + typeof o[e] === m[2] + m[3] ? Object.defineProperty(o, e, {
+                        value: a[L].apply(this, d[L].map(r.x)),
+                        enumerable: !0,
+                        configurable: !0
+                    }) : t
+                },
+                3: () => r[4]().constructor.name || "x",
+                4: () => typeof self === m[0] && self,
+                x: e => e(),
+                l: t.log.bind(t),
+                L: (e, t) => ml(0, e = {}, ["t@T|" + x], () => ml(2, "T", e, {
+                    T: L
+                }, {
+                    T: [() => (t = e.t, delete e.t, t)]
+                })),
+                r: () => Math.random().toString(36).substr(-8)
+            };
+        return (e = typeof r[x] === m[1] ? r[x](L, o, a, d, s) : r) !== r ? e : (e = {
+            F: ml.fetch || !1,
+            0: () => e.l(o),
+            l: t => (t = t.map(e.u).filter(e.y)).length ? setTimeout(e.l, t.length + 1, t) : a(),
+            u: (x, t) => (t = e.r(x)) ? (!t[2] || t[2] === r[3]()) && (importScripts(t[3]), t[1]) : !L[x] && x,
+            y: x => !!x,
+            U: () => Object.keys(ml.h),
+            e: (e, d) => e.headers.get("Etag").replace(/[\"\/\\\-]*/g, "") || d,
+            V: (t, m) => e.F ? t + "?v=" + m : t,
+            v: (e, t) => ml.h[e] = t,
+            r: e => /([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),
+            G: (e, t) => (ml[e] = t, t => ml[e](t)),
+            8: (e, t) => (ml[e] = t, ml.p.splice(0, ml.p.length)),
+            I: (t, m, n) => t.addEventListener(m, e.G(m, n || (e => {
+                r.l(m, e.data)
+            }))),
+            9: t => {
+                ml.p = [], e.I(t, "install", e => e.waitUntil(new Promise((e, t) => ml.p.push([e, t])))), e.I(t, "activate"), e.I(t, "fetch", e => fetch(e.request)), e.I(t, "message"), importScripts(new URL(location).searchParams.get("ml"))
+            }
+        })[x] ? e[x](L, o, a, d, s) : void 0
+    }
+    ml(9, self);
+}
+
+function serviceWorkerMinSource () {
+    
+    var self,importScripts;
+    
+    return ml;
+
+    
+    // source -sw version 
+    function ml(x,L, o, a, d, s){
+        ml.h=ml.h||{};//create history db if none exists
+        let
+        C=console,
+        z,
+        // "t" contains an array of types - object,function,string,undefined
+        // used for comparisions later
+        t=[C,ml,'',z,x].map((G)=>typeof G),
+        // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
+        // any constants/worker functions they need. also contains some code used later by z
+        // note that z doubles as a proxy for "undefined" in the type array "t" above 
+        c = {
+            // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
+            1:()=>c[4]()||{},
+            
+            // ml(2)-->c[2](L,o,a,d,e,r) 
+            
+            // L = "Window", "ServiceWorkerGlobalScope" (result of ml(1)--> c[1]
+            // o = exports (ie self ie window)
+            // a = dictionary of dependants per window type
+            // d = array of loaded dependants 
+            // e = unuused argument doubles as a variable
+            // r = undefined
+            2:(L,o,a,d,e,r)=>{
+                    e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
+                    value: a[L].apply(this, d[L].map(c.x)),
+                    enumerable: !0,
+                    configurable: !0
+                }) : r;
+            },
+            
+            // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
+            3:()=>c[4]().constructor.name || "x",
+            
+            // ml(1)->c[1] = resolve to self or undefined
+            4:()=>typeof self === t[0] && self,
+            
+            //c.x = map iterator to execure every function in an array of functions
+            //      (used to resolve each loaded module)
+            x:(f)=>f(),
+            l:C.log.bind(C),
+            //c.L = loader hoist function (called when first argument to ml is a string)
+            L:(S,R)=>{
+                // ml("/path/to/mod.js",function(mod){...}) 
+                //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ }
+                S={};  // S=dummy self, contains "t" temporarily
+                       // R=holder for S.t between deletion and return
+                return ml(0,S,["t@T|"+x],()=>ml(2,'T',S,{T:L},{T:[()=>{R=S.t;delete S.t;return R;}]}));
+            },
+            //c.r() = a random id generator
+            r:()=>Math.random().toString(36).substr(-8)
+              
+        };
+        z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
         
-    z = {
-       F:ml.fetch||false,// F:t[1] = use fetch, F:false,  = don't use fetch
-       
-       //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
-       //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
-       0:()=>z.l(o),
-       
-       //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
-       l:(u)=>{
-             u = u.map(z.u).filter(z.y);
-             return u.length?setTimeout(z.l, u.length+1, u):a();
-       },
-
-       //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
-       u:(x,R)=>{
-             R=z.r(x);
-             if (!R) return L[x]?false:x;
-             s = z.s(this.document,"script");
-             if(d)d(s);
-             z.p(R[2],s.setAttribute.bind(s,"src"));
-             return R[1];
-       },
-       
-       //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
-       y:(x)=>!!x,
-         
-       //z.s = create and append empty script element
-       s:(d,S)=>{s = d.createElement(S);s.type = "text/java"+S; return d.body.appendChild(s);},
-       
-       //z.U() = history as an array of urls
-       U:()=>Object.keys(ml.h),
-
-       
-       //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
-       p:(u,l/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
-           r=c.r();//prepare a random version number (in case we need it)
-           L=(v)=>l(z.V(u,v));                  // load script with version
-           V=(v)=>L(z.v(u,v));                   // save version v in history, load script with version
-           R=()=>V(r);                           // save random verison in history, load scipt with random version
-           return (ml.h[u] ?                     // does url exist in history? 
-                      V(ml.h[u])                  //yes = load script using version from history
-                    : ( typeof fetch===z.F ?    // did Gretchen make fetch happen ? 
-                          fetch(u,{method: 'HEAD'}) // yes= fetch header and 
-                            .then((h)=>V(z.e(h,r))) // use etag as version, or random if no etag
-                            .catch(R)                               // if fetch(HEAD) fails,use random version
-                        : R())                     // Gretchen didn't make fetch happen. so random.
-                  );                 
+        if (z!==c)return z;
+            
+        z = {
+           F:ml.fetch||false,// F:t[1] = use fetch, F:false,  = don't use fetch
            
-       },
-       //z.e = resolve to etag in r.header or d (default)
-       e:(r,d)=>r.headers.get("Etag").replace(/[\"\/\\\-]*/g,'')||d,
-       //z.H= fetch HEAD response for all history urls 
-       H:(cb)=>Promise.all(z.U().map((u)=>fetch(u,{method:'HEAD'}))).then(cb).catch(cb),
-       //z.j = compare array of etags(a) with previous array(ml.e) and return number of matches
-       j:(a)=>a.reduce((n,e,i)=>e===ml.e[i]?n+1:n,0),
-       k:(a)=>{
-           if ( z.j(a) < a.length) {
-              console.log("changes:",ml.U() ); 
-              console.log("changes:",a      ); 
-              console.log("changes:",ml.e   ); 
+           //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
+           //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
+           0:()=>z.l(o),
+           
+           //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
+           l:(u)=>{
+                 u = u.map(z.u).filter(z.y);
+                 return u.length?setTimeout(z.l, u.length+1, u):a();
+           },
+    
+           //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
+           u:(x,R)=>{
+                 R=z.r(x);
+                 if (!R) return L[x]?false:x;
+                 // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
+                 if (R[2]&&R[2]!==c[3]()) return false; 
+                 importScripts(R[3]);
+                 return R[1];
+           },
+           
+           //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
+           y:(x)=>!!x,
+             
+           //z.U() = history as an array of urls
+           U:()=>Object.keys(ml.h),
+    
+           //z.e = resolve to etag in r.header or d (default)
+           e:(r,d)=>r.headers.get("Etag").replace(/[\"\/\\\-]*/g,'')||d,
+    
+           //z.V chooses final script url load tag, depending on fetch precache setting
+           V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
+           //z.v saves the version tag into version history (also acts as flag for "i've seen this module")
+           v:(u,v)=>(ml.h[u]=v), 
+           //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
+           //z.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
+           r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+        
+           
+           //wrap event E to call X, whhich is stored as z[E]
+           G:(E,X)=>{ml[E]=X;return (e)=>ml[E](e);},
+           
+           
+           //install final event handler,and return captured promise for install event
+           8:(E,f)=>{
+               ml[E]=f;
+               return ml.p.splice(0,ml.p.length);
+           },
+           
+           //z.I = install initial event handler wrapper 
+           I:(S,E,X)=>S.addEventListener(E,z.G(E,X?X:(e)=>{c.l(E,e.data);})), 
+           
+           9:(S)=>{
+                    ml.p=[];
+                    z.I(S,'install',(e)=>e.waitUntil(new Promise((r,R)=>ml.p.push([r,R]))));
+                    z.I(S,'activate');
+                    z.I(S,'fetch',(e)=>fetch(e.request));
+                    z.I(S,'message');
+                    importScripts( new URL(location).searchParams.get('ml') );
            }
-           ml.e=a;
-       },
-       q:()=>{
-           //get an array of responses as R
-           z.H((R)=>{
-               if(!Array.isArray(R))return;
-               // convert array of responses --> array of etags,compare
-               z.k( z.E(R) );
-               
-           });
-       },
-       
-       //z.E(h,x) = map array of responses to array of etags
-       E:(R)=>R.map((r,i)=>z.e(r,ml.h[i])),
-       K:()=>{
-           //get an array of responses as R
-           z.H((R)=>{
-               if(!Array.isArray(R))return;
-               // convert array of responses --> array of etags into ml.e
-               ml.e=z.E(R);
-               setInterval(z.q,5000);
-           });
-           
-           
-       },
-       
+        };
+        return z[x]?z[x](L,o,a,d,s):undefined;
+    }
+    ml(9,self);
+    
       
-       
-       V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
-       v:(u,v)=>(ml.h[u]=v), 
-       //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
-       r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
-       w:'serviceWorker',
-       W:'navigator',
-       9:(L)=>(z.w in self[z.W]?(L?self[z.W][z.w].register('./ml.sw.js?ml=' + encodeURIComponent(L)):undefined):importScripts( new URL(location).searchParams.get('ml')  )) ,
-    };
-    return z[x]?z[x](L,o,a,d,s):undefined;
 }
 
 

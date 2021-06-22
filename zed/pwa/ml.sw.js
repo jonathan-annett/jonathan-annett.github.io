@@ -1,5 +1,6 @@
+    
 // source -sw version 
-/* global self,importScripts,caches*/
+/* global self,importScripts */
 function ml(x,L, o, a, d, s){
     ml.h=ml.h||{};//create history db if none exists
     let
@@ -7,7 +8,7 @@ function ml(x,L, o, a, d, s){
     z,
     // "t" contains an array of types - object,function,string,undefined
     // used for comparisions later
-    t=[C,ml,'',z].map((G)=>typeof G),
+    t=[C,ml,'',z,x].map((G)=>typeof G),
     // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
     // any constants/worker functions they need. also contains some code used later by z
     // note that z doubles as a proxy for "undefined" in the type array "t" above 
@@ -41,6 +42,15 @@ function ml(x,L, o, a, d, s){
         //      (used to resolve each loaded module)
         x:(f)=>f(),
         l:C.log.bind(C),
+        //c.L = loader hoist function (called when first argument to ml is a string)
+        L:(S,R)=>{
+            // ml("/path/to/mod.js",function(mod){...}) 
+            //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ }
+            S={};  // S=dummy self, contains "t" temporarily
+                   // R=holder for S.t between deletion and return
+            return ml(0,S,["t@T|"+x],()=>ml(2,'T',S,{T:L},{T:[()=>{R=S.t;delete S.t;return R;}]}));
+        },
+        //c.r() = a random id generator
         r:()=>Math.random().toString(36).substr(-8)
           
     };
@@ -65,7 +75,9 @@ function ml(x,L, o, a, d, s){
        u:(x,R)=>{
              R=z.r(x);
              if (!R) return L[x]?false:x;
-             importScripts(R[2]);
+             // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
+             if (R[2]&&R[2]!==c[3]()) return false; 
+             importScripts(R[3]);
              return R[1];
        },
        
@@ -77,50 +89,15 @@ function ml(x,L, o, a, d, s){
 
        //z.e = resolve to etag in r.header or d (default)
        e:(r,d)=>r.headers.get("Etag").replace(/[\"\/\\\-]*/g,'')||d,
-       //z.H= fetch HEAD response for all history urls 
-       H:(cb)=>Promise.all(z.U().map((u)=>fetch(u,{method:'HEAD'}))).then(cb).catch(cb),
-       //z.j = compare array of etags(a) with previous array(ml.e) and return number of matches
-       j:(a)=>a.reduce((n,e,i)=>e===ml.e[i]?n+1:n,0),
-       k:(a)=>{
-           if ( z.j(a) < a.length) {
-              console.log("changes:",ml.U() ); 
-              console.log("changes:",a      ); 
-              console.log("changes:",ml.e   ); 
-           }
-           ml.e=a;
-       },
-       q:()=>{
-           //get an array of responses as R
-           z.H((R)=>{
-               if(!Array.isArray(R))return;
-               // convert array of responses --> array of etags,compare
-               z.k( z.E(R) );
-               
-           });
-       },
-       
-       //z.E(h,x) = map array of responses to array of etags
-       E:(R)=>R.map((r,i)=>z.e(r,ml.h[i])),
-       K:()=>{
-           //get an array of responses as R
-           z.H((R)=>{
-               if(!Array.isArray(R))return;
-               // convert array of responses --> array of etags into ml.e
-               ml.e=z.E(R);
-               setInterval(z.q,5000);
-           });
-           
-           
-       },
-       
-      
-       
+
+       //z.V chooses final script url load tag, depending on fetch precache setting
        V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
+       //z.v saves the version tag into version history (also acts as flag for "i've seen this module")
        v:(u,v)=>(ml.h[u]=v), 
-       //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","/url"] or null
-       r:(u)=>/([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
-       
-       a:'addEventListener',
+       //z.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
+       //z.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
+       r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+    
        
        //wrap event E to call X, whhich is stored as z[E]
        G:(E,X)=>{ml[E]=X;return (e)=>ml[E](e);},
@@ -133,7 +110,7 @@ function ml(x,L, o, a, d, s){
        },
        
        //z.I = install initial event handler wrapper 
-       I:(S,E,X)=>S[z.a](E,z.G(E,X?X:(e)=>{c.l(E,e.data);})), 
+       I:(S,E,X)=>S.addEventListener(E,z.G(E,X?X:(e)=>{c.l(E,e.data);})), 
        
        9:(S)=>{
                 ml.p=[];
@@ -148,4 +125,3 @@ function ml(x,L, o, a, d, s){
 }
 ml(9,self);
 
-  

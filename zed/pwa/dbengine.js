@@ -1,19 +1,20 @@
-/* global ml,self,localforage */
-ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
+/* global ml,self,localforage, Rusha */
+ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],function(){ml(2,ml(3),ml(4),
 
     {
         Window:                   function dbengine(lib,evs) {return lib(evs);},
         ServiceWorkerGlobalScope: function dbengine(lib,evs) {return lib(evs);},
-    }, (()=>{
-        
-            return {
+    }, (()=>{//                                      |   |
+             //                                      |                     
+            return {//                               V
                 Window:                   [ ()=> hybridStorageEngine, ()=> self.libEvents ],
                 ServiceWorkerGlobalScope: [ ()=> hybridStorageEngine, ()=> self.libEvents ],
             };
             
 
         function hybridStorageEngine (events) {
-            return function (libFilter,keyprefix) {
+            
+            return function (libMode,keyprefix) {
                   
                  const flushHybridCachedSyncWritesInterval = 1500;
                  const keyprefix_length = keyprefix ? keyprefix.length : 0;
@@ -39,7 +40,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                  var hybridLazyWriteTimeout;
                  
                   
-                switch (libFilter){
+                switch (libMode){
                     case "localStorage" : return localStorageLib();
                     case "localforage"  : return localforageLib();
                     case "sw"           : return swHybridEngine();
@@ -87,7 +88,8 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                     return function (prefix) {
                         
                         var 
-                        
+                        changeHashes = {},
+                        changeHashKeys = [],
                         ev = {}, cleanupEvents,eventNames = [
                             
                             "create", // new items only
@@ -128,14 +130,19 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                         
                         
                         function doRemove (property,cb) {
+                            
                             if (ev.events.create.remove===0) {
+                                delete changeHashes [property];
+                                changeHashKeys = Object.keys(changeHashes);
                                 engine.removeKey(property,cb);
                             } else {
                                 engine.getKey(property,function(err,old){
                                     engine.removeKey(property,function(){
                                         if (!err) {
-                                            ev.emitLibEvent("remove",property,old);
+                                            ev.emitLibEvent("remove",property,changeHashes [property],old);
                                         }
+                                        delete changeHashes [property];
+                                        changeHashKeys = Object.keys(changeHashes);
                                         if (typeof cb==='function') {
                                             cb.apply(this,arguments);
                                         }
@@ -146,24 +153,33 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                         
                         function doSet (property,value,cb) {
                             if (ev.events.create.length+ev.events.change.length+ev.events.set.length===0) {
-                               engine.setKey(property,value,cb);
+                                
+                                createChangeHash(value,function(err,hash){
+                                     changeHashes [property]=hash;
+                                     engine.setKey(property,value,cb);
+                                });
+                              
                             } else {
                                 engine.getKey(property,function(err,old){
-                                    engine.setKey(property,value,function(err){
-                                        if (!err) {
-                                            if (old) {
-                                                if (value!==old) {
-                                                   ev.emitLibEvent("change",property,value,old);
+                                    createChangeHash(value,function(err,hash){
+                                        changeHashes [property]=hash;
+                                        engine.setKey(property,value,function(err){
+                                            if (!err) {
+                                                if (old) {
+                                                    if (value!==old) {
+                                                       ev.emitLibEvent("change",property,value,hash,old);
+                                                    }
+                                                } else {
+                                                    ev.emitLibEvent("create",property,value,hash);
+                                                    ev.emitLibEvent("change",property,value,hash);
+                                                    changeHashKeys = Object.keys(changeHashes);
                                                 }
-                                            } else {
-                                                ev.emitLibEvent("create",property,value);
-                                                ev.emitLibEvent("change",property,value,old);
+                                                ev.emitLibEvent("set",property,value,hash);
                                             }
-                                            ev.emitLibEvent("set",property,value);
-                                        }
-                                        if (typeof cb==='function') {
-                                           cb.apply(this,arguments);
-                                        }
+                                            if (typeof cb==='function') {
+                                               cb.apply(this,arguments);
+                                            }
+                                        });
                                     });
                                 });
                             }
@@ -182,8 +198,150 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                         }
                         
                         function doLocalStorageEvent(e){
-                           
+                            
+                           engine.getKeys(function(err,keys){
+                               if (err) return;
+                               
+                               const removedKeys = changeHashKeys.filter(function(k){ return keys.indexOf(k) <0 });
+                               const newKeys     = keys.filter(function(k){ return changeHashKeys.indexOf(k) <0 });
+                               
+                               
+                               
+                               removedKeys.forEach(function(property){
+                                   
+                                   ev.emitLibEvent(
+                                       "remove",
+                                       property,
+                                       changeHashes [property],
+                                       undefined,
+                                       true);
+                                       
+                                   delete changeHashes [property];
+                               });
+
+                               createChangeHashes (newKeys,engine,function(err,hashes){
+                                   
+                                   newKeys.forEach(function(property){
+                                       engine.getKey(property,function(err,value){
+                                           if (err) return;
+                                           const hash = changeHashes[property] = hashes[property];
+                                           ev.emitLibEvent("create",property,value,hash);
+                                           ev.emitLibEvent("change",property,value,hash);
+                                           
+                                       });
+                                   });
+                                   
+                               });
+                               
+                               let abort=false;
+                               keys.filter(function(k){return newKeys.indexOf(k)<0}).some(function(property){
+                                    engine.getKey(property,function(err,value){
+                                        if (err) return (abort=err);
+
+                                        compareChangeHash (value,changeHashes[property],function(err,changed,newHash){
+                                            if (err) return (abort=err);
+                                            
+                                            if (changed) {
+                                                 ev.emitLibEvent("change",property,value,newHash);
+                                                 changeHashes[property]=newHash;
+                                            }
+                                        });
+                                        
+                                       
+                                    });
+                                    return !!abort;
+                               });
+                               if (abort) return cb(abort);
+                               
+                               changeHashKeys=keys;
+                             
+                           });
                         }
+                        
+                        
+                        let createChangeHashMin = 20; 
+                        function createChangeHash(v,cb) {
+                            const jsonBuf = bufferFromText(JSON.stringify(v));
+                            
+                            if (jsonBuf.length <= createChangeHashMin ) {
+                                return cb (undefined,jsonBuf);
+                            }
+                            
+                            fromBuffertoSha1DigestBuffer(jsonBuf)
+                              .then(function (buffer){
+                                   
+                                  cb(undefined,buffer);
+                                  
+                              })
+                              .catch(cb);
+                             
+                            
+    
+                            function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
+                            
+                           
+                            function fromBuffertoSha1DigestBuffer(buffer){ 
+                                    return self.isSw ? Promise.resolve(Rusha.createHash().update(buffer).digest()) 
+                                                     : window.crypto.subtle.digest("SHA-1", buffer); 
+                                
+                            }
+                            
+                            
+                        
+                        }
+                        
+                        function compareChangeHash (v,hash, cb) {
+                            
+                            createChangeHash(v,function(err,newHash){
+                               if (err) return cb(err);
+                               
+                               if (hash.length !== newHash.length) {
+                                   return cb (undefined,false,newHash);
+                               }
+                               
+                               for(var i = 0; i < hash.length; i++) {
+                                   if (newHash[i] !== hash[i]) {
+                                       return cb (undefined,false,newHash);
+                                   }
+                               }
+                               return cb (undefined,true,newHash);
+                            });
+                        }
+                        
+                        function createChangeHashes (keys,engine,cb) {
+                            const hashes={}
+                            let remain = keys.length;
+                            if (remain ===0) return cb(undefined,hashes);
+                            
+                            keys.some(function(key,index) {
+                                
+                                engine.getKey(key,function(err,value){
+                                    createChangeHash ( value, function (err,hash) {
+                                        if (err) {
+                                            cb(err);
+                                            return true;
+                                        }
+                                        hashes[index]=hash;
+                                        remain --;
+                                        if (remain===0) {
+                                            return cb(undefined,hashes);
+                                        }
+                                    });
+                                });
+                               
+                            });
+                        }
+                        
+                        engine.getKeys(function(err,keys){
+                            if (err) return
+                            createChangeHashes (keys,engine,function(err,hashes){
+                                changeHashKeys = keys;
+                                changeHashes = hashes;
+                            });
+                        });
+                        
+                        
+                        
                         
                         function cleanupProxy() {
                              window.removeEventListener('storage',doLocalStorageEvent);
@@ -244,6 +402,10 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                         });
                         
                     };
+                    
+                       
+                    
+                    
                     
                 }
                 
@@ -447,7 +609,8 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                         if (hybrid===null) {
                            return cb();
                         }
-                        cb(undefined,hybrid[0]);
+                        
+                        cb(undefined,hybrid[0],hybrid[1]);
                     });
                 }
                 
@@ -626,7 +789,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                            if (err) return cb(err);
                            setForageKey(k,data,function(){
                                removeForageKey(k+removedKeySuffix,function(){//make sure it's not flagged for deletion
-                                 cb(undefined,data[0]);
+                                 cb(undefined,data[0],data[1]);
                                });
                            });
                            
@@ -637,7 +800,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                        setForageKey(k,data,function(err){
                            removeForageKey(k+removedKeySuffix,function(){//make sure it's not flagged for deletion
                               if (err) return cb (err);
-                              cb(undefined,data[0]);
+                              cb(undefined,data[0],data[1]);
                            });
                        });
                     }
@@ -645,7 +808,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                     function updateLocal(data) {
                         setLocalKey(k,data,function(err){
                            if (err) return cb(err);
-                           cb(undefined,data[0]);
+                           cb(undefined,data[0],data[1]);
                         });
                     }
                     
@@ -680,7 +843,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                             if (cachedRead){
                                 // data has been read/written with "keepInCache" flag, or recently read via sync - we can use it
                                 // but we need to convert this to an asyc return via timeout.
-                                setTimeout(cb,0,undefined,cachedRead[0]);
+                                setTimeout(cb,0,undefined,cachedRead[0],cachedRead[1]);
                             } else {
                                 // there is nothing in either read or write cache for this key.
                                 // 
@@ -691,7 +854,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                                     } else {
                                         delete cache.read[k];
                                     }
-                                    cb(undefined,local[0]);
+                                    cb(undefined,local[0],local[1]);
                                 });
                             }
                         }
@@ -715,7 +878,7 @@ ml(0,ml(1),['libEvents|events.js'],function(){ml(2,ml(3),ml(4),
                                           if (keepInCache) {
                                                cache.read[k]=local;
                                           }
-                                          cb(undefined,local[0]);
+                                          cb(undefined,local[0],local[1]);
                                        });
                                    });
                                 });

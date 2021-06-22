@@ -3,8 +3,8 @@
 ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
     {
-        Window:                   function libEvents(lib) {return libEventManager;},
-        ServiceWorkerGlobalScope: function libEvents(lib) {return libEventManager;},
+        Window:                   function libEvents() {return libEventManager;},
+        ServiceWorkerGlobalScope: function libEvents() {return libEventManager;},
     }, (()=>{  return{
         Window:                   [],
         ServiceWorkerGlobalScope: [],
