@@ -56,13 +56,14 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                 var currentOpen = localStorage.getItem("windowTools.openWindows");
                 if (currentOpen!==lastOpen) {
                     lastOpen=currentOpen;
-                    const openWindows = JSON.parse(currentOpen);
-                    const selected = select.value;
-                    select.innerHTML = Object.keys(openWindows).map(function(wid){
-                        const meta = openWindows[wid];
-                        return '<option '+(selected===wid?'selected ':'')+'href="'+wid+'">'+meta.url+'</option>';
-                    }).join("\n");
-                    
+                    if (currentOpen) {
+                        const openWindows = JSON.parse(currentOpen);
+                        const selected = select.value;
+                        select.innerHTML = Object.keys(openWindows).map(function(wid){
+                            const meta = openWindows[wid];
+                            return '<option '+(selected===wid?'selected ':'')+'href="'+wid+'">'+meta.url+'</option>';
+                        }).join("\n");
+                    }                    
                     
                 }
                 Object.keys(localStorage).forEach(function(k){
