@@ -43,13 +43,27 @@ function ml(x,L, o, a, d, s){
         x:(f)=>f(),
         l:C.log.bind(C),
         //c.L = loader hoist function (called when first argument to ml is a string)
-        L:(S,R)=>{
-            // ml("/path/to/mod.js",function(mod){...}) 
-            //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ }
-            S={};  // S=dummy self, contains "t" temporarily
-                   // R=holder for S.t between deletion and return
-            return ml(0,S,["t@T|"+x],()=>ml(2,'T',S,{T:L},{T:[()=>{R=S.t;delete S.t;return R;}]}));
-        },
+       L:(S,R,t,w)=>{
+           // ml("/path/to/mod.js",function(mod){...}) 
+           //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ }
+           // ml("/path/to/mod.js",function(mod){...},window,"modName") 
+           //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ } o=window,a="modName"
+           w=!!o;
+           S=w?o:{};  // S=dummy self, contains "t" temporarily
+                  // R=holder for S.t between deletion and return
+           t=a||'t';
+           return ml(
+               0,S,[
+               t+"@T|"+x],
+               ()=>ml(  2,'T',S,
+                       {T:L},
+                       {T:[()=>{ R=S[t];
+                                 if (!w) delete S[t];
+                                 return R;
+                                }
+                          ]})
+           );
+       },
         //c.r() = a random id generator
         r:()=>Math.random().toString(36).substr(-8)
           
