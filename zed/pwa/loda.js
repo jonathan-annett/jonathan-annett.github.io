@@ -238,7 +238,52 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
 function browserMinPretty () {
     return ml;
-   
+    function ml(x, L, o, a, d, s) {
+        ml.h = ml.h || {};
+        let e, t = console,
+            r = [t, ml, "", e, x].map(e => typeof e),
+            m = r[4] === r[2] ? "L" : x,
+            n = {
+                1: () => n[4]() || {},
+                2: (L, o, a, d, e, t) => {
+                    e = typeof(e = a[L] && a[L].name) + typeof o[e] === r[2] + r[3] ? Object.defineProperty(o, e, {
+                        value: a[L].apply(this, d[L].map(n.x)),
+                        enumerable: !0,
+                        configurable: !0
+                    }) : t
+                },
+                3: () => n[4]().constructor.name || "x",
+                4: () => typeof self === r[0] && self,
+                x: e => e(),
+                l: t.log.bind(t),
+                L: (e, t, r, m) => (t = n.r(x), m = t ? n[4]() : !!o, e = m ? o : {}, t = t || [x, "t", 0, x], r = a || t[1], ml(0, e, [r + "@T|" + t[3]], () => ml(2, "T", e, {
+                    T: L
+                }, {
+                    T: [() => (t = e[r], m || delete e[r], t)]
+                }), "T")),
+                r: e => /([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e)
+            };
+        return (e = typeof n[m] === r[1] ? n[m](L, o, a, d, s) : n) !== n ? e : (e = {
+            F: ml.fetch || !1,
+            0: () => e.l(o),
+            l: t => (t = t.map(e.u).filter(e.y)).length ? setTimeout(e.l, t.length + 1, t) : a(),
+            u: (x, t) => (t = n.r(x)) ? (!t[2] || t[2] === (d || n[3]())) && (s = e.s(this.document, "script"), e.p(t[3], s.setAttribute.bind(s, "src")), t[1]) : !L[x] && x,
+            y: x => !!x,
+            s: (d, e) => ((s = d.createElement(e)).type = "text/java" + e, d.body.appendChild(s)),
+            U: () => Object.keys(ml.h),
+            p: (t, l, r, L, m, n) => (r = e.r(), L = (r => l(e.V(t, r))), m = (r => L(e.v(t, r))), n = (() => m(r)), ml.h[t] ? m(ml.h[t]) : typeof fetch === e.F ? fetch(t, {
+                method: "HEAD"
+            }).then(t => m(e.e(t, r))).catch(n) : n()),
+            e: (e, d) => e.headers.get("Etag").replace(/[\"\/\\\-]*/g, "") || d,
+            r: () => Math.random().toString(36).substr(-8),
+            V: (t, r) => e.F ? t + "?v=" + r : t,
+            v: (e, t) => ml.h[e] = t,
+            w: "serviceWorker",
+            W: "navigator",
+            9: L => L && e.w in self[e.W] && self[e.W][e.w].register("./ml.sw.js?ml=" + encodeURIComponent(L))
+        })[x] ? e[x](L, o, a, d, s) : void 0
+    }
+    
 }
 
 
@@ -246,7 +291,7 @@ function browserMin () {
     return ml;
 /*
 <script>//*/    
-
+    function ml(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=console,r=[t,ml,"",e,x].map(e=>typeof e),m=r[4]===r[2]?"L":x,n={1:()=>n[4]()||{},2:(L,o,a,d,e,t)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===r[2]+r[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(n.x)),enumerable:!0,configurable:!0}):t},3:()=>n[4]().constructor.name||"x",4:()=>typeof self===r[0]&&self,x:e=>e(),l:t.log.bind(t),L:(e,t,r,m)=>(t=n.r(x),m=t?n[4]():!!o,e=m?o:{},t=t||[x,"t",0,x],r=a||t[1],ml(0,e,[r+"@T|"+t[3]],()=>ml(2,"T",e,{T:L},{T:[()=>(t=e[r],m||delete e[r],t)]}),"T")),r:e=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e)};return(e=typeof n[m]===r[1]?n[m](L,o,a,d,s):n)!==n?e:(e={F:ml.fetch||!1,0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,t.length+1,t):a(),u:(x,t)=>(t=n.r(x))?(!t[2]||t[2]===(d||n[3]()))&&(s=e.s(this.document,"script"),e.p(t[3],s.setAttribute.bind(s,"src")),t[1]):!L[x]&&x,y:x=>!!x,s:(d,e)=>((s=d.createElement(e)).type="text/java"+e,d.body.appendChild(s)),U:()=>Object.keys(ml.h),p:(t,l,r,L,m,n)=>(r=e.r(),L=(r=>l(e.V(t,r))),m=(r=>L(e.v(t,r))),n=(()=>m(r)),ml.h[t]?m(ml.h[t]):typeof fetch===e.F?fetch(t,{method:"HEAD"}).then(t=>m(e.e(t,r))).catch(n):n()),e:(e,d)=>e.headers.get("Etag").replace(/[\"\/\\\-]*/g,"")||d,r:()=>Math.random().toString(36).substr(-8),V:(t,r)=>e.F?t+"?v="+r:t,v:(e,t)=>ml.h[e]=t,w:"serviceWorker",W:"navigator",9:L=>L&&e.w in self[e.W]&&self[e.W][e.w].register("./ml.sw.js?ml="+encodeURIComponent(L))})[x]?e[x](L,o,a,d,s):void 0}
 //</script>
     
 }
@@ -305,10 +350,11 @@ function browserSource () {
                 //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ }
                 // ml("/path/to/mod.js",function(mod){...},window,"modName") 
                 //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ } o=window,a="modName"
-                w=!!o;
+                R=c.r(x);
+                w=R?c[4]():!!o;
                 S=w?o:{};  // S=dummy self, contains "t" temporarily
                        // R=holder for S.t between deletion and return
-                R=c.r(x)||[x,'t',0,x];// [fullurl,tempname,ignored,url]
+                R=R||[x,'t',0,x];// [fullurl,tempname,ignored,url]
                 t=a||R[1];
                 return ml(
                     0,S,[
@@ -405,7 +451,7 @@ function browserSource () {
 function serviceWorkerMin () {
     var self,importScripts;
     return ml;
-    
+    function ml(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=console,m=[t,ml,"",e,x].map(e=>typeof e),r={1:()=>r[4]()||{},2:(L,o,a,d,e,t)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===m[2]+m[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(r.x)),enumerable:!0,configurable:!0}):t},3:()=>r[4]().constructor.name||"x",4:()=>typeof self===m[0]&&self,x:e=>e(),l:t.log.bind(t),L:(e,t,m,n)=>(e=(n=!!o)?o:{},t=r.r(x)||[x,"t",0,x],m=a||t[1],ml(0,e,[m+"@T|"+t[3]],()=>ml(2,"T",e,{T:L},{T:[()=>(t=e[m],n||delete e[m],t)]}),"T")),r:e=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e)};return(e=typeof r[x]===m[1]?r[x](L,o,a,d,s):r)!==r?e:(e={F:ml.fetch||!1,0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,t.length+1,t):a(),u:(x,e)=>(e=r.r(x))?(!e[2]||e[2]===(d||r[3]()))&&(importScripts(e[3]),e[1]):!L[x]&&x,y:x=>!!x,U:()=>Object.keys(ml.h),e:(e,d)=>e.headers.get("Etag").replace(/[\"\/\\\-]*/g,"")||d,V:(t,m)=>e.F?t+"?v="+m:t,v:(e,t)=>ml.h[e]=t,r:()=>Math.random().toString(36).substr(-8),G:(e,t)=>(ml[e]=t,t=>ml[e](t)),8:(e,t)=>(ml[e]=t,ml.p.splice(0,ml.p.length)),I:(t,m,n)=>t.addEventListener(m,e.G(m,n||(e=>{r.l(m,e.data)}))),9:t=>{ml.p=[],e.I(t,"install",e=>e.waitUntil(new Promise((e,t)=>ml.p.push([e,t])))),e.I(t,"activate"),e.I(t,"fetch",e=>fetch(e.request)),e.I(t,"message"),importScripts(new URL(location).searchParams.get("ml"))}})[x]?e[x](L,o,a,d,s):void 0}ml(9,self);
 
 }
 
@@ -414,7 +460,52 @@ function serviceWorkerMinPretty () {
     var self,importScripts;
     
     return ml;
-
+    function ml(x, L, o, a, d, s) {
+        ml.h = ml.h || {};
+        let e, t = console,
+            m = [t, ml, "", e, x].map(e => typeof e),
+            r = {
+                1: () => r[4]() || {},
+                2: (L, o, a, d, e, t) => {
+                    e = typeof(e = a[L] && a[L].name) + typeof o[e] === m[2] + m[3] ? Object.defineProperty(o, e, {
+                        value: a[L].apply(this, d[L].map(r.x)),
+                        enumerable: !0,
+                        configurable: !0
+                    }) : t
+                },
+                3: () => r[4]().constructor.name || "x",
+                4: () => typeof self === m[0] && self,
+                x: e => e(),
+                l: t.log.bind(t),
+                L: (e, t, m, n) => (e = (n = !!o) ? o : {}, t = r.r(x) || [x, "t", 0, x], m = a || t[1], ml(0, e, [m + "@T|" + t[3]], () => ml(2, "T", e, {
+                    T: L
+                }, {
+                    T: [() => (t = e[m], n || delete e[m], t)]
+                }), "T")),
+                r: e => /([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e)
+            };
+        return (e = typeof r[x] === m[1] ? r[x](L, o, a, d, s) : r) !== r ? e : (e = {
+            F: ml.fetch || !1,
+            0: () => e.l(o),
+            l: t => (t = t.map(e.u).filter(e.y)).length ? setTimeout(e.l, t.length + 1, t) : a(),
+            u: (x, e) => (e = r.r(x)) ? (!e[2] || e[2] === (d || r[3]())) && (importScripts(e[3]), e[1]) : !L[x] && x,
+            y: x => !!x,
+            U: () => Object.keys(ml.h),
+            e: (e, d) => e.headers.get("Etag").replace(/[\"\/\\\-]*/g, "") || d,
+            V: (t, m) => e.F ? t + "?v=" + m : t,
+            v: (e, t) => ml.h[e] = t,
+            r: () => Math.random().toString(36).substr(-8),
+            G: (e, t) => (ml[e] = t, t => ml[e](t)),
+            8: (e, t) => (ml[e] = t, ml.p.splice(0, ml.p.length)),
+            I: (t, m, n) => t.addEventListener(m, e.G(m, n || (e => {
+                r.l(m, e.data)
+            }))),
+            9: t => {
+                ml.p = [], e.I(t, "install", e => e.waitUntil(new Promise((e, t) => ml.p.push([e, t])))), e.I(t, "activate"), e.I(t, "fetch", e => fetch(e.request)), e.I(t, "message"), importScripts(new URL(location).searchParams.get("ml"))
+            }
+        })[x] ? e[x](L, o, a, d, s) : void 0
+    }
+    ml(9, self);
 }
 
 function serviceWorkerSource () {
