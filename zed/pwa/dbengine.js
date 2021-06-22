@@ -12,10 +12,11 @@ ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],
             };
             
 
-        function hybridStorageEngine (events,fromBuffertoSha1DigestBuffer) {
+        function hybridStorageEngine (events,sha1) {
             
             return function (libMode,keyprefix) {
-                  
+                 
+                 const fromBuffertoSha1DigestBuffer = sha1; 
                  const flushHybridCachedSyncWritesInterval = 1500;
                  const keyprefix_length = keyprefix ? keyprefix.length : 0;
                  const prefixes = !!keyprefix;
