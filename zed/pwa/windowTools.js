@@ -7,7 +7,7 @@ ml(0,ml(1),[
 
   { 
       
-    Window : function wTools(dbengine, wToolsLib ) {
+    Window : function wTools(dbengine, wToolsLib, wToolsRem ) {
                  const db      = dbengine("hybrid");
                  const setKey_ = db.setKey;
                  const getKey  = db.getKey;
@@ -46,7 +46,7 @@ ml(0,ml(1),[
                          Object.keys(prev).forEach(
                            function (wid) {
                               const meta = prev[wid];
-                              meta.win   = wToolsRemote(meta,wToolsLib,setKey,getKey);
+                              meta.win   = wToolsRem(meta,wToolsLib,setKey,getKey);
                               meta.win.ping(function (stillAlive){
                                   if (stillAlive) return;
                                   
@@ -570,7 +570,7 @@ ml(0,ml(1),[
                  
              },
       
-    ServiceWorkerGlobalScope : function wTools(dbengine,wToolsLib) {
+    ServiceWorkerGlobalScope : function wTools(dbengine,wToolsLib, wToolsRem) {
           const lib = {};
           
           const db = dbengine ("sw"); 
@@ -585,12 +585,12 @@ ml(0,ml(1),[
           Window : [
             () => self.dbengine,
             () => self.wToolsLib,
-            () => self.wToolsRemote
+            () => self.wToolsRem
               
           ],
           ServiceWorkerGlobalScope : [
             () => self.dbengine,
-            () => self.wToolsRemote
+            () => self.wToolsRem
                 
           ],
         };
