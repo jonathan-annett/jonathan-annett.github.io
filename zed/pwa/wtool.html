@@ -119,7 +119,7 @@
                      s:(d,S)=>{s = z.E(d,S);s.type = "text/java"+S; return z.A(d,s);},
                      //z.s = create empty script in it's own empty iframe
                      S:(w,s,D)=>{D="document";return z.s(z.f(w[D]).contentWindow[D],s);},
-                     T:(w,s)=>z.s(w.document,"script"),
+                     T:(w,s)=>z.s(w.document,s),
                      //z.E = create script element
                      E:(d,S)=>d.createElement(S),
                      //z.A = append element x to document d
