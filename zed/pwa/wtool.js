@@ -114,7 +114,7 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
               // the error if it does. If you'd prefer, it's possible to call
               // controller.postMessage() and set up the onmessage handler
               // independently of a promise, but this is a convenient wrapper.
-                Promise(function(resolve, reject) {
+                return new Promise(function(resolve, reject) {
                 var messageChannel = new MessageChannel();
                 const pingName = "reply_"+Math.random().toString(36).substr(-8);
                 const channel = new BroadcastChannel(pingName);
