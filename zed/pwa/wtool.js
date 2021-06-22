@@ -151,8 +151,8 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                     
                     findWorker().then(function(worker){
                         worker.postMessage({m:cmd,r:replyName,data:data}, [messageChannel.port2]);
-                        }).then(function(x){cb(undefined,x)}).catch(cb);
-                    }).catch(cb);
+                        }).catch(cb);
+                    }).then(function(x){cb(undefined,x)}).catch(cb);
             }
 
             return lib;
