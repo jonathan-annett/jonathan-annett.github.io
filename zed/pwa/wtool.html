@@ -26,7 +26,7 @@
                       //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
                       r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
                       //c.b=document base
-                      b:/(^http(s?):\/)(\/([a-zA-Z0-9\.\-]*\/)*)/.exec(location.href)[3],
+                      b:/([a-zA-Z0-9\.\-]*\/)*/.exec(location.pathname)[0],
                       //c.R=shortcut to replace keyword
                       R:'replace',
                       //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
