@@ -399,7 +399,8 @@ function browserSource () {
                  if (!R) return L[x]?false:x;
                  // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
                  if (R[2]&&R[2]!==(d||c[3]())) return false; 
-                 s = z.s(this.document,"script");
+                 //s = z.s(this.document,"script");
+                 s = z.S(window,"script");
                  z.p(R[3],s.setAttribute.bind(s,"src"));
                  return R[1];
            },
@@ -408,8 +409,23 @@ function browserSource () {
            y:(x)=>!!x,
              
            //z.s = create and append empty script element
-           s:(d,S)=>{s = d.createElement(S);s.type = "text/java"+S; return d.body.appendChild(s);},
+           s:(d,S)=>{s = z.E(S);s.type = "text/java"+S; return z.A(d,s);},
+           //z.s = create empty script in it's own empty iframe
+           S:(w,s,D)=>{D="document";return z.s(z.f(w[D]).contentWindow[D],s);},
+           //z.E = create script element
+           E:(d,S)=>d.createElement(S),
+           //z.A = append element x to document d
+           A:(d,x)=>d.body.appendChild(x),
+           //z.f = create hidden iframe
+           f:(d,i)=>{i=z.E("iframe");i.style.display="none";return z.A(d,i)},
            
+
+           //document.getElementById('targetFrame').contentWindow.targetFunction();
+           
+         
+
+           
+                  
            //z.U() = history as an array of urls
            U:()=>Object.keys(ml.h),
     
@@ -642,6 +658,7 @@ function ml(x,L, o, a, d, s){
        //wrap event E to call X, whhich is stored as z[E]
        G:(E,X)=>{ml[E]=X;return (e)=>ml[E](e);},
        
+         
        
        //install final event handler,and return captured promise for install event
        8:(E,f)=>{
