@@ -2,20 +2,21 @@
 ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],function(){ml(2,ml(3),ml(4),
 
     {
-        Window:                   function dbengine(lib,evs) {return lib(evs);},
-        ServiceWorkerGlobalScope: function dbengine(lib,evs) {return lib(evs);},
+        Window:                   function dbengine(lib,evs,sha1) {return lib(evs,sha1);},
+        ServiceWorkerGlobalScope: function dbengine(lib,evs,sha1) {return lib(evs,sha1);},
     }, (()=>{//                                      |   |
              //                                      |                     
             return {//                               V
-                Window:                   [ ()=> hybridStorageEngine, ()=> self.libEvents ],
-                ServiceWorkerGlobalScope: [ ()=> hybridStorageEngine, ()=> self.libEvents ],
+                Window:                   [ ()=> hybridStorageEngine, ()=> self.libEvents, ()=>sha1Subtle ],
+                ServiceWorkerGlobalScope: [ ()=> hybridStorageEngine, ()=> self.libEvents, ()=>sha1Rusha ],
             };
             
 
-        function hybridStorageEngine (events) {
+        function hybridStorageEngine (events,sha1) {
             
             return function (libMode,keyprefix) {
-                  
+                 
+                 const fromBuffertoSha1DigestBuffer = sha1; 
                  const flushHybridCachedSyncWritesInterval = 1500;
                  const keyprefix_length = keyprefix ? keyprefix.length : 0;
                  const prefixes = !!keyprefix;
@@ -270,7 +271,7 @@ ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],
                             fromBuffertoSha1DigestBuffer(jsonBuf)
                               .then(function (buffer){
                                    
-                                  cb(undefined,bufferToHex(buffer));
+                                  cb(undefined,buffer);
                                   
                               })
                               .catch(cb);
@@ -280,13 +281,7 @@ ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],
                             function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
                             
                            
-                            function fromBuffertoSha1DigestBuffer(buffer){ 
-                                    return self.isSw ? Promise.resolve(Rusha.createHash().update(buffer).digest()) 
-                                                     : window.crypto.subtle.digest("SHA-1", buffer); 
-                                
-                            }
-                            
-                            
+                           
                         
                         }
                         
@@ -394,41 +389,7 @@ ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],
                     
                        
                     
-                    function arrayToHex(bytes) {
-                        const padding = '00';
-                        const hexCodes = [];
-                        if (bytes.length===0) return '';
-                       
-                        for (let i = 0; i < bytes.length; i ++) {
-                            // toString(16) will give the hex representation of the number without padding
-                            const stringValue = bytes[i].toString(16);
-                            // We use concatenation and slice for padding
-                            const paddedValue = (padding + stringValue).slice(-padding.length);
-                            hexCodes.push(paddedValue);
-                        }
-                        // Join all the hex strings into one
-                        return hexCodes.join("");
-                    }
-                    
-                    function bufferToHex(buffer) {
-                        const padding = '00000000';
-                        const hexCodes = [];
-                        const view = new DataView(buffer);
-                        if (view.byteLength===0) return '';
-                        if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
-                    
-                        for (let i = 0; i < view.byteLength; i += 4) {
-                            // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-                            const value = view.getUint32(i);
-                            // toString(16) will give the hex representation of the number without padding
-                            const stringValue = value.toString(16);
-                            // We use concatenation and slice for padding
-                            const paddedValue = (padding + stringValue).slice(-padding.length);
-                            hexCodes.push(paddedValue);
-                        }
-                        // Join all the hex strings into one
-                        return hexCodes.join("");
-                    }
+                  
                     
                     
                 }
@@ -1353,6 +1314,55 @@ ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],
             
               }  
         }
+        
+        
+        function sha1Rusha(buffer){ 
+                return Promise.resolve(Rusha.createHash().update(buffer).digest('hex')) 
+
+        }
+        
+        function sha1Subtle(buffer){ 
+                return window.crypto.subtle.digest("SHA-1", bufferToHex(buffer)); 
+            
+        }
+        
+        
+        function arrayToHex(bytes) {
+            const padding = '00';
+            const hexCodes = [];
+            if (bytes.length===0) return '';
+           
+            for (let i = 0; i < bytes.length; i ++) {
+                // toString(16) will give the hex representation of the number without padding
+                const stringValue = bytes[i].toString(16);
+                // We use concatenation and slice for padding
+                const paddedValue = (padding + stringValue).slice(-padding.length);
+                hexCodes.push(paddedValue);
+            }
+            // Join all the hex strings into one
+            return hexCodes.join("");
+        }
+        
+        function bufferToHex(buffer) {
+            const padding = '00000000';
+            const hexCodes = [];
+            const view = new DataView(buffer);
+            if (view.byteLength===0) return '';
+            if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
+        
+            for (let i = 0; i < view.byteLength; i += 4) {
+                // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
+                const value = view.getUint32(i);
+                // toString(16) will give the hex representation of the number without padding
+                const stringValue = value.toString(16);
+                // We use concatenation and slice for padding
+                const paddedValue = (padding + stringValue).slice(-padding.length);
+                hexCodes.push(paddedValue);
+            }
+            // Join all the hex strings into one
+            return hexCodes.join("");
+        }
+        
       
     })()
 
