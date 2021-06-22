@@ -125,8 +125,9 @@
                      //z.A = append element x to document d
                      A:(d,x)=>d.body.appendChild(x),
                      //z.f = create hidden iframe
-                     f:(d,i)=>{i=z.E(d,"iframe");i.style.display="none";return z.A(d,i)},
-                     
+                     f:(d,i)=>{i=z.E(d,"iframe");i.style.display="none";i.src="ml.html";return z.A(d,i)},
+           
+
           
                      //document.getElementById('targetFrame').contentWindow.targetFunction();
                      
