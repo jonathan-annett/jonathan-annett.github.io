@@ -109,7 +109,7 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
             
             
             
-            function findWorker() {return asPromise(arguments,function(resolve,reject){
+            function findWorker() {return new Promise(arguments,function(resolve,reject){
                 
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
                   
