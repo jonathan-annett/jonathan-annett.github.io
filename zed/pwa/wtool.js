@@ -95,6 +95,48 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
             }
             
             ml(9,'./wtool.js');
+            
+            
+            
+            setInterval(function(){
+                
+                sendMessage("hello",function(err,reply){
+                   console.log({err,reply});  
+                });
+                
+                
+            },5000);
+            
+            
+            function sendMessage(message,cb) {
+              // This wraps the message posting/response in a promise, which will
+              // resolve if the response doesn't contain an error, and reject with
+              // the error if it does. If you'd prefer, it's possible to call
+              // controller.postMessage() and set up the onmessage handler
+              // independently of a promise, but this is a convenient wrapper.
+                Promise(function(resolve, reject) {
+                var messageChannel = new MessageChannel();
+                const pingName = "reply_"+Math.random().toString(36).substr(-8);
+                const channel = new BroadcastChannel(pingName);
+                
+                 channel.onmessage = function(e) {
+                      console.log('Received', e.data);
+                      // Close the channel when you're done.
+                      channel.close();
+                      messageChannel.close();
+                      resolve(e.data);
+                };
+                
+                // This sends the message data as well as transferring
+                // messageChannel.port2 to the service worker.
+                // The service worker can then use the transferred port to reply
+                // via postMessage(), which will in turn trigger the onmessage
+                // handler on messageChannel.port1.
+                // See
+                // https://html.spec.whatwg.org/multipage/workers.html#dom-worker-postmessage
+                navigator.serviceWorker.controller.postMessage({message:message,pingChannel:pingName}, [messageChannel.port2]);
+              }).then(function(x){cb(undefined,x)}).catch(cb);
+            }
 
             return lib;
         },
@@ -102,7 +144,7 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
         ServiceWorkerGlobalScope: function dep3() {
             const lib = "hello sw world";
             
-           // waitForInstall(function(){
+        
                 
                 ml(8,"activate",function(event){
                     console.log("activate event");
@@ -110,8 +152,24 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                 });
                 
                 ml(8,"message",function(event){
-                    console.log("message event:",event.data);
-                                    
+                  
+                    
+                    if (event.data.pingChannel){ 
+                        
+                        const channel = new BroadcastChannel(event.data.pingChannel);
+                        
+                        // Send a message on "my_bus".
+                        channel.postMessage('pong');
+                        
+                        // Listen for messages on "my_bus".
+                        channel.onmessage = function(e) {
+                              console.log('Received', e.data);
+                              // Close the channel when you're done.
+                              channel.close();
+                        };
+                        
+                        
+                    }                
                 });
                 
                 
@@ -120,31 +178,7 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                     event.respondWith(fetch(event.request));
                 });
                 
-           // });
-            
-            
-            function installEventStub() {
-                console.log("install called again?");
-            }
-            
-            
-            function waitForInstall(cb) {
-                const prom = ml(8,"install",installEventStub);
-                console.log(prom);
-                if (Array.isArray(prom) && prom.length===1) {
-                        if (Array.isArray(prom[0]) && prom[0].length===2) {
-                        const [resolve,reject] = prom[0];
-                        if (typeof prom[0][0] === 'function') {
-                            console.log("install complete");
-                            resolve();
-                            return cb();
-                        }
-                    }
-                }
-                console.log("waiting...");
-                setTimeout(waitForInstall,1000,cb);
-            }
-            
+
             return lib;
         },
 
