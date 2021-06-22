@@ -395,7 +395,6 @@ function browserSource () {
                  // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
                  if (R[2]&&R[2]!==(d||c[3]())) return false; 
                  s = z.s(this.document,"script");
-                 if(d)d(s);
                  z.p(R[3],s.setAttribute.bind(s,"src"));
                  return R[1];
            },
