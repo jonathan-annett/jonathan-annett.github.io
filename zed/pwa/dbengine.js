@@ -2,13 +2,13 @@
 ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],function(){ml(2,ml(3),ml(4),
 
     {
-        Window:                   function dbengine(lib,evs,sha1) {return lib(evs);},
-        ServiceWorkerGlobalScope: function dbengine(lib,evs,sha1) {return lib(evs);},
+        Window:                   function dbengine(lib,evs) {return lib(evs);},
+        ServiceWorkerGlobalScope: function dbengine(lib,evs) {return lib(evs);},
     }, (()=>{//                                      |   |
              //                                      |                     
             return {//                               V
-                Window:                   [ ()=> hybridStorageEngine, ()=> self.libEvents, ()=>sha1Subtle ],
-                ServiceWorkerGlobalScope: [ ()=> hybridStorageEngine, ()=> self.libEvents, ()=>sha1Rusha ],
+                Window:                   [ ()=> hybridStorageEngine, ()=> self.libEvents ],
+                ServiceWorkerGlobalScope: [ ()=> hybridStorageEngine, ()=> self.libEvents ],
             };
             
 
@@ -270,7 +270,7 @@ ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],
                             fromBuffertoSha1DigestBuffer(jsonBuf)
                               .then(function (buffer){
                                    
-                                  cb(undefined,buffer);
+                                  cb(undefined,bufferToHex(buffer));
                                   
                               })
                               .catch(cb);
@@ -1353,18 +1353,6 @@ ml(0,ml(1),['libEvents|events.js','Rusha@ServiceWorkerGlobalScope|sw/rusha.js'],
             
               }  
         }
-        
-        
-        function sha1Rusha(buffer){ 
-                return Promise.resolve(Rusha.createHash().update(buffer).digest('hex')) 
-
-        }
-        
-        function sha1Subtle(buffer){ 
-                return window.crypto.subtle.digest("SHA-1", bufferToHex(buffer)); 
-            
-        }
-        
       
     })()
 
