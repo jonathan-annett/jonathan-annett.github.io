@@ -107,8 +107,7 @@
                            if (!R) return L[x]?false:x;
                            // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
                            if (R[2]&&R[2]!==(d||c[3]())) return false; 
-                           s = z.s(this.document,"script");
-                           //s = z.S(window,"script");
+                           s = z.T(window,"script");
                            z.p(R[3],s.setAttribute.bind(s,"src"));
                            return R[1];
                      },
@@ -120,6 +119,7 @@
                      s:(d,S)=>{s = z.E(d,S);s.type = "text/java"+S; return z.A(d,s);},
                      //z.s = create empty script in it's own empty iframe
                      S:(w,s,D)=>{D="document";return z.s(z.f(w[D]).contentWindow[D],s);},
+                     T:(w,s)=>z.s(w.document,"script"),
                      //z.E = create script element
                      E:(d,S)=>d.createElement(S),
                      //z.A = append element x to document d
