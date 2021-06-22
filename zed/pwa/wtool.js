@@ -108,6 +108,26 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
             },5000);
             
             
+            
+            function findWorker() {return asPromise(arguments,function(resolve,reject){
+                
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  
+                  if (!registrations.some(function(reg){
+                      const worker = reg.controller || reg.active || reg.installing || reg.waiting;
+                      if (worker) {
+                          resolve(worker);
+                          return true;
+                      }
+                  })){
+                      
+                     reject(new Error("no worker found"));
+                  }
+                });
+                
+            });}
+             
+            
             function sendMessage(message,cb) {
               // This wraps the message posting/response in a promise, which will
               // resolve if the response doesn't contain an error, and reject with
@@ -134,8 +154,11 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                 // handler on messageChannel.port1.
                 // See
                 // https://html.spec.whatwg.org/multipage/workers.html#dom-worker-postmessage
-                navigator.serviceWorker.controller.postMessage({message:message,pingChannel:pingName}, [messageChannel.port2]);
-              }).then(function(x){cb(undefined,x)}).catch(cb);
+                
+                findWorker().then(function(worker){
+                    worker.postMessage({message:message,pingChannel:pingName}, [messageChannel.port2]);
+                    }).then(function(x){cb(undefined,x)}).catch(cb);
+                }).catch(cb);
             }
 
             return lib;
