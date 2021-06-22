@@ -17,6 +17,7 @@
                   // "t" contains an array of types - object,function,string,undefined
                   // used for comparisions later
                   t=[C,ml,'',z,x].map((G)=>typeof G),
+                  l=location,O=l.origin,
                   X=t[4]===t[2]?'L':x,//X =: x is string ? 6, otherwise x
                   // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
                   // any constants/worker functions they need. also contains some code used later by z
@@ -26,11 +27,11 @@
                       //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
                       r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
                       //c.b=document base
-                      b:/([a-zA-Z0-9\.\-]*\/)*/.exec(location.pathname)[0],
+                      b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
                       //c.R=shortcut to replace keyword
                       R:'replace',
                       //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
-                      B:(u)=>/^(\/|http(s?)\:\/\/)/.test(u)?u:c.b+u[c.R](/^(\.\/)/,''),
+                      B:(u)=>/^(\/|http(s?)\:\/\/)/.test(u)?u:c.b+u[c.r](/^\//,O+'/').[c.R](/^(\.\/)/,''),
               
                       // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
                       
