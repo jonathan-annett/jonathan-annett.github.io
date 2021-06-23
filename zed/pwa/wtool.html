@@ -126,6 +126,8 @@
                       if (!R) {
                           if (L[x]) return !1;
                           
+                          return x;
+                          
                           if(ml.d[x]) return !1;
                           
                           if(ml.h[x]) return !1;
@@ -182,7 +184,7 @@
                     V=(v)=>L(z.v(u,v,s));                   // save version v in history, load script with version
                     R=()=>V(r);                           // save random verison in history, load scipt with random version
                     return (ml.h[u] ?                     // does url exist in history? 
-                               V(ml.h[u].v)                  //yes = load script using version from history
+                              !1// V(ml.h[u].v)                  //yes = load script using version from history
                              : ml.H.push(u) && ( typeof fetch===z.F ?    // did Gretchen make fetch happen ? 
                                    fetch(u,{method: 'HEAD'}) // yes= fetch header and 
                                      .then((h)=>V(z.e(h,r))) // use etag as version, or random if no etag
