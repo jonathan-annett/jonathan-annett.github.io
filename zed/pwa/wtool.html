@@ -107,14 +107,14 @@
                      //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
                      0:()=>z.l(o),
                      
-                     t:(n)=>Math.min(2e3,n*(ml.t=(ml.t?ml.t*2:2))),
+                     t:(n)=>Math.min(100,ml.t=(ml.t?ml.t*2:1)),
                      //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
                      l:(u)=>{
                            u = u.map(z.u).filter(z.y);
                            return u.length?setTimeout(z.l, z.t(u.length), u)&&c.l("pending...",u):a();
                      },
               
-                     //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
+                     //z.u = map iterator z.l
                      u:(x,R)=>{
                            R=c.r(x);
                            if (!R) return L[x]?false:x;
