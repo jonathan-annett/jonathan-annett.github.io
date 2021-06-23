@@ -31,7 +31,7 @@
                       //c.R=shortcut to replace keyword
                       R:'replace',
                       //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
-                      B:(u)=>/^(\/|http(s?)\:\/\/)/.test(u)?u:c.b+u[c.R](/^\//,O+'/')[c.R](/^(\.\/)/,''),
+                      B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
               
                       // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
                       
