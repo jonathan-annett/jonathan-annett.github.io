@@ -54,6 +54,15 @@
                             c.S(ml.h[ ml.d[e].h ].e,e, //
                               c.S(o,e,a[L].apply(this, d[L].map(c.x))) // do the import
                              )&&c.l(D+":",e)||c.l(D+" empty:",e) ) : c.l("ready:",e);
+                           
+                        if (!ml.i){  
+                            ml.i=new Proxy({},{
+                                get:(t,p)=>c.I(x=p),
+                                ownKeys:()=>c.k(ml.d),
+                                getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
+                                has:(t,p)=>!!ml.d[p]
+                            });
+                        }
                      
                  },
                  //c.P property descriptor
@@ -101,12 +110,6 @@
                  //c.I = import query
                  I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
                  k:(o)=>Object.keys(o),
-                 i:new Proxy({},{
-                     get:(t,p)=>c.I(x=p),
-                     ownKeys:()=>c.k(ml.d),
-                     getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
-                     has:(t,p)=>!!ml.d[p]
-                 }),
                  f:'forEach',
                  w:'serviceWorker',
                  n:'navigator',
