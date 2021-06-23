@@ -126,14 +126,11 @@
                       if (!R) {
                           if (L[x]) return !1;
                           
-                          return x;
-                          if(!ml.d[x]) return x;
+                          if(ml.d[x]) return !1;
                           
-                          if(ml.h[ ml.d[x].h ]) {
-                              
-                              return !1;
-                          }
-                         R=['',x,'',ml.d[x].h];
+                          if(ml.h[x]) return !1;
+                          
+                          return x;
                       } else {
                           // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
                          if ((N=R[2])&&N!==(d||c[3]())) return !1; 
