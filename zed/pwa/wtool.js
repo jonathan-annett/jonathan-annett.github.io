@@ -113,7 +113,7 @@ ml(0,ml(1),[
                    
                    sendMessage("unzip",{
                        url:"/zed/server-startup-main.zip",
-                       file:"/server-startup-main/packakge.json"},function(err,reply){
+                       file:"server-startup-main/package.json"},function(err,reply){
                       console.log({err,reply});  
                    });
                    
