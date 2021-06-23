@@ -48,12 +48,11 @@
                       // r = undefined
                       2:(L,o,a,d,e,r)=>{
                               e = a[L] && a[L].name; 
-                              if (o[e])c.l("ok:",e,"is a",typeof o[e]);
                               e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
                               value: a[L].apply(this, d[L].map(c.x)),
                               enumerable: !0,
                               configurable: !0
-                          }) : c.l("loaded:",e);
+                          })||c.log("defined:",e) : c.l("ready:",e);
                           
                       },
                       
