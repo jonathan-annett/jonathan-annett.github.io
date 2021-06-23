@@ -197,15 +197,15 @@ ml(0,ml(1),[
                            cb( {error:err.message||err}); 
                        }
                       
-                       if (msg.url && msg.file) {
+                       if (msg.data && msg.data.url && msg.data.file) {
                            
-                           JSZipUtils.getBinaryContent(msg.url, function(err, data) {
+                           JSZipUtils.getBinaryContent(msg.data.url, function(err, data) {
                                if(err) {
                                    return catcher(err); // or handle err
                                }
                            
                                JSZip.loadAsync(data).then(function (zip) {
-                                   zip.file(msg.file).async("arraybuffer")
+                                   zip.file(msg.data.file).async("arraybuffer")
                                       .then(function(buffer){
                                           cb({buffer:buffer});
                                       });
