@@ -196,37 +196,43 @@ ml(0,ml(1),[
                        function catcher(err) {
                            cb( {error:err.message||err}); 
                        }
+                       
+                       
+                       function unzipper(response) {
+                           
+                           
+                         if (!response.ok) {
+                           return cb ({error:"HTTP error, status = " + response.status});
+                         }
+                         
+                         response.arrayBuffer().then(function(buffer) {
+                       
+                            JSZip.loadAsync(buffer).then(function (zip) {
+                               zip.file(msg.data.file).async("arraybuffer")
+                                  .then(function(buffer){
+                                      cb({buffer:buffer});
+                                  });
+                           }).catch(catcher);
+                           
+                           
+                           
+                         });
+                         
+                         
+                       }
                       
                        if (msg.data && msg.data.url && msg.data.file) {
                            
                            
                            fetch(msg.data.url)
-                              .then(function(response) {
-                                if (!response.ok) {
-                                  return cb ({error:"HTTP error, status = " + response.status});
-                                }
-                                
-                                return response.arrayBuffer();
-                              }).then(function(buffer) {
-                                  
-                                       JSZip.loadAsync(buffer).then(function (zip) {
-                                          zip.file(msg.data.file).async("arraybuffer")
-                                             .then(function(buffer){
-                                                 cb({buffer:buffer});
-                                             });
-                                      }).catch(catcher);
-                                      
-                                      
-                                      
-                                  
+                              .then(unzipper)
+                                .catch(function(err){
+                                    
+                                    fetch(msg.data.url,{mode:'no-cors'})
+                                       .then(unzipper)
+                                       
                                 }).catch(catcher);
-                              
-                              
-                              
-                          
-                           
-                           
-                           
+
                        } 
                       
                         
