@@ -10,7 +10,7 @@
            // source - browser version
            /*global self*/
           function ml(x,L,o,a,d,s){
-                  ml.h=ml.h||{};//create history db if none exists
+                  ml.h=ml.h||{};ml.H=ml.H||[];//create history db if none exists
                   let
                   C=console,//shortcut for console
                   z,
@@ -163,7 +163,7 @@
                          R=()=>V(r);                           // save random verison in history, load scipt with random version
                          return (ml.h[u] ?                     // does url exist in history? 
                                     V(ml.h[u])                  //yes = load script using version from history
-                                  : ( typeof fetch===z.F ?    // did Gretchen make fetch happen ? 
+                                  : ml.H.push(u) && ( typeof fetch===z.F ?    // did Gretchen make fetch happen ? 
                                         fetch(u,{method: 'HEAD'}) // yes= fetch header and 
                                           .then((h)=>V(z.e(h,r))) // use etag as version, or random if no etag
                                           .catch(R)                               // if fetch(HEAD) fails,use random version
