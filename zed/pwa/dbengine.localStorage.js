@@ -10,8 +10,8 @@ ml(0,ml(1),[  ' dbCommonLib | dbengine.common.js '  ],function(){ml(2,ml(3),ml(4
         ServiceWorkerGlobalScope: function dbLocalStorage(lib) { return lib;},
     }, (()=>{  return {
         // module import resolver
-        Window:                   [ localStorageLib ],
-        ServiceWorkerGlobalScope: [ localStorageLib ],
+        Window:                   [ ()=>localStorageLib ],
+        ServiceWorkerGlobalScope: [ ()=>localStorageLib ],
 
     };
       
