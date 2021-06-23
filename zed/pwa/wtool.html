@@ -18,7 +18,7 @@
              // used for comparisions later
              t=[C,ml,'',z,x].map((G)=>typeof G),
              l=location,O=l.origin,
-             X=t[4]===t[2]?'L':x,//X =: x is string ? 6, otherwise x
+             X=t[4]===t[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?'I':'L':x,//X =: L= x is filename, I= x is keyword, otherwise x
              // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
              // any constants/worker functions they need. also contains some code used later by z
              // note that z doubles as a proxy for "undefined" in the type array "t" above 
@@ -97,6 +97,8 @@
                          'T'
                      );
                  },
+                 //c.I = import query
+                 I:(m,M,I)=>(M=ml.d[m])&&(I=ml.h[ M.h ])&&I.e[m],
                  w:'serviceWorker',
                  n:'navigator',
                  d:"document"
