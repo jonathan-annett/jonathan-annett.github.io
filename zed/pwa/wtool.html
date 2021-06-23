@@ -57,7 +57,7 @@
                      
                  },
                  //c.P property descriptor
-                 P:(v)=>{value: v,enumerable: !0,configurable: !0},
+                 P:(v)=>{{value: v,enumerable: !0,configurable: !0}},
                  //c.S set key value in obj, returning value
                  S:(o,k,v)=>{Object.defineProperty(o,k,c.P(v));return v;},
                  // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
