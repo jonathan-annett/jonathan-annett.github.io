@@ -4,14 +4,14 @@
 /* global ml,self */
 ml(0,ml(1),[  ],function(){ml(2,ml(3),ml(4),
 
-    {   Window: function dbCommon(dbCommonLib) { return dbCommonLib ;},
-        ServiceWorkerGlobalScope: function dbCommon(dbCommonLib) { return dbCommonLib ;}
+    {   Window: function dbCommonLib(lib) { return lib ;},
+        ServiceWorkerGlobalScope: function dbCommonLib(lib) { return lib ;}
     }, (()=>{  return {
-        Window:                   [ () => dbCommonLib   ],
-        ServiceWorkerGlobalScope: [ () => dbCommonLib   ]
+        Window:                   [ () => commonLib   ],
+        ServiceWorkerGlobalScope: [ () => commonLib   ]
     };
             
-      function dbCommonLib (keyprefix) {
+      function commonLib (keyprefix) {
           
               
         const flushHybridCachedSyncWritesInterval = 1500;

@@ -5,21 +5,17 @@
 ml(0,ml(1),[  ' dbCommonLib | dbengine.common.js '  ],function(){ml(2,ml(3),ml(4),
 
     {   // module construtor definition
-        Window:                   function dbLocalStorage(dbLocalStorageLib) {
-           
-            return dbLocalStorageLib;
-
-        },
+        Window:                   function dbLocalStorage(lib) {return lib;},
         
-        ServiceWorkerGlobalScope: function moduleName(lib) {lib.hello(); return lib;},
+        ServiceWorkerGlobalScope: function dbLocalStorage(lib) { return lib;},
     }, (()=>{  return {
         // module import resolver
-        Window:                   [ dbLocalStorageLib ],
-        ServiceWorkerGlobalScope: [ dbLocalStorageLib ],
+        Window:                   [ localStorageLib ],
+        ServiceWorkerGlobalScope: [ localStorageLib ],
 
     };
       
-      function dbLocalStorageLib ( keyprefix ) {
+      function localStorageLib ( keyprefix ) {
           
           const { keyprefix_length,
                   prefixes,
