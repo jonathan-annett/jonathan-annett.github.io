@@ -1,9 +1,11 @@
-/* global ml,self,caches,BroadcastChannel,JSZipUtils,JSZip */
+/* global ml,self,caches,BroadcastChannel,JSZipUtils,JSZip,dbLocalForage,Response */
 ml(0,ml(1),[
     
     'wTools|windowTools.js',
     'JSZipUtils@ServiceWorkerGlobalScope | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
-    'JSZip@ServiceWorkerGlobalScope | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js'
+    'JSZip@ServiceWorkerGlobalScope | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
+    'dbLocalForage  | dbengine.localForage.js',
+
     
     
     ],function(){ml(2,ml(3),ml(4),
@@ -171,7 +173,141 @@ ml(0,ml(1),[
         },
 
         ServiceWorkerGlobalScope: function main(wTools) {
-            const lib = "hello sw world";
+            
+            
+            const keyprefix= 'zip-cache.'
+            
+            const {
+                
+                localForageKeyKiller,
+                setForageKey,
+                getForageKey,
+                removeForageKey,
+                getForageKeys,
+                clearForage
+                
+                
+            } = dbLocalForage(keyprefix);
+            
+            
+            const openZipFileCache = {
+                
+            };
+             
+            function limitZipFilesCache(count,cb) {
+                const keys = Object.keys(openZipFileCache);
+                if (keys.length<=count) return cb();
+                keys.sort(function(a,b){
+                    return openZipFileCache[a].touched - openZipFileCache[b].touched;
+                }).slice(0,keys.length-count).forEach(function(key){
+                    delete openZipFileCache[key];
+                });
+                
+                return cb();
+                
+            }
+            
+            
+            
+            function getZipFile(url,cb) {
+                
+                
+                function getBuffer(response) {
+                    
+                    
+                  if (!response.ok) {
+                    return cb (new Error("HTTP error, status = " + response.status));
+                  }
+                  
+                  response.arrayBuffer().then(function(buffer) {
+                      setForageKey(url,buffer,function(err){
+                        if (err) return cb(err);
+                        cb(undefined,buffer);
+                      });
+                      
+                  }).catch(cb);
+                  
+                  
+                }
+                
+                getForageKey(url,function(err,data){
+                    if (!err && data) {
+                        return cb(undefined,data);
+                    }
+                    
+                    fetch(url)
+                    .then(getBuffer)
+                      .catch(function(err){
+                           fetch(url,{mode:'no-cors'})
+                              .then(getBuffer)
+                      }).catch(cb);
+
+                });
+                
+            }
+            
+           
+            
+            function getZipObject(url,cb) {
+                const entry = openZipFileCache[url];
+                if (entry) {
+                    entry.touch=Date.now();
+                    return cb (undefined,entry.zip);
+                }
+                getZipFile(url,function(err,buffer){
+                    if (err) return cb(err);
+                    
+                    JSZip.loadAsync(buffer).then(function (zip) {
+                        limitZipFilesCache(9,function(){
+                            openZipFileCache[url]={
+                                touched:Date.now(),
+                                zip:zip
+                            };
+                            return cb (undefined,zip);
+                        });
+                    }).catch(cb);
+
+                });
+                
+            }
+            
+            function unzipFile(url,path,format,cb) {
+                if (typeof format==='function') {
+                    cb=format;
+                    format="arraybuffer";
+                }
+                
+                getZipObject(url,function(err,zip) {
+                    
+                      if (err) return cb(err);
+                       zip.file(path).async(format)
+                           .then(function(buffer){
+                               cb(undefined,buffer);
+                           });
+                           
+                });
+                 
+            }
+            
+            function fetchZipUrl(event) {
+                const parts = /^(?:(http(?:s?):\/\/.*\.zip)(?:\:\/\/))(.*)/.exec(event.request.url);
+                if (parts) {
+                    event.respondWith(
+                    new Promise(function(resolve){
+                        unzipFile(parts[1],parts[2],function(err,buffer) {
+                            
+                            if (err|| !buffer ) {
+                               // An HTTP error response code (40x, 50x) won't cause the fetch() promise to reject.
+                               // We need to explicitly throw an exception to trigger the catch() clause.
+                               throw err || Error('no buffer returned from unzipFile');
+                                
+                            }
+                            return resolve( new Response(buffer, {status:200}) );
+                        });
+                    })); 
+                }
+                return !!parts;
+            }
             
         
                 
@@ -243,13 +379,9 @@ ml(0,ml(1),[
                 });
                 
                 
-                ml.register("fetch",function(event){
-                    console.log("fetch event:",event.request.url);
-                    event.respondWith(fetch(event.request));
-                });
+                ml.register("fetch",fetchZipUrl);
                 
 
-            return lib;
         },
 
     }, {

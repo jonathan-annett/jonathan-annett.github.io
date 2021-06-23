@@ -62,9 +62,7 @@ ml(0,ml(1),[
                      clearForage
                      
                      
-                 } =
-                 
-                 dbLocalForage(keyprefix)
+                 } = dbLocalForage(keyprefix)
                  
                  
                   
