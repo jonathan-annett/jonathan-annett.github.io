@@ -112,7 +112,7 @@ ml(0,ml(1),[
                    
                    
                    sendMessage("unzip",{
-                       url:"https://github.com/jonathan-annett/server-startup/archive/refs/heads/main.zip",
+                       url:"/zed/server-startup-main.zip",
                        file:"/server-startup-main/packakge.json"},function(err,reply){
                       console.log({err,reply});  
                    });
@@ -228,7 +228,7 @@ ml(0,ml(1),[
                               .then(unzipper)
                                 .catch(function(err){
                                     
-                                    fetch(msg.data.url,{mode:'no-cors'})
+                                        fetch(msg.data.url,{mode:'no-cors'})
                                        .then(unzipper)
                                        
                                 }).catch(catcher);
