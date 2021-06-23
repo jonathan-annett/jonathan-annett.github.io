@@ -28,6 +28,7 @@
                       r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
                       //c.b=document base
                       b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
+                      c:(u)=>u.startsWith(c.b),
                       //c.R=shortcut to replace keyword
                       R:'replace',
                       //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
@@ -125,7 +126,9 @@
                            // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
                            if ((N=R[2])&&N!==(d||c[3]())) return !1; 
                            s = z.T(window,"script");
-                           ml.d[ N=R[1] ]=U=c.B(R[3]);
+                           N=R[1];
+                           U=c.B(R[3]);
+                           if(c.c(U))ml.d[N]=U;
                            z.p(U,s.setAttribute.bind(s,"src"));
                            return N;
                      },
