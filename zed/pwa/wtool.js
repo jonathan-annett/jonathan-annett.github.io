@@ -199,18 +199,31 @@ ml(0,ml(1),[
                       
                        if (msg.data && msg.data.url && msg.data.file) {
                            
-                           JSZipUtils.getBinaryContent(msg.data.url, function(err, data) {
-                               if(err) {
-                                   return catcher(err); // or handle err
-                               }
                            
-                               JSZip.loadAsync(data).then(function (zip) {
-                                   zip.file(msg.data.file).async("arraybuffer")
-                                      .then(function(buffer){
-                                          cb({buffer:buffer});
-                                      });
-                               }).catch(catcher);
-                           });
+                           fetch(msg.data.url)
+                              .then(function(response) {
+                                if (!response.ok) {
+                                  return cb ({error:"HTTP error, status = " + response.status});
+                                }
+                                
+                                return response.arrayBuffer();
+                              }).then(function(buffer) {
+                                  
+                                       JSZip.loadAsync(buffer).then(function (zip) {
+                                          zip.file(msg.data.file).async("arraybuffer")
+                                             .then(function(buffer){
+                                                 cb({buffer:buffer});
+                                             });
+                                      }).catch(catcher);
+                                      
+                                      
+                                      
+                                  });
+                                });
+                              
+                              
+                              
+                          
                            
                            
                            
