@@ -12,7 +12,8 @@ function ml(x,L, o, a, d, s){
         // "t" contains an array of types - object,function,string,undefined
         // used for comparisions later
         t=[C,ml,'',z,x].map((G)=>typeof G),
-        X=t[4]===t[2]?'L':x,//X =: x is string ? 6, otherwise x
+        //X = for ml(x...), when x is string ? X=='L', otherwise X==x
+        X=t[4]===t[2]?'L':x,
         // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
         // any constants/worker functions they need. also contains some code used later by z
         // note that z doubles as a proxy for "undefined" in the type array "t" above 
@@ -75,6 +76,9 @@ function ml(x,L, o, a, d, s){
             //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
             //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
             r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+            w:'serviceWorker',
+            n:'navigator',
+            
            
             
         };
@@ -91,9 +95,10 @@ function ml(x,L, o, a, d, s){
            0:()=>z.l(o),
            
            //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
+           t:(n)=>Math.min(2e3,n*(ml.t=(ml.t?ml.t*2:2))),
            l:(u)=>{
                  u = u.map(z.u).filter(z.y);
-                 return u.length?setTimeout(z.l, 500+(u.length*100), u)&&c.l("waiting for",u):a();
+                 return u.length?setTimeout(z.l, z.t(u.length), u)&&c.l("waiting for",u):a();
            },
     
            //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
@@ -131,8 +136,6 @@ function ml(x,L, o, a, d, s){
                   
            //z.U() = history as an array of urls
            U:()=>Object.keys(ml.h),
-    
-           
            //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
            p:(u,l/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
                r=z.r();//prepare a random version number (in case we need it)
@@ -150,21 +153,18 @@ function ml(x,L, o, a, d, s){
            },
            //z.e = resolve to etag in r.header or d (default)
            e:(r,d)=>r.headers.get("Etag").replace(/[\"\/\\\-]*/g,'')||d,
-           
            //z.r() = a random id generator
-            r:()=>Math.random().toString(36).substr(-8),
-            
-           
+           r:()=>Math.random().toString(36).substr(-8),
+           //z.V() = optionally append version tag to url, depending on prefetch settings
            V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
+           //z.v() = save version for url in history, return version
            v:(u,v)=>(ml.h[u]=v),
-           w:'serviceWorker',
-           W:'navigator',
            8:(m,c)=>{
                
                
                
            },
-           9:(L)=>L&&z.w in self[z.W]&&self[z.W][z.w].register('./ml.sw.min.js?ml=' + encodeURIComponent(L))
+           9:(L)=>L&&c.w in self[c.n]&&self[c.n][c.w].register('./ml.sw.min.js?ml=' + encodeURIComponent(L))
         };
         return z[x]?z[x](L,o,a,d,s):undefined;
     }
