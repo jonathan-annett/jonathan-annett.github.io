@@ -9,7 +9,7 @@
                 
            // source - browser version
            /*global self*/
-          function ml(x,L, o, a, d, s){
+          function ml(x,L,o,a,d,s){
                   ml.h=ml.h||{};//create history db if none exists
                   let
                   C=console,//shortcut for console
@@ -183,7 +183,7 @@
                      },
                      9:(L)=>L&&z.w in self[z.W]&&self[z.W][z.w].register('./ml.sw.min.js?ml=' + encodeURIComponent(L))
                   };
-                  return z[x]?z[x](L,o,a,d,s):undefined;
+                  return z[x]&&z[x](L,o,a,d,s);
               }
         
           
