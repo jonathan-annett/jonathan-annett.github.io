@@ -302,7 +302,7 @@ function browserSource () {
     // source - browser version
     /*global self*/
     function ml(x,L,o,a,d,s){
-        ml.h=ml.h||{};//create history db if none exists
+        if (!ml.h){ml.h={};ml.H=[];ml.d={};ml.f={};}//create history db if none exists
         let
         C=console,//shortcut for console
         z,
@@ -320,6 +320,7 @@ function browserSource () {
             r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
             //c.b=document base
             b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
+            c:(u)=>u.startsWith(c.b),
             //c.R=shortcut to replace keyword
             R:'replace',
             //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
@@ -338,16 +339,18 @@ function browserSource () {
             // d = array of loaded dependants 
             // e = unuused argument doubles as a variable
             // r = undefined
-            2:(L,o,a,d,e,r)=>{
-                    e = a[L] && a[L].name; 
-                    e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
-                    value: a[L].apply(this, d[L].map(c.x)),
-                    enumerable: !0,
-                    configurable: !0
-                })&&c.l("defined:",e) : c.l("ready:",e);
+            2:(L,o,a,d,e,D)=>{
+                    D="defined";//define a constant
+                    e= a[L] && a[L].name; //evaluate name of import
+                    e=typeof e+typeof o[e]===t[2]+t[3]? (//valdidate nameed import is a function
+                       c.S(ml.h[ ml.d[e].h ].e,e, //
+                         c.S(o,e,a[L].apply(this, d[L].map(c.x))) // do the import
+                        )&&c.l(D+":",e)||c.l(D+" empty:",e) ) : c.l("ready:",e);
                 
             },
-            
+            //c.S set key value in obj, returning value
+            S:(o,k,v)=>{Object.defineProperty(o, k, {value: v,enumerable: !0,configurable: !0});
+                          return v;},
             // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
             3:()=>c[4]().constructor.name || "x",
             
@@ -376,8 +379,10 @@ function browserSource () {
                     t+"@T|"+R[3]],
                     ()=>ml(  2,'T',S,
                             {T:L},
-                            {T:[()=>{ R=S[t];
+                            {T:[(x)=>{ R=S[t];
                                       if (!w) delete S[t];
+                                      x=t&&ml.d[t];
+                                      if(x)ml.h[ x.h ].e[t]=R;
                                       return R;
                                      }
                                ]}),
@@ -385,7 +390,8 @@ function browserSource () {
                 );
             },
             w:'serviceWorker',
-            n:'navigator'
+            n:'navigator',
+            d:"document"
         };
         // here X will be 5 if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x
         z=typeof c[X]===t[1]?c[X](L,o,a,d,s):c;// if c[X] resolves to a function, execute it, putting result in z, otherwise set z to c
@@ -399,40 +405,57 @@ function browserSource () {
            //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
            0:()=>z.l(o),
            
-           t:(n)=>Math.min(2e3,n*(ml.t=(ml.t?ml.t*2:2))),
+           t:(n)=>Math.min(100,ml.t=(ml.t?ml.t*2:1)),
            //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
            l:(u)=>{
                  u = u.map(z.u).filter(z.y);
                  return u.length?setTimeout(z.l, z.t(u.length), u)&&c.l("pending...",u):a();
            },
     
-           //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
-           u:(x,R)=>{
+           //z.u = map iterator z.l
+           u:(x,R,U,N)=>{
                  R=c.r(x);
-                 if (!R) return L[x]?false:x;
-                 // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
-                 if (R[2]&&R[2]!==(d||c[3]())) return false; 
-                 s = z.T(window,"script");
-                 z.p(c.B(R[3]),s.setAttribute.bind(s,"src"));
-                 return R[1];
+                 if (!R) {
+                     if (L[x]) return !1;
+                     
+                     return x;
+                     if(!ml.d[x]) return x;
+                     
+                     if(ml.h[ ml.d[x].h ]) {
+                         
+                         return !1;
+                     }
+                    R=['',x,'',ml.d[x].h];
+                 } else {
+                     // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
+                    if ((N=R[2])&&N!==(d||c[3]())) return !1; 
+                 }
+                 N=R[1];
+                 U=c.B(R[3]);
+                 if(c.c(U))ml.d[N]={h:U};
+                 z.T(window,"script",(s)=>{
+                    z.p(U,s.setAttribute.bind(s,"src"),s);    
+                 });
+                 return N;
            },
            
            //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
            y:(x)=>!!x,
              
            //z.s = create and append empty script element
-           s:(d,S)=>{s = z.E(d,S);s.type = "text/java"+S; return z.A(d,s);},
+           s:(d,S,C)=>{s = z.E(d,S);s.type = "text/java"+S;C(z.A(d,s));},
            //z.s = create empty script in it's own empty iframe
-           S:(w,s,D)=>{D="document";return z.s(z.f(w[D]).contentWindow[D],s);},
-           T:(w,s)=>z.s(w.document,s),
+           S:(w,s,C,D)=>{D=z.f(w[c.d],()=>z.s(D.contentWindow[c.d],s,C));},
+           T:(w,s,C)=>z.s(w[c.d],s,C),
            //z.E = create script element
            E:(d,S)=>d.createElement(S),
            //z.A = append element x to document d
            A:(d,x)=>d.body.appendChild(x),
            //z.f = create hidden iframe
-           f:(d,i)=>{ i=z.E(d,"iframe");
+           f:(d,i,l)=>{ i=z.E(d,"iframe");
                       i.style.display="none";
                       i.src="ml.html";
+                      i.onload=l;
                       return z.A(d,i);},
  
 
@@ -448,14 +471,14 @@ function browserSource () {
            
            
            //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
-           p:(u,l/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
+           p:(u,l,s/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
                r=z.r();//prepare a random version number (in case we need it)
                L=(v)=>l(z.V(u,v));                  // load script with version
-               V=(v)=>L(z.v(u,v));                   // save version v in history, load script with version
+               V=(v)=>L(z.v(u,v,s));                   // save version v in history, load script with version
                R=()=>V(r);                           // save random verison in history, load scipt with random version
                return (ml.h[u] ?                     // does url exist in history? 
-                          V(ml.h[u])                  //yes = load script using version from history
-                        : ( typeof fetch===z.F ?    // did Gretchen make fetch happen ? 
+                          V(ml.h[u].v)                  //yes = load script using version from history
+                        : ml.H.push(u) && ( typeof fetch===z.F ?    // did Gretchen make fetch happen ? 
                               fetch(u,{method: 'HEAD'}) // yes= fetch header and 
                                 .then((h)=>V(z.e(h,r))) // use etag as version, or random if no etag
                                 .catch(R)                               // if fetch(HEAD) fails,use random version
@@ -466,20 +489,19 @@ function browserSource () {
            e:(r,d)=>r.headers.get("Etag")[c.R](/[\"\/\\\-]*/g,'')||d,
            
            //z.r() = a random id generator
-            r:()=>Math.random().toString(36).substr(-8),
+           r:()=>Math.random().toString(36).substr(-8),
             
            
            V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
-           v:(u,v)=>(ml.h[u]=v),
-           w:'serviceWorker',
-           W:'navigator',
+           v:(u,v,s)=>(ml.h[u]={v:v,s:s,e:{}}),
            8:(m,c)=>{
                
            },
-           9:(L)=>L&&c.w in self[c.n]&&self[c.n][c.w].register('./ml.sw.min.js?ml=' + encodeURIComponent(L))
+           9:(L)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.min.js?ml=' + encodeURIComponent(L))
         };
         return z[x]&&z[x](L,o,a,d,s);
     }
+
 
 }
 
