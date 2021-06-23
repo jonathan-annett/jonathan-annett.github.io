@@ -56,9 +56,10 @@
                              )&&c.l(D+":",e)||c.l(D+" empty:",e) ) : c.l("ready:",e);
                      
                  },
+                 //c.P property descriptor
+                 P:(v)=>{value: v,enumerable: !0,configurable: !0},
                  //c.S set key value in obj, returning value
-                 S:(o,k,v)=>{Object.defineProperty(o, k, {value: v,enumerable: !0,configurable: !0});
-                               return v;},
+                 S:(o,k,v)=>{Object.defineProperty(o,k,c.P(v));return v;},
                  // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
                  3:()=>c[4]().constructor.name || "x",
                  
@@ -99,6 +100,14 @@
                  },
                  //c.I = import query
                  I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
+                 k:(o)=>Object.keys(o),
+                 i:new Proxy({},{
+                     get:(t,p)=>c.I(x=p),
+                     ownKeys:()=>c.k(ml.d),
+                     getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
+                     has:(t,p)=>!!ml.d[p]
+                 }),
+                 f:'forEach',
                  w:'serviceWorker',
                  n:'navigator',
                  d:"document"
@@ -176,7 +185,8 @@
                 
                        
                 //z.U() = history as an array of urls
-                U:()=>Object.keys(ml.h),
+                
+                U:()=>c.k(ml.h),
                 
                 
                 //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
