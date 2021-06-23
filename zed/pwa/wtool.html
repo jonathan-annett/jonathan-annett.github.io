@@ -117,7 +117,7 @@
                      //z.u = map iterator z.l
                      u:(x,R,U,N)=>{
                            R=c.r(x);
-                           if (!R) return L[x]?false:ml.d[x]||x;
+                           if (!R) return L[x]?false:x;
                            // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
                            if ((N=R[2])&&N!==(d||c[3]())) return false; 
                            s = z.T(window,"script");
