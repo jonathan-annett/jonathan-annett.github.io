@@ -48,11 +48,11 @@
                       // e = unuused argument doubles as a variable
                       // r = undefined
                       2:(L,o,a,d,e,D)=>{
-                              D="defined",
-                              e= a[L] && a[L].name; 
-                              e=typeof e+typeof o[e]===t[2]+t[3]? (
-                                 c.S(ml.h[ ml.d[e].h ].e,e,
-                                   c.S(o,e,a[L].apply(this, d[L].map(c.x)))
+                              D="defined",//define a constant
+                              e= a[L] && a[L].name; //evaluate name of import
+                              e=typeof e+typeof o[e]===t[2]+t[3]? (//valdidate nameed import is a function
+                                 c.S(ml.h[ ml.d[e].h ].e,e, //
+                                   c.S(o,e,a[L].apply(this, d[L].map(c.x))) // do the import
                                   )&&c.l(D+":",e)||c.l(D+" empty:",e) ) : c.l("ready:",e);
                           
                       },
