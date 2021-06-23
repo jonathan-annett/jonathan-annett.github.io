@@ -118,7 +118,8 @@
                      u:(x,R,U,N)=>{
                            R=c.r(x);
                            if (!R) {
-                               if(L[x]||!ml.d[x]) return !1;
+                               if (L[x]) return !1;
+                               if (!ml.d[x]) return x;
                                R=['',ml.d[x],'',x];
                            }
                            // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
