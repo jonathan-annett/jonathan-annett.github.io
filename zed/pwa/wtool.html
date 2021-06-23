@@ -47,16 +47,18 @@
                       // d = array of loaded dependants 
                       // e = unuused argument doubles as a variable
                       // r = undefined
-                      2:(L,o,a,d,e,r)=>{
-                              e = a[L] && a[L].name; 
-                              e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
-                              value: a[L].apply(this, d[L].map(c.x)),
-                              enumerable: !0,
-                              configurable: !0
-                          })&&c.l("defined:",e) : c.l("ready:",e);
+                      2:(L,o,a,d,e,D)=>{
+                              D="defined",
+                              e= a[L] && a[L].name; 
+                              e=typeof e+typeof o[e]===t[2]+t[3]? (
+                                 c.S(ml.h[ ml.d[e].h ].e,e,
+                                   c.S(o,e,a[L].apply(this, d[L].map(c.x)))
+                                  )&&c.l(D+":",e)||c.l(D+" empty:",e) ) : c.l("ready:",e);
                           
                       },
-                      
+                      //c.S set key value in obj, returning value
+                      S:(o,k,v)=>{Object.defineProperty(o, e, {value: v,enumerable: !0,configurable: !0});
+                                    return v;}
                       // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
                       3:()=>c[4]().constructor.name || "x",
                       
