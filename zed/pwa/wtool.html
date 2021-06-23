@@ -85,8 +85,10 @@
                               t+"@T|"+R[3]],
                               ()=>ml(  2,'T',S,
                                       {T:L},
-                                      {T:[()=>{ R=S[t];
+                                      {T:[(x)=>{ R=S[t];
                                                 if (!w) delete S[t];
+                                                x=t&&ml.d[t];
+                                                if(x)ml.h[ x.h ].e[t]=R;
                                                 return R;
                                                }
                                          ]}),
@@ -197,7 +199,7 @@
                       
                      
                      V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
-                     v:(u,v,s)=>(ml.h[u]={v:v,s:s}),
+                     v:(u,v,s)=>(ml.h[u]={v:v,s:s,e:{}}),
                      8:(m,c)=>{
                          
                      },
