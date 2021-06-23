@@ -47,11 +47,13 @@
                       // e = unuused argument doubles as a variable
                       // r = undefined
                       2:(L,o,a,d,e,r)=>{
-                              e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
+                              e = a[L] && a[L].name; 
+                              e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
                               value: a[L].apply(this, d[L].map(c.x)),
                               enumerable: !0,
                               configurable: !0
-                          }) : r;
+                          }) : c.l("failed:",e,"in",o);
+                          
                       },
                       
                       // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
