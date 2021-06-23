@@ -10,7 +10,7 @@
            // source - browser version
            /*global self*/
           function ml(x,L,o,a,d,s){
-                  ml.h=ml.h||{};ml.H=ml.H||[];//create history db if none exists
+                  if (!ml.h){ml.h={};ml.H=[];ml.d={};}//create history db if none exists
                   let
                   C=console,//shortcut for console
                   z,
@@ -115,14 +115,15 @@
                      },
               
                      //z.u = map iterator z.l
-                     u:(x,R)=>{
+                     u:(x,R,U,N)=>{
                            R=c.r(x);
-                           if (!R) return L[x]?false:x;
+                           if (!R) return L[x]?false:ml.d[x]||x;
                            // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
-                           if (R[2]&&R[2]!==(d||c[3]())) return false; 
+                           if ((N=R[2])&&N!==(d||c[3]())) return false; 
                            s = z.T(window,"script");
-                           z.p(c.B(R[3]),s.setAttribute.bind(s,"src"));
-                           return R[1];
+                           U=ml.d[ N=R[1] ]=c.B(R[3]);
+                           z.p(U),s.setAttribute.bind(s,"src"));
+                           return N;
                      },
                      
                      //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
