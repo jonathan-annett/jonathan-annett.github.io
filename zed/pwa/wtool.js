@@ -1,5 +1,12 @@
-/* global ml,self,caches,BroadcastChannel */
-ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
+/* global ml,self,caches,BroadcastChannel,JSZipUtils,JSZip */
+ml(0,ml(1),[
+    
+    'wTools|windowTools.js',
+    'JSZipUtils@ServiceWorkerGlobalScope | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
+    'JSZip@ServiceWorkerGlobalScope | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js'
+    
+    
+    ],function(){ml(2,ml(3),ml(4),
 
     {
 
@@ -98,11 +105,22 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
             
             
             
-            setInterval(function(){
+            setTimeout(function(){
                 
                 sendMessage("ping",{hello:"world",when:new Date(),also:Math.random()},function(err,reply){
                    console.log({err,reply});  
+                   
+                   
+                   sendMessage("unzip",{
+                       url:"https://github.com/jonathan-annett/server-startup/archive/refs/heads/main.zip",
+                       file:"/server-startup-main/packakge.json"},function(err,reply){
+                      console.log({err,reply});  
+                   });
+                   
                 });
+                
+                
+                  
                 
                 
             },5000);
@@ -152,7 +170,7 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
             return lib;
         },
 
-        ServiceWorkerGlobalScope: function dep3() {
+        ServiceWorkerGlobalScope: function main(wTools) {
             const lib = "hello sw world";
             
         
@@ -166,11 +184,44 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
                 ml.register("messages",{
                     
                     ping:function(msg,cb){ 
+                            
+                            console.log(msg); 
+                            return cb("pong");
                         
-                        console.log(msg); 
-                       return cb("pong");
+                    },
                     
-                }});
+                    unzip:function (msg,cb){
+                        
+                        
+                       function catcher(err) {
+                           cb( {error:err.message||err}); 
+                       }
+                      
+                       if (msg.url && msg.file) {
+                           
+                           JSZipUtils.getBinaryContent(msg.url, function(err, data) {
+                               if(err) {
+                                   return catcher(err); // or handle err
+                               }
+                           
+                               JSZip.loadAsync(data).then(function (zip) {
+                                   zip.file(msg.file).async("arraybuffer")
+                                      .then(function(buffer){
+                                          cb({buffer:buffer});
+                                      });
+                               }).catch(catcher);
+                           });
+                           
+                           
+                           
+                       } 
+                      
+                        
+                        
+                    },
+                        
+                    
+                });
                 
                 
                 ml.register("fetch",function(event){
@@ -190,7 +241,9 @@ ml(0,ml(1),['wTools|windowTools.js'],function(){ml(2,ml(3),ml(4),
         ],
         ServiceWorkerGlobalScope: [
 
-            () => self.wTools
+            () => self.wTools,
+            
+            () => self.JSZip
         ],
     }
 
