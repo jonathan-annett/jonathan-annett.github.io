@@ -360,15 +360,13 @@ ml(0,ml(1),[
                        if (msg.data && msg.data.url && msg.data.file) {
                            
                            
-                           fetch(msg.data.url)
-                              .then(unzipper)
-                                .catch(function(err){
-                                    
-                                        fetch(msg.data.url,{mode:'no-cors'})
-                                       .then(unzipper)
-                                       
-                                }).catch(catcher);
-
+                           unzipFile(msg.data.url,msg.data.file,function(err,buffer){
+                               
+                               if (err) return cb( {error:err.message||err}); 
+                               
+                               return cb(buffer);
+                           });
+           
                        } 
                       
                         
