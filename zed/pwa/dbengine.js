@@ -1,10 +1,13 @@
-/* global ml,self,localforage, Rusha,dbLocalStorage,dbCommonLib */
+/* global ml,self,localforage, Rusha,dbLocalStorage,dbLocalForage, dbCommonLib */
 ml(0,ml(1),[
 
 'libEvents|events.js',
 'Rusha@ServiceWorkerGlobalScope|sw/rusha.js',
-'dbCommonLib | dbengine.common.js ' ,
-'dbLocalStorage | dbengine.localStorage.js'
+'dbCommonLib    | dbengine.common.js ' ,
+'dbLocalStorage | dbengine.localStorage.js',
+'dbLocalForage  | dbengine.localForage.js',
+
+
 ],function(){ml(2,ml(3),ml(4),
 
     {
@@ -48,6 +51,20 @@ ml(0,ml(1),[
                          clearLocal
                          
                  } = dbLocalStorage(keyprefix);
+                 
+                 const {
+                     
+                     localForageKeyKiller,
+                     setForageKey,
+                     getForageKey,
+                     removeForageKey,
+                     getForageKeys,
+                     clearForage
+                     
+                     
+                 } =
+                 
+                 dbLocalForage(keyprefix)
                  
                  
                   
@@ -497,7 +514,7 @@ ml(0,ml(1),[
                 }
                 
                 */
-                
+                /*
                 function localForageKeyKiller  (key) {
                     return localforage.removeItem(key);
                 }
@@ -564,7 +581,7 @@ ml(0,ml(1),[
                     return cbok ? setTimeout(syncAsync,0) : syncAsync();             
                 }
                 
-            
+                */
             
                 // the "hybrid" set of wrappers around localStorage and localforage are
                 // a  method of allowing a) synchronous data access in the browser if needed
