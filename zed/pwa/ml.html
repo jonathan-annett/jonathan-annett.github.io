@@ -41,7 +41,7 @@ function ml(x,L,o,a,d,s){
         // a = dictionary of dependants per window type
         // d = array of loaded dependants 
         // e = unuused argument doubles as a variable
-        // r = undefined
+        // D = constant
         2:(L,o,a,d,e,D)=>{
                 D="defined";//define a constant
                 e= a[L] && a[L].name; //evaluate name of import
@@ -49,6 +49,15 @@ function ml(x,L,o,a,d,s){
                    c.S(ml.h[ ml.d[e].h ].e,e, //
                      c.S(o,e,a[L].apply(this, d[L].map(c.x))) // do the import
                     )&&c.l(D+":",e)||c.l(D+" empty:",e) ) : c.l("ready:",e);
+                  
+               if (!ml.i){  
+                   ml.i=new Proxy({},{
+                       get:(t,p)=>c.I(x=p),
+                       ownKeys:()=>c.k(ml.d),
+                       getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
+                       has:(t,p)=>!!ml.d[p]
+                   });
+               }
             
         },
         //c.P property descriptor
@@ -96,12 +105,6 @@ function ml(x,L,o,a,d,s){
         //c.I = import query
         I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
         k:(o)=>Object.keys(o),
-        i:new Proxy({},{
-            get:(t,p)=>c.I(x=p),
-            ownKeys:()=>c.k(ml.d),
-            getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
-            has:(t,p)=>!!ml.d[p]
-        }),
         f:'forEach',
         w:'serviceWorker',
         n:'navigator',
@@ -113,8 +116,8 @@ function ml(x,L,o,a,d,s){
     if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
         
     z = {
-       F:ml.fetch||false,// F:t[1] = use fetch, F:false,  = don't use fetch
-       
+       F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),// F:t[1] = use fetch, F:false,  = don't use fetch
+
        //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
        //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
        0:()=>z.l(o),
@@ -134,11 +137,11 @@ function ml(x,L,o,a,d,s){
                  
                  return x;
                  
-                 if(ml.d[x]) return !1;
+                 //if(ml.d[x]) return !1;
                  
-                 if(ml.h[x]) return !1;
+                 //if(ml.h[x]) return !1;
                  
-                 return x;
+                 //return x;
              } else {
                  // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
                 if ((N=R[2])&&N!==(d||c[3]())) return !1; 

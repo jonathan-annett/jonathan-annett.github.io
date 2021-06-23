@@ -24,7 +24,7 @@ function ml(x,L, o, a, d, s){
         // a = dictionary of dependants per window type
         // d = array of loaded dependants 
         // e = unuused argument doubles as a variable
-        // r = undefined
+        // D = undefined
         2:(L,o,a,d,e,r)=>{
                 e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
                 value: a[L].apply(this, d[L].map(c.x)),

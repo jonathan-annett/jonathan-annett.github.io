@@ -205,6 +205,8 @@ local imports - these functions are available to the other modules declared in t
 });
 
 
+
+
  
 ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
@@ -238,51 +240,89 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
 
 function browserMinPretty () {
     return ml;
-    function ml(x, L, o, a, d, s) {
-        ml.h = ml.h || {};
-        let e, t = console,
-            r = [t, ml, "", e, x].map(e => typeof e),
-            m = r[4] === r[2] ? "L" : x,
-            n = {
-                1: () => n[4]() || {},
-                2: (L, o, a, d, e, t) => {
-                    e = typeof(e = a[L] && a[L].name) + typeof o[e] === r[2] + r[3] ? Object.defineProperty(o, e, {
-                        value: a[L].apply(this, d[L].map(n.x)),
-                        enumerable: !0,
-                        configurable: !0
-                    }) : t
-                },
-                3: () => n[4]().constructor.name || "x",
-                4: () => typeof self === r[0] && self,
-                x: e => e(),
-                l: t.log.bind(t),
-                L: (e, t, r, m) => (t = n.r(x), m = t ? n[4]() : !!o, e = m ? o : {}, t = t || [x, "t", 0, x], r = a || t[1], ml(0, e, [r + "@T|" + t[3]], () => ml(2, "T", e, {
-                    T: L
-                }, {
-                    T: [() => (t = e[r], m || delete e[r], t)]
-                }), "T")),
-                r: e => /([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e)
-            };
-        return (e = typeof n[m] === r[1] ? n[m](L, o, a, d, s) : n) !== n ? e : (e = {
-            F: ml.fetch || !1,
-            0: () => e.l(o),
-            l: t => (t = t.map(e.u).filter(e.y)).length ? setTimeout(e.l, t.length + 1, t) : a(),
-            u: (x, t) => (t = n.r(x)) ? (!t[2] || t[2] === (d || n[3]())) && (s = e.s(this.document, "script"), e.p(t[3], s.setAttribute.bind(s, "src")), t[1]) : !L[x] && x,
-            y: x => !!x,
-            s: (d, e) => ((s = d.createElement(e)).type = "text/java" + e, d.body.appendChild(s)),
-            U: () => Object.keys(ml.h),
-            p: (t, l, r, L, m, n) => (r = e.r(), L = (r => l(e.V(t, r))), m = (r => L(e.v(t, r))), n = (() => m(r)), ml.h[t] ? m(ml.h[t]) : typeof fetch === e.F ? fetch(t, {
-                method: "HEAD"
-            }).then(t => m(e.e(t, r))).catch(n) : n()),
-            e: (e, d) => e.headers.get("Etag").replace(/[\"\/\\\-]*/g, "") || d,
-            r: () => Math.random().toString(36).substr(-8),
-            V: (t, r) => e.F ? t + "?v=" + r : t,
-            v: (e, t) => ml.h[e] = t,
-            w: "serviceWorker",
-            W: "navigator",
-            9: L => L && e.w in self[e.W] && self[e.W][e.w].register("./ml.sw.js?ml=" + encodeURIComponent(L))
-        })[x] ? e[x](L, o, a, d, s) : void 0
-    }
+   function ml(x, L, o, a, d, s) {
+       ml.h || (ml.h = {}, ml.H = [], ml.d = {}, ml.f = {});
+       let z, C = console,
+           e = [C, ml, "", z, x].map(e => typeof e),
+           l = location,
+           O = l.origin,
+           t = e[4] === e[2] ? /^[a-zA-Z0-9\-\_\$]*$/.test(x) ? "I" : "L" : x,
+           c = {
+               r: e => /([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),
+               b: O + /([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
+               c: e => e.startsWith(c.b),
+               R: "replace",
+               B: (e, r) => (r = /^\//) && /^(http(s?)\:\/\/)/.test(e) ? e : r.test(e) ? e[c.R](r, O + "/") : c.b + e[c.R](/^(\.\/)/, ""),
+               1: () => c[4]() || {},
+               2: (L, o, a, d, t, D) => {
+                   D = "defined", t = typeof(t = a[L] && a[L].name) + typeof o[t] === e[2] + e[3] ? c.S(ml.h[ml.d[t].h].e, t, c.S(o, t, a[L].apply(this, d[L].map(c.x)))) && c.l(D + ":", t) || c.l(D + " empty:", t) : c.l("ready:", t), ml.i || (ml.i = new Proxy({}, {
+                       get: (e, t) => c.I(x = t),
+                       ownKeys: () => c.k(ml.d),
+                       getOwnPropertyDescriptor: (e, t) => !!ml.d[t] && c.P(c.I(t)),
+                       has: (e, t) => !!ml.d[t]
+                   }))
+               },
+               P: e => ({
+                   value: e,
+                   enumerable: !0,
+                   configurable: !0
+               }),
+               S: (o, e, t) => (Object.defineProperty(o, e, c.P(t)), t),
+               3: () => c[4]().constructor.name || "x",
+               4: () => typeof self === e[0] && self,
+               x: e => e(),
+               l: C.log.bind(C),
+               L: (e, R, t, m) => (R = c.r(x), m = R ? c[4]() : !!o, e = m ? o : {}, R = R || [x, "t", 0, x], t = a || R[1], ml(0, e, [t + "@T|" + R[3]], () => ml(2, "T", e, {
+                   T: L
+               }, {
+                   T: [x => (R = e[t], m || delete e[t], (x = t && ml.d[t]) && (ml.h[x.h].e[t] = R), R)]
+               }), "T")),
+               I: (e, t) => (e = ml.d[x]) && (t = ml.h[e.h]) && t.e[x],
+               k: o => Object.keys(o),
+               f: "forEach",
+               w: "serviceWorker",
+               n: "navigator",
+               d: "document"
+           };
+       return (z = typeof c[t] === e[1] ? c[t](L, o, a, d, s) : c) !== c ? z : (z = {
+           F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),
+           0: () => z.l(o),
+           t: e => Math.min(100, ml.t = ml.t ? 2 * ml.t : 1),
+           l: e => (e = e.map(z.u).filter(z.y)).length ? setTimeout(z.l, z.t(e.length), e) && c.l("pending...", e) : a(),
+           u: (x, R, e, t) => (R = c.r(x)) ? (!(t = R[2]) || t === (d || c[3]())) && (t = R[1], e = c.B(R[3]), c.c(e) && (ml.d[t] = {
+               h: e
+           }), z.T(window, "script", s => {
+               z.p(e, s.setAttribute.bind(s, "src"), s)
+           }), t) : !L[x] && x,
+           y: x => !!x,
+           s: (d, e, C) => {
+               (s = z.E(d, e)).type = "text/java" + e, C(z.A(d, s))
+           },
+           S: (e, s, C, D) => {
+               D = z.f(e[c.d], () => z.s(D.contentWindow[c.d], s, C))
+           },
+           T: (e, s, C) => z.s(e[c.d], s, C),
+           E: (d, e) => d.createElement(e),
+           A: (d, x) => d.body.appendChild(x),
+           f: (d, e, l) => ((e = z.E(d, "iframe")).style.display = "none", e.src = "ml.html", e.onload = l, z.A(d, e)),
+           U: () => c.k(ml.h),
+           p: (e, l, s, r, L, t, R) => (r = z.r(), L = (t => l(z.V(e, t))), t = (t => L(z.v(e, t, s))), R = (() => t(r)), !ml.h[e] && (ml.H.push(e) && (typeof fetch === z.F ? fetch(e, {
+               method: "HEAD"
+           }).then(e => t(z.e(e, r))).catch(R) : R()))),
+           e: (r, d) => r.headers.get("Etag")[c.R](/[\"\/\\\-]*/g, "") || d,
+           r: () => Math.random().toString(36).substr(-8),
+           V: (e, t) => z.F ? e + "?v=" + t : e,
+           v: (e, t, s) => ml.h[e] = {
+               v: t,
+               s: s,
+               e: {}
+           },
+           8: (e, c) => {},
+           9: L => L && c.w in self[c.n] && self[c.n][c.w].register("./ml.sw.min.js?ml=" + encodeURIComponent(L))
+       })[x] && z[x](L, o, a, d, s)
+   }
+   
+   ml(9, self), ml.register = ml.bind(self, 8);
     
 }
 
@@ -291,8 +331,7 @@ function browserMin () {
     return ml;
 /*
 <script>//*/    
-    function ml(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=console,r=[t,ml,"",e,x].map(e=>typeof e),m=r[4]===r[2]?"L":x,n={1:()=>n[4]()||{},2:(L,o,a,d,e,t)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===r[2]+r[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(n.x)),enumerable:!0,configurable:!0}):t},3:()=>n[4]().constructor.name||"x",4:()=>typeof self===r[0]&&self,x:e=>e(),l:t.log.bind(t),L:(e,t,r,m)=>(t=n.r(x),m=t?n[4]():!!o,e=m?o:{},t=t||[x,"t",0,x],r=a||t[1],ml(0,e,[r+"@T|"+t[3]],()=>ml(2,"T",e,{T:L},{T:[()=>(t=e[r],m||delete e[r],t)]}),"T")),r:e=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e)};return(e=typeof n[m]===r[1]?n[m](L,o,a,d,s):n)!==n?e:(e={F:ml.fetch||!1,0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,t.length+1,t):a(),u:(x,t)=>(t=n.r(x))?(!t[2]||t[2]===(d||n[3]()))&&(s=e.s(this.document,"script"),e.p(t[3],s.setAttribute.bind(s,"src")),t[1]):!L[x]&&x,y:x=>!!x,s:(d,e)=>((s=d.createElement(e)).type="text/java"+e,d.body.appendChild(s)),U:()=>Object.keys(ml.h),p:(t,l,r,L,m,n)=>(r=e.r(),L=(r=>l(e.V(t,r))),m=(r=>L(e.v(t,r))),n=(()=>m(r)),ml.h[t]?m(ml.h[t]):typeof fetch===e.F?fetch(t,{method:"HEAD"}).then(t=>m(e.e(t,r))).catch(n):n()),e:(e,d)=>e.headers.get("Etag").replace(/[\"\/\\\-]*/g,"")||d,r:()=>Math.random().toString(36).substr(-8),V:(t,r)=>e.F?t+"?v="+r:t,v:(e,t)=>ml.h[e]=t,w:"serviceWorker",W:"navigator",9:L=>L&&e.w in self[e.W]&&self[e.W][e.w].register("./ml.sw.js?ml="+encodeURIComponent(L))})[x]?e[x](L,o,a,d,s):void 0}
-//</script>
+    function ml(x,L,o,a,d,s){ml.h||(ml.h={},ml.H=[],ml.d={},ml.f={});let z,C=console,e=[C,ml,"",z,x].map(e=>typeof e),l=location,O=l.origin,t=e[4]===e[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?"I":"L":x,c={r:e=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],c:e=>e.startsWith(c.b),R:"replace",B:(e,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(e)?e:r.test(e)?e[c.R](r,O+"/"):c.b+e[c.R](/^(\.\/)/,""),1:()=>c[4]()||{},2:(L,o,a,d,t,D)=>{D="defined",t=typeof(t=a[L]&&a[L].name)+typeof o[t]===e[2]+e[3]?c.S(ml.h[ml.d[t].h].e,t,c.S(o,t,a[L].apply(this,d[L].map(c.x))))&&c.l(D+":",t)||c.l(D+" empty:",t):c.l("ready:",t),ml.i||(ml.i=new Proxy({},{get:(e,t)=>c.I(x=t),ownKeys:()=>c.k(ml.d),getOwnPropertyDescriptor:(e,t)=>!!ml.d[t]&&c.P(c.I(t)),has:(e,t)=>!!ml.d[t]}))},P:e=>({value:e,enumerable:!0,configurable:!0}),S:(o,e,t)=>(Object.defineProperty(o,e,c.P(t)),t),3:()=>c[4]().constructor.name||"x",4:()=>typeof self===e[0]&&self,x:e=>e(),l:C.log.bind(C),L:(e,R,t,m)=>(R=c.r(x),m=R?c[4]():!!o,e=m?o:{},R=R||[x,"t",0,x],t=a||R[1],ml(0,e,[t+"@T|"+R[3]],()=>ml(2,"T",e,{T:L},{T:[x=>(R=e[t],m||delete e[t],(x=t&&ml.d[t])&&(ml.h[x.h].e[t]=R),R)]}),"T")),I:(e,t)=>(e=ml.d[x])&&(t=ml.h[e.h])&&t.e[x],k:o=>Object.keys(o),f:"forEach",w:"serviceWorker",n:"navigator",d:"document"};return(z=typeof c[t]===e[1]?c[t](L,o,a,d,s):c)!==c?z:(z={F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),0:()=>z.l(o),t:e=>Math.min(100,ml.t=ml.t?2*ml.t:1),l:e=>(e=e.map(z.u).filter(z.y)).length?setTimeout(z.l,z.t(e.length),e)&&c.l("pending...",e):a(),u:(x,R,e,t)=>(R=c.r(x))?(!(t=R[2])||t===(d||c[3]()))&&(t=R[1],e=c.B(R[3]),c.c(e)&&(ml.d[t]={h:e}),z.T(window,"script",s=>{z.p(e,s.setAttribute.bind(s,"src"),s)}),t):!L[x]&&x,y:x=>!!x,s:(d,e,C)=>{(s=z.E(d,e)).type="text/java"+e,C(z.A(d,s))},S:(e,s,C,D)=>{D=z.f(e[c.d],()=>z.s(D.contentWindow[c.d],s,C))},T:(e,s,C)=>z.s(e[c.d],s,C),E:(d,e)=>d.createElement(e),A:(d,x)=>d.body.appendChild(x),f:(d,e,l)=>((e=z.E(d,"iframe")).style.display="none",e.src="ml.html",e.onload=l,z.A(d,e)),U:()=>c.k(ml.h),p:(e,l,s,r,L,t,R)=>(r=z.r(),L=(t=>l(z.V(e,t))),t=(t=>L(z.v(e,t,s))),R=(()=>t(r)),!ml.h[e]&&(ml.H.push(e)&&(typeof fetch===z.F?fetch(e,{method:"HEAD"}).then(e=>t(z.e(e,r))).catch(R):R()))),e:(r,d)=>r.headers.get("Etag")[c.R](/[\"\/\\\-]*/g,"")||d,r:()=>Math.random().toString(36).substr(-8),V:(e,t)=>z.F?e+"?v="+t:e,v:(e,t,s)=>ml.h[e]={v:t,s:s,e:{}},8:(e,c)=>{},9:L=>L&&c.w in self[c.n]&&self[c.n][c.w].register("./ml.sw.min.js?ml="+encodeURIComponent(L))})[x]&&z[x](L,o,a,d,s)}//</script>
     
 }
 
@@ -338,7 +377,7 @@ function browserSource () {
            // a = dictionary of dependants per window type
            // d = array of loaded dependants 
            // e = unuused argument doubles as a variable
-           // r = undefined
+           // D = constant
            2:(L,o,a,d,e,D)=>{
                    D="defined";//define a constant
                    e= a[L] && a[L].name; //evaluate name of import
@@ -346,6 +385,15 @@ function browserSource () {
                       c.S(ml.h[ ml.d[e].h ].e,e, //
                         c.S(o,e,a[L].apply(this, d[L].map(c.x))) // do the import
                        )&&c.l(D+":",e)||c.l(D+" empty:",e) ) : c.l("ready:",e);
+                     
+                  if (!ml.i){  
+                      ml.i=new Proxy({},{
+                          get:(t,p)=>c.I(x=p),
+                          ownKeys:()=>c.k(ml.d),
+                          getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
+                          has:(t,p)=>!!ml.d[p]
+                      });
+                  }
                
            },
            //c.P property descriptor
@@ -393,12 +441,6 @@ function browserSource () {
            //c.I = import query
            I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
            k:(o)=>Object.keys(o),
-           i:new Proxy({},{
-               get:(t,p)=>c.I(x=p),
-               ownKeys:()=>c.k(ml.d),
-               getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
-               has:(t,p)=>!!ml.d[p]
-           }),
            f:'forEach',
            w:'serviceWorker',
            n:'navigator',
@@ -410,8 +452,8 @@ function browserSource () {
        if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
            
        z = {
-          F:ml.fetch||false,// F:t[1] = use fetch, F:false,  = don't use fetch
-          
+          F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),// F:t[1] = use fetch, F:false,  = don't use fetch
+ 
           //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
           //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
           0:()=>z.l(o),
@@ -431,11 +473,11 @@ function browserSource () {
                     
                     return x;
                     
-                    if(ml.d[x]) return !1;
+                    //if(ml.d[x]) return !1;
                     
-                    if(ml.h[x]) return !1;
+                    //if(ml.h[x]) return !1;
                     
-                    return x;
+                    //return x;
                 } else {
                     // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
                    if ((N=R[2])&&N!==(d||c[3]())) return !1; 
@@ -511,7 +553,7 @@ function browserSource () {
           9:(L)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.min.js?ml=' + encodeURIComponent(L))
        };
        return z[x]&&z[x](L,o,a,d,s);
-   } 
+   }
 
 
 }
@@ -746,6 +788,23 @@ ml.register=ml.bind(self,8);
 }
 
 
+function clearAllTimeouts() {
+    const noop=function(){},low = clearAllTimeouts.low||0,high = setTimeout(noop,1e4);
+    let kill= high;
+    while (kill > low) {
+       clearTimeout(kill--);
+    }
+    clearTimeout(clearAllTimeouts.low=setTimeout(noop,1e6));
+}
+
+function clearAllIntervals() {
+    const noop=function(){},low = clearAllIntervals.low||0,high = setInterval(noop,1e4);
+    let kill= high;
+    while (kill > low) {
+       clearInterval(kill--);
+    }
+    clearTimeout(clearAllIntervals.low=setInterval(noop,1e6));
+}
 
 
 
@@ -806,12 +865,6 @@ ml(0,ml(1),[ /*an array of dependancies*/ 'jQuery','someMod | /path/to/filename.
     // the same code, being executed in their own contexts.
 
 });
-
-
-
-
-
- 
 
 
 
