@@ -2,7 +2,7 @@
 ml(0,ml(1),[
 
 'libEvents|events.js',
-'Rusha@ServiceWorkerGlobalScope|sw/rusha.js',
+'sha1Lib        | sha1.js',
 'dbCommonLib    | dbengine.common.js ' ,
 'dbLocalStorage | dbengine.localStorage.js',
 'dbLocalForage  | dbengine.localForage.js',
@@ -16,8 +16,8 @@ ml(0,ml(1),[
     }, (()=>{//                                      |   |
              //                                      |                     
             return {//                               V
-                Window:                   [ ()=> hybridStorageEngine, ()=> self.libEvents, ()=>sha1Subtle ],
-                ServiceWorkerGlobalScope: [ ()=> hybridStorageEngine, ()=> self.libEvents, ()=>sha1Rusha ],
+                Window:                   [ ()=> hybridStorageEngine, ()=> self.libEvents, ()=>self.sha1Lib ],
+                ServiceWorkerGlobalScope: [ ()=> hybridStorageEngine, ()=> self.libEvents, ()=>self.sha1Lib ],
             };
             
 
@@ -421,165 +421,7 @@ ml(0,ml(1),[
                 }
                 
                 
-                /*
-                
-                function localStorageKeyKiller (key) {
-                     return localStorage.removeItem(key);
-                }
-                
-                
-                function setLocalKey(k,v,cb) {
-                    // this function is localforage-agnostic, and can be called synchronusly or async (can supply a callback)
-                    // this function is also cache-agnostic. data WILL be written to localStorage as a result of this call
-                    const cbok=typeof cb==='function';
-                    const syncAsync=function(){
-                        try { 
-                             const json = JSON.stringify(v);
-                             localStorage.setItem(generalizeKey(k),json);
-                             return cbok ? cb() : cb;
-                         } catch (e) {
-                             if (cbok) return cb(e)
-                             throw e;
-                         }
-                    };
-                    return cbok?setTimeout(syncAsync,0):syncAsync();
-                }
-                
-                function getLocalKey(k,cb) {
-                    // this function is localforage-agnostic, and can be called synchronusly or async (can supply a callback)
-                    // this function is also cache-agnostic. data WILL be read from localStorage as a result of this call
-                    
-                    
-                    const cbok = typeof cb==='function';
-                    const syncAsync=function(){
-                        try {
-                          //note: JSON.parse(null) returns null, so no need to check for no data scenario
-                          const data=JSON.parse(localStorage.getItem(generalizeKey(k)));
-                          return cbok ? cb(undefined,data) : data;
-                        } catch (e) {
-                          if (cbok) return cb(e);
-                          throw e;
-                        }
-                    };              
-                    return cbok?setTimeout(syncAsync,0):syncAsync();
-                }
-                
-                function removeLocalKey(k,cb) {
-                    
-                    // this function is localforage-agnostic, and can be called synchronusly or async (you can supply a callback)
-                    // this function is also cache-agnostic. existing data WILL be removed from localStorage as a result of this call
-                    
-                    const cbok=typeof cb==='function';
-                    const genkey=generalizeKey(k);
-                    const syncAsync=function(){
-                        try { 
-                             const existed=!!localStorage.getItem(genkey);
-                             if (existed) {
-                                 localStorage.removeItem(genkey);
-                             }
-                             return cbok ? cb(undefined,existed) : existed;
-                         } catch (e) {
-                             if (cbok) return cb(e)
-                             throw e;
-                         }
-                    };
-                    return cbok?setTimeout(syncAsync,0):syncAsync();
-                }
-                
-                function getLocalKeys (cb) {
-                    // this function is localforage-agnostic, and can be called synchronusly or async (can supply a callback)
-                    // this function is also cache-agnostic. keys returned will be actual keys from localStorage as a result of this call
-                    const cbok=typeof cb==='function';
-                    const syncAsync=function(){
-                        const keys = Object.keys(localStorage);
-                        const retkeys = prefixes ? keys.filter(filterKeys).map(localizeKey) : keys;
-                        return cbok ? cb (retkeys) : retkeys;
-                    };
-                    return cbok ? setTimeout(syncAsync,0) : syncAsync();        
-                }
-                
-                function clearLocal(cb) {
-                    const cbok=typeof cb==='function';
-                    const syncAsync=function(){
-                        if (prefixes) {
-                           Object.keys(localStorage).filter(filterKeys).forEach(localStorageKeyKiller); 
-                        } else {
-                           localStorage.clear();
-                        }
-                        return cbok ? cb () : undefined;
-                    };
-                    return cbok ? setTimeout(syncAsync,0) : syncAsync();           
-                }
-                
-                */
-                /*
-                function localForageKeyKiller  (key) {
-                    return localforage.removeItem(key);
-                }
-        
-                
-                function setForageKey(k,v,cb) {
-                    // this function is localStorage-agnostic, and MUST be called asynchronusly (you MUST supply a callback)
-                    // this function is also cache-agnostic. data WILL be written to localforage as a result of this call
-                    if (typeof cb !=='function') throw new Error('no callback supplied');
-                    self.localforage.setItem(generalizeKey(k),v).then(function(){
-                         cb();
-                     }).catch(cb);
-                }
-                
-                function getForageKey(k,cb) {
-                    // this function is localStorage-agnostic, and MUST be called asynchronusly (you MUST supply a callback)
-                    // this function is also cache-agnostic. data WILL be read from localforage as a result of this call
-                    if (typeof cb !=='function') throw new Error('no callback supplied');
-                    
-                    self.localforage.getItem(generalizeKey(k)).then(function(v){
-                        cb(undefined,v);
-                    }).catch(cb);
-                }
-            
-                function removeForageKey(k,cb) {
-                    // this function is localStorage-agnostic, and MUST be called asynchronusly (you MUST supply a callback)
-                    // this function is also cache-agnostic. existing data WILL be removed from localforage as a result of this call
-                    const genkey = generalizeKey(k);
-                    if (typeof cb !=='function') throw new Error('no callback supplied');
-                    self.localforage.getItem(genkey).then(function(v){
-                        
-                        return v===null ? cb(undefined,false) : self.localforage.removeItem(genkey).then(function(){
-                            cb(undefined,true);
-                        }).catch(cb) ;
-                        
-                    }).catch(cb);
-                }
-                
-                function getForageKeys(cb) {
-                    // this function is localStorage-agnostic, and MUST be called asynchronusly (you MUST supply a callback)
-                    // this function is also cache-agnostic. keys returned will be actual keys from localforage as a result of this call
-                    if (typeof cb !=='function') throw new Error('no callback supplied');
-                    localforage.keys().then(function(keys) {
-                        // An array of all the key names, localized (ie no prefixes and/or demangled)
-                        cb(undefined,keys.filter(filterKeys).map(localizeKey));
-                    }).catch(cb);
-            
-                }
-                
-                function clearForage(cb) {
-                    const cbok=typeof cb==='function';
-                    const syncAsync=function(){
-                        
-                        const promise = prefixes ? Promise.all(Object.keys(localStorage).filter(filterKeys).map(localForageKeyKiller))
-                                                 : localforage.clear();
-                                                 
-                        promise.then(function() {
-                                if (cbok) cb();
-                        }).catch(function(err) {
-                            if (cbok) cb(err); else throw err;
-                        });
-                        
-                    };
-                    return cbok ? setTimeout(syncAsync,0) : syncAsync();             
-                }
-                
-                */
+ 
             
                 // the "hybrid" set of wrappers around localStorage and localforage are
                 // a  method of allowing a) synchronous data access in the browser if needed
@@ -1344,54 +1186,7 @@ ml(0,ml(1),[
               }  
         }
         
-        
-        function sha1Rusha(buffer){ 
-                return Promise.resolve(Rusha.createHash().update(buffer).digest('hex')) 
 
-        }
-        
-        function sha1Subtle(buffer){ 
-                return window.crypto.subtle.digest("SHA-1", bufferToHex(buffer)); 
-            
-        }
-        
-        
-        function arrayToHex(bytes) {
-            const padding = '00';
-            const hexCodes = [];
-            if (bytes.length===0) return '';
-           
-            for (let i = 0; i < bytes.length; i ++) {
-                // toString(16) will give the hex representation of the number without padding
-                const stringValue = bytes[i].toString(16);
-                // We use concatenation and slice for padding
-                const paddedValue = (padding + stringValue).slice(-padding.length);
-                hexCodes.push(paddedValue);
-            }
-            // Join all the hex strings into one
-            return hexCodes.join("");
-        }
-        
-        function bufferToHex(buffer) {
-            const padding = '00000000';
-            const hexCodes = [];
-            const view = new DataView(buffer);
-            if (view.byteLength===0) return '';
-            if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
-        
-            for (let i = 0; i < view.byteLength; i += 4) {
-                // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-                const value = view.getUint32(i);
-                // toString(16) will give the hex representation of the number without padding
-                const stringValue = value.toString(16);
-                // We use concatenation and slice for padding
-                const paddedValue = (padding + stringValue).slice(-padding.length);
-                hexCodes.push(paddedValue);
-            }
-            // Join all the hex strings into one
-            return hexCodes.join("");
-        }
-        
       
     })()
 
