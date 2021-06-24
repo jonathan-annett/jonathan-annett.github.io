@@ -220,19 +220,21 @@ ml(0,ml(1),[
                 if (typeof buffer==='function') {
                     cb=buffer;buffer=undefined;
                 } else {
-                    // this is a subzip,so the buffer is not stored in forage
-                    // we do however store the metadata for it
-                    return getForageKey(zipmetadatakey(url),function(err,zipFileMeta){
-                        
-                         if (zipFileMeta) {
-                            return cb(undefined,buffer,zipFileMeta);
-                         }
-                         // 
-                         sha1(buffer,function(err,etag){
-                            setMetadataForBuffer(buffer,etag,cb); 
-                         });
-                          
-                    });
+                    if (buffer) {
+                        // this is a subzip,so the buffer is not stored in forage
+                        // we do however store the metadata for it
+                        return getForageKey(zipmetadatakey(url),function(err,zipFileMeta){
+                            
+                             if (zipFileMeta) {
+                                return cb(undefined,buffer,zipFileMeta);
+                             }
+                             // 
+                             sha1(buffer,function(err,etag){
+                                setMetadataForBuffer(buffer,etag,cb); 
+                             });
+                              
+                        });
+                    }
                 }
                 
                 getForageKey(zipbufferkey(url),function(err,buffer){
