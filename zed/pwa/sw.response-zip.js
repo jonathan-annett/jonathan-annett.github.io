@@ -437,7 +437,7 @@ ml(0,ml(1),[
                                    
                          zip.file(file_path).async('arraybuffer').then(function(buffer){
                             
-                            if (path_in_zip.endsWith('.zip')) {
+                            if (!subzip && path_in_zip.endsWith('.zip')) {
                                 return resolveZipListing (subzip_url,buffer).then(resolve).catch(reject);
                             }
                             
