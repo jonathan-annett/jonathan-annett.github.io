@@ -21,7 +21,15 @@ function ml(x,L, o, a, d, s){
         //c.b=document base
         b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
         c:(u)=>u.startsWith(c.b),
-       
+        R:'replace',
+        f:'forEach',
+       // w:'serviceWorker',
+       // n:'navigator',
+       // d:"document",
+        
+        //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
+        B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
+
         
         // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
         1:()=>c[4]()||{},
@@ -125,7 +133,7 @@ function ml(x,L, o, a, d, s){
        U:()=>Object.keys(ml.h),
 
        //z.e = resolve to etag in r.header or d (default)
-       e:(r,d)=>r.headers.get("Etag").replace(/[\"\/\\\-]*/g,'')||d,
+       e:(r,d)=>r.headers.get("Etag")[c.r](/[\"\/\\\-]*/g,'')||d,
 
        //z.V chooses final script url load tag, depending on fetch precache setting
        V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version

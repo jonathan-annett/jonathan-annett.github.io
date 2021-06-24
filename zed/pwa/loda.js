@@ -363,6 +363,10 @@ function browserSource () {
            c:(u)=>u.startsWith(c.b),
            //c.R=shortcut to replace keyword
            R:'replace',
+           f:'forEach',
+           w:'serviceWorker',
+           n:'navigator',
+           d:"document",
            //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
            B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
    
@@ -441,11 +445,8 @@ function browserSource () {
            },
            //c.I = import query
            I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
-           k:(o)=>Object.keys(o),
-           f:'forEach',
-           w:'serviceWorker',
-           n:'navigator',
-           d:"document"
+           k:(o)=>Object.keys(o)
+
        };
        // here X will be 5 if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x
        z=typeof c[X]===t[1]?c[X](L,o,a,d,s):c;// if c[X] resolves to a function, execute it, putting result in z, otherwise set z to c
@@ -551,7 +552,7 @@ function browserSource () {
           8:(m,c)=>{
               
           },
-          9:(L)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.min.js?ml=' + encodeURIComponent(L))
+          9:(L)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?ml=' + encodeURIComponent(L))
        };
        return z[x]&&z[x](L,o,a,d,s);
    }
@@ -563,7 +564,7 @@ function browserSource () {
 function serviceWorkerMin () {
     var self,importScripts;
     return ml;
-    function ml(x,L,o,a,d,s){ml.h=ml.h||{};let e,t=console,m=[t,ml,"",e,x].map(e=>typeof e),r={1:()=>r[4]()||{},2:(L,o,a,d,e,t)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===m[2]+m[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(r.x)),enumerable:!0,configurable:!0}):t},3:()=>r[4]().constructor.name||"x",4:()=>typeof self===m[0]&&self,x:e=>e(),l:t.log.bind(t),L:(e,t,m,n)=>(e=(n=!!o)?o:{},t=r.r(x)||[x,"t",0,x],m=a||t[1],ml(0,e,[m+"@T|"+t[3]],()=>ml(2,"T",e,{T:L},{T:[()=>(t=e[m],n||delete e[m],t)]}),"T")),r:e=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e)};return(e=typeof r[x]===m[1]?r[x](L,o,a,d,s):r)!==r?e:(e={F:ml.fetch||!1,0:()=>e.l(o),l:t=>(t=t.map(e.u).filter(e.y)).length?setTimeout(e.l,t.length+1,t):a(),u:(x,e)=>(e=r.r(x))?(!e[2]||e[2]===(d||r[3]()))&&(importScripts(e[3]),e[1]):!L[x]&&x,y:x=>!!x,U:()=>Object.keys(ml.h),e:(e,d)=>e.headers.get("Etag").replace(/[\"\/\\\-]*/g,"")||d,V:(t,m)=>e.F?t+"?v="+m:t,v:(e,t)=>ml.h[e]=t,r:()=>Math.random().toString(36).substr(-8),G:(e,t)=>(ml[e]=t,t=>ml[e](t)),8:(e,t)=>(ml[e]=t,ml.p.splice(0,ml.p.length)),I:(t,m,n)=>t.addEventListener(m,e.G(m,n||(e=>{r.l(m,e.data)}))),9:t=>{ml.p=[],e.I(t,"install",e=>e.waitUntil(new Promise((e,t)=>ml.p.push([e,t])))),e.I(t,"activate"),e.I(t,"fetch",e=>fetch(e.request)),e.I(t,"message"),importScripts(new URL(location).searchParams.get("ml"))}})[x]?e[x](L,o,a,d,s):void 0}ml(9,self);
+    function ml(x,L,o,a,d,s){ml.h||(ml.h={},ml.H=[],ml.d={},ml.f={});let z,C=console,e=e=>typeof e,t=[C,ml,"",z,x].map(e),l=location,O=l.origin,c={r:e=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],c:e=>e.startsWith(c.b),R:"replace",f:"forEach",B:(e,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(e)?e:r.test(e)?e[c.R](r,O+"/"):c.b+e[c.R](/^(\.\/)/,""),1:()=>c[4]()||{},2:(L,o,a,d,e,r)=>{e=typeof(e=a[L]&&a[L].name)+typeof o[e]===t[2]+t[3]?Object.defineProperty(o,e,{value:a[L].apply(this,d[L].map(c.x)),enumerable:!0,configurable:!0}):r},3:()=>c[4]().constructor.name||"x",4:()=>typeof self===t[0]&&self,x:e=>e(),l:C.log.bind(C),L:(e,R,t,m)=>(e=(m=!!o)?o:{},R=c.r(x)||[x,"t",0,x],t=a||R[1],ml(0,e,[t+"@T|"+R[3]],()=>ml(2,"T",e,{T:L},{T:[()=>(R=e[t],m||delete e[t],R)]}),"T"))};return(z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c)!==c?z:(z={F:ml.fetch||!1,0:()=>z.l(o),l:e=>(e=e.map(z.u).filter(z.y)).length?setTimeout(z.l,e.length+1,e):a(),u:(x,R,e,t)=>(R=c.r(x))?(!(t=R[2])||t===(d||c[3]()))&&(t=R[1],e=c.B(R[3]),c.c(e)&&(ml.d[t]={h:e}),importScripts(e),t):!L[x]&&x,y:x=>!!x,U:()=>Object.keys(ml.h),e:(r,d)=>r.headers.get("Etag")[c.r](/[\"\/\\\-]*/g,"")||d,V:(e,t)=>z.F?e+"?v="+t:e,v:(e,t)=>ml.h[e]=t,r:()=>Math.random().toString(36).substr(-8),G:(e,t)=>(ml[e]=t,t=>ml[e](t)),8:(e,t)=>(ml[e]=t,ml.p.splice(0,ml.p.length)),I:(e,t,m)=>e.addEventListener(t,z.G(t,m||(e=>{c.l(t,e.data)}))),m:"message",9:m=>{ml.p=[],z.I(m,"install",e=>self.skipWaiting()),z.I(m,"activate"),z.I(m,"fetch",e=>fetch(e.request)),z.I(m,z.m,(m,r,n,c,d,i)=>{d=m.data,(r=(n=ml[z.m+"s"])&&d.m)&&(r=n[r],(r=e(r)===t[1]&&r(d,x=>i=x))&&((c=new BroadcastChannel(d.r)).postMessage(i||r),c.close()))}),importScripts(new URL(location).searchParams.get("ml"))}})[x]?z[x](L,o,a,d,s):void 0}ml(9,self),ml.register=ml.bind(self,8);
 
 }
 
@@ -573,51 +574,64 @@ function serviceWorkerMinPretty () {
     
     return ml;
     function ml(x, L, o, a, d, s) {
-        ml.h = ml.h || {};
-        let e, t = console,
-            m = [t, ml, "", e, x].map(e => typeof e),
-            r = {
-                1: () => r[4]() || {},
-                2: (L, o, a, d, e, t) => {
-                    e = typeof(e = a[L] && a[L].name) + typeof o[e] === m[2] + m[3] ? Object.defineProperty(o, e, {
-                        value: a[L].apply(this, d[L].map(r.x)),
+        ml.h || (ml.h = {}, ml.H = [], ml.d = {}, ml.f = {});
+        let z, C = console,
+            e = e => typeof e,
+            t = [C, ml, "", z, x].map(e),
+            l = location,
+            O = l.origin,
+            c = {
+                r: e => /([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),
+                b: O + /([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
+                c: e => e.startsWith(c.b),
+                R: "replace",
+                f: "forEach",
+                B: (e, r) => (r = /^\//) && /^(http(s?)\:\/\/)/.test(e) ? e : r.test(e) ? e[c.R](r, O + "/") : c.b + e[c.R](/^(\.\/)/, ""),
+                1: () => c[4]() || {},
+                2: (L, o, a, d, e, r) => {
+                    e = typeof(e = a[L] && a[L].name) + typeof o[e] === t[2] + t[3] ? Object.defineProperty(o, e, {
+                        value: a[L].apply(this, d[L].map(c.x)),
                         enumerable: !0,
                         configurable: !0
-                    }) : t
+                    }) : r
                 },
-                3: () => r[4]().constructor.name || "x",
-                4: () => typeof self === m[0] && self,
+                3: () => c[4]().constructor.name || "x",
+                4: () => typeof self === t[0] && self,
                 x: e => e(),
-                l: t.log.bind(t),
-                L: (e, t, m, n) => (e = (n = !!o) ? o : {}, t = r.r(x) || [x, "t", 0, x], m = a || t[1], ml(0, e, [m + "@T|" + t[3]], () => ml(2, "T", e, {
+                l: C.log.bind(C),
+                L: (e, R, t, m) => (e = (m = !!o) ? o : {}, R = c.r(x) || [x, "t", 0, x], t = a || R[1], ml(0, e, [t + "@T|" + R[3]], () => ml(2, "T", e, {
                     T: L
                 }, {
-                    T: [() => (t = e[m], n || delete e[m], t)]
-                }), "T")),
-                r: e => /([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e)
+                    T: [() => (R = e[t], m || delete e[t], R)]
+                }), "T"))
             };
-        return (e = typeof r[x] === m[1] ? r[x](L, o, a, d, s) : r) !== r ? e : (e = {
+        return (z = typeof c[x] === t[1] ? c[x](L, o, a, d, s) : c) !== c ? z : (z = {
             F: ml.fetch || !1,
-            0: () => e.l(o),
-            l: t => (t = t.map(e.u).filter(e.y)).length ? setTimeout(e.l, t.length + 1, t) : a(),
-            u: (x, e) => (e = r.r(x)) ? (!e[2] || e[2] === (d || r[3]())) && (importScripts(e[3]), e[1]) : !L[x] && x,
+            0: () => z.l(o),
+            l: e => (e = e.map(z.u).filter(z.y)).length ? setTimeout(z.l, e.length + 1, e) : a(),
+            u: (x, R, e, t) => (R = c.r(x)) ? (!(t = R[2]) || t === (d || c[3]())) && (t = R[1], e = c.B(R[3]), c.c(e) && (ml.d[t] = {
+                h: e
+            }), importScripts(e), t) : !L[x] && x,
             y: x => !!x,
             U: () => Object.keys(ml.h),
-            e: (e, d) => e.headers.get("Etag").replace(/[\"\/\\\-]*/g, "") || d,
-            V: (t, m) => e.F ? t + "?v=" + m : t,
+            e: (r, d) => r.headers.get("Etag")[c.r](/[\"\/\\\-]*/g, "") || d,
+            V: (e, t) => z.F ? e + "?v=" + t : e,
             v: (e, t) => ml.h[e] = t,
             r: () => Math.random().toString(36).substr(-8),
             G: (e, t) => (ml[e] = t, t => ml[e](t)),
             8: (e, t) => (ml[e] = t, ml.p.splice(0, ml.p.length)),
-            I: (t, m, n) => t.addEventListener(m, e.G(m, n || (e => {
-                r.l(m, e.data)
+            I: (e, t, m) => e.addEventListener(t, z.G(t, m || (e => {
+                c.l(t, e.data)
             }))),
-            9: t => {
-                ml.p = [], e.I(t, "install", e => e.waitUntil(new Promise((e, t) => ml.p.push([e, t])))), e.I(t, "activate"), e.I(t, "fetch", e => fetch(e.request)), e.I(t, "message"), importScripts(new URL(location).searchParams.get("ml"))
+            m: "message",
+            9: m => {
+                ml.p = [], z.I(m, "install", e => self.skipWaiting()), z.I(m, "activate"), z.I(m, "fetch", e => fetch(e.request)), z.I(m, z.m, (m, r, n, c, d, i) => {
+                    d = m.data, (r = (n = ml[z.m + "s"]) && d.m) && (r = n[r], (r = e(r) === t[1] && r(d, x => i = x)) && ((c = new BroadcastChannel(d.r)).postMessage(i || r), c.close()))
+                }), importScripts(new URL(location).searchParams.get("ml"))
             }
-        })[x] ? e[x](L, o, a, d, s) : void 0
+        })[x] ? z[x](L, o, a, d, s) : void 0
     }
-    ml(9, self);
+    ml(9, self), ml.register = ml.bind(self, 8);
 }
 
 function serviceWorkerSource () {
@@ -650,7 +664,15 @@ function ml(x,L, o, a, d, s){
         //c.b=document base
         b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
         c:(u)=>u.startsWith(c.b),
-       
+        R:'replace',
+        f:'forEach',
+       // w:'serviceWorker',
+       // n:'navigator',
+       // d:"document",
+        
+        //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
+        B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
+
         
         // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
         1:()=>c[4]()||{},
@@ -754,7 +776,7 @@ function ml(x,L, o, a, d, s){
        U:()=>Object.keys(ml.h),
 
        //z.e = resolve to etag in r.header or d (default)
-       e:(r,d)=>r.headers.get("Etag").replace(/[\"\/\\\-]*/g,'')||d,
+       e:(r,d)=>r.headers.get("Etag")[c.r](/[\"\/\\\-]*/g,'')||d,
 
        //z.V chooses final script url load tag, depending on fetch precache setting
        V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version

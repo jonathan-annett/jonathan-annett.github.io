@@ -31,6 +31,10 @@
                 c:(u)=>u.startsWith(c.b),
                 //c.R=shortcut to replace keyword
                 R:'replace',
+                f:'forEach',
+                w:'serviceWorker',
+                n:'navigator',
+                d:"document",
                 //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
                 B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
         
@@ -60,8 +64,7 @@
                                get:(t,p)=>c.I(x=p),
                                ownKeys:()=>c.k(ml.d),
                                getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
-                               has:(t,p)=>!!ml.d[p],
-                               enumerate:(target)=>c.k(ml.d)[Symbol.iterator](),
+                               has:(t,p)=>!!ml.d[p]
                            });
                        }
                     
@@ -80,7 +83,7 @@
                 //      (used to resolve each loaded module)
                 x:(f)=>f(),
                 //c.l = console.log shortcut
-                l:!!ml.fetch?C.log.bind(C):()=>{},
+                l:C.log.bind(C),
                 //c.L = loader hoist function (called when first argument to ml is a string)
                 L:(S,R,t,w)=>{
                     // ml("/path/to/mod.js",function(mod){...}) 
@@ -110,11 +113,8 @@
                 },
                 //c.I = import query
                 I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
-                k:(o)=>Object.keys(o),
-                f:'forEach',
-                w:'serviceWorker',
-                n:'navigator',
-                d:"document"
+                k:(o)=>Object.keys(o)
+     
             };
             // here X will be 5 if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x
             z=typeof c[X]===t[1]?c[X](L,o,a,d,s):c;// if c[X] resolves to a function, execute it, putting result in z, otherwise set z to c
@@ -122,7 +122,7 @@
             if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
                 
             z = {
-               F:ml.fetch||false,// F:t[1] = use fetch, F:false,  = don't use fetch
+               F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),// F:t[1] = use fetch, F:false,  = don't use fetch
       
                //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
                //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
@@ -220,10 +220,11 @@
                8:(m,c)=>{
                    
                },
-               9:(L)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.min.js?ml=' + encodeURIComponent(L))
+               9:(L)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?ml=' + encodeURIComponent(L))
             };
             return z[x]&&z[x](L,o,a,d,s);
         }
+     
           
          </script>
         
