@@ -689,7 +689,7 @@ ml(0,ml(1),[
                     
                     getZipObject(url,function(err,zip,zipFileMeta) {
                         
-                        if (err || !zip || ~zipFileMeta) {
+                        if (err || !zip || !zipFileMeta) {
                             return resolve(new Response('', {
                               status: 404,
                               statusText: 'Not found'
