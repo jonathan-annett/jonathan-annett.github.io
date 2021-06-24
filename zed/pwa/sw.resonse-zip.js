@@ -557,7 +557,14 @@ ml(0,ml(1),[
                      }
                      
                      const uri= '/'+/^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/.exec(url)[2];
-                     const parent_link = url.indexOf('.zip/') > 0 ? '<a href="'+url+'">'+uri+'</a>' : uri;
+                     const url_split = url.split('.zip/');
+                     const parent_link = url.split('.zip/').map(function(x,i,a){
+                            if (i==a.length-1) return x;
+                            
+                            return '<a href="'+a.slice(0,i)+'.zip">'+x+'.zip</a>/'
+                        }).join('') ;
+                     
+                    
                      const html = [ 
                      '<html>',
                      '<head>',
