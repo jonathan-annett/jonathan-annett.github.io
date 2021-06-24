@@ -619,7 +619,7 @@ ml(0,ml(1),[
                          
                          const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                          const uri= urify.exec(url)[2];
-                         const uri_split = uri.split('.zip/').map(function (x,i,a){return i===0 ? "/" : "" + ( i===a.length-1? x : x+'.zip')});
+                         const uri_split = uri.split('.zip/').map(function (x,i,a){return i===a.length-1?'/'+x:'/'+x+'.zip'});
                          var parent_link;
                          const linkit=function(uri,disp){ 
                              const split=(disp||uri).split("/");
@@ -632,7 +632,7 @@ ml(0,ml(1),[
                        
                           const xx = uri_split.shift().split("/"),yy=xx.pop();
                           parent_link = xx.join("/")+'/<b>'+yy+'</b>' +  
-                          uri_split.map(function(e){return linkit(e);})
+                          uri_split.map(function(e,i,a){return linkit(a.slice(0,i).join(''));})
                               .join("/");
            
                          
