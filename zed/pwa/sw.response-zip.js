@@ -659,7 +659,7 @@ ml(0,ml(1),[
                          ].concat (
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
-                                 return '<li>' + parent_link +'/' + linkit(filename) + '</a></li>';
+                                 return '<li>' + parent_link +'/' + linkit(uri+"/"+filename) + '</a></li>';
                               }),
                              
                          [
