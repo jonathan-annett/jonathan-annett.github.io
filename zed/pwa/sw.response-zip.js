@@ -388,7 +388,7 @@ ml(0,ml(1),[
                  const subzip          = parts.length>1;
                  const file_path       = subzip ? parts[0]+'.zip' : parts[0];
                  const subzip_url      = zip_url + file_path  ;
-                 const subzip_filepath = subzip ? parts[1]        : false;
+                 const subzip_filepath = subzip ? parts.slice(1).join('.zip/') : false;
                       
                   
                  return new Promise(function(resolve,reject){     
@@ -500,10 +500,10 @@ ml(0,ml(1),[
              
              function resolveZip (parts,ifNoneMatch,ifModifiedSince) {
                  
-                 const zip_url    = parts[0]+'.zip', 
-                       subzip     = parts.length>2, 
-                       filepath   = subzip ? parts[1]+'.zip' : parts[1],
-                       subzip_url = subzip ? parts.slice(0,1).join('.zip/') + '.zip' : false,
+                 const zip_url           = parts[0]+'.zip', 
+                       subzip            = parts.length>2, 
+                       filepath          = subzip ? parts[1]+'.zip' : parts[1],
+                       subzip_url        = subzip ? parts.slice(0,1).join('.zip/') + '.zip' : false,
                        subzip_filepath   = subzip ? parts.slice(2).join('.zip/')     : false;
                        
                  return new Promise(function (resolve,reject){
