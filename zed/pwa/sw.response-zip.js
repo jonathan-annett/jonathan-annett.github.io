@@ -630,9 +630,9 @@ ml(0,ml(1),[
                          };
                          
                        
-                          const xx = uri_split.shift().split("/"),yy=xx.pop();
+                          const xx = uri_split[0].split("/"),yy=xx.pop();
                           parent_link = xx.join("/")+'/<b>'+yy+'</b>' +  
-                          uri_split.map(function(e,i,a){return linkit(a.slice(0,i).join(''));})
+                          uri_split.map(function(e,i,a){return i===0?'':linkit(a.slice(0,i).join(''));})
                               .join("/");
            
                          
