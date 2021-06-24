@@ -436,12 +436,6 @@ ml(0,ml(1),[
                         
                                    
                          zip.file(file_path).async('arraybuffer').then(function(buffer){
-                            
-                            if (!subzip && path_in_zip.endsWith('.zip')) {
-                                return resolveZipListing (subzip_url,buffer).then(resolve).catch(reject);
-                            }
-                            
-                            
                             if (update_needed) {
                                 // first request for this file, so we need to save 
                                 // contentLength and type in buffer
@@ -465,6 +459,11 @@ ml(0,ml(1),[
                                 },10*10000);
                                 
                             }
+                            
+                            if (path_in_zip.endsWith('.zip')) {
+                                return resolveZipListing (zip_url+"/"+path_in_zip,buffer).then(resolve).catch(reject);
+                            }
+                           
                             
                             if (subzip) {
                                 return resolveSubzip(buffer,subzip_url ,subzip_filepath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
