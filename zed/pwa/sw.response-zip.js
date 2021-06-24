@@ -620,7 +620,7 @@ ml(0,ml(1),[
                          const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                          const uri= '/'+urify.exec(url)[2];
                          const parent_link = url.split('.zip/').map(function(x,i,a){
-                                const u = (i===a.length-1?'/'+urify.exec(x)[2]:x); 
+                                const u = (i===a.length-1?'/':'') + ( i===0?urify.exec(x)[2]:x); 
                                 if (i===a.length-1) return u;
                                 return '/<a href="'+a.slice(0,i-1)+'.zip">'+u+'.zip</a>'
                             }).join('') ;
