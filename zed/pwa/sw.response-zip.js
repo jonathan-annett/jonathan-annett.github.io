@@ -632,8 +632,14 @@ ml(0,ml(1),[
                        
                           const xx = uri_split[0].split("/"),yy=xx.pop();
                           parent_link = (xx.join("/")+'/<b>'+yy+'</b>' +  
-                          uri_split.map(function(e,i,a){return i===0?'':linkit(a.slice(0,i).join(''));})
-                              .join("/")).replace(/\/\//g,'/');
+                          uri_split.map(function(e,i,a){
+                              
+                                  if (i===0) return '';
+                                  const href = a.slice(0,i).join('');
+                                  const prev_href = a.slice(0,i-1).join('');
+                                  const disp = href.substr(prev_href.length);
+                                  return linkit(href,disp);
+                              }) .join("/")).replace(/\/\//g,'/');
            
                          
                          //https://jonathan-annett.github.io/zed/pwa/yet,yet/deeper/dive.zip
