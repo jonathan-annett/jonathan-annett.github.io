@@ -625,7 +625,7 @@ ml(0,ml(1),[
                                 
                                 if (i===a.length-1) return u;
                                 if (i===1) {
-                                    return '/<a href="'+ u +'.zip">' + u + '.zip</a>';
+                                    return '/<a href="/'+ u +'.zip">' + u + '.zip</a>';
                                 }
                                 return '/<a href="'+ a.slice(0,i-2).join('.zip/')+u+'.zip">' + u + '.zip</a>';
                                 
