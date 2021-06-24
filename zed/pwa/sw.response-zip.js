@@ -382,21 +382,22 @@ ml(0,ml(1),[
                  }[filename.substr(lastDot+1)];
              }
              
-             function resolveSubzip(buffer,subzipurl,subpath,ifNoneMatch,ifModifiedSince) {
+             function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince) {
                  
-                 const parts      = subpath.split('.zip/');     
-                 const subzip     = parts.length>1;
-                 const path       = subzip ? parts[0]+'.zip' : parts[0];
-                 const subsubpath = subzip ? parts[1]        : false;
+                 const parts           = path_in_zip.split('.zip/');     
+                 const subzip          = parts.length>1;
+                 const file_path       = subzip ? parts[0]+'.zip' : parts[0];
+                 const subzip_url      = subzip ? zip_url + "/"+file_path : false;
+                 const subzip_filepath = subzip ? parts[1]        : false;
                       
                   
                  return new Promise(function(resolve,reject){     
                      
-                     getZipObject(subzipurl,buffer,function(err,zip,zipFileMeta){
+                     getZipObject(zip_url,buffer,function(err,zip,zipFileMeta){
                          if (err)  throw err;
                          
             
-                         const fileEntry = zipFileMeta.files[subpath];
+                         const fileEntry = zipFileMeta.files[file_path];
                          if (!fileEntry) {
                              new Response('', {
                                  status: 404,
@@ -434,10 +435,10 @@ ml(0,ml(1),[
                          }
                         
                                    
-                         zip.file(path).async('arraybuffer').then(function(buffer){
+                         zip.file(file_path).async('arraybuffer').then(function(buffer){
                             
-                            if (subpath.endsWith('.zip')) {
-                                return resolveZipListing (subzipurl+"/"+subpath,buffer).then(resolve).catch(reject);
+                            if (path_in_zip.endsWith('.zip')) {
+                                return resolveZipListing (subzip_url,buffer).then(resolve).catch(reject);
                             }
                             
                             
@@ -446,19 +447,19 @@ ml(0,ml(1),[
                                 // contentLength and type in buffer
                                 // (they are needed for later 304 responses)
                                 
-                                fileEntry.contentType    = mimeForFilename(path);
+                                fileEntry.contentType    = mimeForFilename(file_path);
                                 fileEntry.contentLength  = buffer.byteLength;
                                 
                                 if (zipFileMeta.updating) {
                                     clearTimeout(zipFileMeta.updating);
                                 }
-                                console.log("updating zip entry",subzipurl,path);
+                                console.log("updating zip entry",zip_url,file_path);
                                 
                                 zipFileMeta.updating = setTimeout(function(){
                                     // in 10 seconds this and any other metadata changes to disk
                                     delete zipFileMeta.updating;
-                                    setForageKey(zipmetadatakey(subzipurl),zipFileMeta,function(){
-                                        console.log("updated zip entry",subzipurl);
+                                    setForageKey(zipmetadatakey(zip_url),zipFileMeta,function(){
+                                        console.log("updated zip entry",zip_url);
                                     });
                                     
                                 },10*10000);
@@ -466,7 +467,7 @@ ml(0,ml(1),[
                             }
                             
                             if (subzip) {
-                                return resolveSubzip(buffer,subzipurl+'/'+path  ,subsubpath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
+                                return resolveSubzip(buffer,subzip_url ,subzip_filepath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
                             }
                             
                             resolve( new Response(
@@ -499,23 +500,23 @@ ml(0,ml(1),[
              
              function resolveZip (parts,ifNoneMatch,ifModifiedSince) {
                  
-                 const url       = parts[0]+'.zip', 
-                       subzip    = parts.length>2, 
-                       path      = subzip ? parts[1]+'.zip' : parts[1],
-                       subpath   = subzip ? parts.slice(2).join('.zip/') : false,
-                       subzipurl = subzip ? parts.slice(0,1).join('.zip/') + '.zip/' : false;
+                 const zip_url    = parts[0]+'.zip', 
+                       subzip     = parts.length>2, 
+                       filepath   = subzip ? parts[1]+'.zip' : parts[1],
+                       subzip_url = subzip ? parts.slice(0,1).join('.zip/') + '.zip/' : false,
+                       subzip_filepath   = subzip ? parts.slice(2).join('.zip/')     : false;
                        
                  return new Promise(function (resolve,reject){
-                     getZipObject(url,function(err,zip,zipFileMeta) {
+                     getZipObject(zip_url,function(err,zip,zipFileMeta) {
                          
                          if (err)  throw err;
                          
-                         const fileEntry = zipFileMeta.files[path];
+                         const fileEntry = zipFileMeta.files[filepath];
                          if (!fileEntry) {
                              new Response('', {
                                  status: 404,
                                  statusText: 'Not found'
-                             })
+                             });
                          }
                          
                         
@@ -550,26 +551,26 @@ ml(0,ml(1),[
                              );
                          }
                          
-                         zip.file(path).async('arraybuffer').then(function(buffer){
+                         zip.file(filepath).async('arraybuffer').then(function(buffer){
                                  
                                  if (update_needed) {
                                      // first request for this file, so we need to save 
                                      // contentLength and type in buffer
                                      // (they are needed for later 304 responses)
                                      
-                                     fileEntry.contentType    = mimeForFilename(path);
+                                     fileEntry.contentType    = mimeForFilename(filepath);
                                      fileEntry.contentLength  = buffer.byteLength;
                                      
                                      if (zipFileMeta.updating) {
                                          clearTimeout(zipFileMeta.updating);
                                      }
-                                     console.log("updating zip entry",url,path);
+                                     console.log("updating zip entry",zip_url,filepath);
                                      
                                      zipFileMeta.updating = setTimeout(function(){
                                          // in 10 seconds this and any other metadata changes to disk
                                          delete zipFileMeta.updating;
-                                         setForageKey(zipmetadatakey(url),zipFileMeta,function(){
-                                             console.log("updated zip entry",url);
+                                         setForageKey(zipmetadatakey(zip_url),zipFileMeta,function(){
+                                             console.log("updated zip entry",zip_url);
                                          });
                                          
                                      },10*10000);
@@ -577,11 +578,11 @@ ml(0,ml(1),[
                                  }
                                  
                                  if (subzip) {
-                                     return resolveSubzip(buffer,subzipurl,subpath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
+                                     return resolveSubzip(buffer,subzip_url,subzip_filepath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
                                  }
                                  
-                                 if (path.endsWith('.zip')) {
-                                     return resolveZipListing (url+"/"+path,buffer).then(resolve).catch(reject);
+                                 if (filepath.endsWith('.zip')) {
+                                     return resolveZipListing (zip_url+"/"+filepath,buffer).then(resolve).catch(reject);
                                  }
                                  
                                  resolve( new Response(
@@ -622,7 +623,7 @@ ml(0,ml(1),[
                          const parent_link = url.split('.zip/').map(function(x,i,a){
                                 const u = (i===a.length-1?'/':'') + ( i===0?urify.exec(x)[2]:x); 
                                 if (i===a.length-1) return u;
-                                return '/<a href="'+a.slice(0,i-1)+'.zip">'+u+'.zip</a>'
+                                return '<a href="'+a.slice(0,i-1)+'.zip">'+u+'.zip</a>'
                             }).join('') ;
                          
                         
