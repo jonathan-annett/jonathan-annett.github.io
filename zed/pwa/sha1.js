@@ -2,7 +2,7 @@
 
 
 /* global ml,self,Rusha */
-ml(0,ml(1),[ 'Rusha@ServiceWorkerGlobalScope | sw/rusha.js' ],function(){ml(2,ml(3),ml(4),
+ml(0,ml(1),[ 'Rusha | sw/rusha.js' ],function(){ml(2,ml(3),ml(4),
 
     {   Window: function sha1Lib(lib) { return lib ;},
         ServiceWorkerGlobalScope: function sha1Lib(lib) { return lib ;}
@@ -11,6 +11,7 @@ ml(0,ml(1),[ 'Rusha@ServiceWorkerGlobalScope | sw/rusha.js' ],function(){ml(2,ml
             sha1Subtle.bufferToHex = bufferToHex;
             sha1Subtle.arrayToHex = arrayToHex;
             sha1Subtle.cb=sha1SubtleCB;
+            sha1Subtle.sync=sha1RushaSync;// we need to use Rusha for sync 
             return sha1Subtle ;
         } ],
         ServiceWorkerGlobalScope: [ () => {
@@ -18,6 +19,7 @@ ml(0,ml(1),[ 'Rusha@ServiceWorkerGlobalScope | sw/rusha.js' ],function(){ml(2,ml
             sha1Rusha.bufferToHex=bufferToHex;
             sha1Rusha.arrayToHex=arrayToHex;
             sha1Rusha.cb=sha1RushaCB;
+            sha1Rusha.sync=sha1RushaSync;
             return sha1Rusha;
             
         }   ]
@@ -43,6 +45,10 @@ ml(0,ml(1),[ 'Rusha@ServiceWorkerGlobalScope | sw/rusha.js' ],function(){ml(2,ml
                Rusha.createHash().update(buffer).digest('hex')
              );
       
+      }
+      
+      function sha1RushaSync(buffer,cb){ 
+          return Rusha.createHash().update(buffer).digest('hex');
       }
       
       function sha1SubtleCB(buffer,cb){ 
