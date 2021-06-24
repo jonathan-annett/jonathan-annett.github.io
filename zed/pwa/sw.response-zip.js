@@ -625,7 +625,7 @@ ml(0,ml(1),[
                                 
                                 if (i===a.length-1) return u;
                                 
-                                return '/<a href="'+ urify.exec(a.slice(0,i-2).join('.zip/')[2]+u)+'.zip">' + u + '.zip</a>';
+                                return '/<a href="'+ urify.exec(a.slice(0,i-2).join('.zip/'))[2]+u+'.zip">' + u + '.zip</a>';
                                 
                             }).join('') ;
                          
