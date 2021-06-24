@@ -556,12 +556,13 @@ ml(0,ml(1),[
                        }));
                      }
                      
-                     const uri= '/'+/^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/.exec(url)[2];
+                     const urify = '/'+/^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
+                     const uri= urify.exec(url)[2];
                      const url_split = url.split('.zip/');
                      const parent_link = url.split('.zip/').map(function(x,i,a){
-                            if (i==a.length-1) return x;
-                            
-                            return '<a href="'+a.slice(0,i)+'.zip">'+x+'.zip</a>/'
+                            const u = (i===0?urify.exec(url)[x]:x); 
+                            if (i==a.length-1) return u;
+                            return '<a href="'+a.slice(0,i-1)+'.zip">'+u+'.zip</a>/'
                         }).join('') ;
                      
                     
