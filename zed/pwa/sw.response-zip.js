@@ -618,21 +618,21 @@ ml(0,ml(1),[
                          }
                          
                          const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
-                         const uri= '/'+urify.exec(url)[2];
-                         const uri_split = uri.split('.zip/').map(function (x,i,a){return i===a.length-1?x:x+'.zip'});
+                         const uri= urify.exec(url)[2];
+                         const uri_split = uri.split('.zip/').map(function (x,i,a){return i===a.length-1?'/'+x:'/'+x+'.zip'});
                          var parent_link;
                          const linkit=function(uri,disp){ 
                              const split=(disp||uri).split("/");
-                             if (split.length===1) return '<a href="'+uri+'">'+uri+'</a>';
+                             if (split.length===1) return '<a href="'+uri+'">'+(disp||uri)+'</a>';
                              const last = split.pop();
                              if (split.length===2) return split[0]+'/<a href="'+uri+'">'+last+'</a>';
                              return split.join("/")+'/<a href="'+uri+'">'+last+'</a>';
                          };
                          
                          if ( uri_split.length === 1 ) {
-                              parent_link = uri; 
+                              parent_link = '/<b>'+uri+'</b>'; 
                          } else {
-                              parent_link = uri_split[0] + '/'+  uri_split.slice(1).map(linkit).join("/");
+                              parent_link = '/<b>'+uri_split[0].substr(1)+ '</b>/'+  uri_split.slice(1).map(linkit).join("/");
                          }
                             
                          
