@@ -16,13 +16,13 @@ ml(0,ml(1),[
     {   Window: function swResponseZipLib(lib) { return lib ;},
         ServiceWorkerGlobalScope: function swResponseZipLib(lib) { return lib ;}
     }, (()=>{  return {
-        Window:                   [ () => rzipLib   ],
-        ServiceWorkerGlobalScope: [ () => rzipLib   ]
+        Window:                   [ () => rzipLib  ],
+        ServiceWorkerGlobalScope: [ () => rzipLib  ]
     };
             
       function rzipLib (dbKeyPrefix) {
           
-          
+         const sha1 = self.sha1Lib.cb ; 
        
          const {
               
