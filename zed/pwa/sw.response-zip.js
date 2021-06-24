@@ -437,7 +437,7 @@ ml(0,ml(1),[
                          zip.file(path).async('arraybuffer').then(function(buffer){
                             
                             if (subpath.endsWith('.zip')) {
-                                return resolveZipListing (subzipurl+"/"+path+"/"+subpath,buffer).then(resolve).catch(reject);
+                                return resolveZipListing (subzipurl+"/"+subpath,buffer).then(resolve).catch(reject);
                             }
                             
                             
@@ -619,11 +619,10 @@ ml(0,ml(1),[
                          
                          const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                          const uri= '/'+urify.exec(url)[2];
-                         const url_split = url.split('.zip/');
                          const parent_link = url.split('.zip/').map(function(x,i,a){
-                                const u = (i===0?'/'+urify.exec(x)[2]:x); 
-                                if (i==a.length-1) return u;
-                                return '<a href="'+a.slice(0,i-1)+'.zip">'+u+'.zip</a>/'
+                                const u = (i===a.length-1?'/'+urify.exec(x)[2]:x); 
+                                if (i===a.length-1) return u;
+                                return '/<a href="'+a.slice(0,i-1)+'.zip">'+u+'.zip</a>'
                             }).join('') ;
                          
                         
