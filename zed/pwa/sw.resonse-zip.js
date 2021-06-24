@@ -557,7 +557,7 @@ ml(0,ml(1),[
                      }
                      
                      const uri= '/'+/^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/.exec(url)[2];
-        
+                     const parent_link = url.indexOf('.zip/')>0 ? '<a href="'+url+'">'+url+'</a>' : url;
                      const html = [ 
                      '<html>',
                      '<head>',
@@ -571,7 +571,7 @@ ml(0,ml(1),[
                      ].concat (
                          
                          Object.keys(zipFileMeta.files).map(function(filename){
-                             return '<li><a href="'+url+'/'+filename+'">'+ filename +'</li>';
+                             return '<li>'+parent_link+'&nbsp;<a href="'+url+'/'+filename+'">'+ filename +'</li>';
                          }),
                          
                      [
