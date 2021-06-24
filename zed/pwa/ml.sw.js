@@ -1,8 +1,7 @@
-    
 // source -sw version 
 /* global self,importScripts,BroadcastChannel */
 function ml(x,L, o, a, d, s){
-    ml.h=ml.h||{};//create history db if none exists
+    if (!ml.h){ml.h={};ml.H=[];ml.d={};ml.f={};}//create history db if none exists
     let
     C=console,
     z,
@@ -10,10 +9,20 @@ function ml(x,L, o, a, d, s){
     // used for comparisions later
     T=(G)=>typeof G,
     t=[C,ml,'',z,x].map(T),
+    l=location,O=l.origin,
     // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
     // any constants/worker functions they need. also contains some code used later by z
     // note that z doubles as a proxy for "undefined" in the type array "t" above 
     c = {
+        
+        //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
+        //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
+        r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+        //c.b=document base
+        b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
+        c:(u)=>u.startsWith(c.b),
+       
+        
         // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
         1:()=>c[4]()||{},
         
@@ -24,7 +33,7 @@ function ml(x,L, o, a, d, s){
         // a = dictionary of dependants per window type
         // d = array of loaded dependants 
         // e = unuused argument doubles as a variable
-        // D = undefined
+        // r = undefined
         2:(L,o,a,d,e,r)=>{
                 e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
                 value: a[L].apply(this, d[L].map(c.x)),
@@ -68,9 +77,8 @@ function ml(x,L, o, a, d, s){
            );
         },
         
-        //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
-        //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
-        r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+
+                
         
           
     };
@@ -92,14 +100,23 @@ function ml(x,L, o, a, d, s){
        },
 
        //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
-       u:(x,R)=>{
+       u:(x,R,U,N)=>{
              R=c.r(x);
-             if (!R) return L[x]?false:x;
-             // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
-             if (R[2]&&R[2]!==(d||c[3]())) return false; 
-             importScripts(R[3]);
-             return R[1];
+             if (!R) {
+                 if (L[x]) return !1;
+                 
+                 return x;
+             } else {
+                 // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
+                if ((N=R[2])&&N!==(d||c[3]())) return !1; 
+             }
+             N=R[1];
+             U=c.B(R[3]);
+             if(c.c(U))ml.d[N]={h:U};
+             importScripts(U);
+             return N;
        },
+       
        
        //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
        y:(x)=>!!x,
@@ -121,6 +138,7 @@ function ml(x,L, o, a, d, s){
        //wrap event E to call X, whhich is stored as z[E]
        G:(E,X)=>{ml[E]=X;return (e)=>ml[E](e);},
        
+         
        
        //install final event handler,and return captured promise for install event
        8:(E,f)=>{

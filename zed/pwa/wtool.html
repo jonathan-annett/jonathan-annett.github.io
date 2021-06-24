@@ -25,7 +25,7 @@
             c = {// holder for "constants", also a few holds outer scope commands, common functions
                 //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
                 //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
-                r:(u)=>/([A-z]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+                r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
                 //c.b=document base
                 b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
                 c:(u)=>u.startsWith(c.b),
