@@ -39,10 +39,9 @@ ml(0,ml(1),[ 'Rusha@ServiceWorkerGlobalScope | sw/rusha.js' ],function(){ml(2,ml
       
       
       function sha1RushaCB(buffer,cb){ 
-              Rusha.createHash().update(buffer)
-                .digest('hex')
-                 .then(function(hex){cb(undefined,hex);})
-                   .catch(cb);
+             cb(undefined,
+               Rusha.createHash().update(buffer).digest('hex')
+             );
       
       }
       
