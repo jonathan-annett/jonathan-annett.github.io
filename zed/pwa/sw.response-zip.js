@@ -630,9 +630,12 @@ ml(0,ml(1),[
                          };
                          
                          if ( uri_split.length === 1 ) {
-                              parent_link = '/<b>'+uri+'</b>'; 
+                              parent_link = '/<b>' + uri + '</b>'; 
                          } else {
-                              parent_link = '/<b>'+uri_split[0].substr(1)+ '</b>/'+  uri_split.slice(1).map(linkit).join("/");
+                              const xx = uri_split.shift().split("/"),yy=xx.pop();
+                              parent_link = xx.join("/")+'<b>'+yy+'</b>/' +  
+                              uri_split.map(function(e){return linkit(e);})
+                                  .join("/");
                          }
                             
                          
