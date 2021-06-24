@@ -518,73 +518,84 @@ ml(0,ml(1),[
             }
             
             
-            function resolveSubzip(resolve,buffer,subzipurl,subpath) {
-                     
+            
+            function resolveSubzip(buffer,subzipurl,subpath) {
+                
                 const parts      = subpath.split('.zip/');     
                 const subzip     = parts.length>1;
                 const path       = subzip ? parts[0]+'.zip' : parts[0];
                 const subsubpath = subzip ? parts[1]        : false;
                      
-                
-                getZipObject(subzipurl,buffer,function(err,zip,zipFileMeta){
-                    if (err)  throw err;
+                 
+                return new Promise(function(resolve,reject){     
                     
-
-                    const fileEntry = zipFileMeta.files[subpath];
-                    if (!fileEntry) {
-                        new Response('', {
-                            status: 404,
-                            statusText: 'Not found'
-                        });
-                    }
-                    
-                    const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
-                              
-                    zip.file(path).async('arraybuffer').then(function(buffer){
+                    getZipObject(subzipurl,buffer,function(err,zip,zipFileMeta){
+                        if (err)  throw err;
+                        
+    
+                        const fileEntry = zipFileMeta.files[subpath];
+                        if (!fileEntry) {
+                            new Response('', {
+                                status: 404,
+                                statusText: 'Not found'
+                            });
+                        }
+                        
                        
-                       if (update_needed) {
-                           // first request for this file, so we need to save 
-                           // contentLength and type in buffer
-                           // (they are needed for later 304 responses)
+                        const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
+                                  
+                        zip.file(path).async('arraybuffer').then(function(buffer){
                            
-                           fileEntry.contentType    = mimeForFilename(path);
-                           fileEntry.contentLength  = buffer.byteLength;
-                           
-                           if (zipFileMeta.updating) {
-                               clearTimeout(zipFileMeta.updating);
+                           if (subpath.endsWith('.zip')) {
+                               return resolveZipListing (subzipurl+"/"+subpath,buffer);
                            }
-                           console.log("updating zip entry",subzipurl,path);
                            
-                           zipFileMeta.updating = setTimeout(function(){
-                               // in 10 seconds this and any other metadata changes to disk
-                               delete zipFileMeta.updating;
-                               setForageKey(zipmetadatakey(subzipurl),zipFileMeta,function(){
-                                   console.log("updated zip entry",subzipurl);
-                               });
+                           
+                           if (update_needed) {
+                               // first request for this file, so we need to save 
+                               // contentLength and type in buffer
+                               // (they are needed for later 304 responses)
                                
-                           },10*10000);
+                               fileEntry.contentType    = mimeForFilename(path);
+                               fileEntry.contentLength  = buffer.byteLength;
+                               
+                               if (zipFileMeta.updating) {
+                                   clearTimeout(zipFileMeta.updating);
+                               }
+                               console.log("updating zip entry",subzipurl,path);
+                               
+                               zipFileMeta.updating = setTimeout(function(){
+                                   // in 10 seconds this and any other metadata changes to disk
+                                   delete zipFileMeta.updating;
+                                   setForageKey(zipmetadatakey(subzipurl),zipFileMeta,function(){
+                                       console.log("updated zip entry",subzipurl);
+                                   });
+                                   
+                               },10*10000);
+                               
+                           }
                            
-                       }
-                       
-                       if (subzip) {
-                           return resolveSubzip(resolve,buffer,subzipurl+'/'+path  ,subsubpath);
-                       }
-                       
-                       resolve( new Response(
-                                   buffer, {
-                                           status: 200,
-                                           statusText: 'Ok',
-                                           headers: new Headers({
-                                             'Content-Type'   : fileEntry.contentType,
-                                             'Content-Length' : fileEntry.contentLength,
-                                             'ETag'           : fileEntry.etag
-                                           })
-                                   })
-                       );
+                           if (subzip) {
+                               return resolveSubzip(buffer,subzipurl+'/'+path  ,subsubpath).then(resolve).catch(reject);
+                           }
+                           
+                           resolve( new Response(
+                                       buffer, {
+                                               status: 200,
+                                               statusText: 'Ok',
+                                               headers: new Headers({
+                                                 'Content-Type'   : fileEntry.contentType,
+                                                 'Content-Length' : fileEntry.contentLength,
+                                                 'ETag'           : fileEntry.etag
+                                               })
+                                       })
+                           );
+                           
+                        });
+                        
                        
                     });
-                    
-                   
+                
                 });
             }
             
@@ -683,11 +694,11 @@ ml(0,ml(1),[
             }    
             
             
-            function resolveZipListing (url) {
+            function resolveZipListing (url,buffer) {
                 
                 return new Promise(function (resolve){
                     
-                    getZipObject(url,function(err,zip,zipFileMeta) {
+                    getZipObject(url,buffer,function(err,zip,zipFileMeta) {
                         
                         if (err || !zip || !zipFileMeta) {
                             return resolve(new Response('', {
@@ -696,8 +707,8 @@ ml(0,ml(1),[
                           }));
                         }
                         
-                        const uri=url.replace(/^http(s?):\/\//,'/');
-                        
+                        const uri= '/'+/^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/.exec(url)[2];
+
                         const html = [ 
                         '<html>',
                         '<head>',
