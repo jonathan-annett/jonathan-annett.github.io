@@ -10,12 +10,14 @@ ml(0,ml(1),[ 'Rusha@ServiceWorkerGlobalScope | sw/rusha.js' ],function(){ml(2,ml
         Window:                   [ () => { 
             sha1Subtle.bufferToHex = bufferToHex;
             sha1Subtle.arrayToHex = arrayToHex;
+            sha1Subtle.cb=sha1SubtleCB;
             return sha1Subtle ;
         } ],
         ServiceWorkerGlobalScope: [ () => {
             
             sha1Rusha.bufferToHex=bufferToHex;
             sha1Rusha.arrayToHex=arrayToHex;
+            sha1Rusha.cb=sha1RushaCB;
             return sha1Rusha;
             
         }   ]
@@ -28,7 +30,26 @@ ml(0,ml(1),[ 'Rusha@ServiceWorkerGlobalScope | sw/rusha.js' ],function(){ml(2,ml
       }
 
       function sha1Subtle(buffer){ 
-              return window.crypto.subtle.digest("SHA-1", bufferToHex(buffer)); 
+              return window.crypto.subtle.digest("SHA-1", buffer)
+                 .then(function(digest){ return Promise.resolve(bufferToHex(digest));}); 
+          
+      }
+      
+      
+      
+      
+      function sha1RushaCB(buffer,cb){ 
+              Rusha.createHash().update(buffer)
+                .digest('hex')
+                 .then(function(hex){cb(undefined,hex);})
+                   .catch(cb);
+      
+      }
+      
+      function sha1SubtleCB(buffer,cb){ 
+              return window.crypto.subtle.digest("SHA-1", buffer)
+                 .then(function(dig){cb(undefined,bufferToHex(dig));})
+                   .catch(cb); 
           
       }
       
@@ -76,7 +97,6 @@ ml(0,ml(1),[ 'Rusha@ServiceWorkerGlobalScope | sw/rusha.js' ],function(){ml(2,ml
     
 
 });
-
 
 
 

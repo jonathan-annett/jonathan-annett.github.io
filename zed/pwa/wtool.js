@@ -229,8 +229,9 @@ ml(0,ml(1),[
                                 return cb(undefined,buffer,zipFileMeta);
                              }
                              // 
-                             
-                            setMetadataForBuffer(buffer,sha1(buffer),cb); 
+                            sha1(buffer,function(err,etag){
+                               setMetadataForBuffer(buffer,etag,cb);
+                            });
                              
                               
                         });
@@ -292,7 +293,7 @@ ml(0,ml(1),[
                     if (typeof actualEtag==='string' && actualEtag.length>0) {
                         return cb(undefined,actualEtag.replace(/(^W)|([\/-_\s\\])/g,''));
                     }
-                    cb (undefined,sha1(buffer));
+                    sha1(buffer,cb);
                 }
 
                 function setMetadataForBuffer(buffer,etag,cb/*function(err,buffer,zipFileMeta){}*/) {
@@ -859,14 +860,14 @@ ml(0,ml(1),[
 
             () => self.wTools,
             
-            () => self.sha1Lib
+            () => self.sha1Lib.cb
            
         ],
         ServiceWorkerGlobalScope: [
 
             () => self.wTools,
             
-            () => self.sha1Lib,
+            () => self.sha1Lib.cb,
             
             () => self.JSZip
             
@@ -884,4 +885,6 @@ local imports - these functions are available to the other modules declared in t
  
 
 });
+
+
 
