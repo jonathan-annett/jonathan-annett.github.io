@@ -437,7 +437,7 @@ ml(0,ml(1),[
                          zip.file(path).async('arraybuffer').then(function(buffer){
                             
                             if (subpath.endsWith('.zip')) {
-                                return resolveZipListing (subzipurl+"/"+subpath,buffer).then(resolve).catch(reject);
+                                return resolveZipListing (subzipurl+"/"+path+"/"+subpath,buffer).then(resolve).catch(reject);
                             }
                             
                             
@@ -630,10 +630,12 @@ ml(0,ml(1),[
                          const html = [ 
                          '<html>',
                          '<head>',
-                         '<title>files in '+uri+'</title>',
+                           '<title>files in '+uri+'</title>',
                          '</head>',
                          '<body>',
+                         
                          '<h1>files in '+uri+'</h1>',
+                         
                          '<div>',
                          '<ul>'
                          
