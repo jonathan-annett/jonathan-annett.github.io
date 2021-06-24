@@ -547,7 +547,7 @@ ml(0,ml(1),[
                         zip.file(path).async('arraybuffer').then(function(buffer){
                            
                            if (subpath.endsWith('.zip')) {
-                               return resolveZipListing (subzipurl+"/"+subpath,buffer);
+                               return resolveZipListing (subzipurl+"/"+subpath,buffer).then(resolve).catch(reject);
                            }
                            
                            
@@ -608,7 +608,7 @@ ml(0,ml(1),[
                       subpath   = subzip ? parts.slice(2).join('.zip/') : false,
                       subzipurl = subzip ? parts.slice(0,1).join('.zip/') + '.zip/' : false;
                       
-                return new Promise(function (resolve){
+                return new Promise(function (resolve,reject){
                     getZipObject(url,function(err,zip,zipFileMeta) {
                         
                         if (err)  throw err;
@@ -673,6 +673,10 @@ ml(0,ml(1),[
                                 
                                 if (subzip) {
                                     return resolveSubzip(resolve,buffer,subzipurl,subpath);
+                                }
+                                
+                                if (path.endsWith('.zip')) {
+                                    return resolveZipListing (url+"/"+path,buffer).then(resolve).catch(reject);
                                 }
                                 
                                 resolve( new Response(
