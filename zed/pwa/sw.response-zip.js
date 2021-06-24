@@ -632,11 +632,14 @@ ml(0,ml(1),[
                          if ( uri_split.length === 1 ) {
                              parent_link = linkit(uri); 
                          } else {
-                             const last = uri_split.pop();
                              if (uri_split.length===2 ) {
-                                  parent_link = linkit(uri_split[0]+'.zip')+'/'+linkit(last);
+                                  parent_link = linkit(uri_split[0]+'.zip')+'/'+linkit(uri_split[0]);
                              } else {
-                                  parent_link = uri_split.map((u)=>u+'.zip/').map(linkit).join('/')+'/'+linkit(last); 
+                                  const last = uri_split.pop();
+                                  parent_link = uri_split.map(function(u){
+                                      return linkit(u + '.zip');
+                                  } 
+                                ).join('/')+'/'+linkit(last); 
                              }
                              
                          }
