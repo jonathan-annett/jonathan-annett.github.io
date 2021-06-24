@@ -362,7 +362,7 @@ ml(0,ml(1),[
                  }[filename.substr(lastDot+1)];
              }
              
-             function resolveSubzip(buffer,subzipurl,subpath) {
+             function resolveSubzip(buffer,subzipurl,subpath,ifNoneMatch,ifModifiedSince) {
                  
                  const parts      = subpath.split('.zip/');     
                  const subzip     = parts.length>1;
@@ -386,6 +386,31 @@ ml(0,ml(1),[
                          
                         
                          const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
+                        
+                        
+                         if (   !update_needed      && 
+                                !subzip             &&
+                                 (
+                                     (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag))
+                                           ||
+                                     (ifModifiedSince &&  (safeDate(ifModifiedSince,fileEntry.date) <  fileEntry.date) )
+                                 
+                                 )
+                             ) {
+                             return resolve( 
+                                 
+                                 new Response('', {
+                                         status: 304,
+                                         statusText: 'Not Modifed',
+                                         headers: new Headers({
+                                           'Content-Type'   : fileEntry.contentType,
+                                           'Content-Length' : fileEntry.contentLength,
+                                           'ETag'           : fileEntry.etag
+                                         })
+                                     })
+                             );
+                         }
+                        
                                    
                          zip.file(path).async('arraybuffer').then(function(buffer){
                             
@@ -419,7 +444,7 @@ ml(0,ml(1),[
                             }
                             
                             if (subzip) {
-                                return resolveSubzip(buffer,subzipurl+'/'+path  ,subsubpath).then(resolve).catch(reject);
+                                return resolveSubzip(buffer,subzipurl+'/'+path  ,subsubpath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
                             }
                             
                             resolve( new Response(
@@ -429,7 +454,9 @@ ml(0,ml(1),[
                                                 headers: new Headers({
                                                   'Content-Type'   : fileEntry.contentType,
                                                   'Content-Length' : fileEntry.contentLength,
-                                                  'ETag'           : fileEntry.etag
+                                                  'ETag'           : fileEntry.etag,
+                                                  'Cache-Control'  : 'max-age=3600, s-maxage=600, must-revalidate',
+                                                  'Last-Modified'  : fileEntry.date.toString(),
                                                 })
                                         })
                             );
@@ -442,7 +469,13 @@ ml(0,ml(1),[
                  });
              }
              
-             function resolveZip (parts,ifnonematch) {
+             function safeDate (d,def) {
+                 const dt = new Date(d);
+                 if (d) return d;
+                 return def
+             }
+             
+             function resolveZip (parts,ifNoneMatch,ifModifiedSince) {
                  
                  const url       = parts[0]+'.zip', 
                        subzip    = parts.length>2, 
@@ -468,11 +501,17 @@ ml(0,ml(1),[
                          const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
                          
                          
-                         if (!update_needed      && 
-                             !subzip             &&
-                             ifnonematch         && 
-                             
-                             ifnonematch === fileEntry.etag) {
+                         
+                         
+                         if (   !update_needed      && 
+                                !subzip             &&
+                                 (
+                                     (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag))
+                                           ||
+                                     (ifModifiedSince &&  (safeDate(ifModifiedSince,fileEntry.date) <  fileEntry.date) )
+                                 
+                                 )
+                             ) {
                              return resolve( 
                                  
                                  new Response('', {
@@ -514,7 +553,7 @@ ml(0,ml(1),[
                                  }
                                  
                                  if (subzip) {
-                                     return resolveSubzip(buffer,subzipurl,subpath).then(resolve).catch(reject);
+                                     return resolveSubzip(buffer,subzipurl,subpath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
                                  }
                                  
                                  if (path.endsWith('.zip')) {
@@ -609,13 +648,17 @@ ml(0,ml(1),[
              
              function fetchZipUrl(event) {
                  
-                 const url         = event.request.url, parts = url.split('.zip/');
-                 const ifnonematch = event.request.headers.get('if-none-match');
+                 const url             = event.request.url, parts = url.split('.zip/');
+                 const ifNoneMatch     = event.request.headers.get('If-None-Match');
+                 const ifModifiedSince = event.request.headers.get('If-Modified-Since');
+                 
+                 
+                 
                  
                  if (parts.length>1) {
                      // this is a url in the format http://example.com/path/to/zipfile.zip/path/to/file/in/zip.ext
                      
-                     event.respondWith( resolveZip (parts,ifnonematch) ); 
+                     event.respondWith( resolveZip (parts,ifNoneMatch,ifModifiedSince) ); 
                      return true;
                  } else {
                  
@@ -623,7 +666,7 @@ ml(0,ml(1),[
                          // this is a url pointing to a possibly existing zip file
                          // we don't let you download the zip. we do however give you the file list when you ask for a zip
                          // which provides links to each file inside
-                         event.respondWith( resolveZipListing ( url, ifnonematch ) ); 
+                         event.respondWith( resolveZipListing ( url ) ); 
                          return true;
                      }
                  }
