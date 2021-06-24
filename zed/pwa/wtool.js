@@ -708,7 +708,7 @@ ml(0,ml(1),[
                         '<div>',
                         '<ul>'
                         
-                        ].append (
+                        ].concat (
                             
                             Object.keys(zipFileMeta.files).map(function(filename){
                                 return '<li><a href="'+url+'/'+filename+'">'+ filename +'</li>';
