@@ -620,7 +620,7 @@ ml(0,ml(1),[
                          const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                          const uri= urify.exec(url)[2];
                          const uri_split = uri.split('.zip/').map(function (x,i,a){return i===a.length-1?'/'+x:'/'+x+'.zip'});
-                         var parent_link;
+                         var parent_link="";
                          const linkit=function(uri,disp){ 
                              const split=(disp||uri).split("/");
                              if (split.length===1) return '<a href="'+uri+'">'+(disp||uri)+'</a>';
@@ -628,18 +628,29 @@ ml(0,ml(1),[
                              if (split.length===1) return split[0]+'/<a href="'+uri+'">'+last+'</a>';
                              return split.join("/")+'/<a href="'+uri+'">'+last+'</a>';
                          };
+                         const boldit=function(uri,disp){ 
+                             const split=(disp||uri).split("/");
+                             if (split.length===1) return '<b>'+(disp||uri)+'</b>';
+                             const last = split.pop();
+                             if (split.length===1) return split[0]+'/<b>'+last+'</b>';
+                             return split.join("/")+'/<b>'+last+'</b>';
+                         };
                          
-                       
-                          const xx = uri_split[0].split("/"),yy=xx.pop();
-                          parent_link = (xx.join("/")+'/<b>'+yy+'</b>' +  
-                          uri_split.map(function(e,i,a){
+                          if (uri_split.length===1) {
+                              const xx = uri_split[0].split("/"),yy=xx.pop();
+                              parent_link = xx.join("/")+'/<b>'+yy+'</b>' ;
+                          } 
+                          parent_link += uri_split.map(function(e,i,a){
                               
                                   if (i===0) return '';
                                   const href = a.slice(0,i).join('');
                                   const prev_href = a.slice(0,i-1).join('');
                                   const disp = href.substr(prev_href.length);
-                                  return linkit(href,disp);
-                              }) .join("/")).replace(/\/\//g,'/');
+                                  return (i<a.length-1 ?linkit : boldit)(href,disp);
+                              }) .join("/");
+                              
+                              
+                          parent_link=parent_link.replace(/\/\//g,'/');
            
                          
                          //https://jonathan-annett.github.io/zed/pwa/yet,yet/deeper/dive.zip
