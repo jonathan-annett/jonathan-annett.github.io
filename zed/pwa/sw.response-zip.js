@@ -628,12 +628,17 @@ ml(0,ml(1),[
                              if (split.length===2) return split[0]+'/<a href="'+uri+'">'+last+'</a>';
                              return split.join("/")+'/<a href="'+uri+'">'+last+'</a>';
                          };
-                         switch (uri_split.length) {
-                             case 1 : parent_link = linkit(uri); break;
-                             case 2 : parent_link = linkit(uri_split[0])+'/'+linkit(uri_split[1]);break;
-                             default :
+                         
+                         if ( uri_split.length === 1 ) {
+                             parent_link = linkit(uri); 
+                         } else {
                              const last = uri_split.pop();
-                             parent_link = uri_split.map(linkit).join('/')+'/'+linkit(uri_split[1]);break;
+                             if (uri_split.length===2 ) {
+                                  parent_link = linkit(uri_split[0]+'.zip')+'/'+linkit(last);
+                             } else {
+                                  parent_link = uri_split.map((u)=>linkit(u+'.zip')).join('/')+'/'+linkit(last); 
+                             }
+                             
                          }
                             
                          
@@ -654,7 +659,7 @@ ml(0,ml(1),[
                          ].concat (
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
-                                 return '<li>'+parent_link+'/<a href="'+url+'/'+filename+'">'+ filename +'</a></li>';
+                                 return '<li>' + parent_link +'/' + linkit(filename) + '</a></li>';
                               }),
                              
                          [
