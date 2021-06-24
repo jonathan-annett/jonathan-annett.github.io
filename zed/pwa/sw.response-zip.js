@@ -99,8 +99,25 @@ ml(0,ml(1),[
                      fetch(url)
                      .then(getBufferFromResponse)
                        .catch(function(err){
+                           
                             fetch(url,{mode:'no-cors'})
                                .then(getBufferFromResponse)
+                               .catch(function(err){
+                                   
+                                    fetch(url+"?r="+Math.random().toString(36).substr(-8),{
+                                        mode:'no-cors',
+                                        headers:{
+                                            'if-none-match':Math.random().toString(36).substr(-8),
+                                            'if-modified-since':new Date( Date.now() - ( 5 * 365 * 24 * 60 * 60 * 1000) ).toUTCString()
+                                        }
+                                        
+                                    },'')
+                                       .then(getBufferFromResponse)
+                                       .catch(cb);
+                                       
+                                       
+                               })
+                               
                        }).catch(cb);
                  }
                  
@@ -410,7 +427,7 @@ ml(0,ml(1),[
                                            'Content-Length' : fileEntry.contentLength,
                                            'ETag'           : fileEntry.etag,
                                            'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                           'Last-Modified'  : fileEntry.date.toString(),
+                                           'Last-Modified'  : fileEntry.date.toUTCString(),
                                          })
                                      })
                              );
@@ -461,7 +478,7 @@ ml(0,ml(1),[
                                                   'Content-Length' : fileEntry.contentLength,
                                                   'ETag'           : fileEntry.etag,
                                                   'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                                  'Last-Modified'  : fileEntry.date.toString(),
+                                                  'Last-Modified'  : fileEntry.date.toUTCString(),
                                                 })
                                         })
                             );
@@ -527,7 +544,7 @@ ml(0,ml(1),[
                                            'Content-Length' : fileEntry.contentLength,
                                            'ETag'           : fileEntry.etag,
                                            'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                           'Last-Modified'  : fileEntry.date.toString(),
+                                           'Last-Modified'  : fileEntry.date.toUTCString(),
                                          })
                                      })
                              );
@@ -576,7 +593,7 @@ ml(0,ml(1),[
                                                        'Content-Length' : fileEntry.contentLength,
                                                        'ETag'           : fileEntry.etag,
                                                        'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                                       'Last-Modified'  : fileEntry.date.toString(),
+                                                       'Last-Modified'  : fileEntry.date.toUTCString(),
                                                      })
                                              })
                                  );
@@ -646,7 +663,7 @@ ml(0,ml(1),[
                                        'Content-Length' : html.length,
                                        'ETag'           : zipFileMeta.etag,
                                        'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                       'Last-Modified'  : zipFileMeta.date.toString(),
+                                       'Last-Modified'  : zipFileMeta.date.toUTCString(),
                                   
                                    
                                      })
