@@ -619,17 +619,23 @@ ml(0,ml(1),[
                          
                          const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                          const uri= '/'+urify.exec(url)[2];
-                         const parent_link = url.split('.zip/').map(function(x,i,a){
-                             
-                                const u = (i===a.length-1?'/':'') + ( i===0?urify.exec(x)[2]:x); 
-                                
-                                if (i===a.length-1) return u;
-                                if (i===1) {
-                                    return '/<a href="/'+ u +'.zip">' + u + '.zip</a>';
-                                }
-                                return '/<a href="'+ a.slice(0,i-2).join('.zip/')+u+'.zip">' + u + '.zip</a>';
-                                
-                            }).join('') ;
+                         const uri_split = uri.split('.zip/');
+                         var parent_link;
+                         const linkit=function(uri){ 
+                             const split=uri.split("/");
+                             if (split.length===1) return '<a href="'+uri+'">'+uri+'</a>';
+                             const last = split.pop();
+                             if (split.length===2) return split[0]+'/<a href="'+uri+'">'+last+'</a>';
+                             return split.join("/")+'/<a href="'+uri+'">'+last+'</a>';
+                         };
+                         switch (uri_split.length) {
+                             case 1 : parent_link = linkit(uri); break;
+                             case 2 : parent_link = linkit(uri_split[0])+'/'+linkit(uri_split[1]);break;
+                             default :
+                             const last = uri_split.pop();
+                             parent_link = uri_split.map(linkit).join('/')+'/'+linkit(uri_split[1]);break;
+                         }
+                            
                          
                          //https://jonathan-annett.github.io/zed/pwa/yet,yet/deeper/dive.zip
                         
