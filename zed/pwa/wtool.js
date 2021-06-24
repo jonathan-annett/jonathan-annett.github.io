@@ -229,9 +229,9 @@ ml(0,ml(1),[
                                 return cb(undefined,buffer,zipFileMeta);
                              }
                              // 
-                             sha1(buffer,function(err,etag){
-                                setMetadataForBuffer(buffer,etag,cb); 
-                             });
+                             
+                            setMetadataForBuffer(buffer,sha1(buffer),cb); 
+                             
                               
                         });
                     }
@@ -292,8 +292,7 @@ ml(0,ml(1),[
                     if (typeof actualEtag==='string' && actualEtag.length>0) {
                         return cb(undefined,actualEtag.replace(/(^W)|([\/-_\s\\])/g,''));
                     }
-                    
-                    sha1(buffer,cb);
+                    cb (undefined,sha1(buffer));
                 }
 
                 function setMetadataForBuffer(buffer,etag,cb/*function(err,buffer,zipFileMeta){}*/) {
