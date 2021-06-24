@@ -75,7 +75,7 @@ ml(0,ml(1),[
                               }
                               // 
                              sha1(buffer,function(err,etag){
-                                setMetadataForBuffer(buffer,etag,cb);
+                                setMetadataForBuffer(buffer,etag,undefined,cb);
                              });
                               
                                
@@ -115,7 +115,7 @@ ml(0,ml(1),[
                        
                        createETagForResponse(response,buffer,function(err,etag){
                            
-                           setMetadataForBuffer(buffer,etag,function(err,buffer,zipFileMeta){
+                           setMetadataForBuffer(buffer,etag,safeDate(response.headers.get('Last-Modified'),new Date()),function(err,buffer,zipFileMeta){
                                if (err) return cb(err);
                                setForageKey(zipbufferkey(url),buffer,function(err){
                                    
@@ -141,9 +141,12 @@ ml(0,ml(1),[
                      sha1(buffer,cb);
                  }
             
-                 function setMetadataForBuffer(buffer,etag,cb/*function(err,buffer,zipFileMeta){}*/) {
+                 function setMetadataForBuffer(buffer,etag,date,cb/*function(err,buffer,zipFileMeta){}*/) {
                      if (!etag) etag = Math.random().toString(36).substr(-8)+Date.now().toString(36).substr(-6);
-                     const zipFileMeta = {etag};
+                     const zipFileMeta = {
+                         etag,
+                         date:date||new Date()
+                     };
                      
                        setForageKey(zipmetadatakey(url),zipFileMeta,function(err){
                            
@@ -405,7 +408,9 @@ ml(0,ml(1),[
                                          headers: new Headers({
                                            'Content-Type'   : fileEntry.contentType,
                                            'Content-Length' : fileEntry.contentLength,
-                                           'ETag'           : fileEntry.etag
+                                           'ETag'           : fileEntry.etag,
+                                           'Cache-Control'  : 'max-age=3600, s-maxage=600, must-revalidate',
+                                           'Last-Modified'  : fileEntry.date.toString(),
                                          })
                                      })
                              );
@@ -569,7 +574,9 @@ ml(0,ml(1),[
                                                      headers: new Headers({
                                                        'Content-Type'   : fileEntry.contentType,
                                                        'Content-Length' : fileEntry.contentLength,
-                                                       'ETag'           : fileEntry.etag
+                                                       'ETag'           : fileEntry.etag,
+                                                       'Cache-Control'  : 'max-age=3600, s-maxage=600, must-revalidate',
+                                                       'Last-Modified'  : fileEntry.date.toString(),
                                                      })
                                              })
                                  );
@@ -637,6 +644,11 @@ ml(0,ml(1),[
                                      headers: new Headers({
                                        'Content-Type'   : 'text/html',
                                        'Content-Length' : html.length,
+                                       'ETag'           : zipFileMeta.etag,
+                                       'Cache-Control'  : 'max-age=3600, s-maxage=600, must-revalidate',
+                                       'Last-Modified'  : zipFileMeta.date.toString(),
+                                  
+                                   
                                      })
                                  })
                          );
