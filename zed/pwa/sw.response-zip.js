@@ -621,8 +621,8 @@ ml(0,ml(1),[
                          const uri= '/'+urify.exec(url)[2];
                          const uri_split = uri.split('.zip/');
                          var parent_link;
-                         const linkit=function(uri){ 
-                             const split=uri.split("/");
+                         const linkit=function(uri,disp){ 
+                             const split=(disp||uri).split("/");
                              if (split.length===1) return '<a href="'+uri+'">'+uri+'</a>';
                              const last = split.pop();
                              if (split.length===2) return split[0]+'/<a href="'+uri+'">'+last+'</a>';
@@ -659,7 +659,7 @@ ml(0,ml(1),[
                          ].concat (
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
-                                 return '<li>' + parent_link +'/' + linkit(uri+"/"+filename) + '</a></li>';
+                                 return '<li>' + parent_link +'/' + linkit(uri+"/"+filename,filename) + '</a></li>';
                               }),
                              
                          [
