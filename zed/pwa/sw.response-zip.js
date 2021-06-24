@@ -620,9 +620,13 @@ ml(0,ml(1),[
                          const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                          const uri= '/'+urify.exec(url)[2];
                          const parent_link = url.split('.zip/').map(function(x,i,a){
+                             
                                 const u = (i===a.length-1?'/':'') + ( i===0?urify.exec(x)[2]:x); 
+                                
                                 if (i===a.length-1) return u;
-                                return '/<a href="'+a.slice(0,i-1).join('.zip/')+'.zip">'+u+'.zip</a>'
+                                
+                                return '/<a href="'+u+'.zip">'+u+'.zip</a>';
+                                
                             }).join('') ;
                          
                          //https://jonathan-annett.github.io/zed/pwa/yet,yet/deeper/dive.zip
