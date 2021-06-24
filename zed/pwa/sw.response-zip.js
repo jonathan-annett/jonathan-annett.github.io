@@ -629,15 +629,12 @@ ml(0,ml(1),[
                              return split.join("/")+'/<a href="'+uri+'">'+last+'</a>';
                          };
                          
-                         if ( uri_split.length === 1 ) {
-                              parent_link = '/<b>' + uri + '</b>'; 
-                         } else {
-                              const xx = uri_split.shift().split("/"),yy=xx.pop();
-                              parent_link = xx.join("/")+'<b>'+yy+'</b>/' +  
-                              uri_split.map(function(e){return linkit(e);})
-                                  .join("/");
-                         }
-                            
+                       
+                          const xx = uri_split.shift().split("/"),yy=xx.pop();
+                          parent_link = xx.join("/")+'<b>'+yy+'</b>/' +  
+                          uri_split.map(function(e){return linkit(e);})
+                              .join("/");
+           
                          
                          //https://jonathan-annett.github.io/zed/pwa/yet,yet/deeper/dive.zip
                         
@@ -656,7 +653,7 @@ ml(0,ml(1),[
                          ].concat (
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
-                                 return '<li>' + parent_link +'/' + linkit(uri+"/"+filename,filename) + '</a></li>';
+                                 return '<li>' + parent_link +'/' + linkit("/"+uri+"/"+filename,filename) + '</a></li>';
                               }),
                              
                          [
