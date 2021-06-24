@@ -625,13 +625,13 @@ ml(0,ml(1),[
                              const split=(disp||uri).split("/");
                              if (split.length===1) return '<a href="'+uri+'">'+(disp||uri)+'</a>';
                              const last = split.pop();
-                             if (split.length===2) return split[0]+'/<a href="'+uri+'">'+last+'</a>';
+                             if (split.length===1) return split[0]+'/<a href="'+uri+'">'+last+'</a>';
                              return split.join("/")+'/<a href="'+uri+'">'+last+'</a>';
                          };
                          
                        
                           const xx = uri_split.shift().split("/"),yy=xx.pop();
-                          parent_link = xx.join("/")+'<b>'+yy+'</b>/' +  
+                          parent_link = xx.join("/")+'/<b>'+yy+'</b>' +  
                           uri_split.map(function(e){return linkit(e);})
                               .join("/");
            
