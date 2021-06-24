@@ -520,7 +520,9 @@ ml(0,ml(1),[
                                          headers: new Headers({
                                            'Content-Type'   : fileEntry.contentType,
                                            'Content-Length' : fileEntry.contentLength,
-                                           'ETag'           : fileEntry.etag
+                                           'ETag'           : fileEntry.etag,
+                                           'Cache-Control'  : 'max-age=3600, s-maxage=600, must-revalidate',
+                                           'Last-Modified'  : fileEntry.date.toString(),
                                          })
                                      })
                              );
