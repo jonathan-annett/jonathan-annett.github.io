@@ -518,7 +518,7 @@ ml(0,ml(1),[
                              }
                              
                              if (subzip) {
-                                 return resolveSubzip(resolve,buffer,subzipurl,subpath);
+                                 return resolveSubzip(buffer,subzipurl,subpath).then(resolve).catch(reject);
                              }
                              
                              if (path.endsWith('.zip')) {
