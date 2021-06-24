@@ -619,7 +619,7 @@ ml(0,ml(1),[
                          
                          const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                          const uri= '/'+urify.exec(url)[2];
-                         const uri_split = uri.split('.zip/');
+                         const uri_split = uri.split('.zip/').map(function (x,i,a){return i===a.length-1?x:x+'.zip'});
                          var parent_link;
                          const linkit=function(uri,disp){ 
                              const split=(disp||uri).split("/");
@@ -630,18 +630,9 @@ ml(0,ml(1),[
                          };
                          
                          if ( uri_split.length === 1 ) {
-                             parent_link = linkit(uri); 
+                              parent_link = uri; 
                          } else {
-                             if (uri_split.length===2 ) {
-                                  parent_link = linkit(uri_split[0]+'.zip')+'/'+linkit(uri_split[0]);
-                             } else {
-                                  const last = uri_split.pop();
-                                  parent_link = uri_split.map(function(u){
-                                      return linkit(u + '.zip');
-                                  } 
-                                ).join('/')+'/'+linkit(last); 
-                             }
-                             
+                              parent_link = uri_split[0] + '/'+  uri_split.slice(1).map(linkit).join("/");
                          }
                             
                          
