@@ -636,7 +636,7 @@ ml(0,ml(1),[
                              if (uri_split.length===2 ) {
                                   parent_link = linkit(uri_split[0]+'.zip')+'/'+linkit(last);
                              } else {
-                                  parent_link = uri_split.map((u)=>linkit(u+'.zip')).join('/')+'/'+linkit(last); 
+                                  parent_link = uri_split.map((u)=>u+'.zip/').map(linkit)+'/'+linkit(last); 
                              }
                              
                          }
