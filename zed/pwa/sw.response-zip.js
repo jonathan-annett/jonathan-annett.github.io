@@ -409,7 +409,7 @@ ml(0,ml(1),[
                                            'Content-Type'   : fileEntry.contentType,
                                            'Content-Length' : fileEntry.contentLength,
                                            'ETag'           : fileEntry.etag,
-                                           'Cache-Control'  : 'max-age=3600, s-maxage=600, must-revalidate',
+                                           'Cache-Control'  : 'max-age=3600, s-maxage=600',
                                            'Last-Modified'  : fileEntry.date.toString(),
                                          })
                                      })
@@ -460,7 +460,7 @@ ml(0,ml(1),[
                                                   'Content-Type'   : fileEntry.contentType,
                                                   'Content-Length' : fileEntry.contentLength,
                                                   'ETag'           : fileEntry.etag,
-                                                  'Cache-Control'  : 'max-age=3600, s-maxage=600, must-revalidate',
+                                                  'Cache-Control'  : 'max-age=3600, s-maxage=600',
                                                   'Last-Modified'  : fileEntry.date.toString(),
                                                 })
                                         })
@@ -526,7 +526,7 @@ ml(0,ml(1),[
                                            'Content-Type'   : fileEntry.contentType,
                                            'Content-Length' : fileEntry.contentLength,
                                            'ETag'           : fileEntry.etag,
-                                           'Cache-Control'  : 'max-age=3600, s-maxage=600, must-revalidate',
+                                           'Cache-Control'  : 'max-age=3600, s-maxage=600',
                                            'Last-Modified'  : fileEntry.date.toString(),
                                          })
                                      })
@@ -575,7 +575,7 @@ ml(0,ml(1),[
                                                        'Content-Type'   : fileEntry.contentType,
                                                        'Content-Length' : fileEntry.contentLength,
                                                        'ETag'           : fileEntry.etag,
-                                                       'Cache-Control'  : 'max-age=3600, s-maxage=600, must-revalidate',
+                                                       'Cache-Control'  : 'max-age=3600, s-maxage=600',
                                                        'Last-Modified'  : fileEntry.date.toString(),
                                                      })
                                              })
@@ -645,7 +645,7 @@ ml(0,ml(1),[
                                        'Content-Type'   : 'text/html',
                                        'Content-Length' : html.length,
                                        'ETag'           : zipFileMeta.etag,
-                                       'Cache-Control'  : 'max-age=3600, s-maxage=600, must-revalidate',
+                                       'Cache-Control'  : 'max-age=3600, s-maxage=600',
                                        'Last-Modified'  : zipFileMeta.date.toString(),
                                   
                                    
