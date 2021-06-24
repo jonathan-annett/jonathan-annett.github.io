@@ -321,7 +321,7 @@ ml(0,ml(1),[
                       zipFileMeta.files[file.name]={
                           date:file.date,
                           etag:zipFileMeta.etag+
-                               file.date ? file.date.now().toString(36) : Math.random().toString(36).substr(2)
+                               file.date ? file.date.getTime().toString(36) : Math.random().toString(36).substr(2)
                       };
                    }
                });
