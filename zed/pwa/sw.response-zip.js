@@ -387,7 +387,7 @@ ml(0,ml(1),[
                  const parts           = path_in_zip.split('.zip/');     
                  const subzip          = parts.length>1;
                  const file_path       = subzip ? parts[0]+'.zip' : parts[0];
-                 const subzip_url      = subzip ? zip_url + "/"+file_path : false;
+                 const subzip_url      = zip_url + "/"+file_path  ;
                  const subzip_filepath = subzip ? parts[1]        : false;
                       
                   
