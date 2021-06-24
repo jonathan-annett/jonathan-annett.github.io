@@ -1,7 +1,7 @@
 /* global ml,self,localforage, Rusha,dbLocalStorage,dbLocalForage, dbCommonLib */
 ml(0,ml(1),[
 
-'libEvents|events.js',
+'libEvents      | events.js',
 'sha1Lib        | sha1.js',
 'dbCommonLib    | dbengine.common.js ' ,
 'dbLocalStorage | dbengine.localStorage.js',
