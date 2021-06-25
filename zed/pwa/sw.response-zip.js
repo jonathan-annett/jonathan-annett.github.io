@@ -15,8 +15,6 @@ ml(0,ml(1),[
         
         return function (dbKeyPrefix) {
               
-           
-           
              const {
                   
                   localForageKeyKiller,
@@ -401,6 +399,39 @@ ml(0,ml(1),[
                  }[filename.substr(lastDot+1)];
              }
              
+             function response304 (resolve,fileEntry) {
+                 console.log("returning 304",fileEntry.name);
+                 return resolve( new Response('', {
+                             status: 304,
+                             statusText: 'Not Modifed',
+                             headers: new Headers({
+                               'Content-Type'   : fileEntry.contentType,
+                               'Content-Length' : fileEntry.contentLength,
+                               'ETag'           : fileEntry.etag,
+                               'Cache-Control'  : 'max-age=3600, s-maxage=600',
+                               'Last-Modified'  : fileEntry.date.toString(),
+                             })
+                }));
+             }
+             
+             function response200 (resolve,buffer,fileEntry) {
+                 console.log("returning 200",fileEntry.name);
+                 return resolve( new Response(
+                                    buffer, {
+                                            status: 200,
+                                            statusText: 'Ok',
+                                            headers: new Headers({
+                                              'Content-Type'   : fileEntry.contentType,
+                                              'Content-Length' : fileEntry.contentLength,
+                                              'ETag'           : fileEntry.etag,
+                                              'Cache-Control'  : 'max-age=3600, s-maxage=600',
+                                              'Last-Modified'  : fileEntry.date.toString(),
+                                            })
+                                    })
+                );
+                        
+             }
+             
              function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince) {
                  
                  const parts           = path_in_zip.split('.zip/');     
@@ -411,6 +442,8 @@ ml(0,ml(1),[
                       
                   
                  return new Promise(function(resolve,reject){     
+                     
+                     
                      
                      getZipObject(zip_url,buffer,function(err,zip,zipFileMeta){
                          if (err)  throw err;
@@ -427,6 +460,7 @@ ml(0,ml(1),[
                                  }
                              }
                              if (!fileEntry) {
+                                 console.log("returning 404",zip_url,path_in_zip);
                                  return resolve(new Response('', {
                                      status: 404,
                                      statusText: 'Not found'
@@ -447,20 +481,9 @@ ml(0,ml(1),[
                                  
                                  )
                              ) {
-                             return resolve( 
                                  
-                                 new Response('', {
-                                         status: 304,
-                                         statusText: 'Not Modifed',
-                                         headers: new Headers({
-                                           'Content-Type'   : fileEntry.contentType,
-                                           'Content-Length' : fileEntry.contentLength,
-                                           'ETag'           : fileEntry.etag,
-                                           'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                           'Last-Modified'  : fileEntry.date.toString(),
-                                         })
-                                     })
-                             );
+                             return response304 (resolve,fileEntry);
+                             
                          }
                         
                                    
@@ -498,19 +521,9 @@ ml(0,ml(1),[
                                 return resolveSubzip(buffer,subzip_url ,subzip_filepath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
                             }
                             
-                            resolve( new Response(
-                                        buffer, {
-                                                status: 200,
-                                                statusText: 'Ok',
-                                                headers: new Headers({
-                                                  'Content-Type'   : fileEntry.contentType,
-                                                  'Content-Length' : fileEntry.contentLength,
-                                                  'ETag'           : fileEntry.etag,
-                                                  'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                                  'Last-Modified'  : fileEntry.date.toString(),
-                                                })
-                                        })
-                            );
+                            
+                            return response200 (resolve,buffer,fileEntry)
+                            
                             
                          });
                          
@@ -530,7 +543,7 @@ ml(0,ml(1),[
                  
                  const zip_url           = parts[0]+'.zip', 
                        subzip            = parts.length>2; 
-                 let   file_path          = subzip ? parts[1]+'.zip' : parts[1],
+                 let   file_path         = subzip ? parts[1]+'.zip' : parts[1],
                        subzip_url        = subzip ? parts.slice(0,2).join('.zip/') + '.zip' : false,
                        subzip_filepath   = subzip ? parts.slice(2).join('.zip/')     : false;
                        
@@ -542,13 +555,14 @@ ml(0,ml(1),[
                          let fileEntry = zipFileMeta.files[file_path];
                          if (!fileEntry) {
                              if (zipFileMeta.alias_root) {
-                                 fileEntry = zipFileMeta.files[zipFileMeta.alias_root+file_path];
+                                 fileEntry = zipFileMeta.files[ zipFileMeta.alias_root+file_path ];
                                  if (fileEntry) {
                                      file_path  = zipFileMeta.alias_root+file_path;
                                      subzip_url = zip_url + file_path;
                                      subzip_filepath = zipFileMeta.alias_root + subzip_filepath;
                                  }
                              }
+                             
                              if (!fileEntry) {
                                  return resolve(new Response('', {
                                      status: 404,
@@ -572,20 +586,7 @@ ml(0,ml(1),[
                                  
                                  )
                              ) {
-                             return resolve( 
-                                 
-                                 new Response('', {
-                                         status: 304,
-                                         statusText: 'Not Modifed',
-                                         headers: new Headers({
-                                           'Content-Type'   : fileEntry.contentType,
-                                           'Content-Length' : fileEntry.contentLength,
-                                           'ETag'           : fileEntry.etag,
-                                           'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                           'Last-Modified'  : fileEntry.date.toString(),
-                                         })
-                                     })
-                             );
+                             return response304 (resolve,fileEntry);
                          }
                          
                          zip.file(file_path).async('arraybuffer').then(function(buffer){
@@ -622,25 +623,13 @@ ml(0,ml(1),[
                                      return resolveZipListing (zip_url+"/"+file_path,buffer).then(resolve).catch(reject);
                                  }
                                  
-                                 resolve( new Response(
-                                             buffer, {
-                                                     status: 200,
-                                                     statusText: 'Ok',
-                                                     headers: new Headers({
-                                                       'Content-Type'   : fileEntry.contentType,
-                                                       'Content-Length' : fileEntry.contentLength,
-                                                       'ETag'           : fileEntry.etag,
-                                                       'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                                       'Last-Modified'  : fileEntry.date.toString(),
-                                                     })
-                                             })
-                                 );
+                                 return response200 (resolve,buffer,fileEntry)
                                  
                               });
                                 
                      });
                  });
-             }    
+             }
              
              function resolveZipListing (url,buffer) {
                  
@@ -743,7 +732,7 @@ ml(0,ml(1),[
                      });
                      
                  });
-             }    
+             }
              
              function fetchZipUrl(event) {
                  
