@@ -201,7 +201,7 @@ ml(0,ml(1),[
                 });
                 if (root_dirs.length===1&&root_files.length===0 ) {
                     if (zipurl.endsWith("/"+root_dirs[0]+".zip")) {
-                        zipFileMeta.alias_root = root_dirs[0]+''; 
+                        zipFileMeta.alias_root = root_dirs[0]+'/'; 
                         console.log({alias_root:zipFileMeta.alias_root});
                     }
                 } else {
