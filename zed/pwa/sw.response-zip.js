@@ -400,7 +400,7 @@ ml(0,ml(1),[
              }
              
              function response304 (resolve,fileEntry) {
-                 console.log("returning 304",fileEntry.name);
+                 console.log("returning 304",fileEntry);
                  return resolve( new Response('', {
                              status: 304,
                              statusText: 'Not Modifed',
@@ -433,7 +433,7 @@ ml(0,ml(1),[
              }
              
              function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince) {
-                 
+                 console.log({resolveSubzip:{ifNoneMatch,ifModifiedSince,zip_url,path_in_zip}});
                  const parts           = path_in_zip.split('.zip/');     
                  const subzip          = parts.length>1;
                  let   file_path       = subzip ? parts[0]+'.zip' : parts[0];
@@ -471,6 +471,7 @@ ml(0,ml(1),[
                         
                          const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
                         
+                         
                         
                          if (   !update_needed      && 
                                 !subzip             &&
@@ -540,7 +541,7 @@ ml(0,ml(1),[
              }
              
              function resolveZip (parts,ifNoneMatch,ifModifiedSince) {
-                 
+                 console.log({resolveZip:{ifNoneMatch,ifModifiedSince,parts}});
                  const zip_url           = parts[0]+'.zip', 
                        subzip            = parts.length>2; 
                  let   file_path         = subzip ? parts[1]+'.zip' : parts[1],
