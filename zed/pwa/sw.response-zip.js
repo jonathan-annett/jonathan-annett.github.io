@@ -791,7 +791,7 @@ ml(0,ml(1),[
              }
              
              function fetchZipUrl(event) {
-                const promise = doFetchZipUrl(event);
+                const promise = doFetchZipUrl(event.request);
                 if (promise) {
                     event.respondWith( promise ); 
                 }
@@ -815,7 +815,7 @@ ml(0,ml(1),[
                  function toFetchUrl (resolve,reject) {
                      getForageKey(updatedUrlKey(url),function(err,args){
                          if (err||!Array.isArray(args)) {
-                             const promise = doFetchZipUrl(event);
+                             const promise = doFetchZipUrl(event.request);
                              if (promise) return promise.then(resolve).catch(reject);
                              return fetch(event.request).then(resolve).catch(reject);
                          } else {
@@ -847,7 +847,7 @@ ml(0,ml(1),[
                                     
                                 } else {
                                     
-                                    const promise = doFetchZipUrl(event);
+                                    const promise = doFetchZipUrl(event.request);
                                     if (promise) return promise.then(resolve).catch(reject);
                                     return fetch(event.request).then(resolve).catch(reject);
                                     
