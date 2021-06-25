@@ -179,8 +179,9 @@ ml(0,ml(1),[
                 }
                 zipFileMeta.files={};
                 const root_dirs = [],root_files=[];
+                const alias=zipurl.replace(/\.zip$/,'').split('/').pop()+'/',alias_skip=alias.length;
                 zip.folder("").forEach(function(relativePath, file){
-                    if (file.name.indexOf("/")<0) (file.dir?root_dirs:root_files).push(file.name);
+                    if (file.name.startsWith(alias) && file.name.substr(alias_skip).indexOf("/")<0) (file.dir?root_dirs:root_files).push(file.name);
                     if (!file.dir) {
                        zipFileMeta.files[file.name]={
                            date:file.date,
