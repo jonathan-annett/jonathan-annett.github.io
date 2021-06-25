@@ -529,8 +529,8 @@ ml(0,ml(1),[
              function resolveZip (parts,ifNoneMatch,ifModifiedSince) {
                  
                  const zip_url           = parts[0]+'.zip', 
-                       subzip            = parts.length>2, 
-                       file_path          = subzip ? parts[1]+'.zip' : parts[1],
+                       subzip            = parts.length>2; 
+                 let   file_path          = subzip ? parts[1]+'.zip' : parts[1],
                        subzip_url        = subzip ? parts.slice(0,2).join('.zip/') + '.zip' : false,
                        subzip_filepath   = subzip ? parts.slice(2).join('.zip/')     : false;
                        
@@ -543,7 +543,11 @@ ml(0,ml(1),[
                          if (!fileEntry) {
                              if (zipFileMeta.alias_root) {
                                  fileEntry = zipFileMeta.files[zipFileMeta.alias_root+file_path];
-                                 
+                                 if (fileEntry) {
+                                     file_path  = zipFileMeta.alias_root+file_path;
+                                     subzip_url = zip_url + file_path;
+                                     subzip_filepath = zipFileMeta.alias_root + subzip_filepath;
+                                 }
                              }
                              if (!fileEntry) {
                                  return resolve(new Response('', {
