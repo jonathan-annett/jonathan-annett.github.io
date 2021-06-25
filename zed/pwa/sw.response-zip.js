@@ -179,10 +179,10 @@ ml(0,ml(1),[
                 }
                 zipFileMeta.files={};
                 const root_dirs = [],root_files=[];
-                const alias=zipurl.replace(/\.zip$/,'').split('/').pop()+'/';
                 zip.folder("").forEach(function(relativePath, file){
                     if (!file.dir) {
-                       if (!file.name.startsWith(alias)) root_files.push(file.name);
+                        
+                       if (file.name.indexOf("/")<0) root_files.push(file.name);
                     
                        zipFileMeta.files[file.name]={
                            date:file.date,
@@ -190,12 +190,19 @@ ml(0,ml(1),[
                                 file.date ? file.date.getTime().toString(36) : Math.random().toString(36).substr(2)
                        };
                     } else {
-                        if (!file.name.startsWith(alias)||file.name===alias) root_dirs.push(file.name);
+                        const slash=file.name.indexOf("/");
+                        if ((slash<0)||(slash===file.name.lastIndexOf("/"))) {
+                            const root = file.name.split("/")[0];
+                            if (root_dirs.indexOf(root)<0) {
+                               root_dirs.push(root);
+                            }
+                        }
                     }
                 });
                 if (root_dirs.length===1&&root_files.length===0 ) {
                     if (zipurl.endsWith("/"+root_dirs[0]+".zip")) {
                         zipFileMeta.alias_root = root_dirs[0]+''; 
+                        console.log({alias_root});
                     }
                 } else {
                    root_files.splice(0,root_files.length);
