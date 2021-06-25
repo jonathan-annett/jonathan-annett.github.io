@@ -193,7 +193,7 @@ ml(0,ml(1),[
                 const dbKeyPrefix       = 'zip-files-cache.';
        
                 
-                ml.register("fetch",swRespZip(dbKeyPrefix).fetchZipUrl);
+                ml.register("fetch",swRespZip(dbKeyPrefix).fetchUpdatableZipURL);
                 
 
         },

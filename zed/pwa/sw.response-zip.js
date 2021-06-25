@@ -25,16 +25,32 @@ ml(0,ml(1),[
                   clearForage
                   
              } = dbLocalForage(dbKeyPrefix);
+             
+             const updatedUrlKey  = modifyURLprotocol.bind(this,"update");
+             const zipmetadatakey = modifyURLprotocol.bind(this,"meta");
               
              const lib = {
                  
                  fetchZipUrl : fetchZipUrl,
                  
-                 unzipFile : unzipFile
+                 unzipFile   : unzipFile,
+                 
+                 fetchUpdatableZipURL : fetchUpdatableZipURL,
+                 
+                 updateURLContents    : updateURLContents,
+                 
+                 removeUpdatedURLContents : removeUpdatedURLContents
+                 
                  
              };
                               
              const openZipFileCache = { };
+             
+             var updatedUrls ;
+             
+             function updateUrlContent(url,uffer,cb) {
+                 
+             }
               
              function limitZipFilesCache(count,cb) {
                  const keys = Object.keys(openZipFileCache);
@@ -51,10 +67,28 @@ ml(0,ml(1),[
                  return url;
              }
              
-             function zipmetadatakey(url) {
-                 return url+"/.meta";
+             function modifyURLprotocol(protocol,url) {
+                 return url.replace(/^http(s?)\:\/\//,+protocol+'://');
              }
-            
+             
+             function full_URL(base,url) {
+                 
+                 if (typeof url==='string') {
+                     if (url.length===0) return base;
+                 
+                     switch (url[0]) {
+                         case '/' : return base+url;
+                         case 'h' : if (/^http(s?)\:\/\//.test(url)) return url; break;
+                         case '.' : if ( url.substr(0,2)==='./') {
+                             return base + url.substr(1);
+                         }
+                     }
+
+                     return base + url;
+                 }
+                 
+             }
+             
              function getZipFile(url,buffer,cb/*function(err,buffer,zipFileMeta){})*/) {
                  
                  if (typeof buffer==='function') {
@@ -442,9 +476,7 @@ ml(0,ml(1),[
                       
                   
                  return new Promise(function(resolve,reject){     
-                     
-                     
-                     
+
                      getZipObject(zip_url,buffer,function(err,zip,zipFileMeta){
                          if (err)  throw err;
                          
@@ -735,41 +767,177 @@ ml(0,ml(1),[
                  });
              }
              
-             function fetchZipUrl(event) {
-                 
-                 const url             = event.request.url, parts = url.split('.zip/');
-                 const ifNoneMatch     = event.request.headers.get('If-None-Match');
-                 const ifModifiedSince = event.request.headers.get('If-Modified-Since');
-                 
-                 
+             function doFetchZipUrl(request) {
+                     
+                 const url             = request.url, parts = url.split('.zip/');
+                 const ifNoneMatch     = request.headers.get('If-None-Match');
+                 const ifModifiedSince = request.headers.get('If-Modified-Since');
                  
                  
                  if (parts.length>1) {
                      // this is a url in the format http://example.com/path/to/zipfile.zip/path/to/file/in/zip.ext
                      
-                     event.respondWith( resolveZip (parts,ifNoneMatch,ifModifiedSince) ); 
-                     return true;
+                     return resolveZip (parts,ifNoneMatch,ifModifiedSince) ; 
+                     
                  } else {
                  
                      if (event.request.url.endsWith('.zip')) {
                          // this is a url pointing to a possibly existing zip file
                          // we don't let you download the zip. we do however give you the file list when you ask for a zip
                          // which provides links to each file inside
-                         event.respondWith( resolveZipListing ( url ) ); 
-                         return true;
+                         return resolveZipListing ( url ) ; 
                      }
                  }
-                 
-                 return false;
              }
+             
+             function fetchZipUrl(event) {
+                const promise = doFetchZipUrl(event);
+                if (promise) {
+                    event.respondWith( promise ); 
+                }
+             }
+             
+             //note - this also lets you proxy any url, not just zip file contents.
+             function fetchUpdatableZipURL(event){
+                 const url =  full_URL(location.origin,event.request.url);
                  
+                 if (!updatedUrls) {
+                      return getCacheList ();
+                 } 
+                 
+                 
+                 if(updatedUrls[url]) {
+                     event.respondWith ( new Promise(toFetchUrl) );
+                 } else {
+                     return fetchZipUrl(event) ;
+                 }
+                 
+                 function toFetchUrl (resolve,reject) {
+                     getForageKey(updatedUrlKey(url),function(err,args){
+                         if (err||!Array.isArray(args)) {
+                             const promise = doFetchZipUrl(event);
+                             if (promise) return promise.then(resolve).catch(reject);
+                             return fetch(event.request).then(resolve).catch(reject);
+                         } else {
+                             resolve(new Response(args[0],args[1]));
+                         }
+                     });
+                 }
+                 
+                 function getCacheList ( ) {
+                     // the task of fetching the list happens out of band
+                     // so we need to tell the event to wait for it
+                     // next time we'll have a cached list to let us syncrononously 
+                     // determine if the there is a replacment response for a given url.
+                     
+                     return event.respondWith (
+                         
+                         new Promise(function(resolve,reject) {
+                             
+                             loadUpdatedURLList (function(updatedUrls){
+                                 
+                                // ok now we have a list for next time, 
+                                // let's see if this url is in the list and if so, fetch it
+                                // otherwise punt the request via doFetchZipUrl to fetch.
+                                // since we are aloread inside a pending promise , we need to manually handle them
+                                
+                                if(updatedUrls[url]) {
+                                    
+                                    return toFetchUrl(resolve,reject);
+                                    
+                                } else {
+                                    
+                                    const promise = doFetchZipUrl(event);
+                                    if (promise) return promise.then(resolve).catch(reject);
+                                    return fetch(event.request).then(resolve).catch(reject);
+                                    
+                                }
+                            
+                             });
+                         })
+                         
+                     );
+                 }
+             }
+             
+             function updateURLContents(url,responseData,responseState,cb) {
+                 
+                  if (!updatedUrls) {
+                     loadUpdatedURLList (saveUrlContents);
+                 } else {
+                     saveUrlContents();
+                 }
+                 
+                 function saveUrlContents() {
+                     
+                     url = full_URL(location.origin,url);
+                     getPayload(function(payload){
+                         setForageKey(updatedUrlKey(url),payload,function(err){
+                            if (err) return cb(err);
+                            updatedUrls[url]=true;
+                            cb();
+                         });
+                     });
+
+                 }
+                 
+                 
+                 function getPayload (cb) {
+                     if (responseState) return cb ([responseData,responseState]);
+                     
+                     sha1(responseData,function(err,hash){
+                         cb([
+                             responseData,
+                             {
+                               'Content-Type'   : mimeForFilename(url),
+                               'Content-Length' : responseData.byteLength || responseData.length,
+                               'ETag'           : hash,
+                               'Cache-Control'  : 'max-age=3600, s-maxage=600',
+                               'Last-Modified'  : new Date().toString()
+                             }
+                         ]);
+                     });
+                 }
+             }
+             
+             function removeUpdatedURLContents(url,cb) {
+                 
+                  if (!updatedUrls) {
+                     loadUpdatedURLList (removeUrlContents);
+                 } else {
+                     removeUrlContents();
+                 }
+                 
+                 function removeUrlContents() {
+                     url = full_URL(location.origin,url);
+                     removeForageKey(updatedUrlKey(url),function(err){
+                        if (err) return cb(err);
+                        delete updatedUrls[url];
+                        cb();
+                     });
+                 }
+
+             }
+             
+             function loadUpdatedURLList ( cb ) {
+                getForageKeys(function(err,keys){
+                   updatedUrls={};
+                   keys.filter(function(k){
+                       return /^update\:\/\//.test(k);
+                   }).forEach(function(k){
+                       updatedUrls[k]=true;
+                   });
+                   cb(updatedUrls);
+                });
+             }
+             
              return lib;
           };
-      
+
         }
-        
+
     }, (()=>{  return {
-        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb   ]
+        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb  ]
     };
             
       
@@ -780,8 +948,6 @@ ml(0,ml(1),[
     
 
 });
-
-
 
 
 
