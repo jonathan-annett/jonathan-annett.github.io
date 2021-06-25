@@ -30,28 +30,17 @@ ml(0,ml(1),[
              const zipmetadatakey = modifyURLprotocol.bind(this,"meta");
               
              const lib = {
-                 
-                 fetchZipUrl : fetchZipUrl,
-                 
-                 unzipFile   : unzipFile,
-                 
-                 fetchUpdatableZipURL : fetchUpdatableZipURL,
-                 
-                 updateURLContents    : updateURLContents,
-                 
+                 fetchZipUrl              : fetchZipUrl,
+                 unzipFile                : unzipFile,
+                 fetchUpdatableZipURL     : fetchUpdatableZipURL,
+                 updateURLContents        : updateURLContents,
                  removeUpdatedURLContents : removeUpdatedURLContents
-                 
-                 
              };
                               
              const openZipFileCache = { };
              
              var updatedUrls ;
-             
-             function updateUrlContent(url,uffer,cb) {
-                 
-             }
-              
+
              function limitZipFilesCache(count,cb) {
                  const keys = Object.keys(openZipFileCache);
                  if (keys.length<=count) return cb();
@@ -861,6 +850,11 @@ ml(0,ml(1),[
              }
              
              function updateURLContents(url,responseData,responseState,cb) {
+                 
+                 if (typeof responseState==='function') {
+                     cb            = responseState;
+                     responseState = undefined;
+                 }
                  
                   if (!updatedUrls) {
                      loadUpdatedURLList (saveUrlContents);
