@@ -1,8 +1,5 @@
-
-
-
-
 /* global ml,self, JSZipUtils,JSZip,dbLocalForage,Response,Headers */
+
 ml(0,ml(1),[ 
     
     'sha1Lib       | sha1.js',
@@ -176,12 +173,14 @@ ml(0,ml(1),[
                  
              }
              
-             function addFileMetaData(zip,zipFileMeta){
+             function addFileMetaData(zip,zipFileMeta,zipurl){
                 if (typeof zipFileMeta.files==='object') {
                     return zipFileMeta;
                 }
                 zipFileMeta.files={};
+                const root_dirs = [],root_files=[];
                 zip.folder("").forEach(function(relativePath, file){
+                    if (file.name.indexOf("/")<0) (file.dir?root_dirs:root_files).push(file.name);
                     if (!file.dir) {
                        zipFileMeta.files[file.name]={
                            date:file.date,
@@ -190,6 +189,15 @@ ml(0,ml(1),[
                        };
                     }
                 });
+                if (root_dirs.length===1&&root_files.length===0 ) {
+                    if (zipurl.endsWith("/"+root_dirs[0]+".zip")) {
+                        zipFileMeta.alias_root = root_dirs[0]+''; 
+                    }
+                } else {
+                   root_files.splice(0,root_files.length);
+                }
+                
+                root_dirs.splice(0,root_dirs.length);
                 return zipFileMeta;
             }
              
@@ -227,7 +235,7 @@ ml(0,ml(1),[
                              // this also "invents" etags for each file inside
                              // we do this once, on first open.
             
-                             setForageKey(zipmetadatakey(url),addFileMetaData(zip,zipFileMeta),function(err){
+                             setForageKey(zipmetadatakey(url),addFileMetaData(zip,zipFileMeta,url),function(err){
                                  
                                 if (err) return cb(err);
             
@@ -397,12 +405,18 @@ ml(0,ml(1),[
                          if (err)  throw err;
                          
             
-                         const fileEntry = zipFileMeta.files[file_path];
+                         let fileEntry = zipFileMeta.files[file_path];
                          if (!fileEntry) {
-                             new Response('', {
-                                 status: 404,
-                                 statusText: 'Not found'
-                             });
+                             if (zipFileMeta.alias_root) {
+                                 fileEntry = zipFileMeta.files[zipFileMeta.alias_root+file_path];
+                                 
+                             }
+                             if (!fileEntry) {
+                                 return resolve(new Response('', {
+                                     status: 404,
+                                     statusText: 'Not found'
+                                 }));
+                             }
                          }
                          
                         
@@ -493,15 +507,15 @@ ml(0,ml(1),[
              
              function safeDate (d,def) {
                  const dt = new Date(d);
-                 if (d) return d;
-                 return def
+                 if (dt) return dt;
+                 return def;
              }
              
              function resolveZip (parts,ifNoneMatch,ifModifiedSince) {
                  
                  const zip_url           = parts[0]+'.zip', 
                        subzip            = parts.length>2, 
-                       filepath          = subzip ? parts[1]+'.zip' : parts[1],
+                       file_path          = subzip ? parts[1]+'.zip' : parts[1],
                        subzip_url        = subzip ? parts.slice(0,2).join('.zip/') + '.zip' : false,
                        subzip_filepath   = subzip ? parts.slice(2).join('.zip/')     : false;
                        
@@ -510,14 +524,19 @@ ml(0,ml(1),[
                          
                          if (err)  throw err;
                          
-                         const fileEntry = zipFileMeta.files[filepath];
+                         let fileEntry = zipFileMeta.files[file_path];
                          if (!fileEntry) {
-                             new Response('', {
-                                 status: 404,
-                                 statusText: 'Not found'
-                             });
+                             if (zipFileMeta.alias_root) {
+                                 fileEntry = zipFileMeta.files[zipFileMeta.alias_root+file_path];
+                                 
+                             }
+                             if (!fileEntry) {
+                                 return resolve(new Response('', {
+                                     status: 404,
+                                     statusText: 'Not found'
+                                 }));
+                             }
                          }
-                         
                         
                          
                          const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
@@ -550,20 +569,20 @@ ml(0,ml(1),[
                              );
                          }
                          
-                         zip.file(filepath).async('arraybuffer').then(function(buffer){
+                         zip.file(file_path).async('arraybuffer').then(function(buffer){
                                  
                                  if (update_needed) {
                                      // first request for this file, so we need to save 
                                      // contentLength and type in buffer
                                      // (they are needed for later 304 responses)
                                      
-                                     fileEntry.contentType    = mimeForFilename(filepath);
+                                     fileEntry.contentType    = mimeForFilename(file_path);
                                      fileEntry.contentLength  = buffer.byteLength;
                                      
                                      if (zipFileMeta.updating) {
                                          clearTimeout(zipFileMeta.updating);
                                      }
-                                     console.log("updating zip entry",zip_url,filepath);
+                                     console.log("updating zip entry",zip_url,file_path);
                                      
                                      zipFileMeta.updating = setTimeout(function(){
                                          // in 10 seconds this and any other metadata changes to disk
@@ -580,8 +599,8 @@ ml(0,ml(1),[
                                      return resolveSubzip(buffer,subzip_url,subzip_filepath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
                                  }
                                  
-                                 if (filepath.endsWith('.zip')) {
-                                     return resolveZipListing (zip_url+"/"+filepath,buffer).then(resolve).catch(reject);
+                                 if (file_path.endsWith('.zip')) {
+                                     return resolveZipListing (zip_url+"/"+file_path,buffer).then(resolve).catch(reject);
                                  }
                                  
                                  resolve( new Response(
