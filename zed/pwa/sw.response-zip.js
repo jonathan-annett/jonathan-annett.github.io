@@ -787,12 +787,12 @@ function injectFN(zip_url_base){
     });
     
     function edBtnClick(e){
-        const btn = e.target,li = btn.parentElement;
+        const btn = e.target;
         const filename = btn.dataset.filename;
         const file_url = zip_url_base + btn.dataset.filename;
         var oReq = new XMLHttpRequest();
         oReq.addEventListener("load", function reqListener () {
-            editInZed(this.responseText,filename,function(detail){
+            editInZed(filename,this.responseText,function(detail){
                 console.log({detail});
             });
         });
