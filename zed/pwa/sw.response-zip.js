@@ -814,7 +814,7 @@ function injectFN(zip_url_base){
         console.log("Contacting Chrome app to edit", el.value || el.innerText);
         var setValue = el.value !== undefined;
     
-        var port = chrome.runtime.connect({
+        var port = chrome.runtime.connect('oocnfnmofhbboakielimkepnlphnfjpp',{
             name: "edit-textarea",
         });
         port.postMessage({
