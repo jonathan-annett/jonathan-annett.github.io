@@ -829,19 +829,21 @@ function injectFN(zip_url_base){
             editInZed(filename,content,function(detail){
               
                 console.log({detail});
-                content = detail.content;
-                
-                var update = new XMLHttpRequest();
-                update.open('UPDATE', file_url, true);
-                
-                update.setRequestHeader('Content-type', 'text/plain');
-                
-                update.onreadystatechange = function() {//Call a function when the state changes.
+                if (!detail.closed && detail.content) {
+                    content = detail.content;
+                    
+                    var update = new XMLHttpRequest();
+                    update.open('UPDATE', file_url, true);
+                    
+                    update.setRequestHeader('Content-type', 'text/plain');
+                    
+                    update.onreadystatechange = function() {//Call a function when the state changes.
+                    }
+                    update.onerror = function() {//Call a function when the state changes.
+                    }
+                    
+                    update.send(new Blob([content], {type: 'text/plain'}));
                 }
-                update.onerror = function() {//Call a function when the state changes.
-                }
-                
-                update.send(new Blob([content], {type: 'text/plain'}));
                 
             });
         });
@@ -886,7 +888,7 @@ function injectFN(zip_url_base){
     
     function viewBtnClick(e){
         e.preventDefault();
-        const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+        const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
         const filename = '/'+btn.dataset.filename.replace(/^\//,'');
         const file_url = zip_url_base + filename;
         viewInZed(file_url,function(detail){
