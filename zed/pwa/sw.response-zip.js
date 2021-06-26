@@ -1194,14 +1194,16 @@ function injectFN(zip_url_base){
     
     function openZipBtnClick(e){
            if (!e.shiftKey) {
-                e.preventDefault();
-                const link      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                const filename = '/'+link.href.replace(/^\//,'');
-                const file_url = zip_url_base + filename;
-           } else {
-               window.wTools.open(file_url,file_url,0,0);
+               return;
            }
- 
+           
+           e.preventDefault();
+            const link      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+            const filename = '/'+link.href.replace(/^\//,'');
+            const file_url = zip_url_base + filename;
+                
+            window.wTools.open(file_url,file_url,0,0);
+
     }
  
     
