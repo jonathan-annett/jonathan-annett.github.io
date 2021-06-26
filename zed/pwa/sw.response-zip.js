@@ -772,7 +772,7 @@ ml(0,ml(1),[
                              '</ul>',
                              '</div>',
                              '<script>',
-                             'var zip_url_base=location.origin+'+JSON.stringify(uri)+';',
+                             'var zip_url_base='+JSON.stringify(uri)+';',
                              fnSrc(injectFN),
                              '</script>',
                              '</body>',
@@ -889,7 +889,7 @@ function injectFN(zip_url_base){
         const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
         const filename = '/'+btn.dataset.filename.replace(/^\//,'');
         const file_url = zip_url_base + filename;
-        viewInZed(file_url,function(detail){
+        viewInZed(filename,function(detail){
           
         });
 
