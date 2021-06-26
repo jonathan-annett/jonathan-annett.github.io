@@ -1,4 +1,4 @@
-/* global ml,self, JSZipUtils,JSZip,dbLocalForage,Response,Headers */
+/* global ml,self, JSZipUtils,JSZip,dbLocalForage,Response,Headers,BroadcastChannel */
 
 ml(0,ml(1),[ 
     
@@ -6,11 +6,44 @@ ml(0,ml(1),[
     'JSZipUtils    | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
     'JSZip         | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
     'dbLocalForage | dbengine.localForage.js',
-
+    'wTools                                     | windowTools.js',
     
     ],function(){ml(2,ml(3),ml(4),
 
-    {   ServiceWorkerGlobalScope: function swResponseZipLib (sha1) {
+    {   
+        Window: function main(wTools) {
+        
+                const lib = {
+        
+                };
+                
+                
+                const cmdChannel     = new BroadcastChannel("sw.response.cmds");
+                
+                cmdChannel.onmessage = function(e) {
+                    switch  (e.data.cmd) {
+                        
+                        case "open" : 
+                            const wid = wTools.open(e.data.url,e.data.title||e.data.url,Number.parseInt(e.data.left)||0,Number.parseInt(e.data.top)||0);
+                            cmdChannel.postMessage({id:e.data.id,wid:wid});
+                            break;
+                            
+                        case "close" :
+                            
+                            wTools.open(e.data.wid,function(err,state){
+                                cmdChannel.postMessage({id:e.data.id,wid:wid,error:err,state:state});  
+                            });
+                            
+                            break;
+                            
+                    }
+                };
+                
+                
+                
+        },
+        
+        ServiceWorkerGlobalScope: function swResponseZipLib (sha1) {
         
         
         return function (dbKeyPrefix) {
@@ -40,6 +73,23 @@ ml(0,ml(1),[
              const openZipFileCache = { };
              
              var updatedUrls ;
+             
+             function openUrl(url,cb) {
+                 
+                 const cmdChannel     = new BroadcastChannel("cmds");
+                 const msgId = "r_"+Math.random().toString(36).substr(-8);
+                 
+                 cmdChannel.onmessage = function (e) {
+                     if (e.data.id === msgId) {
+                         delete e.data.id;
+                         cmdChannel.close();
+                         cb(e.data);
+                     }
+                 };
+                 
+                 cmdChannel.postMessage({cmd:"open",url:url,id:msgId});
+
+             }
 
              function limitZipFilesCache(count,cb) {
                  const keys = Object.keys(openZipFileCache);
@@ -713,6 +763,13 @@ ml(0,ml(1),[
                          '<html>',
                          '<head>',
                            '<title>files in '+uri+'</title>',
+                           
+                           '<script>',
+                           'function ml(e,t,l,m,n,r){ml.h||(ml.h={},ml.H=[],ml.d={},ml.f={});let o,s=console,a=[s,ml,"",o,e].map(e=>typeof e),d=location,h=d.origin,i=a[4]===a[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(e)?"I":"L":e,c={r:e=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),b:h+/([a-zA-Z0-9\.\-]*\/)*/.exec(d.pathname)[0],c:e=>e.startsWith(c.b),R:"replace",f:"forEach",w:"serviceWorker",n:"navigator",d:"document",B:(e,t)=>(t=/^\//)&&/^(http(s?)\:\/\/)/.test(e)?e:t.test(e)?e[c.R](t,h+"/"):c.b+e[c.R](/^(\.\/)/,""),1:()=>c[4]()||{},2:(t,l,m,n,r,o)=>{o="defined",r=typeof(r=m[t]&&m[t].name)+typeof l[r]===a[2]+a[3]?c.S(ml.h[ml.d[r].h].e,r,c.S(l,r,m[t].apply(this,n[t].map(c.x))))&&c.l(o+":",r)||c.l(o+" empty:",r):c.l("ready:",r),ml.i||(ml.i=new Proxy({},{get:(t,l)=>c.I(e=l),ownKeys:()=>c.k(ml.d),getOwnPropertyDescriptor:(e,t)=>!!ml.d[t]&&c.P(c.I(t)),has:(e,t)=>!!ml.d[t]}))},P:e=>({value:e,enumerable:!0,configurable:!0}),S:(e,t,l)=>(Object.defineProperty(e,t,c.P(l)),l),3:()=>c[4]().constructor.name||"x",4:()=>typeof self===a[0]&&self,x:e=>e(),l:s.log.bind(s),L:(n,r,o,s)=>(r=c.r(e),s=r?c[4]():!!l,n=s?l:{},r=r||[e,"t",0,e],o=m||r[1],ml(0,n,[o+"@T|"+r[3]],()=>ml(2,"T",n,{T:t},{T:[e=>(r=n[o],s||delete n[o],(e=o&&ml.d[o])&&(ml.h[e.h].e[o]=r),r)]}),"T")),I:(t,l)=>(t=ml.d[e])&&(l=ml.h[t.h])&&l.e[e],k:e=>Object.keys(e)};return(o=typeof c[i]===a[1]?c[i](t,l,m,n,r):c)!==c?o:(o={F:(e=>((e=ml.fetch||!1)||(c.l=(()=>{})),e))(0),0:()=>o.l(l),t:e=>Math.min(100,ml.t=ml.t?2*ml.t:1),l:e=>(e=e.map(o.u).filter(o.y)).length?setTimeout(o.l,o.t(e.length),e)&&c.l("pending...",e):m(),u:(e,l,m,r)=>(l=c.r(e))?(!(r=l[2])||r===(n||c[3]()))&&(r=l[1],m=c.B(l[3]),c.c(m)&&(ml.d[r]={h:m}),o.T(window,"script",e=>{o.p(m,e.setAttribute.bind(e,"src"),e)}),r):!t[e]&&e,y:e=>!!e,s:(e,t,l)=>{(r=o.E(e,t)).type="text/java"+t,l(o.A(e,r))},S:(e,t,l,m)=>{m=o.f(e[c.d],()=>o.s(m.contentWindow[c.d],t,l))},T:(e,t,l)=>o.s(e[c.d],t,l),E:(e,t)=>e.createElement(t),A:(e,t)=>e.body.appendChild(t),f:(e,t,l)=>((t=o.E(e,"iframe")).style.display="none",t.src="ml.html",t.onload=l,o.A(e,t)),U:()=>c.k(ml.h),p:(e,t,l,m,n,r,s)=>(m=o.r(),n=(l=>t(o.V(e,l))),r=(t=>n(o.v(e,t,l))),s=(()=>r(m)),!ml.h[e]&&(ml.H.push(e)&&(typeof fetch===o.F?fetch(e,{method:"HEAD"}).then(e=>r(o.e(e,m))).catch(s):s()))),e:(e,t)=>e.headers.get("Etag")[c.R](/[\"\/\\\-]*/g,"")||t,r:()=>Math.random().toString(36).substr(-8),V:(e,t)=>o.F?e+"?v="+t:e,v:(e,t,l)=>ml.h[e]={v:t,s:l,e:{}},8:(e,t)=>{},9:e=>e&&c.w in self[c.n]&&self[c.n][c.w].register("./ml.sw.js?ml="+encodeURIComponent(e))})[e]&&o[e](t,l,m,n,r)}',
+                           '</script>',
+                           
+                           
+                           
                            '<style>',
                            'a,a:visited,a:link {',
                            '    color:navy;',
@@ -774,6 +831,7 @@ ml(0,ml(1),[
                              '<script>',
                              'var zip_url_base='+JSON.stringify('/'+uri)+';',
                              fnSrc(injectFN),
+                             fnSrc(openUrl,true),
                              '</script>',
                              '</body>',
                              '</html>'
@@ -804,139 +862,160 @@ ml(0,ml(1),[
                  
 function injectFN(zip_url_base){
 
-    [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
+    ml(0,ml(1),[
+        "localforage | https://unpkg.com/localforage@1.9.0/dist/localforage.js",
+        'dbengine    | dbengine.js',
+        'wToolsRem   | windowTools.remote.js',
+        'wToolsLib   | windowTools.helper.js',
+        'main        | wtool.js',
+        'libEvents   | events.js'
+        ],()=>{ml(2,ml(3),ml(4),
     
-    [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
-
-    function addEditClick (el) {
-        el.addEventListener("click",edBtnClick);
-        el.parentElement.addEventListener("click",edBtnClick);
-    }
-    
-    function addViewClick (el) {
-        el.addEventListener("click",viewBtnClick);
-        el.parentElement.addEventListener("click",viewBtnClick);
-    }
-    
-    function edBtnClick(e){
-        e.preventDefault();
-        const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-        const filename = '/'+btn.dataset.filename.replace(/^\//,'');
-        const file_url = zip_url_base + filename;
-        var oReq = new XMLHttpRequest();
-        oReq.addEventListener("load", function reqListener () {
-            var content = this.responseText;
-            editInZed(filename,content,function(detail){
-              
-                console.log({detail});
-                if (!detail.closed && detail.content) {
-                    content = detail.content;
-                    
-                    var update = new XMLHttpRequest();
-                    update.open('UPDATE', file_url, true);
-                    
-                    update.setRequestHeader('Content-type', 'text/plain');
-                    
-                    update.onreadystatechange = function() {//Call a function when the state changes.
-                    }
-                    update.onerror = function() {//Call a function when the state changes.
-                    }
-                    
-                    update.send(new Blob([content], {type: 'text/plain'}));
-                }
-                
-            });
-        });
-        oReq.open("GET", file_url);
-        oReq.send();
-    }
-    
-    function editInZed(filename,content,cb) {
-        
-        
-        window.dispatchEvent(
-            new CustomEvent( 'editinzed',{ detail: {filename,content} })
-        );
-        window.addEventListener('editinzed_callback',editInZedCallback);
-        
-        function editInZedCallback (event){
+        { Window: function () {
             
-            if (event.detail.filename===filename) {
+            [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
+            
+            [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
+        
+            function addEditClick (el) {
+                el.addEventListener("click",edBtnClick);
+                el.parentElement.addEventListener("click",edBtnClick);
+            }
+            
+            function addViewClick (el) {
+                el.addEventListener("click",viewBtnClick);
+                el.parentElement.addEventListener("click",viewBtnClick);
+            }
+            
+            function edBtnClick(e){
+                e.preventDefault();
+                const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+                const filename = '/'+btn.dataset.filename.replace(/^\//,'');
+                const file_url = zip_url_base + filename;
+                var oReq = new XMLHttpRequest();
+                oReq.addEventListener("load", function reqListener () {
+                    var content = this.responseText;
+                    editInZed(filename,content,function(detail){
+                      
+                        console.log({detail});
+                        if (!detail.closed && detail.content) {
+                            content = detail.content;
+                            
+                            var update = new XMLHttpRequest();
+                            update.open('UPDATE', file_url, true);
+                            
+                            update.setRequestHeader('Content-type', 'text/plain');
+                            
+                            update.onreadystatechange = function() {//Call a function when the state changes.
+                            }
+                            update.onerror = function() {//Call a function when the state changes.
+                            }
+                            
+                            update.send(new Blob([content], {type: 'text/plain'}));
+                        }
+                        
+                    });
+                });
+                oReq.open("GET", file_url);
+                oReq.send();
+            }
+            
+            function editInZed(filename,content,cb) {
                 
-                if (event.detail.closed) {
-                    window.removeEventListener('editinzed_callback',editInZedCallback);
-                    console.log(filename,"closed");
-                    cb(event.detail);
-                } else {
-                    if (typeof event.detail.content==='string') {
-                        if (event.detail.content!==content) {
-                             event.detail.previousContent=content;
-                             cb(event.detail);
-                             content = event.detail.content;
+                
+                window.dispatchEvent(
+                    new CustomEvent( 'editinzed',{ detail: {filename,content} })
+                );
+                window.addEventListener('editinzed_callback',editInZedCallback);
+                
+                function editInZedCallback (event){
+                    
+                    if (event.detail.filename===filename) {
+                        
+                        if (event.detail.closed) {
+                            window.removeEventListener('editinzed_callback',editInZedCallback);
+                            console.log(filename,"closed");
+                            cb(event.detail);
+                        } else {
+                            if (typeof event.detail.content==='string') {
+                                if (event.detail.content!==content) {
+                                     event.detail.previousContent=content;
+                                     cb(event.detail);
+                                     content = event.detail.content;
+                                }
+                            }
                         }
                     }
+        
                 }
-            }
-
-        }
-        
-        
-        
-    }
-    
-    
-    
-    function viewBtnClick(e){
-        e.preventDefault();
-        const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-        const filename = '/'+btn.dataset.filename.replace(/^\//,'');
-        const file_url = zip_url_base + filename;
-        viewInZed(file_url,function(detail){
-          
-        });
-
-    }
-    
-    function viewInZed(filename,cb) {
-        
-        
-        window.dispatchEvent(
-            new CustomEvent( 'viewinzed',{ detail: {filename} })
-        );
-        window.addEventListener('viewinzed_callback',viewInZedCallback);
-        
-        function viewInZedCallback (event){
-            
-            if (event.detail.filename===filename) {
                 
-                if (event.detail.closed) {
-                    window.removeEventListener('viewinzed_callback',viewInZedCallback);
-                    console.log(filename,"closed");
-                    cb(event.detail);
-                }
+                
+                
             }
 
-        }
+            function viewBtnClick(e){
+                e.preventDefault();
+                const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+                const filename = '/'+btn.dataset.filename.replace(/^\//,'');
+                const file_url = zip_url_base + filename;
+                viewInZed(file_url,function(detail){
+                  
+                });
         
+            }
+            
+            function viewInZed(filename,cb) {
+                
+                
+                window.dispatchEvent(
+                    new CustomEvent( 'viewinzed',{ detail: {filename} })
+                );
+                window.addEventListener('viewinzed_callback',viewInZedCallback);
+                
+                function viewInZedCallback (event){
+                    
+                    if (event.detail.filename===filename) {
+                        
+                        if (event.detail.closed) {
+                            window.removeEventListener('viewinzed_callback',viewInZedCallback);
+                            console.log(filename,"closed");
+                            cb(event.detail);
+                        }
+                    }
         
+                }
+                
+                
+                
+            }
+
+            function viewInZedCallback () {
+                
+            }
+            
+            
+           } }, 
         
-    }
+        { Window: [  ] }
+        
+       
+    
+    );
+    
+
+    });
     
     
-    
-    function viewInZedCallback () {
-        
-    }
 
     
 }
                  
-                 function fnSrc(f) {
-                     f = f.toString();
-                     return f.substring(f.indexOf("{")+1,f.lastIndexOf("}")-1);
-                 }
+                
              }
-             
+             function fnSrc(f,k) {
+                     f = f.toString();
+                     return k?f:f.substring(f.indexOf("{")+1,f.lastIndexOf("}")-1);
+                 }
              function doFetchZipUrl(request) {
                      
                  const url             = request.url, parts = url.split('.zip/');
@@ -1179,7 +1258,11 @@ function injectFN(zip_url_base){
         }
 
     }, (()=>{  return {
-        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb  ]
+        
+        
+        Window: [ () => self.wTools ],
+
+        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb, () => self.wTools   ]
     };
             
       
