@@ -1128,7 +1128,7 @@ function injectFN(zip_url_base){
             oReq.open("GET", file_url);
             oReq.send();
         } else {
-            window.location.href=file_url;
+            window.wTools.open(file_url,file_url,0,0);
         }
     }
     
@@ -1171,12 +1171,8 @@ function injectFN(zip_url_base){
             const filename = '/'+btn.dataset.filename.replace(/^\//,'');
             const file_url = zip_url_base + filename;
             
-            if (!e.shiftKey) {
-                window.wTools.open(file_url,file_url,0,0);
-            } else {
-                window.location.href=file_url;
-            }       
-
+            window.wTools.open(file_url,file_url,0,0);
+ 
     }
     
     function viewInZed(filename,cb) {
