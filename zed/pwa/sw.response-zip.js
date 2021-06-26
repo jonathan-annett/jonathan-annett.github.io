@@ -794,17 +794,46 @@ function injectFN(zip_url_base){
         if (!ta) {
             ta = document.createElement('textarea');
             ta.style.display='none';
-            li.appendChild(ta); 
+            li.appendChild(ta);
         }
         var oReq = new XMLHttpRequest();
         oReq.addEventListener("load", function reqListener () {
             ta.value=this.responseText;
             ta.dataset.filename = btn.dataset.filename;
-            ta.dispatchEvent(new Event('editinzed')); 
+            contactZed(ta,function(text){
+                console.log(btn.dataset.filename,text);
+            });
+            //ta.dispatchEvent(new Event('editinzed')); 
         });
         oReq.open("GET", file_url);
         oReq.send();
     }
+    
+    
+    function contactZed(el,cb) {
+        console.log("Contacting Chrome app to edit", el.value || el.innerText);
+        var setValue = el.value !== undefined;
+    
+        var port = chrome.runtime.connect({
+            name: "edit-textarea",
+        });
+        port.postMessage({
+            filename: el.dataset.filename,
+            text: setValue ? el.value : el.innerText
+        });
+        port.onMessage.addListener(function(msg) {
+            if (setValue) {
+                el.value = msg.text;
+            } else {
+                el.innerText = msg.text;
+            }
+            cb(msg.text);
+        });
+        port.onDisconnect.addListener(function() {
+            // console.log("Done editing");
+        });
+    }
+    
 }
                  
                  function fnSrc(f) {
