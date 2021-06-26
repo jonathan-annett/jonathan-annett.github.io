@@ -733,6 +733,21 @@ ml(0,ml(1),[
                            '    left: 6px;',
                            '    margin-left: -6px;',
                            '}',
+                           'a.zipfile span {',
+                           '    background: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE5LjAuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJDYXBhXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIwIDAgNDggNDgiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDQ4IDQ4OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+DQo8Zz4NCgk8Zz4NCgkJPHBhdGggZD0iTTQ3Ljk4NywyMS45MzhjLTAuMDA2LTAuMDkxLTAuMDIzLTAuMTc4LTAuMDUzLTAuMjY0Yy0wLjAxMS0wLjAzMi0wLjAxOS0wLjA2My0wLjAzMy0wLjA5NA0KCQkJYy0wLjA0OC0wLjEwNC0wLjEwOS0wLjIwMi0wLjE5My0wLjI4NWMtMC4wMDEtMC4wMDEtMC4wMDEtMC4wMDEtMC4wMDEtMC4wMDFMNDIsMTUuNTg2VjEwYzAtMC4wMjItMC4wMTEtMC4wNDEtMC4wMTMtMC4wNjMNCgkJCWMtMC4wMDYtMC4wODgtMC4wMjMtMC4xNzMtMC4wNTEtMC4yNTdjLTAuMDExLTAuMDMyLTAuMDE5LTAuMDYzLTAuMDM0LTAuMDk0Yy0wLjA0OS0wLjEwNi0wLjExLTAuMjA3LTAuMTk2LTAuMjkzbC05LTkNCgkJCWMtMC4wODYtMC4wODYtMC4xODctMC4xNDgtMC4yOTQtMC4xOTZjLTAuMDMtMC4wMTQtMC4wNi0wLjAyMi0wLjA5MS0wLjAzMmMtMC4wODUtMC4wMy0wLjE3Mi0wLjA0Ny0wLjI2My0wLjA1Mg0KCQkJQzMyLjAzOSwwLjAxLDMyLjAyMSwwLDMyLDBIN0M2LjQ0OCwwLDYsMC40NDgsNiwxdjE0LjU4NmwtNS43MDcsNS43MDdjMCwwLTAuMDAxLDAuMDAxLTAuMDAyLDAuMDAyDQoJCQljLTAuMDg0LDAuMDg0LTAuMTQ0LDAuMTgyLTAuMTkyLDAuMjg1Yy0wLjAxNCwwLjAzMS0wLjAyMiwwLjA2Mi0wLjAzMywwLjA5NGMtMC4wMywwLjA4Ni0wLjA0OCwwLjE3My0wLjA1MywwLjI2NA0KCQkJQzAuMDExLDIxLjk2LDAsMjEuOTc4LDAsMjJ2MTljMCwwLjU1MiwwLjQ0OCwxLDEsMWg1djVjMCwwLjU1MiwwLjQ0OCwxLDEsMWgzNGMwLjU1MiwwLDEtMC40NDgsMS0xdi01aDVjMC41NTIsMCwxLTAuNDQ4LDEtMVYyMg0KCQkJQzQ4LDIxLjk3OCw0Ny45ODksMjEuOTYsNDcuOTg3LDIxLjkzOHogTTQ0LjU4NiwyMUg0MnYtMi41ODZMNDQuNTg2LDIxeiBNMzguNTg2LDlIMzNWMy40MTRMMzguNTg2LDl6IE04LDJoMjN2OA0KCQkJYzAsMC41NTIsMC40NDgsMSwxLDFoOHY1djVIOHYtNVYyeiBNNiwxOC40MTRWMjFIMy40MTRMNiwxOC40MTR6IE00MCw0Nkg4di00aDMyVjQ2eiBNNDYsNDBIMlYyM2g1aDM0aDVWNDB6Ii8+DQoJCTxwb2x5Z29uIHBvaW50cz0iMTQuNTgyLDI3Ljc2NiAxOC4zNTYsMjcuNzY2IDE0LjMxLDM2LjMxNyAxNC4zMSwzOCAyMC42LDM4IDIwLjYsMzYuMTY0IDE2LjU3MSwzNi4xNjQgMjAuNiwyNy42MTMgMjAuNiwyNS45NjQgDQoJCQkxNC41ODIsMjUuOTY0IAkJIi8+DQoJCTxyZWN0IHg9IjIyLjQzNiIgeT0iMjUuOTY0IiB3aWR0aD0iMi4wNCIgaGVpZ2h0PSIxMi4wMzYiLz4NCgkJPHBhdGggZD0iTTMyLjU0MiwyNi43MmMtMC4zMjMtMC4yNzctMC42ODgtMC40NzMtMS4wOTctMC41ODZjLTAuNDA4LTAuMTEzLTAuODA1LTAuMTctMS4xOS0wLjE3aC0zLjMzMlYzOGgyLjAwNnYtNC44MjhoMS40MjgNCgkJCWMwLjQxOSwwLDAuODI3LTAuMDc0LDEuMjI0LTAuMjIxYzAuMzk3LTAuMTQ3LDAuNzQ4LTAuMzc0LDEuMDU0LTAuNjhjMC4zMDYtMC4zMDYsMC41NTMtMC42ODgsMC43MzktMS4xNDgNCgkJCWMwLjE4Ny0wLjQ1OSwwLjI4LTAuOTk0LDAuMjgtMS42MDZjMC0wLjY4LTAuMTA1LTEuMjQ3LTAuMzE0LTEuN0MzMy4xMzIsMjcuMzY0LDMyLjg2NiwyNi45OTgsMzIuNTQyLDI2LjcyeiBNMzEuMjU5LDMxLjAwNQ0KCQkJYy0wLjMwNiwwLjMzNC0wLjY5NywwLjUwMS0xLjE3MywwLjUwMUgyOC45M3YtMy44MjVoMS4xNTZjMC40NzYsMCwwLjg2NywwLjE0NywxLjE3MywwLjQ0MmMwLjMwNiwwLjI5NSwwLjQ1OSwwLjc2NSwwLjQ1OSwxLjQxMQ0KCQkJQzMxLjcxOCwzMC4xOCwzMS41NjUsMzAuNjcsMzEuMjU5LDMxLjAwNXoiLz4NCgk8L2c+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8L3N2Zz4NCg==");',
+                           '                left center;',
+                           '    background-repeat: no-repeat;',
+                           '    background-size: 10px 10px;',
+                           '    display:inline-block;',
+                           '    cursor:pointer;',
+                           '    color:#ffffff;',
+                           '    width:16px;',
+                           '    height: 16px;',
+                           '    position:relative;',
+                           '    top: 4px;',
+                           '    left: 6px;',
+                           '    margin-left: -6px;',
+                           '}',
                            'a.editinzed  {',
                            '    cursor:pointer;',
                            '},',
@@ -747,7 +762,9 @@ ml(0,ml(1),[
                          ].concat (
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
-                                 const zedBtn = fileIsEditable(filename) ? ['<a class="editinzed" data-filename="'+filename+'"><span>&nbsp;</span>','</a>'] : ['<a href="/'+uri+'/'+filename+'">','</a>'] ;
+                                 const zedBtn = fileIsEditable(filename)     ? ['<a class="editinzed" data-filename="'+filename+'"><span>&nbsp;</span>','</a>'] 
+                                                : filename.endsWith(".zip")  ? ['<a class="zipfile"><span>&nbsp;</span>','</a>']   
+                                                : ['<a href="/'+uri+'/'+filename+'">','</a>'] ;
                                  return '<li>' + parent_link +'/' +linkit("/"+uri+"/"+filename,filename,zedBtn) + '</li>';
                               }),
                              
