@@ -863,7 +863,7 @@ ml(0,ml(1),[
 function injectFN(zip_url_base){
 
     ml(0,ml(1),[
-        'wTools                                     | windowTools.js'
+        'wTools                                     | /zed/pwa/windowTools.js'
         ],()=>{ml(2,ml(3),ml(4),
     
         { Window: function (wTools) {
