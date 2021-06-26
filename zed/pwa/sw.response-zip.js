@@ -786,7 +786,9 @@ function injectFN(zip_url_base){
         btn.addEventListener("click",edBtnClick);
     });
     
-                                
+    var extId = "pgldbamfcpkldkfdjdpedaandaaaabjg";   // upgraded local zed
+
+
     function edBtnClick(e){
         const btn = e.target,li = btn.parentElement;
         const file_url = zip_url_base + btn.dataset.filename;
@@ -814,7 +816,7 @@ function injectFN(zip_url_base){
         console.log("Contacting Chrome app to edit", el.value || el.innerText);
         var setValue = el.value !== undefined;
     
-        var port = chrome.runtime.connect('oocnfnmofhbboakielimkepnlphnfjpp',{
+        var port = chrome.runtime.connect(extId,{
             name: "edit-textarea",
         });
         port.postMessage({
