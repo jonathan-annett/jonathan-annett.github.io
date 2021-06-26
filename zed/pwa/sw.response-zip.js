@@ -792,8 +792,24 @@ function injectFN(zip_url_base){
         const file_url = zip_url_base + btn.dataset.filename;
         var oReq = new XMLHttpRequest();
         oReq.addEventListener("load", function reqListener () {
-            editInZed(filename,this.responseText,function(detail){
+            var content = this.responseText;
+            editInZed(filename,content,function(detail){
+              
                 console.log({detail});
+                content = detail.content;
+                
+                var update = new XMLHttpRequest();
+                update.open('UPDATE', file_url, true);
+                
+                update.setRequestHeader('Content-type', 'text/plain');
+                
+                update.onreadystatechange = function() {//Call a function when the state changes.
+                }
+                update.onerror = function() {//Call a function when the state changes.
+                }
+                
+                update.send(new Blob([content], {type: 'text/plain'}));
+                
             });
         });
         oReq.open("GET", file_url);
@@ -803,10 +819,33 @@ function injectFN(zip_url_base){
     
     
     function editInZed(filename,content,cb) {
+        
+        
         window.dispatchEvent(
             new CustomEvent( 'editinzed',{ detail: {filename,content} })
         );
-        window.addEventListener('editinzed_callback',function (event){ cb(event.detail); });
+        window.addEventListener('editinzed_callback',editInZedCallback);
+        
+        function editInZedCallback (event){ 
+            
+            if (event.detail.filename===filename) {
+                
+                if (event.detail.closed) {
+                    window.removeEventListener('editinzed_callback',editInZedCallback);
+                    console.log(filename,"closed");
+                } else {
+                    if (typeof event.detail.content==='string') {
+                        if (event.detail.content!==content) {
+                             event.detail.previousContent=content;
+                             cb(event.detail);
+                             content = event.detail.content;
+                        }
+                    }
+                }
+            }
+
+        }
+        
     }
     
 }
@@ -863,15 +902,38 @@ function injectFN(zip_url_base){
                  }
                  
                  function toFetchUrl (resolve,reject) {
-                     getForageKey(updatedUrlKey(url),function(err,args){
-                         if (err||!Array.isArray(args)) {
-                             const promise = doFetchZipUrl(event.request);
-                             if (promise) return promise.then(resolve).catch(reject);
-                             return fetch(event.request).then(resolve).catch(reject);
-                         } else {
-                             resolve(new Response(args[0],args[1]));
-                         }
-                     });
+                     if (event.method==='GET') {
+                         
+                         getForageKey(updatedUrlKey(url),function(err,args){
+                             if (err||!Array.isArray(args)) {
+                                 const promise = doFetchZipUrl(event.request);
+                                 if (promise) return promise.then(resolve).catch(reject);
+                                 return fetch(event.request).then(resolve).catch(reject);
+                             } else {
+                                 resolve(new Response(args[0],args[1]));
+                             }
+                         });
+                         
+                     } else {
+                         
+                        if (event.method==='UPDATE') {
+                            
+                            event.request.arrayBuffer().then(function(buffer){
+                               updateURLContents (url,buffer,function(){
+                                   resolve(new Response('ok', {
+                                       status: 200,
+                                       statusText: 'Ok',
+                                       headers: new Headers({
+                                         'Content-Type'   : 'text/plain',
+                                         'Content-Length' : 2
+                                       })
+                                   }));
+                               }); 
+                            });
+                            
+                        }
+                        
+                     }
                  }
                  
                  function getCacheList ( ) {
