@@ -30,7 +30,7 @@ ml(0,ml(1),[
              const zipmetadatakey = modifyURLprotocol.bind(this,"meta");
               
              const lib = {
-                 fetchZipUrl              : fetchZipUrl,
+                 fetchZipEvent            : fetchZipEvent,
                  unzipFile                : unzipFile,
                  fetchUpdatableZipURL     : fetchUpdatableZipURL,
                  updateURLContents        : updateURLContents,
@@ -879,62 +879,54 @@ function injectFN(zip_url_base){
                  }
              }
              
-             function fetchZipUrl(event) {
+             function fetchZipEvent(event) {
                 const promise = doFetchZipUrl(event.request);
                 if (promise) {
                     event.respondWith( promise ); 
                 }
              }
              
+             function internalErrorEvent (event) {
+                 event.respondWith( Promise.resolve(new Response('', {
+                                                    status: 500,
+                                                    statusText: 'Internal Error. WTF did you do?',
+                                                    headers: new Headers({
+                                                      'Content-Length' : 0
+                                                    })}))); 
+             }
+             
              //note - this also lets you proxy any url, not just zip file contents.
              function fetchUpdatableZipURL(event){
-                 const url =  full_URL(location.origin,event.request.url);
+                 const 
+                 
+                 url    =  full_URL(location.origin,event.request.url),
+                 method = event.request.method,
+                 methodPromiseRecipies = {
+                     GET    : toFetchUrl,
+                     POST   : toReturnAnError,
+                     UPDATE : toUpdateUrl
+                 },
+                 nextHandlers = {
+                     GET    : fetchZipEvent,
+                     POST   : internalErrorEvent,
+                     UPDATE : internalErrorEvent,
+                 },
+                 toProcessRequest = methodPromiseRecipies[method];
                  
                  if (!updatedUrls) {
+                      // first time, we need to do some async setup...
+                      // when this setup is complete, the promise "toProcessRequest" will be fullfilled
                       return getCacheList ();
                  } 
-                 
-                 
+
                  if(updatedUrls[url]) {
-                     event.respondWith ( new Promise(toFetchUrl) );
+                     // obviously not the first time, (ie prevous line did not return)
+                     // so we can respond with a new promise to process the request
+                     
+                    return event.respondWith (/* A */ new Promise( toProcessRequest ) );
+
                  } else {
-                     return fetchZipUrl(event) ;
-                 }
-                 
-                 function toFetchUrl (resolve,reject) {
-                     if (event.method==='GET') {
-                         
-                         getForageKey(updatedUrlKey(url),function(err,args){
-                             if (err||!Array.isArray(args)) {
-                                 const promise = doFetchZipUrl(event.request);
-                                 if (promise) return promise.then(resolve).catch(reject);
-                                 return fetch(event.request).then(resolve).catch(reject);
-                             } else {
-                                 resolve(new Response(args[0],args[1]));
-                             }
-                         });
-                         
-                     } else {
-                         
-                        console.log({"method":event.method});
-                        if (event.method==='UPDATE') {
-                            
-                            event.request.arrayBuffer().then(function(buffer){
-                               updateURLContents (url,buffer,function(){
-                                   resolve(new Response('ok', {
-                                       status: 200,
-                                       statusText: 'Ok',
-                                       headers: new Headers({
-                                         'Content-Type'   : 'text/plain',
-                                         'Content-Length' : 2
-                                       })
-                                   }));
-                               }); 
-                            });
-                            
-                        }
-                        
-                     }
+                     return nextHandlers[method](event) ;
                  }
                  
                  function getCacheList ( ) {
@@ -956,7 +948,7 @@ function injectFN(zip_url_base){
                                 
                                 if(updatedUrls[url]) {
                                     
-                                    return toFetchUrl(resolve,reject);
+                                    return toProcessRequest(resolve,reject);
                                     
                                 } else {
                                     
@@ -971,6 +963,52 @@ function injectFN(zip_url_base){
                          
                      );
                  }
+                 
+                 function toUpdateUrl (resolve,reject) {
+                        
+                     event.request.arrayBuffer().then(function(buffer){
+                        updateURLContents (url,buffer,function(){
+                            resolve(new Response('ok', {
+                                status: 200,
+                                statusText: 'Ok',
+                                headers: new Headers({
+                                  'Content-Type'   : 'text/plain',
+                                  'Content-Length' : 2
+                                })
+                            }));
+                        }); 
+                     });
+                     
+                 }
+                 
+                 function toReturnAnError (resolve) {
+                     
+                     resolve(new Response('', {
+                     status: 500,
+                     statusText: 'Internal Error. WTF did you do?',
+                     headers: new Headers({
+                       'Content-Length' : 0
+                     })}));
+                     
+                 }
+                 
+                 function toFetchUrl (resolve,reject) {
+                     
+                         
+                         getForageKey(updatedUrlKey(url),function(err,args){
+                             if (err||!Array.isArray(args)) {
+                                 const promise = doFetchZipUrl(event.request);
+                                 if (promise) return promise.then(resolve).catch(reject);
+                                 return fetch(event.request).then(resolve).catch(reject);
+                             } else {
+                                 resolve(new Response(args[0],args[1]));
+                             }
+                         });
+                         
+                      
+                 }
+                 
+                 
              }
              
              function updateURLContents(url,responseData,responseState,cb) {
