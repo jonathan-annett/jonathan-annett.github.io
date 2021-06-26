@@ -1100,32 +1100,36 @@ function injectFN(zip_url_base){
         const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
         const filename = '/'+btn.dataset.filename.replace(/^\//,'');
         const file_url = zip_url_base + filename;
-        var oReq = new XMLHttpRequest();
-        oReq.addEventListener("load", function reqListener () {
-            var content = this.responseText;
-            editInZed(filename,content,function(detail){
-              
-                console.log({detail});
-                if (!detail.closed && detail.content) {
-                    content = detail.content;
-                    
-                    var update = new XMLHttpRequest();
-                    update.open('UPDATE', file_url, true);
-                    
-                    update.setRequestHeader('Content-type', 'text/plain');
-                    
-                    update.onreadystatechange = function() {//Call a function when the state changes.
+        if (!e.shiftKey) {
+            var oReq = new XMLHttpRequest();
+            oReq.addEventListener("load", function reqListener () {
+                var content = this.responseText;
+                editInZed(filename,content,function(detail){
+                  
+                    console.log({detail});
+                    if (!detail.closed && detail.content) {
+                        content = detail.content;
+                        
+                        var update = new XMLHttpRequest();
+                        update.open('UPDATE', file_url, true);
+                        
+                        update.setRequestHeader('Content-type', 'text/plain');
+                        
+                        update.onreadystatechange = function() {//Call a function when the state changes.
+                        }
+                        update.onerror = function() {//Call a function when the state changes.
+                        }
+                        
+                        update.send(new Blob([content], {type: 'text/plain'}));
                     }
-                    update.onerror = function() {//Call a function when the state changes.
-                    }
                     
-                    update.send(new Blob([content], {type: 'text/plain'}));
-                }
-                
+                });
             });
-        });
-        oReq.open("GET", file_url);
-        oReq.send();
+            oReq.open("GET", file_url);
+            oReq.send();
+        } else {
+            window.location.href=file_url;
+        }
     }
     
     function editInZed(filename,content,cb) {
@@ -1162,14 +1166,16 @@ function injectFN(zip_url_base){
     }
 
     function viewBtnClick(e){
-        if (!e.shiftKey) {
             e.preventDefault();
             const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
             const filename = '/'+btn.dataset.filename.replace(/^\//,'');
             const file_url = zip_url_base + filename;
             
-            window.wTools.open(file_url,file_url,0,0);
-        }        
+            if (!e.shiftKey) {
+                window.wTools.open(file_url,file_url,0,0);
+            } else {
+                window.location.href=file_url;
+            }       
 
     }
     
