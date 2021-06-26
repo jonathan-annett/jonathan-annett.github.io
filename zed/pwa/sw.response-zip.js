@@ -759,7 +759,7 @@ ml(0,ml(1),[
                                 }
                                 
                              }),
-                             '<script>',
+                             '</script>',
                              '</body>',
                              '</html>'
                          ]).join('\n');
