@@ -786,24 +786,14 @@ function injectFN(zip_url_base){
         btn.addEventListener("click",edBtnClick);
     });
     
-    var extId = "pgldbamfcpkldkfdjdpedaandaaaabjg";   // upgraded local zed
-
-
     function edBtnClick(e){
         const btn = e.target,li = btn.parentElement;
+        const filename = btn.dataset.filename;
         const file_url = zip_url_base + btn.dataset.filename;
-        let ta = li.querySelector("textarea");
-        if (!ta) {
-            ta = document.createElement('textarea');
-            ta.style.display='none';
-            li.appendChild(ta);
-        }
         var oReq = new XMLHttpRequest();
         oReq.addEventListener("load", function reqListener () {
-            ta.value=this.responseText;
-            ta.dataset.filename = btn.dataset.filename;
-            contactZed(ta,function(detail){
-                console.log(detail.filename,detail.content);
+            editInZed(this.responseText,filename,function(detail){
+                console.log({detail});
             });
         });
         oReq.open("GET", file_url);
@@ -812,12 +802,11 @@ function injectFN(zip_url_base){
     
     
     
-    function contactZed(ta,cb) {
-        ta.dispatchEvent(new Event('editinzed'));
-        ta.addEventListener('editedbyzed',editedByZedCallback);
-        function editedByZedCallback (e){
-             cb(e.detail);
-        }
+    function editInZed(filename,content,cb) {
+        window.dispatchEvent(
+            new CustomEvent( 'editinzed',{ detail: {filename,content} })
+        );
+        window.addEventListener('editinzed_callback',function (event){ cb(event.detail); });
     }
     
 }
