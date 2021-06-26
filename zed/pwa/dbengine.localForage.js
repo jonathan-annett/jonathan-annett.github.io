@@ -4,7 +4,7 @@
 /* global ml,self,localforage  */
 ml(0,ml(1),[ 
     
-    'dbCommonLib | dbengine.common.js ',
+    'dbCommonLib | /zed/pwa/dbengine.common.js ',
     'localforage | https://unpkg.com/localforage@1.9.0/dist/localforage.js'
     
     ],function(){ml(2,ml(3),ml(4),

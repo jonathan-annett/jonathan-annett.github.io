@@ -1,8 +1,8 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),[
     
-    'wTools                                     | windowTools.js',
-    'swResponseZipLib@ServiceWorkerGlobalScope  | sw.response-zip.js',
+    'wTools                                     | /zed/pwa/windowTools.js',
+    'swResponseZipLib@ServiceWorkerGlobalScope  | /zed/pwa/sw.response-zip.js',
 
     
     ],function(){ml(2,ml(3),ml(4),
