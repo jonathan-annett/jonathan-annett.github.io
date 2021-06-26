@@ -804,11 +804,18 @@ ml(0,ml(1),[
                  
 function injectFN(zip_url_base){
 
-    [].forEach.call(document.querySelectorAll("li a span.editinzed"),addClick);
+    [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
+    
+    [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
 
-    function addClick (el) {
+    function addEditClick (el) {
         el.addEventListener("click",edBtnClick);
         el.parentElement.addEventListener("click",edBtnClick);
+    }
+    
+    function addViewClick (el) {
+        el.addEventListener("click",viewBtnClick);
+        el.parentElement.addEventListener("click",viewBtnClick);
     }
     
     function edBtnClick(e){
@@ -841,8 +848,6 @@ function injectFN(zip_url_base){
         oReq.send();
     }
     
-    
-    
     function editInZed(filename,content,cb) {
         
         
@@ -858,6 +863,7 @@ function injectFN(zip_url_base){
                 if (event.detail.closed) {
                     window.removeEventListener('editinzed_callback',editInZedCallback);
                     console.log(filename,"closed");
+                    cb(event.detail);
                 } else {
                     if (typeof event.detail.content==='string') {
                         if (event.detail.content!==content) {
@@ -871,7 +877,53 @@ function injectFN(zip_url_base){
 
         }
         
+        
+        
     }
+    
+    
+    
+    function viewBtnClick(e){
+        const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+        const filename = '/'+btn.dataset.filename.replace(/^\//,'');
+        const file_url = zip_url_base + filename;
+        viewInZed(filename,function(detail){
+          
+        });
+
+    }
+    
+    function viewInZed(filename,cb) {
+        
+        
+        window.dispatchEvent(
+            new CustomEvent( 'viewinzed',{ detail: {filename} })
+        );
+        window.addEventListener('viewinzed_callback',viewInZedCallback);
+        
+        function viewInZedCallback (event){
+            
+            if (event.detail.filename===filename) {
+                
+                if (event.detail.closed) {
+                    window.removeEventListener('viewinzed_callback',viewInZedCallback);
+                    console.log(filename,"closed");
+                    cb(event.detail);
+                }
+            }
+
+        }
+        
+        
+        
+    }
+    
+    
+    
+    function viewInZedCallback () {
+        
+    }
+
     
 }
                  
