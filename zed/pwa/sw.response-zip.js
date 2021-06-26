@@ -1162,13 +1162,14 @@ function injectFN(zip_url_base){
     }
 
     function viewBtnClick(e){
-        e.preventDefault();
-        const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-        const filename = '/'+btn.dataset.filename.replace(/^\//,'');
-        const file_url = zip_url_base + filename;
-        
-        window.wTools.open(file_url,file_url,0,0);
-        
+        if (!e.shiftKey) {
+            e.preventDefault();
+            const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+            const filename = '/'+btn.dataset.filename.replace(/^\//,'');
+            const file_url = zip_url_base + filename;
+            
+            window.wTools.open(file_url,file_url,0,0);
+        }        
 
     }
     
