@@ -1051,7 +1051,6 @@ ml(0,ml(1),[
                              '<script>',
                              'var zip_url_base='+JSON.stringify('/'+uri)+';',
                              fnSrc(injectFN),
-                             fnSrc(openUrl,true),
                              '</script>',
                              '</body>',
                              '</html>'
@@ -1081,143 +1080,133 @@ ml(0,ml(1),[
                  });
                  
 function injectFN(zip_url_base){
+    
+    [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
+    
+    [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
+
+    function addEditClick (el) {
+        el.addEventListener("click",edBtnClick);
+        el.parentElement.addEventListener("click",edBtnClick);
+    }
+    
+    function addViewClick (el) {
+        el.addEventListener("click",viewBtnClick);
+        el.parentElement.addEventListener("click",viewBtnClick);
+    }
+    
+    function edBtnClick(e){
+        e.preventDefault();
+        const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+        const filename = '/'+btn.dataset.filename.replace(/^\//,'');
+        const file_url = zip_url_base + filename;
+        var oReq = new XMLHttpRequest();
+        oReq.addEventListener("load", function reqListener () {
+            var content = this.responseText;
+            editInZed(filename,content,function(detail){
+              
+                console.log({detail});
+                if (!detail.closed && detail.content) {
+                    content = detail.content;
+                    
+                    var update = new XMLHttpRequest();
+                    update.open('UPDATE', file_url, true);
+                    
+                    update.setRequestHeader('Content-type', 'text/plain');
+                    
+                    update.onreadystatechange = function() {//Call a function when the state changes.
+                    }
+                    update.onerror = function() {//Call a function when the state changes.
+                    }
+                    
+                    update.send(new Blob([content], {type: 'text/plain'}));
+                }
+                
+            });
+        });
+        oReq.open("GET", file_url);
+        oReq.send();
+    }
+    
+    function editInZed(filename,content,cb) {
+        
+        
+        window.dispatchEvent(
+            new CustomEvent( 'editinzed',{ detail: {filename,content} })
+        );
+        window.addEventListener('editinzed_callback',editInZedCallback);
+        
+        function editInZedCallback (event){
+            
+            if (event.detail.filename===filename) {
+                
+                if (event.detail.closed) {
+                    window.removeEventListener('editinzed_callback',editInZedCallback);
+                    console.log(filename,"closed");
+                    cb(event.detail);
+                } else {
+                    if (typeof event.detail.content==='string') {
+                        if (event.detail.content!==content) {
+                             event.detail.previousContent=content;
+                             cb(event.detail);
+                             content = event.detail.content;
+                        }
+                    }
+                }
+            }
+
+        }
+        
+        
+        
+    }
+
+    function viewBtnClick(e){
+        e.preventDefault();
+        const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+        const filename = '/'+btn.dataset.filename.replace(/^\//,'');
+        const file_url = zip_url_base + filename;
+        viewInZed(file_url,function(detail){
+          
+        });
+
+    }
+    
+    function viewInZed(filename,cb) {
+        
+        
+        window.dispatchEvent(
+            new CustomEvent( 'viewinzed',{ detail: {filename} })
+        );
+        window.addEventListener('viewinzed_callback',viewInZedCallback);
+        
+        function viewInZedCallback (event){
+            
+            if (event.detail.filename===filename) {
+                
+                if (event.detail.closed) {
+                    window.removeEventListener('viewinzed_callback',viewInZedCallback);
+                    console.log(filename,"closed");
+                    cb(event.detail);
+                }
+            }
+
+        }
+        
+        
+        
+    }
+
+    function viewInZedCallback () {
+        
+    }
 
     ml(0,ml(1),[
-        'wTools                                     | /zed/pwa/windowTools.js'
+        'wTools | /zed/pwa/windowTools.js'
         ],()=>{ml(2,ml(3),ml(4),
-    
-        { Window: function (wTools) {
-            
-            [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
-            
-            [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
-        
-            function addEditClick (el) {
-                el.addEventListener("click",edBtnClick);
-                el.parentElement.addEventListener("click",edBtnClick);
-            }
-            
-            function addViewClick (el) {
-                el.addEventListener("click",viewBtnClick);
-                el.parentElement.addEventListener("click",viewBtnClick);
-            }
-            
-            function edBtnClick(e){
-                e.preventDefault();
-                const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                const filename = '/'+btn.dataset.filename.replace(/^\//,'');
-                const file_url = zip_url_base + filename;
-                var oReq = new XMLHttpRequest();
-                oReq.addEventListener("load", function reqListener () {
-                    var content = this.responseText;
-                    editInZed(filename,content,function(detail){
-                      
-                        console.log({detail});
-                        if (!detail.closed && detail.content) {
-                            content = detail.content;
-                            
-                            var update = new XMLHttpRequest();
-                            update.open('UPDATE', file_url, true);
-                            
-                            update.setRequestHeader('Content-type', 'text/plain');
-                            
-                            update.onreadystatechange = function() {//Call a function when the state changes.
-                            }
-                            update.onerror = function() {//Call a function when the state changes.
-                            }
-                            
-                            update.send(new Blob([content], {type: 'text/plain'}));
-                        }
-                        
-                    });
-                });
-                oReq.open("GET", file_url);
-                oReq.send();
-            }
-            
-            function editInZed(filename,content,cb) {
-                
-                
-                window.dispatchEvent(
-                    new CustomEvent( 'editinzed',{ detail: {filename,content} })
-                );
-                window.addEventListener('editinzed_callback',editInZedCallback);
-                
-                function editInZedCallback (event){
-                    
-                    if (event.detail.filename===filename) {
-                        
-                        if (event.detail.closed) {
-                            window.removeEventListener('editinzed_callback',editInZedCallback);
-                            console.log(filename,"closed");
-                            cb(event.detail);
-                        } else {
-                            if (typeof event.detail.content==='string') {
-                                if (event.detail.content!==content) {
-                                     event.detail.previousContent=content;
-                                     cb(event.detail);
-                                     content = event.detail.content;
-                                }
-                            }
-                        }
-                    }
-        
-                }
-                
-                
-                
-            }
-
-            function viewBtnClick(e){
-                e.preventDefault();
-                const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                const filename = '/'+btn.dataset.filename.replace(/^\//,'');
-                const file_url = zip_url_base + filename;
-                viewInZed(file_url,function(detail){
-                  
-                });
-        
-            }
-            
-            function viewInZed(filename,cb) {
-                
-                
-                window.dispatchEvent(
-                    new CustomEvent( 'viewinzed',{ detail: {filename} })
-                );
-                window.addEventListener('viewinzed_callback',viewInZedCallback);
-                
-                function viewInZedCallback (event){
-                    
-                    if (event.detail.filename===filename) {
-                        
-                        if (event.detail.closed) {
-                            window.removeEventListener('viewinzed_callback',viewInZedCallback);
-                            console.log(filename,"closed");
-                            cb(event.detail);
-                        }
-                    }
-        
-                }
-                
-                
-                
-            }
-
-            function viewInZedCallback () {
-                
-            }
-            
-            
-           } }, 
-        
-        { Window: [ () => self.wTools ] }
-        
-       
-    
-    );
-    
-
+            { Window: function () { } }, 
+            { Window: [  ] }
+        );
     });
     
     
