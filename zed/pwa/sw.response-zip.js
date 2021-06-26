@@ -1198,7 +1198,7 @@ function injectFN(zip_url_base){
            }
            
             e.preventDefault();
-            const link      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+            const link      = e.target.href ? e.target : e.target.parentElement ;
             window.wTools.open(link.href,link.href,0,0);
 
     }
