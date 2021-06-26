@@ -863,15 +863,10 @@ ml(0,ml(1),[
 function injectFN(zip_url_base){
 
     ml(0,ml(1),[
-        "localforage | https://unpkg.com/localforage@1.9.0/dist/localforage.js",
-        'dbengine    | dbengine.js',
-        'wToolsRem   | windowTools.remote.js',
-        'wToolsLib   | windowTools.helper.js',
-        'main        | wtool.js',
-        'libEvents   | events.js'
+        'wTools                                     | windowTools.js'
         ],()=>{ml(2,ml(3),ml(4),
     
-        { Window: function () {
+        { Window: function (wTools) {
             
             [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
             
@@ -996,7 +991,7 @@ function injectFN(zip_url_base){
             
            } }, 
         
-        { Window: [  ] }
+        { Window: [ () => self.wTools ] }
         
        
     
