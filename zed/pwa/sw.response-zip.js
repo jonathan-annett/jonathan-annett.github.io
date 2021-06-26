@@ -736,6 +736,7 @@ ml(0,ml(1),[
                          
                              fnSrc(function(zip_url_base){
                                  
+
                                 [].forEach.call(document.querySelectorAll("button"),function(btn) {
                                     btn.addEventListener("click",edBtnClick);
                                 });
@@ -753,6 +754,7 @@ ml(0,ml(1),[
                                     var oReq = new XMLHttpRequest();
                                     oReq.addEventListener("load", function reqListener () {
                                         ta.value=this.responseText;
+                                        ta.dispatchEvent(new Event('editinzed')); 
                                     });
                                     oReq.open("GET", file_url);
                                     oReq.send();
