@@ -909,7 +909,7 @@ function injectFN(zip_url_base){
                  nextHandlers = {
                      GET    : fetchZipEvent,
                      POST   : internalErrorEvent,
-                     UPDATE : internalErrorEvent,
+                     UPDATE : updateEvent,
                  },
                  toProcessRequest = methodPromiseRecipies[method];
                  
@@ -962,6 +962,11 @@ function injectFN(zip_url_base){
                          })
                          
                      );
+                 }
+                 
+                 function updateEvent(event) {
+                     return event.respondWith (/* A */ new Promise( toUpdateUrl ) );
+                     
                  }
                  
                  function toUpdateUrl (resolve,reject) {
