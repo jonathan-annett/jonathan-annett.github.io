@@ -889,7 +889,7 @@ function injectFN(zip_url_base){
         const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
         const filename = '/'+btn.dataset.filename.replace(/^\//,'');
         const file_url = zip_url_base + filename;
-        viewInZed(filename,function(detail){
+        viewInZed(file_url,function(detail){
           
         });
 
