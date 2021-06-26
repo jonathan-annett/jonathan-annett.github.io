@@ -725,6 +725,7 @@ ml(0,ml(1),[
                            '    color:#ffffff;',
                            '    width:16px;',
                            '    height: 16px;',
+                           '    position:relative;',
                            '    top: 4px;',
                            '    left: 6px;',
                            '    margin-left: -6px;',
