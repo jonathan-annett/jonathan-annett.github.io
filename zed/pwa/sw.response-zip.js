@@ -1026,10 +1026,19 @@ ml(0,ml(1),[
                            '    background-repeat: no-repeat;',
                            '    background-size: 10px 10px;',
                             '}',
+                            
+                            
+                            
+                            '.disable-select {',
+                            '  -webkit-user-select: none;',
+                            '  -moz-user-select: none;',  
+                            '  -ms-user-select: none;',      
+                            '  user-select: none;',
+                            '}',
 
                            '</style>',
                          '</head>',
-                         '<body>',
+                         '<body class="disable-select">',
                          
                          '<h1>files in '+uri+'</h1>',
                          '<div>',
