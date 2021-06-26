@@ -772,7 +772,7 @@ ml(0,ml(1),[
                              '</ul>',
                              '</div>',
                              '<script>',
-                             'var zip_url_base='+JSON.stringify(uri)+';',
+                             'var zip_url_base='+JSON.stringify('/'+uri)+';',
                              fnSrc(injectFN),
                              '</script>',
                              '</body>',
