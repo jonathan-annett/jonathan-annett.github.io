@@ -653,6 +653,11 @@ ml(0,ml(1),[
                  });
              }
              
+             function fileIsEditable (filename) {
+                 const p = filename.lastIndexOf('.');
+                 return p < 1 ? false:["js","json","hmtl","css"].indexOf(filename.substr(p+1))>=0;
+             }
+             
              function resolveZipListing (url,buffer) {
                  
                  return new Promise(function (resolve){
@@ -712,20 +717,45 @@ ml(0,ml(1),[
                          '<body>',
                          
                          '<h1>files in '+uri+'</h1>',
-                         
                          '<div>',
                          '<ul>'
                          
                          ].concat (
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
-                                 return '<li>' + parent_link +'/' + linkit("/"+uri+"/"+filename,filename) + '</a></li>';
+                                 const ed = fileIsEditable(filename) ? '<button data-filename="'+filename+'">...</button>' : '';
+                                 return '<li>' + parent_link +'/' + linkit("/"+uri+"/"+filename,filename) + '</a>'+ed+'</li>';
                               }),
                              
                          [
                              
                              '</ul>',
                              '</div>',
+                             '<script>',
+                             'var zip_url_base='+JSON.stringify(url+'/')+';',
+                         
+                             fnSrc(function(zip_url_base){
+                                 
+                                [].forEach.apply(document.querySelectorAll("li button"),
+                                function(btn) {
+                                    const file_url = zip_url_base + btn.dataset.filename;
+                                    const li = btn.parentElement;
+                                    let ta = li.querySelector("textarea");
+                                    if (!ta) {
+                                        ta = document.createElement('textarea');
+                                        //ta.style.display='none';
+                                        li.appendChild(ta); 
+                                    }
+                                    var oReq = new XMLHttpRequest();
+                                    oReq.addEventListener("load", function reqListener () {
+                                        ta.value=this.responseText;
+                                    });
+                                    oReq.open("GET", file_url);
+                                    oReq.send();
+                                });
+                                 
+                             }),
+                             '<script>',
                              '</body>',
                              '</html>'
                          ]).join('\n');
@@ -754,6 +784,11 @@ ml(0,ml(1),[
                      });
                      
                  });
+                 
+                 function fnSrc(f) {
+                     f = f.toString();
+                     return f.substring(f.indexOf("{")+1,f.lastIndexOf("}")-1);
+                 }
              }
              
              function doFetchZipUrl(request) {
