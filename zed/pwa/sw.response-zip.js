@@ -804,9 +804,12 @@ ml(0,ml(1),[
                  
 function injectFN(zip_url_base){
 
-    [].forEach.call(document.querySelectorAll("li a span.editinzed"),function(btn) {
-        btn.addEventListener("click",edBtnClick);
-    });
+    [].forEach.call(document.querySelectorAll("li a span.editinzed"),addClick);
+
+    function addClick (el) {
+        el.addEventListener("click",edBtnClick);
+        el.parentElement.addEventListener("click",edBtnClick);
+    }
     
     function edBtnClick(e){
         const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
