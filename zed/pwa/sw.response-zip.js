@@ -916,6 +916,7 @@ function injectFN(zip_url_base){
                          
                      } else {
                          
+                        console.log({"method":event.method});
                         if (event.method==='UPDATE') {
                             
                             event.request.arrayBuffer().then(function(buffer){
