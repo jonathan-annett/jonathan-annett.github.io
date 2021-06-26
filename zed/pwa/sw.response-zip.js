@@ -762,8 +762,8 @@ ml(0,ml(1),[
                          ].concat (
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
-                                 const zedBtn = fileIsEditable(filename)     ? ['<a class="editinzed" data-filename="'+filename+'"><span>&nbsp;</span>','</a>'] 
-                                                : filename.endsWith(".zip")  ? ['<a class="zipfile"><span>&nbsp;</span>','</a>']   
+                                 const zedBtn = fileIsEditable(filename)     ? ['<a class="editinzed" data-filename="'+filename+'"><span>&nbsp;</span>', '</a>'] 
+                                                : filename.endsWith(".zip")  ? ['<a class="zipfile" href="/'+uri+'/'+filename+'><span>&nbsp;</span>',    '</a>']   
                                                 : ['<a href="/'+uri+'/'+filename+'">','</a>'] ;
                                  return '<li>' + parent_link +'/' +linkit("/"+uri+"/"+filename,filename,zedBtn) + '</li>';
                               }),
@@ -810,7 +810,7 @@ function injectFN(zip_url_base){
     });
     
     function edBtnClick(e){
-        const btn = e.target;
+        const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
         const filename = '/'+btn.dataset.filename.replace(/^\//,'');
         const file_url = zip_url_base + filename;
         var oReq = new XMLHttpRequest();
