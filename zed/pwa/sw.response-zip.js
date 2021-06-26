@@ -723,10 +723,11 @@ ml(0,ml(1),[
                            '    display:inline-block;',
                            '    cursor:pointer;',
                            '    color:#ffffff;',
-                           '    width: 16px;',
+                           '    width:16px;',
                            '    height: 16px;',
                            '    top: 4px;',
-                           '    position: relative;',
+                           '    left: 6px;',
+                           '    margin-left: -6px;',
                            '}',
                            '</style>',
                          '</head>',
@@ -749,41 +750,12 @@ ml(0,ml(1),[
                              '</div>',
                              '<script>',
                              'var zip_url_base='+JSON.stringify(url+'/')+';',
-                         
-                             fnSrc(function(zip_url_base){
-                                 
-
-                                [].forEach.call(document.querySelectorAll("li a.editinzed"),function(btn) {
-                                    btn.addEventListener("click",edBtnClick);
-                                });
-                                
-                                
-                                function edBtnClick(e){
-                                    const btn = e.target,li = btn.parentElement;
-                                    const file_url = zip_url_base + btn.dataset.filename;
-                                    let ta = li.querySelector("textarea");
-                                    if (!ta) {
-                                        ta = document.createElement('textarea');
-                                        //ta.style.display='none';
-                                        li.appendChild(ta); 
-                                    }
-                                    var oReq = new XMLHttpRequest();
-                                    oReq.addEventListener("load", function reqListener () {
-                                        ta.value=this.responseText;
-                                        ta.dispatchEvent(new Event('editinzed')); 
-                                    });
-                                    oReq.open("GET", file_url);
-                                    oReq.send();
-                                }
-                                
-                             }),
+                             fnSrc(injectFN),
                              '</script>',
                              '</body>',
                              '</html>'
                          ]).join('\n');
-                         
-                         
-                         
+
                          return resolve( 
                              
                              new Response(html, {
@@ -806,6 +778,32 @@ ml(0,ml(1),[
                      });
                      
                  });
+                 
+function injectFN(zip_url_base){
+
+    [].forEach.call(document.querySelectorAll("li a.editinzed"),function(btn) {
+        btn.addEventListener("click",edBtnClick);
+    });
+    
+                                
+    function edBtnClick(e){
+        const btn = e.target,li = btn.parentElement;
+        const file_url = zip_url_base + btn.dataset.filename;
+        let ta = li.querySelector("textarea");
+        if (!ta) {
+            ta = document.createElement('textarea');
+            ta.style.display='none';
+            li.appendChild(ta); 
+        }
+        var oReq = new XMLHttpRequest();
+        oReq.addEventListener("load", function reqListener () {
+            ta.value=this.responseText;
+            ta.dispatchEvent(new Event('editinzed')); 
+        });
+        oReq.open("GET", file_url);
+        oReq.send();
+    }
+}
                  
                  function fnSrc(f) {
                      f = f.toString();
