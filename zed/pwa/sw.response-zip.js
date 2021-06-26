@@ -802,38 +802,22 @@ function injectFN(zip_url_base){
         oReq.addEventListener("load", function reqListener () {
             ta.value=this.responseText;
             ta.dataset.filename = btn.dataset.filename;
-            contactZed(ta,function(text){
-                console.log(btn.dataset.filename,text);
+            contactZed(ta,function(detail){
+                console.log(detail.filename,detail.content);
             });
-            //ta.dispatchEvent(new Event('editinzed')); 
         });
         oReq.open("GET", file_url);
         oReq.send();
     }
     
     
-    function contactZed(el,cb) {
-        console.log("Contacting Chrome app to edit", el.value || el.innerText);
-        var setValue = el.value !== undefined;
     
-        var port = chrome.runtime.connect(extId,{
-            name: "edit-textarea",
-        });
-        port.postMessage({
-            filename: el.dataset.filename,
-            text: setValue ? el.value : el.innerText
-        });
-        port.onMessage.addListener(function(msg) {
-            if (setValue) {
-                el.value = msg.text;
-            } else {
-                el.innerText = msg.text;
-            }
-            cb(msg.text);
-        });
-        port.onDisconnect.addListener(function() {
-            // console.log("Done editing");
-        });
+    function contactZed(ta,cb) {
+        ta.dispatchEvent(new Event('editinzed'));
+        ta.addEventListener('editedbyzed',editedByZedCallback);
+        function editedByZedCallback (e){
+             cb(e.detail);
+        }
     }
     
 }
