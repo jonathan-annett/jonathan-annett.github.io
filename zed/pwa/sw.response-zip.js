@@ -750,7 +750,7 @@ ml(0,ml(1),[
                              '</ul>',
                              '</div>',
                              '<script>',
-                             'var zip_url_base='+JSON.stringify(url+'/')+';',
+                             'var zip_url_base='+JSON.stringify(url)+';',
                              fnSrc(injectFN),
                              '</script>',
                              '</body>',
@@ -788,8 +788,8 @@ function injectFN(zip_url_base){
     
     function edBtnClick(e){
         const btn = e.target;
-        const filename = btn.dataset.filename;
-        const file_url = zip_url_base + btn.dataset.filename;
+        const filename = '/'+btn.dataset.filename.replace(/^\//,'');
+        const file_url = zip_url_base + filename;
         var oReq = new XMLHttpRequest();
         oReq.addEventListener("load", function reqListener () {
             var content = this.responseText;
@@ -826,7 +826,7 @@ function injectFN(zip_url_base){
         );
         window.addEventListener('editinzed_callback',editInZedCallback);
         
-        function editInZedCallback (event){ 
+        function editInZedCallback (event){
             
             if (event.detail.filename===filename) {
                 
