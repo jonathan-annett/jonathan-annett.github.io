@@ -655,7 +655,7 @@ ml(0,ml(1),[
              
              function fileIsEditable (filename) {
                  const p = filename.lastIndexOf('.');
-                 return p < 1 ? false:["js","json","hmtl","css"].indexOf(filename.substr(p+1))>=0;
+                 return p < 1 ? false:["js","json","css","md","html","htm"].indexOf(filename.substr(p+1))>=0;
              }
              
              function resolveZipListing (url,buffer) {
@@ -675,13 +675,13 @@ ml(0,ml(1),[
                          const uri= urify.exec(url)[2];
                          const uri_split = uri.split('.zip/').map(function (x,i,a){return i===a.length-1?'/'+x:'/'+x+'.zip'});
                          var parent_link="";
-                         const linkit=function(uri,disp,prefix){ 
-                             prefix=prefix||'';
+                         const linkit=function(uri,disp,a_wrap){ 
+                             a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
                              const split=(disp||uri).split("/");
-                             if (split.length===1) return prefix+'<a href="'+uri+'">'+(disp||uri)+'</a>';
+                             if (split.length===1) return a_wrap.join(disp||uri);
                              const last = split.pop();
-                             if (split.length===1) return split[0]+'/'+prefix+'<a href="'+uri+'">'+last+'</a>';
-                             return split.join("/")+'/'+prefix+'<a href="'+uri+'">'+last+'</a>';
+                             if (split.length===1) return split[0]+'/'+ a_wrap.join(last);
+                             return split.join("/")+'/'+ a_wrap.join(last);
                          };
                          const boldit=function(uri,disp){ 
                              const split=(disp||uri).split("/");
@@ -741,7 +741,7 @@ ml(0,ml(1),[
                          ].concat (
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
-                                 const zedBtn = fileIsEditable(filename) ? '<a class="editinzed" data-filename="'+filename+'"></a>' : '';
+                                 const zedBtn = fileIsEditable(filename) ? ['<a class="editinzed" data-filename="'+filename+'">','</a>'] : ['<a href="/'+uri+'/'+filename+'">','</a>'] ;
                                  return '<li>' + parent_link +'/' +linkit("/"+uri+"/"+filename,filename,zedBtn) + '</li>';
                               }),
                              
