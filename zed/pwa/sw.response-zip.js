@@ -57,7 +57,7 @@ ml(0,ml(1),[
              }
              
              function modifyURLprotocol(protocol,url) {
-                 return url.replace(/^http(s?)\:\/\//,+protocol+'://');
+                 return url.replace(/^http(s?)\:\/\//,protocol+'://');
              }
              
              function full_URL(base,url) {
