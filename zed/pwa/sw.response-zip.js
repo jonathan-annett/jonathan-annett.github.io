@@ -736,10 +736,14 @@ ml(0,ml(1),[
                          
                              fnSrc(function(zip_url_base){
                                  
-                                [].forEach.apply(document.querySelectorAll("li button"),
-                                function(btn) {
+                                [].forEach.apply(document.querySelectorAll("button"),function(btn) {
+                                    btn.addEventListener("click",edBtnClick);
+                                });
+                                
+                                
+                                function edBtnClick(e){
+                                    const btn = e.target,li = btn.parentElement;
                                     const file_url = zip_url_base + btn.dataset.filename;
-                                    const li = btn.parentElement;
                                     let ta = li.querySelector("textarea");
                                     if (!ta) {
                                         ta = document.createElement('textarea');
@@ -752,8 +756,8 @@ ml(0,ml(1),[
                                     });
                                     oReq.open("GET", file_url);
                                     oReq.send();
-                                });
-                                 
+                                }
+                                
                              }),
                              '<script>',
                              '</body>',
