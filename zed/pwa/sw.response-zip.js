@@ -763,7 +763,7 @@ ml(0,ml(1),[
                              Object.keys(zipFileMeta.files).map(function(filename){
                                  const zedBtn =   fileIsEditable(filename)   ? ['<a data-filename="'+filename+'"><span class="editinzed">&nbsp;</span>',  '</a>'] 
                                                 : filename.endsWith(".zip")  ? ['<a href="/'+uri+'/'+filename+'"><span class="zipfile">&nbsp;</span>',    '</a>']   
-                                                :                              ['<a href="/'+uri+'/'+filename+'"><span class="normal">&nbsp;</span>',     '</a>'] ;
+                                                :                              ['<a data-filename="'+uri+'/'+filename+'"><span class="normal">&nbsp;</span>',     '</a>'] ;
                                  return '<li>' + parent_link +'/' +linkit("/"+uri+"/"+filename,filename,zedBtn) + '</li>';
                               }),
                              
