@@ -799,6 +799,7 @@ function injectFN(zip_url_base){
         var oReq = new XMLHttpRequest();
         oReq.addEventListener("load", function reqListener () {
             ta.value=this.responseText;
+            ta.dataset.filename = btn.dataset.filename;
             ta.dispatchEvent(new Event('editinzed')); 
         });
         oReq.open("GET", file_url);
