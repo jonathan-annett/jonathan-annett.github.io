@@ -736,7 +736,7 @@ ml(0,ml(1),[
                          
                              fnSrc(function(zip_url_base){
                                  
-                                [].forEach.apply(document.querySelectorAll("button"),function(btn) {
+                                [].forEach.call(document.querySelectorAll("button"),function(btn) {
                                     btn.addEventListener("click",edBtnClick);
                                 });
                                 
