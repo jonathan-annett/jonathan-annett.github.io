@@ -1093,6 +1093,8 @@ function injectFN(zip_url_base){
     [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
     
     [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
+    
+    [].forEach.call(document.querySelectorAll("li a span.zipfile"),addOpenZipViewClick);
 
     function addEditClick (el) {
         el.addEventListener("click",edBtnClick);
@@ -1104,6 +1106,12 @@ function injectFN(zip_url_base){
         el.parentElement.addEventListener("click",viewBtnClick);
     }
     
+    function addOpenZipViewClick (el) {
+        el.addEventListener("click",openZipBtnClick);
+        el.parentElement.addEventListener("click",openZipBtnClick);
+    }
+    
+
     function edBtnClick(e){
         e.preventDefault();
         const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
@@ -1184,34 +1192,19 @@ function injectFN(zip_url_base){
  
     }
     
-    function viewInZed(filename,cb) {
-        
-        
-        window.dispatchEvent(
-            new CustomEvent( 'viewinzed',{ detail: {filename} })
-        );
-        window.addEventListener('viewinzed_callback',viewInZedCallback);
-        
-        function viewInZedCallback (event){
-            
-            if (event.detail.filename===filename) {
-                
-                if (event.detail.closed) {
-                    window.removeEventListener('viewinzed_callback',viewInZedCallback);
-                    console.log(filename,"closed");
-                    cb(event.detail);
-                }
-            }
-
-        }
-        
-        
-        
+    function openZipBtnClick(e){
+           if (!e.shiftKey) {
+                e.preventDefault();
+                const link      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+                const filename = '/'+link.href.replace(/^\//,'');
+                const file_url = zip_url_base + filename;
+           } else {
+               window.wTools.open(file_url,file_url,0,0);
+           }
+ 
     }
-
-    function viewInZedCallback () {
-        
-    }
+ 
+    
 
     ml(0,ml(1),[
         'wTools | /zed/pwa/windowTools.js'
