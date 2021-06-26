@@ -675,12 +675,13 @@ ml(0,ml(1),[
                          const uri= urify.exec(url)[2];
                          const uri_split = uri.split('.zip/').map(function (x,i,a){return i===a.length-1?'/'+x:'/'+x+'.zip'});
                          var parent_link="";
-                         const linkit=function(uri,disp){ 
+                         const linkit=function(uri,disp,prefix){ 
+                             prefix=prefix||'';
                              const split=(disp||uri).split("/");
-                             if (split.length===1) return '<a href="'+uri+'">'+(disp||uri)+'</a>';
+                             if (split.length===1) return '<a href="'+uri+'">'+prefix+(disp||uri)+'</a>';
                              const last = split.pop();
-                             if (split.length===1) return split[0]+'/<a href="'+uri+'">'+last+'</a>';
-                             return split.join("/")+'/<a href="'+uri+'">'+last+'</a>';
+                             if (split.length===1) return split[0]+'/<a href="'+uri+'">'+prefix+last+'</a>';
+                             return split.join("/")+'/<a href="'+uri+'">'+prefix+last+'</a>';
                          };
                          const boldit=function(uri,disp){ 
                              const split=(disp||uri).split("/");
@@ -739,7 +740,7 @@ ml(0,ml(1),[
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
                                  const zedBtn = fileIsEditable(filename) ? '<a class="editinzed" data-filename="'+filename+'"></a>' : '';
-                                 return '<li>' + parent_link +'/' +zedBtn+linkit("/"+uri+"/"+filename,filename) + '</a></li>';
+                                 return '<li>' + parent_link +'/' +linkit("/"+uri+"/"+filename,filename,zedBtn) + '</a></li>';
                               }),
                              
                          [
