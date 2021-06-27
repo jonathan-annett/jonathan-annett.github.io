@@ -877,11 +877,11 @@ ml(0,ml(1),[
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
                                  
-                                 const edited       = updatedUrls[ updated_prefix+filename ] ? '<span class="edited" data-text="file has been edited locally">&nbsp;</span>' : '';
+                                 const edited       = updatedUrls[ updated_prefix+filename ] ? '<span class="edited tooltip" data-text="file has been edited locally">&nbsp;</span>' : '';
                                  const edited_class = updatedUrls[ updated_prefix+filename ] ? ' class="edited"' : ''
 
-                                 const zedBtn =   fileIsEditable(filename)   ? ['<a data-filename="'+filename+'"><span data-text="Edit file in zed" class="editinzed">&nbsp;</span>',  edited+'</a>' ] 
-                                                : filename.endsWith(".zip")  ? ['<a href="/'+uri+'/'+filename+'"><span data-text="this is a zip archive file" class="zipfile">&nbsp;</span>',    edited+'</a>' ]   
+                                 const zedBtn =   fileIsEditable(filename)   ? ['<a data-filename="'+filename+'"><span data-text="Edit file in zed" class="editinzed tooltip">&nbsp;</span>',  edited+'</a>' ] 
+                                                : filename.endsWith(".zip")  ? ['<a href="/'+uri+'/'+filename+'"><span data-text="this is a zip archive file" class="zipfile tooltip">&nbsp;</span>',    edited+'</a>' ]   
                                                 :                              ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',     edited+'</a>' ] ;
                                  
                                  
