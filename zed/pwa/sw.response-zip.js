@@ -794,7 +794,12 @@ ml(0,ml(1),[
                                         n:'navigator',
                                         d:"document",
                                         //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
-                                        B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
+                                        B:(u,r,q)=>{ 
+                                            r=/^\//;
+                                            q=/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,'');
+                                            c.l (u,"==>",q);
+                                            return q; 
+                                        },
                                 
                                         // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
                                         
@@ -810,14 +815,15 @@ ml(0,ml(1),[
                                         // e = unuused argument doubles as a variable
                                         // D = constant
                                         2:(L,o,a,d,e,D)=>{
+                                            
                                                 D="defined";//define a constant
                                                 e= a[L] && a[L].name; //evaluate name of import
                                                 e=typeof e+typeof o[e]===t[2]+t[3]? (//valdidate nameed import is a function
                                                    c.S(ml.h[ ml.d[e].h ].e,e, //
                                                      c.S(o,e,a[L].apply(this, d[L].map(c.x))) // do the import
-                                                    )&&c.l(D+":",e)||c.l(D+" empty:",e) ) : c.l("ready:",e);
+                                                  )&&c.l(D+":",e)||c.l(D+" empty:",e) ) : c.l("ready:",e);
                                                   
-                                               if (!ml.i){  
+                                               if (!ml.i){
                                                    ml.i=new Proxy({},{
                                                        get:(t,p)=>c.I(x=p),
                                                        ownKeys:()=>c.k(ml.d),
