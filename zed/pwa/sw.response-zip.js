@@ -859,11 +859,11 @@ ml(0,ml(1),[
                              '</div>',
                              '<script>',
                              'var zip_url_base='+JSON.stringify('/'+uri)+';',
-                             fnSrc(injectFN).replace(/\n/g,''),
+                             fnSrc(injectFN),
                              '</script>',
                              '</body>',
                              '</html>'
-                         ]).join('');
+                         ]).join('\n').replace(/[\}|\)\]]{1}\n/g,' ').replace(/\n/g,'');
 
                          return resolve( 
                              
