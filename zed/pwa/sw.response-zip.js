@@ -777,19 +777,25 @@ ml(0,ml(1),[
                            
                            
                            '<style>',
+                           'h1 {',
+                           'font-size: 1em;',
+                           'margin-block-end: 0;',
+                           'margin-block-start: 0;',
+                           'margin-bottom: -16px;',
+                           '}',
                            'a,a:visited,a:link {',
-                           '    color:navy;',
-                           '    cursor:pointer;',
+                           'color:navy;',
+                           'cursor:pointer;',
                            '}',
                            'a span {',
-                           '    display:inline-block;',
-                           '    cursor:pointer;',
-                           '    width:16px;',
-                           '    height: 16px;',
-                           '    position:relative;',
-                           '    top: 4px;',
-                           '    left: 6px;',
-                           '    margin-left: -6px;',
+                           'display:inline-block;',
+                           'cursor:pointer;',
+                           'width:16px;',
+                           'height: 16px;',
+                           'position:relative;',
+                           'top: 4px;',
+                           'left: 6px;',
+                           'margin-left: -6px;',
                            '}',
                      
                            'a span.editinzed {',
@@ -853,11 +859,11 @@ ml(0,ml(1),[
                              '</div>',
                              '<script>',
                              'var zip_url_base='+JSON.stringify('/'+uri)+';',
-                             fnSrc(injectFN),
+                             fnSrc(injectFN).replace(/\n/g,''),
                              '</script>',
                              '</body>',
                              '</html>'
-                         ]).join('\n');
+                         ]).join('');
 
                          return resolve( 
                              
@@ -884,6 +890,7 @@ ml(0,ml(1),[
                  
 function injectFN(zip_url_base){
     
+        
     [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
     
     [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
@@ -927,9 +934,9 @@ function injectFN(zip_url_base){
                         update.setRequestHeader('Content-type', 'text/plain');
                         
                         update.onreadystatechange = function() {//Call a function when the state changes.
-                        }
+                        };
                         update.onerror = function() {//Call a function when the state changes.
-                        }
+                        };
                         
                         update.send(new Blob([content], {type: 'text/plain'}));
                     }
@@ -1006,6 +1013,8 @@ function injectFN(zip_url_base){
             { Window: [  ] }
         );
     });
+    
+    
     
     
 
