@@ -1268,7 +1268,7 @@ function injectFN(zip_url_base){
                    keys.filter(function(k){
                        return /^update\:\/\//.test(k);
                    }).forEach(function(k){
-                       updatedUrls[k.replace(/^update\:\/\//,'https://') ]=true;
+                       updatedUrls[ k.replace(/^update\:\/\//,'https://') ]=true;
                    });
                    cb(updatedUrls);
                 });
