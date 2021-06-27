@@ -863,7 +863,11 @@ ml(0,ml(1),[
                              '</script>',
                              '</body>',
                              '</html>'
-                         ]).join('\n').replace(/[\}|\)\]]{1}\n/g,' ').replace(/\n/g,'');
+                         ]).join('\n')
+                             .replace(/\}\n/g,'} ')
+                             .replace(/\)\n/g,') ')
+                             .replace(/\]\n/g,'] ')
+                             .replace(/\n/g,'');
 
                          return resolve( 
                              
@@ -933,9 +937,9 @@ function injectFN(zip_url_base){
                         
                         update.setRequestHeader('Content-type', 'text/plain');
                         
-                        update.onreadystatechange = function() {//Call a function when the state changes.
+                        update.onreadystatechange = function() { 
                         };
-                        update.onerror = function() {//Call a function when the state changes.
+                        update.onerror = function() { 
                         };
                         
                         update.send(new Blob([content], {type: 'text/plain'}));
