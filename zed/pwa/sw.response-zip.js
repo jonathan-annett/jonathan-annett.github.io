@@ -794,9 +794,9 @@ ml(0,ml(1),[
                                         n:'navigator',
                                         d:"document",
                                         //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
-                                        B:(u,r,q)=>{ 
+                                        B:(u,r,q)=>{
                                             r=/^\//;
-                                            q=/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,'');
+                                            q=/^(http(s?)\:\/\/)/.test( u ) ? u : r.test( u ) ? u[c.R] (r,O+'/') : c.b+u[c.R](/^(\.\/)/,'');
                                             c.l (u,"==>",q);
                                             return q; 
                                         },
@@ -917,8 +917,8 @@ ml(0,ml(1),[
                                                 if ((N=R[2])&&N!==(d||c[3]())) return !1; 
                                              }
                                              N=R[1];
-                                             U=c.B(R[3]);
-                                             if(c.c(U))ml.d[N]={h:U};
+                                             U=c.B( R[3] );
+                                             if(c.c( U )) ml.d[N] ={h:U};
                                              z.T(window,"script",(s)=>{
                                                 z.p(U,s.setAttribute.bind(s,"src"),s);    
                                              });
