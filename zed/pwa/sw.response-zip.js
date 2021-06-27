@@ -797,7 +797,7 @@ ml(0,ml(1),[
                                         B:(u,r,q)=>{
                                             r=/^\//;
                                             q=/^(http(s?)\:\/\/)/.test( u ) ? u : r.test( u ) ? u[c.R] (r,O+'/') : c.b+u[c.R](/^(\.\/)/,'');
-                                            c.l (u,"==>",q);
+                                            console.log (u,"==>",q);
                                             return q; 
                                         },
                                 
