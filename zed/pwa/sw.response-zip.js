@@ -797,7 +797,7 @@ ml(0,ml(1),[
                                         B:(u,r,q)=>{
                                             r=/^\//;
                                             q=/^(http(s?)\:\/\/)/.test( u ) ? u : r.test( u ) ? u[c.R] (r,O+'/') : c.b+u[c.R](/^(\.\/)/,'');
-                                            console.log (u,"==>",q);
+                                            console.log (u,"==>",q );
                                             return q; 
                                         },
                                 
@@ -918,7 +918,7 @@ ml(0,ml(1),[
                                              }
                                              N=R[1];
                                              U=c.B( R[3] );
-                                             if(c.c( U )) ml.d[N] ={h:U};
+                                             if(c.c( U )) ml.d[N] = {h:U};
                                              z.T(window,"script",(s)=>{
                                                 z.p(U,s.setAttribute.bind(s,"src"),s);    
                                              });
