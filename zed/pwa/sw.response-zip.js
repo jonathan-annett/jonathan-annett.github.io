@@ -864,6 +864,7 @@ ml(0,ml(1),[
                              '</body>',
                              '</html>'
                          ]).join('\n')
+                             .replace(/\n\s/g,'\n ')
                              .replace(/\}\n/g,'} ')
                              .replace(/\)\n/g,') ')
                              .replace(/\]\n/g,'] ')
