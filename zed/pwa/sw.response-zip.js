@@ -786,7 +786,7 @@ ml(0,ml(1),[
                                         r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
                                         //c.b=document base
                                         b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
-                                        c:(u)=>u.startsWith(c.b),
+                                        c:(u)=>u.startsWith(O),
                                         //c.R=shortcut to replace keyword
                                         R:'replace',
                                         f:'forEach',
@@ -926,7 +926,7 @@ ml(0,ml(1),[
                                        },
                                        
                                        //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
-                                       y:(x)=>!!x,
+                                       y:(x)=>!!x ,
                                          
                                        //z.s = create and append empty script element
                                        s:(d,S,C)=>{s = z.E(d,S);s.type = "text/java"+S;C(z.A(d,s));},
