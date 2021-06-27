@@ -820,8 +820,8 @@ ml(0,ml(1),[
                            '    background-size: 10px 10px;',
                             '}',
                            
-                           'a span.edited {',
-                           '  background-color: #101010;',
+                           'li.edited  {',
+                           '  background-color: #ffe3e3;',
                            
                            '}',
                            'a span.edited {',
@@ -855,12 +855,12 @@ ml(0,ml(1),[
                                  const edited =   updatedUrls[ updated_prefix+filename ] ? '<span class="edited">&nbsp;</span>' : '';
                                  const edited_class = updatedUrls[ updated_prefix+filename ] ? ' class="edited"' : ''
 
-                                 const zedBtn =   fileIsEditable(filename)   ? ['<a'+edited_class+' data-filename="'+filename+'"><span class="editinzed">&nbsp;</span>',  edited+'</a>' ] 
-                                                : filename.endsWith(".zip")  ? ['<a'+edited_class+' href="/'+uri+'/'+filename+'"><span class="zipfile">&nbsp;</span>',    edited+'</a>' ]   
-                                                :                              ['<a'+edited_class+' data-filename="'+filename+'"><span class="normal">&nbsp;</span>',     edited+'</a>' ] ;
+                                 const zedBtn =   fileIsEditable(filename)   ? ['<a data-filename="'+filename+'"><span class="editinzed">&nbsp;</span>',  edited+'</a>' ] 
+                                                : filename.endsWith(".zip")  ? ['<a href="/'+uri+'/'+filename+'"><span class="zipfile">&nbsp;</span>',    edited+'</a>' ]   
+                                                :                              ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',     edited+'</a>' ] ;
                                  
                                  
-                                 return '<li>' + parent_link +'/' +linkit("/"+uri+"/"+filename,filename,zedBtn) + '</li>';
+                                 return '<li'+edited_class+'>' + parent_link +'/' +linkit("/"+uri+"/"+filename,filename,zedBtn) + '</li>';
                               }),
                              
                          [
