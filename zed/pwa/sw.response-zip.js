@@ -1266,9 +1266,9 @@ function injectFN(zip_url_base){
                   getForageKeys(function(err,keys){
                    updatedUrls={};
                    keys.filter(function(k){
-                       return /^updates\:\/\//.test(k);
+                       return /^update\:\/\//.test(k);
                    }).forEach(function(k){
-                       updatedUrls[k.replace(/^updates\:\/\//,'https://') ]=true;
+                       updatedUrls[k.replace(/^update\:\/\//,'https://') ]=true;
                    });
                    cb(updatedUrls);
                 });
