@@ -757,7 +757,8 @@ ml(0,ml(1),[
                               
                           parent_link=parent_link.replace(/\/\//g,'/');
            
-                         
+                         const updated_prefix = url + "/" ;
+                                 
                         
                          const html = [ 
                          '<html>',
@@ -847,9 +848,14 @@ ml(0,ml(1),[
                          ].concat (
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
-                                 const zedBtn =   fileIsEditable(filename)   ? ['<a data-filename="'+filename+'"><span class="editinzed">&nbsp;</span>',  '</a>'] 
-                                                : filename.endsWith(".zip")  ? ['<a href="/'+uri+'/'+filename+'"><span class="zipfile">&nbsp;</span>',    '</a>']   
-                                                :                              ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',     '</a>'] ;
+                                 
+                                 const edited =   updatedUrls[ updated_prefix+filename ] ? '<span class="normal">&nbsp;</span>' : '';
+
+                                 const zedBtn =   fileIsEditable(filename)   ? ['<a data-filename="'+filename+'"><span class="editinzed">&nbsp;</span>',  '</a>'+edited ] 
+                                                : filename.endsWith(".zip")  ? ['<a href="/'+uri+'/'+filename+'"><span class="zipfile">&nbsp;</span>',    '</a>'+edited ]   
+                                                :                              ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',     '</a>'+edited ] ;
+                                 
+                                 
                                  return '<li>' + parent_link +'/' +linkit("/"+uri+"/"+filename,filename,zedBtn) + '</li>';
                               }),
                              
