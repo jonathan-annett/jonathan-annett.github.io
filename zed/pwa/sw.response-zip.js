@@ -619,6 +619,7 @@ ml(0,ml(1),[
                        subzip_filepath   = subzip ? parts.slice(2).join('.zip/')     : false;
                        
                  return new Promise(function (resolve,reject){
+                     
                      getZipObject(zip_url,function(err,zip,zipFileMeta) {
                          
                          if (err)  throw err;
@@ -644,18 +645,14 @@ ml(0,ml(1),[
                         
                          
                          const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
-                         
-                         
-                         
-                         
+
                          if (   !update_needed      && 
                                 !subzip             &&
                                  (
                                      (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag)) ||
                                      (ifModifiedSince &&  (safeDate(ifModifiedSince,fileEntry.date) <  fileEntry.date) )
-                                 
                                  )
-                             ) {
+                            ) {
                              return response304 (resolve,fileEntry);
                          }
                          
@@ -696,7 +693,7 @@ ml(0,ml(1),[
                                  return response200 (resolve,buffer,fileEntry);
                                  
                               });
-                                
+                              
                      });
                  });
              }
@@ -962,7 +959,8 @@ ml(0,ml(1),[
 
              function doFetchZipUrl(request) {
                      
-                 const url             = request.url, parts = url.split('.zip/');
+                 const url             = request.url; 
+                 const parts           = url.split('.zip/');
                  const ifNoneMatch     = request.headers.get('If-None-Match');
                  const ifModifiedSince = request.headers.get('If-Modified-Since');
                  
