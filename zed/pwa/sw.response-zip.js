@@ -1324,9 +1324,9 @@ ml(0,ml(1),[
                  const url = request.url;     
                  db.getItem(url,function(err,args){
                      if (err||!Array.isArray(args)) {
-                         const promise = doFetchZipUrl(event.request);
+                         const promise = doFetchZipUrl(request);
                          if (promise) return promise.then(resolve).catch(reject);
-                         return fetch(event.request).then(resolve).catch(reject);
+                         return fetch(request).then(resolve).catch(reject);
                      } else {
                          resolve(new Response(args[0],{status:200,headers:new Headers(args[1])}));
                      }
