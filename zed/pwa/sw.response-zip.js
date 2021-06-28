@@ -731,7 +731,7 @@ ml(0,ml(1),[
                              if (split.length===1) return split[0]+'/'+ a_wrap.join(last);
                              return split.join("/")+'/'+ a_wrap.join(last);
                          };
-                         const boldit=function(uri,disp){ 
+                         const boldit=function(uri,disp){
                              const split=(disp||uri).split("/");
                              if (split.length===1) return '<b>'+(disp||uri)+'</b>';
                              const last = split.pop();
@@ -742,7 +742,7 @@ ml(0,ml(1),[
                           if (uri_split.length===1) {
                               const xx = uri_split[0].split("/"),yy=xx.pop();
                               parent_link = xx.join("/")+'/<b>'+yy+'</b>' ;
-                          } 
+                          }
                           parent_link += uri_split.map(function(e,i,a){
                               
                                   if (i===0) return '';
@@ -750,7 +750,8 @@ ml(0,ml(1),[
                                   const prev_href = a.slice(0,i-1).join('');
                                   const disp = href.substr(prev_href.length);
                                   return (i<a.length-1 ?linkit : boldit)(href,disp);
-                              }) .join("/");
+                              }
+                          ) .join("/");
                               
                               
                           parent_link=parent_link.replace(/\/\//g,'/');
@@ -785,6 +786,7 @@ ml(0,ml(1),[
                               });
                          
                          const html = [ 
+                         '<!DOCTYPE html>',
                          '<html>',
                          '<!-- url='+url+' -->',
                          '<!-- uri='+uri+' -->',
