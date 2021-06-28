@@ -725,6 +725,13 @@ ml(0,ml(1),[
                              return i===a.length-1?'/'+x:'/'+x+'.zip';
                          });
                          
+                         const top_uri = uri_split[0]+'.zip';
+                         
+                         //const top_uri_re = new RegExp( 
+                          //   top_uri.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'),'g'
+                         //);
+                         
+
                          const uri_full_split = uri_split.map(function(x,i,a){
                              return a.slice(0,i+1).join("");
                          });
@@ -750,7 +757,9 @@ ml(0,ml(1),[
                          parent_link = uri_full_split.map(function(href,i,a){
                              const parts = href.split('/.zip');
                              const disp  = parts.length===1?undefined:parts.pop();
-                             return (href.endsWith(uri)?boldit:linkit) (href,disp);
+                             const res = (href.endsWith(uri)?boldit:linkit) (href,disp);
+                             return i===0 ? res: res.replace(top_uri_re,'');
+                             
                          }).join("");
                         
                          const updated_prefix = url + "/" ;
@@ -782,7 +791,8 @@ ml(0,ml(1),[
                                  return '<li'+li_class+'>' + parent_link +'/' +linkit(full_uri,filename,zedBtn) + '</li>';
                               });
                          
-                         const html = [ 
+                         const html = [
+                             
                          '<!DOCTYPE html>',
                          '<html>',
                          '<!-- url='+url+' -->',
