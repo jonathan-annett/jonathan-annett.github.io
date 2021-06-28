@@ -726,7 +726,7 @@ ml(0,ml(1),[
                          });
                          
                          const uri_full_split = uri_split.map(function(x,i,a){
-                             return a.slice(0,i).join("/");
+                             return a.slice(0,i+1).join("/");
                          });
                          
                          var parent_link="";
