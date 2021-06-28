@@ -725,10 +725,17 @@ ml(0,ml(1),[
                              return i===a.length-1?'/'+x:'/'+x+'.zip';
                          });
                          
-                         const top_uri_re = new RegExp( 
-                             uri_split[0]+"/".replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'),'g'
-                         );
+                         const top_uri_res = uri_split.map(function(uri){ 
+                             return new RegExp( uri_split[0]+"/".replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'),'g');
+                         });
                          
+                         const cleanup_links = function(str) {
+                             top_uri_res.forEach(function(re){
+                                 str = str.replace(re,'/');
+                             });
+                             return str;
+                         };
+                          
 
                          const uri_full_split = uri_split.map(function(x,i,a){
                              return a.slice(0,i+1).join("");
@@ -760,7 +767,7 @@ ml(0,ml(1),[
                          }).join("");
                          
                          
-                         parent_link = parent_link.replace(top_uri_re,'/');
+                         parent_link = cleanup_links(parent_link);
                         
                          const updated_prefix = url + "/" ;
                                  
