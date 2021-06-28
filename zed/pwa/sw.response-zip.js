@@ -748,7 +748,9 @@ ml(0,ml(1),[
                          
                          
                          parent_link = uri_full_split.map(function(href,i,a){
-                             return (uri===href?boldit:linkit) (href);
+                             const parts = href.split('/.zip');
+                             const disp  = parts.length===1?undefined:parts.pop();
+                             return (uri===href?boldit:linkit) (href,disp);
                          }).join("");
                         
                          const updated_prefix = url + "/" ;
