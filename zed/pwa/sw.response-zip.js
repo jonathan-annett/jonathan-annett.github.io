@@ -52,6 +52,7 @@ ml(0,ml(1),[
       
               
              const lib = {
+                 processFetchRequest      : processFetchRequest,
                  fetchZipEvent            : fetchZipEvent,
                  unzipFile                : unzipFile,
                  fetchUpdatableZipURL     : fetchUpdatableZipURL,
@@ -78,6 +79,24 @@ ml(0,ml(1),[
              });
              
              
+             
+             function processFetchRequest(event) {
+                 
+                 const chain = [ fetchUpdatableZipURL, fetchZipEvent  ];
+                 
+                 while (chain.length>0) {
+                     
+                   const handler = chain.shift();
+                   
+                   const promise = handler(event);
+                   
+                   if (promise) {
+                       return event.waitUntil(promise)
+                   }
+                     
+                 }
+                 
+             }
              
              function openUrl(url,cb) {
                  
@@ -987,13 +1006,6 @@ ml(0,ml(1),[
                  }
              }
              
-             function fetchZipEvent(event) {
-                const promise = doFetchZipUrl(event.request);
-                if (promise) {
-                    event.respondWith( promise ); 
-                }
-             }
-             
              function internalErrorEvent (event) {
                  event.respondWith( Promise.resolve(new Response('', {
                                                     status: 500,
@@ -1003,6 +1015,18 @@ ml(0,ml(1),[
                                                     })}))); 
              }
              
+            
+             
+             
+             function fetchZipEvent(event) {
+                 
+                return  doFetchZipUrl(event.request);
+                
+                
+             }
+             
+             
+             
              //note - this also lets you proxy any url, not just zip file contents.
              function fetchUpdatableZipURL(event){
                  const 
@@ -1011,69 +1035,58 @@ ml(0,ml(1),[
                  method = event.request.method,
                  methodPromiseRecipies = {
                      GET    : toFetchUrl,
-                     POST   : toReturnAnError,
                      UPDATE : toUpdateUrl
-                 },
-                 nextHandlers = {
-                     GET    : fetchZipEvent,
-                     POST   : internalErrorEvent,
-                     UPDATE : updateEvent,
                  },
                  toProcessRequest = methodPromiseRecipies[method];
                  
-                 if (!updatedUrls) {
-                      // first time, we need to do some async setup...
-                      // when this setup is complete, the promise "toProcessRequest" will be fullfilled
-                      return getCacheList ();
-                 } 
-
-                 if(updatedUrls[url]) {
-                     // obviously not the first time, (ie prevous line did not return)
-                     // so we can respond with a new promise to process the request
+                 if (toProcessRequest) {
+                 
+                     if (!updatedUrls) {
+                          // first time, we need to do some async setup...
+                          // when this setup is complete, the promise "toProcessRequest" will be fullfilled
+                          
+                          return new Promise ( toGetListAndProcessRequest );
+                          
+                     } 
+    
+                     if(updatedUrls[url]) {
+                         // obviously not the first time, (ie prevous line did not return)
+                         // so we can respond with a new promise to process the request
+                        
+                            return new Promise( toProcessRequest ) ;
+                          
+                     }
                      
-                    return event.respondWith (/* A */ new Promise( toProcessRequest ) );
-
-                 } else {
-                     return nextHandlers[method](event) ;
                  }
                  
-                 function getCacheList ( ) {
+                 
+                 function toGetListAndProcessRequest(resolve, reject){
                      // the task of fetching the list happens out of band
                      // so we need to tell the event to wait for it
                      // next time we'll have a cached list to let us syncrononously 
                      // determine if the there is a replacment response for a given url.
-                     
-                     return event.respondWith (
+                   
+                     loadUpdatedURLList (function(updatedUrls){
                          
-                         new Promise(function(resolve,reject) {
-                             
-                             loadUpdatedURLList (function(updatedUrls){
-                                 
-                                // ok now we have a list for next time, 
-                                // let's see if this url is in the list and if so, fetch it
-                                // otherwise punt the request via doFetchZipUrl to fetch.
-                                // since we are aloread inside a pending promise , we need to manually handle them
-                                
-                                if(updatedUrls[url]) {
-                                    
-                                    return toProcessRequest(resolve,reject);
-                                    
-                                } else {
-                                    
-                                    const promise = doFetchZipUrl(event.request);
-                                    if (promise) return promise.then(resolve).catch(reject);
-                                    return fetch(event.request).then(resolve).catch(reject);
-                                    
-                                }
+                        // ok now we have a list for next time, 
+                        // let's see if this url is in the list and if so, fetch it
+                        // otherwise punt the request via doFetchZipUrl to fetch.
+                        // since we are aloread inside a pending promise , we need to manually handle them
+                        
+                        if(updatedUrls[url]) {
                             
-                             });
-                         })
-                         
-                     );
-                 }
+                            return toProcessRequest(resolve,reject);
+                            
+                        } else {
+                            
+                            
+                            resolve();
+                            
+                        }
+                    
+                     });
+                
                  
-                 function updateEvent(event) {
-                     return event.respondWith (/* A */ new Promise( toUpdateUrl ) );
                      
                  }
                  
@@ -1106,7 +1119,7 @@ ml(0,ml(1),[
                  }
                  
                  function toFetchUrl (resolve,reject) {
-                     
+                         
                          updatedUrlSDB.getItem(url,function(err,args){
                              if (err||!Array.isArray(args)) {
                                  const promise = doFetchZipUrl(event.request);
@@ -1120,12 +1133,10 @@ ml(0,ml(1),[
                       
                  }
                  
-                 
                  function toFetchUpdatedZip(resolve,reject) {
                      
-                     
-                     
                     loadUpdatedURLList ( function( updatedUrls ) {
+                        
                        const relevantURLs = Object.keys(updatedUrls).filter(function(k){
                            return k.startsWith(url);
                        });
@@ -1147,7 +1158,8 @@ ml(0,ml(1),[
                            
                           if (i < relevantURLs.length) {
                               
-                              const file_url=relevantURLs[i],file_name = file_url.substr(url.length);
+                              const file_url  = relevantURLs[i],
+                                    file_name = file_url.substr(url.length);
                               
                               updatedUrlSDB.getItem(file_url,function(err,args){
                                   
@@ -1155,8 +1167,7 @@ ml(0,ml(1),[
                                   
                                   zip.file(
                                       file_name, 
-                                      args[0],
-                                      {
+                                      args[0],{
                                           date : args[1].date
                                       }).then (function () {
                                           loop(i+1);
