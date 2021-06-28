@@ -82,35 +82,38 @@ ml(0,ml(1),[
              
              function processFetchRequest(event) {
                  
-                 event.respondWith(new Promise(function(resolve){
+                 event.respondWith(new Promise(function(resolve,reject){
                      
                      const chain = [ fetchUpdatableZipURL, fetchZipEvent, defaultFetchEvent  ];
-                     const next = function () {
-                         
-                         if (chain.length===0) {
+                     const next = function (handler) {
+                         if (!handler) {
                              console.log("could not find for",event.request.url); 
                              return ;
                          }
-                         const handler = chain.shift();
+                         
                          console.log("trying",handler.name,"for",event.request.url);
                          const promise = handler(event);
                          
                          if (promise) {
                             console.log(handler.name,"is working..."); 
                             promise.then(function(response){
-                                if (response) {
-                                    console.log(handler.name,"returned a response for",event.request.url); 
-                            
-                                    return resolve(response);
-                                }
-                                return next();
+                                if (!response) return next(chain.shift()); 
+                                    
+                                console.log(handler.name,"returned a response for",event.request.url); 
+                                chain.spice(0,chain.length);
+                                resolve(response);
+
+                            }).catch (function(err){
+                                
+                                chain.spice(0,chain.length);
+                                reject(err);
                             });
                            
                          }
                          
                      };
                      
-                     next(); 
+                     next(chain.shift()); 
                  }));
 
              }
