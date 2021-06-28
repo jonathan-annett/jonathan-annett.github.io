@@ -726,7 +726,7 @@ ml(0,ml(1),[
                          });
                          
                          const top_uri_res = uri_split.map(function(uri){ 
-                             return new RegExp( uri_split[0]+"/".replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'),'g');
+                             return new RegExp( uri+"/".replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'),'g');
                          });
                          
                          const cleanup_links = function(str) {
