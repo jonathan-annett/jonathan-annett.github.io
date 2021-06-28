@@ -109,6 +109,8 @@ ml(0,ml(1),[
                                 reject(err);
                             });
                            
+                         } else {
+                             next(chain.shift()); 
                          }
                          
                      };
