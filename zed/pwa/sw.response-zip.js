@@ -1,4 +1,4 @@
-/* global ml,self, JSZipUtils,JSZip,dbLocalForage,Response,Headers,BroadcastChannel */
+/* global ml,self, JSZipUtils,JSZip,localforage,Response,Headers,BroadcastChannel */
 
 ml(0,ml(1),[ 
     
@@ -47,20 +47,9 @@ ml(0,ml(1),[
         
         
         return function (dbKeyPrefix) {
-              
-             const {
-                  
-                  localForageKeyKiller,
-                  setForageKey,
-                  getForageKey,
-                  removeForageKey,
-                  getForageKeys,
-                  clearForage
-                  
-             } = dbLocalForage(dbKeyPrefix);
              
-             const updatedUrlKey  = modifyURLprotocol.bind(this,"update");
-             const zipmetadatakey = modifyURLprotocol.bind(this,"meta");
+             
+      
               
              const lib = {
                  fetchZipEvent            : fetchZipEvent,
@@ -73,6 +62,22 @@ ml(0,ml(1),[
              const openZipFileCache = { };
              
              var updatedUrls ;
+             
+             
+             
+             var updatedUrlSDB = localforage.createInstance({
+               name: "updatedURLS"
+             });
+             
+             var openZipsDB = localforage.createInstance({
+               name: "openZips"
+             });
+             
+             var zipMetadataDB = localforage.createInstance({
+               name: "zipMetadata"
+             });
+             
+             
              
              function openUrl(url,cb) {
                  
@@ -136,7 +141,8 @@ ml(0,ml(1),[
                      if (buffer) {
                          // this is a subzip,so the buffer is not stored in forage
                          // we do however store the metadata for it
-                         return getForageKey(zipmetadatakey(url),function(err,zipFileMeta){
+                         
+                         return zipMetadataDB.getItem(url,function(err,zipFileMeta){
                              
                               if (zipFileMeta) {
                                  return cb(undefined,buffer,zipFileMeta);
@@ -151,11 +157,11 @@ ml(0,ml(1),[
                      }
                  }
                  
-                 getForageKey(zipbufferkey(url),function(err,buffer){
+                 openZipsDB.getItem(url,function(err,buffer){
                      
                      if (err || ! buffer) return download();                    
                      
-                     getForageKey(zipmetadatakey(url),function(err,zipFileMeta){
+                     zipMetadataDB.getItem(url,function(err,zipFileMeta){
                          if (err || ! zipFileMeta) return download();                    
                          cb(undefined,buffer,zipFileMeta);
                      });
@@ -202,7 +208,7 @@ ml(0,ml(1),[
                            
                            setMetadataForBuffer(buffer,etag,safeDate(response.headers.get('Last-Modified'),new Date()),function(err,buffer,zipFileMeta){
                                if (err) return cb(err);
-                               setForageKey(zipbufferkey(url),buffer,function(err){
+                               openZipsDB.setItem(url,buffer,function(err){
                                    
                                  if (err) return cb(err);
                                  cb(undefined,buffer,zipFileMeta);
@@ -233,7 +239,7 @@ ml(0,ml(1),[
                          date:date||new Date()
                      };
                      
-                       setForageKey(zipmetadatakey(url),zipFileMeta,function(err){
+                       zipMetadataDB.setItem(url,zipFileMeta,function(err){
                            
                              if (err) return cb(err);
                              
@@ -317,7 +323,7 @@ ml(0,ml(1),[
                              // this also "invents" etags for each file inside
                              // we do this once, on first open.
             
-                             setForageKey(zipmetadatakey(url),addFileMetaData(zip,zipFileMeta,url),function(err){
+                             zipMetadataDB.setItem(url,addFileMetaData(zip,zipFileMeta,url),function(err){
                                  
                                 if (err) return cb(err);
             
@@ -575,7 +581,7 @@ ml(0,ml(1),[
                                 zipFileMeta.updating = setTimeout(function(){
                                     // in 10 seconds this and any other metadata changes to disk
                                     delete zipFileMeta.updating;
-                                    setForageKey(zipmetadatakey(zip_url),zipFileMeta,function(){
+                                    zipMetadataDB.setItem(zip_url,zipFileMeta,function(){
                                         console.log("updated zip entry",zip_url);
                                     });
                                     
@@ -674,7 +680,7 @@ ml(0,ml(1),[
                                      zipFileMeta.updating = setTimeout(function(){
                                          // in 10 seconds this and any other metadata changes to disk
                                          delete zipFileMeta.updating;
-                                         setForageKey(zipmetadatakey(zip_url),zipFileMeta,function(){
+                                         zipMetadataDB.getItem(zip_url,zipFileMeta,function(){
                                              console.log("updated zip entry",zip_url);
                                          });
                                          
@@ -1101,8 +1107,7 @@ ml(0,ml(1),[
                  
                  function toFetchUrl (resolve,reject) {
                      
-                         
-                         getForageKey(updatedUrlKey(url),function(err,args){
+                         updatedUrlSDB.getItem(url,function(err,args){
                              if (err||!Array.isArray(args)) {
                                  const promise = doFetchZipUrl(event.request);
                                  if (promise) return promise.then(resolve).catch(reject);
@@ -1144,7 +1149,7 @@ ml(0,ml(1),[
                               
                               const file_url=relevantURLs[i],file_name = file_url.substr(url.length);
                               
-                              getForageKey(updatedUrlKey(file_url),function(err,args){
+                              updatedUrlSDB.getItem(file_url,function(err,args){
                                   
                                   if (err) return reject(err);
                                   
@@ -1201,7 +1206,7 @@ ml(0,ml(1),[
                      
                      url = full_URL(location.origin,url);
                      getPayload(function(payload){
-                         setForageKey(updatedUrlKey(url),payload,function(err){
+                         updatedUrlSDB.setItem(url,payload,function(err){
                             if (err) return cb(err);
                             updatedUrls[url]=true;
                             cb();
@@ -1238,7 +1243,7 @@ ml(0,ml(1),[
                  
                  function removeUrlContents() {
                      url = full_URL(location.origin,url);
-                     removeForageKey(updatedUrlKey(url),function(err){
+                     updatedUrlSDB.removeItem(url,function(err){
                         if (err) return cb(err);
                         delete updatedUrls[url];
                         cb();
@@ -1248,12 +1253,10 @@ ml(0,ml(1),[
              }
              
              function loadUpdatedURLList ( cb ) {
-                  getForageKeys(function(err,keys){
+                   updatedUrlSDB.keys(function(err,keys){
                    updatedUrls={};
-                   keys.filter(function(k){
-                       return /^update\:\/\//.test(k);
-                   }).forEach(function(k){
-                       updatedUrls[ k.replace(/^update\:\/\//,'https://') ]=true;
+                   keys.forEach(function(k){
+                       updatedUrls[ k ]=true;
                    });
                    cb(updatedUrls);
                 });
