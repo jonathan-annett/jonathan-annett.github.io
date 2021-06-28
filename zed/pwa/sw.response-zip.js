@@ -88,7 +88,7 @@ ml(0,ml(1),[
                          
                         // on first call, go ahead and get keys from localforage
                         getKeys(function(err,ks){
-                            if(!err&&keys) keys=ks;
+                            if(!err&&ks) keys=ks;
                         });
                         
                         db.getItem= function(k,cb) {
@@ -111,8 +111,8 @@ ml(0,ml(1),[
                                        // now are keys ready yet?
                                        if (!keys){
                                            // no -try to  get them again
-                                           getKeys(function(err,kys){
-                                               if(!err&&keys) keys=kys;
+                                           getKeys(function(err,ks){
+                                               if(!err&&ks) keys=ks;
                                            });
                                        }
                               });
@@ -129,8 +129,8 @@ ml(0,ml(1),[
                                    cb() ;
                                } else {
                                    
-                                   getKeys(function(err,kys){
-                                       if(!err&&keys) keys=kys;
+                                   getKeys(function(err,ks){
+                                       if(!err&&ks) keys=ks;
                                        cb() ;
                                    });
                                }
@@ -146,8 +146,8 @@ ml(0,ml(1),[
                                  if (i>=0) keys.splice(i,1); 
                                  cb() ;
                                } else {
-                                   getKeys(function(err,kys){
-                                       if(!err&&keys) keys=kys;
+                                   getKeys(function(err,ks){
+                                       if(!err&&ks) keys=ks;
                                        cb() ;
                                    });
                                }
@@ -158,9 +158,9 @@ ml(0,ml(1),[
                             
                             if (keys) return cb (undefined,keys);
                             
-                            getKeys(function(err,kys){
+                            getKeys(function(err,ks){
                                 if (err) return cb(err);
-                                cb(undefined,keys=kys);
+                                cb(undefined,keys=ks);
                             });
                             
                         };
@@ -914,7 +914,7 @@ ml(0,ml(1),[
                      const re = new RegExp(  "^"+ regexpEscape(url+"/"),'g');
                      return databases.updatedURLS.allKeys().some(re.test.bind(re));
                  } else {
-                    return databases.updatedURLS.keyExists( url );
+                    return databases.updatedURLS.keyExists( url, false );
                  }
              }
              
