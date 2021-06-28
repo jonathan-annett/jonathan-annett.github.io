@@ -84,7 +84,7 @@ ml(0,ml(1),[
                  
                  const chain = [ fetchUpdatableZipURL, fetchZipEvent, defaultFetchEvent  ];
                  
-                 event.waitUntil(function(resolve,reject){
+                 event.waitUntil(new Promise(function(resolve,reject){
                      
                      const next = function () {
                          
@@ -107,7 +107,7 @@ ml(0,ml(1),[
                      };
                      
                      next(); 
-                 });
+                 }));
 
              }
              
