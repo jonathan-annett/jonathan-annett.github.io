@@ -82,7 +82,7 @@ ml(0,ml(1),[
              
              function processFetchRequest(event) {
                  
-                 event.repsondWith(new Promise(function(resolve){
+                 event.respondWith(new Promise(function(resolve){
                      
                      const chain = [ fetchUpdatableZipURL, fetchZipEvent, defaultFetchEvent  ];
                      const next = function () {
