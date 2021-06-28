@@ -726,7 +726,7 @@ ml(0,ml(1),[
                          });
                          
                          const uri_full_split = uri_split.map(function(x,i,a){
-                             return a.slice(0,i+1).join("/");
+                             return a.slice(0,i+1).join("");
                          });
                          
                          var parent_link="";
@@ -750,7 +750,7 @@ ml(0,ml(1),[
                          parent_link = uri_full_split.map(function(href,i,a){
                              const parts = href.split('/.zip');
                              const disp  = parts.length===1?undefined:parts.pop();
-                             return (uri===href?boldit:linkit) (href,disp);
+                             return (href.endsWith(uri)?boldit:linkit) (href,disp);
                          }).join("");
                         
                          const updated_prefix = url + "/" ;
