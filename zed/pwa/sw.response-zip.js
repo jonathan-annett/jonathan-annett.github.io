@@ -253,6 +253,7 @@ ml(0,ml(1),[
                                     });
                                
                                 } else {
+                                    console.log("not caching",url,"status",response.status,"from",event.request.referrer)
                                     resolve(response);
                                 }
                            })
