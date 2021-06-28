@@ -856,9 +856,9 @@ ml(0,ml(1),[
                                  const edited       = updatedUrls[ updated_prefix+filename ] ? '<span class="edited"'+edited_attr+'>&nbsp;</span>' : '';
                                  const edited_class = updatedUrls[ updated_prefix+filename ] ? ' class="edited"' : ''
                             
-                                 const zedBtn =   is_editable   ? ['<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  edited+'</a>' ] 
-                                                : is_zip        ? ['<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    edited+'</a>' ]   
-                                                :                 ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',      edited+'</a>' ] ;
+                                 const zedBtn =   is_editable   ? ['<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>'+edited ] 
+                                                : is_zip        ? ['<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>'+edited ]   
+                                                :                 ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',                       '</a>'+edited ] ;
                                  
                                  
                                  return '<li'+edited_class+'>' + parent_link +'/' +linkit(full_uri,filename,zedBtn) + '</li>';
