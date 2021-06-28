@@ -250,7 +250,7 @@ ml(0,ml(1),[
                                     const db = databases.cachedURLS;
                                     
                                     updateURLContents (url,db,buffer,function(){
-                                       toFetchUrl (url,db,resolve,reject)
+                                       toFetchUrl (db,url,resolve,reject)
                                     }); 
                                 });
                                
@@ -1319,7 +1319,7 @@ ml(0,ml(1),[
            
              
              
-             function toFetchUrl (url,db,resolve,reject) {
+             function toFetchUrl (db,url,resolve,reject) {
                      
                  db.getItem(url,function(err,args){
                      if (err||!Array.isArray(args)) {
