@@ -758,7 +758,7 @@ ml(0,ml(1),[
                              const parts = href.split('/.zip');
                              const disp  = parts.length===1?undefined:parts.pop();
                              const res = (href.endsWith(uri)?boldit:linkit) (href,disp);
-                             return i===0 ? res: res.replace(top_uri_re,'');
+                             return i===0 ? res: res.replace(top_uri,'');
                              
                          }).join("");
                         
