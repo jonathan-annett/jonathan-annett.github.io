@@ -239,7 +239,8 @@ ml(0,ml(1),[
                          const url = event.request.url;
                          const shouldCache = url.startsWith(location.origin) ||  event.request.referrer && event.request.referrer.startsWith(location.origin);
                          
-                         fetchBufferViaCorsIfNeeded(url,function(buffer,status,ok,headers){
+                         fetchBufferViaCorsIfNeeded(url,function(err,buffer,status,ok,headers){
+                             if (err) return reject(err);
                              if (ok) {
                                     const db = databases.cachedURLS;
                                     updateURLContents (url,db,buffer,{status:status,headers:headers},function(){
