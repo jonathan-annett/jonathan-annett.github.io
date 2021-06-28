@@ -1202,10 +1202,11 @@ ml(0,ml(1),[
              function fetchUpdatedURLEvent(event){
                  const 
                  
-                 url    =  full_URL(location.origin,event.request.url);
+                 url    =  full_URL(location.origin,event.request.url),
+                 db     =  databases.updatedURLS;
                  
                  switch (event.request.method) {
-                     case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.updatedURLS,event.request) );
+                     case "GET"    : return  db.keyExists(url,true) ? new Promise ( toFetchUrl.bind(this,db,event.request) ) : undefined;
                      case "UPDATE" : return new Promise ( toUpdateUrl );
                  }
                  
