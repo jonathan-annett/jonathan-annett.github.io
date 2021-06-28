@@ -891,7 +891,7 @@ ml(0,ml(1),[
                          '</head>',
                          '<body class="disable-select">',
                          
-                         '<h1 files in '+uri+'>',
+                         '<h1> files in '+uri+',
                          
                          '<span>show full path</span><input class="fullpath_chk" type="checkbox" checked>',
                          
@@ -1277,7 +1277,7 @@ ml(0,ml(1),[
           const showPaths=document.querySelector("h1 input.fullpath_chk");
           if (showPaths) {
               showPaths.onchange = function() {
-                  document.querySelector("ul").classList[showHidden.checked?"remove":"add"]("hide_full_path");
+                  document.querySelector("ul").classList[showPaths.checked?"remove":"add"]("hide_full_path");
               };
           }
           
