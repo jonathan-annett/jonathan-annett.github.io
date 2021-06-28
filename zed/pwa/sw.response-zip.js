@@ -891,7 +891,15 @@ ml(0,ml(1),[
                          '</head>',
                          '<body class="disable-select">',
                          
-                         '<h1 files in '+uri+'><span>show full path</span><input class="fullpath_chk" type="checkbox" checked>'+ hidden_files_exist ? '<span>show hidden files</span><input class="hidden_chk" type="checkbox"></h1>' : '</h1>',
+                         '<h1 files in '+uri+'>',
+                         
+                         '<span>show full path</span><input class="fullpath_chk" type="checkbox" checked>',
+                         
+                         
+                         hidden_files_exist ? '<span>show hidden files</span><input class="hidden_chk" type="checkbox">' : '' ,
+                         
+                         
+                         '</h1>',
 
                          
                          '<div>',
