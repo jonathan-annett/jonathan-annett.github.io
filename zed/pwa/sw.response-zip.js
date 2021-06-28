@@ -776,9 +776,9 @@ ml(0,ml(1),[
                                  const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;</span>' : '';
                                  const li_class     = is_edited ? (is_hidden ? ' class="hidden edited"': ' class="edited"' ) : ( is_hidden ? ' class="hidden"' : '');
 
-                                 const zedBtn =   is_editable   ? ['<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>'+edited ] 
-                                                : is_zip        ? ['<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>'+edited ]   
-                                                :                 ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',                       '</a>'+edited ] ;
+                                 const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>' + edited ] 
+                                                : is_zip        ? [ '<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>' + edited ]   
+                                                :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + edited ] ;
                                  
                                  if (is_hidden) hidden_files_exist = true;
                                  return '<li'+li_class+'>' + parent_link +'/' +linkit(full_uri,filename,zedBtn) + '</li>';
@@ -786,6 +786,11 @@ ml(0,ml(1),[
                          
                          const html = [ 
                          '<html>',
+                         '<!-- url='+url+' -->',
+                         '<!-- uri='+uri+' -->',
+                         
+                         '<!-- parent_link='+parent_link+' -->',
+
                          '<head>',
                            '<title>files in '+uri+'</title>',
                            
