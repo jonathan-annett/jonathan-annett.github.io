@@ -739,14 +739,18 @@ ml(0,ml(1),[
                              return split.join("/")+'/<b>'+last+'</b>';
                          };
                          
-                         const isTop = uri_split.length===1;
-                          if (isTop) {
-                              const xx = uri_split[0].split("/"),yy=xx.pop();
-                              parent_link = xx.join("/")+'/<b>'+yy+'</b>' ;
-                          }
+                         // switch (uri_split.length) {
+                           //   case 1: 
+                                  const xx = uri_split[0].split("/"),yy=xx.pop();
+                                  parent_link = xx.join("/")+'/<b>'+yy+'</b>' ;
+                         //         break;
+                         //     case 2:
+                                  
+                              
+                          //}
                           parent_link += uri_split.map(function(e,i,a){
                               
-                                  if (i===0 && isTop) return '';
+                                  if (i===0) return '';
                                   const href = a.slice(0,i).join('');
                                   const prev_href = a.slice(0,i-1).join('');
                                   const disp = href.substr(prev_href.length);
