@@ -739,13 +739,14 @@ ml(0,ml(1),[
                              return split.join("/")+'/<b>'+last+'</b>';
                          };
                          
-                          if (uri_split.length===1) {
+                         const isTop = uri_split.length===1;
+                          if (isTop) {
                               const xx = uri_split[0].split("/"),yy=xx.pop();
                               parent_link = xx.join("/")+'/<b>'+yy+'</b>' ;
                           }
                           parent_link += uri_split.map(function(e,i,a){
                               
-                                  if (i===0) return '';
+                                  if (i===0 && isTop) return '';
                                   const href = a.slice(0,i).join('');
                                   const prev_href = a.slice(0,i-1).join('');
                                   const disp = href.substr(prev_href.length);
