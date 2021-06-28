@@ -245,7 +245,11 @@ ml(0,ml(1),[
                          fetchBufferViaCorsIfNeeded(url,function(err,buffer,status,ok,headers){
                              if (err) return reject(err);
                              
-                            
+                             if (status===0 && buffer.byteLength===0) {
+                                 
+                                 return fetch(url).then(resolve).catch(reject);
+                                 
+                             }
                              
                              if (ok) {
                                     const db = databases.cachedURLS;
