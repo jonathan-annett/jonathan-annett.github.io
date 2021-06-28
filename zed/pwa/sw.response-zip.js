@@ -100,12 +100,12 @@ ml(0,ml(1),[
                                 if (!response) return next(chain.shift()); 
                                     
                                 console.log(handler.name,"returned a response for",event.request.url); 
-                                chain.spice(0,chain.length);
+                                chain.splice(0,chain.length);
                                 resolve(response);
 
                             }).catch (function(err){
                                 
-                                chain.spice(0,chain.length);
+                                chain.splice(0,chain.length);
                                 reject(err);
                             });
                            
