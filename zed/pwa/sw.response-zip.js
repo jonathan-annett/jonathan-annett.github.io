@@ -197,11 +197,11 @@ ml(0,ml(1),[
                          defaultFetchEvent  ];
                      const next = function (handler) {
                          if (!handler) {
-                             console.log("could not find for",event.request.url); 
+                             console.log("could not find for",event.request.url,"from",event.request.referrer); 
                              return ;
                          }
                          
-                         console.log("trying",handler.name,"for",event.request.url);
+                         console.log("trying",handler.name,"for",event.request.url,"from",event.request.referrer);
                          const promise = handler(event);
                          
                          if (promise) {
@@ -209,7 +209,7 @@ ml(0,ml(1),[
                             promise.then(function(response){
                                 if (!response) return next(chain.shift()); 
                                     
-                                console.log(handler.name,"returned a response for",event.request.url); 
+                                console.log(handler.name,"returned a response for",event.request.url,"from",event.request.referrer); 
                                 chain.splice(0,chain.length);
                                 resolve(response);
 
