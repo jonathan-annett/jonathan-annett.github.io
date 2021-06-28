@@ -795,7 +795,7 @@ ml(0,ml(1),[
                                                 :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + edited ] ;
                                  
                                  if (is_hidden) hidden_files_exist = true;
-                                 return '<li'+li_class+'>' + parent_link +'/' +linkit(full_uri,filename,zedBtn) + '</li>';
+                                 return '<li'+li_class+'><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
                               });
                          
                          const html = [
@@ -875,7 +875,7 @@ ml(0,ml(1),[
                            
                            'ul li.hidden.edited { background-color : red; }',
                            
-                           'ul.hide_hidden li.hidden { display : none; }',
+                           'ul.hide_hidden li.hidden, ul.hide_full_path span.full_path { display : none; }',
                             
 
                             
@@ -891,11 +891,11 @@ ml(0,ml(1),[
                          '</head>',
                          '<body class="disable-select">',
                          
-                         hidden_files_exist ? '<h1>files in '+uri+' <span>show hidden files</span><input type="checkbox"></h1>' : '<h1>files in '+uri+'</h1>',
+                         '<h1 files in '+uri+'><span>show full path</span><input class="fullpath_chk" type="checkbox" checked>'+ hidden_files_exist ? '<span>show hidden files</span><input class="hidden_chk" type="checkbox"></h1>' : '</h1>',
 
                          
                          '<div>',
-                         '<ul class="hide_hidden">'
+                         '<ul class="hide_hidden hide_full_path">'
                          
                          ].concat (html_details,
                          [
@@ -1259,12 +1259,21 @@ ml(0,ml(1),[
       function directoryListingCode(zip_url_base){
           
               
-          const showHidden=document.querySelector("h1 input");
+          const showHidden=document.querySelector("h1 input.hidden_chk");
           if (showHidden) {
               showHidden.onchange = function() {
                   document.querySelector("ul").classList[showHidden.checked?"remove":"add"]("hide_hidden");
               };
           }
+          
+          const showPaths=document.querySelector("h1 input.fullpath_chk");
+          if (showPaths) {
+              showPaths.onchange = function() {
+                  document.querySelector("ul").classList[showHidden.checked?"remove":"add"]("hide_full_path");
+              };
+          }
+          
+          
               
           [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
           
