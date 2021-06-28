@@ -721,7 +721,14 @@ ml(0,ml(1),[
                          
                          const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                          const uri= urify.exec(url)[2];
-                         const uri_split = uri.split('.zip/').map(function (x,i,a){return i===a.length-1?'/'+x:'/'+x+'.zip';});
+                         const uri_split = uri.split('.zip/').map(function (x,i,a){
+                             return i===a.length-1?'/'+x:'/'+x+'.zip';
+                         });
+                         
+                         const uri_full_split = uri_split.map(function(x,i,a){
+                             return a.slice(0,i).join("/");
+                         });
+                         
                          var parent_link="";
                          const linkit=function(uri,disp,a_wrap){ 
                              a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
@@ -739,6 +746,12 @@ ml(0,ml(1),[
                              return split.join("/")+'/<b>'+last+'</b>';
                          };
                          
+                         
+                         parent_link = uri_full_split.map(function(href,i){
+                             const disp = href.substr(href.lastIndexOf("/")+1);
+                             return (uri===href?boldit:linkit) (href,disp);
+                         }).join("");
+                         /*
                          // switch (uri_split.length) {
                            //   case 1: 
                                   const xx = uri_split[0].split("/"),yy=xx.pop();
@@ -759,7 +772,7 @@ ml(0,ml(1),[
                           ) .join("/");
                               
                               
-                          parent_link=parent_link.replace(/\/\//g,'/');
+                          parent_link=parent_link.replace(/\/\//g,'/');*/
            
                          const updated_prefix = url + "/" ;
                                  
