@@ -845,16 +845,23 @@ ml(0,ml(1),[
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
                              
-                             
-                                 const edited       = updatedUrls[ updated_prefix+filename ] ? '<span class="edited" data-balloon-pos="down-left" aria-label="'+filename+' has been edited locally">&nbsp;</span>' : '';
+                                 const full_uri = "/"+uri+"/"+filename,
+                                       basename=full_uri.substr(full_uri.indexOf("/")+1);
+                                 const edited_attr  = ' data-balloon-pos="down-left" aria-label="'            + basename + ' has been edited locally"';
+                                 const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
+                                 const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
+                                 const is_editable  = fileIsEditable(filename);
+                                 const is_zip       = filename.endsWith(".zip");
+                                 //const extra_attrs  = is_editable ? (is_zip ? zip_attr : edit_attr) : '';
+                                 const edited       = updatedUrls[ updated_prefix+filename ] ? '<span class="edited"'+edited_attr+'>&nbsp;</span>' : '';
                                  const edited_class = updatedUrls[ updated_prefix+filename ] ? ' class="edited"' : ''
-
-                                 const zedBtn =   fileIsEditable(filename)   ? ['<a data-filename="'+filename+'"><span data-balloon-pos="down-left" aria-label="Edit '+filename+' in zed" class="editinzed">&nbsp;</span>',  edited+'</a>' ] 
-                                                : filename.endsWith(".zip")  ? ['<a href="/'+uri+'/'+filename+'"><span data-balloon-pos="down-left" aria-label="...explore zip contents" class="zipfile">&nbsp;</span>',    edited+'</a>' ]   
-                                                :                              ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',     edited+'</a>' ] ;
+                            
+                                 const zedBtn =   is_editable   ? ['<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  edited+'</a>' ] 
+                                                : is_zip        ? ['<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    edited+'</a>' ]   
+                                                :                 ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',      edited+'</a>' ] ;
                                  
                                  
-                                 return '<li'+edited_class+'>' + parent_link +'/' +linkit("/"+uri+"/"+filename,filename,zedBtn) + '</li>';
+                                 return '<li'+edited_class+'>' + parent_link +'/' +linkit(full_uri,filename,zedBtn,extra_attrs) + '</li>';
                               }),
                              
                          [
