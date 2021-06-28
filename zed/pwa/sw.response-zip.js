@@ -252,12 +252,12 @@ ml(0,ml(1),[
                                     updateURLContents (url,db,buffer,function(){
                                        toFetchUrl (url,db,resolve,reject)
                                     }); 
-                               });
+                                });
                                
                                
                            })
                            .catch (function(err){
-                               
+                               reject(err);
                            });
                          
                         
