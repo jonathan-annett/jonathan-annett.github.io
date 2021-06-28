@@ -176,7 +176,7 @@ ml(0,ml(1),[
                 ml.register("activate",function(event){
                     
                     console.log("activate event");
-                    self.clients.claim());
+                    self.clients.claim();
                     
                 });
                 
