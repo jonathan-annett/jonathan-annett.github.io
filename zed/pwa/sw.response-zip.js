@@ -776,6 +776,9 @@ ml(0,ml(1),[
                            'margin-block-start: 0;',
                            'margin-bottom: -16px;',
                            '}',
+                           'h1 span{',
+                           'font-size: 0.5em;',
+                           '}',
                            'a,a:visited,a:link {',
                            'color:navy;',
                            'cursor:pointer;',
@@ -840,7 +843,7 @@ ml(0,ml(1),[
                          '</head>',
                          '<body class="disable-select">',
                          
-                         '<h1>files in '+uri+'</h1>',
+                         '<h1>files in '+uri+'<input type="checkbox" checked> <span>hide . files</span></h1>',
                          '<div>',
                          '<ul class="hide_hidden">'
                          
