@@ -799,7 +799,7 @@ ml(0,ml(1),[
                                  const is_editable  = fileIsEditable(filename);
                                  const is_zip       = filename.endsWith(".zip");
                                  const is_edited    = fileisEdited( updated_prefix+filename );
-                                 //const extra_attrs  = is_editable ? (is_zip ? zip_attr : edit_attr) : '';
+                                 
                                  const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;&nbsp;&nbsp;</span>' : '';
                                  const li_class     = is_edited ? (is_hidden ? ' class="hidden edited"': ' class="edited"' ) : ( is_hidden ? ' class="hidden"' : '');
 
