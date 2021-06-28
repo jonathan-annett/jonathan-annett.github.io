@@ -1315,7 +1315,7 @@ ml(0,ml(1),[
            
              
              
-             function toFetchUrl (db,request,resolve,reject) {
+             function toFetchUrl (db,request,resolve) {
                      
                  const url = request.url;     
                  db.getItem(url,function(err,args){
