@@ -757,7 +757,33 @@ ml(0,ml(1),[
            
                          const updated_prefix = url + "/" ;
                                  
-                        
+                         let   hidden_files_exist = false;
+                         const html_details = Object.keys(zipFileMeta.files).map(function(filename){
+                                 
+                                 
+                                  
+                             
+                                 const full_uri = "/"+uri+"/"+filename,
+                                       basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
+                                 const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
+                                 const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
+                                 const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
+                                 const is_hidden    = basename.startsWith('.');
+                                 const is_editable  = fileIsEditable(filename);
+                                 const is_zip       = filename.endsWith(".zip");
+                                 const is_edited    = !!updatedUrls[ updated_prefix+filename ];
+                                 //const extra_attrs  = is_editable ? (is_zip ? zip_attr : edit_attr) : '';
+                                 const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;</span>' : '';
+                                 const li_class     = is_edited ? (is_hidden ? ' class="hidden edited"': ' class="edited"' ) : ( is_hidden ? ' class="hidden"' : '');
+
+                                 const zedBtn =   is_editable   ? ['<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>'+edited ] 
+                                                : is_zip        ? ['<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>'+edited ]   
+                                                :                 ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',                       '</a>'+edited ] ;
+                                 
+                                 if (is_hidden) hidden_files_exist = true;
+                                 return '<li'+li_class+'>' + parent_link +'/' +linkit(full_uri,filename,zedBtn) + '</li>';
+                              });
+                         
                          const html = [ 
                          '<html>',
                          '<head>',
@@ -847,38 +873,13 @@ ml(0,ml(1),[
                          '</head>',
                          '<body class="disable-select">',
                          
-                         '<h1>files in '+uri+' <span>show hidden files</span><input type="checkbox"></h1>',
+                         hidden_files_exist ? '<h1>files in '+uri+' <span>show hidden files</span><input type="checkbox"></h1>' : '<h1>files in '+uri+'</h1>',
+
+                         
                          '<div>',
                          '<ul class="hide_hidden">'
                          
-                         ].concat (
-                             
-                             Object.keys(zipFileMeta.files).map(function(filename){
-                                 
-                                 
-                                  
-                             
-                                 const full_uri = "/"+uri+"/"+filename,
-                                       basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
-                                 const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
-                                 const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
-                                 const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
-                                 const is_hidden    = basename.startsWith('.');
-                                 const is_editable  = fileIsEditable(filename);
-                                 const is_zip       = filename.endsWith(".zip");
-                                 const is_edited    = !!updatedUrls[ updated_prefix+filename ];
-                                 //const extra_attrs  = is_editable ? (is_zip ? zip_attr : edit_attr) : '';
-                                 const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;</span>' : '';
-                                 const li_class     = is_edited ? (is_hidden ? ' class="hidden edited"': ' class="edited"' ) : ( is_hidden ? ' class="hidden"' : '');
-
-                                 const zedBtn =   is_editable   ? ['<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>'+edited ] 
-                                                : is_zip        ? ['<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>'+edited ]   
-                                                :                 ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',                       '</a>'+edited ] ;
-                                 
-                                 
-                                 return '<li'+li_class+'>' + parent_link +'/' +linkit(full_uri,filename,zedBtn) + '</li>';
-                              }),
-                             
+                         ].concat (html_details,
                          [
                              
                              '</ul>',
@@ -919,9 +920,11 @@ function injectFN(zip_url_base){
     
         
     const showHidden=document.querySelector("h1 input");
-    showHidden.onchange = function() {
-        document.querySelector("ul").classList[showHidden.checked?"remove":"add"]("hide_hidden");
-    };
+    if (showHidden) {
+        showHidden.onchange = function() {
+            document.querySelector("ul").classList[showHidden.checked?"remove":"add"]("hide_hidden");
+        };
+    }
         
     [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
     
