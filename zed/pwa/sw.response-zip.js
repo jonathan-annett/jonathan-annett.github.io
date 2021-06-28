@@ -82,13 +82,13 @@ ml(0,ml(1),[
              
              function processFetchRequest(event) {
                  
-                 event.waitUntil(new Promise(function(resolve){
+                 event.repsondWith(new Promise(function(resolve){
                      
                      const chain = [ fetchUpdatableZipURL, fetchZipEvent, defaultFetchEvent  ];
                      const next = function () {
                          
                          if (chain.length===0) {
-                             console.log("could not find handler for",event.request.url); 
+                             console.log("could not find for",event.request.url); 
                              return ;
                          }
                          const handler = chain.shift();
