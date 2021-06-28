@@ -727,9 +727,9 @@ ml(0,ml(1),[
                          
                          const top_uri = uri_split[0];
                          
-                         //const top_uri_re = new RegExp( 
-                          //   top_uri.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'),'g'
-                         //);
+                         const top_uri_re = new RegExp( 
+                             top_uri.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'),'g'
+                         );
                          
 
                          const uri_full_split = uri_split.map(function(x,i,a){
@@ -759,7 +759,10 @@ ml(0,ml(1),[
                              const disp  = parts.length===1?undefined:parts.pop();
                              const res = (href.endsWith(uri)?boldit:linkit) (href,disp);
                              return res;
-                         }).join("").replace(top_uri,'');
+                         }).join("");
+                         
+                         
+                         parent_link = parent_link.replace(top_uri,'');
                         
                          const updated_prefix = url + "/" ;
                                  
