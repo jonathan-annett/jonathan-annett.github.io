@@ -244,6 +244,9 @@ ml(0,ml(1),[
                          
                          fetchBufferViaCorsIfNeeded(url,function(err,buffer,status,ok,headers){
                              if (err) return reject(err);
+                             
+                            
+                             
                              if (ok) {
                                     const db = databases.cachedURLS;
                                     updateURLContents (url,db,buffer,{status:status,headers:headers},function(){
@@ -293,7 +296,13 @@ ml(0,ml(1),[
                    function getBufferFromResponse(response) {
                          
                          response.arrayBuffer().then(function(buffer) {
-                             cb(undefined,buffer,response.status,response.ok,response.headers);
+                             
+                             const headers = {};
+                             
+                             for(var key of response.headers.keys()) {
+                                headers[key]=response.headers.get(key);
+                             }
+                             cb(undefined,buffer,response.status,response.ok,headers);
                          });
                          
                    }
