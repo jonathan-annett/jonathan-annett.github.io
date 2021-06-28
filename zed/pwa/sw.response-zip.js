@@ -893,7 +893,7 @@ ml(0,ml(1),[
                          
                          '<h1> files in '+uri,
                          
-                         '<span>show full path</span><input class="fullpath_chk" type="checkbox" checked>',
+                         '<span>show full path</span><input class="fullpath_chk" type="checkbox">',
                          
                          
                          hidden_files_exist ? '<span>show hidden files</span><input class="hidden_chk" type="checkbox">' : '' ,
