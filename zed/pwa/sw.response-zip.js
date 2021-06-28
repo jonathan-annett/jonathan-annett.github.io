@@ -920,10 +920,8 @@ ml(0,ml(1),[
                      getZipObject(url,buffer,function(err,zip,zipFileMeta) {
                          
                          if (err || !zip || !zipFileMeta) {
-                             return resolve(new Response('', {
-                               status: 404,
-                               statusText: 'Not found'
-                           }));
+                             
+                             return resolve ();
                          }
                          
                          const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
