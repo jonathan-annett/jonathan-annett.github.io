@@ -237,9 +237,12 @@ ml(0,ml(1),[
                      function(resolve,reject) {
                          
                          const url = event.request.url;
+                         const shouldCache = url.startsWith(location.origin) ||  event.request.referrer && event.request.referrer.startsWith(location.origin);
                          
                          fetch(url).then  (function(response){
-                                if (response.status===200 ) {
+                             
+                                if (response.status===200 && shouldCache ) {
+                                    
                                     response.arrayBuffer().then(function(buffer){
                                         
                                         const db = databases.cachedURLS;
