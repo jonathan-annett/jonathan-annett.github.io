@@ -82,20 +82,37 @@ ml(0,ml(1),[
              
              function processFetchRequest(event) {
                  
-                 const chain = [ fetchUpdatableZipURL, fetchZipEvent  ];
+                 const chain = [ fetchUpdatableZipURL, fetchZipEvent, defaultFetchEvent  ];
                  
-                 while (chain.length>0) {
+                 event.waitUntil(function(resolve,reject){
                      
-                   const handler = chain.shift();
-                   
-                   const promise = handler(event);
-                   
-                   if (promise) {
-                       return event.waitUntil(promise)
-                   }
+                     const next = function () {
+                         
+                         if (chain.length===0) return reject();
+                         
+                         const handler = chain.shift();
+                         const promise = handler(event);
+                         
+                         if (promise) {
+                             
+                            promise.then(function(response){
+                                if (response) {
+                                    return resolve(response);
+                                }
+                                return next();
+                            });
+                           
+                         }
+                         
+                     };
                      
-                 }
-                 
+                     next(); 
+                 });
+
+             }
+             
+             function defaultFetchEvent(event) {
+                 return fetch(event.request.url);
              }
              
              function openUrl(url,cb) {
