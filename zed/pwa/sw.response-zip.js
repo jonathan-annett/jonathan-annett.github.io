@@ -891,7 +891,7 @@ ml(0,ml(1),[
                          '</head>',
                          '<body class="disable-select">',
                          
-                         '<h1> files in '+uri+',
+                         '<h1> files in '+uri,
                          
                          '<span>show full path</span><input class="fullpath_chk" type="checkbox" checked>',
                          
