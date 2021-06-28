@@ -239,17 +239,19 @@ ml(0,ml(1),[
                          const url = event.request.url;
                          
                          fetch(url).then  (function(response){
-                                
-                                response.arrayBuffer().then(function(buffer){
-                                    
-                                    const db = databases.cachedURLS;
-                                    
-                                    updateURLContents (url,db,buffer,function(){
-                                       toFetchUrl (db,event.request,resolve,reject)
-                                    }); 
-                                });
+                                if (response.status===200 ) {
+                                    response.arrayBuffer().then(function(buffer){
+                                        
+                                        const db = databases.cachedURLS;
+                                        
+                                        updateURLContents (url,db,buffer,function(){
+                                           toFetchUrl (db,event.request,resolve,reject)
+                                        }); 
+                                    });
                                
-                               
+                                } else {
+                                    resolve();
+                                }
                            })
                            .catch (function(err){
                                reject(err);
