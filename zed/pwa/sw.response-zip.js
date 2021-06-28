@@ -79,112 +79,107 @@ ml(0,ml(1),[
                     get : function () {
                         const 
                         
-                        db         = localforage.createInstance({name:name}),
-                        getKeys    = db.keys.bind(db),
-                        getItem    = db.getItem.bind(db),
-                        setItem    = db.setItem.bind(db),
-                        removeItem = db.removeItem.bind(db);
+                        db         = localforage.createInstance({name:name});
                         let keys;
                          
                         // on first call, go ahead and get keys from localforage
-                        getKeys(function(err,ks){
+                        db.keys(function(err,ks){
                             if(!err&&ks) keys=ks;
                         });
                         
-                        db.getItem= function(k,cb) {
+                        const DB = {
+                                getItem   : function(k,cb) {
                             
-                           if (keys) {
-                               
-                               if (keys.indexOf(k)<0) {
-                                   return cb (undefined,null);
-                               }
-                               
-                               return getItem(k,function(err,v){
-                                   cb(err,v) ;
-                               });
-                               
-                           } else {
-                               // keys not ready key, just get item
-                              return getItem(k,function(err,v){
-                                       //report to caller
-                                       cb(err,v) ;
-                                       // now are keys ready yet?
-                                       if (!keys){
-                                           // no -try to  get them again
-                                           getKeys(function(err,ks){
-                                               if(!err&&ks) keys=ks;
-                                           });
-                                       }
-                              });
-                             
-                           }
-                          
-                        };
-                       
-                        db.setItem= function(k,v,cb) {
-                           return setItem(k,v,function(err){
-                               if (err) return cb(err);
                                if (keys) {
-                                   if( keys.indexOf(k)<0) keys.push(k);
-                                   cb() ;
-                               } else {
                                    
-                                   getKeys(function(err,ks){
-                                       if(!err&&ks) keys=ks;
-                                       cb() ;
+                                   if (keys.indexOf(k)<0) {
+                                       return cb (undefined,null);
+                                   }
+                                   
+                                   return db.getItem(k,function(err,v){
+                                       cb(err,v) ;
                                    });
-                               }
-                           });
-                        };
-                       
-                        db.removeItem= function(k,cb) {
-                           return removeItem(k,function(err){
-                               if (err) return cb(err);
-                               
-                               if (keys) {
-                                 const i = keys.indexOf(k);
-                                 if (i>=0) keys.splice(i,1); 
-                                 cb() ;
+                                   
                                } else {
-                                   getKeys(function(err,ks){
-                                       if(!err&&ks) keys=ks;
-                                       cb() ;
-                                   });
+                                   // keys not ready key, just get item
+                                  return db.getItem(k,function(err,v){
+                                           //report to caller
+                                           cb(err,v) ;
+                                           // now are keys ready yet?
+                                           if (!keys){
+                                               // no -try to  get them again
+                                               db.keys(function(err,ks){
+                                                   if(!err&&ks) keys=ks;
+                                               });
+                                           }
+                                  });
+                                 
                                }
-                           });
+                              
+                            },
+                                setItem   : function(k,v,cb) {
+                               return db.setItem(k,v,function(err){
+                                   if (err) return cb(err);
+                                   if (keys) {
+                                       if( keys.indexOf(k)<0) keys.push(k);
+                                       cb() ;
+                                   } else {
+                                       
+                                       db.keys(function(err,ks){
+                                           if (err) return cb(err);
+                                           keys=ks;
+                                           if( keys.indexOf(k)<0) keys.push(k);
+                                           cb() ;
+                                       });
+                                   }
+                               });
+                            },
+                                removeItem   : function(k,cb) {
+                               return db.removeItem(k,function(err){
+                                   if (err) return cb(err);
+                                   
+                                   if (keys) {
+                                     const i = keys.indexOf(k);
+                                     if (i>=0) keys.splice(i,1); 
+                                     cb() ;
+                                   } else {
+                                       db.getKeys(function(err,ks){
+                                           if(!err&&ks) keys=ks;
+                                           cb() ;
+                                       });
+                                   }
+                               });
+                            },
+                                getKeys   : function (cb) {
+                                
+                                if (keys) return cb (undefined,keys);
+                                
+                                db.keys(function(err,ks){
+                                    if (err) return cb(err);
+                                    cb(undefined,keys=ks);
+                                });
+                                
+                            },
+                                keyExists : function (k,d) {
+                                if (keys) return keys.indexOf(k)>=0;
+                                return d;
+                            },
+                                allKeys   : function (k,d) {
+                                return keys||[];
+                            }
                         };
-                        
-                        db.getKeys = function (cb) {
-                            
-                            if (keys) return cb (undefined,keys);
-                            
-                            getKeys(function(err,ks){
-                                if (err) return cb(err);
-                                cb(undefined,keys=ks);
-                            });
-                            
-                        };
-                        
-                        db.keyExists = function (k,d) {
-                            if (keys) return keys.indexOf(k)>=0;
-                            return d;
-                        }
-                        
-                        db.allKeys = function (k,d) {
-                            return keys||[];
-                        }
                         
                         // for next request, caller will be given the object by value
                         // instead of calling this getter.
                         delete databases[name];
                         Object.defineProperty(databases,name,{
-                            value : db,
+                            value : DB,
                             writable : false,
                             configurable:true,
                             enumerable:true
                         });
                         // this caller gets the object directly as a return from this getter function
-                        return db;
+                        return DB;
                     },
                     configurable:true,
                     enumerable:true
