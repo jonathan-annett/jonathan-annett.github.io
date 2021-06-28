@@ -827,6 +827,10 @@ ml(0,ml(1),[
                            '}',
                            
                            
+                           'ul li.hidden { background-color : yellow; }',
+                           
+                           'ul li.hidden.edited { background-color : red; }',
+                           
                            'ul.hide_hidden li.hidden { display : none; }',
                             
 
@@ -843,7 +847,7 @@ ml(0,ml(1),[
                          '</head>',
                          '<body class="disable-select">',
                          
-                         '<h1>files in '+uri+'<input type="checkbox" checked> <span>hide . files</span></h1>',
+                         '<h1>files in '+uri+' <span>show hidden files</span><input type="checkbox"></h1>',
                          '<div>',
                          '<ul class="hide_hidden">'
                          
@@ -913,6 +917,11 @@ ml(0,ml(1),[
                  
 function injectFN(zip_url_base){
     
+        
+    const showHidden=document.querySelector("h1 input");
+    showHidden.onchange = function() {
+        document.querySelector("ul").classList[showHidden.checked?"remove":"add"]("hide_hidden");
+    };
         
     [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
     
