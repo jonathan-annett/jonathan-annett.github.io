@@ -768,7 +768,7 @@ ml(0,ml(1),[
                                     true
                                 ),
                            '</script>',
-                           
+                           '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/balloon-css/1.2.0/balloon.min.css" integrity="sha512-6jHrqOB5TcbWsW52kWP9TTx06FHzpj7eTOnuxQrKaqSvpcML2HTDR2/wWWPOh/YvcQQBGdomHL/x+V1Hn+AWCA==" crossorigin="anonymous" referrerpolicy="no-referrer" />',
                            '<style>',
                            'h1 {',
                            'font-size: 1em;',
@@ -831,35 +831,7 @@ ml(0,ml(1),[
                             '  -ms-user-select: none;',      
                             '  user-select: none;',
                             '}',
-                            
-                            
-                            
-                            '.tooltip:before {',
-                            '  content: attr(data-tip); ',
-                            '  position:absolute;',
-                            '  ',
-                            '  /* vertically center */',
-                            '  top:50%;',
-                            '  transform:translateY(-50%);',
-                            '  ',
-                            '  /* move to right */',
-                            '  left:100%;',
-                            '  margin-left:15px; /* and add a small left margin */',
-                            '  ',
-                            '  /* basic styles */',
-                            '  width:200px;',
-                            '  padding:10px;',
-                            '  border-radius:10px;',
-                            '  background:#000;',
-                            '  color: #fff;',
-                            '  text-align:center;',
-                            '',
-                            '  display:none; /* hide by default */',
-                            '}',
-                            
-                            '.tooltip:hover:before {',
-                            '  display:block;',
-                            '}',
+
 
                            '</style>',
                          '</head>',
@@ -872,12 +844,13 @@ ml(0,ml(1),[
                          ].concat (
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
-                                 
-                                 const edited       = updatedUrls[ updated_prefix+filename ] ? '<span class="edited tooltip" data-tip="file has been edited locally">&nbsp;</span>' : '';
+                             
+                             
+                                 const edited       = updatedUrls[ updated_prefix+filename ] ? '<span class="edited" data-balloon-pos="down-left" aria-label="'+filename+' has been edited locally">&nbsp;</span>' : '';
                                  const edited_class = updatedUrls[ updated_prefix+filename ] ? ' class="edited"' : ''
 
-                                 const zedBtn =   fileIsEditable(filename)   ? ['<a data-filename="'+filename+'"><span data-tip="Edit file in zed" class="editinzed tooltip">&nbsp;</span>',  edited+'</a>' ] 
-                                                : filename.endsWith(".zip")  ? ['<a href="/'+uri+'/'+filename+'"><span data-tip="this is a zip archive file" class="zipfile tooltip">&nbsp;</span>',    edited+'</a>' ]   
+                                 const zedBtn =   fileIsEditable(filename)   ? ['<a data-filename="'+filename+'"><span data-balloon-pos="down-left" aria-label="Edit '+filename+' in zed" class="editinzed">&nbsp;</span>',  edited+'</a>' ] 
+                                                : filename.endsWith(".zip")  ? ['<a href="/'+uri+'/'+filename+'"><span data-balloon-pos="down-left" aria-label="...explore zip contents" class="zipfile">&nbsp;</span>',    edited+'</a>' ]   
                                                 :                              ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',     edited+'</a>' ] ;
                                  
                                  
