@@ -239,33 +239,63 @@ ml(0,ml(1),[
                          const url = event.request.url;
                          const shouldCache = url.startsWith(location.origin) ||  event.request.referrer && event.request.referrer.startsWith(location.origin);
                          
-                         fetch(url).then  (function(response){
-                             
-                                if (response.status===200 && shouldCache ) {
-                                    
-                                    response.arrayBuffer().then(function(buffer){
-                                        
-                                        const db = databases.cachedURLS;
-                                        
-                                        updateURLContents (url,db,buffer,function(){
-                                           toFetchUrl (db,event.request,resolve,reject)
-                                        }); 
+                         fetchBufferViaCorsIfNeeded(url,function(buffer,status,ok,headers){
+                             if (ok) {
+                                    const db = databases.cachedURLS;
+                                    updateURLContents (url,db,buffer,{status:status,headers:headers},function(){
+                                       toFetchUrl (db,event.request,resolve,reject)
                                     });
-                               
-                                } else {
-                                    console.log("not caching",url,"status",response.status,"from",event.request.referrer)
-                                    resolve(response);
-                                }
-                           })
-                           .catch (function(err){
-                               reject(err);
-                           });
-                         
-                        
+                                    
+                             } else {
+                                 console.log("not caching",url,"status",status,"from",event.request.referrer,headers);
+                                 resolve(new Response (buffer,{status:status,headers:headers}));
+                             }
+                         });
+
                      }
                   )
                  
              }
+             
+             
+             
+             function fetchBufferViaCorsIfNeeded(url,cb) {
+                 
+                 fetch(url).then(getBufferFromResponse)
+                   .catch(function(err){
+                       
+                        fetch(url,{mode:'no-cors'})
+                           .then(getBufferFromResponse)
+                           .catch(function(err){
+                               
+                                fetch(url+"?r="+Math.random().toString(36).substr(-8),{
+                                    mode:'no-cors',
+                                    headers:{
+                                        'if-none-match':Math.random().toString(36).substr(-8),
+                                        'if-modified-since':new Date( Date.now() - ( 5 * 365 * 24 * 60 * 60 * 1000) ).toString()
+                                    }
+                                    
+                                },'')
+                                   .then(getBufferFromResponse)
+                                   .catch(cb);
+                                   
+                                   
+                           });
+                           
+                   }).catch(cb);
+                   
+                   
+                   
+                   function getBufferFromResponse(response) {
+                         
+                         response.arrayBuffer().then(function(buffer) {
+                             cb(undefined,buffer,response.status,response.ok,response.headers);
+                         });
+                         
+                   }
+                       
+             }
+             
              
              function fetchFileFromCacheEvent(event){
                  
