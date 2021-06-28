@@ -80,7 +80,7 @@ ml(0,ml(1),[
                         const 
                         
                         db         = localforage.createInstance({name:name}),
-                        getKeys    = db.getKeys.bind(db),
+                        getKeys    = db.keys.bind(db),
                         getItem    = db.getItem.bind(db),
                         setItem    = db.setItem.bind(db),
                         removeItem = db.removeItem.bind(db);
