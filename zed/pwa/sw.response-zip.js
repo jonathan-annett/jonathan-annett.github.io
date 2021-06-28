@@ -87,15 +87,20 @@ ml(0,ml(1),[
                      const chain = [ fetchUpdatableZipURL, fetchZipEvent, defaultFetchEvent  ];
                      const next = function () {
                          
-                         if (chain.length===0) return ;
-                         
+                         if (chain.length===0) {
+                             console.log("could not find handler for",event.request.url); 
+                             return ;
+                         }
                          const handler = chain.shift();
+                         console.log("trying",handler.name,"for",event.request.url);
                          const promise = handler(event);
                          
                          if (promise) {
-                             
+                            console.log(handler.name,"is working..."); 
                             promise.then(function(response){
                                 if (response) {
+                                    console.log(handler.name,"returned a response for",event.request.url); 
+                            
                                     return resolve(response);
                                 }
                                 return next();
