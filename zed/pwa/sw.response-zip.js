@@ -856,14 +856,14 @@ ml(0,ml(1),[
                                  const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
                                  const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
                                  const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
-                                 const is_hidden    = basename[0]==='.';
+                                 const is_hidden    = basename.startsWith('.');
                                  const is_editable  = fileIsEditable(filename);
                                  const is_zip       = filename.endsWith(".zip");
                                  const is_edited    = !!updatedUrls[ updated_prefix+filename ];
                                  //const extra_attrs  = is_editable ? (is_zip ? zip_attr : edit_attr) : '';
                                  const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;</span>' : '';
-                                 const li_class     = is_edited ? (' class="edited' + is_hidden ? ' hidden" ' : '"') : (is_hidden ? ' class="hidden"' : '');
-                            
+                                 const li_class     = is_edited ? (is_hidden ? ' class="hidden edited"': ' class="edited"' ) : ( is_hidden ? ' class="hidden"' : '');
+
                                  const zedBtn =   is_editable   ? ['<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>'+edited ] 
                                                 : is_zip        ? ['<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>'+edited ]   
                                                 :                 ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',                       '</a>'+edited ] ;
