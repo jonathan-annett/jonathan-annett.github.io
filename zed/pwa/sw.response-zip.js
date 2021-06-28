@@ -706,6 +706,19 @@ ml(0,ml(1),[
                  return p < 1 ? false:["js","json","css","md","html","htm"].indexOf(filename.substr(p+1))>=0;
              }
              
+             function regexpEscape(str) {
+                 return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
+             }
+             
+             function fileisEdited (url) {
+                 if (url.endsWith('.zip')) {
+                     const re = new RegExp(  "^"+ regexpEscape(url+"/"),'g');
+                     return Object.keys(updatedUrls).some(re.test);
+                 } else {
+                    return updatedUrls[ url ];
+                 }
+             }
+             
              function resolveZipListing (url,buffer) {
                  
                  return new Promise(function (resolve){
@@ -726,7 +739,7 @@ ml(0,ml(1),[
                          });
                          
                          const top_uri_res = uri_split.map(function(uri){ 
-                             return new RegExp( uri+"/".replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'),'g');
+                             return new RegExp( regexpEscape(uri+"/"),'g');
                          });
                          
                          const cleanup_links = function(str) {
@@ -785,7 +798,7 @@ ml(0,ml(1),[
                                  const is_hidden    = basename.startsWith('.');
                                  const is_editable  = fileIsEditable(filename);
                                  const is_zip       = filename.endsWith(".zip");
-                                 const is_edited    = !!updatedUrls[ updated_prefix+filename ];
+                                 const is_edited    = fileisEdited( updated_prefix+filename );
                                  //const extra_attrs  = is_editable ? (is_zip ? zip_attr : edit_attr) : '';
                                  const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;</span>' : '';
                                  const li_class     = is_edited ? (is_hidden ? ' class="hidden edited"': ' class="edited"' ) : ( is_hidden ? ' class="hidden"' : '');
