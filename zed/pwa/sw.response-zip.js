@@ -713,7 +713,7 @@ ml(0,ml(1),[
              function fileisEdited (url) {
                  if (url.endsWith('.zip')) {
                      const re = new RegExp(  "^"+ regexpEscape(url+"/"),'g');
-                     return Object.keys(updatedUrls).some(re.test);
+                     return Object.keys(updatedUrls).some(re.test.bind(re));
                  } else {
                     return updatedUrls[ url ];
                  }
