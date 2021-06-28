@@ -82,13 +82,12 @@ ml(0,ml(1),[
              
              function processFetchRequest(event) {
                  
-                 const chain = [ fetchUpdatableZipURL, fetchZipEvent, defaultFetchEvent  ];
-                 
-                 event.waitUntil(new Promise(function(resolve,reject){
+                 event.waitUntil(new Promise(function(resolve){
                      
+                     const chain = [ fetchUpdatableZipURL, fetchZipEvent, defaultFetchEvent  ];
                      const next = function () {
                          
-                         if (chain.length===0) return reject();
+                         if (chain.length===0) return ;
                          
                          const handler = chain.shift();
                          const promise = handler(event);
