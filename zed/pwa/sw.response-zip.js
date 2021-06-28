@@ -748,8 +748,7 @@ ml(0,ml(1),[
                          
                          
                          parent_link = uri_full_split.map(function(href,i,a){
-                             const disp = i===a.length-1? href.substr(href.lastIndexOf("/")+1) :undefined;
-                             return (uri===href?boldit:linkit) (href,disp);
+                             return (uri===href?boldit:linkit) (href);
                          }).join("");
                         
                          const updated_prefix = url + "/" ;
