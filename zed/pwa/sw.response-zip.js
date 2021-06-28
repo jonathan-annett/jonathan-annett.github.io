@@ -250,7 +250,7 @@ ml(0,ml(1),[
                                     const db = databases.cachedURLS;
                                     
                                     updateURLContents (url,db,buffer,function(){
-                                       toFetchUrl (db,url,resolve,reject)
+                                       toFetchUrl (db,event.request,resolve,reject)
                                     }); 
                                 });
                                
@@ -270,7 +270,7 @@ ml(0,ml(1),[
                  
                  const url = full_URL(location.origin,event.request.url);
                  switch (event.request.method) {
-                     case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.cachedURLS,url) );
+                     case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.cachedURLS,event.request) );
                  }
 
              }
@@ -1210,7 +1210,7 @@ ml(0,ml(1),[
                  url    =  full_URL(location.origin,event.request.url);
                  
                  switch (event.request.method) {
-                     case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.updatedURLS,url) );
+                     case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.updatedURLS,event.request) );
                      case "UPDATE" : return new Promise ( toUpdateUrl );
                  }
                  
@@ -1319,8 +1319,9 @@ ml(0,ml(1),[
            
              
              
-             function toFetchUrl (db,url,resolve,reject) {
+             function toFetchUrl (db,request,resolve,reject) {
                      
+                 const url = request.url;     
                  db.getItem(url,function(err,args){
                      if (err||!Array.isArray(args)) {
                          const promise = doFetchZipUrl(event.request);
