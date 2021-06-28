@@ -239,11 +239,13 @@ ml(0,ml(1),[
                  return fetch(event.request.url);
              }
              
-             function fetchFileFromCacheEvent(event) {
-                 databases.cachedURLS.getItem(event.request.url,function(err,data){
-                    // if ()
-                     
-                 });
+             function fetchFileFromCacheEvent(event){
+                 
+                 const url = full_URL(location.origin,event.request.url);
+                 switch (event.request.method) {
+                     case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.cachedURLS,url) );
+                 }
+
              }
              
              function openUrl(url,cb) {
@@ -1175,150 +1177,131 @@ ml(0,ml(1),[
              
              
              
-             //note - this also lets you proxy any url, not just zip file contents.
              function fetchUpdatedURLEvent(event){
                  const 
                  
-                 url    =  full_URL(location.origin,event.request.url),
-                 method = event.request.method,
-                 methodPromiseRecipies = {
-                     GET    : toFetchUrl,
-                     UPDATE : toUpdateUrl
-                 },
-                 toProcessRequest = methodPromiseRecipies[method];
+                 url    =  full_URL(location.origin,event.request.url);
                  
-                 if (toProcessRequest) {
-                     
-                     return  new Promise ( toGetListAndProcessRequest )
+                 switch (event.request.method) {
+                     case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.updatedURLS,url) );
+                     case "UPDATE" : return new Promise ( toUpdateUrl )
+                 }
 
-                 }
+             }
                  
-                 
-                 function toGetListAndProcessRequest(resolve, reject){
-                     // the task of fetching the list happens out of band
-                     // so we need to tell the event to wait for it
-                     // next time we'll have a cached list to let us syncrononously 
-                     // determine if the there is a replacment response for a given url.
-                     
-                     databases.updatedURLS.getKeys(function(err,keys){
-                        
-                        if(!err && keys.indexOf(url)>=0) {
-                            return toProcessRequest(resolve,reject);
-                        } else {
-                            resolve();
-                        }
-                     });
-                 }
-                 
-                 function toUpdateUrl (resolve,reject) {
-                        
-                     event.request.arrayBuffer().then(function(buffer){
-                        updateURLContents (url,buffer,function(){
-                            resolve(new Response('ok', {
-                                status: 200,
-                                statusText: 'Ok',
-                                headers: new Headers({
-                                  'Content-Type'   : 'text/plain',
-                                  'Content-Length' : 2
-                                })
-                            }));
-                        }); 
-                     });
-                     
-                 }
-                 
-                 function toReturnAnError (resolve) {
-                     
-                     resolve(new Response('', {
-                     status: 500,
-                     statusText: 'Internal Error. WTF did you do?',
-                     headers: new Headers({
-                       'Content-Length' : 0
-                     })}));
-                     
-                 }
-                 
-                 function toFetchUrl (resolve,reject) {
-                         
-                         databases.updatedURLS.getItem(url,function(err,args){
-                             if (err||!Array.isArray(args)) {
-                                 const promise = doFetchZipUrl(event.request);
-                                 if (promise) return promise.then(resolve).catch(reject);
-                                 return fetch(event.request).then(resolve).catch(reject);
-                             } else {
-                                 resolve(new Response(args[0],{status:200,headers:new Headers(args[1])}));
-                             }
-                         });
-                         
-                      
-                 }
-                 
-                 function toFetchUpdatedZip(resolve,reject) {
+            
+             function toUpdateUrl (resolve,reject) {
                     
+                 event.request.arrayBuffer().then(function(buffer){
+                    updateURLContents (url,buffer,function(){
+                        resolve(new Response('ok', {
+                            status: 200,
+                            statusText: 'Ok',
+                            headers: new Headers({
+                              'Content-Type'   : 'text/plain',
+                              'Content-Length' : 2
+                            })
+                        }));
+                    }); 
+                 });
+                 
+             }
+             
+             function toReturnAnError (resolve) {
+                 
+                 resolve(new Response('', {
+                 status: 500,
+                 statusText: 'Internal Error. WTF did you do?',
+                 headers: new Headers({
+                   'Content-Length' : 0
+                 })}));
+                 
+             }
+             
+             
+             
+             function toFetchUpdatedZip(resolve,reject) {
+                
+                
+                databases.updatedURLS.getKeys(function(err,keys){
                     
-                    databases.updatedURLS.getKeys(function(err,keys){
-                        
-                       const relevantURLs = keys.filter(function(k){
-                           return k.startsWith(url);
-                       });
+                   const relevantURLs = keys.filter(function(k){
+                       return k.startsWith(url);
+                   });
+                   
+                   if (relevantURLs.length===0) {
+                       resolve(new Response('', {
+                           status: 404,
+                           statusText: 'Not Found',
+                           headers: new Headers({
+                             'Content-Type'   : 'text/plain',
+                             'Content-Length' : 0
+                           })
+                       }));
+                   }
+                   
+                   const zip = new JSZip();
+                   
+                   const loop = function (i) {
                        
-                       if (relevantURLs.length===0) {
-                           resolve(new Response('', {
-                               status: 404,
-                               statusText: 'Not Found',
-                               headers: new Headers({
-                                 'Content-Type'   : 'text/plain',
-                                 'Content-Length' : 0
-                               })
-                           }));
-                       }
-                       
-                       const zip = new JSZip();
-                       
-                       const loop = function (i) {
-                           
-                          if (i < relevantURLs.length) {
-                              
-                              const file_url  = relevantURLs[i],
-                                    file_name = file_url.substr(url.length);
-                              
-                              databases.updatedURLS.getItem(file_url,function(err,args){
-                                  
-                                  if (err) return reject(err);
-                                  
-                                  zip.file(
-                                      file_name, 
-                                      args[0],{
-                                          date : args[1].date
-                                      }).then (function () {
-                                          loop(i+1);
-                                      });
-                                  
-                              });
-                              
-                          }  else {
-                              
-                              zip.generateAsync({type:"arraybuffer"}).then(function (buffer) {
-                                  
-                                  resolve(new Response(buffer,{
-                                      status:200,
-                                      headers : new Headers({
-                                          'Content-Type'   : mimeForFilename('x.zip'),
-                                          'Content-Length' : buffer.byteLength
-                                      })
-                                  }));
-                                  
-                              });
-                          }
+                      if (i < relevantURLs.length) {
                           
-                       };
-                       loop (0);
-                        
-                    });
+                          const file_url  = relevantURLs[i],
+                                file_name = file_url.substr(url.length);
+                          
+                          databases.updatedURLS.getItem(file_url,function(err,args){
+                              
+                              if (err) return reject(err);
+                              
+                              zip.file(
+                                  file_name, 
+                                  args[0],{
+                                      date : args[1].date
+                                  }).then (function () {
+                                      loop(i+1);
+                                  });
+                              
+                          });
+                          
+                      }  else {
+                          
+                          zip.generateAsync({type:"arraybuffer"}).then(function (buffer) {
+                              
+                              resolve(new Response(buffer,{
+                                  status:200,
+                                  headers : new Headers({
+                                      'Content-Type'   : mimeForFilename('x.zip'),
+                                      'Content-Length' : buffer.byteLength
+                                  })
+                              }));
+                              
+                          });
+                      }
+                      
+                   };
+                   loop (0);
                     
-                 }
+                });
+                
+             }
+             
+             
+           
+             
+             
+             function toFetchUrl (url,db,resolve,reject) {
+                     
+                 db.getItem(url,function(err,args){
+                     if (err||!Array.isArray(args)) {
+                         const promise = doFetchZipUrl(event.request);
+                         if (promise) return promise.then(resolve).catch(reject);
+                         return fetch(event.request).then(resolve).catch(reject);
+                     } else {
+                         resolve(new Response(args[0],{status:200,headers:new Headers(args[1])}));
+                     }
+                 });
                  
-                 
+                  
              }
              
              function updateURLContents(url,responseData,responseState,cb) {
