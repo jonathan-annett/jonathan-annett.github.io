@@ -236,7 +236,34 @@ ml(0,ml(1),[
              }
              
              function defaultFetchEvent(event) {
-                 return fetch(event.request.url);
+                 
+                 return new Promise(
+                     
+                     function(resolve,reject) {
+                         
+                         const url = event.request.url;
+                         
+                         fetch(url).then  (function(response){
+                                
+                                response.arrayBuffer().then(function(buffer){
+                                    
+                                    const db = databases.cachedURLS;
+                                    
+                                    updateURLContents (url,db,buffer,function(){
+                                       toFetchUrl (url,db,resolve,reject)
+                                    }); 
+                               });
+                               
+                               
+                           })
+                           .catch (function(err){
+                               
+                           });
+                         
+                        
+                     }
+                  )
+                 
              }
              
              function fetchFileFromCacheEvent(event){
@@ -849,7 +876,7 @@ ml(0,ml(1),[
                                      zipFileMeta.updating = setTimeout(function(){
                                          // in 10 seconds this and any other metadata changes to disk
                                          delete zipFileMeta.updating;
-                                         databases.zipMetadata.getItem(zip_url,zipFileMeta,function(){
+                                         databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
                                              console.log("updated zip entry",zip_url);
                                          });
                                          
@@ -1184,28 +1211,31 @@ ml(0,ml(1),[
                  
                  switch (event.request.method) {
                      case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.updatedURLS,url) );
-                     case "UPDATE" : return new Promise ( toUpdateUrl )
+                     case "UPDATE" : return new Promise ( toUpdateUrl );
+                 }
+                 
+                 
+                 function toUpdateUrl (resolve,reject) {
+                        
+                     event.request.arrayBuffer().then(function(buffer){
+                        updateURLContents (url,databases.updatedURLS,buffer,function(){
+                            resolve(new Response('ok', {
+                                status: 200,
+                                statusText: 'Ok',
+                                headers: new Headers({
+                                  'Content-Type'   : 'text/plain',
+                                  'Content-Length' : 2
+                                })
+                            }));
+                        }); 
+                     });
+                     
                  }
 
              }
                  
             
-             function toUpdateUrl (resolve,reject) {
-                    
-                 event.request.arrayBuffer().then(function(buffer){
-                    updateURLContents (url,buffer,function(){
-                        resolve(new Response('ok', {
-                            status: 200,
-                            statusText: 'Ok',
-                            headers: new Headers({
-                              'Content-Type'   : 'text/plain',
-                              'Content-Length' : 2
-                            })
-                        }));
-                    }); 
-                 });
-                 
-             }
+             
              
              function toReturnAnError (resolve) {
                  
@@ -1304,17 +1334,21 @@ ml(0,ml(1),[
                   
              }
              
-             function updateURLContents(url,responseData,responseState,cb) {
+             function updateURLContents(url,db,responseData,responseState,cb) {
                  
                  if (typeof responseState==='function') {
                      cb            = responseState;
                      responseState = undefined;
                  }
                  
+                 if (typeof db==='string') {
+                     db = databases[db];
+                 }
+                 
                  url = full_URL(location.origin,url);
                  
                  getPayload(function(payload){
-                     databases.updatedURLS.setItem(url,payload,cb);
+                     db.setItem(url,payload,cb);
                  });
 
                  function getPayload (cb) {
