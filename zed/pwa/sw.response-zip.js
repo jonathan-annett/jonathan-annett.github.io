@@ -194,7 +194,10 @@ ml(0,ml(1),[
                          fetchUpdatedURLEvent, 
                          fetchFileFromZipEvent,
                          fetchFileFromCacheEvent,
-                         defaultFetchEvent  ];
+                         defaultFetchEvent  
+                      ];
+                         
+                         
                      const next = function (handler) {
                          if (!handler) {
                              console.log("could not find for",event.request.url,"from",event.request.referrer); 
