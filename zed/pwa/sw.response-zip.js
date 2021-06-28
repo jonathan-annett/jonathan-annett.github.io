@@ -747,33 +747,11 @@ ml(0,ml(1),[
                          };
                          
                          
-                         parent_link = uri_full_split.map(function(href,i){
-                             const disp = href.substr(href.lastIndexOf("/")+1);
+                         parent_link = uri_full_split.map(function(href,i,a){
+                             const disp = i===a.length-1? href.substr(href.lastIndexOf("/")+1) :undefined;
                              return (uri===href?boldit:linkit) (href,disp);
                          }).join("");
-                         /*
-                         // switch (uri_split.length) {
-                           //   case 1: 
-                                  const xx = uri_split[0].split("/"),yy=xx.pop();
-                                  parent_link = xx.join("/")+'/<b>'+yy+'</b>' ;
-                         //         break;
-                         //     case 2:
-                                  
-                              
-                          //}
-                          parent_link += uri_split.map(function(e,i,a){
-                              
-                                  if (i===0) return '';
-                                  const href = a.slice(0,i).join('');
-                                  const prev_href = a.slice(0,i-1).join('');
-                                  const disp = href.substr(prev_href.length);
-                                  return (i<a.length-1 ?linkit : boldit)(href,disp);
-                              }
-                          ) .join("/");
-                              
-                              
-                          parent_link=parent_link.replace(/\/\//g,'/');*/
-           
+                        
                          const updated_prefix = url + "/" ;
                                  
                          let   hidden_files_exist = false;
