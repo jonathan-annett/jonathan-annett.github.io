@@ -852,7 +852,7 @@ ml(0,ml(1),[
                                   
                              
                                  const full_uri = "/"+uri+"/"+filename,
-                                       basename=full_uri.substr(full_uri.indexOf("/")+1);
+                                       basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
                                  const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
                                  const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
                                  const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
