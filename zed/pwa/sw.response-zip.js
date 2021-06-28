@@ -53,38 +53,153 @@ ml(0,ml(1),[
               
              const lib = {
                  processFetchRequest      : processFetchRequest,
-                 fetchZipEvent            : fetchZipEvent,
+                 fetchFileFromZipEvent    : fetchFileFromZipEvent,
                  unzipFile                : unzipFile,
-                 fetchUpdatableZipURL     : fetchUpdatableZipURL,
+                 fetchUpdatedURLEvent     : fetchUpdatedURLEvent,
                  updateURLContents        : updateURLContents,
                  removeUpdatedURLContents : removeUpdatedURLContents
              };
                               
              const openZipFileCache = { };
-             
-             var updatedUrls ;
-             
-             
-             
-             var updatedUrlSDB = localforage.createInstance({
-               name: "updatedURLS"
-             });
-             
-             var openZipsDB = localforage.createInstance({
-               name: "openZips"
-             });
-             
-             var zipMetadataDB = localforage.createInstance({
-               name: "zipMetadata"
-             });
-             
-             
+
+             const databases = {};
+             defineDB("updatedURLS"); 
+             defineDB("openZips");
+             defineDB("zipMetadata");
+             defineDB("cachedURLS");
+
+             function defineDB(name) {
+                 // since these dbs are used by a single instance (the service worker)
+                 // and may be dumped from memory at any moment, a few optimizations are made
+                 // 1. they are created on "first touch" (ie on demand by first caller)
+                 // 2. keys are kept in memory, so denials are quick (no need to hit the datastore to find out the key doesnt exist
+                 // 3. keys are updated whenever a set or remove takes place
+                 // (note - if the keys aren't ready on the first read)
+                 Object.defineProperty(databases,name,{
+                    get : function () {
+                        const 
+                        
+                        db         = localforage.createInstance({name:name}),
+                        getKeys    = db.getKeys.bind(db),
+                        getItem    = db.getItem.bind(db),
+                        setItem    = db.setItem.bind(db),
+                        removeItem = db.removeItem.bind(db);
+                        let keys;
+                         
+                        // on first call, go ahead and get keys from localforage
+                        getKeys(function(err,ks){
+                            if(!err&&keys) keys=ks;
+                        });
+                        
+                        db.getItem= function(k,cb) {
+                            
+                           if (keys) {
+                               
+                               if (keys.indexOf(k)<0) {
+                                   return cb (undefined,null);
+                               }
+                               
+                               return getItem(k,function(err,v){
+                                   cb(err,v) ;
+                               });
+                               
+                           } else {
+                               // keys not ready key, just get item
+                              return getItem(k,function(err,v){
+                                       //report to caller
+                                       cb(err,v) ;
+                                       // now are keys ready yet?
+                                       if (!keys){
+                                           // no -try to  get them again
+                                           getKeys(function(err,kys){
+                                               if(!err&&keys) keys=kys;
+                                           });
+                                       }
+                              });
+                             
+                           }
+                          
+                        };
+                       
+                        db.setItem= function(k,v,cb) {
+                           return setItem(k,v,function(err){
+                               if (err) return cb(err);
+                               if (keys) {
+                                   if( keys.indexOf(k)<0) keys.push(k);
+                                   cb() ;
+                               } else {
+                                   
+                                   getKeys(function(err,kys){
+                                       if(!err&&keys) keys=kys;
+                                       cb() ;
+                                   });
+                               }
+                           });
+                        };
+                       
+                        db.removeItem= function(k,cb) {
+                           return removeItem(k,function(err){
+                               if (err) return cb(err);
+                               
+                               if (keys) {
+                                 const i = keys.indexOf(k);
+                                 if (i>=0) keys.splice(i,1); 
+                                 cb() ;
+                               } else {
+                                   getKeys(function(err,kys){
+                                       if(!err&&keys) keys=kys;
+                                       cb() ;
+                                   });
+                               }
+                           });
+                        };
+                        
+                        db.getKeys = function (cb) {
+                            
+                            if (keys) return cb (undefined,keys);
+                            
+                            getKeys(function(err,kys){
+                                if (err) return cb(err);
+                                cb(undefined,keys=kys);
+                            });
+                            
+                        };
+                        
+                        db.keyExists = function (k,d) {
+                            if (keys) return keys.indexOf(k)>=0;
+                            return d;
+                        }
+                        
+                        db.allKeys = function (k,d) {
+                            return keys||[];
+                        }
+                        
+                        // for next request, caller will be given the object by value
+                        // instead of calling this getter.
+                        delete databases[name];
+                        Object.defineProperty(databases,name,{
+                            value : db,
+                            writable : false,
+                            configurable:true,
+                            enumerable:true
+                        });
+                        // this caller gets the object directly as a return from this getter function
+                        return db;
+                    },
+                    configurable:true,
+                    enumerable:true
+                 });
+             }
              
              function processFetchRequest(event) {
                  
                  event.respondWith(new Promise(function(resolve,reject){
                      
-                     const chain = [ fetchUpdatableZipURL, fetchZipEvent, defaultFetchEvent  ];
+                     const chain = [ 
+                         fetchUpdatedURLEvent, 
+                         fetchFileFromZipEvent,
+                         fetchFileFromCacheEvent,
+                         defaultFetchEvent  ];
                      const next = function (handler) {
                          if (!handler) {
                              console.log("could not find for",event.request.url); 
@@ -122,6 +237,13 @@ ml(0,ml(1),[
              
              function defaultFetchEvent(event) {
                  return fetch(event.request.url);
+             }
+             
+             function fetchFileFromCacheEvent(event) {
+                 databases.cachedURLS.getItem(event.request.url,function(err,data){
+                    // if ()
+                     
+                 });
              }
              
              function openUrl(url,cb) {
@@ -187,7 +309,7 @@ ml(0,ml(1),[
                          // this is a subzip,so the buffer is not stored in forage
                          // we do however store the metadata for it
                          
-                         return zipMetadataDB.getItem(url,function(err,zipFileMeta){
+                         return databases.zipMetadata.getItem(url,function(err,zipFileMeta){
                              
                               if (zipFileMeta) {
                                  return cb(undefined,buffer,zipFileMeta);
@@ -202,11 +324,11 @@ ml(0,ml(1),[
                      }
                  }
                  
-                 openZipsDB.getItem(url,function(err,buffer){
+                 databases.openZips.getItem(url,function(err,buffer){
                      
                      if (err || ! buffer) return download();                    
                      
-                     zipMetadataDB.getItem(url,function(err,zipFileMeta){
+                     databases.zipMetadata.getItem(url,function(err,zipFileMeta){
                          if (err || ! zipFileMeta) return download();                    
                          cb(undefined,buffer,zipFileMeta);
                      });
@@ -253,7 +375,7 @@ ml(0,ml(1),[
                            
                            setMetadataForBuffer(buffer,etag,safeDate(response.headers.get('Last-Modified'),new Date()),function(err,buffer,zipFileMeta){
                                if (err) return cb(err);
-                               openZipsDB.setItem(url,buffer,function(err){
+                               databases.openZips.setItem(url,buffer,function(err){
                                    
                                  if (err) return cb(err);
                                  cb(undefined,buffer,zipFileMeta);
@@ -284,7 +406,7 @@ ml(0,ml(1),[
                          date:date||new Date()
                      };
                      
-                       zipMetadataDB.setItem(url,zipFileMeta,function(err){
+                       databases.zipMetadata.setItem(url,zipFileMeta,function(err){
                            
                              if (err) return cb(err);
                              
@@ -368,7 +490,7 @@ ml(0,ml(1),[
                              // this also "invents" etags for each file inside
                              // we do this once, on first open.
             
-                             zipMetadataDB.setItem(url,addFileMetaData(zip,zipFileMeta,url),function(err){
+                             databases.zipMetadata.setItem(url,addFileMetaData(zip,zipFileMeta,url),function(err){
                                  
                                 if (err) return cb(err);
             
@@ -626,7 +748,7 @@ ml(0,ml(1),[
                                 zipFileMeta.updating = setTimeout(function(){
                                     // in 10 seconds this and any other metadata changes to disk
                                     delete zipFileMeta.updating;
-                                    zipMetadataDB.setItem(zip_url,zipFileMeta,function(){
+                                    databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
                                         console.log("updated zip entry",zip_url);
                                     });
                                     
@@ -725,7 +847,7 @@ ml(0,ml(1),[
                                      zipFileMeta.updating = setTimeout(function(){
                                          // in 10 seconds this and any other metadata changes to disk
                                          delete zipFileMeta.updating;
-                                         zipMetadataDB.getItem(zip_url,zipFileMeta,function(){
+                                         databases.zipMetadata.getItem(zip_url,zipFileMeta,function(){
                                              console.log("updated zip entry",zip_url);
                                          });
                                          
@@ -761,9 +883,9 @@ ml(0,ml(1),[
              function fileisEdited (url) {
                  if (url.endsWith('.zip')) {
                      const re = new RegExp(  "^"+ regexpEscape(url+"/"),'g');
-                     return Object.keys(updatedUrls).some(re.test.bind(re));
+                     return databases.updatedURLS.allKeys().some(re.test.bind(re));
                  } else {
-                    return updatedUrls[ url ];
+                    return databases.updatedURLS.keyExists( url );
                  }
              }
              
@@ -1044,7 +1166,7 @@ ml(0,ml(1),[
             
              
              
-             function fetchZipEvent(event) {
+             function fetchFileFromZipEvent(event) {
                  
                 return  doFetchZipUrl(event.request);
                 
@@ -1054,7 +1176,7 @@ ml(0,ml(1),[
              
              
              //note - this also lets you proxy any url, not just zip file contents.
-             function fetchUpdatableZipURL(event){
+             function fetchUpdatedURLEvent(event){
                  const 
                  
                  url    =  full_URL(location.origin,event.request.url),
@@ -1066,23 +1188,9 @@ ml(0,ml(1),[
                  toProcessRequest = methodPromiseRecipies[method];
                  
                  if (toProcessRequest) {
-                 
-                     if (!updatedUrls) {
-                          // first time, we need to do some async setup...
-                          // when this setup is complete, the promise "toProcessRequest" will be fullfilled
-                          
-                          return new Promise ( toGetListAndProcessRequest );
-                          
-                     } 
-    
-                     if(updatedUrls[url]) {
-                         // obviously not the first time, (ie prevous line did not return)
-                         // so we can respond with a new promise to process the request
-                        
-                            return new Promise( toProcessRequest ) ;
-                          
-                     }
                      
+                     return  new Promise ( toGetListAndProcessRequest )
+
                  }
                  
                  
@@ -1091,29 +1199,15 @@ ml(0,ml(1),[
                      // so we need to tell the event to wait for it
                      // next time we'll have a cached list to let us syncrononously 
                      // determine if the there is a replacment response for a given url.
-                   
-                     loadUpdatedURLList (function(updatedUrls){
-                         
-                        // ok now we have a list for next time, 
-                        // let's see if this url is in the list and if so, fetch it
-                        // otherwise punt the request via doFetchZipUrl to fetch.
-                        // since we are aloread inside a pending promise , we need to manually handle them
-                        
-                        if(updatedUrls[url]) {
-                            
-                            return toProcessRequest(resolve,reject);
-                            
-                        } else {
-                            
-                            
-                            resolve();
-                            
-                        }
-                    
-                     });
-                
-                 
                      
+                     databases.updatedURLS.getKeys(function(err,keys){
+                        
+                        if(!err && keys.indexOf(url)>=0) {
+                            return toProcessRequest(resolve,reject);
+                        } else {
+                            resolve();
+                        }
+                     });
                  }
                  
                  function toUpdateUrl (resolve,reject) {
@@ -1146,7 +1240,7 @@ ml(0,ml(1),[
                  
                  function toFetchUrl (resolve,reject) {
                          
-                         updatedUrlSDB.getItem(url,function(err,args){
+                         databases.updatedURLS.getItem(url,function(err,args){
                              if (err||!Array.isArray(args)) {
                                  const promise = doFetchZipUrl(event.request);
                                  if (promise) return promise.then(resolve).catch(reject);
@@ -1160,10 +1254,11 @@ ml(0,ml(1),[
                  }
                  
                  function toFetchUpdatedZip(resolve,reject) {
-                     
-                    loadUpdatedURLList ( function( updatedUrls ) {
+                    
+                    
+                    databases.updatedURLS.getKeys(function(err,keys){
                         
-                       const relevantURLs = Object.keys(updatedUrls).filter(function(k){
+                       const relevantURLs = keys.filter(function(k){
                            return k.startsWith(url);
                        });
                        
@@ -1187,7 +1282,7 @@ ml(0,ml(1),[
                               const file_url  = relevantURLs[i],
                                     file_name = file_url.substr(url.length);
                               
-                              updatedUrlSDB.getItem(file_url,function(err,args){
+                              databases.updatedURLS.getItem(file_url,function(err,args){
                                   
                                   if (err) return reject(err);
                                   
@@ -1233,26 +1328,12 @@ ml(0,ml(1),[
                      responseState = undefined;
                  }
                  
-                  if (!updatedUrls) {
-                     loadUpdatedURLList (saveUrlContents);
-                 } else {
-                     saveUrlContents();
-                 }
+                 url = full_URL(location.origin,url);
                  
-                 function saveUrlContents() {
-                     
-                     url = full_URL(location.origin,url);
-                     getPayload(function(payload){
-                         updatedUrlSDB.setItem(url,payload,function(err){
-                            if (err) return cb(err);
-                            updatedUrls[url]=true;
-                            cb();
-                         });
-                     });
+                 getPayload(function(payload){
+                     databases.updatedURLS.setItem(url,payload,cb);
+                 });
 
-                 }
-                 
-                 
                  function getPayload (cb) {
                      if (responseState) return cb ([responseData,responseState]);
                      
@@ -1271,33 +1352,11 @@ ml(0,ml(1),[
              }
              
              function removeUpdatedURLContents(url,cb) {
-                 
-                  if (!updatedUrls) {
-                     loadUpdatedURLList (removeUrlContents);
-                 } else {
-                     removeUrlContents();
-                 }
-                 
-                 function removeUrlContents() {
-                     url = full_URL(location.origin,url);
-                     updatedUrlSDB.removeItem(url,function(err){
-                        if (err) return cb(err);
-                        delete updatedUrls[url];
-                        cb();
-                     });
-                 }
-
+                 url = full_URL(location.origin,url);
+                 databases.updatedURLS.removeItem(url,cb);
              }
              
-             function loadUpdatedURLList ( cb ) {
-                   updatedUrlSDB.keys(function(err,keys){
-                   updatedUrls={};
-                   keys.forEach(function(k){
-                       updatedUrls[ k ]=true;
-                   });
-                   cb(updatedUrls);
-                });
-             }
+             
              
              return lib;
              
