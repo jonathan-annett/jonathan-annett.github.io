@@ -6,7 +6,7 @@ ml(0,ml(1),[
     'JSZipUtils    | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
     'JSZip         | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
     'dbLocalForage | dbengine.localForage.js',
-    'wTools                                     | windowTools.js',
+    'wTools        | windowTools.js',
     
     ],function(){ml(2,ml(3),ml(4),
 
@@ -184,7 +184,7 @@ ml(0,ml(1),[
                                        .catch(cb);
                                        
                                        
-                               })
+                               });
                                
                        }).catch(cb);
                  }
@@ -547,8 +547,7 @@ ml(0,ml(1),[
                          if (   !update_needed      && 
                                 !subzip             &&
                                  (
-                                     (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag))
-                                           ||
+                                     (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag)) ||
                                      (ifModifiedSince &&  (safeDate(ifModifiedSince,fileEntry.date) <  fileEntry.date) )
                                  
                                  )
@@ -594,7 +593,7 @@ ml(0,ml(1),[
                             }
                             
                             
-                            return response200 (resolve,buffer,fileEntry)
+                            return response200 (resolve,buffer,fileEntry);
                             
                             
                          });
@@ -652,8 +651,7 @@ ml(0,ml(1),[
                          if (   !update_needed      && 
                                 !subzip             &&
                                  (
-                                     (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag))
-                                           ||
+                                     (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag)) ||
                                      (ifModifiedSince &&  (safeDate(ifModifiedSince,fileEntry.date) <  fileEntry.date) )
                                  
                                  )
@@ -695,7 +693,7 @@ ml(0,ml(1),[
                                      return resolveZipListing (zip_url+"/"+file_path,buffer).then(resolve).catch(reject);
                                  }
                                  
-                                 return response200 (resolve,buffer,fileEntry)
+                                 return response200 (resolve,buffer,fileEntry);
                                  
                               });
                                 
@@ -723,7 +721,7 @@ ml(0,ml(1),[
                          
                          const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                          const uri= urify.exec(url)[2];
-                         const uri_split = uri.split('.zip/').map(function (x,i,a){return i===a.length-1?'/'+x:'/'+x+'.zip'});
+                         const uri_split = uri.split('.zip/').map(function (x,i,a){return i===a.length-1?'/'+x:'/'+x+'.zip';});
                          var parent_link="";
                          const linkit=function(uri,disp,a_wrap){ 
                              a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
@@ -764,14 +762,9 @@ ml(0,ml(1),[
                          '<html>',
                          '<head>',
                            '<title>files in '+uri+'</title>',
-                           
                            '<script>',
-                            fnSrc(
-                                function ml(x,L,o,a,d,s){ml.h||(ml.h={},ml.H=[],ml.d={},ml.f={});let z,C=console,e=[C,ml,"",z,x].map(e=>typeof e),l=location,O=l.origin,t=e[4]===e[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?"I":"L":x,c={r:e=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],c:e=>e.startsWith(O),R:"replace",f:"forEach",w:"serviceWorker",n:"navigator",d:"document",B:(e,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(e)?e:r.test(e)?e[c.R](r,O+"/"):c.b+e[c.R](/^(\.\/)/,""),1:()=>c[4]()||{},2:(L,o,a,d,t,D)=>{D="defined",t=typeof(t=a[L]&&a[L].name)+typeof o[t]===e[2]+e[3]?c.S(ml.h[ml.d[t].h].e,t,c.S(o,t,a[L].apply(this,d[L].map(c.x))))&&c.l(D+":",t)||c.l(D+" empty:",t):c.l("ready:",t),ml.i||(ml.i=new Proxy({},{get:(e,t)=>c.I(x=t),ownKeys:()=>c.k(ml.d),getOwnPropertyDescriptor:(e,t)=>!!ml.d[t]&&c.P(c.I(t)),has:(e,t)=>!!ml.d[t]}))},P:e=>({value:e,enumerable:!0,configurable:!0}),S:(o,e,t)=>(Object.defineProperty(o,e,c.P(t)),t),3:()=>c[4]().constructor.name||"x",4:()=>typeof self===e[0]&&self,x:e=>e(),l:C.log.bind(C),L:(e,R,t,m)=>(R=c.r(x),m=R?c[4]():!!o,e=m?o:{},R=R||[x,"t",0,x],t=a||R[1],ml(0,e,[t+"@T|"+R[3]],()=>ml(2,"T",e,{T:L},{T:[x=>(R=e[t],m||delete e[t],(x=t&&ml.d[t])&&(ml.h[x.h].e[t]=R),R)]}),"T")),I:(e,t)=>(e=ml.d[x])&&(t=ml.h[e.h])&&t.e[x],k:o=>Object.keys(o)};return(z=typeof c[t]===e[1]?c[t](L,o,a,d,s):c)!==c?z:(z={F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),0:()=>z.l(o),t:e=>Math.min(100,ml.t=ml.t?2*ml.t:1),l:e=>(e=e.map(z.u).filter(z.y)).length?setTimeout(z.l,z.t(e.length),e)&&c.l("pending...",e):a(),u:(x,R,e,t)=>(R=c.r(x))?(!(t=R[2])||t===(d||c[3]()))&&(t=R[1],e=c.B(R[3]),c.c(e)&&(ml.d[t]={h:e}),z.T(window,"script",s=>{z.p(e,s.setAttribute.bind(s,"src"),s)}),t):!L[x]&&x,y:x=>!!x,s:(d,e,C)=>{(s=z.E(d,e)).type="text/java"+e,C(z.A(d,s))},S:(e,s,C,D)=>{D=z.f(e[c.d],()=>z.s(D.contentWindow[c.d],s,C))},T:(e,s,C)=>z.s(e[c.d],s,C),E:(d,e)=>d.createElement(e),A:(d,x)=>d.body.appendChild(x),f:(d,e,l)=>((e=z.E(d,"iframe")).style.display="none",e.src="ml.html",e.onload=l,z.A(d,e)),U:()=>c.k(ml.h),p:(e,l,s,r,L,t,R)=>(r=z.r(),L=(t=>l(z.V(e,t))),t=(t=>L(z.v(e,t,s))),R=(()=>t(r)),!ml.h[e]&&(ml.H.push(e)&&(typeof fetch===z.F?fetch(e,{method:"HEAD"}).then(e=>t(z.e(e,r))).catch(R):R()))),e:(r,d)=>r.headers.get("Etag")[c.R](/[\"\/\\\-]*/g,"")||d,r:()=>Math.random().toString(36).substr(-8),V:(e,t)=>z.F?e+"?v="+t:e,v:(e,t,s)=>ml.h[e]={v:t,s:s,e:{}},8:(e,c)=>{},9:L=>L&&c.w in self[c.n]&&self[c.n][c.w].register("./ml.sw.js?ml="+encodeURIComponent(L))})[x]&&z[x](L,o,a,d,s)}
-                                ,true),
+                                fnSrc(function ml(x,L,o,a,d,s){ml.h||(ml.h={},ml.H=[],ml.d={},ml.f={});let z,C=console,e=[C,ml,"",z,x].map(e=>typeof e),l=location,O=l.origin,t=e[4]===e[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?"I":"L":x,c={r:e=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],c:e=>e.startsWith(O),R:"replace",f:"forEach",w:"serviceWorker",n:"navigator",d:"document",B:(e,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(e)?e:r.test(e)?e[c.R](r,O+"/"):c.b+e[c.R](/^(\.\/)/,""),1:()=>c[4]()||{},2:(L,o,a,d,t,D)=>{D="defined",t=typeof(t=a[L]&&a[L].name)+typeof o[t]===e[2]+e[3]?c.S(ml.h[ml.d[t].h].e,t,c.S(o,t,a[L].apply(this,d[L].map(c.x))))&&c.l(D+":",t)||c.l(D+" empty:",t):c.l("ready:",t),ml.i||(ml.i=new Proxy({},{get:(e,t)=>c.I(x=t),ownKeys:()=>c.k(ml.d),getOwnPropertyDescriptor:(e,t)=>!!ml.d[t]&&c.P(c.I(t)),has:(e,t)=>!!ml.d[t]}))},P:e=>({value:e,enumerable:!0,configurable:!0}),S:(o,e,t)=>(Object.defineProperty(o,e,c.P(t)),t),3:()=>c[4]().constructor.name||"x",4:()=>typeof self===e[0]&&self,x:e=>e(),l:C.log.bind(C),L:(e,R,t,m)=>(R=c.r(x),m=R?c[4]():!!o,e=m?o:{},R=R||[x,"t",0,x],t=a||R[1],ml(0,e,[t+"@T|"+R[3]],()=>ml(2,"T",e,{T:L},{T:[x=>(R=e[t],m||delete e[t],(x=t&&ml.d[t])&&(ml.h[x.h].e[t]=R),R)]}),"T")),I:(e,t)=>(e=ml.d[x])&&(t=ml.h[e.h])&&t.e[x],k:o=>Object.keys(o)};return(z=typeof c[t]===e[1]?c[t](L,o,a,d,s):c)!==c?z:(z={F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),0:()=>z.l(o),t:e=>Math.min(100,ml.t=ml.t?2*ml.t:1),l:e=>(e=e.map(z.u).filter(z.y)).length?setTimeout(z.l,z.t(e.length),e)&&c.l("pending...",e):a(),u:(x,R,e,t)=>(R=c.r(x))?(!(t=R[2])||t===(d||c[3]()))&&(t=R[1],e=c.B(R[3]),c.c(e)&&(ml.d[t]={h:e}),z.T(window,"script",s=>{z.p(e,s.setAttribute.bind(s,"src"),s)}),t):!L[x]&&x,y:x=>!!x,s:(d,e,C)=>{(s=z.E(d,e)).type="text/java"+e,C(z.A(d,s))},S:(e,s,C,D)=>{D=z.f(e[c.d],()=>z.s(D.contentWindow[c.d],s,C))},T:(e,s,C)=>z.s(e[c.d],s,C),E:(d,e)=>d.createElement(e),A:(d,x)=>d.body.appendChild(x),f:(d,e,l)=>((e=z.E(d,"iframe")).style.display="none",e.src="ml.html",e.onload=l,z.A(d,e)),U:()=>c.k(ml.h),p:(e,l,s,r,L,t,R)=>(r=z.r(),L=(t=>l(z.V(e,t))),t=(t=>L(z.v(e,t,s))),R=(()=>t(r)),!ml.h[e]&&(ml.H.push(e)&&(typeof fetch===z.F?fetch(e,{method:"HEAD"}).then(e=>t(z.e(e,r))).catch(R):R()))),e:(r,d)=>r.headers.get("Etag")[c.R](/[\"\/\\\-]*/g,"")||d,r:()=>Math.random().toString(36).substr(-8),V:(e,t)=>z.F?e+"?v="+t:e,v:(e,t,s)=>ml.h[e]={v:t,s:s,e:{}},8:(e,c)=>{},9:L=>L&&c.w in self[c.n]&&self[c.n][c.w].register("./ml.sw.js?ml="+encodeURIComponent(L))})[x]&&z[x](L,o,a,d,s)},true),
                            '</script>',
-                           
-                           
                            
                            '<style>',
                            'h1 {',
@@ -877,11 +870,11 @@ ml(0,ml(1),[
                              
                              Object.keys(zipFileMeta.files).map(function(filename){
                                  
-                                 const edited       = updatedUrls[ updated_prefix+filename ] ? '<span class="edited tooltip" data-text="file has been edited locally">&nbsp;</span>' : '';
+                                 const edited       = updatedUrls[ updated_prefix+filename ] ? '<span class="edited tooltip" data-tip="file has been edited locally">&nbsp;</span>' : '';
                                  const edited_class = updatedUrls[ updated_prefix+filename ] ? ' class="edited"' : ''
 
-                                 const zedBtn =   fileIsEditable(filename)   ? ['<a data-filename="'+filename+'"><span data-text="Edit file in zed" class="editinzed tooltip">&nbsp;</span>',  edited+'</a>' ] 
-                                                : filename.endsWith(".zip")  ? ['<a href="/'+uri+'/'+filename+'"><span data-text="this is a zip archive file" class="zipfile tooltip">&nbsp;</span>',    edited+'</a>' ]   
+                                 const zedBtn =   fileIsEditable(filename)   ? ['<a data-filename="'+filename+'"><span data-tip="Edit file in zed" class="editinzed tooltip">&nbsp;</span>',  edited+'</a>' ] 
+                                                : filename.endsWith(".zip")  ? ['<a href="/'+uri+'/'+filename+'"><span data-tip="this is a zip archive file" class="zipfile tooltip">&nbsp;</span>',    edited+'</a>' ]   
                                                 :                              ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',     edited+'</a>' ] ;
                                  
                                  
@@ -907,23 +900,19 @@ ml(0,ml(1),[
 
                          return resolve( 
                              
-                             new Response(html, {
-                                     status: 200,
-                                     statusText: 'Ok',
-                                     headers: new Headers({
-                                       'Content-Type'   : 'text/html',
-                                       'Content-Length' : html.length,
-                                       'ETag'           : zipFileMeta.etag,
-                                       'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                       'Last-Modified'  : zipFileMeta.date.toString(),
-                                  
-                                   
-                                     })
+                             new Response(
+                                    html, {
+                                             status: 200,
+                                             statusText: 'Ok',
+                                             headers: new Headers({
+                                               'Content-Type'   : 'text/html',
+                                               'Content-Length' : html.length,
+                                               'ETag'           : zipFileMeta.etag,
+                                               'Cache-Control'  : 'max-age=3600, s-maxage=600',
+                                               'Last-Modified'  : zipFileMeta.date.toString() } )
                                  })
-                         );
-                         
-            
-            
+                        );
+
                      });
                      
                  });
@@ -1217,11 +1206,77 @@ function injectFN(zip_url_base){
                                  if (promise) return promise.then(resolve).catch(reject);
                                  return fetch(event.request).then(resolve).catch(reject);
                              } else {
-                                 resolve(new Response(args[0],args[1]));
+                                 resolve(new Response(args[0],{status:200,headers:new Headers(args[1])}));
                              }
                          });
                          
                       
+                 }
+                 
+                 
+                 function toFetchUpdatedZip(resolve,reject) {
+                     
+                     
+                     
+                    loadUpdatedURLList ( function( updatedUrls ) {
+                       const relevantURLs = Object.keys(updatedUrls).filter(function(k){
+                           return k.startsWith(url);
+                       });
+                       
+                       if (relevantURLs.length===0) {
+                           resolve(new Response('', {
+                               status: 404,
+                               statusText: 'Not Found',
+                               headers: new Headers({
+                                 'Content-Type'   : 'text/plain',
+                                 'Content-Length' : 0
+                               })
+                           }));
+                       }
+                       
+                       const zip = new JSZip();
+                       
+                       const loop = function (i) {
+                           
+                          if (i < relevantURLs.length) {
+                              
+                              const file_url=relevantURLs[i],file_name = file_url.substr(url.length);
+                              
+                              getForageKey(updatedUrlKey(file_url),function(err,args){
+                                  
+                                  if (err) return reject(err);
+                                  
+                                  zip.file(
+                                      file_name, 
+                                      args[0],
+                                      {
+                                          date : args[1].date
+                                      }).then (function () {
+                                          loop(i+1);
+                                      });
+                                  
+                              });
+                              
+                          }  else {
+                              
+                              zip.generateAsync({type:"arraybuffer"}).then(function (buffer) {
+                                  
+                                  resolve(new Response(buffer,{
+                                      status:200,
+                                      headers : new Headers({
+                                          'Content-Type'   : mimeForFilename('x.zip'),
+                                          'Content-Length' : buffer.byteLength
+                                      })
+                                  }));
+                                  
+                              });
+                          }
+                          
+                       };
+                       loop (0);
+                        
+                    });
+                    
                  }
                  
                  
@@ -1260,12 +1315,11 @@ function injectFN(zip_url_base){
                      sha1(responseData,function(err,hash){
                          cb([
                              responseData,
-                             {
-                               'Content-Type'   : mimeForFilename(url),
-                               'Content-Length' : responseData.byteLength || responseData.length,
-                               'ETag'           : hash,
-                               'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                               'Last-Modified'  : new Date().toString()
+                             {     'Content-Type'   : mimeForFilename(url),
+                                   'Content-Length' : responseData.byteLength || responseData.length,
+                                   'ETag'           : hash,
+                                   'Cache-Control'  : 'max-age=3600, s-maxage=600',
+                                   'Last-Modified'  : new Date().toString()
                              }
                          ]);
                      });
@@ -1303,10 +1357,13 @@ function injectFN(zip_url_base){
                 });
              }
              
+            
              return lib;
           };
 
         }
+        
+            
 
     }, (()=>{  return {
         
