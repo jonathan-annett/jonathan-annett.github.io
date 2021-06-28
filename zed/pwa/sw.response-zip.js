@@ -861,7 +861,7 @@ ml(0,ml(1),[
                                                 :                 ['<a data-filename="'+filename+'"><span class="normal">&nbsp;</span>',      edited+'</a>' ] ;
                                  
                                  
-                                 return '<li'+edited_class+'>' + parent_link +'/' +linkit(full_uri,filename,zedBtn,extra_attrs) + '</li>';
+                                 return '<li'+edited_class+'>' + parent_link +'/' +linkit(full_uri,filename,zedBtn) + '</li>';
                               }),
                              
                          [
