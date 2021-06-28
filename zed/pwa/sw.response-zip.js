@@ -247,7 +247,7 @@ ml(0,ml(1),[
                              
                              if (status===0 && buffer.byteLength===0) {
                                  
-                                 return fetch(url).then(resolve).catch(reject);
+                                 return fetch(url,{mode:'no-cors'}).then(resolve).catch(reject);
                                  
                              }
                              
