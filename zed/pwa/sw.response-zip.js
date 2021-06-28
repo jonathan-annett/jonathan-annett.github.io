@@ -725,7 +725,7 @@ ml(0,ml(1),[
                              return i===a.length-1?'/'+x:'/'+x+'.zip';
                          });
                          
-                         const top_uri = uri_split[0]+'.zip';
+                         const top_uri = uri_split[0];
                          
                          //const top_uri_re = new RegExp( 
                           //   top_uri.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'),'g'
@@ -759,7 +759,6 @@ ml(0,ml(1),[
                              const disp  = parts.length===1?undefined:parts.pop();
                              const res = (href.endsWith(uri)?boldit:linkit) (href,disp);
                              return res;
-                             
                          }).join("").replace(top_uri,'');
                         
                          const updated_prefix = url + "/" ;
