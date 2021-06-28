@@ -760,7 +760,7 @@ ml(0,ml(1),[
                              const res = (href.endsWith(uri)?boldit:linkit) (href,disp);
                              return res;
                              
-                         }).join("");
+                         }).join("").replace(top_uri,'');
                         
                          const updated_prefix = url + "/" ;
                                  
