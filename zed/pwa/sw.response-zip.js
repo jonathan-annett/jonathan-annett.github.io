@@ -101,12 +101,23 @@ ml(0,ml(1),[
                       
                      while ( rules.some( enforce ) );
                     
-                    return cb(undefined,url);
+                    return cb(undefined,url,getVirtualDir(url));
                     
                  }
                  fetchLocalJson("/zed/pwa/fstab.json",function(err,arr){
                      if (err) return cb(err);
-                      const json = JSON.stringify(arr);
+                      const source = arr.filter(function(x){
+                          if (x.virtualDirs) {
+                              fixUrl.virtualDirs = x.virtualDirs;
+                              fixUrl.virtualDirUrls = Object.keys(x.virtualDirs);
+                              delete x.virtualDirs;
+                              return false;
+                          }
+                          
+                          return true;
+                      });
+                      arr.splice(0,arr.length);
+                      const json = JSON.stringify(source);
                       const regexs = function (x,k) {
                          if (x[k]) {
                              x[k]= new RegExp(x[k],x.flags||'');
@@ -117,14 +128,14 @@ ml(0,ml(1),[
                              x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
                           }
                       };
-                      const rules_template = arr.map(function(x){
+                      const rules_template = source.map(function(x){
                            regexs(x,'match');   
                            regexs(x,'replace'); 
                            replacements(x,'with');
                            replacements(x,'addPrefix');
                            return x;
                       });
-                      
+                      source.splice(0,source.length);
                       fixUrl.rules = function (baseURI) {
                           const replacements = function (dest,src,k) {
                               if (src[k]) {
@@ -140,8 +151,30 @@ ml(0,ml(1),[
                           rules.forEach(text_reps);
                           return rules_template;
                      }
-                     return fixUrl(url,referrer,cb);
+                      return fixUrl(url,referrer,cb);
                  });
+                 
+                 
+                 
+                 function getVirtualDir(url) {
+                     if (fixUrl.virtualDirs && fixUrl.virtualDirUrls) {
+                         const prefix = fixUrl.virtualDirUrls.find(function (u){
+                             return url.indexOf(u)===0;
+                         });
+                         
+                         if (prefix) {
+                             const subpath = url.substr(prefix.length);
+                             return {
+                                 root  : prefix,
+                                 path  : subpath,
+                                 urls  : fixUrl.virtualDirs[prefix].map(function(newprefix){
+                                     return newprefix+subpath;
+                                 })
+                             };
+                         }
+                     }
+                     return false;
+                 }
              }
 
              function defineDB(name) {
@@ -321,7 +354,7 @@ ml(0,ml(1),[
                      function(resolve,reject) {
                          
                          //const url = event.request.url;
-                         const shouldCache = url.startsWith(location.origin) ||  event.request.referrer && event.request.referrer.startsWith(location.origin);
+                         const shouldCache = url.indexOf(location.origin)===0 ||  event.request.referrer && event.request.referrer.indexOf(location.origin)===0;
                          
                          fetchBufferViaCorsIfNeeded(url,function(err,buffer,status,ok,headers){
                              if (err) return reject(err);
@@ -1122,7 +1155,7 @@ ml(0,ml(1),[
                                  const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
                                  const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
                                  const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
-                                 const is_hidden    = basename.startsWith('.');
+                                 const is_hidden    = basename.indexOf('.')===0;
                                  const is_editable  = fileIsEditable(filename);
                                  const is_zip       = filename.endsWith(".zip");
                                  const is_edited    = fileisEdited( updated_prefix+filename );
@@ -1385,7 +1418,7 @@ ml(0,ml(1),[
                 databases.updatedURLS.getKeys(function(err,keys){
                     
                    const relevantURLs = keys.filter(function(k){
-                       return k.startsWith(url);
+                       return k.indexOf(url)===0;
                    });
                    
                    if (relevantURLs.length===0) {
@@ -1677,7 +1710,7 @@ ml(0,ml(1),[
       
       function get_ML () {
           return fnSrc(
-              function ml(x,L,o,a,d,s){ml.h||(ml.h={},ml.H=[],ml.d={},ml.f={});let z,C=console,e=[C,ml,"",z,x].map(e=>typeof e),l=location,O=l.origin,t=e[4]===e[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?"I":"L":x,c={r:e=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],c:e=>e.startsWith(O),R:"replace",f:"forEach",w:"serviceWorker",n:"navigator",d:"document",B:(e,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(e)?e:r.test(e)?e[c.R](r,O+"/"):c.b+e[c.R](/^(\.\/)/,""),1:()=>c[4]()||{},2:(L,o,a,d,t,D)=>{D="defined",t=typeof(t=a[L]&&a[L].name)+typeof o[t]===e[2]+e[3]?c.S(ml.h[ml.d[t].h].e,t,c.S(o,t,a[L].apply(this,d[L].map(c.x))))&&c.l(D+":",t)||c.l(D+" empty:",t):c.l("ready:",t),ml.i||(ml.i=new Proxy({},{get:(e,t)=>c.I(x=t),ownKeys:()=>c.k(ml.d),getOwnPropertyDescriptor:(e,t)=>!!ml.d[t]&&c.P(c.I(t)),has:(e,t)=>!!ml.d[t]}))},P:e=>({value:e,enumerable:!0,configurable:!0}),S:(o,e,t)=>(Object.defineProperty(o,e,c.P(t)),t),3:()=>c[4]().constructor.name||"x",4:()=>typeof self===e[0]&&self,x:e=>e(),l:C.log.bind(C),L:(e,R,t,m)=>(R=c.r(x),m=R?c[4]():!!o,e=m?o:{},R=R||[x,"t",0,x],t=a||R[1],ml(0,e,[t+"@T|"+R[3]],()=>ml(2,"T",e,{T:L},{T:[x=>(R=e[t],m||delete e[t],(x=t&&ml.d[t])&&(ml.h[x.h].e[t]=R),R)]}),"T")),I:(e,t)=>(e=ml.d[x])&&(t=ml.h[e.h])&&t.e[x],k:o=>Object.keys(o)};return(z=typeof c[t]===e[1]?c[t](L,o,a,d,s):c)!==c?z:(z={F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),0:()=>z.l(o),t:e=>Math.min(100,ml.t=ml.t?2*ml.t:1),l:e=>(e=e.map(z.u).filter(z.y)).length?setTimeout(z.l,z.t(e.length),e)&&c.l("pending...",e):a(),u:(x,R,e,t)=>(R=c.r(x))?(!(t=R[2])||t===(d||c[3]()))&&(t=R[1],e=c.B(R[3]),c.c(e)&&(ml.d[t]={h:e}),z.T(window,"script",s=>{z.p(e,s.setAttribute.bind(s,"src"),s)}),t):!L[x]&&x,y:x=>!!x,s:(d,e,C)=>{(s=z.E(d,e)).type="text/java"+e,C(z.A(d,s))},S:(e,s,C,D)=>{D=z.f(e[c.d],()=>z.s(D.contentWindow[c.d],s,C))},T:(e,s,C)=>z.s(e[c.d],s,C),E:(d,e)=>d.createElement(e),A:(d,x)=>d.body.appendChild(x),f:(d,e,l)=>((e=z.E(d,"iframe")).style.display="none",e.src="ml.html",e.onload=l,z.A(d,e)),U:()=>c.k(ml.h),p:(e,l,s,r,L,t,R)=>(r=z.r(),L=(t=>l(z.V(e,t))),t=(t=>L(z.v(e,t,s))),R=(()=>t(r)),!ml.h[e]&&(ml.H.push(e)&&(typeof fetch===z.F?fetch(e,{method:"HEAD"}).then(e=>t(z.e(e,r))).catch(R):R()))),e:(r,d)=>r.headers.get("Etag")[c.R](/[\"\/\\\-]*/g,"")||d,r:()=>Math.random().toString(36).substr(-8),V:(e,t)=>z.F?e+"?v="+t:e,v:(e,t,s)=>ml.h[e]={v:t,s:s,e:{}},8:(e,c)=>{},9:L=>L&&c.w in self[c.n]&&self[c.n][c.w].register("./ml.sw.js?ml="+encodeURIComponent(L))})[x]&&z[x](L,o,a,d,s)},
+              function ml(x,L,o,a,d,s){ml.h||(ml.h={},ml.H=[],ml.d={},ml.f={});let z,C=console,e=[C,ml,"",z,x].map(e=>typeof e),l=location,O=l.origin,t=e[4]===e[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?"I":"L":x,c={r:e=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],c:e=>e.indexOf(O)===0,R:"replace",f:"forEach",w:"serviceWorker",n:"navigator",d:"document",B:(e,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(e)?e:r.test(e)?e[c.R](r,O+"/"):c.b+e[c.R](/^(\.\/)/,""),1:()=>c[4]()||{},2:(L,o,a,d,t,D)=>{D="defined",t=typeof(t=a[L]&&a[L].name)+typeof o[t]===e[2]+e[3]?c.S(ml.h[ml.d[t].h].e,t,c.S(o,t,a[L].apply(this,d[L].map(c.x))))&&c.l(D+":",t)||c.l(D+" empty:",t):c.l("ready:",t),ml.i||(ml.i=new Proxy({},{get:(e,t)=>c.I(x=t),ownKeys:()=>c.k(ml.d),getOwnPropertyDescriptor:(e,t)=>!!ml.d[t]&&c.P(c.I(t)),has:(e,t)=>!!ml.d[t]}))},P:e=>({value:e,enumerable:!0,configurable:!0}),S:(o,e,t)=>(Object.defineProperty(o,e,c.P(t)),t),3:()=>c[4]().constructor.name||"x",4:()=>typeof self===e[0]&&self,x:e=>e(),l:C.log.bind(C),L:(e,R,t,m)=>(R=c.r(x),m=R?c[4]():!!o,e=m?o:{},R=R||[x,"t",0,x],t=a||R[1],ml(0,e,[t+"@T|"+R[3]],()=>ml(2,"T",e,{T:L},{T:[x=>(R=e[t],m||delete e[t],(x=t&&ml.d[t])&&(ml.h[x.h].e[t]=R),R)]}),"T")),I:(e,t)=>(e=ml.d[x])&&(t=ml.h[e.h])&&t.e[x],k:o=>Object.keys(o)};return(z=typeof c[t]===e[1]?c[t](L,o,a,d,s):c)!==c?z:(z={F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),0:()=>z.l(o),t:e=>Math.min(100,ml.t=ml.t?2*ml.t:1),l:e=>(e=e.map(z.u).filter(z.y)).length?setTimeout(z.l,z.t(e.length),e)&&c.l("pending...",e):a(),u:(x,R,e,t)=>(R=c.r(x))?(!(t=R[2])||t===(d||c[3]()))&&(t=R[1],e=c.B(R[3]),c.c(e)&&(ml.d[t]={h:e}),z.T(window,"script",s=>{z.p(e,s.setAttribute.bind(s,"src"),s)}),t):!L[x]&&x,y:x=>!!x,s:(d,e,C)=>{(s=z.E(d,e)).type="text/java"+e,C(z.A(d,s))},S:(e,s,C,D)=>{D=z.f(e[c.d],()=>z.s(D.contentWindow[c.d],s,C))},T:(e,s,C)=>z.s(e[c.d],s,C),E:(d,e)=>d.createElement(e),A:(d,x)=>d.body.appendChild(x),f:(d,e,l)=>((e=z.E(d,"iframe")).style.display="none",e.src="ml.html",e.onload=l,z.A(d,e)),U:()=>c.k(ml.h),p:(e,l,s,r,L,t,R)=>(r=z.r(),L=(t=>l(z.V(e,t))),t=(t=>L(z.v(e,t,s))),R=(()=>t(r)),!ml.h[e]&&(ml.H.push(e)&&(typeof fetch===z.F?fetch(e,{method:"HEAD"}).then(e=>t(z.e(e,r))).catch(R):R()))),e:(r,d)=>r.headers.get("Etag")[c.R](/[\"\/\\\-]*/g,"")||d,r:()=>Math.random().toString(36).substr(-8),V:(e,t)=>z.F?e+"?v="+t:e,v:(e,t,s)=>ml.h[e]={v:t,s:s,e:{}},8:(e,c)=>{},9:L=>L&&c.w in self[c.n]&&self[c.n][c.w].register("./ml.sw.js?ml="+encodeURIComponent(L))})[x]&&z[x](L,o,a,d,s)},
               true
           );
       }

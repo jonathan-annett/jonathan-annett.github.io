@@ -15,8 +15,13 @@
     "with": "https://jonathan-annett.github.io/zed/pwa/yet.zip/yet/"
 },
 {
-    "replace": "^https\\:\\/\\/jonathan-annett\\.github\\.io\\/zed\\/pwa\\/demo",
-    "with": "https://jonathan-annett.github.io/zed/pwa/yet.zip/yet/index.html"
+    
+    "virtualDirs" : {
+        "https://jonathan-annett.github.io/zed/pwa/dir"      : [
+            "https://jonathan-annett.github.io/zed/pwa/yet.zip",
+            "https://jonathan-annett.github.io/zed/pwa/test.zip"
+        ]
+    }
 }
 
 ]

@@ -74,7 +74,7 @@ ml(0,ml(1),[
                 }
                 Object.keys(localStorage).forEach(function(k){
                     
-                    if (k.startsWith("windowTools.")){
+                    if (k.indexOf("windowTools.")===0){
                         info[k]=JSON.parse(localStorage.getItem(k));
                     }
                     
