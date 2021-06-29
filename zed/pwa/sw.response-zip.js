@@ -67,6 +67,65 @@ ml(0,ml(1),[
              defineDB("openZips");
              defineDB("zipMetadata");
              defineDB("cachedURLS");
+             
+             
+             function fetchLocalJson(path,cb) {
+                 fetch(path).then(function(response){
+                    response.json().then(function(x){return cb(undefined,x)}).catch(cb); 
+                 }).catch(cb);
+             }
+             
+             function fixUrl(url,referrer,cb) {
+                 
+                 if (fixUrl.rules) {
+                     
+                     const basepath = referrer === '' ? location.origin : 
+                     
+                       ( referrer.lastIndexOf('.') > referrer.lastIndexOf('/') ) 
+                          ? referrer.substr(0,referrer.indexOf("/"))
+                          : referrer;  
+                          
+                      console.log("referrer",referrer,"--> basepath",basepath);
+                     const rules = fixUrl.rules(basepath);
+                     const enforce = function(x){
+                         if (x.replace&&x.replace.test(url)) { 
+                             url = url.replace(x.replace,x.with);
+                             return true;
+                         } else {
+                             if (x.match && x.addPrefix && x.match.test(url)) { 
+                                 url = x.addPrefix + url;
+                                 return true;
+                             }
+                         }
+                      };
+                      
+                     while ( rules.some( enforce ) );
+                    
+                    return cb(undefined,url);
+                    
+                 }
+                 fetchLocalJson("/zed/pwa/fstab.json",function(err,arr){
+                     if (err) return cb(err);
+                     const json = JSON.stringify(arr);
+                      fixUrl.rules = function (baseURI) {
+                          const replacements = function (x,k) {
+                              x[k] = x[k].replace(/\$\{origin\}/g,location.origin).replace(/\$\{base\}/g,baseURI);
+                          };
+                          const rules = JSON.parse(json);
+                          const regexs = function (x,k) {
+                             if (x[k]) x[k]= new RegExp(x[k],x.flags||'');
+                          };
+                          const rules_map = function(x){
+                             regexs(x,'match');   replacements(x,'with');
+                             regexs(x,'replace'); replacements(x,'addPrefix');
+                             return x;
+                          };
+                          
+                          return rules.map(rules_map);
+                     }
+                     return fixUrl(url,cb);
+                 });
+             }
 
              function defineDB(name) {
                  // since these dbs are used by a single instance (the service worker)
@@ -189,46 +248,50 @@ ml(0,ml(1),[
              function processFetchRequest(event) {
                  
                  event.respondWith(new Promise(function(resolve,reject){
-                     
-                     const chain = [ 
-                         fetchUpdatedURLEvent, 
-                         fetchFileFromZipEvent,
-                         fetchFileFromCacheEvent,
-                         defaultFetchEvent  
-                      ];
+                     fixUrl(event.request.url,event.request.referrer,function(err,url){
+                         if (err) return reject(err);
                          
-                         
-                     const next = function (handler) {
-                         if (!handler) {
-                             console.log("could not find for",event.request.url,"from",event.request.referrer); 
-                             return ;
-                         }
-                         
-                         console.log("trying",handler.name,"for",event.request.url,"from",event.request.referrer);
-                         const promise = handler(event);
-                         
-                         if (promise) {
-                            console.log(handler.name,"is working..."); 
-                            promise.then(function(response){
-                                if (!response) return next(chain.shift()); 
+                         const chain = [ 
+                             fetchUpdatedURLEvent, 
+                             fetchFileFromZipEvent,
+                             fetchFileFromCacheEvent,
+                             defaultFetchEvent  
+                          ];
+                             
+                             
+                         const next = function (handler) {
+                             if (!handler) {
+                                 console.log("could not find for",url,"from",event.request.referrer); 
+                                 return ;
+                             }
+                             
+                             console.log("trying",handler.name,"for",url,"from",event.request.referrer);
+                             const promise = handler(event);
+                             
+                             if (promise) {
+                                console.log(handler.name,"is working..."); 
+                                promise.then(function(response){
+                                    if (!response) return next(chain.shift()); 
+                                        
+                                    console.log(handler.name,"returned a response for",url,"from",event.request.referrer); 
+                                    chain.splice(0,chain.length);
+                                    resolve(response);
+    
+                                }).catch (function(err){
                                     
-                                console.log(handler.name,"returned a response for",event.request.url,"from",event.request.referrer); 
-                                chain.splice(0,chain.length);
-                                resolve(response);
-
-                            }).catch (function(err){
-                                
-                                chain.splice(0,chain.length);
-                                reject(err);
-                            });
-                           
-                         } else {
-                             next(chain.shift()); 
-                         }
+                                    chain.splice(0,chain.length);
+                                    reject(err);
+                                });
+                               
+                             } else {
+                                 next(chain.shift()); 
+                             }
+                             
+                         };
                          
-                     };
+                         next(chain.shift()); 
+                     });
                      
-                     next(chain.shift()); 
                  }));
 
              }
@@ -358,6 +421,7 @@ ml(0,ml(1),[
              function modifyURLprotocol(protocol,url) {
                  return url.replace(/^http(s?)\:\/\//,protocol+'://');
              }
+             
              
              function full_URL(base,url) {
                  
@@ -1250,7 +1314,7 @@ ml(0,ml(1),[
              
              
              
-             function fetchUpdatedURLEvent(event){
+             function fetchUpdatedURLEvent(event,url){
                  const 
                  
                  url    =  full_URL(location.origin,event.request.url),
