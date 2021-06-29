@@ -173,6 +173,9 @@ ml(0,ml(1),[
                              }
                              
                          });
+                         
+                         
+                         console.log("finished cleaning up cached files older than 60 mins.")
                      }
                      
                      setTimeout(cleanupOld,60*1000);
