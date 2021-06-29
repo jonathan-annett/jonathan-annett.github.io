@@ -101,7 +101,7 @@ ml(0,ml(1),[
                       
                      while ( rules.some( enforce ) );
                     
-                    return cb(undefined,url,getVirtualDir(url));
+                    return getVirtualDir(url);
                     
                  }
                  fetchLocalJson("/zed/pwa/fstab.json",function(err,arr){
@@ -157,23 +157,43 @@ ml(0,ml(1),[
                  
                  
                  function getVirtualDir(url) {
+                     
                      if (fixUrl.virtualDirs && fixUrl.virtualDirUrls) {
+                         // see if the url starts with one of the virtual directory path names
                          const prefix = fixUrl.virtualDirUrls.find(function (u){
                              return url.indexOf(u)===0;
                          });
                          
                          if (prefix) {
+                             // pull in the list of replacement zips that are layered under this url
+                             // (earlier entries replace later entries, so we loop until we get a hit inside the zip file
+                             // this loops through the stored meta only, later we will crack into the actual zip
+                             // this also has the effect of precaching the zip file's data for the unzip process
                              const subpath = url.substr(prefix.length);
-                             return {
-                                 root  : prefix,
-                                 path  : subpath,
-                                 urls  : fixUrl.virtualDirs[prefix].map(function(newprefix){
-                                     return newprefix+subpath;
-                                 })
+                             const zipurlprefixes = fixUrl.virtualDirs[prefix].slice(0);
+                             const locateZipMetadata = function (i) {
+                                 if (i<zipurlprefixes.length) {
+                                     getZipFile(zipurlprefixes[i],function(err,buffer,zipFileMeta){
+                                         if (err) return locateZipMetadata(i+1);
+                                         if (!!zipFileMeta.files[subpath]) {
+                                             // this is enough to tellus the file exists inside this zip
+                                             return cb (undefined,zipurlprefixes[i]+subpath);
+                                         }
+                                     });
+                                 } else {
+                                     // this will result in a eventual 404 from the end server
+                                     // (unless of course the url points to an actual file.)
+                                     return cb(undefined,url);
+                                 }
                              };
+                             
+                             locateZipMetadata(0);
+                             
                          }
                      }
-                     return false;
+                     
+                     // fall through to default callback with url
+                     return cb(undefined,url);
                  }
              }
 
