@@ -106,26 +106,39 @@ ml(0,ml(1),[
                  }
                  fetchLocalJson("/zed/pwa/fstab.json",function(err,arr){
                      if (err) return cb(err);
-                     const json = JSON.stringify(arr);
+                      const json = JSON.stringify(arr);
+                      const regexs = function (x,k) {
+                         if (x[k]) {
+                             x[k]= new RegExp(x[k],x.flags||'');
+                         }
+                      };
+                      const replacements = function (x,k) {
+                          if (x[k]) {
+                             x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
+                          }
+                      };
+                      const rules_template = arr.map(function(x){
+                           regexs(x,'match');   
+                           regexs(x,'replace'); 
+                           replacements(x,'with');
+                           replacements(x,'addPrefix');
+                           return x;
+                      });
+                      
                       fixUrl.rules = function (baseURI) {
-                          const replacements = function (x,k) {
-                              if (x[k]) {
-                                 x[k] = x[k].replace(/\$\{origin\}/g,location.origin).replace(/\$\{base\}/g,baseURI);
+                          const replacements = function (dest,src,k) {
+                              if (src[k]) {
+                                 dest[k] = src[k].replace(/\$\{base\}/g,baseURI);
                               }
                           };
                           const rules = JSON.parse(json);
-                          const regexs = function (x,k) {
-                             if (x[k]) {
-                                 x[k]= new RegExp(x[k],x.flags||'');
-                             }
-                          };
-                          const rules_map = function(x){
-                             regexs(x,'match');   replacements(x,'with');
-                             regexs(x,'replace'); replacements(x,'addPrefix');
+                          const text_reps = function(x,i){
+                             replacements(rules_template[i],x,'with');
+                             replacements(rules_template[i],x,'addPrefix');
                              return x;
                           };
-                          
-                          return rules.map(rules_map);
+                          rules.forEach(text_reps);
+                          return rules_template;
                      }
                      return fixUrl(url,referrer,cb);
                  });
@@ -274,7 +287,6 @@ ml(0,ml(1),[
                              const promise = handler(event,url);
                              
                              if (promise) {
-                                console.log(handler.name,"is working..."); 
                                 promise.then(function(response){
                                     if (!response) return next(chain.shift()); 
                                         
