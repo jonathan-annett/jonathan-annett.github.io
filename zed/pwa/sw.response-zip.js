@@ -251,8 +251,9 @@ ml(0,ml(1),[
              
              function processFetchRequest(event) {
                  
-                 fixUrl(event.request.url,event.request.referrer,function(err,url){
+                
                      event.respondWith(new Promise(function(resolve,reject){
+                         fixUrl(event.request.url,event.request.referrer,function(err,url){
                           if (err) return reject(err);
                          
                          const chain = [ 
@@ -296,9 +297,9 @@ ml(0,ml(1),[
                          next(chain.shift()); 
                         
                          
-                     }));
-                 });    
-                 
+                            
+                         });    
+                  }));
              }
              
              function defaultFetchEvent(event,url) {
