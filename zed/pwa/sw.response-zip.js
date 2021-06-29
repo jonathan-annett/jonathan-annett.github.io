@@ -172,37 +172,22 @@ ml(0,ml(1),[
                              const subpath = url.substr(prefix.length);
                              const zipurlprefixes = fixUrl.virtualDirs[prefix].slice(0);
                              const locateZipMetadata = function (i) {
+                                 
                                  if (i<zipurlprefixes.length) {
-                                     const parts = (zipurlprefixes[i]+subpath).split('.zip/');
-                                     let ifNoneMatch ,ifModifiedSince;
-                                     resolveZip (parts,ifNoneMatch,ifModifiedSince)
-                                       .then (function (response){
-                                           if (response) {
-                                               if (response.status===200) {
-                                                   return cb (undefined,false,response);
-                                               }
-                                           } 
-                                           
-                                           return locateZipMetadata(i+1);
-                                           
-                                       }).catch(function(){
-                                           return locateZipMetadata(i+1);
-                                       });
-                                     
-                                     
-                                     /*
-                                     getZipFile(zipurlprefixes[i],function(err,buffer,zipFileMeta){
-                                         if (err) return locateZipMetadata(i+1);
-                                         if (!!zipFileMeta.files[subpath]) {
-                                             // this is enough to tellus the file exists inside this zip
-                                             return cb (undefined,zipurlprefixes[i]+subpath);
-                                         }
-                                     });*/
+                                     const fixup_url = zipurlprefixes[i]+subpath;
+                                     getEmbeddedZipFileResponse(fixup_url,function(err,response){
+                                         if (err||!response) return locateZipMetadata(i+1);
+                                         console.log("resolved vitualdir",url,"==>",fixup_url);
+                                         return cb (undefined,false,response);
+                                     });
+                                            
+                             
                                  } else {
                                      // this will result in a eventual 404 from the end server
                                      // (unless of course the url points to an actual file.)
                                      return cb(undefined,url);
                                  }
+                                 
                              };
                              
                              locateZipMetadata(0);
@@ -1362,6 +1347,51 @@ ml(0,ml(1),[
                  
                 
              }
+             
+             
+             function getEmbeddedZipFileResponse(url,options,cb) {
+                 
+                 if (typeof options == 'function') {
+                     cb      = options;
+                     options = {};
+                 }
+                 const {ifNoneMatch,ifModifiedSince, showListing} = options;
+                     
+                 //const url             = request.url; 
+                 const parts           = url.split('.zip/');
+
+                 if (parts.length>1) {
+                     // this is a url in the format http://example.com/path/to/zipfile.zip/path/to/file/in/zip.ext
+                     
+                     return resolveZip (parts,ifNoneMatch,ifModifiedSince).then(function(response){
+                        if (response && response.status===200) {
+                            return cb(undefined,response);
+                        }  else {
+                            return cb ();
+                        }
+                     }).catch(cb); 
+                     
+                 } else {
+                 
+                     if (showListing && url.endsWith('.zip')) {
+                         // this is a url pointing to a possibly existing zip file
+                         // we don't let you download the zip. we do however give you the file list when you ask for a zip
+                         // which provides links to each file inside
+                         return resolveZipListing ( url ).then(function(response){
+                             if (response && response.status===200) {
+                                 return cb(undefined,response);
+                             }  else {
+                                 return cb ();
+                             }
+                         }); 
+                         
+                     } else {
+                          return cb ();
+                     }
+                     
+                 }
+             }
+             
 
              function doFetchZipUrl(request,url) {
                      
