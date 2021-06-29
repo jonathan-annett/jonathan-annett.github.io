@@ -264,14 +264,14 @@ ml(0,ml(1),[
                           ];
                              
                              
-                         const next = function (handler,url) {
+                         const next = function (handler) {
                              if (!handler) {
                                  console.log("could not find for",url,"from",event.request.referrer); 
                                  return ;
                              }
                              
                              console.log("trying",handler.name,"for",url,"from",event.request.referrer);
-                             const promise = handler(event);
+                             const promise = handler(event,url);
                              
                              if (promise) {
                                 console.log(handler.name,"is working..."); 
