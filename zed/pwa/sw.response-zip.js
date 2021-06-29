@@ -173,7 +173,7 @@ ml(0,ml(1),[
                              const zipurlprefixes = fixUrl.virtualDirs[prefix].slice(0);
                              const locateZipMetadata = function (i) {
                                  if (i<zipurlprefixes.length) {
-                                     const parts = zipurlprefixes[i]+subpath.split('.zip/');
+                                     const parts = (zipurlprefixes[i]+subpath).split('.zip/');
                                      let ifNoneMatch ,ifModifiedSince;
                                      resolveZip (parts,ifNoneMatch,ifModifiedSince)
                                        .then (function (response){
