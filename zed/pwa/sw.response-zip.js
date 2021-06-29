@@ -109,11 +109,15 @@ ml(0,ml(1),[
                      const json = JSON.stringify(arr);
                       fixUrl.rules = function (baseURI) {
                           const replacements = function (x,k) {
-                              x[k] = x[k].replace(/\$\{origin\}/g,location.origin).replace(/\$\{base\}/g,baseURI);
+                              if (x[k]) {
+                                 x[k] = x[k].replace(/\$\{origin\}/g,location.origin).replace(/\$\{base\}/g,baseURI);
+                              }
                           };
                           const rules = JSON.parse(json);
                           const regexs = function (x,k) {
-                             if (x[k]) x[k]= new RegExp(x[k],x.flags||'');
+                             if (x[k]) {
+                                 x[k]= new RegExp(x[k],x.flags||'');
+                             }
                           };
                           const rules_map = function(x){
                              regexs(x,'match');   replacements(x,'with');
