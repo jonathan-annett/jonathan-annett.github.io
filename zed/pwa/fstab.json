@@ -3,5 +3,5 @@
    {  "replace" : "^\\/",                     "with"      : "${origin}/"},
    {  "replace" : "^\\.\\/",                   "with"      : "${base}/" },
    {  "match"   : "^((?!https:)(?:[a-z]))",   "addPrefix" : "${base}/" },
-   {  "replace" : "^https\\:\\/\\/jonathan-annett\\.github\\.io\\/yet\\/",                "with"      : "https://jonathan-annett.github.io/zed/pwa/yet.zip/yet/" }
+   {  "replace" : "^https\\:\\/\\/jonathan-annett\\.github\\.io\\/zed\\/pwa\\/js\\/",                "with"      : "https://jonathan-annett.github.io/zed/pwa/yet.zip/yet/" }
 ]
