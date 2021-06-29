@@ -247,9 +247,9 @@ ml(0,ml(1),[
              
              function processFetchRequest(event) {
                  
-                 event.respondWith(new Promise(function(resolve,reject){
-                     fixUrl(event.request.url,event.request.referrer,function(err,url){
-                         if (err) return reject(err);
+                 fixUrl(event.request.url,event.request.referrer,function(err,url){
+                     event.respondWith(new Promise(function(resolve,reject){
+                          if (err) return reject(err);
                          
                          const chain = [ 
                              fetchUpdatedURLEvent, 
@@ -276,7 +276,7 @@ ml(0,ml(1),[
                                     console.log(handler.name,"returned a response for",url,"from",event.request.referrer); 
                                     chain.splice(0,chain.length);
                                     resolve(response);
-    
+        
                                 }).catch (function(err){
                                     
                                     chain.splice(0,chain.length);
@@ -290,19 +290,20 @@ ml(0,ml(1),[
                          };
                          
                          next(chain.shift()); 
-                     });
-                     
-                 }));
-
+                        
+                         
+                     }));
+                 });    
+                 
              }
              
-             function defaultFetchEvent(event) {
+             function defaultFetchEvent(event,url) {
                  
                  return new Promise(
                      
                      function(resolve,reject) {
                          
-                         const url = event.request.url;
+                         //const url = event.request.url;
                          const shouldCache = url.startsWith(location.origin) ||  event.request.referrer && event.request.referrer.startsWith(location.origin);
                          
                          fetchBufferViaCorsIfNeeded(url,function(err,buffer,status,ok,headers){
@@ -377,9 +378,9 @@ ml(0,ml(1),[
              }
              
              
-             function fetchFileFromCacheEvent(event){
+             function fetchFileFromCacheEvent(event,url){
                  
-                 const url = full_URL(location.origin,event.request.url);
+                 //const url = full_URL(location.origin,event.request.url);
                  switch (event.request.method) {
                      case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.cachedURLS,event.request) );
                  }
@@ -1269,9 +1270,9 @@ ml(0,ml(1),[
                 
              }
 
-             function doFetchZipUrl(request) {
+             function doFetchZipUrl(request,url) {
                      
-                 const url             = request.url; 
+                 //const url             = request.url; 
                  const parts           = url.split('.zip/');
                  const ifNoneMatch     = request.headers.get('If-None-Match');
                  const ifModifiedSince = request.headers.get('If-Modified-Since');
@@ -1305,9 +1306,9 @@ ml(0,ml(1),[
             
              
              
-             function fetchFileFromZipEvent(event) {
+             function fetchFileFromZipEvent(event,url) {
                  
-                return  doFetchZipUrl(event.request);
+                return  doFetchZipUrl(event.request,url);
                 
                 
              }
@@ -1317,7 +1318,7 @@ ml(0,ml(1),[
              function fetchUpdatedURLEvent(event,url){
                  const 
                  
-                 url    =  full_URL(location.origin,event.request.url),
+                 //url    =  full_URL(location.origin,event.request.url),
                  db     =  databases.updatedURLS;
                  
                  switch (event.request.method) {
