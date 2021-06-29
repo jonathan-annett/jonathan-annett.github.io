@@ -173,13 +173,31 @@ ml(0,ml(1),[
                              const zipurlprefixes = fixUrl.virtualDirs[prefix].slice(0);
                              const locateZipMetadata = function (i) {
                                  if (i<zipurlprefixes.length) {
+                                     const parts = fixUrl.virtualDirs[prefix]+subpath.split('.zip/');
+                                     let ifNoneMatch ,ifModifiedSince;
+                                     resolveZip (parts,ifNoneMatch,ifModifiedSince)
+                                       .then (function (response){
+                                           if (response) {
+                                               if (response.status===200) {
+                                                   return cb (undefined,false,response);
+                                               }
+                                           } 
+                                           
+                                           return locateZipMetadata(i+1);
+                                           
+                                       }).catch(function(){
+                                           return locateZipMetadata(i+1);
+                                       });
+                                     
+                                     
+                                     /*
                                      getZipFile(zipurlprefixes[i],function(err,buffer,zipFileMeta){
                                          if (err) return locateZipMetadata(i+1);
                                          if (!!zipFileMeta.files[subpath]) {
                                              // this is enough to tellus the file exists inside this zip
                                              return cb (undefined,zipurlprefixes[i]+subpath);
                                          }
-                                     });
+                                     });*/
                                  } else {
                                      // this will result in a eventual 404 from the end server
                                      // (unless of course the url points to an actual file.)
@@ -319,8 +337,13 @@ ml(0,ml(1),[
                  
                 
                      event.respondWith(new Promise(function(resolve,reject){
-                         fixUrl(event.request.url,event.request.referrer,function(err,url){
+                         
+                         fixUrl(event.request.url,event.request.referrer,function(err,url,virtualResponse){
+                             
                           if (err) return reject(err);
+                          
+                          if (virtualResponse) return resolve(virtualResponse);
+                          
                          
                          const chain = [ 
                              fetchUpdatedURLEvent, 
