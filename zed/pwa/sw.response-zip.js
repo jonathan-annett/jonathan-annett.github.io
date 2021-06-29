@@ -82,7 +82,7 @@ ml(0,ml(1),[
                      const basepath = referrer === '' ? location.origin : 
                      
                        ( referrer.lastIndexOf('.') > referrer.lastIndexOf('/') ) 
-                          ? referrer.substr(0,referrer.indexOf("/"))
+                          ? referrer.substr(0,referrer.lastIndexOf("/"))
                           : referrer;  
                           
                       console.log("referrer",referrer,"--> basepath",basepath);
