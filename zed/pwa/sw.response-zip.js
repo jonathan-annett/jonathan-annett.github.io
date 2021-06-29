@@ -1363,30 +1363,42 @@ ml(0,ml(1),[
                  if (parts.length>1) {
                      // this is a url in the format http://example.com/path/to/zipfile.zip/path/to/file/in/zip.ext
                      
-                     return resolveZip (parts,ifNoneMatch,ifModifiedSince).then(function(response){
-                        if (response && response.status===200) {
-                            return cb(undefined,response);
-                        }  else {
-                            return cb ();
-                        }
-                     }).catch(cb); 
+                     return resolveZip (parts,ifNoneMatch,ifModifiedSince)
+                     
+                            .then(function(response){
+                                if (response && response.status===200) {
+                                    return cb(undefined,response);
+                                }  else {
+                                    return cb ();
+                                }
+                            })
+                            
+                            .catch(cb); 
                      
                  } else {
                  
                      if (showListing && url.endsWith('.zip')) {
+                         
                          // this is a url pointing to a possibly existing zip file
                          // we don't let you download the zip. we do however give you the file list when you ask for a zip
                          // which provides links to each file inside
-                         return resolveZipListing ( url ).then(function(response){
-                             if (response && response.status===200) {
-                                 return cb(undefined,response);
-                             }  else {
-                                 return cb ();
-                             }
-                         }); 
+                         return resolveZipListing ( url )
+                         
+                                  .then(function(response){
+                                         if (response && response.status===200) {
+                                             return cb(undefined,response);
+                                         }  else {
+                                             return cb ();
+                                         }
+                                     })
+                                     
+                                  .catch(cb); 
                          
                      } else {
+                         
                           return cb ();
+                          
+                          
                      }
                      
                  }
