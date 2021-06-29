@@ -1,0 +1,17 @@
+{
+  "name": "Progressive Web App Test",
+  "short_name": "PWA",
+  "description": "Test",
+  "lang": "en-US",
+  "display": "standalone",
+  "background_color": "#B12A34",
+  "theme_color": "#B12A34",
+  "icons": [
+      {
+          "src": "/pwapp/icon.svg",
+          "purpose": "maskable any",
+          "sizes": "any"
+      }
+  ],
+  "start_url": "/pwapp/index.html"
+}
