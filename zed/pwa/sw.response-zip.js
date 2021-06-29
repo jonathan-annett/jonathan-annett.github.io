@@ -110,6 +110,9 @@ ml(0,ml(1),[
                           if (x.virtualDirs) {
                               fixUrl.virtualDirs = x.virtualDirs;
                               fixUrl.virtualDirUrls = Object.keys(x.virtualDirs);
+                              fixUrl.virtualDirFoundUrls = {};
+                              
+                              cleanupOld();
                               delete x.virtualDirs;
                               return false;
                           }
@@ -154,9 +157,35 @@ ml(0,ml(1),[
                       return fixUrl(url,referrer,cb);
                  });
                  
-                 
+                 function cleanupOld() {
+                     if (fixUrl.virtualDirFoundUrls) {
+                         const watershed = Date.now - (  60 * 60 * 1000);// keeps stuff for an hour
+                         Object.keys (fixUrl.virtualDirFoundUrls).forEach(function(u){
+                             const previous = fixUrl.virtualDirFoundUrls[u];
+                            
+                             if (previous && previous.when < watershed) {
+                                 delete fixUrl.virtualDirFoundUrls[previous.url];
+                                 delete fixUrl.virtualDirFoundUrls[previous.fixup_url];
+                                 delete previous.response;
+                                 delete previous.url;
+                                 delete previous.fixup_url;
+                                 delete previous.when;
+                             }
+                             
+                         });
+                     }
+                     
+                     setTimeout(cleanupOld,60*1000);
+                 }
                  
                  function getVirtualDir(url) {
+                     
+                     const previous = fixUrl.virtualDirFoundUrls[url];
+                     if (previous) {
+                         previous.when = Date.now();
+                         console.log("reused vitualdir",previous.url,"==>",previous.fixup);
+                         return  cb(undefined,false,previous.response.clone());
+                     }
                      
                      if (fixUrl.virtualDirs && fixUrl.virtualDirUrls) {
                          // see if the url starts with one of the virtual directory path names
@@ -178,6 +207,14 @@ ml(0,ml(1),[
                                      getEmbeddedZipFileResponse(fixup_url,function(err,response){
                                          if (err||!response) return locateZipMetadata(i+1);
                                          console.log("resolved vitualdir",url,"==>",fixup_url);
+                                         const entry = fixUrl.virtualDirFoundUrls[url]={
+                                             fixup_url : fixup_url,
+                                             url: url,
+                                             response: response.clone(),
+                                             when:Date.now()
+                                         };
+                                         fixUrl.virtualDirFoundUrls[fixup_url]=entry;
+                                         
                                          return cb (undefined,false,response);
                                      });
                                             
