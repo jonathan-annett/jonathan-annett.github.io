@@ -1769,8 +1769,7 @@ ml(0,ml(1),[
              
             
              
-             function 
-             (url,db,responseData,responseState,cb) {
+             function updateURLContents(url,db,responseData,responseState,cb) {
                  
                  if (typeof responseState==='function') {
                      cb            = responseState;
