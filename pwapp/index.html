@@ -50,7 +50,6 @@
                     
                     fetch("betakeys.json")
                       .then(toJSON)
-                        .then(filterConfigComments)
                           .then(resolve).catch(reject);
         
         
@@ -91,7 +90,7 @@
                     
                      getConfig().then(function(config){
                         
-                        if (config && config.site && config.site.betaTesterKeys) {
+                        if (config && config.betaTesterKeys) {
                             const keyAsHex = localStorage[localStorageKey];
                             if (keyAsHex) {
                                 const keyAsBuffer = bufferFromHex(keyAsHex);
@@ -103,7 +102,7 @@
                                             
                                            const hashedKeyHex = bufferToHex(hashedKeyasBuffer);
                                       
-                                             if ( config.site.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
+                                             if ( config.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
                                                  console.log("your beta tester approval code:",hashedKeyHex);
                                                  html.classList.remove("beta");
                                                  html.classList.add("notbeta");
@@ -162,6 +161,7 @@
                 return r;
             }
             
+            function toJSON(response) { return response.json(); }
 
             
             </script>
