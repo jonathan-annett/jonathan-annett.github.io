@@ -1,7 +1,7 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),[
     
-    'swResponseZipLib@ServiceWorkerGlobalScope  | /zed/pwa/sw.response-zip.js',
+    'swResponseZipLib@ServiceWorkerGlobalScope  | ml.zipfs.js',
 
     
     ],function(){ml(2,ml(3),ml(4),
@@ -15,7 +15,7 @@ ml(0,ml(1),[
             };
          
             
-            ml(9,'./wtool.js');
+            ml(9,'./ml.pwa.js');
             
             
             

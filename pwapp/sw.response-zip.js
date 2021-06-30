@@ -4,19 +4,30 @@ ml(0,ml(1),[
     
     'sha1Lib       | sha1.js',
     'JSZipUtils    | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
-    'JSZip         | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js'
+    'JSZip         | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
+    'localforage   | https://unpkg.com/localforage@1.9.0/dist/localforage.js'
 
     ],function(){ml(2,ml(3),ml(4),
 
     {   
-           
-        ServiceWorkerGlobalScope: function swResponseZipLib (sha1, fnSrc, mlSource, directoryListingSource) {
+        Window: function swResponseZipLib() {
+        
+                const lib = {
+        
+                };
+                
+               
+               return lib;
+                
+                
+                
+        },
+        
+        ServiceWorkerGlobalScope: function swResponseZipLib (sha1,fnSrc, directoryListingSource) {
         
         
         return function (dbKeyPrefix) {
-             
-             
-      
+
               
              const lib = {
                  processFetchRequest      : processFetchRequest,
@@ -71,7 +82,7 @@ ml(0,ml(1),[
                     return getVirtualDir(url);
                     
                  }
-                 fetchLocalJson("fstab.json",function(err,arr){
+                 fetchLocalJson("/zed/pwa/fstab.json",function(err,arr){
                      if (err) return cb(err);
                       const source = arr.filter(function(x){
                           if (x.virtualDirs) {
@@ -120,7 +131,7 @@ ml(0,ml(1),[
                           };
                           rules.forEach(text_reps);
                           return rules_template;
-                     };
+                     }
                       return fixUrl(url,referrer,cb);
                  });
                  
@@ -142,7 +153,7 @@ ml(0,ml(1),[
                          });
                          
                          
-                         console.log("finished cleaning up cached files older than 60 mins.");
+                         console.log("finished cleaning up cached files older than 60 mins.")
                      }
                      
                      setTimeout(cleanupOld,60*1000);
@@ -403,7 +414,7 @@ ml(0,ml(1),[
                              if (ok) {
                                     const db = databases.cachedURLS;
                                     updateURLContents (url,db,buffer,{status:status,headers:headers},function(){
-                                       toFetchUrl (db,event.request,resolve,reject);
+                                       toFetchUrl (db,event.request,resolve,reject)
                                     });
                                     
                              } else {
@@ -413,7 +424,7 @@ ml(0,ml(1),[
                          });
 
                      }
-                  );
+                  )
                  
              }
              
@@ -1218,7 +1229,7 @@ ml(0,ml(1),[
                          '<head>',
                            '<title>files in '+uri+'</title>',
                            
-                           '<script>',mlSource,'</script>',
+                           '<script src="ml.js"></script>',
                            
                            '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/balloon-css/1.2.0/balloon.min.css" integrity="sha512-6jHrqOB5TcbWsW52kWP9TTx06FHzpj7eTOnuxQrKaqSvpcML2HTDR2/wWWPOh/YvcQQBGdomHL/x+V1Hn+AWCA==" crossorigin="anonymous" referrerpolicy="no-referrer" />',
                            '<style>',
@@ -1324,12 +1335,7 @@ ml(0,ml(1),[
                              '</script>',
                              '</body>',
                              '</html>'
-                         ]).join('\n')
-                             .replace(/\n\s/g,'\n ')
-                             .replace(/\}\n/g,'} ')
-                             .replace(/\)\n/g,') ')
-                             .replace(/\]\n/g,'] ')
-                             .replace(/\n/g,'');
+                         ]).join('\n');
 
                          return resolve( 
                              
@@ -1502,7 +1508,7 @@ ml(0,ml(1),[
                  
              }
              
-             /*
+            /* 
              
              function toFetchUpdatedZip(resolve,reject) {
                 
@@ -1639,34 +1645,43 @@ ml(0,ml(1),[
     }, (()=>{  return {
         
         
-        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb, () =>fnSrc, ()=>get_ML(), ()=>fnSrc(directoryListingCode)   ]
+        Window: [  ],
+
+        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb,  () =>fnSrc, ()=>fnSrc(directoryListingCode)   ]
     };
       
-      function directoryListingCode(zip_url_base){
+      function directoryListingCode(zip_url_base) {
+           
+          var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
+           
+          window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
           
+          function onDOMContentLoaded (event){
+
+              const showHidden=document.querySelector("h1 input.hidden_chk");
+              if (showHidden) {
+                  showHidden.onchange = function() {
+                      document.querySelector("ul").classList[showHidden.checked?"remove":"add"]("hide_hidden");
+                  };
+              }
               
-          const showHidden=document.querySelector("h1 input.hidden_chk");
-          if (showHidden) {
-              showHidden.onchange = function() {
-                  document.querySelector("ul").classList[showHidden.checked?"remove":"add"]("hide_hidden");
-              };
+              const showPaths=document.querySelector("h1 input.fullpath_chk");
+              if (showPaths) {
+                  showPaths.onchange = function() {
+                      document.querySelector("ul").classList[showPaths.checked?"remove":"add"]("hide_full_path");
+                  };
+              }
+              
+              
+                  
+              [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
+              
+              [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
+              
+              [].forEach.call(document.querySelectorAll("li a span.zipfile"),addOpenZipViewClick);
+              
           }
           
-          const showPaths=document.querySelector("h1 input.fullpath_chk");
-          if (showPaths) {
-              showPaths.onchange = function() {
-                  document.querySelector("ul").classList[showPaths.checked?"remove":"add"]("hide_full_path");
-              };
-          }
-          
-          
-              
-          [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
-          
-          [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
-          
-          [].forEach.call(document.querySelectorAll("li a span.zipfile"),addOpenZipViewClick);
-      
           function addEditClick (el) {
               el.addEventListener("click",edBtnClick);
               el.parentElement.addEventListener("click",edBtnClick);
@@ -1686,7 +1701,7 @@ ml(0,ml(1),[
           function edBtnClick(e){
               e.preventDefault();
               const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-              const filename = '/'+btn.dataset.filename.replace(/^\//,'');
+              const filename = '/'+btn.dataset.filename.replace(/(^\/)/,'');
               const file_url = zip_url_base + filename;
               if (!e.shiftKey) {
                   var oReq = new XMLHttpRequest();
@@ -1716,7 +1731,8 @@ ml(0,ml(1),[
                   oReq.open("GET", file_url);
                   oReq.send();
               } else {
-                  window.wTools.open(file_url,file_url,0,0);
+                  
+                  open_url(file_url);
               }
           }
           
@@ -1756,10 +1772,10 @@ ml(0,ml(1),[
           function viewBtnClick(e){
                   e.preventDefault();
                   const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                  const filename = '/'+btn.dataset.filename.replace(/^\//,'');
+                  const filename = '/'+btn.dataset.filename.replace(/(^\/)/,'');
                   const file_url = zip_url_base + filename;
                   
-                  window.wTools.open(file_url,file_url,0,0);
+                  open_url(file_url);
        
           }
           
@@ -1770,41 +1786,116 @@ ml(0,ml(1),[
                  
                   e.preventDefault();
                   const link      = e.target.href ? e.target : e.target.parentElement ;
-                  window.wTools.open(link.href,link.href,0,0);
-      
+                  open_url(link.href);
+                  
+                 
           }
-       
           
-      
-          ml(0,ml(1),[
-              'wTools | windowTools.js'
-              ],()=>{ml(2,ml(3),ml(4),
-                  { Window: function () { } }, 
-                  { Window: [  ] }
+          function open_url(file_url) {
+              return open_window(
+                file_url,
+                file_url.replace(/\/|\:|\.|\-/g,''),
+                0,
+                0,
+                1024,
+                768,
+                true,
+                function onClosed(){},
+                function onOpened(){}
               );
-          });
+          }
           
+          function open_window(
+            url,
+            name,
+            left,
+            top,
+            width,
+            height,
+            size,
+            onClosed,
+            onOpened
+          ) {
+            // sync return is a string refering to future open window.
+                var opts =
+                   "toolbar=no,menubar=no,location=no"+
+                   ",resizable=" + (size ? "yes" : "no") +
+                   ",scrollbars=" + (size ? "yes" : "no") +
+                   (typeof top==='number'    ? ",top="    + (top-deltaTop).toString()+     ",screenY="    + top    : "" )+
+                   (typeof left==='number'   ? ",left="   + (left-deltaLeft).toString()+   ",screenX="   +  left  : "" )+
+                   (typeof width==='number'  ? ",width="  + (width-deltaWidth).toString()   : "" )+
+                   (typeof height==='number' ? ",height=" + (height-deltaHeight).toString() : "" );
+                   
+                 // if a name is specified, use that, otherwise make up a random name
+                 const w = window.open(url, name, opts);
+                 
+                 on_window_close(w,onClosed);
+                 on_window_open(w,onOpened);
+                 
+                 return w;
+          }
           
+       
+
+          function on_window_close(w, fn) {
+            if (typeof fn === "function" && w && typeof w === "object") {
+              setTimeout(function() {
+                if (w.closed) return fn();
           
+                try {
+                  w.addEventListener("beforeunload", fn);
+                } catch (err) {
+                  // console.log(err);
+                  var fallback = function() {
+                    if (w.closed) return fn();
+                    setTimeout(fallback, 500, w, fn);
+                  };
+                  setTimeout(fallback, 500);
+                }
+              }, 1000);
+            }
+          }
+          
+        
+          
+          function on_window_open_poller (w,fn, interval) {
+              if (w.closed) return ;
+              
+              if (w.length>1) {
+                  return fn (w);
+              }
+              if (interval) {
+                  return setTimeout(fn, interval, w);   
+              }
+              return setTimeout(on_window_open_poller, 400, w, fn, 1500);
+          }
+          
+          function on_window_open(w, fn) {
+            if (typeof fn === "function" && w && typeof w === "object") {
+              
+              try {
+                w.addEventListener("load", function(){fn(w);});// this will throw for cross domain windows
+              } catch (err) {
+                //wait until 1 subfram exiss or 2 seconds, whatever happens first
+                setTimeout(on_window_open_poller, 100, w, fn);
+              }
+            }
+          }
           
       
           
       }
       
       
-      function fnSrc(f,k) {
+      function fnSrc(f,k,c) {
           f = f.toString();
+          if (c) {
+             f=f.replace(/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/)|\/\/.*?[\r\n])[\r\n]*/,'');
+          }
           return k?f:f.substring(f.indexOf("{")+1,f.lastIndexOf("}")-1);
       }
       
-      
-      function get_ML () {
-          return fnSrc(
-              function ml(x,L,o,a,d,s){ml.h||(ml.h={},ml.H=[],ml.d={},ml.f={});let z,C=console,e=[C,ml,"",z,x].map(e=>typeof e),l=location,O=l.origin,t=e[4]===e[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?"I":"L":x,c={r:e=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(e),b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],c:e=>e.indexOf(O)===0,R:"replace",f:"forEach",w:"serviceWorker",n:"navigator",d:"document",B:(e,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(e)?e:r.test(e)?e[c.R](r,O+"/"):c.b+e[c.R](/^(\.\/)/,""),1:()=>c[4]()||{},2:(L,o,a,d,t,D)=>{D="defined",t=typeof(t=a[L]&&a[L].name)+typeof o[t]===e[2]+e[3]?c.S(ml.h[ml.d[t].h].e,t,c.S(o,t,a[L].apply(this,d[L].map(c.x))))&&c.l(D+":",t)||c.l(D+" empty:",t):c.l("ready:",t),ml.i||(ml.i=new Proxy({},{get:(e,t)=>c.I(x=t),ownKeys:()=>c.k(ml.d),getOwnPropertyDescriptor:(e,t)=>!!ml.d[t]&&c.P(c.I(t)),has:(e,t)=>!!ml.d[t]}))},P:e=>({value:e,enumerable:!0,configurable:!0}),S:(o,e,t)=>(Object.defineProperty(o,e,c.P(t)),t),3:()=>c[4]().constructor.name||"x",4:()=>typeof self===e[0]&&self,x:e=>e(),l:C.log.bind(C),L:(e,R,t,m)=>(R=c.r(x),m=R?c[4]():!!o,e=m?o:{},R=R||[x,"t",0,x],t=a||R[1],ml(0,e,[t+"@T|"+R[3]],()=>ml(2,"T",e,{T:L},{T:[x=>(R=e[t],m||delete e[t],(x=t&&ml.d[t])&&(ml.h[x.h].e[t]=R),R)]}),"T")),I:(e,t)=>(e=ml.d[x])&&(t=ml.h[e.h])&&t.e[x],k:o=>Object.keys(o)};return(z=typeof c[t]===e[1]?c[t](L,o,a,d,s):c)!==c?z:(z={F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),0:()=>z.l(o),t:e=>Math.min(100,ml.t=ml.t?2*ml.t:1),l:e=>(e=e.map(z.u).filter(z.y)).length?setTimeout(z.l,z.t(e.length),e)&&c.l("pending...",e):a(),u:(x,R,e,t)=>(R=c.r(x))?(!(t=R[2])||t===(d||c[3]()))&&(t=R[1],e=c.B(R[3]),c.c(e)&&(ml.d[t]={h:e}),z.T(window,"script",s=>{z.p(e,s.setAttribute.bind(s,"src"),s)}),t):!L[x]&&x,y:x=>!!x,s:(d,e,C)=>{(s=z.E(d,e)).type="text/java"+e,C(z.A(d,s))},S:(e,s,C,D)=>{D=z.f(e[c.d],()=>z.s(D.contentWindow[c.d],s,C))},T:(e,s,C)=>z.s(e[c.d],s,C),E:(d,e)=>d.createElement(e),A:(d,x)=>d.body.appendChild(x),f:(d,e,l)=>((e=z.E(d,"iframe")).style.display="none",e.src="ml.html",e.onload=l,z.A(d,e)),U:()=>c.k(ml.h),p:(e,l,s,r,L,t,R)=>(r=z.r(),L=(t=>l(z.V(e,t))),t=(t=>L(z.v(e,t,s))),R=(()=>t(r)),!ml.h[e]&&(ml.H.push(e)&&(typeof fetch===z.F?fetch(e,{method:"HEAD"}).then(e=>t(z.e(e,r))).catch(R):R()))),e:(r,d)=>r.headers.get("Etag")[c.R](/[\"\/\\\-]*/g,"")||d,r:()=>Math.random().toString(36).substr(-8),V:(e,t)=>z.F?e+"?v="+t:e,v:(e,t,s)=>ml.h[e]={v:t,s:s,e:{}},8:(e,c)=>{},9:L=>L&&c.w in self[c.n]&&self[c.n][c.w].register("./ml.sw.js?ml="+encodeURIComponent(L))})[x]&&z[x](L,o,a,d,s)},
-              true
-          );
-      }
-      
+
     })()
 
     );
