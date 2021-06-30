@@ -13,30 +13,44 @@ ml(0,ml(1),[
             const lib = {
 
             };
+            
+            
+          
          
             
             ml(9,'./ml.pwa.js',function(result){
+                
                 window.dispatchEvent(
                     new CustomEvent( 'ml.pwa.registered',{ detail: result })
                 );
+                
+                const persistent=true;
+                sendMessage("onCustomEvents",{},function(err,e){
+                    if (err) return console.log(err);
+                    
+                    findWorker(function(err,worker){
+                        window.dispatchEvent(
+                            new CustomEvent( e.eventName,{ detail: {data:e.eventData,worker:worker} })
+                        );
+                    });
+                    
+                },persistent);
+
             });
-            
+         
+           
+       
             /*
-            
             setTimeout(function(){
                 
                 sendMessage("ping",{hello:"world",when:new Date(),also:Math.random()},function(err,reply){
                    console.log({err,reply});  
                    
                    
-                 
                 });
                 
-                
-                  
-                
-                
-            },5000);
+
+            },5000);*/
             
             
             
@@ -59,14 +73,16 @@ ml(0,ml(1),[
             }
              
             
-            function sendMessage(cmd,data,cb) {
+            function sendMessage(cmd,data,cb,persistent) {
                 const replyName        = "r"+Math.random().toString(36).substr(-8)+Date.now().toString(36).substr(-4);
                 const sendChannel      = new MessageChannel();
                 const replyChannel     = new BroadcastChannel(replyName);
                 const timeout = 2000;
                 const exitMsg=function(d){
                     let noerr;
-                    replyChannel.close();
+                    if (!persistent) {
+                       replyChannel.close();
+                    }
                     sendChannel.port1.close();
                     sendChannel.port2.close();
                     if (d.error) {
@@ -75,9 +91,9 @@ ml(0,ml(1),[
                        cb(noerr,d);
                     }
                 }
-                let tmr = setTimeout(function(){exitMsg({error:"timeout"})},timeout);
+                let tmr = persistent ? undefined : setTimeout(function(){exitMsg({error:"timeout"})},timeout);
                 replyChannel.onmessage = function(e) {
-                      clearTimeout(tmr);
+                      if(!persistent)clearTimeout(tmr);
                       exitMsg(e.data);
                 };
                 
@@ -85,16 +101,28 @@ ml(0,ml(1),[
                     if (err) return cb(err);
                     worker.postMessage({m:cmd,r:replyName,data:data},[sendChannel.port2]); 
                 });
-           } */
+           } 
+           
+            
+           
+
 
             return lib;
         },
 
         ServiceWorkerGlobalScope: function main(swRespZip) {
             
+                let dispatchCustomEvent;
+            
                 ml.register("activate",function(event){
                     
-                    console.log("activate event");
+                    if (dispatchCustomEvent) {
+                        
+                        dispatchCustomEvent({
+                            eventName:ml.pwa.activated,
+                            eventData:1
+                        })
+                    }
                     self.clients.claim();
                     
                 });
@@ -106,6 +134,10 @@ ml(0,ml(1),[
                             console.log(msg); 
                             return cb("pong");
                         
+                    },
+                    
+                    onCustomEvents :function(msg,cb){ 
+                        dispatchCustomEvent = cb;    
                     },
 
                 });
