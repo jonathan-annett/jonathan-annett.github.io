@@ -1714,7 +1714,7 @@ ml(0,ml(1),[
                        resolve();
                    } else {
                        
-                       const hdrs=args[1];
+                       const hdrs=args[1].headers;
                        const etag = hdrs.etag;
                        const lastModified = hdrs['last-modified'];
                        
@@ -1769,7 +1769,8 @@ ml(0,ml(1),[
              
             
              
-             function updateURLContents(url,db,responseData,responseState,cb) {
+             function 
+             (url,db,responseData,responseState,cb) {
                  
                  if (typeof responseState==='function') {
                      cb            = responseState;
@@ -1792,11 +1793,15 @@ ml(0,ml(1),[
                      sha1(responseData,function(err,hash){
                          cb([
                              responseData,
-                             {     'Content-Type'   : mimeForFilename(url),
+                             {
+                                status : 200,
+                                headers:{     'Content-Type'   : mimeForFilename(url),
                                    'Content-Length' : responseData.byteLength || responseData.length,
                                    'ETag'           : hash,
                                    'Cache-Control'  : 'max-age=3600, s-maxage=600',
                                    'Last-Modified'  : new Date().toString()
+                                }
+                                 
                              }
                          ]);
                      });
