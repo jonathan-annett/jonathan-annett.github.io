@@ -1714,7 +1714,7 @@ ml(0,ml(1),[
                        resolve();
                    } else {
                        
-                       const hdrs=args[1].headers;
+                       const hdrs=args[1];
                        const etag = hdrs.etag;
                        const lastModified = hdrs['last-modified'];
                        
