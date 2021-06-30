@@ -1768,6 +1768,18 @@ ml(0,ml(1),[
            }
              
             
+            function fixupKeys(db) {
+                if (db) {
+                    Object.keys(db).forEach(function(key){
+                        const newkey=key.toLowerCase();
+                        if (newkey===key) return;
+                        db[newkey]=db[key]
+                        delete db[key];
+                    });
+                }
+                return db;
+            }
+            
              
              function updateURLContents(url,db,responseData,responseState,cb) {
                  
@@ -1783,13 +1795,7 @@ ml(0,ml(1),[
                  url = full_URL(location.origin,url);
                  
                  getPayload(function(payload){
-                     const src=payload[1].headers;
-                     if (src) {
-                         const dest=(payload[1].headers={});
-                         Object.keys(src).forEach(function(k){
-                             dest[k.toLowerCase()]=src[k];
-                         });
-                     }
+                     fixupKeys(payload[1].headers);
                      db.setItem(url,payload,cb);
                  });
 
