@@ -456,7 +456,7 @@ ml(0,ml(1),[
                  const db  = databases.updatedURLS;
                  
                  switch (event.request.method) {
-                     case "GET"    : return  db.keyExists(url,true) ? new Promise ( toFetchUrl.bind(this,db,event.request) ) : undefined;
+                     case "GET"    : return  db.keyExists(url,true) ? new Promise ( toFetchUrl.bind(this,db,url) ) : undefined;
                      case "UPDATE" : return new Promise ( toUpdateUrl );
                  }
                  
@@ -501,7 +501,7 @@ ml(0,ml(1),[
                  const url = event.fixup_url;
                  //const url = full_URL(location.origin,event.request.url);
                  switch (event.request.method) {
-                     case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.cachedURLS,event.request) );
+                     case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.cachedURLS,url) );
                  }
 
              }
@@ -527,7 +527,7 @@ ml(0,ml(1),[
                              if (ok) {
                                     const db = databases.cachedURLS;
                                     updateURLContents (url,db,buffer,{status:status,headers:headers},function(){
-                                       toFetchUrl (db,event.request,resolve,reject)
+                                       toFetchUrl (db,url,resolve,reject)
                                     });
                                     
                              } else {
@@ -1788,21 +1788,23 @@ ml(0,ml(1),[
              
              
            */
+           
+           
+           
+           function toFetchUrl (db,url,resolve) {
+                   
+               db.getItem(url,function(err,args){
+                   if (err||!Array.isArray(args)) {
+                       resolve();
+                   } else {
+                       resolve(new Response(args[0],{status:200,headers:new Headers(args[1])}));
+                   }
+               });
+               
+                
+           }
              
-             
-             function toFetchUrl (db,request,resolve) {
-                     
-                 const url = request.url;     
-                 db.getItem(url,function(err,args){
-                     if (err||!Array.isArray(args)) {
-                         resolve();
-                     } else {
-                         resolve(new Response(args[0],{status:200,headers:new Headers(args[1])}));
-                     }
-                 });
-                 
-                  
-             }
+            
              
              function updateURLContents(url,db,responseData,responseState,cb) {
                  
