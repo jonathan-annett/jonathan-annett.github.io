@@ -1,8 +1,8 @@
 /* global 
 */
 const  
-[ html,keyPRE,                    refresh_files,   load_new_version,]   = 
-["html","html .notbeta pre.key","#refresh_files","#load_new_version"].map(qs);
+[ html,keyPRE,                   runhere]   = 
+["html","html .notbeta pre.key","button"].map(qs);
 
  
  
@@ -24,7 +24,7 @@ const
      "activated"].forEach(function(x){
      window.addEventListener('ml.pwa.'+x,function(){
          
-       //  if (window.matchMedia('(display-mode: standalone)').matches) {  
+         if (sessionStorage.running==='1' || window.matchMedia('(display-mode: standalone)').matches) {  
              
              betaTesterApproval().then(function(){
                   location.replace(location.href);
@@ -33,7 +33,19 @@ const
                     console.log("site not available",err);
                 }    
              ); 
-      //     }
+           } else {
+               delete sessionStorage.running;
+               betaTesterApproval().then(function(){
+                   runhere.onclick = function(){
+                        sessionStorage.running='1';
+                        location.replace(location.href);
+                   };
+               }).catch(
+                  function(err){
+                      console.log("site not available",err);
+                  }    
+               ); 
+           }
      });
  });
  
