@@ -23,9 +23,11 @@
                     } else {
                        const buttons = document.querySelectorAll("button");
                        buttons[0].onclick=function(){
-                           //location.replace(location.href);
+                           localStorage.installed='1';
+                           location.replace(location.href);
                        };
                        buttons[1].onclick=function(){
+                           localStorage.installed='1';
                            location.replace(location.href);
                        };
                     }
