@@ -1652,10 +1652,10 @@ ml(0,ml(1),[
         
         Window: [  ],
 
-        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb,  () =>fnSrc, ()=>fnSrc(directoryListingCode)   ]
+        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb,  () =>fnSrc, ()=>fnSrc(directoryListingCode,false,true)   ]
     };
       
-      function directoryListingCode(zip_url_base){
+      function directoryListingCode(zip_url_base) {
            
           var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
            
@@ -1892,8 +1892,11 @@ ml(0,ml(1),[
       }
       
       
-      function fnSrc(f,k) {
+      function fnSrc(f,k,c) {
           f = f.toString();
+          if (c) {
+             f=f.replace(/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/)|\/\/.*?[\r\n])[\r\n]*/,'');
+          }
           return k?f:f.substring(f.indexOf("{")+1,f.lastIndexOf("}")-1);
       }
       
