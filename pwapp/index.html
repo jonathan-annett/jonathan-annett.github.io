@@ -4,35 +4,166 @@
     <head>
  
         <link rel="manifest" href="/pwapp/manifest.json">
-    
+        <style>
+            div.beta,
+            div.notbeta {
+                display : none;
+            }
+            
+            html.notbeta div.notbeta,
+            html.beta div.beta {
+               display : block;
+            }
+            
+            
+        </style>
     </head>
     
     <body>
         
-            <button>Install</button>
-            <button>Run</button>
+        
+            <div class="beta">
+               installing...    
+            </div>
+            <div class="notbeta">
+                <p>
+                    For access, raise an issue <a href="https://github.com/jonathan-annett/jonathan-annett.github.io/issues">jonathan-annett</a> and quote this code:
+                </p>
+                <p>
+                    <pre class="key"></pre>
+                </p>
+                
+                
+            </div>
             <script src="ml.js"></script>
             <script src="ml.pwa.js" defer></script>
             <script>
+            
+           const  
+           [ html,keyPRE,                    refresh_files,   load_new_version,]   = 
+           ["html","html .notbeta pre.key","#refresh_files","#load_new_version"].map(qs);
+       
+            
+            
+            function getConfig() {
+                return new Promise(function (resolve,reject){
+                    
+                    fetch("betakeys.json")
+                      .then(toJSON)
+                        .then(filterConfigComments)
+                          .then(resolve).catch(reject);
+        
+        
+                });
+            }
+            
+
+                
             [
                 "registered",
                 "activated"].forEach(function(x){
                 window.addEventListener('ml.pwa.'+x,function(){
-                    if (localStorage.installed) {
-                       location.replace(location.href);
-                    } else {
-                       const buttons = document.querySelectorAll("button");
-                       buttons[0].onclick=function(){
-                           localStorage.installed='1';
-                           location.replace(location.href);
-                       };
-                       buttons[1].onclick=function(){
-                           localStorage.installed='1';
-                           location.replace(location.href);
-                       };
-                    }
+                    
+                  //  if (window.matchMedia('(display-mode: standalone)').matches) {  
+                        
+                        betaTesterApproval().then(function(){
+                             location.replace(location.href);
+                        }).catch(
+                           function(err){
+                               console.log("site not available",err);
+                           }    
+                        ); 
+                 //     }
                 });
             });
+            
+            
+            function betaTesterApproval() {
+                
+                if (!window.crypto) {
+                   return Promise.reject();
+                }
+        
+                return new Promise(function(resolve,reject) {
+                    const hashAlgo = "SHA-256";
+                    const seedSize = 512;
+                    const localStorageKey = "betaTesterKey";
+                    
+                     getConfig().then(function(config){
+                        
+                        if (config && config.site && config.site.betaTesterKeys) {
+                            const keyAsHex = localStorage[localStorageKey];
+                            if (keyAsHex) {
+                                const keyAsBuffer = bufferFromHex(keyAsHex);
+                                
+                                return window.crypto.subtle
+                                    .digest( hashAlgo, keyAsBuffer ).then (
+                                        
+                                        function(hashedKeyasBuffer) {
+                                            
+                                           const hashedKeyHex = bufferToHex(hashedKeyasBuffer);
+                                      
+                                             if ( config.site.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
+                                                 console.log("your beta tester approval code:",hashedKeyHex);
+                                                 html.classList.remove("beta");
+                                                 html.classList.add("notbeta");
+                                                 keyPRE.innerHTML=hashedKeyHex;
+                                                 reject();
+                                             } else {
+                                                 html.classList.add("beta");
+                                                 html.classList.remove("notbeta");
+                                                 config.testerKey = keyAsHex;
+                                                 resolve(config);
+                                             }
+                                             
+                                        }
+                                    ); 
+                                
+                            } else {
+                                
+                                var seed = new Uint32Array(seedSize);
+                                window.crypto.getRandomValues(seed);
+                                return window.crypto.subtle.digest(hashAlgo,seed).then(function(unhashedKey) {
+                                    const unhashedKeyHex = bufferToHex(unhashedKey);
+                                    return window.crypto.subtle.digest(hashAlgo,unhashedKey).then(function(hashedKey) {
+                                         localStorage[localStorageKey] = unhashedKeyHex;
+                                         html.classList.remove("beta");
+                                         html.classList.add("notbeta");
+                                         keyPRE.innerHTML=bufferToHex(hashedKey);
+                                         reject();
+                                    });        
+                                });
+                            }
+                        } else {
+                           reject();  
+                        }
+                        
+                    }).catch(reject);
+                    
+                });
+                
+            }
+            
+            // generic tools 
+        
+            function qs(d,q,f) {
+                let r,O=typeof {},S=typeof O,FN=typeof qs,D=typeof d,Q=typeof q,F=typeof f;
+                if (D+Q+F===S+'number'+O){q=r;}//handle map iterator
+                if (D===S) {f=q;q=d;d=document;D=O;Q=S;F=typeof f}//handle implied d=document
+                if (D+Q===O+S){
+                   r = d.querySelector(q);
+                   if (r&&typeof r+typeof f===O+FN) {
+                        if (f.name.length>0) 
+                           r.addEventListener(f.name,f);
+                        else 
+                           f(r);
+                    }
+                }
+                return r;
+            }
+            
+
+            
             </script>
     </body>
     
