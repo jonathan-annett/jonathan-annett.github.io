@@ -48,7 +48,7 @@ function getRules() {
                getRules().then(function(enable_app){
                    
                    const disable_app =enable_app.filter(function(x){
-                       return !x.with.endsWith("/index.html");
+                       return !x.with || !(x.with.endsWith("/index.html"));
                    });
                    
                    window.main.newFixupRulesArray(disable_app,function(){
