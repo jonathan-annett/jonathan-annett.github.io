@@ -17,7 +17,16 @@ const
      });
  }
  
+function getRules() {
+    return new Promise(function (resolve,reject){
+        
+        fetch("fstab.json")
+          .then(toJSON)
+              .then(resolve).catch(reject);
 
+
+    });
+}
      
  [
      "registered",
@@ -35,16 +44,30 @@ const
              ); 
            } else {
                delete sessionStorage.running;
-               betaTesterApproval().then(function(){
-                   runhere.onclick = function(){
-                        sessionStorage.running='1';
-                        location.replace(location.href);
-                   };
-               }).catch(
-                  function(err){
-                      console.log("site not available",err);
-                  }    
-               ); 
+               
+               getRules().then(function(enable_app){
+                   
+                   const disable_app =enable_app.filter(function(x){
+                       return !x.with.endsWith("/index.html");
+                   });
+                   
+                   window.main.newFixupRulesArray(disable_app,function(){
+                       betaTesterApproval().then(function(){
+                           runhere.onclick = function(){
+                                window.main.newFixupRulesArray(enable_app,function(){
+                                   sessionStorage.running='1';
+                                   location.replace(location.href);
+                                });
+                           };
+                       }).catch(
+                          function(err){
+                              console.log("site not available",err);
+                          }    
+                       ); 
+                   });
+               });
+               
+               
            }
      });
  });
