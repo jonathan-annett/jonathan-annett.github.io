@@ -10,39 +10,20 @@ ml(0,ml(1),[
     ],function(){ml(2,ml(3),ml(4),
 
     {   
-        Window: function main(wTools) {
+        Window: function swResponseZipLib() {
         
                 const lib = {
         
                 };
                 
-                
-                const cmdChannel     = new BroadcastChannel("sw.response.cmds");
-                
-                cmdChannel.onmessage = function(e) {
-                    switch  (e.data.cmd) {
-                        
-                        case "open" : 
-                            const wid = wTools.open(e.data.url,e.data.title||e.data.url,Number.parseInt(e.data.left)||0,Number.parseInt(e.data.top)||0);
-                            cmdChannel.postMessage({id:e.data.id,wid:wid});
-                            break;
-                            
-                        case "close" :
-                            
-                            wTools.open(e.data.wid,function(err,state){
-                                cmdChannel.postMessage({id:e.data.id,wid:wid,error:err,state:state});  
-                            });
-                            
-                            break;
-                            
-                    }
-                };
+               
+               return lib;
                 
                 
                 
         },
         
-        ServiceWorkerGlobalScope: function swResponseZipLib (sha1,wTools,fnSrc, mlSource, directoryListingSource) {
+        ServiceWorkerGlobalScope: function swResponseZipLib (sha1,fnSrc, mlSource, directoryListingSource) {
         
         
         return function (dbKeyPrefix) {
@@ -1671,9 +1652,9 @@ ml(0,ml(1),[
     }, (()=>{  return {
         
         
-        Window: [ () => self.wTools ],
+        Window: [  ],
 
-        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb, () => self.wTools, () =>fnSrc, ()=>get_ML(), ()=>fnSrc(directoryListingCode)   ]
+        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb,  () =>fnSrc, ()=>get_ML(), ()=>fnSrc(directoryListingCode)   ]
     };
       
       function directoryListingCode(zip_url_base){
