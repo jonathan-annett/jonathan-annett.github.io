@@ -8,31 +8,37 @@ ml(0,ml(1),[
 
     {
 
-        Window: function main(wTools) {
+        Window: function pwa(wTools) {
             
             const lib = {
-                newFixupRulesArray:newFixupRulesArray
+                newFixupRulesArray:newFixupRulesArray,
+                start:start
             };
-
-            ml(9,'./ml.pwa.js',function(result){
+            
+            function start() {
                 
-                window.dispatchEvent(
-                    new CustomEvent( 'ml.pwa.registered',{ detail: result })
-                );
+                lib.start=function(){};
                 
-                const persistent=true;
-                sendMessage("onCustomEvents",{},function(err,e){
-                    if (err) return console.log(err);
+                ml(9,'./ml.pwa.js',function(result){
                     
-                    findWorker(function(err,worker){
-                        window.dispatchEvent(
-                            new CustomEvent( e.eventName,{ detail: {data:e.eventData,worker:worker} })
-                        );
-                    });
+                    window.dispatchEvent(
+                        new CustomEvent( 'ml.pwa.registered',{ detail: result })
+                    );
                     
-                },persistent);
-
-            });
+                    const persistent=true;
+                    sendMessage("onCustomEvents",{},function(err,e){
+                        if (err) return console.log(err);
+                        
+                        findWorker(function(err,worker){
+                            window.dispatchEvent(
+                                new CustomEvent( e.eventName,{ detail: {data:e.eventData,worker:worker} })
+                            );
+                        });
+                        
+                    },persistent);
+    
+                });
+            }
            
             function newFixupRulesArray(rules,cb) {
                 sendMessage("newFixupRulesArray",{rules:rules},cb);
@@ -89,7 +95,7 @@ ml(0,ml(1),[
             return lib;
         },
 
-        ServiceWorkerGlobalScope: function main(swRespZip) {
+        ServiceWorkerGlobalScope: function pwa(swRespZip) {
             
                 let dispatchCustomEvent;
                 const dbKeyPrefix = 'zip-files-cache.';

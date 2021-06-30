@@ -1,33 +1,10 @@
-/* global 
+/* global pwa
 */
 const  
 [ html,keyPRE,                   runhere]   = 
 ["html","html .notbeta pre.key","button"].map(qs);
 
- 
- 
- function getConfig() {
-     return new Promise(function (resolve,reject){
-         
-         fetch("betakeys.json")
-           .then(toJSON)
-               .then(resolve).catch(reject);
 
-
-     });
- }
- 
-function getRules() {
-    return new Promise(function (resolve,reject){
-        
-        fetch("fstab.json")
-          .then(toJSON)
-              .then(resolve).catch(reject);
-
-
-    });
-}
-     
  [
      "registered",
      "activated"].forEach(function(x){
@@ -45,32 +22,59 @@ function getRules() {
            } else {
                delete sessionStorage.running;
                
-               getRules().then(function(enable_app){
-                   
-                   const disable_app =enable_app.filter(function(x){
-                       return !x.with || !(x.with.endsWith("/index.html"));
-                   });
-                   
-                   window.main.newFixupRulesArray(disable_app,function(){
-                       betaTesterApproval().then(function(){
-                           runhere.onclick = function(){
-                                window.main.newFixupRulesArray(enable_app,function(){
-                                   sessionStorage.running='1';
-                                   location.replace(location.href);
-                                });
-                           };
-                       }).catch(
-                          function(err){
-                              console.log("site not available",err);
-                          }    
-                       ); 
-                   });
-               });
+              
                
                
            }
      });
  });
+ 
+ betaTesterApproval().then(function(){
+     
+     if (sessionStorage.running==='1' || window.matchMedia('(display-mode: standalone)').matches) {  
+          pwa.start(); 
+          location.replace(location.href);
+     } else {
+          runhere.onclick = function() {
+              sessionStorage.running='1';
+              pwa.start(); 
+              location.replace(location.href);
+          } 
+     }
+             
+
+ }).catch(
+     
+    function(err){
+        console.log("site not available",err);
+    } 
+    
+ ); 
+ 
+  
+  
+  function getConfig() {
+      return new Promise(function (resolve,reject){
+          
+          fetch("betakeys.json")
+            .then(toJSON)
+                .then(resolve).catch(reject);
+ 
+ 
+      });
+  }
+  
+ function getRules() {
+     return new Promise(function (resolve,reject){
+         
+         fetch("fstab.json")
+           .then(toJSON)
+               .then(resolve).catch(reject);
+ 
+ 
+     });
+ }
+      
  
  
  function betaTesterApproval() {
