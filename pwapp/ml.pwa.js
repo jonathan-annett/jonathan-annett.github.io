@@ -16,7 +16,9 @@ ml(0,ml(1),[
          
             
             ml(9,'./ml.pwa.js',function(result){
-                console.log({result});
+                window.dispatchEvent(
+                    new CustomEvent( 'ml.pwa.registered',{ detail: result })
+                );
             });
             
             /*

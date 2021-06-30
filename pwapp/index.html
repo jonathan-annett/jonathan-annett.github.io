@@ -10,6 +10,11 @@
     <body>
             <script src="ml.js"></script>
             <script src="ml.pwa.js" defer></script>
+            <script>
+            window.addEventListener('ml.pwa.registered',function(e){
+                console.log("registered:",e.detail);
+            });
+            </script>
     </body>
     
 </html>
