@@ -1,7 +1,6 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),[
     
-   // 'wTools                                     | /zed/pwa/windowTools.js',
     'swResponseZipLib@ServiceWorkerGlobalScope  | /zed/pwa/sw.response-zip.js',
 
     
@@ -14,92 +13,7 @@ ml(0,ml(1),[
             const lib = {
 
             };
-            /*
-            
-            var [ 
-                btnOpen, btnMax, btnMin, btnRestore,
-            
-                url, title,wleft,wtop,textarea,select] = [
-                "#btnOpen", "#btnMax", "#btnMin", "#btnRestore",
-                "#url", "#title","#left","#top","textarea","select"
-                
-            ].map(qs);
-            
-            btnOpen.onclick = function(){
-                wTools.open(url.value,title.value,Number.parseInt(wleft.value)||0,Number.parseInt(wtop.value)||0);
-            };
-            btnMax.onclick = function(){
-                const meta = wTools.getMetaForURL(url.value);
-                if (meta) {
-                    wTools.fs_api(meta.wid).maximize();
-                }
-             };
-            btnMin.onclick = function(){
-                const meta = wTools.getMetaForURL(url.value);
-                if (meta) {
-                    wTools.fs_api(meta.wid).minimize();
-                }
-            };
-            btnRestore.onclick = function(){
-                const meta = wTools.getMetaForURL(url.value);
-                if (meta) {
-                    wTools.fs_api(meta.wid).restore();
-                }
-            };
-            
-            
-            monitor();
-            
-            wTools.on("setKey",monitor);
-            
-            window.addEventListener("storage",monitor);
-            
-            var lastOpen="";
-            
-            function monitor(){
-                var info={};
-                var currentOpen = localStorage.getItem("windowTools.openWindows");
-                if (currentOpen!==lastOpen) {
-                    lastOpen=currentOpen;
-                    if (currentOpen) {
-                        const openWindows = JSON.parse(currentOpen);
-                        const selected = select.value;
-                        select.innerHTML = Object.keys(openWindows).map(function(wid){
-                            const meta = openWindows[wid];
-                            return '<option '+(selected===wid?'selected ':'')+'href="'+wid+'">'+meta.url+'</option>';
-                        }).join("\n");
-                    }                    
-                    
-                }
-                Object.keys(localStorage).forEach(function(k){
-                    
-                    if (k.indexOf("windowTools.")===0){
-                        info[k]=JSON.parse(localStorage.getItem(k));
-                    }
-                    
-                });
-                textarea.value = JSON.stringify(info,undefined,4);
-            }
-            
-            // generic tools 
-            
-            function qs(d,q,f) {
-                let r,O=typeof {},S=typeof O,FN=typeof qs,D=typeof d,Q=typeof q,F=typeof f;
-                if (D+Q+F===S+'number'+O){q=r;}//handle map iterator
-                if (D===S) {f=q;q=d;d=document;D=O;Q=S;F=typeof f}//handle implied d=document
-                if (D+Q===O+S){
-                   r = d.querySelector(q);
-                   if (r&&typeof r+typeof f===O+FN) {
-                        if (f.name.length>0) 
-                           r.addEventListener(f.name,f);
-                        else 
-                           f(r);
-                    }
-                }
-                return r;
-            }
-            
-            */
+         
             
             ml(9,'./wtool.js');
             
@@ -172,7 +86,7 @@ ml(0,ml(1),[
             return lib;
         },
 
-        ServiceWorkerGlobalScope: function main(wTools,swRespZip) {
+        ServiceWorkerGlobalScope: function main(swRespZip) {
             
                 ml.register("activate",function(event){
                     
@@ -203,13 +117,9 @@ ml(0,ml(1),[
     }, {
         Window: [
 
-            () => self.wTools,
-
         ],
         ServiceWorkerGlobalScope: [
 
-            () => self.wTools,
-            
             () => self.swResponseZipLib
             
         ],
