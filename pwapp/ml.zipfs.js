@@ -1783,6 +1783,13 @@ ml(0,ml(1),[
                  url = full_URL(location.origin,url);
                  
                  getPayload(function(payload){
+                     const src=payload[1].headers;
+                     if (src) {
+                         const dest=(payload[1].headers={});
+                         Object.keys(src).forEach(function(k){
+                             dest[k.toLowerCase()]=src[k];
+                         });
+                     }
                      db.setItem(url,payload,cb);
                  });
 
