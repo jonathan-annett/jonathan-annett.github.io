@@ -39,6 +39,11 @@ ml(0,ml(1),[
              };
                               
              const openZipFileCache = { };
+             
+             const virtualDir = {
+             
+                 
+             };
 
              const databases = {};
              defineDB("updatedURLS"); 
@@ -63,7 +68,7 @@ ml(0,ml(1),[
                           ? referrer.substr(0,referrer.lastIndexOf("/"))
                           : referrer;  
                           
-                      console.log("referrer",referrer,"--> basepath",basepath);
+                     console.log("referrer",referrer,"--> basepath",basepath);
                      const rules = fixUrl.rules(basepath);
                      const enforce = function(x){
                          if (x.replace&&x.replace.test(url)) { 
@@ -79,16 +84,16 @@ ml(0,ml(1),[
                       
                      while ( rules.some( enforce ) );
                     
-                    return getVirtualDir(url);
+                    return cb(undefined,url);
                     
                  }
                  fetchLocalJson("fstab.json",function(err,arr){
                      if (err) return cb(err);
                       const source = arr.filter(function(x){
                           if (x.virtualDirs) {
-                              fixUrl.virtualDirs = x.virtualDirs;
-                              fixUrl.virtualDirUrls = Object.keys(x.virtualDirs);
-                              fixUrl.virtualDirFoundUrls = {};
+                              virtualDir.virtualDirs = x.virtualDirs;
+                              virtualDir.virtualDirUrls = Object.keys(x.virtualDirs);
+                              virtualDir.virtualDirFoundUrls = {};
                               
                               cleanupOld();
                               delete x.virtualDirs;
@@ -136,14 +141,14 @@ ml(0,ml(1),[
                  });
                  
                  function cleanupOld() {
-                     if (fixUrl.virtualDirFoundUrls) {
+                     if (virtualDir.virtualDirFoundUrls) {
                          const watershed = Date.now - (  60 * 60 * 1000);// keeps stuff for an hour
-                         Object.keys (fixUrl.virtualDirFoundUrls).forEach(function(u){
-                             const previous = fixUrl.virtualDirFoundUrls[u];
+                         Object.keys (virtualDir.virtualDirFoundUrls).forEach(function(u){
+                             const previous = virtualDir.virtualDirFoundUrls[u];
                             
                              if (previous && previous.when < watershed) {
-                                 delete fixUrl.virtualDirFoundUrls[previous.url];
-                                 delete fixUrl.virtualDirFoundUrls[previous.fixup_url];
+                                 delete virtualDir.virtualDirFoundUrls[previous.url];
+                                 delete virtualDir.virtualDirFoundUrls[previous.fixup_url];
                                  delete previous.response;
                                  delete previous.url;
                                  delete previous.fixup_url;
@@ -159,63 +164,65 @@ ml(0,ml(1),[
                      setTimeout(cleanupOld,60*1000);
                  }
                  
-                 function getVirtualDir(url) {
-                     
-                     const previous = fixUrl.virtualDirFoundUrls[url];
-                     if (previous) {
-                         previous.when = Date.now();
-                         console.log("reused vitualdir",previous.url,"==>",previous.fixup);
-                         return  cb(undefined,false,previous.response.clone());
-                     }
-                     
-                     if (fixUrl.virtualDirs && fixUrl.virtualDirUrls) {
-                         // see if the url starts with one of the virtual directory path names
-                         const prefix = fixUrl.virtualDirUrls.find(function (u){
-                             return url.indexOf(u)===0;
-                         });
-                         
-                         if (prefix) {
-                             // pull in the list of replacement zips that are layered under this url
-                             // (earlier entries replace later entries, so we loop until we get a hit inside the zip file
-                             // this loops through the stored meta only, later we will crack into the actual zip
-                             // this also has the effect of precaching the zip file's data for the unzip process
-                             const subpath = url.substr(prefix.length);
-                             const zipurlprefixes = fixUrl.virtualDirs[prefix].slice(0);
-                             const locateZipMetadata = function (i) {
-                                 
-                                 if (i<zipurlprefixes.length) {
-                                     const fixup_url = zipurlprefixes[i]+subpath;
-                                     getEmbeddedZipFileResponse(fixup_url,function(err,response){
-                                         if (err||!response) return locateZipMetadata(i+1);
-                                         console.log("resolved vitualdir",url,"==>",fixup_url);
-                                         const entry = fixUrl.virtualDirFoundUrls[url]={
-                                             fixup_url : fixup_url,
-                                             url: url,
-                                             response: response.clone(),
-                                             when:Date.now()
-                                         };
-                                         fixUrl.virtualDirFoundUrls[fixup_url]=entry;
-                                         
-                                         return cb (undefined,false,response);
-                                     });
-                                            
-                             
-                                 } else {
-                                     // this will result in a eventual 404 from the end server
-                                     // (unless of course the url points to an actual file.)
-                                     return cb(undefined,url);
-                                 }
-                                 
-                             };
-                             
-                             locateZipMetadata(0);
-                             
-                         }
-                     }
-                     
-                     // fall through to default callback with url
-                     return cb(undefined,url);
+                
+                 
+             }
+             
+             function getVirtualDir(url,cb) {
+                 
+                 const previous = virtualDir.virtualDirFoundUrls[url];
+                 if (previous) {
+                     previous.when = Date.now();
+                     console.log("reused vitualdir",previous.url,"==>",previous.fixup);
+                     return  cb(undefined,previous.response.clone());
                  }
+                 
+                 if (virtualDir.virtualDirs && virtualDir.virtualDirUrls) {
+                     // see if the url starts with one of the virtual directory path names
+                     const prefix = virtualDir.virtualDirUrls.find(function (u){
+                         return url.indexOf(u)===0;
+                     });
+                     
+                     if (prefix) {
+                         // pull in the list of replacement zips that are layered under this url
+                         // (earlier entries replace later entries, so we loop until we get a hit inside the zip file
+                         // this loops through the stored meta only, later we will crack into the actual zip
+                         // this also has the effect of precaching the zip file's data for the unzip process
+                         const subpath = url.substr(prefix.length);
+                         const zipurlprefixes = virtualDir.virtualDirs[prefix].slice(0);
+                         const locateZipMetadata = function (i) {
+                             
+                             if (i<zipurlprefixes.length) {
+                                 const fixup_url = zipurlprefixes[i]+subpath;
+                                 getEmbeddedZipFileResponse(fixup_url,function(err,response){
+                                     if (err||!response) return locateZipMetadata(i+1);
+                                     console.log("resolved vitualdir",url,"==>",fixup_url);
+                                     const entry = virtualDir.virtualDirFoundUrls[url]={
+                                         fixup_url : fixup_url,
+                                         url: url,
+                                         response: response.clone(),
+                                         when:Date.now()
+                                     };
+                                     virtualDir.virtualDirFoundUrls[fixup_url]=entry;
+                                     
+                                     return cb (undefined,response);
+                                 });
+                                        
+                         
+                             } else {
+                                 // this will result in a eventual 404 from the end server
+                                 // (unless of course the url points to an actual file.)
+                                 return cb();
+                             }
+                             
+                         };
+                         
+                         locateZipMetadata(0);
+                         
+                     }
+                 }
+                 
+                 return cb();
              }
 
              function defineDB(name) {
@@ -341,55 +348,61 @@ ml(0,ml(1),[
                 
                      event.respondWith(new Promise(function(resolve,reject){
                          
-                         fixUrl(event.request.url,event.request.referrer,function(err,url,virtualResponse){
-                             
+                          fixUrl(event.request.url,event.request.referrer,function(err,url){
                           if (err) return reject(err);
                           
-                          if (virtualResponse) return resolve(virtualResponse);
                           
-                         
-                         const chain = [ 
-                             fetchUpdatedURLEvent, 
-                             fetchFileFromZipEvent,
-                             fetchFileFromCacheEvent,
-                             defaultFetchEvent  
-                          ];
-                             
-                             
-                         const next = function (handler) {
-                             if (!handler) {
-                                 console.log("could not find for",url,"from",event.request.referrer); 
-                                 return ;
-                             }
-                             
-                             console.log("trying",handler.name,"for",url,"from",event.request.referrer);
-                             const promise = handler(event,url);
-                             
-                             if (promise) {
-                                promise.then(function(response){
-                                    if (!response) return next(chain.shift()); 
-                                        
-                                    console.log(handler.name,"returned a response for",url,"from",event.request.referrer); 
-                                    chain.splice(0,chain.length);
-                                    resolve(response);
-        
-                                }).catch (function(err){
-                                    
-                                    chain.splice(0,chain.length);
-                                    reject(err);
-                                });
+                          getVirtualDir(url,function(err,virtualResponse){
+                               if (err) return reject(err);
+                               if (virtualResponse) return resolve(virtualResponse);
                                
-                             } else {
-                                 next(chain.shift()); 
-                             }
+                              
+                              const chain = [ 
+                                  fetchUpdatedURLEvent, 
+                                  fetchFileFromZipEvent,
+                                  fetchFileFromCacheEvent,
+                                  defaultFetchEvent  
+                               ];
+                                  
+                                  
+                              const next = function (handler) {
+                                  if (!handler) {
+                                      console.log("could not find for",url,"from",event.request.referrer); 
+                                      return ;
+                                  }
+                                  
+                                  console.log("trying",handler.name,"for",url,"from",event.request.referrer);
+                                  const promise = handler(event,url);
+                                  
+                                  if (promise) {
+                                     promise.then(function(response){
+                                         if (!response) return next(chain.shift()); 
+                                             
+                                         console.log(handler.name,"returned a response for",url,"from",event.request.referrer); 
+                                         chain.splice(0,chain.length);
+                                         resolve(response);
+             
+                                     }).catch (function(err){
+                                         
+                                         chain.splice(0,chain.length);
+                                         reject(err);
+                                     });
+                                    
+                                  } else {
+                                      next(chain.shift()); 
+                                  }
+                                  
+                              };
+                              
+                              next(chain.shift()); 
                              
-                         };
-                         
-                         next(chain.shift()); 
-                        
-                         
-                            
-                         });    
+                              
+                                 
+                              });    
+                              
+                              
+                          });
+                  
                   }));
              }
              
