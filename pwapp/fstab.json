@@ -16,8 +16,8 @@
       "addPrefix":"${base}/"
    },
    {
-       "replace":"\\/pwapp\\/$",
-       "with":"/pwapp/index.html"
+       "replace":"\\/pwapp\\/app\\/$",
+       "with":"/pwapp/app/index.html"
    },
 
    {
