@@ -1,7 +1,7 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),[
     
-    'wTools                                     | /zed/pwa/windowTools.js',
+   // 'wTools                                     | /zed/pwa/windowTools.js',
     'swResponseZipLib@ServiceWorkerGlobalScope  | /zed/pwa/sw.response-zip.js',
 
     
@@ -14,7 +14,7 @@ ml(0,ml(1),[
             const lib = {
 
             };
-            
+            /*
             
             var [ 
                 btnOpen, btnMax, btnMin, btnRestore,
@@ -28,7 +28,6 @@ ml(0,ml(1),[
             btnOpen.onclick = function(){
                 wTools.open(url.value,title.value,Number.parseInt(wleft.value)||0,Number.parseInt(wtop.value)||0);
             };
-            
             btnMax.onclick = function(){
                 const meta = wTools.getMetaForURL(url.value);
                 if (meta) {
@@ -99,6 +98,8 @@ ml(0,ml(1),[
                 }
                 return r;
             }
+            
+            */
             
             ml(9,'./wtool.js');
             
