@@ -185,7 +185,7 @@ ml(0,ml(1),[
              function processFetchRequest(event) {
                  
                      event.respondWith(new Promise(function(resolve,reject){
-                              event.fixed_url = event.request.url;
+                              event.fixup_url = event.request.url;
                               const chain = [ 
                                   
                                   //  these are "middleware vectors" in the form of function(event){ /* url resolution code*/ }
@@ -204,22 +204,22 @@ ml(0,ml(1),[
                                   
                                   //  for the purpose of this discussion "valid" means it is an object
                                   
-                                  //  any of these handlers are free to modify the "fixed_url" property of the event object
+                                  //  any of these handlers are free to modify the "fixup_url" property of the event object
                                   //  subsequent handlers use that url to resolve the response
                                   //  for diganostic reasons, and collision detection, event.request.url is left untainted to contain the actual url
-                                  //  for the request, otherwise the handler is to treat "event.fixed_url" as the url being requested. )
+                                  //  for the request, otherwise the handler is to treat "event.fixup_url" as the url being requested. )
                                   
                                   
-                                  fixupUrlEvent,            // sets event.fixed_url according to rules defined in fstab.json
+                                  fixupUrlEvent,            // sets event.fixup_url according to rules defined in fstab.json
                                                             // these rules do things like append index.html to the root path
                                                             // and convert partial urls into complete urls, with respect to the referrer
                                                             
-                                  virtualDirEvent,          // if event.fixed_url is inside a virtal modifies event.fixed_url, 
+                                  virtualDirEvent,          // if event.fixup_url is inside a virtal modifies event.fixup_url, 
                                                             // to point to the endpoint inside it's container zip, and saves saves the 
                                                             // potential response in event.cache_response. (potential, because it may 
                                                             // have been updated, if the site is in local edit mode.
                                                             
-                                  fetchUpdatedURLEvent,     // if event.fixed_url has been updated, resolve with updated content
+                                  fetchUpdatedURLEvent,     // if event.fixup_url has been updated, resolve with updated content
                                                             // production sites don't include this middleware vector.
                                   
                                   
@@ -235,18 +235,18 @@ ml(0,ml(1),[
                               
                           const next = function (handler) {
                               if (!handler) {
-                                  console.log("could not find for",event.fixed_url,"from",event.request.referrer); 
+                                  console.log("could not find for",event.fixup_url,"from",event.request.referrer); 
                                   return ;
                               }
                               
-                              console.log("trying",handler.name,"for",event.fixed_url,"from",event.request.referrer);
+                              console.log("trying",handler.name,"for",event.fixup_url,"from",event.request.referrer);
                               const promise = handler(event);
                               
                               if (promise) {
                                  promise.then(function(response){
                                      if (!response) return next(chain.shift()); 
                                          
-                                     console.log(handler.name,"returned a response for",event.fixed_url,"from",event.request.referrer); 
+                                     console.log(handler.name,"returned a response for",event.fixup_url,"from",event.request.referrer); 
                                      chain.splice(0,chain.length);
                                      resolve(response);
          
@@ -295,7 +295,7 @@ ml(0,ml(1),[
              
              function fixupUrlEvent (event) {
                  
-                  let url = event.fixed_url;
+                  let url = event.fixup_url;
                       
                       if (fixupUrlEvent.rules) {
                           const referrer = event.request.referrer;
@@ -321,7 +321,7 @@ ml(0,ml(1),[
                            
                           while ( rules.some( enforce ) );
                          
-                          event.fixed_url = url;
+                          event.fixup_url = url;
                           return ;
                       }
                       
@@ -392,11 +392,11 @@ ml(0,ml(1),[
              }
              
              function virtualDirEvent (event) {
-                const url = event.fixed_url;
+                const url = event.fixup_url;
                 const previous = virtualDir.virtualDirFoundUrls[url];
                 if (previous) {
                     previous.when = Date.now();
-                    event.fixed_url = previous.url;
+                    event.fixup_url = previous.fixup_url;
                     event.cache_response = previous.response;
                     return;
                 }
@@ -431,7 +431,7 @@ ml(0,ml(1),[
                                         virtualDir.virtualDirFoundUrls[fixup_url]=entry;
                                         
                                         
-                                        event.fixed_url = fixup_url;
+                                        event.fixup_url = fixup_url;
                                         event.cache_response = response;
                                         
                                         return resolve ();
@@ -452,7 +452,7 @@ ml(0,ml(1),[
              }
 
              function fetchUpdatedURLEvent(event) {
-                 const url = event.fixed_url;
+                 const url = event.fixup_url;
                  const db  = databases.updatedURLS;
                  
                  switch (event.request.method) {
@@ -493,12 +493,12 @@ ml(0,ml(1),[
 
 
              function fetchFileFromZipEvent (event) {
-                const url = event.fixed_url;
+                const url = event.fixup_url;
                 return  doFetchZipUrl(event.request,url);
              }
              
              function fetchFileFromCacheEvent(event) {
-                 const url = event.fixed_url;
+                 const url = event.fixup_url;
                  //const url = full_URL(location.origin,event.request.url);
                  switch (event.request.method) {
                      case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.cachedURLS,event.request) );
@@ -507,7 +507,7 @@ ml(0,ml(1),[
              }
 
              function defaultFetchEvent(event) {
-                 const url = event.fixed_url;
+                 const url = event.fixup_url;
                  
                  return new Promise(
                      
