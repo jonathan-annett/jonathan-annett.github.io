@@ -5,8 +5,8 @@ ml(0,ml(1),[
     'sha1Lib       | sha1.js',
     'JSZipUtils    | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
     'JSZip         | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
-    'dbLocalForage | dbengine.localForage.js',
-    'wTools        | windowTools.js',
+   // 'dbLocalForage | dbengine.localForage.js',
+  //  'wTools        | windowTools.js',
     
     ],function(){ml(2,ml(3),ml(4),
 
