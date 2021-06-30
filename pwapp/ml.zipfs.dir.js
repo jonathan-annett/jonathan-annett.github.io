@@ -1,3 +1,5 @@
+/* global zip_url_base*/
+
 var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
  
 window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
