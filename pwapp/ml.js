@@ -213,7 +213,7 @@ function ml(x,L,o,a,d,s){
        8:(m,c)=>{
            
        },
-       9:(L)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?ml=' + encodeURIComponent(L))
+       9:(L,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?ml=' + encodeURIComponent(L)).then(C?C:()=>{})
     };
     return z[x]&&z[x](L,o,a,d,s);
 }
