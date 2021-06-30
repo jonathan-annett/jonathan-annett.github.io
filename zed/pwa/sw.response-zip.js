@@ -1335,12 +1335,7 @@ ml(0,ml(1),[
                              '</script>',
                              '</body>',
                              '</html>'
-                         ]).join('\n')
-                             .replace(/\n\s/g,'\n ')
-                             .replace(/\}\n/g,'} ')
-                             .replace(/\)\n/g,') ')
-                             .replace(/\]\n/g,'] ')
-                             .replace(/\n/g,'');
+                         ]).join('\n');
 
                          return resolve( 
                              
@@ -1652,7 +1647,7 @@ ml(0,ml(1),[
         
         Window: [  ],
 
-        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb,  () =>fnSrc, ()=>fnSrc(directoryListingCode,false,true)   ]
+        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb,  () =>fnSrc, ()=>fnSrc(directoryListingCode)   ]
     };
       
       function directoryListingCode(zip_url_base) {
