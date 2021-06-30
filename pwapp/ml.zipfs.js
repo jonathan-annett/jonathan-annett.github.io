@@ -377,18 +377,12 @@ ml(0,ml(1),[
                                    rules.forEach(text_reps);
                                    return rules_template;
                               }
-                              
-                              return fixupUrlEvent(event).then(resolve).catch(reject);
+                              fixupUrlEvent(event);
+                              resolve();
                           });
                           
                       });
-                      
-                    
-                      
-                     
-                      
-                   
-                 
+
              }
              
              function virtualDirEvent (event) {
