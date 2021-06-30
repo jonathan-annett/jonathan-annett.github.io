@@ -1,7 +1,6 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),[
     
-    'wTools                                     | windowTools.js',
     'swResponseZipLib@ServiceWorkerGlobalScope  | sw.response-zip.js',
 
     
@@ -9,7 +8,7 @@ ml(0,ml(1),[
 
     {
 
-        Window: function main(wTools) {
+        Window: function main() {
             
             const lib = {
 
@@ -98,7 +97,7 @@ ml(0,ml(1),[
             return lib;
         },
 
-        ServiceWorkerGlobalScope: function main(wTools,swRespZip) {
+        ServiceWorkerGlobalScope: function main(swRespZip) {
             
                 ml.register("activate",function(event){
                     
@@ -127,18 +126,8 @@ ml(0,ml(1),[
         },
 
     }, {
-        Window: [
-
-            () => self.wTools,
-
-        ],
-        ServiceWorkerGlobalScope: [
-
-            () => self.wTools,
-            
-            () => self.swResponseZipLib
-            
-        ],
+        Window: [ ],
+        ServiceWorkerGlobalScope: [ () => self.swResponseZipLib ],
     }
 
     );
