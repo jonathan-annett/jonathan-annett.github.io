@@ -19,9 +19,10 @@
        "replace":"\\/pwapp\\/$",
        "with":"/pwapp/index.html"
    },
+
    {
       "virtualDirs":{
-         "https://jonathan-annett.github.io/pwapp":[
+         "https://jonathan-annett.github.io/pwapp/app":[
             "https://jonathan-annett.github.io/pwapp/js-keygen-master.zip"
          ]
       }
