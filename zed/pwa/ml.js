@@ -45,11 +45,13 @@ function ml(x,L,o,a,d,s){
         2:(L,o,a,d,e,D)=>{
                 D="defined";//define a constant
                 e= a[L] && a[L].name; //evaluate name of import
-                e=typeof e+typeof o[e]===t[2]+t[3]? (//valdidate nameed import is a function
-                   c.S(ml.h[ ml.d[e].h ].e,e, //
-                     c.S(o,e,a[L].apply(this, d[L].map(c.x))) // do the import
-                    )&&c.l(D+":",e)||c.l(D+" empty:",e) ) : c.l("ready:",e);
-                  
+                
+                if(typeof e+typeof o[e]===t[2]+t[3]) {//valdidate named import is a function
+                    c.S(o,e,a[L].apply(this, d[L].map(c.x))); // do the import into o[e]
+                    if (ml.d[e]) {
+                       c.S(ml.h[ ml.d[e].h ].e,e,o[e]);
+                    }
+                } 
                if (!ml.i){  
                    ml.i=new Proxy({},{
                        get:(t,p)=>c.I(x=p),
