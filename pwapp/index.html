@@ -11,14 +11,10 @@
             <script src="ml.js"></script>
             <script src="ml.pwa.js" defer></script>
             <script>
-            window.addEventListener('ml.pwa.registered',function(e){
-                console.log("registered:",e.detail);
-                location.replace(location.href);
-            });
-            
-            window.addEventListener('ml.pwa.activated',function(e){
-                console.log("activatd:",e.detail);
-                location.replace(location.href);
+            [
+                //"registered",
+                "activated"].forEach(function(x){
+                window.addEventListener('ml.pwa.'+x,function(){location.replace(location.href);});
             });
             </script>
     </body>
