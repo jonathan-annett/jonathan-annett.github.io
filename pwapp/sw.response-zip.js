@@ -4,45 +4,13 @@ ml(0,ml(1),[
     
     'sha1Lib       | sha1.js',
     'JSZipUtils    | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
-    'JSZip         | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
-    'wTools        | windowTools.js',
-    
+    'JSZip         | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js'
+
     ],function(){ml(2,ml(3),ml(4),
 
     {   
-        Window: function main(wTools) {
-        
-                const lib = {
-        
-                };
-                
-                
-                const cmdChannel     = new BroadcastChannel("sw.response.cmds");
-                
-                cmdChannel.onmessage = function(e) {
-                    switch  (e.data.cmd) {
-                        
-                        case "open" : 
-                            const wid = wTools.open(e.data.url,e.data.title||e.data.url,Number.parseInt(e.data.left)||0,Number.parseInt(e.data.top)||0);
-                            cmdChannel.postMessage({id:e.data.id,wid:wid});
-                            break;
-                            
-                        case "close" :
-                            
-                            wTools.open(e.data.wid,function(err,state){
-                                cmdChannel.postMessage({id:e.data.id,wid:wid,error:err,state:state});  
-                            });
-                            
-                            break;
-                            
-                    }
-                };
-                
-                
-                
-        },
-        
-        ServiceWorkerGlobalScope: function swResponseZipLib (sha1,wTools,fnSrc, mlSource, directoryListingSource) {
+           
+        ServiceWorkerGlobalScope: function swResponseZipLib (sha1, fnSrc, mlSource, directoryListingSource) {
         
         
         return function (dbKeyPrefix) {
@@ -152,7 +120,7 @@ ml(0,ml(1),[
                           };
                           rules.forEach(text_reps);
                           return rules_template;
-                     }
+                     };
                       return fixUrl(url,referrer,cb);
                  });
                  
@@ -174,7 +142,7 @@ ml(0,ml(1),[
                          });
                          
                          
-                         console.log("finished cleaning up cached files older than 60 mins.")
+                         console.log("finished cleaning up cached files older than 60 mins.");
                      }
                      
                      setTimeout(cleanupOld,60*1000);
@@ -435,7 +403,7 @@ ml(0,ml(1),[
                              if (ok) {
                                     const db = databases.cachedURLS;
                                     updateURLContents (url,db,buffer,{status:status,headers:headers},function(){
-                                       toFetchUrl (db,event.request,resolve,reject)
+                                       toFetchUrl (db,event.request,resolve,reject);
                                     });
                                     
                              } else {
@@ -445,7 +413,7 @@ ml(0,ml(1),[
                          });
 
                      }
-                  )
+                  );
                  
              }
              
@@ -1534,7 +1502,7 @@ ml(0,ml(1),[
                  
              }
              
-             
+             /*
              
              function toFetchUpdatedZip(resolve,reject) {
                 
@@ -1602,7 +1570,7 @@ ml(0,ml(1),[
              }
              
              
-           
+           */
              
              
              function toFetchUrl (db,request,resolve) {
@@ -1671,9 +1639,7 @@ ml(0,ml(1),[
     }, (()=>{  return {
         
         
-        Window: [ () => self.wTools ],
-
-        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb, () => self.wTools, () =>fnSrc, ()=>get_ML(), ()=>fnSrc(directoryListingCode)   ]
+        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb, () =>fnSrc, ()=>get_ML(), ()=>fnSrc(directoryListingCode)   ]
     };
       
       function directoryListingCode(zip_url_base){
