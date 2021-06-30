@@ -2,19 +2,34 @@
 <html>
     
     <head>
-        <!--
+ 
         <link rel="manifest" href="/pwapp/manifest.json">
-        -->
+    
     </head>
     
     <body>
+        
+            <button>Install</button>
+            <button>Run</button>
             <script src="ml.js"></script>
             <script src="ml.pwa.js" defer></script>
             <script>
             [
                 "registered",
                 "activated"].forEach(function(x){
-                window.addEventListener('ml.pwa.'+x,function(){location.replace(location.href);});
+                window.addEventListener('ml.pwa.'+x,function(){
+                    if (localStorage.installed) {
+                       location.replace(location.href);
+                    } else {
+                       const buttons = document.querySelectorAll("button");
+                       buttons[0].onclick=function(){
+                           //location.replace(location.href);
+                       };
+                       buttons[1].onclick=function(){
+                           location.replace(location.href);
+                       };
+                    }
+                });
             });
             </script>
     </body>
