@@ -2,7 +2,7 @@
 
 
 /* global ml,self,Rusha */
-ml(0,ml(1),[ 'Rusha | /zed/pwa/sw/rusha.js' ],function(){ml(2,ml(3),ml(4),
+ml(0,ml(1),[ 'Rusha | https://cdnjs.cloudflare.com/ajax/libs/rusha/0.8.13/rusha.min.js' ],function(){ml(2,ml(3),ml(4),
 
     {   Window: function sha1Lib(lib) { return lib ;},
         ServiceWorkerGlobalScope: function sha1Lib(lib) { return lib ;}
