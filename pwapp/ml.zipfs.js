@@ -82,7 +82,7 @@ ml(0,ml(1),[
                     return getVirtualDir(url);
                     
                  }
-                 fetchLocalJson("/zed/pwa/fstab.json",function(err,arr){
+                 fetchLocalJson("fstab.json",function(err,arr){
                      if (err) return cb(err);
                       const source = arr.filter(function(x){
                           if (x.virtualDirs) {
