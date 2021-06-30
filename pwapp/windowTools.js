@@ -1,8 +1,8 @@
 /*global self,ml*/
 ml(0,ml(1),[
-    'wToolsLib | /pwapp/windowTools.helper.js',
-    'dbengine  | /pwapp/dbengine.js',
-    'wToolsRem | /pwapp/windowTools.remote.js'
+    'wToolsLib | windowTools.helper.js',
+    'dbengine  | dbengine.js',
+    'wToolsRem | windowTools.remote.js'
 ],function(){ml(2,ml(3),ml(4),
 
   { 

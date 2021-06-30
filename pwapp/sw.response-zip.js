@@ -103,7 +103,7 @@ ml(0,ml(1),[
                     return getVirtualDir(url);
                     
                  }
-                 fetchLocalJson("/zed/pwa/fstab.json",function(err,arr){
+                 fetchLocalJson("fstab.json",function(err,arr){
                      if (err) return cb(err);
                       const source = arr.filter(function(x){
                           if (x.virtualDirs) {
@@ -1811,7 +1811,7 @@ ml(0,ml(1),[
           
       
           ml(0,ml(1),[
-              'wTools | /zed/pwa/windowTools.js'
+              'wTools | windowTools.js'
               ],()=>{ml(2,ml(3),ml(4),
                   { Window: function () { } }, 
                   { Window: [  ] }

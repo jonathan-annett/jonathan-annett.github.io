@@ -1,7 +1,7 @@
 /*global self,localforage, ml*/
 /*global multiLoad,__ml1,__ml2,__ml3,__ml4*/
 //multiLoad(__ml1(),[],function(){__ml2(__ml3(),__ml4(),
-ml(0,ml(1),['libEvents | /pwapp/events.js'],function(){ml(2,ml(3),ml(4),
+ml(0,ml(1),['libEvents | events.js'],function(){ml(2,ml(3),ml(4),
 
   { 
       Window : function wToolsLib(events) {

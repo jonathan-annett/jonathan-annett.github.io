@@ -17,9 +17,8 @@
    },
    {
       "virtualDirs":{
-         "https://jonathan-annett.github.io/zed/pwa/dir":[
-            "https://jonathan-annett.github.io/zed/pwa/yet.zip",
-            "https://jonathan-annett.github.io/zed/pwa/test.zip"
+         "https://jonathan-annett.github.io/pwapp/main":[
+            "https://jonathan-annett.github.io/pwapp/js-keygen-master.zip"
          ]
       }
    }

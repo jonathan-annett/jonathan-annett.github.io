@@ -1,11 +1,11 @@
 /* global ml,self,localforage, Rusha,dbLocalStorage,dbLocalForage, dbCommonLib */
 ml(0,ml(1),[
 
-'libEvents      | /pwapp/events.js',
-'sha1Lib        | /pwapp/sha1.js',
-'dbCommonLib    | /pwapp/dbengine.common.js ' ,
-'dbLocalStorage | /pwapp/dbengine.localStorage.js',
-'dbLocalForage  | /pwapp/dbengine.localForage.js',
+'libEvents      | events.js',
+'sha1Lib        | sha1.js',
+'dbCommonLib    | dbengine.common.js ' ,
+'dbLocalStorage | dbengine.localStorage.js',
+'dbLocalForage  | dbengine.localForage.js',
 
 
 ],function(){ml(2,ml(3),ml(4),
