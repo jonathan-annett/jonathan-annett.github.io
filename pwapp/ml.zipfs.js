@@ -1718,17 +1718,18 @@ ml(0,ml(1),[
                        const etag = hdrs.etag;
                        const lastModified = hdrs['last-modified'];
                        
-                       const getHeaders = {};
-                       if (etag) {
-                           getHeaders['if-none-match']= etag;
-                       }
+                      
                        
-                       if (lastModified) {
-                           getHeaders['if-modified-since']= lastModified.toString();
-                       }
-                       
-                       if (etag) {
+                       if (etag||lastModified) {
+                           
+                          const getHeaders = {};
+                          if (etag) {
+                              getHeaders['if-none-match']= etag;
+                          }
                           
+                          if (lastModified) {
+                              getHeaders['if-modified-since']= lastModified.toString();
+                          }
                            
                            fetch(url, { headers: getHeaders })
                            
