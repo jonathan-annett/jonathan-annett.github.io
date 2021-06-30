@@ -58,115 +58,9 @@ ml(0,ml(1),[
                  }).catch(cb);
              }
              
-             function fixUrl(url,referrer,cb) {
-                 
-                 if (fixUrl.rules) {
-                     
-                     const basepath = referrer === '' ? location.origin : 
-                     
-                       ( referrer.lastIndexOf('.') > referrer.lastIndexOf('/') ) 
-                          ? referrer.substr(0,referrer.lastIndexOf("/"))
-                          : referrer;  
-                          
-                     console.log("referrer",referrer,"--> basepath",basepath);
-                     const rules = fixUrl.rules(basepath);
-                     const enforce = function(x){
-                         if (x.replace&&x.replace.test(url)) { 
-                             url = url.replace(x.replace,x.with);
-                             return true;
-                         } else {
-                             if (x.match && x.addPrefix && x.match.test(url)) { 
-                                 url = x.addPrefix + url;
-                                 return true;
-                             }
-                         }
-                      };
-                      
-                     while ( rules.some( enforce ) );
-                    
-                    return cb(undefined,url);
-                    
-                 }
-                 fetchLocalJson("fstab.json",function(err,arr){
-                     if (err) return cb(err);
-                      const source = arr.filter(function(x){
-                          if (x.virtualDirs) {
-                              virtualDir.virtualDirs = x.virtualDirs;
-                              virtualDir.virtualDirUrls = Object.keys(x.virtualDirs);
-                              virtualDir.virtualDirFoundUrls = {};
-                              
-                              cleanupOld();
-                              delete x.virtualDirs;
-                              return false;
-                          }
-                          
-                          return true;
-                      });
-                      arr.splice(0,arr.length);
-                      const json = JSON.stringify(source);
-                      const regexs = function (x,k) {
-                         if (x[k]) {
-                             x[k]= new RegExp(x[k],x.flags||'');
-                         }
-                      };
-                      const replacements = function (x,k) {
-                          if (x[k]) {
-                             x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
-                          }
-                      };
-                      const rules_template = source.map(function(x){
-                           regexs(x,'match');   
-                           regexs(x,'replace'); 
-                           replacements(x,'with');
-                           replacements(x,'addPrefix');
-                           return x;
-                      });
-                      source.splice(0,source.length);
-                      fixUrl.rules = function (baseURI) {
-                          const replacements = function (dest,src,k) {
-                              if (src[k]) {
-                                 dest[k] = src[k].replace(/\$\{base\}/g,baseURI);
-                              }
-                          };
-                          const rules = JSON.parse(json);
-                          const text_reps = function(x,i){
-                             replacements(rules_template[i],x,'with');
-                             replacements(rules_template[i],x,'addPrefix');
-                             return x;
-                          };
-                          rules.forEach(text_reps);
-                          return rules_template;
-                     }
-                      return fixUrl(url,referrer,cb);
-                 });
-                 
-                 function cleanupOld() {
-                     if (virtualDir.virtualDirFoundUrls) {
-                         const watershed = Date.now - (  60 * 60 * 1000);// keeps stuff for an hour
-                         Object.keys (virtualDir.virtualDirFoundUrls).forEach(function(u){
-                             const previous = virtualDir.virtualDirFoundUrls[u];
-                            
-                             if (previous && previous.when < watershed) {
-                                 delete virtualDir.virtualDirFoundUrls[previous.url];
-                                 delete virtualDir.virtualDirFoundUrls[previous.fixup_url];
-                                 delete previous.response;
-                                 delete previous.url;
-                                 delete previous.fixup_url;
-                                 delete previous.when;
-                             }
-                             
-                         });
-                         
-                         
-                         console.log("finished cleaning up cached files older than 60 mins.")
-                     }
-                     
-                     setTimeout(cleanupOld,60*1000);
-                 }
-                 
-                
-                 
-             }
+             
+             
+             
              
             
 
@@ -292,33 +186,32 @@ ml(0,ml(1),[
                  
                      event.respondWith(new Promise(function(resolve,reject){
                          
-                          fixUrl(event.request.url,event.request.referrer,function(err,url){
-                          if (err) return reject(err);
-                          
-                          
                               const chain = [ 
-                              fetchUpdatedURLEvent, 
-                              virtualDirEvent,
-                              fetchFileFromZipEvent,
-                              fetchFileFromCacheEvent,
-                              defaultFetchEvent  
-                           ];
+                                  
+                                  fixupUrlEvent,        // sets event.fixed_url
+                                  
+                                  fetchUpdatedURLEvent, 
+                                  virtualDirEvent,
+                                  fetchFileFromZipEvent,
+                                  fetchFileFromCacheEvent,
+                                  defaultFetchEvent  
+                              ];
                               
                               
                           const next = function (handler) {
                               if (!handler) {
-                                  console.log("could not find for",url,"from",event.request.referrer); 
+                                  console.log("could not find for",event.fixed_url,"from",event.request.referrer); 
                                   return ;
                               }
                               
-                              console.log("trying",handler.name,"for",url,"from",event.request.referrer);
-                              const promise = handler(event,url);
+                              console.log("trying",handler.name,"for",event.fixed_url,"from",event.request.referrer);
+                              const promise = handler(event);
                               
                               if (promise) {
                                  promise.then(function(response){
                                      if (!response) return next(chain.shift()); 
                                          
-                                     console.log(handler.name,"returned a response for",url,"from",event.request.referrer); 
+                                     console.log(handler.name,"returned a response for",event.fixed_url,"from",event.request.referrer); 
                                      chain.splice(0,chain.length);
                                      resolve(response);
          
@@ -336,18 +229,141 @@ ml(0,ml(1),[
                           
                           next(chain.shift()); 
                          
-                          });    
+                         
 
                   }));
              }
              
-             function defaultFetchEvent(event,url) {
+             
+             function fixupUrlEvent (event) {
+                 
+                  let url = event.request.url;
+                      
+                      if (fixupUrlEvent.rules) {
+                          const referrer = event.request.referrer;
+                          const basepath = referrer === '' ? location.origin : 
+                          
+                            ( referrer.lastIndexOf('.') > referrer.lastIndexOf('/') ) 
+                               ? referrer.substr(0,referrer.lastIndexOf("/"))
+                               : referrer;  
+                               
+                          console.log("referrer",referrer,"--> basepath",basepath);
+                          const rules = fixupUrlEvent.rules(basepath);
+                          const enforce = function(x){
+                              if (x.replace&&x.replace.test(url)) { 
+                                  url = url.replace(x.replace,x.with);
+                                  return true;
+                              } else {
+                                  if (x.match && x.addPrefix && x.match.test(url)) { 
+                                      url = x.addPrefix + url;
+                                      return true;
+                                  }
+                              }
+                           };
+                           
+                          while ( rules.some( enforce ) );
+                         
+                          event.fixed_url = url;
+                          return ;
+                      }
+                      
+                      return new Promise (function (resolve,reject){
+
+                          fetchLocalJson("fstab.json",function(err,arr){
+                               if (err) return reject(err);
+                               const source = arr.filter(function(x){
+                                   if (x.virtualDirs) {
+                                       virtualDir.virtualDirs = x.virtualDirs;
+                                       virtualDir.virtualDirUrls = Object.keys(x.virtualDirs);
+                                       virtualDir.virtualDirFoundUrls = {};
+                                       
+                                       cleanupOld();
+                                       delete x.virtualDirs;
+                                       return false;
+                                   }
+                                   
+                                   return true;
+                               });
+                               arr.splice(0,arr.length);
+                               const json = JSON.stringify(source);
+                               const regexs = function (x,k) {
+                                  if (x[k]) {
+                                      x[k]= new RegExp(x[k],x.flags||'');
+                                  }
+                               };
+                               const replacements = function (x,k) {
+                                   if (x[k]) {
+                                      x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
+                                   }
+                               };
+                               const rules_template = source.map(function(x){
+                                    regexs(x,'match');   
+                                    regexs(x,'replace'); 
+                                    replacements(x,'with');
+                                    replacements(x,'addPrefix');
+                                    return x;
+                               });
+                               source.splice(0,source.length);
+                               fixupUrlEvent.rules = function (baseURI) {
+                                   const replacements = function (dest,src,k) {
+                                       if (src[k]) {
+                                          dest[k] = src[k].replace(/\$\{base\}/g,baseURI);
+                                       }
+                                   };
+                                   const rules = JSON.parse(json);
+                                   const text_reps = function(x,i){
+                                      replacements(rules_template[i],x,'with');
+                                      replacements(rules_template[i],x,'addPrefix');
+                                      return x;
+                                   };
+                                   rules.forEach(text_reps);
+                                   return rules_template;
+                              }
+                              
+                              return fixupUrlEvent(event).then(resolve).catch(reject);
+                          });
+                          
+                      });
+                      
+                    
+                      
+                     
+                      
+                   
+                 
+             }
+             
+             function cleanupOld() {
+                 if (virtualDir.virtualDirFoundUrls) {
+                     const watershed = Date.now - (  60 * 60 * 1000);// keeps stuff for an hour
+                     Object.keys (virtualDir.virtualDirFoundUrls).forEach(function(u){
+                         const previous = virtualDir.virtualDirFoundUrls[u];
+                        
+                         if (previous && previous.when < watershed) {
+                             delete virtualDir.virtualDirFoundUrls[previous.url];
+                             delete virtualDir.virtualDirFoundUrls[previous.fixup_url];
+                             delete previous.response;
+                             delete previous.url;
+                             delete previous.fixup_url;
+                             delete previous.when;
+                         }
+                         
+                     });
+                     
+                     
+                     console.log("finished cleaning up cached files older than 60 mins.")
+                 }
+                 
+                 setTimeout(cleanupOld,60*1000);
+             }
+             
+             function defaultFetchEvent(event) {
+                 const url = event.fixed_url;
                  
                  return new Promise(
                      
                      function(resolve,reject) {
                          
-                         //const url = event.request.url;
                          const shouldCache = url.indexOf(location.origin)===0 ||  event.request.referrer && event.request.referrer.indexOf(location.origin)===0;
                          
                          fetchBufferViaCorsIfNeeded(url,function(err,buffer,status,ok,headers){
@@ -376,18 +392,14 @@ ml(0,ml(1),[
                  
              }
              
-             function fetchFileFromZipEvent(event,url) {
-                 
+             function fetchFileFromZipEvent (event) {
+                const url = event.fixed_url;
                 return  doFetchZipUrl(event.request,url);
-                
-                
              }
              
-             function fetchUpdatedURLEvent(event,url){
-                 const 
-                 
-                 //url    =  full_URL(location.origin,event.request.url),
-                 db     =  databases.updatedURLS;
+             function fetchUpdatedURLEvent(event) {
+                 const url = event.fixed_url;
+                 const db  = databases.updatedURLS;
                  
                  switch (event.request.method) {
                      case "GET"    : return  db.keyExists(url,true) ? new Promise ( toFetchUrl.bind(this,db,event.request) ) : undefined;
@@ -414,8 +426,8 @@ ml(0,ml(1),[
 
              }
              
-             function fetchFileFromCacheEvent(event,url){
-                 
+             function fetchFileFromCacheEvent(event) {
+                 const url = event.fixed_url;
                  //const url = full_URL(location.origin,event.request.url);
                  switch (event.request.method) {
                      case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.cachedURLS,event.request) );
@@ -423,8 +435,8 @@ ml(0,ml(1),[
 
              }
              
-             function virtualDirEvent (event,url) {
-                 
+             function virtualDirEvent (event) {
+                const url = event.fixed_url;
                 const previous = virtualDir.virtualDirFoundUrls[url];
                 if (previous) {
                     previous.when = Date.now();
@@ -480,62 +492,180 @@ ml(0,ml(1),[
                     }
                 }
              }
-
-             function getVirtualDir(url,cb) {
-                 
-                 const previous = virtualDir.virtualDirFoundUrls[url];
-                 if (previous) {
-                     previous.when = Date.now();
-                     console.log("reused vitualdir",previous.url,"==>",previous.fixup);
-                     return  cb(undefined,previous.response.clone());
-                 }
-                 
-                 if (virtualDir.virtualDirs && virtualDir.virtualDirUrls) {
-                     // see if the url starts with one of the virtual directory path names
-                     const prefix = virtualDir.virtualDirUrls.find(function (u){
-                         return url.indexOf(u)===0;
+             
+             
+             
+             function depricated(){
+             
+                 function fixUrl(url,referrer,cb) {
+                     
+                     if (fixUrl.rules) {
+                         
+                         const basepath = referrer === '' ? location.origin : 
+                         
+                           ( referrer.lastIndexOf('.') > referrer.lastIndexOf('/') ) 
+                              ? referrer.substr(0,referrer.lastIndexOf("/"))
+                              : referrer;  
+                              
+                         console.log("referrer",referrer,"--> basepath",basepath);
+                         const rules = fixUrl.rules(basepath);
+                         const enforce = function(x){
+                             if (x.replace&&x.replace.test(url)) { 
+                                 url = url.replace(x.replace,x.with);
+                                 return true;
+                             } else {
+                                 if (x.match && x.addPrefix && x.match.test(url)) { 
+                                     url = x.addPrefix + url;
+                                     return true;
+                                 }
+                             }
+                          };
+                          
+                         while ( rules.some( enforce ) );
+                        
+                        return cb(undefined,url);
+                        
+                     }
+                     fetchLocalJson("fstab.json",function(err,arr){
+                         if (err) return cb(err);
+                          const source = arr.filter(function(x){
+                              if (x.virtualDirs) {
+                                  virtualDir.virtualDirs = x.virtualDirs;
+                                  virtualDir.virtualDirUrls = Object.keys(x.virtualDirs);
+                                  virtualDir.virtualDirFoundUrls = {};
+                                  
+                                  cleanupOld();
+                                  delete x.virtualDirs;
+                                  return false;
+                              }
+                              
+                              return true;
+                          });
+                          arr.splice(0,arr.length);
+                          const json = JSON.stringify(source);
+                          const regexs = function (x,k) {
+                             if (x[k]) {
+                                 x[k]= new RegExp(x[k],x.flags||'');
+                             }
+                          };
+                          const replacements = function (x,k) {
+                              if (x[k]) {
+                                 x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
+                              }
+                          };
+                          const rules_template = source.map(function(x){
+                               regexs(x,'match');   
+                               regexs(x,'replace'); 
+                               replacements(x,'with');
+                               replacements(x,'addPrefix');
+                               return x;
+                          });
+                          source.splice(0,source.length);
+                          fixUrl.rules = function (baseURI) {
+                              const replacements = function (dest,src,k) {
+                                  if (src[k]) {
+                                     dest[k] = src[k].replace(/\$\{base\}/g,baseURI);
+                                  }
+                              };
+                              const rules = JSON.parse(json);
+                              const text_reps = function(x,i){
+                                 replacements(rules_template[i],x,'with');
+                                 replacements(rules_template[i],x,'addPrefix');
+                                 return x;
+                              };
+                              rules.forEach(text_reps);
+                              return rules_template;
+                         }
+                          return fixUrl(url,referrer,cb);
                      });
                      
-                     if (prefix) {
-                         // pull in the list of replacement zips that are layered under this url
-                         // (earlier entries replace later entries, so we loop until we get a hit inside the zip file
-                         // this loops through the stored meta only, later we will crack into the actual zip
-                         // this also has the effect of precaching the zip file's data for the unzip process
-                         const subpath = url.substr(prefix.length);
-                         const zipurlprefixes = virtualDir.virtualDirs[prefix].slice(0);
-                         const locateZipMetadata = function (i) {
+                     function cleanupOld() {
+                         if (virtualDir.virtualDirFoundUrls) {
+                             const watershed = Date.now - (  60 * 60 * 1000);// keeps stuff for an hour
+                             Object.keys (virtualDir.virtualDirFoundUrls).forEach(function(u){
+                                 const previous = virtualDir.virtualDirFoundUrls[u];
+                                
+                                 if (previous && previous.when < watershed) {
+                                     delete virtualDir.virtualDirFoundUrls[previous.url];
+                                     delete virtualDir.virtualDirFoundUrls[previous.fixup_url];
+                                     delete previous.response;
+                                     delete previous.url;
+                                     delete previous.fixup_url;
+                                     delete previous.when;
+                                 }
+                                 
+                             });
                              
-                             if (i<zipurlprefixes.length) {
-                                 const fixup_url = zipurlprefixes[i]+subpath;
-                                 getEmbeddedZipFileResponse(fixup_url,function(err,response){
-                                     if (err||!response) return locateZipMetadata(i+1);
-                                     console.log("resolved vitualdir",url,"==>",fixup_url);
-                                     const entry = virtualDir.virtualDirFoundUrls[url]={
-                                         fixup_url : fixup_url,
-                                         url: url,
-                                         response: response.clone(),
-                                         when:Date.now()
-                                     };
-                                     virtualDir.virtualDirFoundUrls[fixup_url]=entry;
-                                     
-                                     return cb (undefined,response);
-                                 });
-                                        
-                         
-                             } else {
-                                 // this will result in a eventual 404 from the end server
-                                 // (unless of course the url points to an actual file.)
-                                 return cb();
-                             }
                              
-                         };
+                             console.log("finished cleaning up cached files older than 60 mins.")
+                         }
                          
-                         locateZipMetadata(0);
-                         
+                         setTimeout(cleanupOld,60*1000);
                      }
+                     
+                    
+                     
                  }
                  
-                 return cb();
+
+                 function getVirtualDir(url,cb) {
+                     
+                     const previous = virtualDir.virtualDirFoundUrls[url];
+                     if (previous) {
+                         previous.when = Date.now();
+                         console.log("reused vitualdir",previous.url,"==>",previous.fixup);
+                         return  cb(undefined,previous.response.clone());
+                     }
+                     
+                     if (virtualDir.virtualDirs && virtualDir.virtualDirUrls) {
+                         // see if the url starts with one of the virtual directory path names
+                         const prefix = virtualDir.virtualDirUrls.find(function (u){
+                             return url.indexOf(u)===0;
+                         });
+                         
+                         if (prefix) {
+                             // pull in the list of replacement zips that are layered under this url
+                             // (earlier entries replace later entries, so we loop until we get a hit inside the zip file
+                             // this loops through the stored meta only, later we will crack into the actual zip
+                             // this also has the effect of precaching the zip file's data for the unzip process
+                             const subpath = url.substr(prefix.length);
+                             const zipurlprefixes = virtualDir.virtualDirs[prefix].slice(0);
+                             const locateZipMetadata = function (i) {
+                                 
+                                 if (i<zipurlprefixes.length) {
+                                     const fixup_url = zipurlprefixes[i]+subpath;
+                                     getEmbeddedZipFileResponse(fixup_url,function(err,response){
+                                         if (err||!response) return locateZipMetadata(i+1);
+                                         console.log("resolved vitualdir",url,"==>",fixup_url);
+                                         const entry = virtualDir.virtualDirFoundUrls[url]={
+                                             fixup_url : fixup_url,
+                                             url: url,
+                                             response: response.clone(),
+                                             when:Date.now()
+                                         };
+                                         virtualDir.virtualDirFoundUrls[fixup_url]=entry;
+                                         
+                                         return cb (undefined,response);
+                                     });
+                                            
+                             
+                                 } else {
+                                     // this will result in a eventual 404 from the end server
+                                     // (unless of course the url points to an actual file.)
+                                     return cb();
+                                 }
+                                 
+                             };
+                             
+                             locateZipMetadata(0);
+                             
+                         }
+                     }
+                     
+                     return cb();
+                 }
+             
+             
              }
              
              function fetchBufferViaCorsIfNeeded(url,cb) {
