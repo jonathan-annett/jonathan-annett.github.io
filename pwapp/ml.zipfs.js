@@ -31,7 +31,7 @@ ml(0,ml(1),[
               
              const lib = {
                  processFetchRequest      : processFetchRequest,
-                 fetchFileFromZipEvent    : fetchFileFromZipEvent,
+                 newFixupRulesArray       : newFixupRulesArray,
                  unzipFile                : unzipFile,
                  fetchUpdatedURLEvent     : fetchUpdatedURLEvent,
                  updateURLContents        : updateURLContents,
@@ -329,60 +329,64 @@ ml(0,ml(1),[
 
                           fetchLocalJson("fstab.json",function(err,arr){
                                if (err) return reject(err);
-                               const source = arr.filter(function(x){
-                                   if (x.virtualDirs) {
-                                       virtualDir.virtualDirs = x.virtualDirs;
-                                       virtualDir.virtualDirUrls = Object.keys(x.virtualDirs);
-                                       virtualDir.virtualDirFoundUrls = {};
-                                       
-                                       cleanupOld();
-                                       delete x.virtualDirs;
-                                       return false;
-                                   }
-                                   
-                                   return true;
-                               });
-                               arr.splice(0,arr.length);
-                               const json = JSON.stringify(source);
-                               const regexs = function (x,k) {
-                                  if (x[k]) {
-                                      x[k]= new RegExp(x[k],x.flags||'');
-                                  }
-                               };
-                               const replacements = function (x,k) {
-                                   if (x[k]) {
-                                      x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
-                                   }
-                               };
-                               const rules_template = source.map(function(x){
-                                    regexs(x,'match');   
-                                    regexs(x,'replace'); 
-                                    replacements(x,'with');
-                                    replacements(x,'addPrefix');
-                                    return x;
-                               });
-                               source.splice(0,source.length);
-                               fixupUrlEvent.rules = function (baseURI) {
-                                   const replacements = function (dest,src,k) {
-                                       if (src[k]) {
-                                          dest[k] = src[k].replace(/\$\{base\}/g,baseURI);
-                                       }
-                                   };
-                                   const rules = JSON.parse(json);
-                                   const text_reps = function(x,i){
-                                      replacements(rules_template[i],x,'with');
-                                      replacements(rules_template[i],x,'addPrefix');
-                                      return x;
-                                   };
-                                   rules.forEach(text_reps);
-                                   return rules_template;
-                              }
-                              fixupUrlEvent(event);
-                              resolve();
+                               newFixupRulesArray(arr);
+                               fixupUrlEvent(event);
+                               resolve();
                           });
                           
                       });
 
+             }
+             
+             function newFixupRulesArray(arr) {
+                 const source = arr.filter(function(x){
+                      if (x.virtualDirs) {
+                          virtualDir.virtualDirs = x.virtualDirs;
+                          virtualDir.virtualDirUrls = Object.keys(x.virtualDirs);
+                          virtualDir.virtualDirFoundUrls = {};
+                          
+                          cleanupOld();
+                          delete x.virtualDirs;
+                          return false;
+                      }
+                      
+                      return true;
+                  });
+                  arr.splice(0,arr.length);
+                  const json = JSON.stringify(source);
+                  const regexs = function (x,k) {
+                     if (x[k]) {
+                         x[k]= new RegExp(x[k],x.flags||'');
+                     }
+                  };
+                  const replacements = function (x,k) {
+                      if (x[k]) {
+                         x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
+                      }
+                  };
+                  const rules_template = source.map(function(x){
+                       regexs(x,'match');   
+                       regexs(x,'replace'); 
+                       replacements(x,'with');
+                       replacements(x,'addPrefix');
+                       return x;
+                  });
+                  source.splice(0,source.length);
+                  fixupUrlEvent.rules = function (baseURI) {
+                      const replacements = function (dest,src,k) {
+                          if (src[k]) {
+                             dest[k] = src[k].replace(/\$\{base\}/g,baseURI);
+                          }
+                      };
+                      const rules = JSON.parse(json);
+                      const text_reps = function(x,i){
+                         replacements(rules_template[i],x,'with');
+                         replacements(rules_template[i],x,'addPrefix');
+                         return x;
+                      };
+                      rules.forEach(text_reps);
+                      return rules_template;
+                 }
              }
              
              function virtualDirEvent (event) {

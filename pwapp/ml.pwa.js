@@ -11,13 +11,9 @@ ml(0,ml(1),[
         Window: function main(wTools) {
             
             const lib = {
-
+                newFixupRulesArray:newFixupRulesArray
             };
-            
-            
-          
-         
-            
+
             ml(9,'./ml.pwa.js',function(result){
                 
                 window.dispatchEvent(
@@ -37,11 +33,11 @@ ml(0,ml(1),[
                 },persistent);
 
             });
-         
            
-       
+            function newFixupRulesArray(rules,cb) {
+                sendMessage("newFixupRulesArray",{rules:rules},cb);
+            }
   
-            
             function findWorker(cb) {
 
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -59,7 +55,6 @@ ml(0,ml(1),[
                 });
                 
             }
-             
             
             function sendMessage(cmd,data,cb,persistent) {
                 const replyName        = "r"+Math.random().toString(36).substr(-8)+Date.now().toString(36).substr(-4);
@@ -90,18 +85,17 @@ ml(0,ml(1),[
                     worker.postMessage({m:cmd,r:replyName,data:data},[sendChannel.port2]); 
                 });
            } 
-           
-            
-           
-
-
+          
             return lib;
         },
 
         ServiceWorkerGlobalScope: function main(swRespZip) {
             
                 let dispatchCustomEvent;
-            
+                const dbKeyPrefix = 'zip-files-cache.';
+                
+                const zipFS = swRespZip(dbKeyPrefix);
+                
                 ml.register("activate",function(event){
                     
                     if (dispatchCustomEvent) {
@@ -127,13 +121,23 @@ ml(0,ml(1),[
                     onCustomEvents :function(msg,cb){ 
                         dispatchCustomEvent = cb;    
                     },
+                    
+                    newFixupRulesArray : function(msg,cb) {
+                        if (Array.isArray(msg.rules)){
+                            zipFS.newFixupRulesArray(msg.rules);
+                            cb("ok");
+                        } else {
+                            cb({error:"not an array"});
+                        }
+                        
+                    }
 
                 });
                    
-                const dbKeyPrefix       = 'zip-files-cache.';
+                
        
                 
-                ml.register("fetch",swRespZip(dbKeyPrefix).processFetchRequest);
+                ml.register("fetch",zipFS.processFetchRequest);
                 
 
         },
