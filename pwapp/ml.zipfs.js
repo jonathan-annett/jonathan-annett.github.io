@@ -499,7 +499,6 @@ ml(0,ml(1),[
              
              function fetchFileFromCacheEvent(event) {
                  const url = event.fixup_url;
-                 //const url = full_URL(location.origin,event.request.url);
                  switch (event.request.method) {
                      case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.cachedURLS,url) );
                  }
@@ -527,7 +526,8 @@ ml(0,ml(1),[
                              if (ok) {
                                     const db = databases.cachedURLS;
                                     updateURLContents (url,db,buffer,{status:status,headers:headers},function(){
-                                       toFetchUrl (db,url,resolve,reject)
+                                       //toFetchUrl (db,url,resolve,reject)
+                                       resolve(new Response (buffer,{status:status,headers:headers}));
                                     });
                                     
                              } else {
@@ -750,7 +750,7 @@ ml(0,ml(1),[
                              const headers = {};
                              
                              for(var key of response.headers.keys()) {
-                                headers[key]=response.headers.get(key);
+                                headers[key.toLowerCase()]=response.headers.get(key);
                              }
                              cb(undefined,buffer,response.status,response.ok,headers);
                          });
@@ -1535,10 +1535,7 @@ ml(0,ml(1),[
                      });
                      
                  });
-                 
 
-                 
-                
              }
              
              function getEmbeddedZipFileResponse(url,options,cb) {
@@ -1713,17 +1710,66 @@ ml(0,ml(1),[
            
            
            
+           
            function toFetchUrl (db,url,resolve) {
-                   
+               // resolve to cached url response, or undefined if that url is not cached.
+               // (will refresh the cache if online and etag has changed)
                db.getItem(url,function(err,args){
+                   
                    if (err||!Array.isArray(args)) {
                        resolve();
                    } else {
-                       resolve(new Response(args[0],{status:200,headers:new Headers(args[1])}));
+                       
+                       const hdrs=args[1];
+                       const etag = hdrs.etag;
+                       const lastModified = hdrs['last-modified'];
+                       
+                       const getHeaders = {};
+                       if (etag) {
+                           getHeaders['if-none-match']= etag;
+                       }
+                       
+                       if (lastModified) {
+                           getHeaders['if-modified-since']= lastModified.toString();
+                       }
+                       
+                       if (etag) {
+                          
+                           
+                           fetch(url, { headers: getHeaders })
+                           
+                           
+                           .then(function(response){ 
+                               if (response && response.status===200) {
+                                   response.clone().arrayBuffer().then(function(buffer){
+                                       
+                                       const headers = {};
+                                       for(var key of response.headers.keys()) {
+                                          headers[key.toLowerCase()]=response.headers.get(key);
+                                       }
+                                       updateURLContents (url,db,buffer,{status:status,headers:headers},function(){
+                                          return resolve(response);
+                                       });
+                                       
+                                   });
+                              }
+                              
+                              doCache() ;
+                           })
+                           
+                           .catch(doCache);
+                           
+                       
+                       }
+                      
+                   }
+                   
+                   
+                   function doCache() { 
+                      resolve(new Response(args[0],{status:200,headers:new Headers(args[1])}));
                    }
                });
-               
-                
+
            }
              
             
