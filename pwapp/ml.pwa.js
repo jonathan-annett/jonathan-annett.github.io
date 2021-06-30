@@ -40,19 +40,7 @@ ml(0,ml(1),[
          
            
        
-            /*
-            setTimeout(function(){
-                
-                sendMessage("ping",{hello:"world",when:new Date(),also:Math.random()},function(err,reply){
-                   console.log({err,reply});  
-                   
-                   
-                });
-                
-
-            },5000);*/
-            
-            
+  
             
             function findWorker(cb) {
 
@@ -121,7 +109,7 @@ ml(0,ml(1),[
                         dispatchCustomEvent({
                             eventName:ml.pwa.activated,
                             eventData:1
-                        })
+                        });
                     }
                     self.clients.claim();
                     
