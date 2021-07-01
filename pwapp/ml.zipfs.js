@@ -1490,9 +1490,13 @@ ml(0,ml(1),[
                                      if (is_hidden) hidden_files_exist = true;
                                      return '<li'+li_class+'><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
                                   };
-                             const html_details = Object.keys(zipFileMeta.files).map(html_file_item);
-                             tools.extraFiles().forEach(html_file_item);
-                             
+                                  
+                             const html_details = Object.keys(zipFileMeta.files)
+                                 .map(html_file_item)
+                                    .concat(
+                                       tools.extraFiles().map(html_file_item)
+                                    );
+                                  
                              const html = [
                                  
                              '<!DOCTYPE html>',
