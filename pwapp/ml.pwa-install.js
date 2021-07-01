@@ -7,6 +7,29 @@ const
 let normal_rules ,menu_rules;
 getRules();
 
+runhere.onclick = function() {
+    sessionStorage.running=((1000*60*2) + Date.now()).toString();
+    pwa.start(function(){
+        setNormalRules(function(){
+           location.replace(config.root);   
+        });
+    });
+};
+
+update.onclick = function() {
+    delete sessionStorage.running;
+    console.log("unregistering service worker");
+    pwa.unregister(function(){
+        console.log("unregistered service worker, reregistering...");
+        pwa.start(function(){
+            setMenuRules(function(){
+
+            });
+        }); 
+    });
+};
+
+
 function setNormalRules (cb) {
     if (normal_rules) {
         return pwa.newFixupRulesArray(normal_rules,cb);
@@ -90,28 +113,7 @@ function setMenuRules(cb) {
               });
           }
           
-          runhere.onclick = function() {
-              sessionStorage.running=((1000*60*2) + Date.now()).toString();
-              pwa.start(function(){
-                  setNormalRules(function(){
-                     location.replace(config.root);   
-                  });
-              });
-          };
-          
-          update.onclick = function() {
-              delete sessionStorage.running;
-              console.log("unregistering service worker");
-              pwa.unregister(function(){
-                  console.log("unregistered service worker, reregistering...");
-                  pwa.start(function(){
-                      setMenuRules(function(){
-
-                      });
-                  }); 
-              });
-          };
-          
+         
      }
  }).catch(
     function(err){
