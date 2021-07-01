@@ -505,7 +505,7 @@ ml(0,ml(1),[
                     let inzip   = event.request.headers.get('x-is-in-zip') ===  '1';
                     
                     
-                    removeUpdatedURLContents (url,databases.updatedURLS,function(){
+                    removeUpdatedURLContents (url,function(){
                         
                         
                         if (inzip) {
