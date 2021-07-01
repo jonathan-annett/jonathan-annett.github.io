@@ -1108,7 +1108,7 @@ ml(0,ml(1),[
                                                 emptyBuffer,emptyResp,
                                                 function(){
                                                    // send the empty buffer back to browser.
-                                                   return resolve(new Response(buffer,emptyResp));    
+                                                   return resolve(new Response(emptyBuffer,emptyResp));    
                                                 }
                                             );
                                             
@@ -1233,7 +1233,7 @@ ml(0,ml(1),[
                                  } else {
                                      if (tools.isAdded(file_path)) {
                                          // this is a request for a new file, which may or may not have been created yet.
-                                        const added_url = zip_url+"/"+path_in_zip; 
+                                        const added_url = zip_url+"/"+file_path; 
                                         return toFetchUrl (databases.updatedURLS,added_url,function(response){
                                             
                                             if (response) {
@@ -1250,7 +1250,7 @@ ml(0,ml(1),[
                                                 emptyBuffer,emptyResp,
                                                 function(){
                                                    // send the empty buffer back to browser.
-                                                   return resolve(new Response(buffer,emptyResp));    
+                                                   return resolve(new Response(emptyBuffer,emptyResp));    
                                                 }
                                             );
                                             
