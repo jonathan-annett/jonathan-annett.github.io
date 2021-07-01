@@ -53,7 +53,12 @@ const
           pwa.start(); 
           location.replace(config.root);
      } else {
-         
+          if (config.root!==location.pathname) {
+              return pwa.unregister(function(){
+                  console.log("unregistered service worker, restarting...");
+                  location.replace(config.root);
+              });
+          }
           runhere.onclick = function() {
               sessionStorage.running=((1000*60*2) + Date.now()).toString();
               pwa.start();
