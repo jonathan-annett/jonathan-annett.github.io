@@ -10,8 +10,10 @@ getRules();
 runhere.onclick = function() {
     sessionStorage.running=((1000*60*2) + Date.now()).toString();
     pwa.start(function(){
-        setNormalRules(function(){
-           location.replace(config.root);   
+        betaTesterApproval().then(function(config){
+            setNormalRules(function(){
+               location.replace(config.root);   
+            });
         });
     });
 };
