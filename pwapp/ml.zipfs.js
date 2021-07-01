@@ -1245,7 +1245,7 @@ ml(0,ml(1),[
                      } else {
                          
                          toFetchUrl (databases.updatedURLS,url+'/'+dir_meta_name,true,function(buffer){
-                            cb (getTester(JSON.parse(buffer.toString())));
+                            cb (getTester(JSON.parse(bufferToText(buffer))));
                          });
                          
                      }
@@ -1261,6 +1261,9 @@ ml(0,ml(1),[
                         });  
                      };
                  }
+                 
+                 
+                 function bufferToText(x) {return new TextEncoder("utf-8").decode(x);}
              }
              
              function resolveZipListing (url,buffer) {
