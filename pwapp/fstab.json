@@ -24,6 +24,10 @@
         "with":"/pwapp/update.html"
    },
    {
+        "replace":"\\/pwapp\\/edit\\/$",
+        "with":"/pwapp/js-keygen-master.zip"
+   },
+   {
       "virtualDirs":{
          "https://jonathan-annett.github.io/pwapp":[
             "https://jonathan-annett.github.io/pwapp/js-keygen-master.zip/js-keygen-master"
