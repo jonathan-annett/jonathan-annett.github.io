@@ -56,12 +56,24 @@ ml(0,ml(1),[
              const dir_meta_empty_json = JSON.stringify(dir_meta_empty);
              const dir_meta_empty_resp = {
                  status: 200,
-                 statusText: 'Not found',
                  headers : {
                      'Content-Type'   : 'application/json',
                      'Content-Length' : dir_meta_empty_json.length,
                  }
              };
+             
+             const emptyBuffer = new ArrayBuffer();
+             const emptyBufferStatus = emptyBufferStatusWithType('text/plain');
+             function emptyBufferStatusWithType(t) {
+                 return {
+                            status: 200,
+                            headers : {
+                                'Content-Type'   : t,
+                                'Content-Length' : 0,
+                            }
+                        }
+             }
+             
              
              function fetchLocalJson(path,cb) {
                  fetch(path).then(function(response){
@@ -728,6 +740,10 @@ ml(0,ml(1),[
                          date:date||new Date()
                      };
                      
+                       if (zipFileMeta.tools) {
+                           Object.keys.forEach(function(k){delete zipFileMeta.tools[k];});
+                           delete zipFileMeta.tools;
+                       }
                        databases.zipMetadata.setItem(url,zipFileMeta,function(err){
                            
                              if (err) return cb(err);
@@ -828,6 +844,10 @@ ml(0,ml(1),[
                              // this also "invents" etags for each file inside
                              // we do this once, on first open.
             
+                             if (zipFileMeta.tools) {
+                                Object.keys.forEach(function(k){delete zipFileMeta.tools[k];});
+                                delete zipFileMeta.tools;
+                             }
                              databases.zipMetadata.setItem(url,addFileMetaData(zip,zipFileMeta,url),function(err){
                                  
                                 if (err) return cb(err);
@@ -1014,100 +1034,138 @@ ml(0,ml(1),[
                      getZipObject(zip_url,buffer,function(err,zip,zipFileMeta){
                          if (err)  throw err;
                          
-            
-                         let fileEntry = zipFileMeta.files[file_path];
-                         if (!fileEntry) {
-                             if (zipFileMeta.alias_root) {
-                                 fileEntry = zipFileMeta.files[zipFileMeta.alias_root+file_path];
-                                 if (fileEntry) {
-                                     file_path  = zipFileMeta.alias_root+file_path;
-                                     subzip_url = zip_url + file_path;
-                                     subzip_filepath = zipFileMeta.alias_root + subzip_filepath;
+                        getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
+                                
+                             let fileEntry = zipFileMeta.files[file_path];
+                             if (!fileEntry) {
+                                 if (zipFileMeta.alias_root) {
+                                     fileEntry = zipFileMeta.files[zipFileMeta.alias_root+file_path];
+                                     if (fileEntry) {
+                                         file_path  = zipFileMeta.alias_root+file_path;
+                                         subzip_url = zip_url + file_path;
+                                         subzip_filepath = zipFileMeta.alias_root + subzip_filepath;
+                                     }
+                                 }
+                                 if (!fileEntry) {
+                                     
+                                     
+    
+                                     console.log("returning 404",zip_url,path_in_zip);
+                                     return resolve(new Response('', {
+                                         status: 404,
+                                         statusText: 'Not found'
+                                     }));
                                  }
                              }
-                             if (!fileEntry) {
-                                 
-                                 
-
-                                 console.log("returning 404",zip_url,path_in_zip);
-                                 return resolve(new Response('', {
-                                     status: 404,
-                                     statusText: 'Not found'
-                                 }));
-                             }
-                         }
-                         
-                        
-                         const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
-                        
-                         
-                        
-                         if (   !update_needed      && 
-                                !subzip             &&
-                                 (
-                                     (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag)) ||
-                                     (ifModifiedSince &&  (safeDate(ifModifiedSince,fileEntry.date) <  fileEntry.date) )
-                                 
-                                 )
-                             ) {
-                                 
-                             return response304 (resolve,fileEntry);
                              
-                         }
-                         
-                         const zip_fileobj = zip.file(file_path);
-                         
-                         if (!zip_fileobj) {
-                             if (file_path===dir_meta_name) {
-                                 return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
-                             } else {
-                                 throw new Error ('file not in zip!'); 
+                            
+                             const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
+                            
+                             
+                            
+                             if (   !update_needed      && 
+                                    !subzip             &&
+                                     (
+                                         (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag)) ||
+                                         (ifModifiedSince &&  (safeDate(ifModifiedSince,fileEntry.date) <  fileEntry.date) )
+                                     
+                                     )
+                                 ) {
+                                     
+                                 return response304 (resolve,fileEntry);
+                                 
                              }
-                         }
-                         
-                         zip_fileobj.async('arraybuffer').then(function(buffer){
-                            if (update_needed) {
-                                // first request for this file, so we need to save 
-                                // contentLength and type in buffer
-                                // (they are needed for later 304 responses)
-                                
-                                fileEntry.contentType    = mimeForFilename(file_path);
-                                fileEntry.contentLength  = buffer.byteLength;
-                                
-                                if (zipFileMeta.updating) {
-                                    clearTimeout(zipFileMeta.updating);
-                                }
-                                console.log("updating zip entry",zip_url,file_path);
-                                
-                                zipFileMeta.updating = setTimeout(function(){
-                                    // in 10 seconds this and any other metadata changes to disk
-                                    delete zipFileMeta.updating;
-                                    databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
-                                        console.log("updated zip entry",zip_url);
-                                    });
+                             
+                             const zip_fileobj = zip.file(file_path);
+                             
+                             if (!zip_fileobj) {
+                                 // url refers to a file NOT in the zip
+                                 if (file_path===dir_meta_name) {
+                                     // this zip doesn't have any custom meta, and this url points to the implied meta json file for the zip
+                                     // the meta json file has things like deleted files, extra files, hidden file rules.
+                                     // this enbables the editor to "update" files that don't exist yet, or remove files that
+                                     // are no longer needed, without immedately modifying the server based zip. 
+                                     // since there is nothing defined, we return a default empty meta record.
+                                     return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
+                                 } else {
+                                     
+                                     if (tools.isAdded(file_path)) {
+                                         // this is a request for a new file, which may or may not have been created yet.
+                                        const added_url = zip_url+"/"+path_in_zip; 
+                                        return toFetchUrl (databases.updatedURLS,added_url,function(response){
+                                            
+                                            if (response) {
+                                                // clearly the file file has been created as we just fetched it.
+                                               return resolve (response);
+                                            }
+                                            
+                                            // must be first time this added file has been fetched - make an empty file.
+                                            const emptyResp = emptyBufferStatusWithType(mimeForFilename(file_path));
+                                            
+                                            updateURLContents (
+                                                added_url,
+                                                databases.updatedURLS,
+                                                emptyBuffer,emptyResp,
+                                                function(){
+                                                   // send the empty buffer back to browser.
+                                                   return resolve(new Response(buffer,emptyResp));    
+                                                }
+                                            );
+                                            
+                                        });
+                                         
+                                     }
+                                     throw new Error ('file not in zip!'); 
+                                 }
+                             }
+                             
+                             zip_fileobj.async('arraybuffer').then(function(buffer){
+                                if (update_needed) {
+                                    // first request for this file, so we need to save 
+                                    // contentLength and type in buffer
+                                    // (they are needed for later 304 responses)
                                     
-                                },10*10000);
+                                    fileEntry.contentType    = mimeForFilename(file_path);
+                                    fileEntry.contentLength  = buffer.byteLength;
+                                    
+                                    if (zipFileMeta.updating) {
+                                        clearTimeout(zipFileMeta.updating);
+                                    }
+                                    console.log("updating zip entry",zip_url,file_path);
+                                    
+                                    zipFileMeta.updating = setTimeout(function(){
+                                        // in 10 seconds this and any other metadata changes to disk
+                                        delete zipFileMeta.updating;
+                                        if (zipFileMeta.tools) {
+                                            Object.keys.forEach(function(k){delete zipFileMeta.tools[k];});
+                                            delete zipFileMeta.tools;
+                                        }
+                                        databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
+                                            console.log("updated zip entry",zip_url);
+                                        });
+                                        
+                                    },10*10000);
+                                    
+                                }
                                 
-                            }
-                            
-                            if (path_in_zip.endsWith('.zip')) {
-                                return resolveZipListing (zip_url+"/"+path_in_zip,buffer).then(resolve).catch(reject);
-                            }
-                           
-                            
-                            if (subzip) {
-                                return resolveSubzip(buffer,subzip_url ,subzip_filepath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
-                            }
-                            
-                            
-                            return response200 (resolve,buffer,fileEntry);
-                            
+                                if (path_in_zip.endsWith('.zip')) {
+                                    return resolveZipListing (zip_url+"/"+path_in_zip,buffer).then(resolve).catch(reject);
+                                }
+                               
+                                
+                                if (subzip) {
+                                    return resolveSubzip(buffer,subzip_url ,subzip_filepath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
+                                }
+                                
+                                
+                                return response200 (resolve,buffer,fileEntry);
+                                
+                                
+                             });
+                             
                             
                          });
-                         
-                        
                      });
-                 
                  });
              }
              
@@ -1128,91 +1186,126 @@ ml(0,ml(1),[
                  return new Promise(function (resolve,reject){
                      
                      getZipObject(zip_url,function(err,zip,zipFileMeta) {
-                         
-                         if (err)  throw err;
-                         
-                         let fileEntry = zipFileMeta.files[file_path];
-                         if (!fileEntry) {
-                             if (zipFileMeta.alias_root) {
-                                 fileEntry = zipFileMeta.files[ zipFileMeta.alias_root+file_path ];
-                                 if (fileEntry) {
-                                     file_path  = zipFileMeta.alias_root+file_path;
-                                     subzip_url = zip_url + file_path;
-                                     subzip_filepath = zipFileMeta.alias_root + subzip_filepath;
+                          if (err)  throw err;
+                         getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
+                             
+                            
+                             
+                             let fileEntry = zipFileMeta.files[file_path];
+                             if (!fileEntry) {
+                                 if (zipFileMeta.alias_root) {
+                                     fileEntry = zipFileMeta.files[ zipFileMeta.alias_root+file_path ];
+                                     if (fileEntry) {
+                                         file_path  = zipFileMeta.alias_root+file_path;
+                                         subzip_url = zip_url + file_path;
+                                         subzip_filepath = zipFileMeta.alias_root + subzip_filepath;
+                                     }
+                                 }
+                                 
+                                 if (!fileEntry) {
+                                     
+                                      return resolve(new Response('', {
+                                         status: 404,
+                                         statusText: 'Not found'
+                                     }));
+                                 }
+                             }
+                            
+                             
+                             const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
+    
+                             if (   !update_needed      && 
+                                    !subzip             &&
+                                     (
+                                         (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag)) ||
+                                         (ifModifiedSince &&  (safeDate(ifModifiedSince,fileEntry.date) <  fileEntry.date) )
+                                     )
+                                ) {
+                                 return response304 (resolve,fileEntry);
+                             }
+                             
+                             
+                             const zip_fileobj = zip.file(file_path);
+                             
+                             if (!zip_fileobj) {
+                                 if (file_path===dir_meta_name) {
+                                     return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
+                                 } else {
+                                     if (tools.isAdded(file_path)) {
+                                         // this is a request for a new file, which may or may not have been created yet.
+                                        const added_url = zip_url+"/"+path_in_zip; 
+                                        return toFetchUrl (databases.updatedURLS,added_url,function(response){
+                                            
+                                            if (response) {
+                                                // clearly the file file has been created as we just fetched it.
+                                               return resolve (response);
+                                            }
+                                            
+                                            // must be first time this added file has been fetched - make an empty file.
+                                            const emptyResp = emptyBufferStatusWithType(mimeForFilename(file_path));
+                                            
+                                            updateURLContents (
+                                                added_url,
+                                                databases.updatedURLS,
+                                                emptyBuffer,emptyResp,
+                                                function(){
+                                                   // send the empty buffer back to browser.
+                                                   return resolve(new Response(buffer,emptyResp));    
+                                                }
+                                            );
+                                            
+                                        });
+                                         
+                                     }
+                                     
+                                     
+                                     throw new Error ('file not in zip!'); 
                                  }
                              }
                              
-                             if (!fileEntry) {
-                                 
-                                  return resolve(new Response('', {
-                                     status: 404,
-                                     statusText: 'Not found'
-                                 }));
-                             }
-                         }
-                        
-                         
-                         const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
-
-                         if (   !update_needed      && 
-                                !subzip             &&
-                                 (
-                                     (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag)) ||
-                                     (ifModifiedSince &&  (safeDate(ifModifiedSince,fileEntry.date) <  fileEntry.date) )
-                                 )
-                            ) {
-                             return response304 (resolve,fileEntry);
-                         }
-                         
-                         
-                         const zip_fileobj = zip.file(file_path);
-                         
-                         if (!zip_fileobj) {
-                             if (file_path===dir_meta_name) {
-                                 return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
-                             } else {
-                                 throw new Error ('file not in zip!'); 
-                             }
-                         }
-                         
-                         zip_fileobj.async('arraybuffer').then(function(buffer){
-                                 
-                                 if (update_needed) {
-                                     // first request for this file, so we need to save 
-                                     // contentLength and type in buffer
-                                     // (they are needed for later 304 responses)
+                             zip_fileobj.async('arraybuffer').then(function(buffer){
                                      
-                                     fileEntry.contentType    = mimeForFilename(file_path);
-                                     fileEntry.contentLength  = buffer.byteLength;
-                                     
-                                     if (zipFileMeta.updating) {
-                                         clearTimeout(zipFileMeta.updating);
-                                     }
-                                     console.log("updating zip entry",zip_url,file_path);
-                                     
-                                     zipFileMeta.updating = setTimeout(function(){
-                                         // in 10 seconds this and any other metadata changes to disk
-                                         delete zipFileMeta.updating;
-                                         databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
-                                             console.log("updated zip entry",zip_url);
-                                         });
+                                     if (update_needed) {
+                                         // first request for this file, so we need to save 
+                                         // contentLength and type in buffer
+                                         // (they are needed for later 304 responses)
                                          
-                                     },10*10000);
+                                         fileEntry.contentType    = mimeForFilename(file_path);
+                                         fileEntry.contentLength  = buffer.byteLength;
+                                         
+                                         if (zipFileMeta.updating) {
+                                             clearTimeout(zipFileMeta.updating);
+                                         }
+                                         console.log("updating zip entry",zip_url,file_path);
+                                         
+                                         zipFileMeta.updating = setTimeout(function(){
+                                             // in 10 seconds this and any other metadata changes to disk
+                                             delete zipFileMeta.updating;
+                                             if (zipFileMeta.tools) {
+                                                 Object.keys.forEach(function(k){delete zipFileMeta.tools[k];});
+                                                 delete zipFileMeta.tools;
+                                             }
+                                             databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
+                                                 console.log("updated zip entry",zip_url);
+                                             });
+                                             
+                                         },10*10000);
+                                         
+                                     }
                                      
-                                 }
-                                 
-                                 if (subzip) {
-                                     return resolveSubzip(buffer,subzip_url,subzip_filepath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
-                                 }
-                                 
-                                 if (file_path.endsWith('.zip')) {
-                                     return resolveZipListing (zip_url+"/"+file_path,buffer).then(resolve).catch(reject);
-                                 }
-                                 
-                                 return response200 (resolve,buffer,fileEntry);
-                                 
-                              });
-                              
+                                     if (subzip) {
+                                         return resolveSubzip(buffer,subzip_url,subzip_filepath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
+                                     }
+                                     
+                                     if (file_path.endsWith('.zip')) {
+                                         return resolveZipListing (zip_url+"/"+file_path,buffer).then(resolve).catch(reject);
+                                     }
+                                     
+                                     return response200 (resolve,buffer,fileEntry);
+                                     
+                                  });
+                                  
+                         });
                      });
                  });
              }
@@ -1236,6 +1329,8 @@ ml(0,ml(1),[
              }
              
              function getZipDirMetaTools(url,zip,zipFileMeta,cb) {
+                 if (zipFileMeta.tools) return cb(zipFileMeta.tools);
+                 
                  if (zipFileMeta.files[dir_meta_name]) {
                      const meta = zip.file(dir_meta_name);
                      if (meta) {
@@ -1249,6 +1344,9 @@ ml(0,ml(1),[
                          });
                          
                      }
+                     
+                     
+                     
                  } else {
                      cb (getTester());
                  }
@@ -1258,16 +1356,25 @@ ml(0,ml(1),[
                      return {
                              
                              isHidden : function (file_name) {
+                                if (meta.deleted) { 
+                                    if (meta.deleted.indexOf(file_name)>=0) return true;
+                                }
+                                
                                 return regexps.some(function(re){ 
                                     return re.test(file_name);
                                 });
                              },
+                             
                              isDeleted : function (file_name) {
-                                 return meta.deleted.indexOf(file_name)>=0;
+                                 return meta.deleted && meta.deleted.indexOf(file_name)>=0;
+                             },
+                             isAdded : function (file_name) {
+                                 return meta.added && meta.added.indexOf(file_name)>=0;
                              },
                              extraFiles : function () {
-                                return meta.added.slice(0);  
+                                return meta.added ? meta.added.slice(0) : [];  
                              },
+                             
                              filterFileList : function ( files ) {
                                 const added = meta.added||[],deleted=meta.deleted||[];
                                 return files.filter(function(file){
@@ -1294,7 +1401,7 @@ ml(0,ml(1),[
                              return resolve ();
                          }
                          
-                         getZipDirMetaTools(url,zip,zipFileMeta,function(isHiddenFileTest){
+                         getZipDirMetaTools(url,zip,zipFileMeta,function(tools){
                              
                              const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                              const uri= urify.exec(url)[2];
@@ -1358,7 +1465,7 @@ ml(0,ml(1),[
                                      const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
                                      const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
                                      const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
-                                     const is_hidden    = isHiddenFileTest(basename);
+                                     const is_hidden    = tools.isHidden(basename);
                                      const is_editable  = fileIsEditable(filename);
                                      const is_zip       = filename.endsWith(".zip");
                                      const is_edited    = fileisEdited( updated_prefix+filename );
