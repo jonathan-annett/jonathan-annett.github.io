@@ -211,7 +211,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                         '</div>',
                         
                         '<div>',
-                        '<ul class="hide_hidden hide_full_path'+(hidden_files_exist ? + ' hidden_files_exist' :'')+ '">'
+                        '<ul class="hide_hidden hide_full_path ' + (hidden_files_exist ? + 'hidden_files_exist' :'' ) + '">'
                         
                         ].concat (html_details,
                         [
