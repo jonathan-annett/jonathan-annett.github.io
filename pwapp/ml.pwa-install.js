@@ -4,52 +4,17 @@ const
 [ html,keyPRE,                   runhere,  update  ]   = 
 ["html","html .notbeta pre.key","#runBtn", "#updateBtn"].map(qs);
 
-let normal_rules ,menu_rules;
-getRules();
 
 runhere.onclick = function() {
     sessionStorage.running=((1000*60*2) + Date.now()).toString();
     pwa.start(function(){
         betaTesterApproval().then(function(config){
-            setNormalRules(function(){
-               location.replace(config.root);   
-            });
+            location.replace(config.root);   
         });
     });
 };
 
-update.onclick = function() {
-    delete sessionStorage.running;
-    console.log("unregistering service worker");
-    pwa.unregister(function(){
-       pwa.start(function(){
-           betaTesterApproval().then(function(config){
-               setMenuRules(function(){
-                  location.replace(config.root);   
-               });
-           });
-       });
-    });
-};
 
-
-function setNormalRules (cb) {
-    if (normal_rules) {
-        return pwa.newFixupRulesArray(normal_rules,cb);
-    } 
-    getRules(function(){
-        return pwa.newFixupRulesArray(normal_rules,cb);
-    });
-}
-
-function setMenuRules(cb) {
-     if (menu_rules) {
-         return pwa.newFixupRulesArray(menu_rules,cb);
-     } 
-     getRules(function(){
-        return pwa.newFixupRulesArray(menu_rules,cb);
-     });
-}
 
 [
      "registered",
@@ -60,9 +25,7 @@ function setMenuRules(cb) {
              
              betaTesterApproval().then(function(config){
                  
-                 setNormalRules(function(){
-                    location.replace(config.root);   
-                 });
+                location.replace(config.root);   
 
              }).catch(
                  
@@ -74,9 +37,6 @@ function setMenuRules(cb) {
            } else {
                
                delete sessionStorage.running;
-               setMenuRules(function(){
-                   
-               });
 
            }
      });
@@ -99,20 +59,13 @@ function setMenuRules(cb) {
      
      if (canRunInBrowser() || canRunAsApp()  ) {  
           pwa.start(function(){
-              setNormalRules(function(){
-                 location.replace(config.root);   
-              });
+            location.replace(config.root);   
           }); 
      } else {
          
           if (config.root!==location.pathname) {
-              return pwa.unregister(function(){
+              return pwa.unregister(config.root,function(){
                   console.log("unregistered service worker, restarting...");
-                  pwa.start(function(){
-                      setMenuRules(function(){
-
-                      });
-                  }); 
               });
           }
           
@@ -137,24 +90,9 @@ function setMenuRules(cb) {
       });
   }
   
- function getRules(cb) {
-     
-     new Promise(function (resolve,reject){
-         
-         fetch("fstab.json")
-           .then(toJSON)
-               .then(function(arr){
-                   normal_rules = arr;
-                   menu_rules   = arr.filter(function(x){
-                       return !x.with || !!(x.with.endsWith("/index.html"));
-                   });
-                   if (cb) cb();
-               });
-     });
- }
-      
+
  
- 
+
  function betaTesterApproval() {
      
      if (!window.crypto) {

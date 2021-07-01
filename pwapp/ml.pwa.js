@@ -16,10 +16,13 @@ ml(0,ml(1),[
                 unregister:noop
             };
             
-            function noop(cb) {
+            function noop(arg,cb) {
+              if (typeof arg==='function') {
+                  cb=arg;
+              }
               if (typeof cb==='function') {
                   setTimeout(cb,1);
-              }
+              } 
             }
             let stopped = false;
             function start(cb) {
@@ -49,10 +52,10 @@ ml(0,ml(1),[
                 });
             }
             
-            function unregister(cb) {
+            function unregister(path,cb) {
                  stopped=true;
                  lib.unregister=noop;
-                 sendMessage("unregister",{},cb);
+                 sendMessage("unregister",{path:path},cb);
             }
            
             function newFixupRulesArray(rules,cb) {
@@ -164,7 +167,7 @@ ml(0,ml(1),[
                                           .then(self.clients.matchAll)
                                                .then(function(clients) {
                                                    
-                                                   clients.forEach(function(client){ client.navigate(client.url);})
+                                                   clients.forEach(function(client){ client.navigate(msg.path || client.url);})
                                                    
                                                 });
                                         resolve();        
