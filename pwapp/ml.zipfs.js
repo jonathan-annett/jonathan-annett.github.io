@@ -1468,14 +1468,14 @@ ml(0,ml(1),[
                              let   hidden_files_exist = false;
                              
                          
-                             const html_details = Object.keys(zipFileMeta.files).map(function(filename){
+                             const html_file_item = function(filename){
     
                                      const full_uri = "/"+uri+"/"+filename,
                                            basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
                                      const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
                                      const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
                                      const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
-                                     const is_hidden    = tools.isHidden(basename);
+                                     const is_hidden    = tools.isHidden(basename) || zipFileMeta.alias_root && tools.isHidden(zipFileMeta.alias_root+basename) ;
                                      const is_editable  = fileIsEditable(filename);
                                      const is_zip       = filename.endsWith(".zip");
                                      const is_edited    = fileisEdited( updated_prefix+filename );
@@ -1489,7 +1489,9 @@ ml(0,ml(1),[
                                      
                                      if (is_hidden) hidden_files_exist = true;
                                      return '<li'+li_class+'><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
-                                  });
+                                  };
+                             const html_details = Object.keys(zipFileMeta.files).map(html_file_item);
+                             tools.extraFiles().forEach(html_file_item);
                              
                              const html = [
                                  
