@@ -1746,7 +1746,7 @@ ml(0,ml(1),[
                                        for(var key of response.headers.keys()) {
                                           headers[key.toLowerCase()]=response.headers.get(key);
                                        }
-                                       updateURLContents (url,db,buffer,{status:status,headers:headers},function(){
+                                       updateURLContents (url,db,buffer,{status:200,headers:headers},function(){
                                           return resolve(response);
                                        });
                                        
