@@ -639,15 +639,19 @@ ml(0,ml(1),[
              
              
              function getZipFileUpdates(url,cb) {
-                 databases.updatedURLS.getKeys(function(err,keys){
-                    if (err) return cb (err);
-                    return cb (undefined,keys.filter(function(u){
-                        return u.indexOf(url)===0;
-                    }).map(function(u){
-                        return u.substr(url.length);
-                    }));
-                 });
-                 
+                 url = url.endsWith('.zip/') ? url : url.endsWith('.zip') ? url +"/" : false;
+                 if (url) {
+                     const len = url.length;
+                     
+                     databases.updatedURLS.getKeys(function(err,keys){
+                        if (err) return cb (err);
+                        return cb (undefined,keys.filter(function(u){
+                            return u.indexOf(url)===0;
+                        }).map(function(u){
+                            return u.substr(len);
+                        }));
+                     });
+                 }
              }
              
              function getZipFile(url,buffer,cb/*function(err,buffer,zipFileMeta){})*/) {
