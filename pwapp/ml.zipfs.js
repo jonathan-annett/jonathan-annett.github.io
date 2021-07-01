@@ -1237,7 +1237,7 @@ ml(0,ml(1),[
              
              function getHiddenFilesTest(url,zip,zipFileMeta,cb) {
                  if (zipFileMeta.files[dir_meta_name]) {
-                     const meta = zip.files(dir_meta_name);
+                     const meta = zip.file(dir_meta_name);
                      if (meta) {
                         meta.async('string').then(function(json){
                            cb (getTester(JSON.parse(json)));
