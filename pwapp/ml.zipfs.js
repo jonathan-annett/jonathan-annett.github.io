@@ -1475,14 +1475,19 @@ ml(0,ml(1),[
                                      const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
                                      const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
                                      const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
-                                     const is_hidden    = tools.isHidden(basename) || zipFileMeta.alias_root && tools.isHidden(zipFileMeta.alias_root+basename) ;
+                                     const alt_name     = zipFileMeta.alias_root && zipFileMeta.alias_root+basename;
+                                     const is_hidden    = tools.isHidden(basename) || alt_name && tools.isHidden(alt_name) ;
+                                     const is_deleted   = is_hidden && ( tools.isDeleted(basename) || alt_name && tools.isDeleted(alt_name) );
                                      const is_editable  = fileIsEditable(filename);
                                      const is_zip       = filename.endsWith(".zip");
                                      const is_edited    = fileisEdited( updated_prefix+filename );
                                      
                                      const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;&nbsp;&nbsp;</span>' : '';
-                                     const li_class     = is_edited ? (is_hidden ? ' class="hidden edited"': ' class="edited"' ) : ( is_hidden ? ' class="hidden"' : '');
-    
+                                     const cls = is_deleted ? ["deleted"] : [];
+                                     if (is_edited)  cls.push("edited");
+                                     if (is_hidden)  cls.push("hiddden");
+                                     const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
+                                     
                                      const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>' + edited ] 
                                                     : is_zip        ? [ '<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>' + edited ]   
                                                     :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + edited ] ;
@@ -1491,12 +1496,9 @@ ml(0,ml(1),[
                                      return '<li'+li_class+'><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
                                   };
                                   
-                             const html_details = Object.keys(zipFileMeta.files)
-                                 .map(html_file_item)
-                                    .concat(
-                                       tools.extraFiles().map(html_file_item)
-                                    );
-                                  
+                             const file_listing = Object.keys(zipFileMeta.files).concat(tools.extraFiles()).sort();
+                             const html_details = file_listing.map(html_file_item);
+
                              const html = [
                                  
                              '<!DOCTYPE html>',

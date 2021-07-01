@@ -57,7 +57,9 @@ li.edited span.edited {
     background-size: 10px 10px;
 }
 ul li.hidden { background-color : yellow; }
-ul li.hidden.edited { background-color : red; }
+ul li.hidden.edited { background-color : lime; }
+ul li.hidden.deleted { background-color : red; }
+
 ul.hide_hidden li.hidden, ul.hide_full_path span.full_path { display : none; }
 .disable-select {
   -webkit-user-select: none;
