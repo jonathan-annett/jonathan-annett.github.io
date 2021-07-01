@@ -62,11 +62,11 @@ function onDOMContentLoaded (event){
         }
     });
     
-    qs("h1 a span.download",function click(){
+    qs("h1 a.download",function click(){
         
     });
     
-    qs("h1 a span.newfile",function click(){
+    qs("h1 a.newfile",function click(){
         inputModal.style.display = "block";
     });
         
