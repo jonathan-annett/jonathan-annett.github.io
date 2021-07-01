@@ -84,7 +84,7 @@ function setMenuRules(cb) {
                   console.log("unregistered service worker, restarting...");
                   pwa.start(function(){
                       setMenuRules(function(){
-                         location.replace(config.root);   
+
                       });
                   }); 
               });
@@ -106,7 +106,7 @@ function setMenuRules(cb) {
                   console.log("unregistered service worker, reregistering...");
                   pwa.start(function(){
                       setMenuRules(function(){
-                         location.replace(config.root);   
+
                       });
                   }); 
               });
