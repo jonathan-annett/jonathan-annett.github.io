@@ -1,54 +1,77 @@
 /* global pwa
 */
 const  
-[ html,keyPRE,                   runhere]   = 
-["html","html .notbeta pre.key","button"].map(qs);
+[ html,keyPRE,                   runhere,  update  ]   = 
+["html","html .notbeta pre.key","#runBtn", "#updateBtn"].map(qs);
 
 
- [
+[
      "registered",
      "activated"].forEach(function(x){
      window.addEventListener('ml.pwa.'+x,function(){
          
-         if (sessionStorage.running==='1' || window.matchMedia('(display-mode: standalone)').matches) {  
+         if ( canRunInBrowser() || canRunAsApp() ) {  
              
              betaTesterApproval().then(function(){
+                 
                   location.replace(location.href);
+                  // once the service worker is running and active, 
+                  // this page will be replaced by the index.html inside the zip file.
+                  // as such, once the service worker is running, the beta checks are redundant
+                  
              }).catch(
+                 
                 function(err){
                     console.log("site not available",err);
                 }    
+                
              ); 
            } else {
+               
                delete sessionStorage.running;
-               
-              
-               
-               
            }
      });
  });
  
+ function canRunAsApp() {
+     return !!window.matchMedia('(display-mode: standalone)').matches;
+ }
+ 
+ function canRunInBrowser() {
+     const runningTimeout = Number.parseInt(sessionStorage.running)||0;
+     const runInBrowser   = (runningTimeout > 0) && (runningTimeout<Date.now());
+     if (!!sessionStorage.running && !runInBrowser) {
+         delete sessionStorage.running;
+     }
+     return runInBrowser;
+ }
+ 
  betaTesterApproval().then(function(){
      
-     if (sessionStorage.running==='1' || window.matchMedia('(display-mode: standalone)').matches) {  
+     if (canRunInBrowser() || canRunAsApp()  ) {  
           pwa.start(); 
           location.replace(location.href);
      } else {
+         
           runhere.onclick = function() {
-              sessionStorage.running='1';
-              pwa.start(); 
+              sessionStorage.running=((1000*60*2) + Date.now()).toString();
+              pwa.start();
               location.replace(location.href);
-          } 
+          };
+          
+          update.onclick = function() {
+              delete sessionStorage.running;
+              console.log("unregistering service worker");
+              pwa.unregister(function(){
+                  console.log("unregistered service worker, restarting...");
+                  location.replace(location.href);
+              });
+          };
      }
-             
-
  }).catch(
-     
     function(err){
         console.log("site not available",err);
     } 
-    
  ); 
  
   

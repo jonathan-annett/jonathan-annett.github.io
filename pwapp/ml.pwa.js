@@ -12,12 +12,20 @@ ml(0,ml(1),[
             
             const lib = {
                 newFixupRulesArray:newFixupRulesArray,
-                start:start
+                start:start,
+                unregister:noop
             };
             
-            function start() {
+            function noop(cb) {
+              if (typeof cb==='function') {
+                  setTimeout(cb,1);
+              }
+            }
+            let stopped = false;
+            function start(cb) {
                 
-                lib.start=function(){};
+                lib.start=noop;
+                
                 
                 ml(9,'./ml.pwa.js',function(result){
                     
@@ -36,8 +44,15 @@ ml(0,ml(1),[
                         });
                         
                     },persistent);
-    
+                    lib.unregister=unregister;
+                    noop(cb);
                 });
+            }
+            
+            function unregister(cb) {
+                 stopped=true;
+                 lib.unregister=noop;
+                 sendMessage("unregister",{},cb);
             }
            
             function newFixupRulesArray(rules,cb) {
@@ -135,12 +150,39 @@ ml(0,ml(1),[
                         } else {
                             cb({error:"not an array"});
                         }
+                    },
+                    unregister : function(msg,cb) {
+                        ml.register("activate",function(event){
+                            
+                            event.waitUntil(
+                                
+                                new Promise(function(resolve) { 
+                                    
+                                    setTimeout(function(){
+                                       
+                                        self.registration.unregister()
+                                          .then(self.clients.matchAll)
+                                               .then(function(clients) {
+                                                   
+                                                   clients.forEach(function(client){ client.navigate(client.url);})
+                                                   
+                                                });
+                                        resolve();        
+                                    },500);
+                                })
+
+                            );
+                            
+                        });
+                        ml.register("message",function(){});
+                        ml.register("fetch",function(){});
                         
-                    }
+                        setTimeout(cb,10,{});
+                    },
 
                 });
                    
-                
+               
        
                 
                 ml.register("fetch",zipFS.processFetchRequest);
