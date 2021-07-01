@@ -51,8 +51,9 @@ ml(0,ml(1),[
              defineDB("cachedURLS");
              
              
-             const dir_meta_name = '.dirmeta.json';
-             const dir_meta_empty_json = '{"deleted":{},"added":{}}';
+             const dir_meta_name  = '.dirmeta.json';
+             const dir_meta_empty = {"deleted":[],"added":[],"hidden":["^\\."]};
+             const dir_meta_empty_json = JSON.stringify(dir_meta_empty);
              const dir_meta_empty_resp = {
                  status: 200,
                  statusText: 'Not found',
@@ -67,12 +68,6 @@ ml(0,ml(1),[
                     response.json().then(function(x){return cb(undefined,x)}).catch(cb); 
                  }).catch(cb);
              }
-             
-             
-             
-             
-             
-            
 
              function defineDB(name) {
                  // since these dbs are used by a single instance (the service worker)
@@ -488,7 +483,6 @@ ml(0,ml(1),[
 
              }
              
-             
              function virtualDirResponseEvent (event) {
                 
                 if (event.cache_response) {
@@ -498,7 +492,6 @@ ml(0,ml(1),[
                 }
                   
              }
-
 
              function fetchFileFromZipEvent (event) {
                 const url = event.fixup_url;
@@ -1242,6 +1235,34 @@ ml(0,ml(1),[
                  }
              }
              
+             function getHiddenFilesTest(url,zip,zipFileMeta,cb) {
+                 if (zipFileMeta.files[dir_meta_name]) {
+                     const meta = zip.files(dir_meta_name);
+                     if (meta) {
+                        meta.async('string').then(function(json){
+                           cb (getTester(JSON.parse(json)));
+                        });
+                     } else {
+                         
+                         toFetchUrl (databases.updatedURLS,url+'/'+dir_meta_name,true,function(buffer){
+                            cb (getTester(JSON.parse(buffer.toString())));
+                         });
+                         
+                     }
+                 } else {
+                     cb (getTester());
+                 }
+                 
+                 function getTester(meta) {
+                     const regexps = (meta ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
+                     return function (file_name) {
+                        return regexps.some(function(re){ 
+                            return re.test(file_name);
+                        });  
+                     };
+                 }
+             }
+             
              function resolveZipListing (url,buffer) {
                  
                  return new Promise(function (resolve){
@@ -1253,141 +1274,147 @@ ml(0,ml(1),[
                              return resolve ();
                          }
                          
-                         const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
-                         const uri= urify.exec(url)[2];
-                         const uri_split = uri.split('.zip/').map(function (x,i,a){
-                             return i===a.length-1?'/'+x:'/'+x+'.zip';
-                         });
-                         
-                         const top_uri_res = uri_split.map(function(uri){ 
-                             return new RegExp( regexpEscape(uri+"/"),'g');
-                         });
-                         
-                         const cleanup_links = function(str) {
-                             top_uri_res.forEach(function(re){
-                                 str = str.replace(re,'/');
+                         getHiddenFilesTest(url,zip,zipFileMeta,function(isHiddenFileTest){
+                             
+                             const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
+                             const uri= urify.exec(url)[2];
+                             const uri_split = uri.split('.zip/').map(function (x,i,a){
+                                 return i===a.length-1?'/'+x:'/'+x+'.zip';
                              });
-                             return str;
-                         };
-                          
-
-                         const uri_full_split = uri_split.map(function(x,i,a){
-                             return a.slice(0,i+1).join("");
-                         });
-                         
-                         var parent_link="";
-                         const linkit=function(uri,disp,a_wrap){ 
-                             a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
-                             const split=(disp||uri).split("/");
-                             if (split.length===1) return a_wrap.join(disp||uri);
-                             const last = split.pop();
-                             if (split.length===1) return split[0]+'/'+ a_wrap.join(last);
-                             return split.join("/")+'/'+ a_wrap.join(last);
-                         };
-                         const boldit=function(uri,disp){
-                             const split=(disp||uri).split("/");
-                             if (split.length===1) return '<b>'+(disp||uri)+'</b>';
-                             const last = split.pop();
-                             if (split.length===1) return split[0]+'/<b>'+last+'</b>';
-                             return split.join("/")+'/<b>'+last+'</b>';
-                         };
-                         
-                         
-                         parent_link = uri_full_split.map(function(href,i,a){
-                             const parts = href.split('/.zip');
-                             const disp  = parts.length===1?undefined:parts.pop();
-                             const res = (href.endsWith(uri)?boldit:linkit) (href,disp);
-                             return res;
-                         }).join("");
-                         
-                         
-                         parent_link = cleanup_links(parent_link);
-                        
-                         const updated_prefix = url + "/" ;
-                                 
-                         let   hidden_files_exist = false;
-                         const html_details = Object.keys(zipFileMeta.files).map(function(filename){
-
-                                 const full_uri = "/"+uri+"/"+filename,
-                                       basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
-                                 const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
-                                 const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
-                                 const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
-                                 const is_hidden    = basename.indexOf('.')===0;
-                                 const is_editable  = fileIsEditable(filename);
-                                 const is_zip       = filename.endsWith(".zip");
-                                 const is_edited    = fileisEdited( updated_prefix+filename );
-                                 
-                                 const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;&nbsp;&nbsp;</span>' : '';
-                                 const li_class     = is_edited ? (is_hidden ? ' class="hidden edited"': ' class="edited"' ) : ( is_hidden ? ' class="hidden"' : '');
-
-                                 const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>' + edited ] 
-                                                : is_zip        ? [ '<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>' + edited ]   
-                                                :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + edited ] ;
-                                 
-                                 if (is_hidden) hidden_files_exist = true;
-                                 return '<li'+li_class+'><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
-                              });
-                         
-                         const html = [
                              
-                         '<!DOCTYPE html>',
-                         '<html>',
-                         '<!-- url='+url+' -->',
-                         '<!-- uri='+uri+' -->',
-                         
-                         '<!-- parent_link='+parent_link+' -->',
-
-                         '<head>',
-                           '<title>files in '+uri+'</title>',
-                           '<script>var zip_url_base='+JSON.stringify('/'+uri)+'</script>',
-                           '<script src="ml.js"></script>',
-                           '<script src="ml.zipfs.dir.js"></script>',
-                           '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/balloon-css/1.2.0/balloon.min.css" integrity="sha512-6jHrqOB5TcbWsW52kWP9TTx06FHzpj7eTOnuxQrKaqSvpcML2HTDR2/wWWPOh/YvcQQBGdomHL/x+V1Hn+AWCA==" crossorigin="anonymous" referrerpolicy="no-referrer" />',
-                           '<link rel="stylesheet" href="ml.zipfs.dir.css"/>',
-                           '</style>',
-                         '</head>',
-                         '<body class="disable-select">',
-                         
-                         '<h1> files in '+uri,
-                         
-                         '<span>show full path</span><input class="fullpath_chk" type="checkbox">',
-                         
-                         
-                         hidden_files_exist ? '<span>show hidden files</span><input class="hidden_chk" type="checkbox">' : '' ,
-                         
-                         
-                         '</h1>',
-
-                         
-                         '<div>',
-                         '<ul class="hide_hidden hide_full_path">'
-                         
-                         ].concat (html_details,
-                         [
+                             const top_uri_res = uri_split.map(function(uri){ 
+                                 return new RegExp( regexpEscape(uri+"/"),'g');
+                             });
                              
-                             '</ul>',
-                             '</div>',
+                             const cleanup_links = function(str) {
+                                 top_uri_res.forEach(function(re){
+                                     str = str.replace(re,'/');
+                                 });
+                                 return str;
+                             };
+                              
+    
+                             const uri_full_split = uri_split.map(function(x,i,a){
+                                 return a.slice(0,i+1).join("");
+                             });
                              
+                             var parent_link="";
+                             const linkit=function(uri,disp,a_wrap){ 
+                                 a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
+                                 const split=(disp||uri).split("/");
+                                 if (split.length===1) return a_wrap.join(disp||uri);
+                                 const last = split.pop();
+                                 if (split.length===1) return split[0]+'/'+ a_wrap.join(last);
+                                 return split.join("/")+'/'+ a_wrap.join(last);
+                             };
+                             const boldit=function(uri,disp){
+                                 const split=(disp||uri).split("/");
+                                 if (split.length===1) return '<b>'+(disp||uri)+'</b>';
+                                 const last = split.pop();
+                                 if (split.length===1) return split[0]+'/<b>'+last+'</b>';
+                                 return split.join("/")+'/<b>'+last+'</b>';
+                             };
+                             
+                             
+                             parent_link = uri_full_split.map(function(href,i,a){
+                                 const parts = href.split('/.zip');
+                                 const disp  = parts.length===1?undefined:parts.pop();
+                                 const res = (href.endsWith(uri)?boldit:linkit) (href,disp);
+                                 return res;
+                             }).join("");
+                             
+                             
+                             parent_link = cleanup_links(parent_link);
                             
-                             '</body>',
-                             '</html>'
-                         ]).join('\n');
-
-                         return resolve( 
+                             const updated_prefix = url + "/" ;
+                                     
+                             let   hidden_files_exist = false;
                              
-                             new Response(
-                                    html, {
-                                             status: 200,
-                                             statusText: 'Ok',
-                                             headers: new Headers({
-                                               'Content-Type'   : 'text/html',
-                                               'Content-Length' : html.length,
-                                               'ETag'           : zipFileMeta.etag,
-                                               'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                               'Last-Modified'  : zipFileMeta.date.toString() } )
-                                 })
-                        );
+                         
+                             const html_details = Object.keys(zipFileMeta.files).map(function(filename){
+    
+                                     const full_uri = "/"+uri+"/"+filename,
+                                           basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
+                                     const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
+                                     const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
+                                     const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
+                                     const is_hidden    = isHiddenFileTest(basename);
+                                     const is_editable  = fileIsEditable(filename);
+                                     const is_zip       = filename.endsWith(".zip");
+                                     const is_edited    = fileisEdited( updated_prefix+filename );
+                                     
+                                     const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;&nbsp;&nbsp;</span>' : '';
+                                     const li_class     = is_edited ? (is_hidden ? ' class="hidden edited"': ' class="edited"' ) : ( is_hidden ? ' class="hidden"' : '');
+    
+                                     const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>' + edited ] 
+                                                    : is_zip        ? [ '<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>' + edited ]   
+                                                    :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + edited ] ;
+                                     
+                                     if (is_hidden) hidden_files_exist = true;
+                                     return '<li'+li_class+'><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
+                                  });
+                             
+                             const html = [
+                                 
+                             '<!DOCTYPE html>',
+                             '<html>',
+                             '<!-- url='+url+' -->',
+                             '<!-- uri='+uri+' -->',
+                             
+                             '<!-- parent_link='+parent_link+' -->',
+    
+                             '<head>',
+                               '<title>files in '+uri+'</title>',
+                               '<script>var zip_url_base='+JSON.stringify('/'+uri)+'</script>',
+                               '<script src="ml.js"></script>',
+                               '<script src="ml.zipfs.dir.js"></script>',
+                               '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/balloon-css/1.2.0/balloon.min.css" integrity="sha512-6jHrqOB5TcbWsW52kWP9TTx06FHzpj7eTOnuxQrKaqSvpcML2HTDR2/wWWPOh/YvcQQBGdomHL/x+V1Hn+AWCA==" crossorigin="anonymous" referrerpolicy="no-referrer" />',
+                               '<link rel="stylesheet" href="ml.zipfs.dir.css"/>',
+                               '</style>',
+                             '</head>',
+                             '<body class="disable-select">',
+                             
+                             '<h1> files in '+uri,
+                             
+                             '<span>show full path</span><input class="fullpath_chk" type="checkbox">',
+                             
+                             
+                             hidden_files_exist ? '<span>show hidden files</span><input class="hidden_chk" type="checkbox">' : '' ,
+                             
+                             
+                             '</h1>',
+    
+                             
+                             '<div>',
+                             '<ul class="hide_hidden hide_full_path">'
+                             
+                             ].concat (html_details,
+                             [
+                                 
+                                 '</ul>',
+                                 '</div>',
+                                 
+                                
+                                 '</body>',
+                                 '</html>'
+                             ]).join('\n');
+    
+                             return resolve( 
+                                 
+                                 new Response(
+                                        html, {
+                                                 status: 200,
+                                                 statusText: 'Ok',
+                                                 headers: new Headers({
+                                                   'Content-Type'   : 'text/html',
+                                                   'Content-Length' : html.length,
+                                                   'ETag'           : zipFileMeta.etag,
+                                                   'Cache-Control'  : 'max-age=3600, s-maxage=600',
+                                                   'Last-Modified'  : zipFileMeta.date.toString() } )
+                                     })
+                            );
+                            
+                         });
 
                      });
                      
@@ -1483,7 +1510,6 @@ ml(0,ml(1),[
                                                     })}))); 
              }
              
-             
              function toReturnAnError (resolve) {
                  
                  resolve(new Response('', {
@@ -1564,25 +1590,27 @@ ml(0,ml(1),[
              
              
            */
-           
-           
-           
-           
-           function toFetchUrl (db,url,resolve) {
+
+           function toFetchUrl (db,url,raw,resolve) {
+               
+               if (typeof raw==='function') {
+                   resolve=raw;
+                   raw=false;
+               }
+               
                // resolve to cached url response, or undefined if that url is not cached.
                // (will refresh the cache if online and etag has changed)
                db.getItem(url,function(err,args){
                    
                    if (err||!Array.isArray(args)) {
+                       // item is not cached, so resolve undefined.
                        resolve();
                    } else {
-                       
-                       const hdrs=fixupKeys(args[1].headers);
+                       // inspect cache header to see cache can be compared
+                       const hdrs = fixupKeys(args[1].headers);
                        const etag = hdrs.etag;
                        const lastModified = hdrs['last-modified'];
-                       
-                      
-                       
+
                        if (etag||lastModified) {
                            
                           const getHeaders = {};
@@ -1594,10 +1622,8 @@ ml(0,ml(1),[
                               getHeaders['if-modified-since']= lastModified.toString();
                           }
                            
-                           fetch(url, { headers: getHeaders })
-                           
-                           
-                           .then(function(response){ 
+                           fetch(url, { headers: getHeaders }).then(function(response){
+                               
                                if (response && response.status===200) {
                                    response.clone().arrayBuffer().then(function(buffer){
                                        
@@ -1606,24 +1632,33 @@ ml(0,ml(1),[
                                           headers[key.toLowerCase()]=response.headers.get(key);
                                        }
                                        updateURLContents (url,db,buffer,{status:200,headers:headers},function(){
-                                          return resolve(response);
+                                           // we got an updated buffer
+                                           if (raw) return resolve(buffer);// caller wants buffer not response
+                                           return resolve(response);
                                        });
                                        
                                    });
+                                   
+                              } else {
+                                  // if server reports someething other than 200, return from cache
+                                  doCache() ;
                               }
                               
-                              doCache() ;
-                           })
+                             
+                           }).catch(
+                               // if offline, return from cache
+                               doCache
+                            );
                            
-                           .catch(doCache);
-                           
-                       
+                       } else {
+                           // there's no cache info so no point in checking server for update, use local cache.
+                           doCache();
                        }
-                      
                    }
                    
                    
                    function doCache() { 
+                      if (raw) return resolve(args[0]);
                       resolve(new Response(args[0],{status:200,headers:new Headers(args[1])}));
                    }
                });
