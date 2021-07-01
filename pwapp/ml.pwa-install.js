@@ -22,12 +22,13 @@ update.onclick = function() {
     delete sessionStorage.running;
     console.log("unregistering service worker");
     pwa.unregister(function(){
-        console.log("unregistered service worker, reregistering...");
-        pwa.start(function(){
-            setMenuRules(function(){
-
-            });
-        }); 
+       pwa.start(function(){
+           betaTesterApproval().then(function(config){
+               setMenuRules(function(){
+                  location.replace(config.root);   
+               });
+           });
+       });
     });
 };
 
