@@ -1485,7 +1485,7 @@ ml(0,ml(1),[
                                      const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;&nbsp;&nbsp;</span>' : '';
                                      const cls = is_deleted ? ["deleted"] : [];
                                      if (is_edited)  cls.push("edited");
-                                     if (is_hidden)  cls.push("hiddden");
+                                     if (is_hidden)  cls.push("hidden");
                                      const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
                                      
                                      const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>' + edited ] 
