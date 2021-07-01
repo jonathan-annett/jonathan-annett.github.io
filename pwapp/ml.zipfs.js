@@ -1089,9 +1089,13 @@ ml(0,ml(1),[
                                      return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
                                  } else {
                                      
-                                     if (tools.isAdded(file_path)) {
+                                     const added_file = zipFileMeta.alias_root ? 
+                                       ( tools.isAdded(zipFileMeta.alias_root+file_path) ? zipFileMeta.alias_root+file_path : false) : 
+                                         ( tools.isAdded(file_path) ? file_path  : false );
+                                     
+                                     if (added_file) {
                                          // this is a request for a new file, which may or may not have been created yet.
-                                        const added_url = zip_url+"/"+path_in_zip; 
+                                        const added_url = zip_url+"/"+added_file; 
                                         return toFetchUrl (databases.updatedURLS,added_url,function(response){
                                             
                                             if (response) {
