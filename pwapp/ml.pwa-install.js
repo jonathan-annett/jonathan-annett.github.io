@@ -12,9 +12,9 @@ const
          
          if ( canRunInBrowser() || canRunAsApp() ) {  
              
-             betaTesterApproval().then(function(){
+             betaTesterApproval().then(function(config){
                  
-                  location.replace(location.href);
+                  location.replace(config.root);
                   // once the service worker is running and active, 
                   // this page will be replaced by the index.html inside the zip file.
                   // as such, once the service worker is running, the beta checks are redundant
@@ -29,6 +29,7 @@ const
            } else {
                
                delete sessionStorage.running;
+               
            }
      });
  });
@@ -46,17 +47,17 @@ const
      return runInBrowser;
  }
  
- betaTesterApproval().then(function(){
+ betaTesterApproval().then(function(config){
      
      if (canRunInBrowser() || canRunAsApp()  ) {  
           pwa.start(); 
-          location.replace(location.href);
+          location.replace(config.root);
      } else {
          
           runhere.onclick = function() {
               sessionStorage.running=((1000*60*2) + Date.now()).toString();
               pwa.start();
-              location.replace(location.href);
+              location.replace(config.root);
           };
           
           update.onclick = function() {
@@ -64,7 +65,7 @@ const
               console.log("unregistering service worker");
               pwa.unregister(function(){
                   console.log("unregistered service worker, restarting...");
-                  location.replace(location.href);
+                  location.replace(config.root);
               });
           };
      }
