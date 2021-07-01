@@ -1263,7 +1263,8 @@ ml(0,ml(1),[
                  }
                  
                  
-                 function bufferToText(x) {return new TextEncoder("utf-8").decode(x);}
+                 function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
+
              }
              
              function resolveZipListing (url,buffer) {

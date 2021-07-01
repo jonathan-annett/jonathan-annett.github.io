@@ -85,7 +85,7 @@ function rejectViaConsoleLog(reject,prefix,suffix) {
 
 function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
 
-function bufferToText(x) {return new TextEncoder("utf-8").decode(x);}
+function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
 
 function bufferToHex(buffer) {
     const padding = '00000000';
