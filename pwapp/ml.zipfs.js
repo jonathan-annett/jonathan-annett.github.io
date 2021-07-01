@@ -202,7 +202,10 @@ ml(0,ml(1),[
              function processFetchRequest(event) {
                  
                      event.respondWith(new Promise(function(resolve,reject){
-                              event.fixup_url = event.request.url;
+                              const querySplit  = event.request.url.indexOf('?');
+                              event.fixup_url   = querySplit < 0 ? event.request.url : event.request.url.substr(0,querySplit);
+                              event.fixup_query = querySplit < 0 ? '' : event.request.url.substr(querySplit);
+                              
                               const chain = [ 
                                   
                                   //  these are "middleware vectors" in the form of function(event){ /* url resolution code*/ }
