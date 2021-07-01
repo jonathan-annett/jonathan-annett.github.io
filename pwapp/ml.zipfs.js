@@ -1035,7 +1035,6 @@ ml(0,ml(1),[
                              if (!fileEntry) {
                                  
                                  if (file_path===dir_meta_name) {
-                                     console.log("returning default dir meta for ",zip_url,path_in_zip);
                                      return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
                                  }
 
@@ -1144,6 +1143,11 @@ ml(0,ml(1),[
                              }
                              
                              if (!fileEntry) {
+                                 
+                                 if (file_path===dir_meta_name) {
+                                     return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
+                                 }
+
                                  return resolve(new Response('', {
                                      status: 404,
                                      statusText: 'Not found'
