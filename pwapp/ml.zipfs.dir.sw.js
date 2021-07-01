@@ -78,11 +78,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                                     let   hidden_files_exist = false;
                                     
                           
-                                    const file_listing = 
-                                        Object.keys(zipFileMeta.files).concat(
-                                            tools.extraFiles()
-                                        );
-                                           
+                                    const file_listing = Object.keys(zipFileMeta.files);
                                     const all_files = file_listing.concat(
                                         
                                         additonalFiles.filter(function(fn){return file_listing.indexOf(fn)<0;})

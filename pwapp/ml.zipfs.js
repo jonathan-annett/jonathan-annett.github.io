@@ -56,7 +56,7 @@ ml(0,ml(1),[
              
              
              const dir_meta_name  = '.dirmeta.json';
-             const dir_meta_empty = {"deleted":[],"added":[],"hidden":["^\\."]};
+             const dir_meta_empty = {"deleted":[],"hidden":["^\\."]};
              const dir_meta_empty_json = JSON.stringify(dir_meta_empty);
              const dir_meta_empty_resp = {
                  status: 200,
@@ -1110,37 +1110,7 @@ ml(0,ml(1),[
                                      // since there is nothing defined, we return a default empty meta record.
                                      return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
                                  } else {
-                                     
-                                     const added_file = zipFileMeta.alias_root ? 
-                                       ( tools.isAdded(zipFileMeta.alias_root+file_path) ? zipFileMeta.alias_root+file_path : false) : 
-                                         ( tools.isAdded(file_path) ? file_path  : false );
-                                     
-                                     if (added_file) {
-                                         // this is a request for a new file, which may or may not have been created yet.
-                                        const added_url = zip_url+"/"+added_file; 
-                                        return toFetchUrl (databases.updatedURLS,added_url,function(response){
-                                            
-                                            if (response) {
-                                                // clearly the file file has been created as we just fetched it.
-                                               return resolve (response);
-                                            }
-                                            
-                                            // must be first time this added file has been fetched - make an empty file.
-                                            const emptyResp = emptyBufferStatusWithType(mimeForFilename(file_path));
-                                            
-                                            updateURLContents (
-                                                added_url,
-                                                databases.updatedURLS,
-                                                emptyBuffer,emptyResp,
-                                                function(){
-                                                   // send the empty buffer back to browser.
-                                                   return resolve(new Response(emptyBuffer,emptyResp));    
-                                                }
-                                            );
-                                            
-                                        });
-                                         
-                                     }
+     
                                      throw new Error ('file not in zip!'); 
                                  }
                              }
@@ -1257,40 +1227,6 @@ ml(0,ml(1),[
                                  if (file_path===dir_meta_name) {
                                      return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
                                  } else {
-                                     
-                                     const added_file = zipFileMeta.alias_root ? 
-                                       ( tools.isAdded(zipFileMeta.alias_root+file_path) ? zipFileMeta.alias_root+file_path : false) : 
-                                         ( tools.isAdded(file_path) ? file_path  : false );
-                                     
-                                     if (added_file) {
-                                         // this is a request for a new file, which may or may not have been created yet.
-                                        const added_url = zip_url+"/"+added_file; 
-                                        return toFetchUrl (databases.updatedURLS,added_url,function(response){
-                                            
-                                            if (response) {
-                                                // clearly the file file has been created as we just fetched it.
-                                               return resolve (response);
-                                            }
-                                            
-                                            // must be first time this added file has been fetched - make an empty file.
-                                            const emptyResp = emptyBufferStatusWithType(mimeForFilename(file_path));
-                                            
-                                            updateURLContents (
-                                                added_url,
-                                                databases.updatedURLS,
-                                                emptyBuffer,emptyResp,
-                                                function(){
-                                                   // send the empty buffer back to browser.
-                                                   return resolve(new Response(emptyBuffer,emptyResp));    
-                                                }
-                                            );
-                                            
-                                        });
-                                         
-                                     }
-                                     
-                                      
-                                     
                                      throw new Error ('file not in zip!'); 
                                  }
                              }
@@ -1396,18 +1332,11 @@ ml(0,ml(1),[
                              isDeleted : function (file_name) {
                                  return meta.deleted && meta.deleted.indexOf(file_name)>=0;
                              },
-                             isAdded : function (file_name) {
-                                 return meta.added && meta.added.indexOf(file_name)>=0;
-                             },
-                             extraFiles : function () {
-                                return meta.added ? meta.added.slice(0) : [];  
-                             },
-                             
                              filterFileList : function ( files ) {
-                                const added = meta.added||[],deleted=meta.deleted||[];
+                                const deleted=meta.deleted||[];
                                 return files.filter(function(file){
-                                    return added.indexOf(file) < 0 && deleted.indexOf(file)< 0;
-                                }).concat(added); 
+                                    return deleted.indexOf(file)< 0;
+                                }); 
                              }
                          
                      };
