@@ -45,7 +45,7 @@ function onDOMContentLoaded (event){
                    updateURIContent(file_url,'\n',function(){
                        qs("ul",function(el){
                            let newid="li_"+Math.random().toString(36).substr(-8);
-                           el.innerHTML=html_file_item(newid,filename);
+                           el.innerHTML += html_file_item(newid,filename);
                            addViewClick(qs("#"+newid+" a span.normal"));
                            addOpenZipViewClick(qs("#"+newid+" a span.zipfile"));
                            
