@@ -1,4 +1,4 @@
-/* global zip_url_base*/
+/* global zip_url_base,parent_link*/
 
 var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
  
@@ -9,18 +9,66 @@ function onDOMContentLoaded (event){
     const showHidden=document.querySelector("h1 input.hidden_chk");
     if (showHidden) {
         showHidden.onchange = function() {
-            document.querySelector("ul").classList[showHidden.checked?"remove":"add"]("hide_hidden");
+            qs("ul").classList[showHidden.checked?"remove":"add"]("hide_hidden");
         };
     }
     
-    const showPaths=document.querySelector("h1 input.fullpath_chk");
+    const showPaths=qs("h1 input.fullpath_chk");
     if (showPaths) {
         showPaths.onchange = function() {
-            document.querySelector("ul").classList[showPaths.checked?"remove":"add"]("hide_full_path");
+           qs("ul").classList[showPaths.checked?"remove":"add"]("hide_full_path");
         };
     }
     
     
+    const inputModal = qs("#inputModal");
+    
+    qs("div.modal-content span.close",function click(){
+        inputModal.style.display = "none";
+    });
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+      if (event.target == inputModal) {
+        inputModal.style.display = "none";
+        }
+    }
+    
+    const filename_input = qs("#newfilename",function keydown(e){
+        if (e.keyCode===27) {
+            inputModal.style.display = "none";
+        } else {
+           if (e.keyCode===13) {
+               inputModal.style.display = "none";
+               let filename = filename_input.value.trim();
+               if (filename.length >0) {
+                   const file_url = zip_url_base + filename;
+                   updateURIContent(file_url,'\n',function(){
+                       qs("ul",function(el){
+                           let newid="li_"+Math.random().toString(36).substr(-8);
+                           el.innerHTML=html_file_item(newid,filename);
+                           addViewClick(qs("#"+newid+" a span.normal"));
+                           addOpenZipViewClick(qs("#"+newid+" a span.zipfile"));
+                           
+                           let edBtn = qs("#"+newid+" a span.editinzed");
+                           if (edBtn) {
+                               addEditClick(edBtn);
+                               edBtnClick({target:edBtn,preventDefault(){}});
+                           }
+                           
+                       })
+                   });
+               }
+           }
+        }
+    });
+    
+    qs("h1 a span.download",function click(){
+        
+    });
+    
+    qs("h1 a span.newfile",function click(){
+        inputModal.style.display = "block";
+    });
         
     [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
     
@@ -31,18 +79,87 @@ function onDOMContentLoaded (event){
 }
 
 function addEditClick (el) {
-    el.addEventListener("click",edBtnClick);
-    el.parentElement.addEventListener("click",edBtnClick);
+    if (el) {
+      el.addEventListener("click",edBtnClick);
+      el.parentElement.addEventListener("click",edBtnClick);
+    }
 }
 
 function addViewClick (el) {
-    el.addEventListener("click",viewBtnClick);
-    el.parentElement.addEventListener("click",viewBtnClick);
+    if (el) {
+        el.addEventListener("click",viewBtnClick);
+        el.parentElement.addEventListener("click",viewBtnClick);
+    }
 }
 
 function addOpenZipViewClick (el) {
-    el.addEventListener("click",openZipBtnClick);
-    el.parentElement.addEventListener("click",openZipBtnClick);
+    if (el) {
+        el.addEventListener("click",openZipBtnClick);
+        el.parentElement.addEventListener("click",openZipBtnClick);
+    }
+}
+
+
+function updateURIContent(file_url,content,cb) {
+    
+   var update = new XMLHttpRequest();
+   update.open('PUT', file_url, true);
+   
+   update.setRequestHeader('Content-type', 'text/plain');
+   
+   update.onreadystatechange = function() { 
+       if(update.readyState === XMLHttpRequest.DONE) {
+         if (typeof cb==='function') {
+             var status = update.status;
+            cb (undefined,(status === 0 || (status >= 200 && status < 400))); 
+            cb=undefined;
+         }
+       }
+   };
+   update.onerror = function(err) { 
+       if (typeof cb==='function') {
+           cb(err);
+           cb=undefined;
+       }
+   };
+   
+   update.send(new Blob([content], {type: 'text/plain'})); 
+}
+
+function html_file_item (id,filename){
+    
+    
+    const linkit=function(uri,disp,a_wrap){ 
+        a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
+        const split=(disp||uri).split("/");
+        if (split.length===1) return a_wrap.join(disp||uri);
+        const last = split.pop();
+        if (split.length===1) return split[0]+'/'+ a_wrap.join(last);
+        return split.join("/")+'/'+ a_wrap.join(last);
+    };
+
+   const full_uri = zip_url_base+"/"+filename,
+         basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
+   const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
+   const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
+   const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
+   const is_hidden    = false;
+   const is_deleted   = false;
+   const is_editable  = true;
+   const is_zip       = false;
+   const is_edited    = true;
+   
+   const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;&nbsp;&nbsp;</span>' : '';
+   const cls = is_deleted ? ["deleted"] : [];
+   if (is_edited)  cls.push("edited");
+   if (is_hidden)  cls.push("hidden");
+   const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
+   
+   const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>' + edited ] 
+                  : is_zip        ? [ '<a'+zip_attr+  ' href="'+zip_url_base+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>' + edited ]   
+                  :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + edited ] ;
+   
+   return '<li id="'+id+'" '+li_class+'><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
 }
 
 
@@ -54,33 +171,30 @@ function edBtnClick(e){
     const file_url = zip_url_base + filename;
     if (!e.shiftKey) {
         var oReq = new XMLHttpRequest();
+        
         oReq.addEventListener("load", function reqListener () {
             var content = this.responseText;
             li.classList.add("editing");
+            
             editInZed(filename,content,function(detail){
               
                 if (detail.closed ) {
+                    
                     li.classList.remove("editing");
+                    
                 } else {
               
                     if (detail.content) {
-                        content = detail.content;
-                        li.classList.add("edited");
-                        var update = new XMLHttpRequest();
-                        update.open('UPDATE', file_url, true);
                         
-                        update.setRequestHeader('Content-type', 'text/plain');
-                        
-                        update.onreadystatechange = function() { 
-                        };
-                        update.onerror = function() { 
-                        };
-                        
-                        update.send(new Blob([content], {type: 'text/plain'}));
+                        updateURIContent(file_url,detail.content,function(){
+                            li.classList.add("edited");
+                        });
                     }
+                    
                 }
                 
             });
+            
         });
         oReq.open("GET", file_url);
         oReq.send();
@@ -234,4 +348,20 @@ function on_window_open(w, fn) {
       setTimeout(on_window_open_poller, 100, w, fn);
     }
   }
+}
+
+function qs(d,q,f) {
+    let r,O=typeof {},S=typeof O,FN=typeof qs,D=typeof d,Q=typeof q,F=typeof f;
+    if (D+Q+F===S+'number'+O){q=r;}//handle map iterator
+    if (D===S) {f=q;q=d;d=document;D=O;Q=S;F=typeof f}//handle implied d=document
+    if (D+Q===O+S){
+       r = d.querySelector(q);
+       if (r&&typeof r+typeof f===O+FN) {
+            if (f.name.length>0) 
+               r.addEventListener(f.name,f);
+            else 
+               f(r);
+        }
+    }
+    return r;
 }

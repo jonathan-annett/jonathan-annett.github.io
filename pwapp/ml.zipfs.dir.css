@@ -39,6 +39,22 @@ a span.normal {
     background-repeat: no-repeat;
     background-size: 10px 10px;
 }
+
+a span.download {
+    
+    background-image: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE4LjEuMSwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJDYXBhXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIwIDAgNjEyIDYxMiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNjEyIDYxMjsiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPGc+DQoJPGc+DQoJCTxnPg0KCQkJPHBhdGggZD0iTTk1LjY2OSwzMTQuOTMxbDE5OC44ODksMTU4LjQ5MWMzLjM0NywyLjY2OCw3LjM5Miw0LDExLjQ0MSw0YzQuMDQ2LDAsOC4wOTQtMS4zMzQsMTEuNDQxLTRsMTk4Ljg4Ni0xNTguNDkxDQoJCQkJYzYuMTAxLTQuODYzLDguNDYxLTEzLjA1Miw1Ljg4Ni0yMC40MTZjLTIuNTc2LTcuMzY0LTkuNTI2LTEyLjI5OC0xNy4zMjYtMTIuMjk4aC04NC4xOTZWNDUuNzQ2DQoJCQkJYzAtMTAuMTM5LTguMjE5LTE4LjM1Ny0xOC4zNTctMTguMzU3SDIwOS42NjNjLTEwLjE0MSwwLTE4LjM1Nyw4LjIxOC0xOC4zNTcsMTguMzU3djIzNi40N0gxMDcuMTENCgkJCQljLTcuODA1LDAtMTQuNzU0LDQuOTMyLTE3LjMyOSwxMi4yOThDODcuMjA1LDMwMS44NzksODkuNTY1LDMxMC4wNjgsOTUuNjY5LDMxNC45MzF6IE0yMDkuNjYzLDMxOC45MzENCgkJCQljMTAuMTM4LDAsMTguMzU3LTguMjE4LDE4LjM1Ny0xOC4zNTdWNjQuMTAzaDE1NS45NTd2MjM2LjQ3YzAsMTAuMTM5LDguMjE5LDE4LjM1NywxOC4zNTcsMTguMzU3aDUwLjA2MUwzMDUuOTk5LDQzNS41OTMNCgkJCQlMMTU5LjYwMSwzMTguOTMxTDIwOS42NjMsMzE4LjkzMUwyMDkuNjYzLDMxOC45MzF6Ii8+DQoJCQk8cGF0aCBkPSJNNTkzLjY0MywzOTkuNTI5Yy0xMC4xMzgsMC0xOC4zNTcsOC4yMTktMTguMzU3LDE4LjM1N3YxMzAuMDExSDM2LjcxNFY0MTcuODg2YzAtMTAuMTM4LTguMjE5LTE4LjM1Ny0xOC4zNTctMTguMzU3DQoJCQkJUzAsNDA3Ljc0OCwwLDQxNy44ODZ2MTQ4LjM2OGMwLDEwLjEzOSw4LjIxOSwxOC4zNTcsMTguMzU3LDE4LjM1N2g1NzUuMjg2YzEwLjEzOCwwLDE4LjM1Ny04LjIxOCwxOC4zNTctMTguMzU3VjQxNy44ODYNCgkJCQlDNjEyLDQwNy43NDgsNjAzLjc3OSwzOTkuNTI5LDU5My42NDMsMzk5LjUyOXoiLz4NCgkJPC9nPg0KCTwvZz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjwvc3ZnPg0K")
+                      left center;
+    background-repeat: no-repeat;
+    background-size: 10px 10px;
+    
+}
+
+a span.newfile {
+    background-image: url("data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9JzMwMHB4JyB3aWR0aD0nMzAwcHgnICBmaWxsPSIjMDAwMDAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSIwIDAgMzIgMzIiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDMyIDMyIiB4bWw6c3BhY2U9InByZXNlcnZlIj48Zz48Zz48cGF0aCBmaWxsPSIjMDAwMDAwIiBkPSJNMjIuMyw5LjNoLTcuMWMtMC40LDAtMC44LTAuMy0wLjgtMC44di03YzAtMC4zLDAuMi0wLjYsMC41LTAuN3MwLjYtMC4xLDAuOCwwLjJsNy4xLDcuMSAgICBDMjMsOC4zLDIzLjEsOC42LDIzLDguOUMyMi45LDkuMiwyMi42LDkuMywyMi4zLDkuM3ogTTE1LjksNy44aDQuNWwtNC41LTQuNVY3Ljh6Ij48L3BhdGg+PC9nPjxnPjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHBvaW50cz0iMTYuOCwyNiAxLjIsMjYgMS4yLDAuOCAxNS41LDAuOCAyMyw4LjMgMjMsMTcuOSAyMS41LDE3LjkgMjEuNSw4LjkgMTQuOSwyLjMgMi43LDIuMyAyLjcsMjQuNSAgICAgMTYuOCwyNC41ICAgIj48L3BvbHlnb24+PC9nPjxnPjxwYXRoIGZpbGw9IiMwMDAwMDAiIGQ9Ik0yMy40LDMxLjNjLTQuMSwwLTcuMy0zLjMtNy4zLTcuM3MzLjMtNy4zLDcuMy03LjNjNC4xLDAsNy4zLDMuMyw3LjMsNy4zUzI3LjUsMzEuMywyMy40LDMxLjN6ICAgICBNMjMuNCwxOC4xYy0zLjIsMC01LjgsMi42LTUuOCw1LjhzMi42LDUuOCw1LjgsNS44czUuOC0yLjYsNS44LTUuOFMyNi42LDE4LjEsMjMuNCwxOC4xeiI+PC9wYXRoPjwvZz48Zz48cmVjdCB4PSIyMi43IiB5PSIyMC4zIiBmaWxsPSIjMDAwMDAwIiB3aWR0aD0iMS41IiBoZWlnaHQ9IjcuMiI+PC9yZWN0PjwvZz48Zz48cmVjdCB4PSIxOS44IiB5PSIyMy4yIiBmaWxsPSIjMDAwMDAwIiB3aWR0aD0iNy4zIiBoZWlnaHQ9IjEuNSI+PC9yZWN0PjwvZz48L2c+PC9zdmc")
+        left center;
+    background-repeat: no-repeat;
+    background-size: 10px 10px;
+}
 li.editing  {
   background-color: #a9d8eb;
 }
@@ -66,4 +82,44 @@ ul.hide_hidden li.hidden, ul.hide_full_path span.full_path { display : none; }
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
 }

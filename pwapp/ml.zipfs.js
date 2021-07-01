@@ -71,7 +71,7 @@ ml(0,ml(1),[
                                 'Content-Type'   : t,
                                 'Content-Length' : 0,
                             }
-                        }
+                        };
              }
              
              
@@ -474,8 +474,8 @@ ml(0,ml(1),[
                  const db  = databases.updatedURLS;
                  
                  switch (event.request.method) {
-                     case "GET"    : return  db.keyExists(url,true) ? new Promise ( toFetchUrl.bind(this,db,url) ) : undefined;
-                     case "UPDATE" : return new Promise ( toUpdateUrl );
+                     case "GET" : return  db.keyExists(url,true) ? new Promise ( toFetchUrl.bind(this,db,url) ) : undefined;
+                     case "PUT" : return new Promise ( toUpdateUrl );
                  }
                  
                  
@@ -1470,7 +1470,7 @@ ml(0,ml(1),[
                                      
                              let   hidden_files_exist = false;
                              
-                         
+                         /*
                              const html_file_item = function(filename){
     
                                      const full_uri = "/"+uri+"/"+filename,
@@ -1497,55 +1497,12 @@ ml(0,ml(1),[
                                      
                                      if (is_hidden) hidden_files_exist = true;
                                      return '<li'+li_class+'><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
-                                  };
+                                  };*/
                                   
                              const file_listing = Object.keys(zipFileMeta.files).concat(tools.extraFiles()).sort();
                              const html_details = file_listing.map(html_file_item);
 
-                             const html = [
-                                 
-                             '<!DOCTYPE html>',
-                             '<html>',
-                             '<!-- url='+url+' -->',
-                             '<!-- uri='+uri+' -->',
-                             
-                             '<!-- parent_link='+parent_link+' -->',
-    
-                             '<head>',
-                               '<title>files in '+uri+'</title>',
-                               '<script>var zip_url_base='+JSON.stringify('/'+uri)+'</script>',
-                               '<script src="ml.js"></script>',
-                               '<script src="ml.zipfs.dir.js"></script>',
-                               '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/balloon-css/1.2.0/balloon.min.css" integrity="sha512-6jHrqOB5TcbWsW52kWP9TTx06FHzpj7eTOnuxQrKaqSvpcML2HTDR2/wWWPOh/YvcQQBGdomHL/x+V1Hn+AWCA==" crossorigin="anonymous" referrerpolicy="no-referrer" />',
-                               '<link rel="stylesheet" href="ml.zipfs.dir.css"/>',
-                               '</style>',
-                             '</head>',
-                             '<body class="disable-select">',
-                             
-                             '<h1> files in '+uri,
-                             
-                             '<span>show full path</span><input class="fullpath_chk" type="checkbox">',
-                             
-                             
-                             hidden_files_exist ? '<span>show hidden files</span><input class="hidden_chk" type="checkbox">' : '' ,
-                             
-                             
-                             '</h1>',
-    
-                             
-                             '<div>',
-                             '<ul class="hide_hidden hide_full_path">'
-                             
-                             ].concat (html_details,
-                             [
-                                 
-                                 '</ul>',
-                                 '</div>',
-                                 
-                                
-                                 '</body>',
-                                 '</html>'
-                             ]).join('\n');
+                             const html = renderHtml (uri,hidden_files_exist,html_details,parent_link);
     
                              return resolve( 
                                  
@@ -1562,11 +1519,100 @@ ml(0,ml(1),[
                                      })
                             );
                             
+                            
+                            function html_file_item (filename){
+           
+                               const full_uri = "/"+uri+"/"+filename,
+                                     basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
+                               const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
+                               const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
+                               const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
+                               const alt_name     = zipFileMeta.alias_root && zipFileMeta.alias_root+basename;
+                               const is_hidden    = tools.isHidden(basename) || alt_name && tools.isHidden(alt_name) ;
+                               const is_deleted   = is_hidden && ( tools.isDeleted(basename) || alt_name && tools.isDeleted(alt_name) );
+                               const is_editable  = fileIsEditable(filename);
+                               const is_zip       = filename.endsWith(".zip");
+                               const is_edited    = fileisEdited( updated_prefix+filename );
+                               
+                               const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;&nbsp;&nbsp;</span>' : '';
+                               const cls = is_deleted ? ["deleted"] : [];
+                               if (is_edited)  cls.push("edited");
+                               if (is_hidden)  cls.push("hidden");
+                               const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
+                               
+                               const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>' + edited ] 
+                                              : is_zip        ? [ '<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>' + edited ]   
+                                              :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + edited ] ;
+                               
+                               if (is_hidden) hidden_files_exist = true;
+                               return '<li'+li_class+'><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
+                            }
+                          
+                            
                          });
 
                      });
                      
                  });
+                 
+                 
+                 
+                
+                 
+                 function renderHtml (uri,hidden_files_exist,html_details,parent_link) {
+                     
+                     const html = [
+                         
+                     '<!DOCTYPE html>',
+                     '<html>',
+                    
+                     '<head>',
+                       '<title>files in '+uri+'</title>',
+                       '<script>var zip_url_base='+JSON.stringify('/'+uri)+',parent_link='+JSON.stringify(parent_link)+';</script>',
+                       '<script src="ml.js"></script>',
+                       '<script src="ml.zipfs.dir.js"></script>',
+                       '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/balloon-css/1.2.0/balloon.min.css" integrity="sha512-6jHrqOB5TcbWsW52kWP9TTx06FHzpj7eTOnuxQrKaqSvpcML2HTDR2/wWWPOh/YvcQQBGdomHL/x+V1Hn+AWCA==" crossorigin="anonymous" referrerpolicy="no-referrer" />',
+                       '<link rel="stylesheet" href="ml.zipfs.dir.css"/>',
+                       '</style>',
+                     '</head>',
+                     '<body class="disable-select">',
+                     
+                     '<h1> files in '+uri,
+                     
+                     '<span>show full path</span><input class="fullpath_chk" type="checkbox">',
+                     
+                     
+                     '<span id="show_hidden">show hidden files</span><input class="hidden_chk" type="checkbox">' ,
+                     
+                     '<a><span class="download">&nbps;</span></a>','<a><span class="newfile">&nbps;</span></a>',
+                     '</h1>',
+                        
+                     '<div id="inputModal" class="modal">',
+                     '',
+                     '  <div class="modal-content">',
+                     '    <span class="close">&times;</span>',
+                     '    <p>Filename:<input id="newfilename" placeholder"file.js" value=""></p>',
+                     '  </div>',
+                     '',
+                     '</div>',
+                     
+                     '<div>',
+                     '<ul class="hide_hidden hide_full_path'+(hidden_files_exist ? + ' hidden_files_exist' :'')+ '">'
+                     
+                     ].concat (html_details,
+                     [
+                         
+                         '</ul>',
+                         '</div>',
+                         
+                        
+                         '</body>',
+                         '</html>'
+                     ]).join('\n');
+                     
+                     return html;
+
+                 }
 
              }
              
