@@ -1584,7 +1584,7 @@ ml(0,ml(1),[
                      
                      '<span id="show_hidden">show hidden files</span><input class="hidden_chk" type="checkbox">' ,
                      
-                     '<a><span class="download">&nbsp;</span></a>','<a><span class="newfile">&nbsp;</span></a>',
+                     '<a class="download">&nbsp;</a>','<a class="newfile">&nbsp;</a>',
                      '</h1>',
                         
                      '<div id="inputModal" class="modal">',
