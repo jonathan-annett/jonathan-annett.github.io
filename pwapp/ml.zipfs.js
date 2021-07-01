@@ -1235,7 +1235,7 @@ ml(0,ml(1),[
                  }
              }
              
-             function getHiddenFilesTest(url,zip,zipFileMeta,cb) {
+             function getZipDirMetaTools(url,zip,zipFileMeta,cb) {
                  if (zipFileMeta.files[dir_meta_name]) {
                      const meta = zip.file(dir_meta_name);
                      if (meta) {
@@ -1255,10 +1255,26 @@ ml(0,ml(1),[
                  
                  function getTester(meta) {
                      const regexps = (meta && meta.hidden ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
-                     return function (file_name) {
-                        return regexps.some(function(re){ 
-                            return re.test(file_name);
-                        });  
+                     return {
+                             
+                             isHidden : function (file_name) {
+                                return regexps.some(function(re){ 
+                                    return re.test(file_name);
+                                });
+                             },
+                             isDeleted : function (file_name) {
+                                 return meta.deleted.indexOf(file_name)>=0;
+                             },
+                             extraFiles : function () {
+                                return meta.added.slice(0);  
+                             },
+                             filterFileList : function ( files ) {
+                                const added = meta.added||[],deleted=meta.deleted||[];
+                                return files.filter(function(file){
+                                    return added.indexOf(file) < 0 && deleted.indexOf(file)< 0;
+                                }).concat(added); 
+                             }
+                         
                      };
                  }
                  
@@ -1278,7 +1294,7 @@ ml(0,ml(1),[
                              return resolve ();
                          }
                          
-                         getHiddenFilesTest(url,zip,zipFileMeta,function(isHiddenFileTest){
+                         getZipDirMetaTools(url,zip,zipFileMeta,function(isHiddenFileTest){
                              
                              const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                              const uri= urify.exec(url)[2];
