@@ -1034,9 +1034,7 @@ ml(0,ml(1),[
                              }
                              if (!fileEntry) {
                                  
-                                 if (file_path===dir_meta_name) {
-                                     return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
-                                 }
+                                 
 
                                  console.log("returning 404",zip_url,path_in_zip);
                                  return resolve(new Response('', {
@@ -1063,9 +1061,18 @@ ml(0,ml(1),[
                              return response304 (resolve,fileEntry);
                              
                          }
-                        
-                                   
-                         zip.file(file_path).async('arraybuffer').then(function(buffer){
+                         
+                         const zip_fileobj = zip.file(file_path);
+                         
+                         if (!zip_fileobj) {
+                             if (file_path===dir_meta_name) {
+                                 return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
+                             } else {
+                                 throw new Error ('file not in zip!'); 
+                             }
+                         }
+                         
+                         zip_fileobj.async('arraybuffer').then(function(buffer){
                             if (update_needed) {
                                 // first request for this file, so we need to save 
                                 // contentLength and type in buffer
@@ -1144,11 +1151,7 @@ ml(0,ml(1),[
                              
                              if (!fileEntry) {
                                  
-                                 if (file_path===dir_meta_name) {
-                                     return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
-                                 }
-
-                                 return resolve(new Response('', {
+                                  return resolve(new Response('', {
                                      status: 404,
                                      statusText: 'Not found'
                                  }));
@@ -1168,7 +1171,18 @@ ml(0,ml(1),[
                              return response304 (resolve,fileEntry);
                          }
                          
-                         zip.file(file_path).async('arraybuffer').then(function(buffer){
+                         
+                         const zip_fileobj = zip.file(file_path);
+                         
+                         if (!zip_fileobj) {
+                             if (file_path===dir_meta_name) {
+                                 return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
+                             } else {
+                                 throw new Error ('file not in zip!'); 
+                             }
+                         }
+                         
+                         zip_fileobj.async('arraybuffer').then(function(buffer){
                                  
                                  if (update_needed) {
                                      // first request for this file, so we need to save 
