@@ -76,6 +76,9 @@ function onDOMContentLoaded (event){
     
     [].forEach.call(document.querySelectorAll("li a span.zipfile"),addOpenZipViewClick);
     
+    
+    [].forEach.call(document.querySelectorAll("li a span.deletefile"),addDeleteClick);
+    
 }
 
 
