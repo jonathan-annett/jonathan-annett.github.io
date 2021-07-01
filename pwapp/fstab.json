@@ -21,11 +21,7 @@
    },
    {
         "replace":"\\/pwapp\\/update\\/$",
-        "with":"/pwapp/update.html"
-   },
-   {
-        "replace":"\\/pwapp\\/edit\\/$",
-        "with":"/pwapp/js-keygen-master.zip"
+        "with":"/pwapp/index.html"
    },
    {
       "virtualDirs":{
