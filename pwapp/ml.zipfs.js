@@ -1231,9 +1231,14 @@ ml(0,ml(1),[
                                  if (file_path===dir_meta_name) {
                                      return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
                                  } else {
-                                     if (tools.isAdded(file_path)) {
+                                     
+                                     const added_file = zipFileMeta.alias_root ? 
+                                       ( tools.isAdded(zipFileMeta.alias_root+file_path) ? zipFileMeta.alias_root+file_path : false) : 
+                                         ( tools.isAdded(file_path) ? file_path  : false );
+                                     
+                                     if (added_file) {
                                          // this is a request for a new file, which may or may not have been created yet.
-                                        const added_url = zip_url+"/"+file_path; 
+                                        const added_url = zip_url+"/"+added_file; 
                                         return toFetchUrl (databases.updatedURLS,added_url,function(response){
                                             
                                             if (response) {
@@ -1258,6 +1263,7 @@ ml(0,ml(1),[
                                          
                                      }
                                      
+                                      
                                      
                                      throw new Error ('file not in zip!'); 
                                  }
