@@ -477,8 +477,9 @@ ml(0,ml(1),[
                  const db  = databases.updatedURLS;
                  
                  switch (event.request.method) {
-                     case "GET" : return  db.keyExists(url,true) ? new Promise ( toFetchUrl.bind(this,db,url) ) : undefined;
-                     case "PUT" : return new Promise ( toUpdateUrl );
+                     case "GET"    : return  db.keyExists(url,true) ? new Promise ( toFetchUrl.bind(this,db,url) ) : undefined;
+                     case "PUT"    : return new Promise ( toUpdateUrl );
+                     case "DELETE" : return new Promise ( toRemoveUrl );
                  }
                  
                  
@@ -498,6 +499,55 @@ ml(0,ml(1),[
                      });
                      
                  }
+                 
+                 function toRemoveUrl (resolve,reject) {
+                        
+                    let inzip   = event.request.headers.get('x-is-in-zip') ===  '1';
+                    
+                    
+                    removeUpdatedURLContents (url,databases.updatedURLS,function(){
+                        
+                        
+                        if (inzip) {
+                            
+                            const zip_url_split = url.lastIndexOf('.zip/')+4;
+                            const zip_url     = url.substr(0,zip_url_split);
+                            const file_in_zip = url.substr(zip_url_split+1);
+                            
+                            getZipObject(zip_url,function(err,zip,zipFileMeta){
+                                
+                                if (err)  throw err;
+                                 
+                                getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
+                                    
+                                    tools.deleteFile(file_in_zip,okStatus);
+                                    
+                                });
+                                
+                            });
+                            
+                        } else {
+                            okStatus();
+                        }
+                        
+                    }); 
+                    
+                    
+                    
+                    function okStatus() {
+                          resolve(new Response('ok', {
+                            status: 200,
+                            statusText: 'Ok',
+                            headers: new Headers({
+                              'Content-Type'   : 'text/plain',
+                              'Content-Length' : 2
+                            })
+                        }));
+                    }
+                 
+                 }
+                 
+                 
 
              }
              
@@ -1294,7 +1344,7 @@ ml(0,ml(1),[
              
              function getZipDirMetaTools(url,zip,zipFileMeta,cb) {
                  if (zipFileMeta.tools) return cb(zipFileMeta.tools);
-                 
+                 const meta_url = url+'/'+dir_meta_name;
                  if (zipFileMeta.files[dir_meta_name]) {
                      const meta = zip.file(dir_meta_name);
                      if (meta) {
@@ -1303,7 +1353,7 @@ ml(0,ml(1),[
                         });
                      } else {
                          
-                         toFetchUrl (databases.updatedURLS,url+'/'+dir_meta_name,true,function(buffer){
+                         toFetchUrl (databases.updatedURLS,meta_url,true,function(buffer){
                             cb (getTester(JSON.parse(bufferToText(buffer))));
                          });
                          
@@ -1332,17 +1382,35 @@ ml(0,ml(1),[
                              isDeleted : function (file_name) {
                                  return meta.deleted && meta.deleted.indexOf(file_name)>=0;
                              },
+                             
                              filterFileList : function ( files ) {
                                 const deleted=meta.deleted||[];
                                 return files.filter(function(file){
                                     return deleted.indexOf(file)< 0;
                                 }); 
+                             },
+                             
+                             deleteFile : function (file_name,cb) {
+                                 meta.deleted = meta.deleted || [];
+                                 if (meta.deleted.indexOf(file_name) < 0 ) {
+                                     meta.deleted.push (file_name);
+                                     updateURLContents(
+                                         meta_url,
+                                         databases.updatedURLS,
+                                         bufferFromText(JSON.stringify(meta)),
+                                         function () {
+                                             cb();
+                                         }
+                                     );
+                                 }
                              }
-                         
+                        
+
                      };
                  }
                  
-                 
+                 function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
+
                  function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
 
              }

@@ -115,6 +115,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                                       const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
                                       const alt_name     = zipFileMeta.alias_root && zipFileMeta.alias_root+basename;
                                       const is_hidden    = tools.isHidden(basename) || alt_name && tools.isHidden(alt_name) ;
+                                      const is_in_zip    = file_listing.indexOf(filename)>=0;
                                       const is_deleted   = is_hidden && ( tools.isDeleted(basename) || alt_name && tools.isDeleted(alt_name) );
                                       const is_editable  = fileIsEditable(filename);
                                       const is_zip       = filename.endsWith(".zip");
@@ -131,7 +132,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                                                      :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + edited ] ;
                                       
                                       if (is_hidden) hidden_files_exist = true;
-                                      return '<li'+li_class+'><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
+                                      return '<li'+li_class+'><a data-filename="' + filename + '" data-inzip="'+ (is_in_zip?'1':'0') + '"><span class="deletefile"></span></a><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
                                    }
                                  
                                    

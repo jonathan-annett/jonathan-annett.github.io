@@ -78,6 +78,15 @@ function onDOMContentLoaded (event){
     
 }
 
+
+function addDeleteClick (el) {
+    if (el) {
+      el.addEventListener("click",deleteClick);
+      el.parentElement.addEventListener("click",deleteClick);
+    }
+}
+
+
 function addEditClick (el) {
     if (el) {
       el.addEventListener("click",edBtnClick);
@@ -126,6 +135,36 @@ function updateURIContent(file_url,content,cb) {
    update.send(new Blob([content], {type: 'text/plain'})); 
 }
 
+
+
+
+function deleteURIContent(file_url, is_in_zip, cb) {
+    
+   var update = new XMLHttpRequest();
+   update.open('DELETE', file_url, true);
+   
+   update.setRequestHeader('x-is-in-zip', is_in_zip);
+   
+   update.onreadystatechange = function() { 
+       if(update.readyState === XMLHttpRequest.DONE) {
+         if (typeof cb==='function') {
+             var status = update.status;
+            cb (undefined,(status === 0 || (status >= 200 && status < 400))); 
+            cb=undefined;
+         }
+       }
+   };
+   
+   update.onerror = function(err) { 
+       if (typeof cb==='function') {
+           cb(err);
+           cb=undefined;
+       }
+   };
+   
+   update.send(); 
+}
+
 function html_file_item (id,filename){
     
     
@@ -140,7 +179,7 @@ function html_file_item (id,filename){
 
    const full_uri = zip_url_base+"/"+filename,
          basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
-   const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
+   const edited_attr  = ' data-balloon-pos="right" aria-label="'                + basename + ' has been edited locally"';
    const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
    const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
    const is_hidden    = false;
@@ -157,9 +196,10 @@ function html_file_item (id,filename){
    
    const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>' + edited ] 
                   : is_zip        ? [ '<a'+zip_attr+  ' href="'+zip_url_base+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>' + edited ]   
-                  :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + edited ] ;
+                  :                 [ '<a data-filename="'               + filename + '" data-inzip="0"><span class="normal">&nbsp;</span>',     '</a>' + edited ] ;
    
-   return '<li id="'+id+'" '+li_class+'><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
+   
+   return '<li'+li_class+'><a data-filename="' + filename + '"><span class="deletefile"></span></a><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
 }
 
 
@@ -202,6 +242,18 @@ function edBtnClick(e){
         
         open_url(file_url);
     }
+}
+
+
+function deleteClick(e) {
+    e.preventDefault();
+    const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+    const li  = btn.parentElement;
+    const filename  = '/'+btn.dataset.filename.replace(/(^\/)/,'');
+    const file_url = zip_url_base + filename;
+    deleteURIContent(file_url, btn.dataset.inzip, function(){
+        li.parentElement.removeChild(li);
+    });
 }
 
 function editInZed(filename,content,cb) {
