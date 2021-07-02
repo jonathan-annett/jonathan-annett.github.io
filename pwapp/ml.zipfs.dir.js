@@ -29,15 +29,19 @@ ml(0,ml(1),[
                         if (!err && msg) {
                            const ix = zip_files.indexOf(file);
                            if (msg.deleted) {
-                              el.classList.add('deleted');
-                              el.classList.add("hidden");
+                              if (el) {
+                                el.classList.add('deleted');
+                                el.classList.add("hidden");
+                              }
                               if (ix >=0) {
                                   zip_files.splice(ix,1);
                               }
                            }
                            if (msg.undeleted) {
-                              el.classList.remove('deleted');
-                              el.classList.remove('hidden');
+                              if (el) {
+                                el.classList.remove('deleted');
+                                el.classList.remove('hidden');
+                              }
                               if (ix <0) {
                                   zip_files.push(file);
                               }
@@ -51,7 +55,7 @@ ml(0,ml(1),[
                        zip : full_zip_uri,
                        add : file
                    },function(err,msg){
-                       el.classList.add('deleted');
+                       if(el) el.classList.add('deleted');
                        const ix = zip_files.indexOf(file);
                        if (ix >=0) {
                            zip_files.splice(ix,1);
@@ -64,7 +68,7 @@ ml(0,ml(1),[
                        zip    : full_zip_uri,
                        remove : file
                    },function(err,msg){
-                       el.classList.remove('deleted');
+                       if (el) el.classList.remove('deleted');
                        const ix = zip_files.indexOf(file);
                        if (ix <0) {
                            zip_files.push(file);
@@ -77,7 +81,7 @@ ml(0,ml(1),[
                   sendMessage('removeUpdatedURLContents',{
                       url : full_zip_uri+'/'+file
                   },function(err,msg){
-                      el.classList.remove('edited');
+                      if (el) el.classList.remove('edited');
                       if(cb)cb(err,msg);
                   });
                },
@@ -86,7 +90,7 @@ ml(0,ml(1),[
                        url     : full_zip_uri+'/'+file,
                        content : content
                    },function(err,msg){
-                       el.classList.add('edited');
+                       if (el) el.classList.add('edited');
                        if(cb)cb(err,msg);
                    });
                },
@@ -103,13 +107,11 @@ ml(0,ml(1),[
 
             };
             
-            
-           const lib = {
+            const lib = {
                
                pwaApi : pwaApi
            };
 
-            
             function onDOMContentLoaded (){
             
                 const showHidden=document.querySelector("h1 input.hidden_chk");
@@ -272,6 +274,7 @@ ml(0,ml(1),[
                 const li = btn.parentElement;
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
                 const file_url = zip_url_base + '/'+filename;
+               
                 if (!e.shiftKey) {
                     
                     pwaApi.fetchUpdatedURLContents(filename,function(err,buffer){
@@ -279,23 +282,7 @@ ml(0,ml(1),[
                             
                            li.classList.add("editing");
                            
-                           editInZed('/'+filename,bufferToText(buffer),function(detail){
-                             
-                               if (detail.closed ) {
-                                   
-                                   li.classList.remove("editing");
-                                   
-                               } else {
-                             
-                                   if (detail.content) {
-                                       
-                                       pwaApi.updateURLContents(filename,detail.content,li);
-                                       
-                                   }
-                                   
-                               }
-                               
-                           });
+                           editInZed('/'+filename,bufferToText(buffer));
                         }
                     });
                
@@ -320,7 +307,14 @@ ml(0,ml(1),[
                 }
             }
             
-            function editInZed(filename,content,files,cb) {
+
+            function editInZed(filename,content,files) {
+                
+                const active_edits = [filename];
+                const find_li=function(file) {
+                    return qs('a[data-filename="'+file+'"]').parentElement;
+                };
+               
                 
                 
                 window.dispatchEvent(
@@ -330,23 +324,92 @@ ml(0,ml(1),[
                 
                 function editInZedCallback (event){
                     
-                    if (event.detail.filename===filename) {
-                        
-                        if (event.detail.closed) {
-                            window.removeEventListener('editinzed_callback',editInZedCallback);
-                            console.log(filename,"closed");
-                            cb(event.detail);
-                        } else {
-                            if (typeof event.detail.content==='string') {
-                                if (event.detail.content!==content) {
-                                     event.detail.previousContent=content;
-                                     cb(event.detail);
-                                     content = event.detail.content;
-                                }
-                            }
-                        }
+                    const 
+                    detail  = event.detail,
+                    reqId   = detail.request,
+                    reqFile = detail.getText;
+                    
+                    if (reqId && reqFile)  {
+                        return openNewFile (reqFile,reqId);
                     }
-            
+                    
+                    
+                    
+                    if (detail.closed ) {
+                        
+                        active_edits.forEach(function(fn){
+                              const li = find_li(fn);
+                              if (li) {
+                                  li.classList.remove("editing");
+                              }
+                        }); 
+                        
+                        
+                    } else {
+                  
+                        if (  active_edits.indexOf( detail.filename ) >= 0  && !!detail.content ) {
+                            
+                            
+                            const li = find_li(detail.filename);
+                            pwaApi.updateURLContents(detail.filename,detail.content,li);
+                            
+                        }
+                        
+                    }
+
+                }
+                
+                
+                function openNewFile (reqFile,reqId) {
+                    
+                    const reply_msgName = 'msg_'+reqId;
+                    if (zip_files.indexOf(reqFile)<0) {
+                        
+                        window.dispatchEvent(
+                            new CustomEvent( reply_msgName,{ 
+                                detail: {
+                                    reject : reqId,
+                                    data   : reqFile+" not found" 
+                                }
+                            })
+                        );
+                        
+                    } else {
+                        pwaApi.fetchUpdatedURLContents(reqFile,function(err,buffer){
+                            
+                            if (err) {
+                                window.dispatchEvent(
+                                    new CustomEvent( reply_msgName,{ 
+                                        detail: {
+                                            reject : reqId,
+                                            data   : err.message||err 
+                                        }
+                                    })
+                                );
+                            } else {
+                                
+                                if (active_edits.indexOf(reqFile)<0)
+                                    active_edits.push(reqFile);
+                                 
+                                 
+                                 const li = find_li(reqFile);
+                                 if (li) {
+                                     li.classList.add("editing");
+                                 }
+                                 
+                                window.dispatchEvent(
+                                    new CustomEvent( reply_msgName, { 
+                                        detail: {
+                                            resolve : reqId,
+                                            data    : bufferToText(buffer) 
+                                        }
+                                    })
+                                );
+                            }
+                            
+                        });
+                    }
+                        
                 }
                 
                 
