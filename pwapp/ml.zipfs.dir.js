@@ -79,7 +79,10 @@ ml(0,ml(1),[
                fetchUpdatedURLContents : function (file,cb) {
                    sendMessage('fetchUpdatedURLContents',{
                        url     : full_zip_uri+'/'+file,
-                   },cb);
+                   },function(err,msg){
+                       if (err) return cb (err);
+                       cb(undefined,msg.buffer,msg.updated);
+                   });
                    
                }
 
