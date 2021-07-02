@@ -385,7 +385,7 @@ ml(0,ml(1),[
                     
                     open_url(file_url);
             
-            }btn.dataset.filename.replbtn.dataset.filename.replace(/(^\/)/,'')
+            }
             
             function openZipBtnClick(e){
                    if (!e.shiftKey) {
