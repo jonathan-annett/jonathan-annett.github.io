@@ -22,6 +22,46 @@ ml(0,ml(1),[
              
             window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
             
+            
+            const api = {
+               
+               toggleDeleteFile : function (el,file,cb) {
+                   sendMessage('deleted',{
+                        zip    : zip_url_base,
+                        toggle : file
+                   },function(err,msg){
+                        if (!err && msg) {
+                           if (msg.deleted) {
+                              el.classList.add('deleted');
+                           }
+                           if (msg.undeleted) {
+                              el.classList.remove('deleted');
+                           }
+                        }
+                        if(cb)cb(err,msg);
+                   });
+               },
+               deleteFile : function (el,file,cb) {
+                   sendMessage('deleted',{
+                       zip : zip_url_base,
+                       add : file
+                   },function(err,msg){
+                       el.classList.add('deleted');
+                       if(cb)cb(err,msg);
+                   });
+               },
+               unDeleteFile : function (el,file,cb) {
+                   sendMessage('deleted',{
+                       zip    : zip_url_base,
+                       remove : file
+                   },function(err,msg){
+                       el.classList.remove('deleted');
+                       if(cb)cb(err,msg);
+                   });
+               }
+                
+            };
+            
             function onDOMContentLoaded (event){
             
                 const showHidden=document.querySelector("h1 input.hidden_chk");

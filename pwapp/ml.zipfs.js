@@ -34,7 +34,8 @@ ml(0,ml(1),[
                  newFixupRulesArray       : newFixupRulesArray,
                  fetchUpdatedURLEvent     : fetchUpdatedURLEvent,
                  updateURLContents        : updateURLContents,
-                 removeUpdatedURLContents : removeUpdatedURLContents
+                 removeUpdatedURLContents : removeUpdatedURLContents,
+                 getZipDirMetaTools       : getZipDirMetaToolsExternal
              };
              
              const { resolveZipListing }  =  listingLib( getZipObject,getZipFileUpdates,getZipDirMetaTools,fileisEdited ); 
@@ -1105,6 +1106,14 @@ ml(0,ml(1),[
                         
              }
              
+             
+             function getZipDirMetaToolsExternal(zip_url,cb) {
+                 getZipObject(zip_url,function(err,zip,zipFileMeta){
+                     if (err) return cb(err);
+                     getZipDirMetaTools(zip_url,zip,zipFileMeta,cb);
+                 });
+             }
+             
              function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince) {
                  console.log({resolveSubzip:{ifNoneMatch,ifModifiedSince,zip_url,path_in_zip}});
                  const parts           = path_in_zip.split('.zip/');     
@@ -1361,15 +1370,15 @@ ml(0,ml(1),[
                      const meta = zip.file(dir_meta_name);
                      if (meta) {
                         meta.async('string').then(function(json){
-                           cb (getTester(JSON.parse(json)));
+                           cb (getTools(JSON.parse(json)));
                         });
                      } else {
                          
                          toFetchUrl (databases.updatedURLS,meta_url,true,function(buffer){
                              if (buffer) {
-                                 cb (getTester(JSON.parse(bufferToText(buffer))));
+                                 cb (getTools(JSON.parse(bufferToText(buffer))));
                              } else {
-                                 cb (getTester());
+                                 cb (getTools());
                              }
                             
                          });
@@ -1379,10 +1388,10 @@ ml(0,ml(1),[
                      
                      
                  } else {
-                     cb (getTester());
+                     cb (getTools());
                  }
                  
-                 function getTester(meta) {
+                 function getTools(meta) {
                      if (!meta) {
                          meta = JSON.parse(dir_meta_empty_json);
                      }
@@ -1419,11 +1428,54 @@ ml(0,ml(1),[
                                          databases.updatedURLS,
                                          bufferFromText(JSON.stringify(meta)),
                                          function () {
-                                             cb();
+                                             cb({deleted:file_name});
                                          }
                                      );
+                                 } else {
+                                     cb();
                                  }
-                             }
+                             },
+                             
+                             undeleteFile : function (file_name,cb) {
+                                 meta.deleted = meta.deleted || [];
+                                 const ix = meta.deleted.indexOf(file_name);
+                                 if (ix >= 0 ) {
+                                     meta.deleted.splice (ix,1);
+                                     updateURLContents(
+                                         meta_url,
+                                         databases.updatedURLS,
+                                         bufferFromText(JSON.stringify(meta)),
+                                         function () {
+                                             cb({undeleted:file_name});
+                                         }
+                                     );
+                                 } else {
+                                     cb();
+                                 }
+                             },
+                             
+                             
+                             toggleDelete : function (file_name,cb) {
+                                meta.deleted = meta.deleted || [];
+                                const ix = meta.deleted.indexOf(file_name);
+                                const msgReply={};
+                                if (ix >= 0 ) {
+                                    meta.deleted.splice (ix,1);
+                                    msgReply.undeleted = file_name;
+                                } else {
+                                    meta.deleted.push (file_name);
+                                    msgReply.deleted = file_name;
+                                }
+                                updateURLContents(
+                                    meta_url,
+                                    databases.updatedURLS,
+                                    bufferFromText(JSON.stringify(meta)),
+                                    function () {
+                                        cb(msgReply);
+                                    }
+                                );
+                            },
+             
                         
 
                      };

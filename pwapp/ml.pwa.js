@@ -100,6 +100,31 @@ ml(0,ml(1),[
                         dispatchCustomEvent = cb;    
                     },
                     
+                    
+                    deleted : function (msg,cb) {
+                        if (msg.zip && (msg.toggle||msg.add||msg.remove)) {
+                            zipFS.getZipDirMetaTools(msg.zip,function(tools) {
+                                if (tools) {
+                                    if (msg.toggle) {
+                                        tools.toggleDelete(msg.toggle,cb);
+                                    } else {
+                                        if (msg.add) {
+                                            tools.deleteFile(msg.toggle,cb);
+                                        } else {
+                                            if (msg.remove) {
+                                                tools.undeleteFile(msg.toggle,cb);
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    cb({error:"could not access zip tools"});
+                                }
+                            });
+                        } else {
+                            cb({error:"needs zip + toggle/add/remove"});
+                        }
+                    },
+                    
                     newFixupRulesArray : function(msg,cb) {
                         if (Array.isArray(msg.rules)){
                             zipFS.newFixupRulesArray(msg.rules);

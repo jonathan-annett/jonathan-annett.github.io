@@ -190,7 +190,6 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                         '</head>',
                         '<body class="disable-select">',
                         '<script src="ml.js"></script>',
-                        '<script src="ml.pwa-message.js"></script>',
                         '<script src="ml.zipfs.dir.js"></script>',
                         
                         '<h1> files in '+uri,
