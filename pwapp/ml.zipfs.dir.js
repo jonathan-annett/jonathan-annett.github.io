@@ -20,7 +20,7 @@ ml(0,ml(1),[
 
             var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
              
-            window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
+          
             
             
             const api = {
@@ -62,7 +62,10 @@ ml(0,ml(1),[
                 
             };
             
-            function onDOMContentLoaded (event){
+            
+           
+            
+            function onDOMContentLoaded (){
             
                 const showHidden=document.querySelector("h1 input.hidden_chk");
                 if (showHidden) {
@@ -476,6 +479,13 @@ ml(0,ml(1),[
                     }
                 }
                 return r;
+            }
+            
+            
+            if (window.document && window.document.readyState === "interactive") {
+                onDOMContentLoaded();
+            } else {
+               window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
             }
             
             return lib;
