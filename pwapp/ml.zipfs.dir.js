@@ -60,7 +60,7 @@ ml(0,ml(1),[
                
                removeUpdatedURLContents  : function (file,el,cb) {
                   sendMessage('removeUpdatedURLContents',{
-                      url : full_zip_uri+file
+                      url : full_zip_uri+'/'+file
                   },function(err,msg){
                       el.classList.remove('edited');
                       if(cb)cb(err,msg);
@@ -68,7 +68,7 @@ ml(0,ml(1),[
                },
                updateURLContents : function (file,content,el,cb) {
                    sendMessage('updateURLContents',{
-                       url     : full_zip_uri+file,
+                       url     : full_zip_uri+'/'+file,
                        content : content
                    },function(err,msg){
                        el.classList.add('edited');
@@ -171,14 +171,12 @@ ml(0,ml(1),[
                 
             }
             
-            
             function addDeleteClick (el) {
                 if (el) {
                   el.addEventListener("click",deleteClick);
                   el.parentElement.addEventListener("click",deleteClick);
                 }
             }
-            
             
             function addEditClick (el) {
                 if (el) {
@@ -199,61 +197,6 @@ ml(0,ml(1),[
                     el.addEventListener("click",openZipBtnClick);
                     el.parentElement.addEventListener("click",openZipBtnClick);
                 }
-            }
-            
-            
-            function updateURIContent(file_url,content,cb) {
-                
-               var update = new XMLHttpRequest();
-               update.open('PUT', file_url, true);
-               
-               update.setRequestHeader('Content-type', 'text/plain');
-               
-               update.onreadystatechange = function() { 
-                   if(update.readyState === XMLHttpRequest.DONE) {
-                     if (typeof cb==='function') {
-                         var status = update.status;
-                        cb (undefined,(status === 0 || (status >= 200 && status < 400))); 
-                        cb=undefined;
-                     }
-                   }
-               };
-               update.onerror = function(err) { 
-                   if (typeof cb==='function') {
-                       cb(err);
-                       cb=undefined;
-                   }
-               };
-               
-               update.send(new Blob([content], {type: 'text/plain'})); 
-            }
-            
-             
-            function deleteURIContent(file_url, is_in_zip, cb) {
-                
-               var update = new XMLHttpRequest();
-               update.open('DELETE', file_url, true);
-               
-               update.setRequestHeader('x-is-in-zip', is_in_zip);
-               
-               update.onreadystatechange = function() { 
-                   if(update.readyState === XMLHttpRequest.DONE) {
-                     if (typeof cb==='function') {
-                         var status = update.status;
-                        cb (undefined,(status === 0 || (status >= 200 && status < 400))); 
-                        cb=undefined;
-                     }
-                   }
-               };
-               
-               update.onerror = function(err) { 
-                   if (typeof cb==='function') {
-                       cb(err);
-                       cb=undefined;
-                   }
-               };
-               
-               update.send(); 
             }
             
             function html_file_item (id,filename){
