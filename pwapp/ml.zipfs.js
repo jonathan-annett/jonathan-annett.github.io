@@ -29,7 +29,6 @@ ml(0,ml(1),[
         
         return function (dbKeyPrefix) {
 
-              
              const lib = {
                  processFetchRequest      : processFetchRequest,
                  newFixupRulesArray       : newFixupRulesArray,
@@ -37,7 +36,6 @@ ml(0,ml(1),[
                  updateURLContents        : updateURLContents,
                  removeUpdatedURLContents : removeUpdatedURLContents
              };
-             
              
              const { resolveZipListing }  =  listingLib( getZipObject,getZipFileUpdates,getZipDirMetaTools,fileisEdited ); 
                               
@@ -67,7 +65,9 @@ ml(0,ml(1),[
              };
              
              const emptyBuffer = new ArrayBuffer();
+             
              const emptyBufferStatus = emptyBufferStatusWithType('text/plain');
+             
              function emptyBufferStatusWithType(t) {
                  return {
                             status: 200,
@@ -344,7 +344,12 @@ ml(0,ml(1),[
                            
                           while ( rules.some( enforce ) );
                          
-                          event.fixup_url = url;
+                          event.fixup_url   = url;
+                          event.use_no_cors = url.indexOf(location.origin)!==0;
+                          event.shouldCache = url.indexOf(location.origin)===0 ||  event.request.referrer && event.request.referrer.indexOf(location.origin)===0;
+                        
+                          event.fetchBuffer = event.use_no_cors ? fetchBufferViaNoCors.bind(this,url) : fetchBuffer.bind(this,url) ;
+                          
                           return ;
                       }
                       
@@ -359,57 +364,6 @@ ml(0,ml(1),[
                           
                       });
 
-             }
-             
-             function newFixupRulesArray(arr) {
-                 const source = arr.filter(function(x){
-                      if (x.virtualDirs) {
-                          virtualDir.virtualDirs = x.virtualDirs;
-                          virtualDir.virtualDirUrls = Object.keys(x.virtualDirs);
-                          virtualDir.virtualDirFoundUrls = {};
-                          
-                          cleanupOld();
-                          delete x.virtualDirs;
-                          return false;
-                      }
-                      
-                      return true;
-                  });
-                  arr.splice(0,arr.length);
-                  const json = JSON.stringify(source);
-                  const regexs = function (x,k) {
-                     if (x[k]) {
-                         x[k]= new RegExp(x[k],x.flags||'');
-                     }
-                  };
-                  const replacements = function (x,k) {
-                      if (x[k]) {
-                         x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
-                      }
-                  };
-                  const rules_template = source.map(function(x){
-                       regexs(x,'match');   
-                       regexs(x,'replace'); 
-                       replacements(x,'with');
-                       replacements(x,'addPrefix');
-                       return x;
-                  });
-                  source.splice(0,source.length);
-                  fixupUrlEvent.rules = function (baseURI) {
-                      const replacements = function (dest,src,k) {
-                          if (src[k]) {
-                             dest[k] = src[k].replace(/\$\{base\}/g,baseURI);
-                          }
-                      };
-                      const rules = JSON.parse(json);
-                      const text_reps = function(x,i){
-                         replacements(rules_template[i],x,'with');
-                         replacements(rules_template[i],x,'addPrefix');
-                         return x;
-                      };
-                      rules.forEach(text_reps);
-                      return rules_template;
-                 }
              }
              
              function virtualDirEvent (event) {
@@ -581,9 +535,8 @@ ml(0,ml(1),[
                      
                      function(resolve,reject) {
                          
-                         const shouldCache = url.indexOf(location.origin)===0 ||  event.request.referrer && event.request.referrer.indexOf(location.origin)===0;
-                         
-                         fetchBufferViaCorsIfNeeded(url,function(err,buffer,status,ok,headers){
+
+                         event.fetchBuffer(function(err,buffer,status,ok,headers){
                              if (err) return reject(err);
                              
                              if (status===0 && buffer.byteLength===0) {
@@ -610,33 +563,13 @@ ml(0,ml(1),[
                  
              }
 
-             function fetchBufferViaCorsIfNeeded(url,cb) {
+             function fetchBuffer(url,cb) {
                  
-                 fetch(url).then(getBufferFromResponse)
-                   .catch(function(err){
-                       
-                        fetch(url,{mode:'no-cors'})
-                           .then(getBufferFromResponse)
-                           .catch(function(err){
-                               
-                                fetch(url+"?r="+Math.random().toString(36).substr(-8),{
-                                    mode:'no-cors',
-                                    headers:{
-                                        'if-none-match':Math.random().toString(36).substr(-8),
-                                        'if-modified-since':new Date( Date.now() - ( 5 * 365 * 24 * 60 * 60 * 1000) ).toString()
-                                    }
-                                    
-                                },'')
-                                   .then(getBufferFromResponse)
-                                   .catch(cb);
-                                   
-                                   
-                           });
-                           
-                   }).catch(cb);
+                fetch(url)
+                 .then(getBufferFromResponse)
+                   .catch(cb);
                    
-                   
-                   
+                  
                    function getBufferFromResponse(response) {
                          
                          response.arrayBuffer().then(function(buffer) {
@@ -651,6 +584,83 @@ ml(0,ml(1),[
                          
                    }
                        
+             }
+             
+             
+             function fetchBufferViaNoCors(url,cb) {
+                 
+                fetch(url,{mode:'no-cors',referrer:'about:client',referrerPolicy:'no-referrer'})
+                    .then(getBufferFromResponse)
+                    .catch(cb);
+                    
+                    
+                function getBufferFromResponse(response) {
+                      
+                      response.arrayBuffer().then(function(buffer) {
+                          
+                          const headers = {};
+                          
+                          for(var key of response.headers.keys()) {
+                             headers[key.toLowerCase()]=response.headers.get(key);
+                          }
+                          cb(undefined,buffer,response.status,response.ok,headers);
+                      });
+                      
+                }
+                       
+             }
+             
+             
+             
+             function newFixupRulesArray(arr) {
+                 const source = arr.filter(function(x){
+                      if (x.virtualDirs) {
+                          virtualDir.virtualDirs = x.virtualDirs;
+                          virtualDir.virtualDirUrls = Object.keys(x.virtualDirs);
+                          virtualDir.virtualDirFoundUrls = {};
+                          
+                          cleanupOld();
+                          delete x.virtualDirs;
+                          return false;
+                      }
+                      
+                      return true;
+                  });
+                  arr.splice(0,arr.length);
+                  const json = JSON.stringify(source);
+                  const regexs = function (x,k) {
+                     if (x[k]) {
+                         x[k]= new RegExp(x[k],x.flags||'');
+                     }
+                  };
+                  const replacements = function (x,k) {
+                      if (x[k]) {
+                         x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
+                      }
+                  };
+                  const rules_template = source.map(function(x){
+                       regexs(x,'match');   
+                       regexs(x,'replace'); 
+                       replacements(x,'with');
+                       replacements(x,'addPrefix');
+                       return x;
+                  });
+                  source.splice(0,source.length);
+                  fixupUrlEvent.rules = function (baseURI) {
+                      const replacements = function (dest,src,k) {
+                          if (src[k]) {
+                             dest[k] = src[k].replace(/\$\{base\}/g,baseURI);
+                          }
+                      };
+                      const rules = JSON.parse(json);
+                      const text_reps = function(x,i){
+                         replacements(rules_template[i],x,'with');
+                         replacements(rules_template[i],x,'addPrefix');
+                         return x;
+                      };
+                      rules.forEach(text_reps);
+                      return rules_template;
+                 }
              }
              
              function limitZipFilesCache(count,cb) {
@@ -1583,6 +1593,8 @@ ml(0,ml(1),[
              
              
            */
+           
+               
 
            function toFetchUrl (db,url,raw,resolve) {
                
