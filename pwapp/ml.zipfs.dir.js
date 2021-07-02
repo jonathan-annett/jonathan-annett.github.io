@@ -109,10 +109,10 @@ ml(0,ml(1),[
                 });
                 // When the user clicks anywhere outside of the modal, close it
                 window.onclick = function(event) {
-                  if (event.target == inputModal) {
-                    inputModal.style.display = "none";
+                    if (event.target == inputModal) {
+                       inputModal.style.display = "none";
                     }
-                }
+                };
                 
                 const filename_input = qs("#newfilename",function keydown(e){
                     if (e.keyCode===27) {
@@ -122,8 +122,7 @@ ml(0,ml(1),[
                            inputModal.style.display = "none";
                            let filename = filename_input.value.trim();
                            if (filename.length >0) {
-                               const file_url = zip_url_base + filename;
-                               
+
                                // find the ul element
                                qs("ul",function(el){
                                    // make a new id for the new element, as we are creating it on the fly
@@ -137,7 +136,7 @@ ml(0,ml(1),[
                                    let edBtn = qs("#"+newid+" a span.editinzed");
                                    
                                    // create the file using the service worker 
-                                   pwaApi.updateURLContents(file_url,'\n',el,function(){
+                                   pwaApi.updateURLContents(filename,'\n',el,function(){
                                         
                                         if (edBtn) {
                                             // if editable, open the editor 
@@ -167,8 +166,7 @@ ml(0,ml(1),[
                 [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
                 
                 [].forEach.call(document.querySelectorAll("li a span.zipfile"),addOpenZipViewClick);
-                
-                
+
                 [].forEach.call(document.querySelectorAll("li a span.deletefile"),addDeleteClick);
                 
             }
@@ -300,8 +298,8 @@ ml(0,ml(1),[
                 e.preventDefault();
                 const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
                 const li = btn.parentElement;
-                const filename = '/'+btn.dataset.filename.replace(/(^\/)/,'');
-                const file_url = zip_url_base + filename;
+                const filename = btn.dataset.filename.replace(/(^\/)/,'');
+                const file_url = zip_url_base + '/'+filename;
                 if (!e.shiftKey) {
                     var oReq = new XMLHttpRequest();
                     
@@ -309,7 +307,7 @@ ml(0,ml(1),[
                         var content = this.responseText;
                         li.classList.add("editing");
                         
-                        editInZed(filename,content,function(detail){
+                        editInZed('/'+filename,content,function(detail){
                           
                             if (detail.closed ) {
                                 
@@ -319,7 +317,7 @@ ml(0,ml(1),[
                           
                                 if (detail.content) {
                                     
-                                    pwaApi.updateURLContents(file_url,detail.content,li);
+                                    pwaApi.updateURLContents(filename,detail.content,li);
                                     
                                 }
                                 
@@ -341,7 +339,8 @@ ml(0,ml(1),[
                 e.preventDefault();
                 const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
                 const li  = btn.parentElement;
-                pwaApi.toggleDeleteFile(btn.dataset.filename.replace(/(^\/)/,''),li);
+                const filename = btn.dataset.filename.replace(/(^\/)/,'');
+                pwaApi.toggleDeleteFile(filename,li);
             }
             
             function editInZed(filename,content,cb) {
@@ -378,13 +377,11 @@ ml(0,ml(1),[
             }
             
             function viewBtnClick(e){
-                    e.preventDefault();
-                    const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                    const filename = '/'+btn.dataset.filename.replace(/(^\/)/,'');
-                    const file_url = zip_url_base + filename;
-                    
-                    open_url(file_url);
-            
+                e.preventDefault();
+                const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+                const filename = btn.dataset.filename.replace(/(^\/)/,'');
+                const file_url = zip_url_base + '/' + filename;
+                open_url(file_url);
             }
             
             function openZipBtnClick(e){
@@ -395,8 +392,6 @@ ml(0,ml(1),[
                     e.preventDefault();
                     const link      = e.target.href ? e.target : e.target.parentElement ;
                     open_url(link.href);
-                    
-                   
             }
             
             function open_url(file_url) {
