@@ -297,7 +297,12 @@ ml(0,ml(1),[
                 const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
                 const li  = btn.parentElement;
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
-                pwaApi.toggleDeleteFile(filename,li);
+                
+                if (e.shiftKey) {
+                   pwaApi.removeUpdatedURLContents(filename,li);
+                } else {
+                   pwaApi.toggleDeleteFile(filename,li);
+                }
             }
             
             function editInZed(filename,content,cb) {
