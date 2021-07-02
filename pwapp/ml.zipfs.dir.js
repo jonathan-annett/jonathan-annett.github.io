@@ -302,7 +302,7 @@ ml(0,ml(1),[
                 const api_id = Math.random().toString(36).substr(-8),
                       api_call_event_name = 'zipFS_apiCall_'+api_id;
                       
-                window.addEventListner(api_call_event_name,apiCall);      
+                window.addEventListener(api_call_event_name,apiCall);      
 
                 window.dispatchEvent( 
                     new CustomEvent( 'zipFS_apiHook',{  detail: {  api_id : api_id,  zipfs: full_zip_uri  } })
@@ -447,14 +447,14 @@ ml(0,ml(1),[
                          }
                     },
                     
-                    //getCapabilities: function(reqId) { }
+                    getCapabilities: function(reqId) { }
                 };
                 
                 
                 function apiCall (event) {
                     
                     if (event.detail.closed) {
-                        return window.removeEventListner(api_call_event_name,apiCall);   
+                        return window.removeEventListener(api_call_event_name,apiCall);   
                     }
 
                     const cmd     = Object.keys(event.detail.api_msg)[0];
