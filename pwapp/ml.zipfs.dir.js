@@ -74,6 +74,13 @@ ml(0,ml(1),[
                        el.classList.add('edited');
                        if(cb)cb(err,msg);
                    });
+               },
+               
+               fetchUpdatedURLContents : function (file,cb) {
+                   sendMessage('fetchUpdatedURLContents',{
+                       url     : full_zip_uri+'/'+file,
+                   },cb);
+                   
                }
 
             };
@@ -237,6 +244,10 @@ ml(0,ml(1),[
             }
             
             
+            function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
+           
+            function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
+            
             function edBtnClick(e){
                 e.preventDefault();
                 const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
@@ -244,33 +255,33 @@ ml(0,ml(1),[
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
                 const file_url = zip_url_base + '/'+filename;
                 if (!e.shiftKey) {
-                    var oReq = new XMLHttpRequest();
                     
-                    oReq.addEventListener("load", function reqListener () {
-                        var content = this.responseText;
-                        li.classList.add("editing");
-                        
-                        editInZed('/'+filename,content,function(detail){
-                          
-                            if (detail.closed ) {
-                                
-                                li.classList.remove("editing");
-                                
-                            } else {
-                          
-                                if (detail.content) {
-                                    
-                                    pwaApi.updateURLContents(filename,detail.content,li);
-                                    
-                                }
-                                
-                            }
+                    pwaApi.fetchUpdatedURLContents(filename,function(err,buffer){
+                        if (buffer) {
                             
-                        });
-                        
+                           li.classList.add("editing");
+                           
+                           editInZed('/'+filename,bufferToText(buffer),function(detail){
+                             
+                               if (detail.closed ) {
+                                   
+                                   li.classList.remove("editing");
+                                   
+                               } else {
+                             
+                                   if (detail.content) {
+                                       
+                                       pwaApi.updateURLContents(filename,detail.content,li);
+                                       
+                                   }
+                                   
+                               }
+                               
+                           });
+                        }
                     });
-                    oReq.open("GET", file_url);
-                    oReq.send();
+               
+                    
                 } else {
                     
                     open_url(file_url);

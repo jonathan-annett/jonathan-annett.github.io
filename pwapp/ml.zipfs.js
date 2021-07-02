@@ -32,9 +32,11 @@ ml(0,ml(1),[
              const lib = {
                  processFetchRequest      : processFetchRequest,
                  newFixupRulesArray       : newFixupRulesArray,
-                 fetchUpdatedURLEvent     : fetchUpdatedURLEvent,
+                 
+                 fetchUpdatedURLContents  : fetchUpdatedURLContents,
                  updateURLContents        : updateURLContents,
                  removeUpdatedURLContents : removeUpdatedURLContents,
+                 
                  getZipDirMetaTools       : getZipDirMetaToolsExternal
              };
              
@@ -1454,7 +1456,6 @@ ml(0,ml(1),[
                                  }
                              },
                              
-                             
                              toggleDelete : function (file_name,cb) {
                                 meta.deleted = meta.deleted || [];
                                 const ix = meta.deleted.indexOf(file_name);
@@ -1476,8 +1477,6 @@ ml(0,ml(1),[
                                 );
                             },
              
-                        
-
                      };
                  }
                  
@@ -1665,6 +1664,9 @@ ml(0,ml(1),[
                 return db;
             }
             
+            
+            
+            
              
              function updateURLContents(url,db,responseData,responseState,cb) {
                  
@@ -1704,14 +1706,32 @@ ml(0,ml(1),[
                      });
                  }
              }
+            
+             function fetchUpdatedURLContents(url,cb) {
+                 url = full_URL(location.origin,url);
+                 databases.updatedURLS.getItem(url,function(err,args){
+                     if(err) {
+                         return cb(err);
+                     }
+                     if (args) {
+                         const buffer = args[0];
+                         return cb (undefined,buffer,true);
+                     } else {
+                         fetchBuffer(url,function(err,buffer){
+                               if(err) {
+                                  return cb(err);
+                               }
+                               return cb (undefined,buffer,false);
+                         });
+                     }
+                 });
+             }
              
              function removeUpdatedURLContents(url,cb) {
                  url = full_URL(location.origin,url);
                  databases.updatedURLS.removeItem(url,cb);
              }
-             
-             
-             
+
              return lib;
              
           };

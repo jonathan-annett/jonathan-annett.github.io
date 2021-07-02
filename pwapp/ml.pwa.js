@@ -126,6 +126,12 @@ ml(0,ml(1),[
                         }
                     },
                     
+                    fetchUpdatedURLContents : function (msg,cb) {
+                         zipFS.fetchUpdatedURLContents(msg.data.url,function(err,contents, updated){
+                             if (err) return cb({error:err.message||err});
+                             cb({contents:contents,updated:updated});
+                         });
+                    },
                     
                     removeUpdatedURLContents : function (msg,cb) {
                         zipFS.removeUpdatedURLContents(msg.data.url,function(err){
@@ -164,6 +170,7 @@ ml(0,ml(1),[
                             cb({error:"not an array"});
                         }
                     },
+                    
                     unregister : function(msg,cb) {
                         ml.register("activate",function(event){
                             
