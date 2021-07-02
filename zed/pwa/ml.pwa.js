@@ -2,97 +2,87 @@
 ml(0,ml(1),[
     
     'swResponseZipLib@ServiceWorkerGlobalScope  | ml.zipfs.js',
+    'pwaMessage@Window                          | ml.pwa-message.js'
 
     
     ],function(){ml(2,ml(3),ml(4),
 
     {
 
-        Window: function main(wTools) {
+        Window: function pwa(findWorker,sendMessage) {
             
             const lib = {
-
+                newFixupRulesArray:newFixupRulesArray,
+                start:start,
+                unregister:noop
             };
-         
             
-            ml(9,'./ml.pwa.js',function(result){
-                console.log({result});
-            });
-            
-            /*
-            
-            setTimeout(function(){
-                
-                sendMessage("ping",{hello:"world",when:new Date(),also:Math.random()},function(err,reply){
-                   console.log({err,reply});  
-                   
-                   
-                 
-                });
-                
-                
-                  
-                
-                
-            },5000);
-            
-            
-            
-            function findWorker(cb) {
-
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                  let noerr;
-                
-                  if (!registrations.some(function(reg){
-                      const worker = reg.controller || reg.active || reg.installing || reg.waiting;
-                      if (worker) {
-                          cb(noerr,worker);
-                          return true;//break some
-                      }
-                  })){
-                     cb(new Error("no worker found"));
-                  }
-                });
-                
+            function noop(arg,cb) {
+              if (typeof arg==='function') {
+                  cb=arg;
+              }
+              if (typeof cb==='function') {
+                  setTimeout(cb,1);
+              } 
             }
-             
-            
-            function sendMessage(cmd,data,cb) {
-                const replyName        = "r"+Math.random().toString(36).substr(-8)+Date.now().toString(36).substr(-4);
-                const sendChannel      = new MessageChannel();
-                const replyChannel     = new BroadcastChannel(replyName);
-                const timeout = 2000;
-                const exitMsg=function(d){
-                    let noerr;
-                    replyChannel.close();
-                    sendChannel.port1.close();
-                    sendChannel.port2.close();
-                    if (d.error) {
-                       cb(d.error); 
-                    } else {
-                       cb(noerr,d);
-                    }
-                }
-                let tmr = setTimeout(function(){exitMsg({error:"timeout"})},timeout);
-                replyChannel.onmessage = function(e) {
-                      clearTimeout(tmr);
-                      exitMsg(e.data);
-                };
+            let stopped = false;
+            function start(cb) {
                 
-                findWorker(function(err,worker){
-                    if (err) return cb(err);
-                    worker.postMessage({m:cmd,r:replyName,data:data},[sendChannel.port2]); 
+                lib.start=noop;
+                
+                
+                ml(9,'./ml.pwa.js',function(result){
+                    
+                    window.dispatchEvent(
+                        new CustomEvent( 'ml.pwa.registered',{ detail: result })
+                    );
+                    
+                    const persistent=true;
+                    sendMessage("onCustomEvents",{},function(err,e){
+                        if (err) return console.log(err);
+                        
+                        findWorker(function(err,worker){
+                            window.dispatchEvent(
+                                new CustomEvent( e.eventName,{ detail: {data:e.eventData,worker:worker} })
+                            );
+                        });
+                        
+                    },persistent);
+                    lib.unregister=unregister;
+                    noop(cb);
                 });
-           } */
+            }
+            
+            function unregister(path,cb) {
+                 stopped=true;
+                 lib.unregister=noop;
+                 sendMessage("unregister",{path:path},cb);
+            }
+           
+            function newFixupRulesArray(rules,cb) {
+                sendMessage("newFixupRulesArray",{rules:rules},cb);
+            }
 
+          
             return lib;
         },
 
-        ServiceWorkerGlobalScope: function main(swRespZip) {
+        ServiceWorkerGlobalScope: function pwa(swRespZip) {
             
+                let dispatchCustomEvent;
+                const dbKeyPrefix = 'zip-files-cache.';
+                
+                const zipFS = swRespZip(dbKeyPrefix);
+                
                 ml.register("activate",function(event){
                     
-                    console.log("activate event");
+                    if (dispatchCustomEvent) {
+                        
+                        dispatchCustomEvent({
+                            eventName:ml.pwa.activated,
+                            eventData:1
+                        });
+                    }
                     self.clients.claim();
                     
                 });
@@ -105,20 +95,127 @@ ml(0,ml(1),[
                             return cb("pong");
                         
                     },
+                    
+                    onCustomEvents :function(msg,cb){ 
+                        dispatchCustomEvent = cb;    
+                    },
+                    
+                    
+                    deleted : function (msg,cb) {
+                        const data = msg.data;
+                        if (data.zip && (data.toggle||data.add||data.remove)) {
+                            zipFS.getZipDirMetaTools(data.zip,function(tools) {
+                                if (tools) {
+                                    if (data.toggle) {
+                                        tools.toggleDelete(data.toggle,cb);
+                                    } else {
+                                        if (data.add) {
+                                            tools.deleteFile(data.toggle,cb);
+                                        } else {
+                                            if (data.remove) {
+                                                tools.undeleteFile(data.toggle,cb);
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    cb({error:"could not access zip tools"});
+                                }
+                            });
+                        } else {
+                            cb({error:"needs zip + toggle/add/remove"});
+                        }
+                    },
+                    
+                    fetchUpdatedURLContents : function (msg,cb) {
+                         zipFS.fetchUpdatedURLContents(msg.data.url,function(err,contents, updated){
+                             if (err) return cb({error:err.message||err});
+                             cb({contents:contents,updated:updated});
+                         });
+                    },
+                    
+                    removeUpdatedURLContents : function (msg,cb) {
+                        zipFS.removeUpdatedURLContents(msg.data.url,function(err){
+                            if (err) return cb({error:err.message||err});
+                            cb({});
+                        });
+                    },
+                    
+                    updateURLContents : function (msg,cb) {
+                        const data = msg.data;
+                        let contentBuffer = data.content;
+                        switch (contentBuffer) {
+                            case 'string' : contentBuffer =  bufferFromText( contentBuffer) ; break;
+                            case 'object' : 
+                                if ([ArrayBuffer,Uint8Array,Uint16Array,Uint32Array ].indexOf(contentBuffer.constructor)<0) {
+                                    contentBuffer =  bufferFromText( JSON.stringify(contentBuffer) ); 
+                                }
+                        }
+                        
+                        zipFS.updateURLContents(
+                            data.url,
+                            data.cacheDB||"updatedURLS",
+                            contentBuffer,
+                            function(err){
+                                if (err) return cb({error:err.message||err});
+                                cb({});
+                            });
+                        
+                    },
+
+                    newFixupRulesArray : function(msg,cb) {
+                        if (Array.isArray(msg.rules)){
+                            zipFS.newFixupRulesArray(msg.rules);
+                            cb("ok");
+                        } else {
+                            cb({error:"not an array"});
+                        }
+                    },
+                    
+                    unregister : function(msg,cb) {
+                        ml.register("activate",function(event){
+                            
+                            event.waitUntil(
+                                
+                                new Promise(function(resolve) { 
+                                    
+                                    setTimeout(function(){
+                                       
+                                        self.registration.unregister()
+                                          .then(self.clients.matchAll)
+                                               .then(function(clients) {
+                                                   
+                                                   clients.forEach(function(client){ client.navigate(msg.path || client.url);})
+                                                   
+                                                });
+                                        resolve();        
+                                    },500);
+                                })
+
+                            );
+                            
+                        });
+                        ml.register("message",function(){});
+                        ml.register("fetch",function(){});
+                        
+                        setTimeout(cb,10,{});
+                    },
 
                 });
                    
-                const dbKeyPrefix       = 'zip-files-cache.';
+               
        
                 
-                ml.register("fetch",swRespZip(dbKeyPrefix).processFetchRequest);
+                ml.register("fetch",zipFS.processFetchRequest);
                 
 
         },
 
     }, {
         Window: [
-
+            
+            ()=>self.pwaMessage.findWorker, 
+            ()=>self.pwaMessage.sendMessage
+            
         ],
         ServiceWorkerGlobalScope: [
 
@@ -130,7 +227,9 @@ ml(0,ml(1),[
     );
 
 
- 
+ function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
+
+ function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
 
 });
 

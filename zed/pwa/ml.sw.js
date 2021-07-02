@@ -162,16 +162,18 @@ function ml(x,L, o, a, d, s){
                 z.I(S,'install',(e)=>self.skipWaiting());
                 z.I(S,'activate');
                 z.I(S,'fetch',(e)=>fetch(e.request));
-                z.I(S,z.m,(e,r,m,c,d,M)=>{
+                z.I(S,z.m,(e,r,m,d,M,Z)=>{
                     d=e.data;m=ml[z.m+'s'];r=m&&d.m;
+                    Z=(x,c)=>{
+                        c = new BroadcastChannel(d.r);
+                        c.postMessage(x);
+                        c.close();
+                        Z=0;
+                    };
                     if (r){ 
                         r=m[r];
-                        r=T(r)===t[1]&&r(d,((x)=>M=x));
-                        if (r){
-                          c = new BroadcastChannel(d.r);
-                          c.postMessage(M||r);
-                          c.close();
-                        }
+                        r=T(r)===t[1]&&r(d,Z);
+                        if (r&&Z){Z(r);}
                     }
                 });
                 importScripts( new URL(location).searchParams.get('ml') );
