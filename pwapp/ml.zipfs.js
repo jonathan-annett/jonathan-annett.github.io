@@ -352,7 +352,7 @@ ml(0,ml(1),[
                                };
                                event.toFetchUrl   = function(db) { 
                                    return function (resolve,reject) {
-                                       return toFetchUrl (db||databases.cacheDB,url,false,resolve,event.fetchBuffer);
+                                       return toFetchUrl (db||event.cacheDB,url,false,resolve,event.fetchBuffer);
                                    };
                                };
                           } else {
