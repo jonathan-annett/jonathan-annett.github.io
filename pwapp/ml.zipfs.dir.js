@@ -81,7 +81,7 @@ ml(0,ml(1),[
                        url     : full_zip_uri+'/'+file,
                    },function(err,msg){
                        if (err) return cb (err);
-                       cb(undefined,msg.buffer,msg.updated);
+                       cb(undefined,msg.content,msg.updated);
                    });
                    
                }

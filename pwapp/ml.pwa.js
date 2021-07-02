@@ -127,9 +127,9 @@ ml(0,ml(1),[
                     },
                     
                     fetchUpdatedURLContents : function (msg,cb) {
-                         zipFS.fetchUpdatedURLContents(msg.data.url,function(err,contents, updated){
+                         zipFS.fetchUpdatedURLContents(msg.data.url,function(err,content, updated){
                              if (err) return cb({error:err.message||err});
-                             cb({contents:contents,updated:updated});
+                             cb({content:content,updated:updated});
                          });
                     },
                     
