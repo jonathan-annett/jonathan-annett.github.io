@@ -102,17 +102,18 @@ ml(0,ml(1),[
                     
                     
                     deleted : function (msg,cb) {
-                        if (msg.zip && (msg.toggle||msg.add||msg.remove)) {
-                            zipFS.getZipDirMetaTools(msg.zip,function(tools) {
+                        const data = msg.data;
+                        if (data.zip && (data.toggle||data.add||data.remove)) {
+                            zipFS.getZipDirMetaTools(data.zip,function(tools) {
                                 if (tools) {
-                                    if (msg.toggle) {
-                                        tools.toggleDelete(msg.toggle,cb);
+                                    if (data.toggle) {
+                                        tools.toggleDelete(data.toggle,cb);
                                     } else {
-                                        if (msg.add) {
-                                            tools.deleteFile(msg.toggle,cb);
+                                        if (data.add) {
+                                            tools.deleteFile(data.toggle,cb);
                                         } else {
-                                            if (msg.remove) {
-                                                tools.undeleteFile(msg.toggle,cb);
+                                            if (data.remove) {
+                                                tools.undeleteFile(data.toggle,cb);
                                             }
                                         }
                                     }
@@ -127,15 +128,15 @@ ml(0,ml(1),[
                     
                     
                     removeUpdatedURLContents : function (msg,cb) {
-                        zipFS.removeUpdatedURLContents(msg.url,function(err){
+                        zipFS.removeUpdatedURLContents(msg.data.url,function(err){
                             if (err) return cb({error:err.message||err});
                             cb({});
                         });
                     },
                     
                     updateURLContents : function (msg,cb) {
-                        
-                        let contentBuffer = msg.content;
+                        const data = msg.data;
+                        let contentBuffer = data.content;
                         switch (contentBuffer) {
                             case 'string' : contentBuffer =  bufferFromText( contentBuffer) ; break;
                             case 'object' : 
@@ -145,8 +146,8 @@ ml(0,ml(1),[
                         }
                         
                         zipFS.updateURLContents(
-                            msg.url,
-                            msg.cacheDB||"updatedURLS",
+                            data.url,
+                            data.cacheDB||"updatedURLS",
                             contentBuffer,
                             function(err){
                                 if (err) return cb({error:err.message||err});
