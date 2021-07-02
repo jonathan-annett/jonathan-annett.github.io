@@ -1364,7 +1364,12 @@ ml(0,ml(1),[
                      } else {
                          
                          toFetchUrl (databases.updatedURLS,meta_url,true,function(buffer){
-                            cb (getTester(JSON.parse(bufferToText(buffer))));
+                             if (buffer) {
+                                 cb (getTester(JSON.parse(bufferToText(buffer))));
+                             } else {
+                                 cb (getTester());
+                             }
+                            
                          });
                          
                      }
