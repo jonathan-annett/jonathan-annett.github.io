@@ -456,7 +456,7 @@ ml(0,ml(1),[
             }
             
             
-            if (["interactive","loaded"].indexOf( window.document && window.document.readyState) >=0) {
+            if (["interactive","complete"].indexOf( window.document && window.document.readyState) >=0) {
                 onDOMContentLoaded();
             } else {
                window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
