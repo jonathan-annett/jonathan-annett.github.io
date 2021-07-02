@@ -341,9 +341,7 @@ ml(0,ml(1),[
                 e.preventDefault();
                 const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
                 const li  = btn.parentElement;
-                const filename  = '/'+btn.dataset.filename.replace(/(^\/)/,'');
-                const file_url = zip_url_base + filename;
-                pwaApi.toggleDeleteFile(filename,li);
+                pwaApi.toggleDeleteFile(btn.dataset.filename.replace(/(^\/)/,''),li);
             }
             
             function editInZed(filename,content,cb) {
@@ -387,7 +385,7 @@ ml(0,ml(1),[
                     
                     open_url(file_url);
             
-            }
+            }btn.dataset.filename.replbtn.dataset.filename.replace(/(^\/)/,'')
             
             function openZipBtnClick(e){
                    if (!e.shiftKey) {
