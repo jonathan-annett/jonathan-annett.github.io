@@ -125,6 +125,36 @@ ml(0,ml(1),[
                         }
                     },
                     
+                    
+                    removeUpdatedURLContents : function (msg,cb) {
+                        zipFS.removeUpdatedURLContents(msg.url,function(err){
+                            if (err) return cb({error:err.message||err});
+                            cb({});
+                        });
+                    },
+                    
+                    updateURLContents : function (msg,cb) {
+                        
+                        let contentBuffer = msg.content;
+                        switch (contentBuffer) {
+                            case 'string' : contentBuffer =  bufferFromText( contentBuffer) ; break;
+                            case 'object' : 
+                                if ([ArrayBuffer,Uint8Array,Uint16Array,Uint32Array ].indexOf(contentBuffer.constructor)<0) {
+                                    contentBuffer =  bufferFromText( JSON.stringify(contentBuffer) ); 
+                                }
+                        }
+                        
+                        zipFS.updateURLContents(
+                            msg.url,
+                            msg.cacheDB||"updatedURLS",
+                            contentBuffer,
+                            function(err){
+                                if (err) return cb({error:err.message||err});
+                                cb({});
+                            });
+                        
+                    },
+
                     newFixupRulesArray : function(msg,cb) {
                         if (Array.isArray(msg.rules)){
                             zipFS.newFixupRulesArray(msg.rules);
@@ -189,7 +219,9 @@ ml(0,ml(1),[
     );
 
 
- 
+ function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
+
+ function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
 
 });
 

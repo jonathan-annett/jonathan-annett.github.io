@@ -22,8 +22,8 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             
                 return  {
                     
-                   resolveZipListing:resolveZipListing 
-                    
+                   resolveZipListing:resolveZipListing,
+
                 };
                 
                 function resolveZipListing (url,buffer) {

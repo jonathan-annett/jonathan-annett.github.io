@@ -23,9 +23,9 @@ ml(0,ml(1),[
           
             
             
-            const api = {
+            const pwaApi = {
                
-               toggleDeleteFile : function (el,file,cb) {
+               toggleDeleteFile : function (file,el,cb) {
                    sendMessage('deleted',{
                         zip    : zip_url_base,
                         toggle : file
@@ -33,15 +33,17 @@ ml(0,ml(1),[
                         if (!err && msg) {
                            if (msg.deleted) {
                               el.classList.add('deleted');
+                              el.classList.add("hidden");
                            }
                            if (msg.undeleted) {
                               el.classList.remove('deleted');
+                              el.classList.remove('hidden');
                            }
                         }
                         if(cb)cb(err,msg);
                    });
                },
-               deleteFile : function (el,file,cb) {
+               deleteFile       : function (file,el,cb) {
                    sendMessage('deleted',{
                        zip : zip_url_base,
                        add : file
@@ -50,7 +52,7 @@ ml(0,ml(1),[
                        if(cb)cb(err,msg);
                    });
                },
-               unDeleteFile : function (el,file,cb) {
+               unDeleteFile     : function (file,el,cb) {
                    sendMessage('deleted',{
                        zip    : zip_url_base,
                        remove : file
@@ -58,8 +60,26 @@ ml(0,ml(1),[
                        el.classList.remove('deleted');
                        if(cb)cb(err,msg);
                    });
+               },
+               
+               removeUpdatedURLContents  : function (file,el,cb) {
+                  sendMessage('removeUpdatedURLContents',{
+                      url : zip_url_base+file
+                  },function(err,msg){
+                      el.classList.remove('edited');
+                      if(cb)cb(err,msg);
+                  });
+               },
+               updateURLContents : function (file,content,el,cb) {
+                   sendMessage('updateURLContents',{
+                       url     : zip_url_base+file,
+                       content : content
+                   },function(err,msg){
+                       el.classList.add('edited');
+                       if(cb)cb(err,msg);
+                   });
                }
-                
+
             };
             
             
@@ -103,20 +123,31 @@ ml(0,ml(1),[
                            let filename = filename_input.value.trim();
                            if (filename.length >0) {
                                const file_url = zip_url_base + filename;
-                               updateURIContent(file_url,'\n',function(){
-                                   qs("ul",function(el){
-                                       let newid="li_"+Math.random().toString(36).substr(-8);
-                                       el.innerHTML += html_file_item(newid,filename);
-                                       addViewClick(qs("#"+newid+" a span.normal"));
-                                       addOpenZipViewClick(qs("#"+newid+" a span.zipfile"));
-                                       
-                                       let edBtn = qs("#"+newid+" a span.editinzed");
-                                       if (edBtn) {
+                               
+                               // find the ul element
+                               qs("ul",function(el){
+                                   // make a new id for the new element, as we are creating it on the fly
+                                   let newid="li_"+Math.random().toString(36).substr(-8);
+                                   
+                                   // patch the ul element to include new file
+                                   el.innerHTML += html_file_item(newid,filename);
+                                   
+                                   // add some button events (if relel)
+                                   addViewClick(qs("#"+newid+" a span.normal"));
+                                   let edBtn = qs("#"+newid+" a span.editinzed");
+                                   
+                                   // create the file using the service worker 
+                                   pwaApi.updateURLContents(file_url,'\n',el,function(){
+                                        
+                                        if (edBtn) {
+                                            // if editable, open the editor 
                                            addEditClick(edBtn);
-                                           edBtnClick({target:edBtn,preventDefault(){}});
+                                           // make a dummy event object on the fly to "fool" the click handler
+                                           edBtnClick({target:edBtn,preventDefault(){/*ok!*/}});
                                        }
-                                       
-                                   })
+                                   
+                                   });
+                                   
                                });
                            }
                        }
@@ -288,9 +319,8 @@ ml(0,ml(1),[
                           
                                 if (detail.content) {
                                     
-                                    updateURIContent(file_url,detail.content,function(){
-                                        li.classList.add("edited");
-                                    });
+                                    pwaApi.updateURLContents(file_url,detail.content,li);
+                                    
                                 }
                                 
                             }
@@ -313,10 +343,7 @@ ml(0,ml(1),[
                 const li  = btn.parentElement;
                 const filename  = '/'+btn.dataset.filename.replace(/(^\/)/,'');
                 const file_url = zip_url_base + filename;
-                deleteURIContent(file_url, btn.dataset.inzip, function(){
-                    li.classList.add("deleted");
-                    li.classList.add("hidden");
-                });
+                pwaApi.toggleDeleteFile(filename,li);
             }
             
             function editInZed(filename,content,cb) {
