@@ -143,7 +143,7 @@ ml(0,ml(1),[
                     updateURLContents : function (msg,cb) {
                         const data = msg.data;
                         let contentBuffer = data.content;
-                        switch (contentBuffer) {
+                        switch (typeof contentBuffer) {
                             case 'string' : contentBuffer =  bufferFromText( contentBuffer) ; break;
                             case 'object' : 
                                 if ([ArrayBuffer,Uint8Array,Uint16Array,Uint32Array ].indexOf(contentBuffer.constructor)<0) {
