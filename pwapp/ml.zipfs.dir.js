@@ -282,7 +282,7 @@ ml(0,ml(1),[
                             
                            li.classList.add("editing");
                            
-                           editInZed('/'+filename,bufferToText(buffer));
+                           editInZed(filename,bufferToText(buffer));
                         }
                     });
                
@@ -312,22 +312,28 @@ ml(0,ml(1),[
                 
                 const active_edits = [filename];
                 const find_li=function(file) {
-                    return qs('a[data-filename="'+file+'"]').parentElement;
+                    const anchor = qs('a[data-filename="'+file+'"]');
+                    return anchor && anchor.parentElement;
                 };
                
-                
-                
-                window.dispatchEvent(
-                    new CustomEvent( 'editinzed',{ detail: {filename,content,zip_files} })
+                window.dispatchEvent( new CustomEvent( 'editinzed',
+                                        { 
+                                            detail: {   filename:"/"+filename,
+                                                        content,
+                                                        files: zip_files 
+                                                    } 
+                                        })
                 );
+                
                 window.addEventListener('editinzed_callback',editInZedCallback);
                 
                 function editInZedCallback (event){
                     
                     const 
-                    detail  = event.detail,
-                    reqId   = detail.request,
-                    reqFile = detail.getText;
+                    detail   = event.detail,
+                    reqId    = detail.request,
+                    reqFile  = typeof detail.getText  === 'string' && detail.getText[0]==="/" ? detail.getText.substr(1) : false,
+                    filename = typeof detail.filename === 'string' && detail.filename[0] ? detail.filename.substr(1)     : false; 
                     
                     if (reqId && reqFile)  {
                         return openNewFile (reqFile,reqId);
@@ -347,11 +353,11 @@ ml(0,ml(1),[
                         
                     } else {
                   
-                        if (  active_edits.indexOf( detail.filename ) >= 0  && !!detail.content ) {
+                        if (  active_edits.indexOf( filename ) >= 0  && !!detail.content ) {
                             
                             
-                            const li = find_li(detail.filename);
-                            pwaApi.updateURLContents(detail.filename,detail.content,li);
+                            const li = find_li( filename);
+                            pwaApi.updateURLContents( filename,detail.content,li);
                             
                         }
                         
@@ -369,7 +375,7 @@ ml(0,ml(1),[
                             new CustomEvent( reply_msgName,{ 
                                 detail: {
                                     reject : reqId,
-                                    data   : reqFile+" not found" 
+                                    data   : "/"+reqFile+" not found" 
                                 }
                             })
                         );
