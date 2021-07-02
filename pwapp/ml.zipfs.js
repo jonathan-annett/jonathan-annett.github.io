@@ -287,14 +287,13 @@ ml(0,ml(1),[
              }
              
              function fetchInternal(url,cb) {
-                 if (typeof mode==='function') {
-                     cb=mode;
-                     mode=undefined;
-                 }
                  const fakeEvent = {
                      request : {
                          url      : url,
                          referrer : 'about:client',
+                         headers  : {
+                             get : function () {}
+                         }
                      },
                  };
                  processFetchRequestInternal(fakeEvent,cb);
