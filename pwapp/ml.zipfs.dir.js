@@ -324,7 +324,7 @@ ml(0,ml(1),[
                 
                 
                 window.dispatchEvent(
-                    new CustomEvent( 'editinzed',{ detail: {filename,content,files} })
+                    new CustomEvent( 'editinzed',{ detail: {filename,content,zip_files} })
                 );
                 window.addEventListener('editinzed_callback',editInZedCallback);
                 
