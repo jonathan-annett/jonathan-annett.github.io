@@ -255,7 +255,7 @@ function deleteClick(e) {
     const filename  = '/'+btn.dataset.filename.replace(/(^\/)/,'');
     const file_url = zip_url_base + filename;
     deleteURIContent(file_url, btn.dataset.inzip, function(){
-        li.parentElement.removeChild(li);
+        li.classList.add("deleted");
     });
 }
 
