@@ -1,4 +1,4 @@
-/* global zip_url_base,parent_link*/
+/* global zip_url_base,parent_link,BroadcastChannel*/
 
 var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
  
@@ -139,7 +139,55 @@ function updateURIContent(file_url,content,cb) {
 }
 
 
+function SWMessage(message,data,persist,cb) {
+    if (typeof persist==='function') {
+        cb=persist;
+        persist=false;
+    }
+    if (typeof cb==='function') {
+        findWorker(function(err,worker){
+            if (err) return cb(err);
+            const reply = "r_"+Date.now().toString(36).substr(-6)+'-'+Math.random().toString(36).substr(-8);
+            const sendChannel   = new MessageChannel(); 
+            const replyChannel = new BroadcastChannel(reply) ;
+            let abort=false;
+            replyChannel.onmessage = function (e) {
+                if (abort) return;
+                sendChannel.port1.close();
+                sendChannel.port2.close();
+                cb(e.data);
+                if (persist) return;
+                replyChannel.close();
+                abort=true;
+            };
+            if (worker) {
+                worker.postMessage({
+                   message:message,
+                   data:data,
+                   reply:reply
+                },[sendChannel.port2]);
+            }
+        });
+    }
+}
 
+function findWorker(cb) {
+
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+      let noerr;
+    
+      if (!registrations.some(function(reg){
+          const worker = reg.controller || reg.active || reg.installing || reg.waiting;
+          if (worker) {
+              cb(noerr,worker);
+              return true;//break some
+          }
+      })){
+         cb(new Error("no worker found"));
+      }
+    });
+    
+}
 
 function deleteURIContent(file_url, is_in_zip, cb) {
     
