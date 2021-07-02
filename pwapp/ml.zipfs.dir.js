@@ -256,6 +256,7 @@ function deleteClick(e) {
     const file_url = zip_url_base + filename;
     deleteURIContent(file_url, btn.dataset.inzip, function(){
         li.classList.add("deleted");
+        li.classList.add("hidden");
     });
 }
 
