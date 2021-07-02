@@ -348,7 +348,7 @@ ml(0,ml(1),[
                           event.use_no_cors = url.indexOf(location.origin)!==0;
                           event.shouldCache = url.indexOf(location.origin)===0 ||  event.request.referrer && event.request.referrer.indexOf(location.origin)===0;
                         
-                          event.fetchBuffer = event.use_no_cors ? fetchBufferViaNoCors.bind(this,url) : fetchBuffer.bind(this,url) ;
+                          event.fetchBuffer = event.use_no_cors ? fetchBufferViaNoCors.bind(this,event.request,url) : fetchBuffer.bind(this,url) ;
                           
                           return ;
                       }
@@ -587,11 +587,19 @@ ml(0,ml(1),[
              }
              
              
-             function fetchBufferViaNoCors(url,cb) {
+             function fetchBufferViaNoCors(request,url,cb) {
                  
-                fetch(url,{mode:'no-cors',referrer:'about:client',referrerPolicy:'no-referrer'})
-                    .then(getBufferFromResponse)
-                    .catch(cb);
+                fetch (request)
+                 .then(getBufferFromResponse)
+                  .catch(function(){
+                      
+                      fetch(url,{mode:'no-cors',referrer:'about:client',referrerPolicy:'no-referrer'})
+                        .then(getBufferFromResponse)
+                         .catch(cb);
+                  
+                      
+                  });
+                
                     
                     
                 function getBufferFromResponse(response) {
