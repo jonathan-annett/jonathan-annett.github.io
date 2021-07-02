@@ -47,12 +47,9 @@ ml(0,ml(1),[
              };
 
              const databases = {};
-             defineDB("updatedURLS"); 
-             defineDB("openZips");
-             defineDB("zipMetadata");
-             defineDB("cachedURLS");
-             
-             
+             const databaseNames = ["updatedURLS","openZips","zipMetadata","cachedURLS","offsiteURLS"];
+             databaseNames.forEach(defineDB);
+
              const dir_meta_name  = '.dirmeta.json';
              const dir_meta_empty = {"deleted":[],"hidden":["^\\."]};
              const dir_meta_empty_json = JSON.stringify(dir_meta_empty);
@@ -348,8 +345,28 @@ ml(0,ml(1),[
                           event.use_no_cors = url.indexOf(location.origin)!==0;
                           event.shouldCache = url.indexOf(location.origin)===0 ||  event.request.referrer && event.request.referrer.indexOf(location.origin)===0;
                         
-                          event.fetchBuffer = event.use_no_cors ? fetchBufferViaNoCors.bind(this,event.request,url) : fetchBuffer.bind(this,url) ;
-                          
+                          if (event.use_no_cors) {
+                               event.cacheDB = databases.offsiteURLS;
+                               event.fetchBuffer  = function(cb) { 
+                                  return fetchBufferViaNoCors(event.request,event.fixup_url,cb);
+                               };
+                               event.toFetchUrl   = function(db) { 
+                                   return function (resolve,reject) {
+                                       return toFetchUrl (db||databases.cacheDB,url,false,resolve,event.fetchBuffer);
+                                   };
+                               };
+                          } else {
+                               event.cacheDB = databases.cachedURLS;
+                               event.fetchBuffer = function(cb) { 
+                                   return fetchBuffer(event.fixup_url,cb);
+                               };
+                               event.toFetchUrl   = function(db) { 
+                                   return function (resolve,reject) {
+                                     return toFetchUrl (db||event.cacheDB,url,false,resolve,event.fetchBuffer);
+                                   };
+                               };
+                          }
+
                           return ;
                       }
                       
@@ -431,7 +448,7 @@ ml(0,ml(1),[
                  const db  = databases.updatedURLS;
                  
                  switch (event.request.method) {
-                     case "GET"    : return  db.keyExists(url,true) ? new Promise ( toFetchUrl.bind(this,db,url) ) : undefined;
+                     case "GET"    : return  db.keyExists(url,true) ? new Promise ( event.toFetchUrl(databases.updatedURLS) ) : undefined;
                      case "PUT"    : return new Promise ( toUpdateUrl );
                      case "DELETE" : return new Promise ( toRemoveUrl );
                  }
@@ -521,9 +538,9 @@ ml(0,ml(1),[
              }
              
              function fetchFileFromCacheEvent(event) {
-                 const url = event.fixup_url;
+                 
                  switch (event.request.method) {
-                     case "GET"    : return new Promise ( toFetchUrl.bind(this,databases.cachedURLS,url) );
+                     case "GET"    : return new Promise ( event.toFetchUrl() );
                  }
 
              }
@@ -536,7 +553,7 @@ ml(0,ml(1),[
                      function(resolve,reject) {
                          
 
-                         event.fetchBuffer(function(err,buffer,status,ok,headers){
+                         event.fetchBuffer(function(err,buffer,status,ok,headers,response){
                              if (err) return reject(err);
                              
                              if (status===0 && buffer.byteLength===0) {
@@ -545,80 +562,58 @@ ml(0,ml(1),[
                                  
                              }
                              
-                             if (ok) {
-                                    const db = databases.cachedURLS;
-                                    updateURLContents (url,db,buffer,{status:status,headers:headers},function(){
-                                       //toFetchUrl (db,url,resolve,reject)
+                             if (ok && event.cacheDB) {
+                                    updateURLContents (url,event.cacheDB,buffer,{status:status,headers:headers},function(){
                                        resolve(new Response (buffer,{status:status,headers:headers}));
                                     });
                                     
                              } else {
                                  console.log("not caching",url,"status",status,"from",event.request.referrer,headers);
-                                 resolve(new Response (buffer,{status:status,headers:headers}));
+                                 resolve(response);
                              }
                          });
 
                      }
-                  )
+                  );
                  
+             }
+             
+             function getBufferFromResponse(cb) {
+                   return function (response) {
+                       response.clone().arrayBuffer().then(function(buffer) {
+                           
+                           const headers = {};
+                           
+                           for(var key of response.headers.keys()) {
+                              headers[key.toLowerCase()]=response.headers.get(key);
+                           }
+                           cb(undefined,buffer,response.status,response.ok,headers,response);
+                       });
+                   };
+                   
              }
 
              function fetchBuffer(url,cb) {
                  
                 fetch(url)
-                 .then(getBufferFromResponse)
+                 .then(getBufferFromResponse(cb))
                    .catch(cb);
-                   
-                  
-                   function getBufferFromResponse(response) {
-                         
-                         response.arrayBuffer().then(function(buffer) {
-                             
-                             const headers = {};
-                             
-                             for(var key of response.headers.keys()) {
-                                headers[key.toLowerCase()]=response.headers.get(key);
-                             }
-                             cb(undefined,buffer,response.status,response.ok,headers);
-                         });
-                         
-                   }
-                       
              }
-             
              
              function fetchBufferViaNoCors(request,url,cb) {
                  
-                fetch (request)
-                 .then(getBufferFromResponse)
+                fetch(request)
+                 .then(getBufferFromResponse(cb))
                   .catch(function(){
                       
                       fetch(url,{mode:'no-cors',referrer:'about:client',referrerPolicy:'no-referrer'})
-                        .then(getBufferFromResponse)
+                        .then(getBufferFromResponse(cb))
                          .catch(cb);
                   
                       
                   });
                 
-                    
-                    
-                function getBufferFromResponse(response) {
-                      
-                      response.arrayBuffer().then(function(buffer) {
-                          
-                          const headers = {};
-                          
-                          for(var key of response.headers.keys()) {
-                             headers[key.toLowerCase()]=response.headers.get(key);
-                          }
-                          cb(undefined,buffer,response.status,response.ok,headers);
-                      });
-                      
-                }
-                       
              }
-             
-             
              
              function newFixupRulesArray(arr) {
                  const source = arr.filter(function(x){
@@ -762,11 +757,11 @@ ml(0,ml(1),[
                  function download() {
                      
                      fetch(url)
-                     .then(getBufferFromResponse)
+                     .then(getBuffer)
                        .catch(function(err){
                            
                             fetch(url,{mode:'no-cors'})
-                               .then(getBufferFromResponse)
+                               .then(getBuffer)
                                .catch(function(err){
                                    
                                     fetch(url+"?r="+Math.random().toString(36).substr(-8),{
@@ -777,7 +772,7 @@ ml(0,ml(1),[
                                         }
                                         
                                     },'')
-                                       .then(getBufferFromResponse)
+                                       .then(getBuffer)
                                        .catch(cb);
                                        
                                        
@@ -786,7 +781,7 @@ ml(0,ml(1),[
                        }).catch(cb);
                  }
                  
-                 function getBufferFromResponse(response) {
+                 function getBuffer(response) {
                      
                      
                    if (!response.ok) {
@@ -1346,7 +1341,6 @@ ml(0,ml(1),[
                  });
              }
              
-            
              function regexpEscape(str) {
                  return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
              }
@@ -1540,79 +1534,8 @@ ml(0,ml(1),[
                  
              }
              
-            /* 
-             
-             function toFetchUpdatedZip(resolve,reject) {
-                
-                
-                databases.updatedURLS.getKeys(function(err,keys){
-                    
-                   const relevantURLs = keys.filter(function(k){
-                       return k.indexOf(url)===0;
-                   });
-                   
-                   if (relevantURLs.length===0) {
-                       resolve(new Response('', {
-                           status: 404,
-                           statusText: 'Not Found',
-                           headers: new Headers({
-                             'Content-Type'   : 'text/plain',
-                             'Content-Length' : 0
-                           })
-                       }));
-                   }
-                   
-                   const zip = new JSZip();
-                   
-                   const loop = function (i) {
-                       
-                      if (i < relevantURLs.length) {
-                          
-                          const file_url  = relevantURLs[i],
-                                file_name = file_url.substr(url.length);
-                          
-                          databases.updatedURLS.getItem(file_url,function(err,args){
-                              
-                              if (err) return reject(err);
-                              
-                              zip.file(
-                                  file_name, 
-                                  args[0],{
-                                      date : args[1].date
-                                  }).then (function () {
-                                      loop(i+1);
-                                  });
-                              
-                          });
-                          
-                      }  else {
-                          
-                          zip.generateAsync({type:"arraybuffer"}).then(function (buffer) {
-                              
-                              resolve(new Response(buffer,{
-                                  status:200,
-                                  headers : new Headers({
-                                      'Content-Type'   : mimeForFilename('x.zip'),
-                                      'Content-Length' : buffer.byteLength
-                                  })
-                              }));
-                              
-                          });
-                      }
-                      
-                   };
-                   loop (0);
-                    
-                });
-                
-             }
-             
-             
-           */
-           
-               
-
-           function toFetchUrl (db,url,raw,resolve) {
+ 
+           function toFetchUrl (db,url,raw,resolve,bufferFetcher) {
                
                if (typeof raw==='function') {
                    resolve=raw;
@@ -1643,34 +1566,25 @@ ml(0,ml(1),[
                               getHeaders['if-modified-since']= lastModified.toString();
                           }
                            
-                           fetch(url, { headers: getHeaders }).then(function(response){
-                               
-                               if (response && response.status===200) {
-                                   response.clone().arrayBuffer().then(function(buffer){
-                                       
-                                       const headers = {};
-                                       for(var key of response.headers.keys()) {
-                                          headers[key.toLowerCase()]=response.headers.get(key);
-                                       }
-                                       updateURLContents (url,db,buffer,{status:200,headers:headers},function(){
-                                           // we got an updated buffer
-                                           if (raw) return resolve(buffer);// caller wants buffer not response
-                                           return resolve(response);
-                                       });
-                                       
-                                   });
-                                   
-                              } else {
-                                  // if server reports someething other than 200, return from cache
-                                  doCache() ;
-                              }
-                              
-                             
-                           }).catch(
-                               // if offline, return from cache
-                               doCache
-                            );
+                           bufferFetcher = bufferFetcher || function(cb) { return fetchBuffer(url,cb) ; };
                            
+                           bufferFetcher(function(err,buffer,status,ok,headers,response){
+                                if (!err && response && response.status===200) {
+                                   
+                                    updateURLContents (url,db,buffer,{status:200,headers:headers},function(){
+                                        // we got an updated buffer
+                                        if (raw) return resolve(buffer);// caller wants buffer not response
+                                        return resolve(response);
+                                    });
+                                        
+
+                               } else {
+                                   // if server reports someething other than 200, return from cache
+                                   doCache() ;
+                               }
+                               
+                           });
+
                        } else {
                            // there's no cache info so no point in checking server for update, use local cache.
                            doCache();
