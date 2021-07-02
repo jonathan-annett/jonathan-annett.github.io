@@ -13,21 +13,17 @@ ml(0,ml(1),[
 
         Window: function pwaZipDirListing(findWorker,sendMessage) {
             
-            const lib = {
-                
-                
-            };
-
+            
             var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
              
           
             
-            
+            const full_zip_uri = location.origin+zip_url_base;
             const pwaApi = {
                
                toggleDeleteFile : function (file,el,cb) {
                    sendMessage('deleted',{
-                        zip    : zip_url_base,
+                        zip    : full_zip_uri,
                         toggle : file
                    },function(err,msg){
                         if (!err && msg) {
@@ -45,7 +41,7 @@ ml(0,ml(1),[
                },
                deleteFile       : function (file,el,cb) {
                    sendMessage('deleted',{
-                       zip : zip_url_base,
+                       zip : full_zip_uri,
                        add : file
                    },function(err,msg){
                        el.classList.add('deleted');
@@ -54,7 +50,7 @@ ml(0,ml(1),[
                },
                unDeleteFile     : function (file,el,cb) {
                    sendMessage('deleted',{
-                       zip    : zip_url_base,
+                       zip    : full_zip_uri,
                        remove : file
                    },function(err,msg){
                        el.classList.remove('deleted');
@@ -64,7 +60,7 @@ ml(0,ml(1),[
                
                removeUpdatedURLContents  : function (file,el,cb) {
                   sendMessage('removeUpdatedURLContents',{
-                      url : zip_url_base+file
+                      url : full_zip_uri+file
                   },function(err,msg){
                       el.classList.remove('edited');
                       if(cb)cb(err,msg);
@@ -72,7 +68,7 @@ ml(0,ml(1),[
                },
                updateURLContents : function (file,content,el,cb) {
                    sendMessage('updateURLContents',{
-                       url     : zip_url_base+file,
+                       url     : full_zip_uri+file,
                        content : content
                    },function(err,msg){
                        el.classList.add('edited');
@@ -83,7 +79,11 @@ ml(0,ml(1),[
             };
             
             
-           
+           const lib = {
+               
+               pwaApi : pwaApi
+           };
+
             
             function onDOMContentLoaded (){
             
