@@ -1381,6 +1381,9 @@ ml(0,ml(1),[
                  }
                  
                  function getTester(meta) {
+                     if (!meta) {
+                         meta = JSON.parse(dir_meta_empty_json);
+                     }
                      const regexps = (meta && meta.hidden ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
                      return {
                              
