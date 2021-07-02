@@ -1,4 +1,4 @@
-/* global zip_url_base,parent_link,BroadcastChannel*/
+/* global zip_url_base,zip_files, parent_link,BroadcastChannel*/
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
@@ -27,13 +27,20 @@ ml(0,ml(1),[
                         toggle : file
                    },function(err,msg){
                         if (!err && msg) {
+                           const ix = zip_files.indexOf(file);
                            if (msg.deleted) {
                               el.classList.add('deleted');
                               el.classList.add("hidden");
+                              if (ix >=0) {
+                                  zip_files.splice(ix,1);
+                              }
                            }
                            if (msg.undeleted) {
                               el.classList.remove('deleted');
                               el.classList.remove('hidden');
+                              if (ix <0) {
+                                  zip_files.push(file);
+                              }
                            }
                         }
                         if(cb)cb(err,msg);
@@ -45,6 +52,10 @@ ml(0,ml(1),[
                        add : file
                    },function(err,msg){
                        el.classList.add('deleted');
+                       const ix = zip_files.indexOf(file);
+                       if (ix >=0) {
+                           zip_files.splice(ix,1);
+                       }
                        if(cb)cb(err,msg);
                    });
                },
@@ -54,6 +65,10 @@ ml(0,ml(1),[
                        remove : file
                    },function(err,msg){
                        el.classList.remove('deleted');
+                       const ix = zip_files.indexOf(file);
+                       if (ix <0) {
+                           zip_files.push(file);
+                       }
                        if(cb)cb(err,msg);
                    });
                },
@@ -305,11 +320,11 @@ ml(0,ml(1),[
                 }
             }
             
-            function editInZed(filename,content,cb) {
+            function editInZed(filename,content,files,cb) {
                 
                 
                 window.dispatchEvent(
-                    new CustomEvent( 'editinzed',{ detail: {filename,content} })
+                    new CustomEvent( 'editinzed',{ detail: {filename,content,files} })
                 );
                 window.addEventListener('editinzed_callback',editInZedCallback);
                 
@@ -337,6 +352,9 @@ ml(0,ml(1),[
                 
                 
             }
+            
+            
+            
             
             function viewBtnClick(e){
                 e.preventDefault();

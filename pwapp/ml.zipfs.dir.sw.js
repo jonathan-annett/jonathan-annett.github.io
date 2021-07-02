@@ -87,7 +87,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                                     
                                     const html_details = all_files.map(html_file_item);
                 
-                                    const html = renderHtml (uri,hidden_files_exist,html_details,parent_link);
+                                    const html = renderHtml (uri,all_files,hidden_files_exist,html_details,parent_link);
                 
                                     return resolve( 
                                         
@@ -174,7 +174,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 
                    
                     
-                    function renderHtml (uri,hidden_files_exist,html_details,parent_link) {
+                    function renderHtml (uri,files, hidden_files_exist,html_details,parent_link) {
                         
                         const html = [
                             
@@ -183,7 +183,7 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                        
                         '<head>',
                           '<title>files in '+uri+'</title>',
-                          '<script>var zip_url_base='+JSON.stringify('/'+uri)+',parent_link='+JSON.stringify(parent_link)+';</script>',
+                          '<script>var zip_url_base='+JSON.stringify('/'+uri)+',zip_files='+JSON.stringify(files)+' ,parent_link='+JSON.stringify(parent_link)+';</script>',
                           '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/balloon-css/1.2.0/balloon.min.css" integrity="sha512-6jHrqOB5TcbWsW52kWP9TTx06FHzpj7eTOnuxQrKaqSvpcML2HTDR2/wWWPOh/YvcQQBGdomHL/x+V1Hn+AWCA==" crossorigin="anonymous" referrerpolicy="no-referrer" />',
                           '<link rel="stylesheet" href="ml.zipfs.dir.css"/>',
                           '</style>',
