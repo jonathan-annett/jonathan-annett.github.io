@@ -163,6 +163,7 @@ ml(0,ml(1),[
                        }
                        if (ix <0) {
                            zip_files.push(file);
+                       }
                     }
                  }
             }
