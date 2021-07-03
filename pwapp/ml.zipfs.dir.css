@@ -88,6 +88,15 @@ li.edited span.edited {
     background-repeat: no-repeat;
     background-size: 10px 10px;
 }
+
+li span.sha1 {
+    font-size: 0.5em;
+    text-align: right;
+    margin-left: 10px;
+    margin-right: 10px;
+    color: #101010;
+}
+
 ul li.hidden { background-color : yellow; }
 ul li.hidden.edited { background-color : lime; }
 ul li.hidden.deleted { background-color : red; }
