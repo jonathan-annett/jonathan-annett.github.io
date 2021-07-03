@@ -521,7 +521,7 @@ ml(0,ml(1),[
                 window.addEventListener(api_call_event_name,apiCall);      
 
                 window.dispatchEvent( 
-                    new CustomEvent( 'zipFS_apiHook',{  detail: {  api_id : api_id,  zipfs: full_zip_uri  } })
+                    new CustomEvent( 'zipFS_apiHook',{  detail: {  api_id : api_id,  zipfs: full_zip_uri, file : initial_path  } })
                 );
                 
                 Object.defineProperties (self,{});
