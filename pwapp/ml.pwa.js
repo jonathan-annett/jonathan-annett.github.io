@@ -89,7 +89,7 @@ ml(0,ml(1),[
                 
                 ml.register("messages",{
                     
-                    ping:function(msg,cb){ 
+                    ping : function(msg,cb){ 
                             
                             console.log(msg); 
                             return cb("pong");
@@ -99,7 +99,6 @@ ml(0,ml(1),[
                     onCustomEvents :function(msg,cb){ 
                         dispatchCustomEvent = cb;    
                     },
-                    
                     
                     deleted : function (msg,cb) {
                         const data = msg.data;
@@ -201,6 +200,38 @@ ml(0,ml(1),[
                             cb("ok");
                         } else {
                             cb({error:"not an array"});
+                        }
+                    },
+                    
+                    
+                    registerForNotifications :function (msg,cb) {
+                        const data = msg.data;
+                        if (data.zip ) {
+                            zipFS.getZipDirMetaTools(data.zip,function(tools) {
+                                if (tools) {
+                                    tools.registerForNotifications(cb);
+                                } else {
+                                    cb({error:'no tools for zip:'+data.zip});
+                                }
+                            });
+                        } else {
+                            cb({error:'need a zip'});
+                        }
+                    },
+                    
+                    
+                    unregisterForNotifications :function (msg,cb) {
+                        const data = msg.data;
+                        if (data.zip&&data.notificationId) {
+                            zipFS.getZipDirMetaTools(data.zip,function(tools) {
+                                if (tools) {
+                                    tools.unregisterForNotifications(msg.notificationId,cb);
+                                } else {
+                                    cb({error:'no tools for zip:'+data.zip});
+                                }
+                            });
+                        } else {
+                            cb({error:'need a zip & notificationId'});
                         }
                     },
                     

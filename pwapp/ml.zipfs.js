@@ -513,7 +513,7 @@ ml(0,ml(1),[
                                 getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
                                     
                                     tools.deleteFile(file_in_zip,okStatus);
-                                    
+                                    tools.notify({deleteFile:file_in_zip});
                                 });
                                 
                             });
@@ -1415,6 +1415,8 @@ ml(0,ml(1),[
                      if (!meta) {
                          meta = JSON.parse(dir_meta_empty_json);
                      }
+                     const notifications = {};
+                     const notificationIds = [];
                      const regexps = (meta && meta.hidden ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
                      return {
                              
@@ -1431,6 +1433,7 @@ ml(0,ml(1),[
                              
                              deleteFile : function (file_name,cb) {
                                  meta.deleted = meta.deleted || [];
+                                 const msgReply = {deleted:file_name};
                                  if (meta.deleted.indexOf(file_name) < 0 ) {
                                      meta.deleted.push (file_name);
                                      updateURLContents(
@@ -1438,17 +1441,20 @@ ml(0,ml(1),[
                                          databases.updatedURLS,
                                          bufferFromText(JSON.stringify(meta)),
                                          function () {
-                                             cb({deleted:file_name});
+                                             if (cb)cb(msgReply);
+                                             toolsNotify(msgReply);
                                          }
                                      );
                                  } else {
-                                     cb();
+                                     if (cb)cb(msgReply);
+                                     toolsNotify(msgReply);
                                  }
                              },
                              
                              undeleteFile : function (file_name,cb) {
                                  meta.deleted = meta.deleted || [];
                                  const ix = meta.deleted.indexOf(file_name);
+                                 const msgReply= {undeleted:file_name};
                                  if (ix >= 0 ) {
                                      meta.deleted.splice (ix,1);
                                      updateURLContents(
@@ -1456,11 +1462,13 @@ ml(0,ml(1),[
                                          databases.updatedURLS,
                                          bufferFromText(JSON.stringify(meta)),
                                          function () {
-                                             cb({undeleted:file_name});
+                                             if (cb)cb(msgReply);
+                                             toolsNotify(msgReply);
                                          }
                                      );
                                  } else {
-                                     cb();
+                                     if (cb)cb(msgReply);
+                                     toolsNotify(msgReply);
                                  }
                              },
                              
@@ -1480,7 +1488,8 @@ ml(0,ml(1),[
                                     databases.updatedURLS,
                                     bufferFromText(JSON.stringify(meta)),
                                     function () {
-                                        cb(msgReply);
+                                        if (cb)cb(msgReply);
+                                        toolsNotify(msgReply);
                                     }
                                 );
                             },
@@ -1505,6 +1514,7 @@ ml(0,ml(1),[
                              unhideFile : function (file_name,cb) {
                                  meta.hidden = meta.hidden || [];
                                  const ix = meta.hidden.indexOf(file_name);
+                                 const msgReply = {unhidden:file_name}
                                  if (ix >= 0 ) {
                                      meta.hidden.splice (ix,1);
                                      updateURLContents(
@@ -1512,11 +1522,13 @@ ml(0,ml(1),[
                                          databases.updatedURLS,
                                          bufferFromText(JSON.stringify(meta)),
                                          function () {
-                                             cb({unhidden:file_name});
+                                             if (cb)cb(msgReply);
+                                             toolsNotify(msgReply);
                                          }
                                      );
                                  } else {
-                                     cb();
+                                     if (cb)cb(msgReply);
+                                     toolsNotify(msgReply);
                                  }
                              },
                              
@@ -1536,12 +1548,37 @@ ml(0,ml(1),[
                                     databases.updatedURLS,
                                     bufferFromText(JSON.stringify(meta)),
                                     function () {
-                                        cb(msgReply);
+                                        if (cb)cb(msgReply);
+                                        toolsNotify(msgReply);
                                     }
                                 );
                             },
+                            
+                             registerForNotifications : function (cb) {
+                                 const notificationId = "changes_"+Date.Now().toString(36).substr(-6)+'_'+Math.random().toString(36).substr(-8);
+                                 
+                                 const channel = new BroadcastChannel(notificationId);
+                                 notifications[notificationId]=channel;
+                                 notificationIds.splice.apply(notificationIds,[0,notificationIds.length].concat(Object.keys(notifications)));
+                                 cb({notificationId:notificationId}); 
+                             },
+                             
+                             unregisterForNotifications : function (notificationId,cb) {
+                                 delete notifications[notificationId];
+                                 notificationIds.splice.apply(notificationIds,[0,notificationIds.length].concat(Object.keys(notifications)));
+                                 cb({}); 
+                             },
+                             
+                             notify : toolsNotify
              
                      };
+                     
+                     
+                     function toolsNotify(msg) {
+                         notificationIds.forEach(function(notificationId){
+                             notifications[notificationId].postMessage(msg);
+                         });
+                     }
                      
                      function isDeleted (file_name) {
                          return meta.deleted && meta.deleted.indexOf(file_name)>=0;

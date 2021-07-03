@@ -139,6 +139,24 @@ ml(0,ml(1),[
                        cb(undefined,msg.content,msg.updated);
                    });
                    
+               },
+               
+               registerForNotifications : function (cb) {
+                   sendMessage('registerForNotifications',{
+                       zip     : full_zip_uri,
+                   },function(err,msg){
+                       if (err) return cb (err);
+                       cb(undefined,msg);
+                   });
+               },
+               unregisterForNotifications : function (id,cb) {
+                   sendMessage('unregisterForNotifications',{
+                       zip     : full_zip_uri,
+                       notificationId : id
+                   },function(err,msg){
+                       if (err) return cb (err);
+                       cb(undefined,msg);
+                   });
                }
 
             };
@@ -669,6 +687,11 @@ ml(0,ml(1),[
             } else {
                window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
             }
+            
+            
+            pwaApi.registerForNotifications(function(msg){
+                console.log({registeredNotification:msg});
+            });
             
             return lib;
         } 
