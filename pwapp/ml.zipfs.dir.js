@@ -123,7 +123,10 @@ ml(0,ml(1),[
                        content : content
                    },function(err,msg){
                        const el = find_li(file);
-                       if (el) el.classList.add('edited');
+                       if (el) {
+                           el.classList.add('edited');
+                           el.classList.remove('editing');
+                       }
                        if(cb)cb(err,msg);
                    });
                },
@@ -306,15 +309,18 @@ ml(0,ml(1),[
                const is_zip       = false;
                const is_edited    = true;
                
+               
+               const sha1span     = '<span class="sha1"></span>';
+               
                const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;&nbsp;&nbsp;</span>' : '';
                const cls = is_deleted ? ["deleted"] : [];
                if (is_edited)  cls.push("edited");
                if (is_hidden)  cls.push("hidden");
                const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
                
-               const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>' + edited ] 
-                              : is_zip        ? [ '<a'+zip_attr+  ' href="'+zip_url_base+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>' + edited ]   
-                              :                 [ '<a data-filename="'               + filename + '" data-inzip="0"><span class="normal">&nbsp;</span>',     '</a>' + edited ] ;
+               const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>'                + sha1span + edited ] 
+                              : is_zip        ? [ '<a'+zip_attr+  ' href="'+zip_url_base+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>'        + sha1span + edited ]   
+                              :                 [ '<a data-filename="'               + filename + '" data-inzip="0"><span class="normal">&nbsp;</span>',     '</a>' + sha1span + edited ] ;
                
                
                return '<li'+li_class+'><a data-filename="' + filename + '"><span class="deletefile"></span></a><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
@@ -394,13 +400,8 @@ ml(0,ml(1),[
                                       new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
                                   );
                               }
-                              const text = bufferToText(buffer);
-                              sha1(text,function(err,hash){
-                                  if (err) {
-                                      tags[path]=1;
-                                  } else {
-                                      tags[path]=hash;
-                                  }
+                              
+                              bufferToTextAndHash(path,buffer,function(text){
                                   window.dispatchEvent( 
                                       new CustomEvent('zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:text }})
                                   );
@@ -411,15 +412,10 @@ ml(0,ml(1),[
                       
                       writeFile: function(reqId,path,content) { 
                           const filename = path.replace(leadingSlash,'');
+                          
                           const buffer = bufferFromText(content);
-                          sha1(buffer,function(err,hash){
-                             
-                              if (err) {
-                                  tags[path]=1;
-                              } else {
-                                  tags[path]=hash;
-                              }
-                              
+                          bufferToHash(path,buffer,function(){
+
                               pwaApi.updateURLContents( filename,buffer,function(err){
                                   if (err) {
                                       return window.dispatchEvent( 
@@ -471,18 +467,11 @@ ml(0,ml(1),[
                                           new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : '1' }})
                                       );
                                    }
-                                   const text = bufferToText(buffer);
-                                   sha1(text,function(err,hash){
-                                       if (err) {
-                                           tags[path]=1;
-                                       } else {
-                                           tags[path]=hash;
-                                       }
+                                   bufferToHash(buffer,function(hash){
                                        return window.dispatchEvent( 
-                                           new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : tags[path] }})
+                                           new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : hash }})
                                        );
                                    });
-                                   
                                });
                            }
                       },
@@ -516,6 +505,29 @@ ml(0,ml(1),[
 
                 }
                 
+                function bufferToHash(path,buffer,cb) {
+                    sha1(buffer,function(err,hash){
+                        if (err) {
+                            tags[path]=1;
+                        } else {
+                            tags[path]=hash;
+                        }
+                        const anchor = qs('a[data-filename="'+path.replace(leadingSlash,'')+'"]');
+                        if (anchor) {
+                            const sh = anchor.parentElement.querySelector('span.sha1');
+                            if (sh) {
+                                sh.innerHTML=hash;
+                            }
+                        }
+                        cb(hash);
+                    });
+                }
+                
+                function bufferToTextAndHash(path,buffer,cb) {
+                    bufferToHash(path,buffer,function(hash){
+                        cb(bufferToText(buffer),hash);
+                    })
+                }
                
                 function prependSlash(x) { return "/"+x.replace(leadingSlash,'');}
                 function removePrependedSlash (x) { return x.replace(leadingSlash,'') }
@@ -526,6 +538,8 @@ ml(0,ml(1),[
                   const anchor = qs('a[data-filename="'+file+'"]');
                   return anchor && anchor.parentElement;
             }
+            
+           
             
             function viewBtnClick(e){
                 e.preventDefault();
