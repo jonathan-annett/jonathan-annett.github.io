@@ -103,7 +103,7 @@ ml(0,ml(1),[
                     
                     deleted : function (msg,cb) {
                         const data = msg.data;
-                        if (data.zip && (data.toggle||data.add||data.remove)) {
+                        if (data.zip && (data.toggle||data.add||data.remove||data.test)) {
                             zipFS.getZipDirMetaTools(data.zip,function(tools) {
                                 if (tools) {
                                     if (data.toggle) {
@@ -134,7 +134,7 @@ ml(0,ml(1),[
                     
                     hidden : function (msg,cb) {
                                  const data = msg.data;
-                                 if (data.zip && (data.toggle||data.add||data.remove)) {
+                                 if (data.zip && (data.toggle||data.add||data.remove||data.test)) {
                                      zipFS.getZipDirMetaTools(data.zip,function(tools) {
                                          if (tools) {
                                              if (data.toggle) {
