@@ -51,6 +51,7 @@ ml(0,ml(1),[
                         if(cb)cb(err,msg);
                    });
                },
+               
                deleteFile       : function (file,el,cb) {
                    sendMessage('deleted',{
                        zip : full_zip_uri,
@@ -64,6 +65,7 @@ ml(0,ml(1),[
                        if(cb)cb(err,msg);
                    });
                },
+               
                unDeleteFile     : function (file,el,cb) {
                    sendMessage('deleted',{
                        zip    : full_zip_uri,
@@ -86,6 +88,7 @@ ml(0,ml(1),[
                       if(cb)cb(err,msg);
                   });
                },
+               
                updateURLContents : function (file,content,el,cb) {
                    sendMessage('updateURLContents',{
                        url     : full_zip_uri+'/'+file,
@@ -461,7 +464,7 @@ ml(0,ml(1),[
                     const args    = event.detail.api_msg[cmd];
                     const handler = api[cmd];
                     if (handler && args) {
-                        handler.apply(this,[event.data.request].concat(args));
+                        handler.apply(this,[event.detail.request].concat(args));
                     }
                     
 
