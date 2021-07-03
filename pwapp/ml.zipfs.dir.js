@@ -265,7 +265,7 @@ ml(0,ml(1),[
                                             // if editable, open the editor 
                                            addEditClick(edBtn);
                                            // make a dummy event object on the fly to "fool" the click handler
-                                           edBtnClick({target:edBtn,preventDefault(){/*ok!*/}});
+                                           edBtnClick({target:edBtn,stopPropagation(){/*ok!*/}});
                                        }
                                    
                                    });
@@ -368,7 +368,7 @@ ml(0,ml(1),[
             function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
             
             function edBtnClick(e){
-                e.preventDefault();
+                e.stopPropagation();
                 const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
                 const li = btn.parentElement;
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
@@ -383,7 +383,7 @@ ml(0,ml(1),[
             }
             
             function deleteClick(e) {
-                e.preventDefault();
+                e.stopPropagation();
                 const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
                 
@@ -579,7 +579,7 @@ ml(0,ml(1),[
            
             
             function viewBtnClick(e){
-                e.preventDefault();
+                e.stopPropagation();
                 const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
                 const file_url = zip_url_base + '/' + filename;
@@ -591,7 +591,7 @@ ml(0,ml(1),[
                        return;
                    }
                    
-                    e.preventDefault();
+                    e.stopPropagation();
                     const link      = e.target.href ? e.target : e.target.parentElement ;
                     open_url(link.href);
             }
