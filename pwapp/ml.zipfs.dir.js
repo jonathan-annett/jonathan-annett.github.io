@@ -409,9 +409,9 @@ ml(0,ml(1),[
                           });
                       },
                       
-                      writeFile: function(reqId,path,detail) { 
+                      writeFile: function(reqId,path,content) { 
                           const filename = path.replace(leadingSlash,'');
-                          const buffer = bufferFromText(detail.content);
+                          const buffer = bufferFromText(content);
                           sha1(buffer,function(err,hash){
                              
                               if (err) {
