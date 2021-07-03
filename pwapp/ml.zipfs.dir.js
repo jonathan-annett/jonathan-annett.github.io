@@ -156,7 +156,7 @@ ml(0,ml(1),[
                     if (err) return cb (err);
                     msg.channel = new BroadcastChannel(msg.notificationId);
                     msg.channel.onmessage = function(e){
-                       cb(msg.data); 
+                       cb(e.data); 
                     }
                     pwaApi.unregisterForNotifications = function (cb) {
                         msg.channel.close();
