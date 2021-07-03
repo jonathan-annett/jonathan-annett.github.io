@@ -28,7 +28,11 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 
             }
             
-            function sendMessage(cmd,data,cb,persistent) {
+            function sendMessage(cmd,data,persistent,cb) {
+                if (typeof persistent==='function') {
+                    cb = persistent;
+                    persistent = false;
+                }
                 const replyName        = "r"+Math.random().toString(36).substr(-8)+Date.now().toString(36).substr(-4);
                 const sendChannel      = new MessageChannel();
                 const replyChannel     = new BroadcastChannel(replyName);

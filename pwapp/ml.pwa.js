@@ -38,7 +38,7 @@ ml(0,ml(1),[
                     );
                     
                     const persistent=true;
-                    sendMessage("onCustomEvents",{},function(err,e){
+                    sendMessage("onCustomEvents",{},persistent,function(err,e){
                         if (err) return console.log(err);
                         
                         findWorker(function(err,worker){
@@ -47,7 +47,7 @@ ml(0,ml(1),[
                             );
                         });
                         
-                    },persistent);
+                    });
                     lib.unregister=unregister;
                     noop(cb);
                 });

@@ -142,9 +142,10 @@ ml(0,ml(1),[
                },
                
                registerForNotifications : function (cb) {
+                   const persistent=true;
                    sendMessage('registerForNotifications',{
                        zip     : full_zip_uri,
-                   },function(err,msg){
+                   },persistent,function(err,msg){
                        if (err) return cb (err);
                        cb(undefined,msg);
                    });
