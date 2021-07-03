@@ -585,6 +585,92 @@ ml(0,ml(1),[
                     cb();
                 }
                 
+                
+                pwaApi.registerForNotifications(function(msg){
+    
+                    if (msg.deleted) {
+                        const el = find_li(msg.deleted);
+                        if (el) {
+                           el.classList.add("deleted");
+                           el.classList.add("hidden");
+                        }
+                        return;
+                    }
+                    if (msg.undeleted) {
+                        const el = find_li(msg.undeleted);
+                        if (el) {
+                           el.classList.remove("deleted");
+                           el.classList.remove("hidden");
+                        }
+                        return;
+                    }
+                    if (msg.hidden) {
+                        const el = find_li(msg.hidden);
+                        return el && el.classList.add("hidden");
+                    }
+                    
+                    if (msg.unhidden) {
+                        const el = find_li(msg.unhidden);
+                        return el && el.classList.remove("hidden");
+                    }
+                    
+                    if (msg.hash && msg.writeFileString) {
+                        
+                        if (msg.writeFileString.replace(/^\//,'') !== '.zedstate') {
+                            
+                            if (initial_path!==msg.writeFileString) {
+                                const el = find_li(initial_path);
+                                el.classList.remove("editing");
+                            }
+                            
+                            initial_path = msg.writeFileString.replace(/^\//,'');
+                            const anchor = qs('a[data-filename="'+initial_path+'"]');
+                            if (anchor) {
+                                const el = anchor.parentElement;
+                                const sh = el.querySelector('span.sha1');
+                                if (sh) {
+                                    sh.innerHTML=msg.hash;
+                                }
+                                el.classList.remove("editing");
+                                el.classList.add("edited");
+                            } else {
+                               
+                                    qs("ul",function(el){
+                                        // make a new id for the new element, as we are creating it on the fly
+                                        let newid="li_"+Math.random().toString(36).substr(-8);
+                                        
+                                        // patch the ul element to include new file
+                                        el.innerHTML += html_file_item(newid,initial_path);
+                                        
+                                        // add some button events (if relel)
+                                        addViewClick(qs("#"+newid+" a span.normal"));
+                                        let edBtn = qs("#"+newid+" a span.editinzed");
+                                        el.classList.add("edited");
+                                        pwaApi.isHidden(initial_path,function(hidden){
+                                            if (hidden) {
+                                                el.classList.add("hidden");
+                                            }
+                                        });
+                                    });
+                                
+                            }
+                        }
+                    }
+                    
+                    if (msg.hash && msg.readFileString) {
+                        const anchor = qs('a[data-filename="'+msg.readFileString.replace(/^\//,'')+'"]');
+                        if (anchor) {
+                            const sh = anchor.parentElement.querySelector('span.sha1');
+                            if (sh) {
+                                sh.innerHTML=msg.hash;
+                            }
+                        }
+                    }
+                    
+                    
+    
+                });
+                
             }
             
             
@@ -725,80 +811,7 @@ ml(0,ml(1),[
             }
             
             
-            pwaApi.registerForNotifications(function(msg){
-
-                if (msg.deleted) {
-                    const el = find_li(msg.deleted);
-                    if (el) {
-                       el.classList.add("deleted");
-                       el.classList.add("hidden");
-                    }
-                    return;
-                }
-                if (msg.undeleted) {
-                    const el = find_li(msg.undeleted);
-                    if (el) {
-                       el.classList.remove("deleted");
-                       el.classList.remove("hidden");
-                    }
-                    return;
-                }
-                if (msg.hidden) {
-                    const el = find_li(msg.hidden);
-                    return el && el.classList.add("hidden");
-                }
-                
-                if (msg.unhidden) {
-                    const el = find_li(msg.unhidden);
-                    return el && el.classList.remove("hidden");
-                }
-                
-                if (msg.hash && msg.writeFileString) {
-                    const anchor = qs('a[data-filename="'+msg.writeFileString.replace(/^\//,'')+'"]');
-                    if (anchor) {
-                        const el = anchor.parentElement;
-                        const sh = el.querySelector('span.sha1');
-                        if (sh) {
-                            sh.innerHTML=msg.hash;
-                        }
-                        el.classList.remove("editing");
-                        el.classList.add("edited");
-                    } else {
-                        if (msg.writeFileString !=='.zedstate') {
-                            qs("ul",function(el){
-                                // make a new id for the new element, as we are creating it on the fly
-                                let newid="li_"+Math.random().toString(36).substr(-8);
-                                
-                                // patch the ul element to include new file
-                                el.innerHTML += html_file_item(newid,msg.writeFileString);
-                                
-                                // add some button events (if relel)
-                                addViewClick(qs("#"+newid+" a span.normal"));
-                                let edBtn = qs("#"+newid+" a span.editinzed");
-                                el.classList.add("edited");
-                                pwaApi.isHidden(msg.writeFileString,function(hidden){
-                                    if (hidden) {
-                                        el.classList.add("hidden");
-                                    }
-                                });
-                            });
-                        }
-                    }
-                }
-                
-                if (msg.hash && msg.readFileString) {
-                    const anchor = qs('a[data-filename="'+msg.readFileString.replace(/^\//,'')+'"]');
-                    if (anchor) {
-                        const sh = anchor.parentElement.querySelector('span.sha1');
-                        if (sh) {
-                            sh.innerHTML=msg.hash;
-                        }
-                    }
-                }
-                
-                
-
-            });
+           
             
             return lib;
         } 
