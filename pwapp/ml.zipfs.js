@@ -1544,7 +1544,7 @@ ml(0,ml(1),[
                      };
                      
                      function isDeleted (file_name) {
-                         return meta.hidden && meta.deleted.indexOf(file_name)>=0;
+                         return meta.deleted && meta.deleted.indexOf(file_name)>=0;
                      }
                      
                      function isHidden (file_name) {
