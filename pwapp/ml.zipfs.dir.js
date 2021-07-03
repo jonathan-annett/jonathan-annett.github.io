@@ -154,7 +154,7 @@ ml(0,ml(1),[
                     zip     : full_zip_uri,
                 },persistent,function(err,msg){
                     if (err) return cb (err);
-                    msg.channel = BroadcastChannel(msg.notificationId);
+                    msg.channel = new BroadcastChannel(msg.notificationId);
                     msg.channel.onmessage = function(e){
                        cb(msg.data); 
                     }
