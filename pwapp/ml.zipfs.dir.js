@@ -821,7 +821,7 @@ ml(0,ml(1),[
             }
             
             
-            registerForNotifications("/",cb) 
+            registerForNotifications("/",function(){});
             
             return lib;
         } 
