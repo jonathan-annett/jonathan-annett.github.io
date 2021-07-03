@@ -525,65 +525,6 @@ ml(0,ml(1),[
                 );
                 
                 Object.defineProperties (self,{});
-                return self;
-                
-                function apiCall (event) {
-                    
-                    if (event.detail.closed) {
-                        return window.removeEventListener(api_call_event_name,apiCall);   
-                    }
-
-                    const cmd     = Object.keys(event.detail.api_msg)[0];
-                    const args    = event.detail.api_msg[cmd];
-                    const handler = fs_api[cmd];
-                    if (handler && args) {
-                        handler.apply(this,[event.detail.request].concat(args));
-                    }
-                    
-
-                }
-                
-                function bufferToHash(path,buffer,cb) {
-                    sha1(buffer,function(err,hash){
-                        if (err) {
-                            tags[path]=1;
-                        } else {
-                            tags[path]=hash;
-                        }
-                        const anchor = qs('a[data-filename="'+path.replace(leadingSlash,'')+'"]');
-                        if (anchor) {
-                            const sh = anchor.parentElement.querySelector('span.sha1');
-                            if (sh) {
-                                sh.innerHTML=hash;
-                            }
-                        }
-                        cb(hash);
-                    });
-                }
-                
-                function bufferToTextAndHash(path,buffer,cb) {
-                    bufferToHash(path,buffer,function(hash){
-                        cb(bufferToText(buffer),hash);
-                    })
-                }
-               
-                function prependSlash(x) { return "/"+x.replace(leadingSlash,'');}
-                function removePrependedSlash (x) { return x.replace(leadingSlash,'') }
-                
-                
-                
-                function getZedState(cb) {
-                    if (!zedstate) {
-                        zedstate = JSON.stringify({"session.current": [ '/'+initial_path  ]});
-                    }
-                    return cb (zedstate);
-                } 
-                
-                
-                function setZedState (json,cb) {
-                    zedstate = json;
-                    cb();
-                }
                 
                 
                 pwaApi.registerForNotifications(function(msg){
@@ -670,6 +611,69 @@ ml(0,ml(1),[
                     
     
                 });
+                
+                return self;
+                
+                function apiCall (event) {
+                    
+                    if (event.detail.closed) {
+                        return window.removeEventListener(api_call_event_name,apiCall);   
+                    }
+
+                    const cmd     = Object.keys(event.detail.api_msg)[0];
+                    const args    = event.detail.api_msg[cmd];
+                    const handler = fs_api[cmd];
+                    if (handler && args) {
+                        handler.apply(this,[event.detail.request].concat(args));
+                    }
+                    
+
+                }
+                
+                function bufferToHash(path,buffer,cb) {
+                    sha1(buffer,function(err,hash){
+                        if (err) {
+                            tags[path]=1;
+                        } else {
+                            tags[path]=hash;
+                        }
+                        const anchor = qs('a[data-filename="'+path.replace(leadingSlash,'')+'"]');
+                        if (anchor) {
+                            const sh = anchor.parentElement.querySelector('span.sha1');
+                            if (sh) {
+                                sh.innerHTML=hash;
+                            }
+                        }
+                        cb(hash);
+                    });
+                }
+                
+                function bufferToTextAndHash(path,buffer,cb) {
+                    bufferToHash(path,buffer,function(hash){
+                        cb(bufferToText(buffer),hash);
+                    })
+                }
+               
+                function prependSlash(x) { return "/"+x.replace(leadingSlash,'');}
+                function removePrependedSlash (x) { return x.replace(leadingSlash,'') }
+                
+                
+                
+                function getZedState(cb) {
+                    if (!zedstate) {
+                        zedstate = JSON.stringify({"session.current": [ '/'+initial_path  ]});
+                    }
+                    return cb (zedstate);
+                } 
+                
+                
+                function setZedState (json,cb) {
+                    zedstate = json;
+                    cb();
+                }
+                
+                
+                
                 
             }
             
