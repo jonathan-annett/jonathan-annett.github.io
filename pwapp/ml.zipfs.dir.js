@@ -399,8 +399,7 @@ ml(0,ml(1),[
                     open : { value : openFile }
                 });
                 
-                zipFS_apiHook.previous=self;
-                
+                zipFS_apiHook.singleton = self;
                 return self.open(initial_path);
                 
                 function openFile(file) {
