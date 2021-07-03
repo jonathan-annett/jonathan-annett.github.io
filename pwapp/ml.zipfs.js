@@ -1418,19 +1418,9 @@ ml(0,ml(1),[
                      const regexps = (meta && meta.hidden ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
                      return {
                              
-                             isHidden : function (file_name) {
-                                if (meta.deleted) { 
-                                    if (meta.deleted.indexOf(file_name)>=0) return true;
-                                }
-                                
-                                return regexps.some(function(re){ 
-                                    return re.test(file_name);
-                                });
-                             },
+                             isHidden : isHidden ,
                              
-                             isDeleted : function (file_name) {
-                                 return meta.deleted && meta.deleted.indexOf(file_name)>=0;
-                             },
+                             isDeleted : isDeleted,
                              
                              filterFileList : function ( files ) {
                                 const deleted=meta.deleted||[];
@@ -1494,8 +1484,78 @@ ml(0,ml(1),[
                                     }
                                 );
                             },
+                            
+                             hideFile : function (file_name,cb) {
+                                 meta.hidden = meta.deleted || [];
+                                 if (meta.hidden.indexOf(file_name) < 0 ) {
+                                     meta.hidden.push (file_name);
+                                     updateURLContents(
+                                         meta_url,
+                                         databases.updatedURLS,
+                                         bufferFromText(JSON.stringify(meta)),
+                                         function () {
+                                             cb({hidden:file_name});
+                                         }
+                                     );
+                                 } else {
+                                     cb();
+                                 }
+                             },
+                             
+                             unhideFile : function (file_name,cb) {
+                                 meta.hidden = meta.hidden || [];
+                                 const ix = meta.hidden.indexOf(file_name);
+                                 if (ix >= 0 ) {
+                                     meta.hidden.splice (ix,1);
+                                     updateURLContents(
+                                         meta_url,
+                                         databases.updatedURLS,
+                                         bufferFromText(JSON.stringify(meta)),
+                                         function () {
+                                             cb({unhidden:file_name});
+                                         }
+                                     );
+                                 } else {
+                                     cb();
+                                 }
+                             },
+                             
+                             toggleHidden : function (file_name,cb) {
+                                meta.hidden = meta.hidden || [];
+                                const ix = meta.hidden.indexOf(file_name);
+                                const msgReply={};
+                                if (ix >= 0 ) {
+                                    meta.hidden.splice (ix,1);
+                                    msgReply.unhidden = file_name;
+                                } else {
+                                    meta.hidden.push (file_name);
+                                    msgReply.hidden = file_name;
+                                }
+                                updateURLContents(
+                                    meta_url,
+                                    databases.updatedURLS,
+                                    bufferFromText(JSON.stringify(meta)),
+                                    function () {
+                                        cb(msgReply);
+                                    }
+                                );
+                            },
              
                      };
+                     
+                     function isDeleted (file_name) {
+                         return meta.hidden && meta.deleted.indexOf(file_name)>=0;
+                     }
+                     
+                     function isHidden (file_name) {
+                        if (meta.deleted) { 
+                            if (meta.deleted.indexOf(file_name)>=0) return true;
+                        }
+                        
+                        return regexps.some(function(re){ 
+                            return re.test(file_name);
+                        });
+                     }
                  }
                  
                  function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}

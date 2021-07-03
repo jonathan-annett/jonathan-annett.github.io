@@ -22,42 +22,29 @@ ml(0,ml(1),[
             const full_zip_uri = location.origin+zip_url_base;
             const pwaApi = {
                
-               toggleDeleteFile : function (file,el,cb) {
+               toggleDeleteFile : function (file,cb) {
                    sendMessage('deleted',{
                         zip    : full_zip_uri,
                         toggle : file
                    },function(err,msg){
                         if (!err && msg) {
-                           const ix = zip_files.indexOf(file);
-                           if (msg.deleted) {
-                              if (el) {
-                                el.classList.add('deleted');
-                                el.classList.add("hidden");
-                              }
-                              if (ix >=0) {
-                                  zip_files.splice(ix,1);
-                              }
-                           }
-                           if (msg.undeleted) {
-                              if (el) {
-                                el.classList.remove('deleted');
-                                el.classList.remove('hidden');
-                              }
-                              if (ix <0) {
-                                  zip_files.push(file);
-                              }
-                           }
+                            const el = find_li(file);
+                            updateDeletedUI(file,el,msg);
+                            if (el&&msg.undeleted) {
+                                pwaApi.isHidden(file);
+                            }
                         }
+                        
                         if(cb)cb(err,msg);
                    });
                },
                
-               deleteFile       : function (file,el,cb) {
+               deleteFile       : function (file,cb) {
                    sendMessage('deleted',{
                        zip : full_zip_uri,
                        add : file
                    },function(err,msg){
-                       if(el) el.classList.add('deleted');
+                       updateDeletedUI(file,find_li(file),msg);
                        const ix = zip_files.indexOf(file);
                        if (ix >=0) {
                            zip_files.splice(ix,1);
@@ -66,34 +53,76 @@ ml(0,ml(1),[
                    });
                },
                
-               unDeleteFile     : function (file,el,cb) {
+               unDeleteFile     : function (file,cb) {
                    sendMessage('deleted',{
                        zip    : full_zip_uri,
                        remove : file
                    },function(err,msg){
-                       if (el) el.classList.remove('deleted');
+                       const el = find_li(file);
+                       updateDeletedUI(file,el,msg);
                        const ix = zip_files.indexOf(file);
                        if (ix <0) {
                            zip_files.push(file);
+                       }
+                       
+                       if (el) {
+                           pwaApi.isHidden(file);
                        }
                        if(cb)cb(err,msg);
                    });
                },
                
-               removeUpdatedURLContents  : function (file,el,cb) {
+               isDeleted     : function (file,cb) {
+                   sendMessage('deleted',{
+                        zip    : full_zip_uri,
+                        test   : file
+                   },function(err,msg){
+                        if (!err && msg) {
+                            const el = find_li(file);
+                            updateDeletedUI(file,el,msg);
+                           
+                           if (el&&msg.undeleted) {
+                               pwaApi.isHidden(file);
+                           }
+                        }
+                        if(cb)cb(err,msg);
+                   });
+               },
+               
+               
+               isHidden : function (file,cb) {
+                   sendMessage('hidden',{
+                       zip    : full_zip_uri,
+                       test   : file
+                   },function(err,msg){
+                       const el = find_li(file);
+                       if (el) {
+                           if (msg.hidden) {
+                                el.classList.add("hidden");
+                           } else {
+                                el.classList.remove("hidden");
+                           }
+                       }
+                       if(cb)cb(msg.hidden);
+                   });
+               },
+               
+               removeUpdatedURLContents  : function (file,cb) {
                   sendMessage('removeUpdatedURLContents',{
                       url : full_zip_uri+'/'+file
                   },function(err,msg){
+                      const el = find_li(file);
                       if (el) el.classList.remove('edited');
                       if(cb)cb(err,msg);
                   });
                },
                
-               updateURLContents : function (file,content,el,cb) {
+               updateURLContents : function (file,content,cb) {
                    sendMessage('updateURLContents',{
                        url     : full_zip_uri+'/'+file,
                        content : content
                    },function(err,msg){
+                       const el = find_li(file);
                        if (el) el.classList.add('edited');
                        if(cb)cb(err,msg);
                    });
@@ -115,6 +144,29 @@ ml(0,ml(1),[
                
                pwaApi : pwaApi
            };
+            
+            function updateDeletedUI(file,el,msg){
+                 if (msg) {
+                    const ix = zip_files.indexOf(file);
+                    if (msg.deleted) {
+                       if (el) {
+                         el.classList.add('deleted');
+                         el.classList.add("hidden");
+                       }
+                       if (ix >=0) {
+                           zip_files.splice(ix,1);
+                       }
+                    }
+                    if (msg.undeleted) {
+                       if (el) {
+                         el.classList.remove('deleted');
+                       }
+                       if (ix <0) {
+                           zip_files.push(file);
+                       }
+                    }
+                 }
+            }
 
             function onDOMContentLoaded (){
             
@@ -167,7 +219,7 @@ ml(0,ml(1),[
                                    let edBtn = qs("#"+newid+" a span.editinzed");
                                    
                                    // create the file using the service worker 
-                                   pwaApi.updateURLContents(filename,'\n',el,function(){
+                                   pwaApi.updateURLContents(filename,'\n',function(){
                                         
                                         if (edBtn) {
                                             // if editable, open the editor 
@@ -230,6 +282,7 @@ ml(0,ml(1),[
                 }
             }
             
+            
             function html_file_item (id,filename){
                 
                 
@@ -267,7 +320,6 @@ ml(0,ml(1),[
                return '<li'+li_class+'><a data-filename="' + filename + '"><span class="deletefile"></span></a><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
             }
             
-            
             function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
            
             function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
@@ -290,20 +342,154 @@ ml(0,ml(1),[
             function deleteClick(e) {
                 e.preventDefault();
                 const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                const li  = btn.parentElement;
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
                 
                 if (e.shiftKey) {
-                   pwaApi.removeUpdatedURLContents(filename,li);
+                   pwaApi.removeUpdatedURLContents(filename);
                 } else {
-                   pwaApi.toggleDeleteFile(filename,li);
+                   pwaApi.toggleDeleteFile(filename);
                 }
             }
             
             function zipFS_apiHook (initial_path) {
                 
                 const api_id = Math.random().toString(36).substr(-8),
-                      api_call_event_name = 'zipFS_apiCall_'+api_id;
+                      api_call_event_name = 'zipFS_apiCall_'+api_id,
+                      tags = {
+                          
+                          
+                      },
+                    leadingSlash = /^\//,
+                    self = {},
+                    fs_api = {
+                      
+                      listFiles: function(reqId) { 
+                          window.dispatchEvent( 
+                              new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:zip_files.map(prependSlash) } })
+                          );
+                      },
+                      
+                      readFile: function(reqId,path) { 
+                          
+                          const filename = path.replace(leadingSlash,'');
+                          
+                          if (path === "/.zedstate") {
+                              
+                              return window.dispatchEvent(
+                                  new CustomEvent('zipFS_'+reqId,{  
+                                      detail: {  
+                                          resolve : reqId, 
+                                          resolveData:JSON.stringify({"session.current": [ '/'+initial_path  ]}) 
+                                          
+                                      }})
+                              );
+                              
+                          }
+                          
+                          
+                          
+                          pwaApi.fetchUpdatedURLContents(filename,function(err,buffer){
+                              if (err) {
+                                  return window.dispatchEvent( 
+                                      new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
+                                  );
+                              }
+                              const text = bufferToText(buffer);
+                              sha1(text,function(err,hash){
+                                  if (err) {
+                                      tags[path]=1;
+                                  } else {
+                                      tags[path]=hash;
+                                  }
+                                  window.dispatchEvent( 
+                                      new CustomEvent('zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:text }})
+                                  );
+                              });
+                              
+                          });
+                      },
+                      
+                      writeFile: function(reqId,path,detail) { 
+                          const filename = path.replace(leadingSlash,'');
+                          const buffer = bufferFromText(detail.content);
+                          sha1(buffer,function(err,hash){
+                             
+                              if (err) {
+                                  tags[path]=1;
+                              } else {
+                                  tags[path]=hash;
+                              }
+                              
+                              pwaApi.updateURLContents( filename,buffer,function(err){
+                                  if (err) {
+                                      return window.dispatchEvent( 
+                                          new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
+                                      );
+                                  }
+                                  window.dispatchEvent( 
+                                      new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId }})
+                                  );
+                              });
+                              
+                              
+                          });
+                          
+                          
+                      },
+                      
+                      deleteFile: function(reqId,path) { 
+                          const filename = path.replace(leadingSlash,'');
+                          pwaApi.removeUpdatedURLContents( filename, function(err){
+                             if (err) {
+                                 return window.dispatchEvent( 
+                                     new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
+                                 );
+                             }
+                             delete tags[path];
+                             window.dispatchEvent( 
+                                  new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId }})
+                              );
+                          });
+                          
+                      },
+      
+                     // watchFile: function(reqId) {},
+                      
+                     // unwatchFile: function(reqId) {},
+                      
+                      getCacheTag: function(reqId,path) { 
+                          
+                           if (tags[path]) {
+                                return window.dispatchEvent( 
+                                    new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : tags[path] }})
+                                );
+                           } else {
+                               const filename = path[0] === '/'? path.substr(1) : path;
+                               pwaApi.fetchUpdatedURLContents(filename,function(err,buffer){
+                                   if (err) {
+                                      return window.dispatchEvent( 
+                                          new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : '1' }})
+                                      );
+                                   }
+                                   const text = bufferToText(buffer);
+                                   sha1(text,function(err,hash){
+                                       if (err) {
+                                           tags[path]=1;
+                                       } else {
+                                           tags[path]=hash;
+                                       }
+                                       return window.dispatchEvent( 
+                                           new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : tags[path] }})
+                                       );
+                                   });
+                                   
+                               });
+                           }
+                      },
+                      
+                      getCapabilities: function(reqId) { }
+                  };
+      
                       
                 window.addEventListener(api_call_event_name,apiCall);      
 
@@ -311,151 +497,8 @@ ml(0,ml(1),[
                     new CustomEvent( 'zipFS_apiHook',{  detail: {  api_id : api_id,  zipfs: full_zip_uri  } })
                 );
                 
-                
-                const find_li=function(file) {
-                    const anchor = qs('a[data-filename="'+file+'"]');
-                    return anchor && anchor.parentElement;
-                };
-                
-                
-                const tags = {
-                    
-                    
-                };
-                
-                const leadingSlash = /^\//;
-                function prependSlash(x) { return "/"+x.replace(leadingSlash,'');}
-                function removePrependedSlash (x) { return x.replace(leadingSlash,'') }
-                
-                var api = {
-                    
-                    listFiles: function(reqId) { 
-                        window.dispatchEvent( 
-                            new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:zip_files.map(prependSlash) } })
-                        );
-                    },
-                    
-                    readFile: function(reqId,path) { 
-                        
-                        const filename = path.replace(leadingSlash,'');
-                        
-                        if (path === "/.zedstate") {
-                            
-                            return window.dispatchEvent(
-                                new CustomEvent('zipFS_'+reqId,{  
-                                    detail: {  
-                                        resolve : reqId, 
-                                        resolveData:JSON.stringify({"session.current": [ '/'+initial_path  ]}) 
-                                        
-                                    }})
-                            );
-                            
-                        }
-                        
-                        
-                        
-                        pwaApi.fetchUpdatedURLContents(filename,function(err,buffer){
-                            if (err) {
-                                return window.dispatchEvent( 
-                                    new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
-                                );
-                            }
-                            const text = bufferToText(buffer);
-                            sha1(text,function(err,hash){
-                                if (err) {
-                                    tags[path]=1;
-                                } else {
-                                    tags[path]=hash;
-                                }
-                                window.dispatchEvent( 
-                                    new CustomEvent('zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:text }})
-                                );
-                            });
-                            
-                        });
-                    },
-                    
-                    writeFile: function(reqId,path,detail) { 
-                        const filename = path.replace(leadingSlash,'');
-                        const buffer = bufferFromText(detail.content);
-                        sha1(buffer,function(err,hash){
-                           
-                            if (err) {
-                                tags[path]=1;
-                            } else {
-                                tags[path]=hash;
-                            }
-                            
-                            pwaApi.updateURLContents( filename,buffer,find_li(filename),function(err){
-                                if (err) {
-                                    return window.dispatchEvent( 
-                                        new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
-                                    );
-                                }
-                                window.dispatchEvent( 
-                                    new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId }})
-                                );
-                            });
-                            
-                            
-                        });
-                        
-                        
-                    },
-                    
-                    deleteFile: function(reqId,path) { 
-                        const filename = path.replace(leadingSlash,'');
-                        pwaApi.removeUpdatedURLContents( filename, find_li(filename),function(err){
-                           if (err) {
-                               return window.dispatchEvent( 
-                                   new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
-                               );
-                           }
-                           delete tags[path];
-                           window.dispatchEvent( 
-                                new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId }})
-                            );
-                        });
-                        
-                    },
-    
-                   // watchFile: function(reqId) {},
-                    
-                   // unwatchFile: function(reqId) {},
-                    
-                    getCacheTag: function(reqId,path) { 
-                        
-                         if (tags[path]) {
-                              return window.dispatchEvent( 
-                                  new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : tags[path] }})
-                              );
-                         } else {
-                             const filename = path[0] === '/'? path.substr(1) : path;
-                             pwaApi.fetchUpdatedURLContents(filename,function(err,buffer){
-                                 if (err) {
-                                    return window.dispatchEvent( 
-                                        new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : '1' }})
-                                    );
-                                 }
-                                 const text = bufferToText(buffer);
-                                 sha1(text,function(err,hash){
-                                     if (err) {
-                                         tags[path]=1;
-                                     } else {
-                                         tags[path]=hash;
-                                     }
-                                     return window.dispatchEvent( 
-                                         new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : tags[path] }})
-                                     );
-                                 });
-                                 
-                             });
-                         }
-                    },
-                    
-                    getCapabilities: function(reqId) { }
-                };
-                
+                Object.defineProperties (self,{});
+                return self;
                 
                 function apiCall (event) {
                     
@@ -465,7 +508,7 @@ ml(0,ml(1),[
 
                     const cmd     = Object.keys(event.detail.api_msg)[0];
                     const args    = event.detail.api_msg[cmd];
-                    const handler = api[cmd];
+                    const handler = fs_api[cmd];
                     if (handler && args) {
                         handler.apply(this,[event.detail.request].concat(args));
                     }
@@ -473,130 +516,16 @@ ml(0,ml(1),[
 
                 }
                 
-                
-                
-            }
-            
-            /*
-
-            function editInZed(filename,content,files) {
-                
-                const active_edits = [filename];
-                const find_li=function(file) {
-                    const anchor = qs('a[data-filename="'+file+'"]');
-                    return anchor && anchor.parentElement;
-                };
                
-                window.dispatchEvent( new CustomEvent( 'editinzed',
-                                        { 
-                                            detail: {   filename:"/"+filename,
-                                                        content,
-                                                        files: zip_files 
-                                                    } 
-                                        })
-                );
-                
-                window.addEventListener('editinzed_callback',editInZedCallback);
-                
-                function editInZedCallback (event){
-                    
-                    const 
-                    detail   = event.detail,
-                    reqId    = detail.request,
-                    reqFile  = typeof detail.getText  === 'string' && detail.getText[0]==="/" ? detail.getText.substr(1) : false,
-                    filename = typeof detail.filename === 'string' && detail.filename[0] ? detail.filename.substr(1)     : false; 
-                    
-                    if (reqId && reqFile)  {
-                        return openNewFile (reqFile,reqId);
-                    }
-                    
-                    
-                    
-                    if (detail.closed ) {
-                        
-                        active_edits.forEach(function(fn){
-                        
-                            const li = find_li(fn);
-                            if (li) {
-                                li.classList.remove("editing");
-                            }
-                          
-                        }); 
-                        
-                        
-                    } else {
-                  
-                        if (  active_edits.indexOf( filename ) >= 0  && !!detail.content ) {
-                            
-                            
-                            const li = find_li( filename);
-                            pwaApi.updateURLContents( filename,detail.content,li);
-                            
-                        }
-                        
-                    }
-
-                }
-                
-                
-                function openNewFile (reqFile,reqId) {
-                    
-                    const reply_msgName = 'msg_'+reqId;
-                    if (zip_files.indexOf(reqFile)<0) {
-                        
-                        window.dispatchEvent(
-                            new CustomEvent( reply_msgName,{ 
-                                detail: {
-                                    reject : reqId,
-                                    data   : "/"+reqFile+" not found" 
-                                }
-                            })
-                        );
-                        
-                    } else {
-                        pwaApi.fetchUpdatedURLContents(reqFile,function(err,buffer){
-                            
-                            if (err) {
-                                window.dispatchEvent(
-                                    new CustomEvent( reply_msgName,{ 
-                                        detail: {
-                                            reject : reqId,
-                                            data   : err.message||err 
-                                        }
-                                    })
-                                );
-                            } else {
-                                
-                                if (active_edits.indexOf(reqFile)<0)
-                                    active_edits.push(reqFile);
-                                 
-                                 
-                                 const li = find_li(reqFile);
-                                 if (li) {
-                                     li.classList.add("editing");
-                                 }
-                                 
-                                window.dispatchEvent(
-                                    new CustomEvent( reply_msgName, { 
-                                        detail: {
-                                            resolve : reqId,
-                                            data    : bufferToText(buffer) 
-                                        }
-                                    })
-                                );
-                            }
-                            
-                        });
-                    }
-                        
-                }
-                
-                
+                function prependSlash(x) { return "/"+x.replace(leadingSlash,'');}
+                function removePrependedSlash (x) { return x.replace(leadingSlash,'') }
                 
             }
             
-            
-            */
+            function find_li (file) {
+                  const anchor = qs('a[data-filename="'+file+'"]');
+                  return anchor && anchor.parentElement;
+            }
             
             function viewBtnClick(e){
                 e.preventDefault();
@@ -661,7 +590,6 @@ ml(0,ml(1),[
             }
             
             
-            
             function on_window_close(w, fn) {
               if (typeof fn === "function" && w && typeof w === "object") {
                 setTimeout(function() {
@@ -680,8 +608,6 @@ ml(0,ml(1),[
                 }, 1000);
               }
             }
-            
-            
             
             function on_window_open_poller (w,fn, interval) {
                 if (w.closed) return ;

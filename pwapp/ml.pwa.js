@@ -114,6 +114,12 @@ ml(0,ml(1),[
                                         } else {
                                             if (data.remove) {
                                                 tools.undeleteFile(data.toggle,cb);
+                                            } else {
+                                                if (data.test) {
+                                                    cb (undefined,
+                                                        tools.isDeleted(data.test) ? {deleted:data.test} : {undeleted:data.test} 
+                                                    );
+                                                }
                                             }
                                         }
                                     }
@@ -125,6 +131,37 @@ ml(0,ml(1),[
                             cb({error:"needs zip + toggle/add/remove"});
                         }
                     },
+                    
+                    hidden : function (msg,cb) {
+                                 const data = msg.data;
+                                 if (data.zip && (data.toggle||data.add||data.remove)) {
+                                     zipFS.getZipDirMetaTools(data.zip,function(tools) {
+                                         if (tools) {
+                                             if (data.toggle) {
+                                                 tools.toggleHidden(data.toggle,cb);
+                                             } else {
+                                                 if (data.add) {
+                                                     tools.hideFile(data.toggle,cb);
+                                                 } else {
+                                                     if (data.remove) {
+                                                         tools.unhideFile(data.toggle,cb);
+                                                     } else {
+                                                         if (data.test) {
+                                                             cb (undefined,
+                                                                 tools.isHidden(data.test) ? {hidden:data.test} : {unhidden:data.test} 
+                                                             );
+                                                         }
+                                                     }
+                                                 }
+                                             }
+                                         } else {
+                                             cb({error:"could not access zip tools"});
+                                         }
+                                     });
+                                 } else {
+                                     cb({error:"needs zip + toggle/add/remove"});
+                                 }
+                             },
                     
                     fetchUpdatedURLContents : function (msg,cb) {
                          zipFS.fetchUpdatedURLContents(msg.data.url,function(err,content, updated){
