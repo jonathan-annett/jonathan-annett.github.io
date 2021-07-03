@@ -116,7 +116,9 @@ ml(0,ml(1),[
                                                 tools.undeleteFile(data.toggle,cb);
                                             } else {
                                                 if (data.test) {
-                                                    cb (tools.isDeleted(data.test) ? {deleted:data.test} : {undeleted:data.test});
+                                                    cb (undefined,
+                                                        tools.isDeleted(data.test) ? {deleted:data.test} : {undeleted:data.test} 
+                                                    );
                                                 }
                                             }
                                         }
@@ -145,7 +147,9 @@ ml(0,ml(1),[
                                                          tools.unhideFile(data.toggle,cb);
                                                      } else {
                                                          if (data.test) {
-                                                             cb (tools.isHidden(data.test) ? {hidden:data.test} : {unhidden:data.test} );
+                                                             cb (undefined,
+                                                                 tools.isHidden(data.test) ? {hidden:data.test} : {unhidden:data.test} 
+                                                             );
                                                          }
                                                      }
                                                  }
