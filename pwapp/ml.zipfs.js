@@ -1454,14 +1454,26 @@ ml(0,ml(1),[
                                          bufferFromText(JSON.stringify(meta)),
                                          function () {
                                              if (cb)cb(msgReply);
-                                             if (notificationIds.length)
-                                                  toolsNotify(msgReply);
+                                             if (notificationIds.length) {
+                                                 if (isHidden(file_name)) {
+                                                     msgReply.hidden=file_name;
+                                                 } else {
+                                                     msgReply.unhidden=file_name;
+                                                 } 
+                                                 toolsNotify(msgReply);
+                                             }
                                          }
                                      );
                                  } else {
                                      if (cb)cb(msgReply);
-                                     if (notificationIds.length)
+                                     if (notificationIds.length) {
+                                          if (isHidden(file_name)) {
+                                              msgReply.hidden=file_name;
+                                          } else {
+                                              msgReply.unhidden=file_name;
+                                          }
                                           toolsNotify(msgReply);
+                                     }
                                  }
                              },
                              
@@ -1477,14 +1489,27 @@ ml(0,ml(1),[
                                          bufferFromText(JSON.stringify(meta)),
                                          function () {
                                              if (cb)cb(msgReply);
-                                             if (notificationIds.length)
+                                             
+                                             if (notificationIds.length) {
+                                                 if (isHidden(file_name)) {
+                                                     msgReply.hidden=file_name;
+                                                 } else {
+                                                     msgReply.unhidden=file_name;
+                                                 }
                                                  toolsNotify(msgReply);
+                                             }
                                          }
                                      );
                                  } else {
                                      if (cb)cb(msgReply);
-                                     if (notificationIds.length) 
+                                     if (notificationIds.length) {
+                                          if (isHidden(file_name)) {
+                                              msgReply.hidden=file_name;
+                                          } else {
+                                              msgReply.unhidden=file_name;
+                                          }
                                           toolsNotify(msgReply);
+                                     }
                                  }
                              },
                              
@@ -1499,14 +1524,21 @@ ml(0,ml(1),[
                                     meta.deleted.push (file_name);
                                     msgReply.deleted = file_name;
                                 }
+                                
                                 updateURLContents(
                                     meta_url,
                                     databases.updatedURLS,
                                     bufferFromText(JSON.stringify(meta)),
                                     function () {
                                         if (cb)cb(msgReply);
-                                        if (notificationIds.length)
+                                        if (notificationIds.length) {
+                                            if (isHidden(file_name)) {
+                                                msgReply.hidden=file_name;
+                                            } else {
+                                                msgReply.unhidden=file_name;
+                                            }
                                             toolsNotify(msgReply);
+                                        }
                                     }
                                 );
                             },

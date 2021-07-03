@@ -706,7 +706,11 @@ ml(0,ml(1),[
                 }
                 if (msg.undeleted) {
                     const el = find_li(msg.undeleted);
-                    return el && el.classList.remove("deleted");
+                    if (el) {
+                       el.classList.remove("deleted");
+                       el.classList.remove("hidden");
+                    }
+                    return;
                 }
                 if (msg.hidden) {
                     const el = find_li(msg.hidden);
