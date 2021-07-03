@@ -27,14 +27,6 @@ ml(0,ml(1),[
                         zip    : full_zip_uri,
                         toggle : file
                    },function(err,msg){
-                        if (!err && msg) {
-                            const el = find_li(file);
-                            updateDeletedUI(file,el,msg);
-                            if (el&&msg.undeleted) {
-                                pwaApi.isHidden(file);
-                            }
-                        }
-                        
                         if(cb)cb(err,msg);
                    });
                },
@@ -44,7 +36,6 @@ ml(0,ml(1),[
                        zip : full_zip_uri,
                        add : file
                    },function(err,msg){
-                       updateDeletedUI(file,find_li(file),msg);
                        const ix = zip_files.indexOf(file);
                        if (ix >=0) {
                            zip_files.splice(ix,1);
@@ -58,15 +49,9 @@ ml(0,ml(1),[
                        zip    : full_zip_uri,
                        remove : file
                    },function(err,msg){
-                       const el = find_li(file);
-                       updateDeletedUI(file,el,msg);
                        const ix = zip_files.indexOf(file);
                        if (ix <0) {
                            zip_files.push(file);
-                       }
-                       
-                       if (el) {
-                           pwaApi.isHidden(file);
                        }
                        if(cb)cb(err,msg);
                    });
@@ -77,14 +62,6 @@ ml(0,ml(1),[
                         zip    : full_zip_uri,
                         test   : file
                    },function(err,msg){
-                        if (!err && msg) {
-                            const el = find_li(file);
-                            updateDeletedUI(file,el,msg);
-                           
-                           if (el&&msg.undeleted) {
-                               pwaApi.isHidden(file);
-                           }
-                        }
                         if(cb)cb(err,msg);
                    });
                },
@@ -209,28 +186,7 @@ ml(0,ml(1),[
                pwaApi : pwaApi
             };
             
-            function updateDeletedUI(file,el,msg){
-                 if (msg) {
-                    const ix = zip_files.indexOf(file);
-                    if (msg.deleted) {
-                       if (el) {
-                         el.classList.add('deleted');
-                         el.classList.add("hidden");
-                       }
-                       if (ix >=0) {
-                           zip_files.splice(ix,1);
-                       }
-                    }
-                    if (msg.undeleted) {
-                       if (el) {
-                         el.classList.remove('deleted');
-                       }
-                       if (ix <0) {
-                           zip_files.push(file);
-                       }
-                    }
-                 }
-            }
+           
 
             function onDOMContentLoaded (){
             
@@ -492,8 +448,6 @@ ml(0,ml(1),[
                           const filename = path.replace(leadingSlash,'');
                           const replyMsgId = 'zipFS_'+reqId;
                           
-                          
-                          
                           pwaApi.deleteFile(filename,function (err) {
                               
                               if (err) {
@@ -609,9 +563,7 @@ ml(0,ml(1),[
                   const anchor = qs('a[data-filename="'+file+'"]');
                   return anchor && anchor.parentElement;
             }
-            
-           
-            
+
             function viewBtnClick(e){
                 e.stopPropagation();
                 const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
@@ -743,7 +695,35 @@ ml(0,ml(1),[
             
             
             pwaApi.registerForNotifications(function(msg){
-                console.log({registeredNotification:msg});
+
+                if (msg.deleted) {
+                    const el = find_li(msg.deleted);
+                    return el && el.classList.add("deleted");
+                }
+                if (msg.undeleted) {
+                    const el = find_li(msg.undeleted);
+                    return el && el.classList.remove("deleted");
+                }
+                if (msg.hidden) {
+                    const el = find_li(msg.hidden);
+                    return el && el.classList.add("hidden");
+                }
+                
+                if (msg.unhidden) {
+                    const el = find_li(msg.unhidden);
+                    return el && el.classList.remove("hidden");
+                }
+                
+                if (msg.hash && msg.file) {
+                    const anchor = qs('a[data-filename="'+msg.file.replace(/^\//,'')+'"]');
+                    if (anchor) {
+                        const sh = anchor.parentElement.querySelector('span.sha1');
+                        if (sh) {
+                            sh.innerHTML=msg.hash;
+                        }
+                    }
+                }
+
             });
             
             return lib;
