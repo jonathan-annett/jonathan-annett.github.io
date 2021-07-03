@@ -714,8 +714,21 @@ ml(0,ml(1),[
                     return el && el.classList.remove("hidden");
                 }
                 
-                if (msg.hash && msg.file) {
-                    const anchor = qs('a[data-filename="'+msg.file.replace(/^\//,'')+'"]');
+                if (msg.hash && msg.writeFileString) {
+                    const anchor = qs('a[data-filename="'+msg.writeFileString.replace(/^\//,'')+'"]');
+                    if (anchor) {
+                        const el = anchor.parentElement;
+                        const sh = el.querySelector('span.sha1');
+                        if (sh) {
+                            sh.innerHTML=msg.hash;
+                        }
+                        el.classList.remove("editing");
+                        el.classList.add("edited");
+                    }
+                }
+                
+                if (msg.hash && msg.readFileString) {
+                    const anchor = qs('a[data-filename="'+msg.readFileString.replace(/^\//,'')+'"]');
                     if (anchor) {
                         const sh = anchor.parentElement.querySelector('span.sha1');
                         if (sh) {
