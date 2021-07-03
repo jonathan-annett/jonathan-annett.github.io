@@ -1418,7 +1418,7 @@ ml(0,ml(1),[
                      const regexps = (meta && meta.hidden ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
                      return {
                              
-                             isHidden : isHidden ,
+                             isHidden : isHixdden ,
                              
                              isDeleted : isDeleted,
                              
