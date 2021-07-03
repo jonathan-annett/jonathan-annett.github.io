@@ -375,13 +375,14 @@ ml(0,ml(1),[
             }
             
             function zipFS_apiHook (initial_path) {
-                
+                var zedstate;
                 const api_id = Math.random().toString(36).substr(-8),
                       api_call_event_name = 'zipFS_apiCall_'+api_id,
                       tags = {
                           
                           
                       },
+                   
                     leadingSlash = /^\//,
                     self = {},
                     fs_api = {
@@ -396,20 +397,21 @@ ml(0,ml(1),[
                           
                           const filename = path.replace(leadingSlash,'');
                           const replyMsgId = 'zipFS_'+reqId;
+                          if (path === "/.zedstate") {
+                              
+                              getZedState(function(json){
+                                  return window.dispatchEvent(
+                                      new CustomEvent('zipFS_'+reqId,{  
+                                          detail: {  
+                                              resolve : reqId, 
+                                              resolveData:json
+                                          }})
+                                  );
+                              });
+                          }
                           
                           pwaApi.readFileString(filename,true,function (err,data) {
                              if (err) {
-                                 if (path === "/.zedstate") {
-                                     
-                                     return window.dispatchEvent(
-                                         new CustomEvent('zipFS_'+reqId,{  
-                                             detail: {  
-                                                 resolve : reqId, 
-                                                 resolveData:JSON.stringify({"session.current": [ '/'+initial_path  ]}) 
-                                             }})
-                                     );
-                                     
-                                 }
                                  return window.dispatchEvent( 
                                      new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
                                  );
@@ -425,6 +427,17 @@ ml(0,ml(1),[
                       writeFile: function(reqId,path,content) { 
                           const filename = path.replace(leadingSlash,'');
                           const replyMsgId = 'zipFS_'+reqId;
+                          
+                          
+                          
+                          if (path === "/.zedstate") {
+                              
+                              setZedState(content,function(){
+                                 window.dispatchEvent( 
+                                     new CustomEvent(replyMsgId,{  detail: {  resolve : reqId } })
+                                 );
+                              });
+                          }
                           
                           pwaApi.writeFileString(filename,content,true,function (err,hash) {
                               
@@ -557,7 +570,25 @@ ml(0,ml(1),[
                 function prependSlash(x) { return "/"+x.replace(leadingSlash,'');}
                 function removePrependedSlash (x) { return x.replace(leadingSlash,'') }
                 
+                
+                
+                function getZedState(cb) {
+                    if (!zedstate) {
+                        zedstate = JSON.stringify({"session.current": [ '/'+initial_path  ]});
+                    }
+                    return cb (zedstate);
+                } 
+                
+                
+                function setZedState (json,cb) {
+                    zedstate = json;
+                    cb();
+                }
+                
             }
+            
+            
+            
             
             function find_li (file) {
                   const anchor = qs('a[data-filename="'+file+'"]');
