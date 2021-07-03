@@ -1555,7 +1555,7 @@ ml(0,ml(1),[
                             },
                             
                              registerForNotifications : function (cb) {
-                                 const notificationId = "changes_"+Date.Now().toString(36).substr(-6)+'_'+Math.random().toString(36).substr(-8);
+                                 const notificationId = "changes_"+Date.now().toString(36).substr(-6)+'_'+Math.random().toString(36).substr(-8);
                                  
                                  const channel = new BroadcastChannel(notificationId);
                                  notifications[notificationId]=channel;
