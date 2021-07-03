@@ -323,18 +323,21 @@ ml(0,ml(1),[
                     
                 };
                 
+                const leadingSlash = /^\//;
+                function prependSlash(x) { return "/"+x.replace(leadingSlash,'');}
+                function removePrependedSlash (x) { return x.replace(leadingSlash,'') }
                 
                 var api = {
                     
                     listFiles: function(reqId) { 
                         window.dispatchEvent( 
-                            new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:zip_files  } })
+                            new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:zip_files.map(prependSlash) } })
                         );
                     },
                     
                     readFile: function(reqId,path) { 
                         
-                        const filename = path[0] === '/'? path.substr(1) : path;
+                        const filename = path.replace(leadingSlash,'');
                         
                         if (path === "/.zedstate") {
                             
@@ -373,7 +376,7 @@ ml(0,ml(1),[
                     },
                     
                     writeFile: function(reqId,path,detail) { 
-                        const filename = path[0] === '/'? path.substr(1) : path;
+                        const filename = path.replace(leadingSlash,'');
                         const buffer = bufferFromText(detail.content);
                         sha1(buffer,function(err,hash){
                            
@@ -401,7 +404,7 @@ ml(0,ml(1),[
                     },
                     
                     deleteFile: function(reqId,path) { 
-                        const filename = path[0] === '/'? path.substr(1) : path;
+                        const filename = path.replace(leadingSlash,'');
                         pwaApi.removeUpdatedURLContents( filename, find_li(filename),function(err){
                            if (err) {
                                return window.dispatchEvent( 
