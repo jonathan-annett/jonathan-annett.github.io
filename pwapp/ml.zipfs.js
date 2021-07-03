@@ -1454,12 +1454,14 @@ ml(0,ml(1),[
                                          bufferFromText(JSON.stringify(meta)),
                                          function () {
                                              if (cb)cb(msgReply);
-                                             toolsNotify(msgReply);
+                                             if (notificationIds.length)
+                                                  toolsNotify(msgReply);
                                          }
                                      );
                                  } else {
                                      if (cb)cb(msgReply);
-                                     toolsNotify(msgReply);
+                                     if (notificationIds.length)
+                                          toolsNotify(msgReply);
                                  }
                              },
                              
@@ -1475,12 +1477,14 @@ ml(0,ml(1),[
                                          bufferFromText(JSON.stringify(meta)),
                                          function () {
                                              if (cb)cb(msgReply);
-                                             toolsNotify(msgReply);
+                                             if (notificationIds.length)
+                                                 toolsNotify(msgReply);
                                          }
                                      );
                                  } else {
                                      if (cb)cb(msgReply);
-                                     toolsNotify(msgReply);
+                                     if (notificationIds.length) 
+                                          toolsNotify(msgReply);
                                  }
                              },
                              
@@ -1501,7 +1505,8 @@ ml(0,ml(1),[
                                     bufferFromText(JSON.stringify(meta)),
                                     function () {
                                         if (cb)cb(msgReply);
-                                        toolsNotify(msgReply);
+                                        if (notificationIds.length)
+                                            toolsNotify(msgReply);
                                     }
                                 );
                             },
@@ -1535,12 +1540,14 @@ ml(0,ml(1),[
                                          bufferFromText(JSON.stringify(meta)),
                                          function () {
                                              if (cb)cb(msgReply);
-                                             toolsNotify(msgReply);
+                                             if (notificationIds.length)
+                                                  toolsNotify(msgReply);
                                          }
                                      );
                                  } else {
                                      if (cb)cb(msgReply);
-                                     toolsNotify(msgReply);
+                                     if (notificationIds.length)
+                                        toolsNotify(msgReply);
                                  }
                              },
                              
@@ -1561,7 +1568,8 @@ ml(0,ml(1),[
                                     bufferFromText(JSON.stringify(meta)),
                                     function () {
                                         if (cb)cb(msgReply);
-                                        toolsNotify(msgReply);
+                                        if (notificationIds.length)
+                                           toolsNotify(msgReply);
                                     }
                                 );
                             },
@@ -1573,6 +1581,51 @@ ml(0,ml(1),[
                                  notifications[notificationId]=channel;
                                  notificationIds.splice.apply(notificationIds,[0,notificationIds.length].concat(Object.keys(notifications)));
                                  cb({notificationId:notificationId}); 
+                             },
+                             
+                             
+                             writeFileString : function (file,text,hash,cb) {
+                                 if (typeof hash==='function') {
+                                     cb=hash;
+                                     hash=false;
+                                 }
+                                 const buffer = bufferFromText(text);
+                                 updateURLContents (url+'/'+file,databases.updatedURLS,buffer,function(err){
+                                    if (err) return cb ({error:err.message||err});
+                                    if (hash) {
+                                       sha1(buffer,function(err,hash){
+                                           if (err) return cb ({error:err.message||err});
+                                           cb (hash);
+                                           toolsNotify({writeFileString:file,hash,length:text.length});
+                                       });
+                                    } else {
+                                       cb();
+                                       toolsNotify({writeFileString:file,length:text.length});
+                                    }
+                                 });
+                             },
+                             
+                             readFileString : function (file,hash,cb) {
+                                 if (typeof hash==='function') {
+                                     cb=hash;
+                                     hash=false;
+                                 }
+                                 fetchUpdatedURLContents(url+'/'+file,function(err,buffer){
+                                     if (err) return cb ({error:err.message||err});
+                                     const text = bufferToText(buffer);
+                                     if (hash) {
+                                        sha1(buffer,function(err,hash){
+                                            if (err) return cb ({error:err.message||err});
+                                            cb ({text,hash});
+                                            if (notificationIds.length)
+                                               toolsNotify({readFileString:file,hash,length:text.length});
+                                        });
+                                     } else {
+                                        cb(text);
+                                        if (notificationIds.length)
+                                           toolsNotify({readFileString:file,length:text.length});
+                                     }
+                                 }) 
                              },
                              
                              unregisterForNotifications : function (notificationId,cb) {

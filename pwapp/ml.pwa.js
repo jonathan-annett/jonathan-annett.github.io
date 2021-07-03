@@ -130,33 +130,73 @@ ml(0,ml(1),[
                     },
                     
                     hidden : function (msg,cb) {
-                                 const data = msg.data;
-                                 if (data.zip && (data.toggle||data.add||data.remove||data.test)) {
-                                     zipFS.getZipDirMetaTools(data.zip,function(tools) {
-                                         if (tools) {
-                                             if (data.toggle) {
-                                                 tools.toggleHidden(data.toggle,cb);
+                         const data = msg.data;
+                         if (data.zip && (data.toggle||data.add||data.remove||data.test)) {
+                             zipFS.getZipDirMetaTools(data.zip,function(tools) {
+                                 if (tools) {
+                                     if (data.toggle) {
+                                         tools.toggleHidden(data.toggle,cb);
+                                     } else {
+                                         if (data.add) {
+                                             tools.hideFile(data.toggle,cb);
+                                         } else {
+                                             if (data.remove) {
+                                                 tools.unhideFile(data.toggle,cb);
                                              } else {
-                                                 if (data.add) {
-                                                     tools.hideFile(data.toggle,cb);
-                                                 } else {
-                                                     if (data.remove) {
-                                                         tools.unhideFile(data.toggle,cb);
-                                                     } else {
-                                                         if (data.test) {
-                                                             cb (tools.isHidden(data.test) ? {hidden:data.test} : {unhidden:data.test} );
-                                                         }
-                                                     }
+                                                 if (data.test) {
+                                                     cb (tools.isHidden(data.test) ? {hidden:data.test} : {unhidden:data.test} );
                                                  }
                                              }
-                                         } else {
-                                             cb({error:"could not access zip tools"});
                                          }
-                                     });
+                                     }
                                  } else {
-                                     cb({error:"needs zip + toggle/add/remove"});
+                                     cb({error:"could not access zip tools"});
                                  }
-                             },
+                             });
+                         } else {
+                             cb({error:"needs zip + toggle/add/remove"});
+                         }
+                     },
+                     
+                             
+                    writeFileString : function (msg,cb) {
+                        const data = msg.data;
+                        if (data.zip && data.file && data.text) {
+                            zipFS.getZipDirMetaTools(data.zip,function(tools) {
+                                if (tools) {
+                                     if (data.hash) {
+                                         tools.writeFileString(data.file,data.text,data.hash,cb);
+                                     } else {
+                                         tools.writeFileString(data.file,data.text,cb);
+                                     }
+                                } else {
+                                    cb({error:"could not access zip tools"});
+                                }
+                            });
+                        } else {
+                            cb({error:"needs zip + toggle/add/remove"});
+                        }
+                    
+                    },
+                    
+                    readFileString : function (msg,cb) {
+                        const data = msg.data;
+                        if (data.zip && data.file) {
+                            zipFS.getZipDirMetaTools(data.zip,function(tools) {
+                                if (tools) {
+                                    if (data.hash) {
+                                       tools.readFileString(data.file,data.hash,cb);
+                                    } else {
+                                       tools.readFileString(data.file,cb);
+                                    }
+                                } else {
+                                    cb({error:"could not access zip tools"});
+                                }
+                            });
+                        } else {
+                            cb({error:"needs zip + toggle/add/remove"});
+                        }
+                    },
                     
                     fetchUpdatedURLContents : function (msg,cb) {
                          zipFS.fetchUpdatedURLContents(msg.data.url,function(err,content, updated){

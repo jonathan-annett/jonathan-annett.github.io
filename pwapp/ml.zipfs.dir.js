@@ -89,6 +89,30 @@ ml(0,ml(1),[
                    });
                },
                
+               writeFileString : function (file,text,hash,cb) {
+                   if (typeof hash==='function') {
+                       cb   = hash;
+                       hash = false;
+                   }
+                   sendMessage('writeFileString',{
+                       zip    : full_zip_uri,
+                       file   : file,
+                       text   : text,
+                       hash   : hash
+                   },cb);
+               },
+               
+               readFileString : function (file,hash,cb) {
+                   if (typeof hash==='function') {
+                       cb   = hash;
+                       hash = false;
+                   }
+                    sendMessage('readFileString',{
+                        zip    : full_zip_uri,
+                        file   : file,
+                        hash   : hash
+                    },cb);
+               },
                
                isHidden : function (file,cb) {
                    sendMessage('hidden',{
@@ -415,74 +439,76 @@ ml(0,ml(1),[
                       readFile: function(reqId,path) { 
                           
                           const filename = path.replace(leadingSlash,'');
+                          const replyMsgId = 'zipFS_'+reqId;
                           
-                          if (path === "/.zedstate") {
-                              
-                              return window.dispatchEvent(
-                                  new CustomEvent('zipFS_'+reqId,{  
-                                      detail: {  
-                                          resolve : reqId, 
-                                          resolveData:JSON.stringify({"session.current": [ '/'+initial_path  ]}) 
-                                          
-                                      }})
-                              );
-                              
-                          }
-                          
-                          
-                          
-                          pwaApi.fetchUpdatedURLContents(filename,function(err,buffer){
-                              if (err) {
-                                  return window.dispatchEvent( 
-                                      new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
-                                  );
-                              }
-                              
-                              bufferToTextAndHash(path,buffer,function(text){
-                                  window.dispatchEvent( 
-                                      new CustomEvent('zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:text }})
-                                  );
-                              });
-                              
+                          pwaApi.readFileString(filename,true,function (err,data) {
+                             if (err) {
+                                 if (path === "/.zedstate") {
+                                     
+                                     return window.dispatchEvent(
+                                         new CustomEvent('zipFS_'+reqId,{  
+                                             detail: {  
+                                                 resolve : reqId, 
+                                                 resolveData:JSON.stringify({"session.current": [ '/'+initial_path  ]}) 
+                                             }})
+                                     );
+                                     
+                                 }
+                                 return window.dispatchEvent( 
+                                     new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
+                                 );
+                             }
+                             tags[path] = data.hash;
+                             window.dispatchEvent( 
+                                 new CustomEvent('zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:data.text }})
+                             );
                           });
+                          
                       },
                       
                       writeFile: function(reqId,path,content) { 
                           const filename = path.replace(leadingSlash,'');
+                          const replyMsgId = 'zipFS_'+reqId;
                           
-                          const buffer = bufferFromText(content);
-                          bufferToHash(path,buffer,function(){
-
-                              pwaApi.updateURLContents( filename,buffer,function(err){
-                                  if (err) {
-                                      return window.dispatchEvent( 
-                                          new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
-                                      );
-                                  }
-                                  window.dispatchEvent( 
-                                      new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId }})
+                          pwaApi.writeFileString(filename,content,true,function (err,hash) {
+                              
+                              if (err) {
+                                  return window.dispatchEvent( 
+                                      new CustomEvent( replyMsgId,{  detail: {  reject : reqId, resolveData:err.message||err }})
                                   );
-                              });
+                              }
                               
-                              
+                              tags[path] = hash;
+                              window.dispatchEvent( 
+                                  new CustomEvent(replyMsgId,{  detail: {  resolve : reqId } })
+                              );
+
                           });
-                          
+                           
                           
                       },
                       
                       deleteFile: function(reqId,path) { 
                           const filename = path.replace(leadingSlash,'');
-                          pwaApi.removeUpdatedURLContents( filename, function(err){
-                             if (err) {
-                                 return window.dispatchEvent( 
-                                     new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
-                                 );
-                             }
-                             delete tags[path];
-                             window.dispatchEvent( 
-                                  new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId }})
+                          const replyMsgId = 'zipFS_'+reqId;
+                          
+                          
+                          
+                          pwaApi.deleteFile(filename,function (err) {
+                              
+                              if (err) {
+                                  return window.dispatchEvent( 
+                                      new CustomEvent( replyMsgId,{  detail: {  reject : reqId, resolveData:err.message||err }})
+                                  );
+                              }
+                              
+                              window.dispatchEvent( 
+                                  new CustomEvent(replyMsgId,{  detail: {  resolve : reqId } })
                               );
+
                           });
+                          
+                          
                           
                       },
       
@@ -492,24 +518,32 @@ ml(0,ml(1),[
                       
                       getCacheTag: function(reqId,path) { 
                           
+                          
+                          const filename = path.replace(leadingSlash,'');
+                          const replyMsgId = 'zipFS_'+reqId;
+                          
                            if (tags[path]) {
                                 return window.dispatchEvent( 
-                                    new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : tags[path] }})
+                                    new CustomEvent(replyMsgId,{  detail: {  resolve : tags[path] }})
                                 );
                            } else {
-                               const filename = path[0] === '/'? path.substr(1) : path;
-                               pwaApi.fetchUpdatedURLContents(filename,function(err,buffer){
+                               
+                               pwaApi.readFileString(filename,true,function (err,data) {
                                    if (err) {
                                       return window.dispatchEvent( 
-                                          new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : '1' }})
+                                          new CustomEvent( replyMsgId,{  detail: {  resolve : '1' }})
                                       );
                                    }
-                                   bufferToHash(buffer,function(hash){
-                                       return window.dispatchEvent( 
-                                           new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : hash }})
-                                       );
-                                   });
+                                   
+                                   tags[path] = data.hash;
+                                   delete data.text;
+                                   delete data.hash;
+                                   
+                                   return window.dispatchEvent( 
+                                       new CustomEvent( replyMsgId,{  detail: {  resolve : tags[path] }})
+                                   );
                                });
+                               
                            }
                       },
                       
