@@ -840,20 +840,23 @@ ml(0,ml(1),[
                  }
             
                  function setMetadataForBuffer(buffer,etag,date,cb/*function(err,buffer,zipFileMeta){}*/) {
-                     if (!etag) etag = Math.random().toString(36).substr(-8)+Date.now().toString(36).substr(-6);
-                     const zipFileMeta = {
-                         etag,
-                         date:date||new Date()
-                     };
                      
-                       if (zipFileMeta.tools) {
-                           Object.keys.forEach(function(k){delete zipFileMeta.tools[k];});
+                       if (!etag) etag = Math.random().toString(36).substr(-8)+Date.now().toString(36).substr(-6);
+                       const zipFileMeta = {
+                           etag,
+                           date:date||new Date()
+                       };
+                     
+                       const saveTools = zipFileMeta.tools; 
+                       if (saveTools) {
                            delete zipFileMeta.tools;
                        }
                        databases.zipMetadata.setItem(url,zipFileMeta,function(err){
-                           
                              if (err) return cb(err);
                              
+                             if (saveTools) {
+                                 zipFileMeta.tools = saveTools;
+                             }
                              cb(undefined,buffer,zipFileMeta);
                              
                        });
@@ -950,14 +953,17 @@ ml(0,ml(1),[
                              // this also "invents" etags for each file inside
                              // we do this once, on first open.
             
-                             if (zipFileMeta.tools) {
-                                Object.keys.forEach(function(k){delete zipFileMeta.tools[k];});
-                                delete zipFileMeta.tools;
+                             const saveTools = zipFileMeta.tools; 
+                             if (saveTools) {
+                                 delete zipFileMeta.tools;
                              }
                              databases.zipMetadata.setItem(url,addFileMetaData(zip,zipFileMeta,url),function(err){
                                  
                                 if (err) return cb(err);
             
+                                if (saveTools) {
+                                    zipFileMeta.tools= saveTools;
+                                }
                                 return cb (undefined,zip,zipFileMeta);
                                 
                              });
@@ -1224,11 +1230,14 @@ ml(0,ml(1),[
                                     zipFileMeta.updating = setTimeout(function(){
                                         // in 10 seconds this and any other metadata changes to disk
                                         delete zipFileMeta.updating;
-                                        if (zipFileMeta.tools) {
-                                            Object.keys.forEach(function(k){delete zipFileMeta.tools[k];});
+                                        const saveTools = zipFileMeta.tools; 
+                                        if (saveTools) {
                                             delete zipFileMeta.tools;
                                         }
                                         databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
+                                            if (saveTools) {
+                                                zipFileMeta.tools = saveTools; 
+                                            }
                                             console.log("updated zip entry",zip_url);
                                         });
                                         
@@ -1341,11 +1350,12 @@ ml(0,ml(1),[
                                          zipFileMeta.updating = setTimeout(function(){
                                              // in 10 seconds this and any other metadata changes to disk
                                              delete zipFileMeta.updating;
-                                             if (zipFileMeta.tools) {
-                                                 Object.keys.forEach(function(k){delete zipFileMeta.tools[k];});
+                                             const saveTools = zipFileMeta.tools; 
+                                             if (saveTools) {
                                                  delete zipFileMeta.tools;
                                              }
                                              databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
+                                                 zipFileMeta.tools = saveTools;
                                                  console.log("updated zip entry",zip_url);
                                              });
                                              
@@ -1384,7 +1394,9 @@ ml(0,ml(1),[
              }
              
              function getZipDirMetaTools(url,zip,zipFileMeta,cb) {
-                 if (zipFileMeta.tools) return cb(zipFileMeta.tools);
+                 if (zipFileMeta.tools) {
+                     return cb(zipFileMeta.tools);
+                 }
                  const meta_url = url+'/'+dir_meta_name;
                  if (zipFileMeta.files[dir_meta_name]) {
                      const meta = zip.file(dir_meta_name);
@@ -1418,7 +1430,7 @@ ml(0,ml(1),[
                      const notifications = {};
                      const notificationIds = [];
                      const regexps = (meta && meta.hidden ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
-                     return {
+                     zipFileMeta.tools = {
                              
                              isHidden : isHidden ,
                              
@@ -1573,6 +1585,7 @@ ml(0,ml(1),[
              
                      };
                      
+                     return zipFileMeta.tools;
                      
                      function toolsNotify(msg) {
                          notificationIds.forEach(function(notificationId){
