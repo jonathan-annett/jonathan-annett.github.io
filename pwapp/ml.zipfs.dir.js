@@ -141,31 +141,49 @@ ml(0,ml(1),[
                    
                },
                
-               registerForNotifications : function (cb) {
-                   const persistent=true;
-                   sendMessage('registerForNotifications',{
-                       zip     : full_zip_uri,
-                   },persistent,function(err,msg){
-                       if (err) return cb (err);
-                       cb(undefined,msg);
-                   });
-               },
-               unregisterForNotifications : function (id,cb) {
-                   sendMessage('unregisterForNotifications',{
-                       zip     : full_zip_uri,
-                       notificationId : id
-                   },function(err,msg){
-                       if (err) return cb (err);
-                       cb(undefined,msg);
-                   });
+               registerForNotifications : ___registerForNotifications,
+               unregisterForNotifications : function (cb) {
+                    cb();
                }
 
             };
             
+            function ___registerForNotifications(cb) {
+                const persistent=true;
+                sendMessage('registerForNotifications',{
+                    zip     : full_zip_uri,
+                },persistent,function(err,msg){
+                    if (err) return cb (err);
+                    msg.channel = BroadcastChannel(msg.notificationId);
+                    msg.channel.onmessage = function(e){
+                       cb(msg.data); 
+                    }
+                    pwaApi.unregisterForNotifications = function (cb) {
+                        msg.channel.close();
+                        sendMessage('unregisterForNotifications',{
+                            zip     : full_zip_uri,
+                            notificationId : msg.notificationId
+                        },function(err,msg){
+                            if (err) return cb (err);
+                            cb(undefined);
+                        });
+                        
+                        pwaApi.unregisterForNotifications = function (cb) {
+                             cb();
+                        };
+                        
+                        pwaApi.registerForNotifications = ___registerForNotifications;
+                    };
+                    
+                    pwaApi.registerForNotifications = function (newcb) {
+                         cb=newcb;
+                    };
+                });
+            }
+            
             const lib = {
-               
                pwaApi : pwaApi
-           };
+            };
             
             function updateDeletedUI(file,el,msg){
                  if (msg) {
