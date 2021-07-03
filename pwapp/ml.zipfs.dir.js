@@ -257,7 +257,7 @@ ml(0,ml(1),[
                 });
                 
                 qs("h1 a.download",function click(){
-                    
+                      
                 });
                 
                 qs("h1 a.newfile",function click(){
@@ -763,6 +763,26 @@ ml(0,ml(1),[
                         }
                         el.classList.remove("editing");
                         el.classList.add("edited");
+                    } else {
+                        if (msg.writeFileString !=='.zedstate') {
+                            qs("ul",function(el){
+                                // make a new id for the new element, as we are creating it on the fly
+                                let newid="li_"+Math.random().toString(36).substr(-8);
+                                
+                                // patch the ul element to include new file
+                                el.innerHTML += html_file_item(newid,msg.writeFileString);
+                                
+                                // add some button events (if relel)
+                                addViewClick(qs("#"+newid+" a span.normal"));
+                                let edBtn = qs("#"+newid+" a span.editinzed");
+                                el.classList.add("edited");
+                                pwaApi.isHidden(msg.writeFileString,function(hidden){
+                                    if (hidden) {
+                                        el.classList.add("hidden");
+                                    }
+                                });
+                            });
+                        }
                     }
                 }
                 
@@ -775,6 +795,8 @@ ml(0,ml(1),[
                         }
                     }
                 }
+                
+                
 
             });
             
