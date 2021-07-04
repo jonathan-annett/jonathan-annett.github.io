@@ -284,13 +284,14 @@ ml(0,ml(1),[
                     getZipObject(zip_url,function(err,zip,zipFileMeta){
                         if (err) return cb(err);
                         const log = [];
+                        const logname = (zipFileMeta.alias_root ?zipFileMeta.alias_root : '') + '.log.txt';
                         getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
                             tools[mode](function(filenames){
                                 const newZip = new JSZip();
                                 function nextFile(i) {
                                     if (i<filenames.length) {
                                         const filename  = filenames[i];
-                                        if (filename==='.log.txt') return nextFile(i+1);
+                                        if (filename===logname) return nextFile(i+1);
                                         const fileEntry = zipFileMeta.files[filename];
                                          
                                         if (fileEntry) {
@@ -307,7 +308,7 @@ ml(0,ml(1),[
                                         
                                     } else {
                                         
-                                        newZip.file('.log.txt',log.join('\n'),{date : new Date(),createFolders: false });
+                                        newZip.file(logname,log.join('\n'),{date : new Date(),createFolders: false });
                                         
                                         newZip.generateAsync({
                                             type: "arraybuffer",
