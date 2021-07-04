@@ -924,6 +924,7 @@ ml(0,ml(1),[
                    'mpe'    : 'video/mpeg',
                    'mpeg'   : 'video/mpeg',
                    'mpg'    : 'video/mpeg',
+                   'md'     : 'text/markdown',
                    'ms'     : 'application/x-troff-ms',
                    'nc'     : 'application/x-netcdf',
                    'nws'    : 'message/rfc822',
@@ -989,6 +990,7 @@ ml(0,ml(1),[
                    'xsl'    : 'application/xml',
                    'xwd'    : 'image/x-xwindowdump',
                    'zip'    : 'application/zip'
+                   
                  }[filename.substr(lastDot+1)];
              }
              

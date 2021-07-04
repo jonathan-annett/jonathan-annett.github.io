@@ -276,7 +276,7 @@ ml(0,ml(1),[
                         if (err) return cb(err);
                         getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
                             const filenames = tools.filterFileList(Object.keys(zipFileMeta.files));
-                            const zip = new JSZip();
+                            const newZip = new JSZip();
                             function nextFile(i) {
                                 if (i<filenames.length) {
                                     const filename  = filenames[i];
@@ -284,7 +284,7 @@ ml(0,ml(1),[
                                     
                                     fetchInternalBuffer(zip_url+'/'+filename,function(err,buffer){
                                         if (err) return cb (err);
-                                        zip.file(filename,buffer,{date : fileEntry.date,createFolders: false })
+                                        newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false })
                                            .then (function (){
                                                nextFile(i+1);
                                            }).catch(cb);
@@ -293,7 +293,7 @@ ml(0,ml(1),[
                                     
                                 } else {
                                     
-                                    zip.generateAsync({
+                                    newZip.generateAsync({
                                         type: "arraybuffer",
                                         compression: "DEFLATE",
                                         compressionOptions: {
