@@ -281,9 +281,7 @@ ml(0,ml(1),[
                                 if (i<filenames.length) {
                                     const filename  = filenames[i];
                                     const fileEntry = zipFileMeta.files[filename];
-                                    
-                                    
-                                    fetchUpdatedURLContents(zip_url+'/'+file,function(err,buffer){
+                                    fetchUpdatedURLContents(zip_url+'/'+filename,function(err,buffer){
                                         if (err) return cb (err);
                                         newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false });
                                         nextFile(i+1);
