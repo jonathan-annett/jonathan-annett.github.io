@@ -6,7 +6,8 @@ ml(0,ml(1),[
     'zipFSListingLib                     | ml.zipfs.dir.sw.js',
     'JSZipUtils@ServiceWorkerGlobalScope | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
     'JSZip@ServiceWorkerGlobalScope      | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
-    'ml_db_Lib@ServiceWorkerGlobalScope  | ml.db.js'
+    'ml_db_Lib@ServiceWorkerGlobalScope  | ml.db.js',
+    'zipUpLib@ServiceWorkerGlobalScope   | ml.fetch.updated.js'
 
     ],function(){ml(2,ml(3),ml(4),
 
@@ -22,10 +23,21 @@ ml(0,ml(1),[
 
         },
         
-        ServiceWorkerGlobalScope: function swResponseZipLib (sha1,fnSrc, listingLib,ml_db) {
+        ServiceWorkerGlobalScope: function swResponseZipLib (sha1,fnSrc, listingLib,ml_db, upLib) {
         
         
         return function (dbKeyPrefix) {
+            
+            
+             const databaseNames = ["updatedURLS","openZips","zipMetadata","cachedURLS","offsiteURLS"];
+             const databases     = ml_db (databaseNames);
+            
+             const {
+                       updateURLContents,
+                       fetchUpdatedURLContents,
+                       removeUpdatedURLContents,
+                       fixupKeys
+                   } = upLib(databases,processFetchRequestInternal,mimeForFilename);
 
              const lib = {
                  processFetchRequest      : processFetchRequest,
@@ -47,8 +59,7 @@ ml(0,ml(1),[
                  
              };
               
-             const databaseNames = ["updatedURLS","openZips","zipMetadata","cachedURLS","offsiteURLS"];
-             const databases     = ml_db (databaseNames);
+             
              
              const dir_meta_name  = '.dirmeta.json';
              const dir_meta_empty = {"deleted":[],"hidden":["^\\."]};
@@ -165,18 +176,6 @@ ml(0,ml(1),[
                   next(chain.shift()); 
              }
              
-             function fetchInternal(url,cb) {
-                 const fakeEvent = {
-                     request : {
-                         url      : url,
-                         referrer : 'about:client',
-                         headers  : {
-                             get : function () {}
-                         }
-                     },
-                 };
-                 processFetchRequestInternal(fakeEvent,cb);
-             }
              
              function processFetchRequest(event) {
                 event.respondWith(
@@ -585,23 +584,6 @@ ml(0,ml(1),[
                  return url.replace(/^http(s?)\:\/\//,protocol+'://');
              }
              
-             function full_URL(base,url) {
-                 
-                 if (typeof url==='string') {
-                     if (url.length===0) return base;
-                 
-                     switch (url[0]) {
-                         case '/' : return base+url;
-                         case 'h' : if (/^http(s?)\:\/\//.test(url)) return url; break;
-                         case '.' : if ( url.substr(0,2)==='./') {
-                             return base + url.substr(1);
-                         }
-                     }
-
-                     return base + url;
-                 }
-                 
-             }
              
              function getZipFileUpdates(url,cb) {
                  url = url.endsWith('.zip/') ? url : url.endsWith('.zip') ? url +"/" : false;
@@ -1744,91 +1726,8 @@ ml(0,ml(1),[
            }
              
             
-            function fixupKeys(db) {
-                if (db) {
-                    Object.keys(db).forEach(function(key){
-                        const newkey=key.toLowerCase();
-                        if (newkey===key) return;
-                        db[newkey]=db[key]
-                        delete db[key];
-                    });
-                }
-                return db;
-            }
-            
-            
-            
-            
-             
-             function updateURLContents(url,db,responseData,responseState,cb) {
-                 
-                 if (typeof responseState==='function') {
-                     cb            = responseState;
-                     responseState = undefined;
-                 }
-                 
-                 if (typeof db==='string') {
-                     db = databases[db];
-                 }
-                 
-                 url = full_URL(location.origin,url);
-                 
-                 getPayload(function(payload){
-                     fixupKeys(payload[1].headers);
-                     db.setItem(url,payload,cb);
-                 });
+           
 
-                 function getPayload (cb) {
-                     if (responseState) return cb ([responseData,responseState]);
-                     
-                     sha1(responseData,function(err,hash){
-                         cb([
-                             responseData,
-                             {
-                                status : 200,
-                                headers:{     'Content-Type'   : mimeForFilename(url),
-                                   'Content-Length' : responseData.byteLength || responseData.length,
-                                   'ETag'           : hash,
-                                   'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                   'Last-Modified'  : new Date().toString()
-                                }
-                                 
-                             }
-                         ]);
-                     });
-                 }
-             }
-            
-             function fetchUpdatedURLContents(url,cb) {
-                 
-                 url = full_URL(location.origin,url);
-                 
-                 databases.updatedURLS.getItem(url,function(err,args){
-                     if(err) {
-                         return cb(err);
-                     }
-                     if (args) {
-                         const buffer = args[0];
-                         return cb (undefined,buffer,true);
-                     } else {
-                         
-                         
-                         fetchInternal(url,function(err,response){
-                               if(err) {
-                                  return cb(err);
-                               }
-                               response.arrayBuffer().then(function(buffer){
-                                   return cb (undefined,buffer,false);
-                               });
-                         });
-                     }
-                 });
-             }
-             
-             function removeUpdatedURLContents(url,cb) {
-                 url = full_URL(location.origin,url);
-                 databases.updatedURLS.removeItem(url,cb);
-             }
 
              return lib;
              
@@ -1842,7 +1741,12 @@ ml(0,ml(1),[
         
         Window: [  ],
 
-        ServiceWorkerGlobalScope: [ () => self.sha1Lib.cb,  () => fnSrc, () => self.zipFSListingLib, ()=>self.ml_db_Lib   ]
+        ServiceWorkerGlobalScope: [ 
+            () => self.sha1Lib.cb,  
+            () => fnSrc, 
+            () => self.zipFSListingLib, 
+            () => self.ml_db_Lib,
+            () => self.zipUpLib ]
     };
       
       
