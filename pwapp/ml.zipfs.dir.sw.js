@@ -275,7 +275,7 @@ ml(0,ml(1),[
                     getZipObject(zip_url,function(err,zip,zipFileMeta){
                         if (err) return cb(err);
                         getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
-                            const filenames = Object.keys(zipFileMeta.files).filter(tools.filterFileList);
+                            const filenames = tools.filterFileList(Object.keys(zipFileMeta.files));
                             const zip = new JSZip();
                             function nextFile(i) {
                                 if (i<filenames.length) {
