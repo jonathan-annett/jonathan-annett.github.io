@@ -393,7 +393,11 @@ ml(0,ml(1),[
                       self = {},
                       fs_api = fsZipApi();
       
-                window.addEventListener(api_call_event_name,apiCall);      
+                window.addEventListener(api_call_event_name,apiCall);
+                
+                
+                window.addEventListener('beforeunload',windowUnloading);
+
 
                 Object.defineProperties (self,{
                     open : { value : openFile }
@@ -401,6 +405,15 @@ ml(0,ml(1),[
                 
                 zipFS_apiHook.singleton = self;
                 return self.open(initial_path);
+                
+                
+                function windowUnloading () {
+                    
+                    window.dispatchEvent( 
+                        new CustomEvent( 'zipFS_apiHook',{  detail: {  api_id : api_id,  zipfs: full_zip_uri, unloading:true  } })
+                    );
+                     
+                }
                 
                 function openFile(file) {
                      initial_path = file;
