@@ -53,7 +53,10 @@ ml(0,ml(1),[
                  
              };
              
-             const { resolveZipListing, resolveFullZipDownload }  =  listingLib( getZipObject,fetchInternalBuffer,getZipFileUpdates,getZipDirMetaTools,fileisEdited ); 
+             const { resolveZipListing, resolveFullZipDownload }  =  listingLib( 
+                getZipObject,fetchInternalBuffer,getZipFileUpdates,
+                getZipDirMetaTools,fileisEdited,response200
+            );
                               
              const openZipFileCache = { };
              
