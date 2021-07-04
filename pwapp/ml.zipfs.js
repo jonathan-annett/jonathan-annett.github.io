@@ -462,8 +462,7 @@ ml(0,ml(1),[
              }
 
              function fetchFileFromZipEvent (event) {
-                const url = event.fixup_url;
-                return  doFetchZipUrl(event.request,url);
+                return  doFetchZipUrl(event.request,event.fixup_url,event.fixup_query);
              }
              
              function fetchFileFromCacheEvent(event) {
@@ -1648,7 +1647,7 @@ ml(0,ml(1),[
                  }
              }
              
-             function doFetchZipUrl(request,url) {
+             function doFetchZipUrl(request,url,params) {
                      
                  //const url             = request.url; 
                  const parts           = url.split('.zip/');
@@ -1668,9 +1667,9 @@ ml(0,ml(1),[
                          // we don't let you download the zip. we do however give you the file list when you ask for a zip
                          // which provides links to each file inside
                          
-                         switch (event.fixup_query) {
+                         switch (params) {
                              
-                             case '?fulldowload' :  return resolveFullZipDownload( url );
+                             case '?fulldownload' :  return resolveFullZipDownload( url );
                          
                          }
                          return resolveZipListing ( url ) ; 
