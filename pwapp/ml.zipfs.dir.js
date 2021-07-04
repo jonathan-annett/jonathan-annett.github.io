@@ -256,10 +256,6 @@ ml(0,ml(1),[
                     }
                 });
                 
-                qs("h1 a.download",function click(){
-                      
-                });
-                
                 qs("h1 a.newfile",function click(){
                     inputModal.style.display = "block";
                 });

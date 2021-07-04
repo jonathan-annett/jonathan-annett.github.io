@@ -1663,14 +1663,14 @@ ml(0,ml(1),[
                      
                  } else {
                  
-                     if (request.url.endsWith('.zip')) {
+                     if (url.endsWith('.zip')) {
                          // this is a url pointing to a possibly existing zip file
                          // we don't let you download the zip. we do however give you the file list when you ask for a zip
                          // which provides links to each file inside
                          
-                         switch (request.headers.get('x-download-zip')) {
+                         switch (event.fixup_query) {
                              
-                             case 'full' :  return resolveFullZipDownload( url );
+                             case '?fulldowload' :  return resolveFullZipDownload( url );
                          
                          }
                          return resolveZipListing ( url ) ; 
