@@ -7,7 +7,7 @@ ml(0,ml(1),[
     'JSZipUtils@ServiceWorkerGlobalScope    | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
     'JSZip@ServiceWorkerGlobalScope         | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
     'ml_db_Lib@ServiceWorkerGlobalScope     | ml.db.js',
-    'zipUpWriteLib@ServiceWorkerGlobalScope | ml.zipfs.fetch.updated-write.js'
+    'zipUpWriteLib@ServiceWorkerGlobalScope | ml.fetch.updated-write.js'
    
 
     ],function(){ml(2,ml(3),ml(4),
@@ -38,9 +38,10 @@ ml(0,ml(1),[
                        fetchUpdatedURLContents,
                        removeUpdatedURLContents,
                        fixupKeys
-                   } = self.zipUpWriteLib(databases,processFetchRequestInternal,mimeForFilename);
+                   } = self.zipUpWriteLib(databases,fetchInternalBuffer,mimeForFilename);
 
              const lib = {
+                 
                  processFetchRequest      : processFetchRequest,
                  newFixupRulesArray       : newFixupRulesArray,
                  
@@ -49,9 +50,10 @@ ml(0,ml(1),[
                  removeUpdatedURLContents : removeUpdatedURLContents,
                  
                  getZipDirMetaTools       : getZipDirMetaToolsExternal
+                 
              };
              
-             const { resolveZipListing }  =  listingLib( getZipObject,getZipFileUpdates,getZipDirMetaTools,fileisEdited ); 
+             const { resolveZipListing, resolveFullZipDownload }  =  listingLib( getZipObject,fetchInternalBuffer,getZipFileUpdates,getZipDirMetaTools,fileisEdited ); 
                               
              const openZipFileCache = { };
              
@@ -139,8 +141,10 @@ ml(0,ml(1),[
                        
                       // we get here the url isn't inside a virtual dir  
                        
-                      fetchFileFromZipEvent,   
+                      fetchFileFromZipEvent,
+                      
                       fetchFileFromCacheEvent,
+                      
                       defaultFetchEvent  
                   ];
                   
@@ -151,14 +155,14 @@ ml(0,ml(1),[
                           return ;
                       }
                       
-                      console.log("trying",handler.name,"for",event.fixup_url,"from",event.request.referrer);
+                      //console.log("trying",handler.name,"for",event.fixup_url,"from",event.request.referrer);
                       const promise = handler(event);
                       
                       if (promise) {
                          promise.then(function(response){
                              if (!response) return next(chain.shift()); 
                                  
-                             console.log(handler.name,"returned a response for",event.fixup_url,"from",event.request.referrer); 
+                             //console.log(handler.name,"returned a response for",event.fixup_url,"from",event.request.referrer); 
                              chain.splice(0,chain.length);
                              cb(undefined,response);
  
@@ -175,6 +179,31 @@ ml(0,ml(1),[
                   };
                   
                   next(chain.shift()); 
+             }
+             
+             
+             function fetchInternal(url,cb) {
+                 const fakeEvent = {
+                     request : {
+                         url      : url,
+                         referrer : 'about:client',
+                         headers  : {
+                             get : function () {}
+                         }
+                     },
+                 };
+                 processFetchRequestInternal(fakeEvent,cb);
+             }
+             
+             function fetchInternalBuffer(url,cb){
+                  fetchInternal(url,function(err,response){
+                        if(err) {
+                           return cb(err);
+                        }
+                        response.arrayBuffer().then(function(buffer){
+                            return cb (undefined,buffer);
+                        });
+                  });    
              }
              
              
@@ -207,7 +236,7 @@ ml(0,ml(1),[
                      });
                      
                      
-                     console.log("finished cleaning up cached files older than 60 mins.")
+                     //console.log("finished cleaning up cached files older than 60 mins.")
                  }
                  
                  setTimeout(cleanupOld,60*1000);
@@ -468,7 +497,7 @@ ml(0,ml(1),[
                                     });
                                     
                              } else {
-                                 console.log("not caching",url,"status",status,"from",event.request.referrer,headers);
+                                 //console.log("not caching",url,"status",status,"from",event.request.referrer,headers);
                                  resolve(response);
                              }
                          });
@@ -836,6 +865,9 @@ ml(0,ml(1),[
                  });
                  
              }
+             
+             
+             
              
              function mimeForFilename(filename) {
                  //lsauer.com , lo sauer 2013
@@ -1635,7 +1667,15 @@ ml(0,ml(1),[
                          // this is a url pointing to a possibly existing zip file
                          // we don't let you download the zip. we do however give you the file list when you ask for a zip
                          // which provides links to each file inside
+                         
+                         switch (request.headers.get('x-download-zip')) {
+                             
+                             case 'full' :  return resolveFullZipDownload( url );
+                         
+                         }
                          return resolveZipListing ( url ) ; 
+                         
+                        
                      }
                  }
              }

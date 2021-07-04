@@ -1,6 +1,10 @@
 /* global ml,self, JSZipUtils,JSZip,localforage,Response,Headers,BroadcastChannel */
 
-ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
+ml(0,ml(1),[
+    
+    'sha1Lib                             | sha1.js'
+
+    ],function(){ml(2,ml(3),ml(4),
 
     {   
         ServiceWorkerGlobalScope: function zipFSListingLib (  listingLib ) {
@@ -18,11 +22,15 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
             
             };
             
-            function listingLib(getZipObject,getZipFileUpdates,getZipDirMetaTools,fileisEdited) {
+            function listingLib(getZipObject,fetchInternalBuffer,getZipFileUpdates,getZipDirMetaTools,fileisEdited,response200) {
+                
+                
+                const sha1 = self.sha1Lib.cb;
             
                 return  {
                     
                    resolveZipListing:resolveZipListing,
+                   resolveFullZipDownload:resolveFullZipDownload
 
                 };
                 
@@ -231,6 +239,74 @@ ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
                 
                     }
                 
+                }
+                
+                
+                
+                function resolveFullZipDownload( url) {
+                    
+                    return new Promise(function(resolve){
+                        
+                        getUpdatedZipFile(url,function(err,buffer){
+                            sha1(buffer,function(err,hash){
+                                const fileEntry = {
+                                    contentType   : 'application/zip',
+                                    contentLength : buffer.byteLength,
+                                    etag          : hash,
+                                    date          : new Date()
+                                };
+                                response200(resolve,buffer,fileEntry);
+                            });
+                        }); 
+                    
+                    });
+                    
+                }
+                
+                
+                function getUpdatedZipFile (zip_url,cb) {
+                    getZipObject(zip_url,function(err,zip,zipFileMeta){
+                        if (err) return cb(err);
+                        getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
+                            const filenames = Object.keys(zipFileMeta.files).filter(tools.filterFileList);
+                            const zip = new JSZip();
+                            function nextFile(i) {
+                                if (i<filenames.length) {
+                                    const filename  = filenames[i];
+                                    const fileEntry = zipFileMeta.files[filename];
+                                    
+                                    fetchInternalBuffer(zip_url+'/'+filename,function(err,buffer){
+                                        
+                                        zip.file(filename,buffer,{date : fileEntry.date,createFolders: false })
+                                           .then (function (){
+                                               nextFile(i+1);
+                                           }).catch(cb);
+                                           
+                                    });
+                                    
+                                } else {
+                                    
+                                    zip.generateAsync({
+                                        type: "arraybuffer",
+                                        compression: "DEFLATE",
+                                        compressionOptions: {
+                                            level: 9
+                                        },
+                                        platform : 'UNIX'
+                                    },function updateCallback(metadata) {
+                                          console.log("progression: " + metadata.percent.toFixed(2) + " %");
+                                          if(metadata.currentFile) {
+                                              console.log("current file = " + metadata.currentFile);
+                                          }
+                                      }).then(function (buffer) {
+                                         cb(undefined,buffer)
+                                    }).catch(cb);
+                                    
+                                }
+                            }
+                            nextFile(0);
+                        });
+                    });
                 }
                 
         

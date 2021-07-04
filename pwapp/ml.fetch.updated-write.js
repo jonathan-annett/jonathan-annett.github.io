@@ -4,7 +4,7 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),[
     
-   'zipUpLib                            | ml.zipfs.fetch.updated.js',
+   'zipUpLib                            | ml.fetch.updated.js',
    'sha1Lib                             | sha1.js'
   
     
@@ -16,13 +16,12 @@ ml(0,ml(1),[
             const lib = {
             };
             
-        
             return lib;
         },
 
         ServiceWorkerGlobalScope: function zipUpWriteLib( lib ) {
 
-            
+            // 
 
             return lib;
         } 
@@ -39,11 +38,11 @@ ml(0,ml(1),[
     );
 
             
-    function fetchUpdatedLib(databases,processFetchRequestInternal,mimeForFilename) {
+    function fetchUpdatedLib(databases,fetchInternalBuffer,mimeForFilename) {
         
         
     const sha1 = self.sha1Lib.cb;
-    const { fetchUpdatedURLContents,fixupKeys,full_URL }  = self.zipUpLib(databases,processFetchRequestInternal);
+    const { fetchUpdatedURLContents,fixupKeys,full_URL }  = self.zipUpLib(databases,fetchInternalBuffer);
     
             
     return {
@@ -97,6 +96,7 @@ ml(0,ml(1),[
         databases.updatedURLS.removeItem(url,cb);
     }
     
+   
 
 
 }
