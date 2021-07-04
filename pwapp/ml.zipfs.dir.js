@@ -408,7 +408,9 @@ ml(0,ml(1),[
                 
                 
                 function windowUnloading () {
-                    
+                    // invoked by browser when user closes BROWSER window
+                    window.removeEventListener('beforeunload',windowUnloading);
+                    window.removeEventListener(api_call_event_name,apiCall);
                     window.dispatchEvent( 
                         new CustomEvent( 'zipFS_apiHook',{  detail: {  api_id : api_id,  zipfs: full_zip_uri, unloading:true  } })
                     );
@@ -556,7 +558,30 @@ ml(0,ml(1),[
                                     }
                                },
                                
-                               getCapabilities: function(reqId) { }
+                               getCapabilities: function(reqId) { },
+                               
+                               
+                               unmount : function (reqId) {
+                                    // this zip file is being unmounted.
+                                    const replyMsgId = 'zipFS_'+reqId;
+                                    window.dispatchEvent( 
+                                        new CustomEvent(replyMsgId,{  detail: {  resolve : reqId } })
+                                    );
+                                    window.removeEventListener(api_call_event_name,apiCall);
+                                    window.removeEventListener('beforeunload',windowUnloading);
+                                    zedstate=undefined;
+                                    initial_path=undefined;
+                                    delete zipFS_apiHook.singleton;
+                                    
+                                    // pedantically releas each refrenceed object / function
+                                    Object.keys(fs_api).forEach(function (fn){
+                                        delete fs_api[fn];
+                                    });
+                                    
+                                    Object.keys(self).forEach(function (fn){
+                                        delete self[fn];
+                                    });
+                               } 
                            };
                     
                     
@@ -603,10 +628,10 @@ ml(0,ml(1),[
                 }
                
                 function prependSlash(x) { return "/"+x.replace(leadingSlash,'');}
+                
                 function removePrependedSlash (x) { return x.replace(leadingSlash,'') }
                 
-                
-                
+            
                 function getZedState(cb) {
                     if (!zedstate) {
                         zedstate = JSON.stringify({"session.current": [ '/'+initial_path  ]});
