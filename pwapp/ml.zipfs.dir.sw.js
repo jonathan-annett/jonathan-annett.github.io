@@ -22,7 +22,7 @@ ml(0,ml(1),[
             
             };
             
-            function listingLib(getZipObject,fetchInternalBuffer,getZipFileUpdates,getZipDirMetaTools,fileisEdited,response200) {
+            function listingLib(getZipObject,fetchUpdatedURLContents,getZipFileUpdates,getZipDirMetaTools,fileisEdited,response200) {
                 
                 
                 const sha1 = self.sha1Lib.cb;
@@ -282,7 +282,8 @@ ml(0,ml(1),[
                                     const filename  = filenames[i];
                                     const fileEntry = zipFileMeta.files[filename];
                                     
-                                    fetchInternalBuffer(zip_url+'/'+filename,function(err,buffer){
+                                    
+                                    fetchUpdatedURLContents(zip_url+'/'+file,function(err,buffer){
                                         if (err) return cb (err);
                                         newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false });
                                         nextFile(i+1);

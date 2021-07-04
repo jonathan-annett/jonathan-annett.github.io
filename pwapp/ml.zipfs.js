@@ -54,7 +54,7 @@ ml(0,ml(1),[
              };
              
              const { resolveZipListing, resolveFullZipDownload }  =  listingLib( 
-                getZipObject,fetchInternalBuffer,getZipFileUpdates,
+                getZipObject,fetchUpdatedURLContents,getZipFileUpdates,
                 getZipDirMetaTools,fileisEdited,response200
             );
                               
