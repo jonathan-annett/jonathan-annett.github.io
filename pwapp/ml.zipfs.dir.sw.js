@@ -283,20 +283,31 @@ ml(0,ml(1),[
                     }
                     getZipObject(zip_url,function(err,zip,zipFileMeta){
                         if (err) return cb(err);
+                        const log = [];
                         getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
                             tools[mode](function(filenames){
                                 const newZip = new JSZip();
                                 function nextFile(i) {
                                     if (i<filenames.length) {
                                         const filename  = filenames[i];
+                                        if (filename==='.log.txt') return nextFile(i+1);
                                         const fileEntry = zipFileMeta.files[filename];
-                                        fetchUpdatedURLContents(zip_url+'/'+filename,function(err,buffer){
-                                            if (err) return cb (err);
-                                            newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false });
+                                         
+                                        if (fileEntry) {
+                                            fetchUpdatedURLContents(zip_url+'/'+filename,function(err,buffer){
+                                                if (err) return cb (err);
+                                                newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false });
+                                                log.push('added '+filename);
+                                                nextFile(i+1);
+                                            });
+                                        } else {
+                                            log.push('no zip entry for '+filename+', skipping');
                                             nextFile(i+1);
-                                        });
+                                        }
                                         
                                     } else {
+                                        
+                                        newZip.file('.log.txt',log.join('\n'),{date : new Date(),createFolders: false });
                                         
                                         newZip.generateAsync({
                                             type: "arraybuffer",
