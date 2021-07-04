@@ -126,7 +126,7 @@ ml(0,ml(1),[
                        const el = find_li(file);
                        if (el) {
                            el.classList.add('edited');
-                           el.classList.remove('editing');
+                           el.classList.add('editing');
                        }
                        if(cb)cb(err,msg);
                    });
@@ -181,7 +181,7 @@ ml(0,ml(1),[
                     };
                 });
             }
-            
+            const modified_files = {};
             const lib = {
                pwaApi : pwaApi
             };
@@ -355,13 +355,15 @@ ml(0,ml(1),[
                 
                 if (!e.shiftKey) {
                    li.classList.add("editing");
-                   zipFS_apiHook(filename);
+                   zipFS_apiHook(filename).onunmount = onEditorClose;
+                   
                 } else {
                     const file_url = zip_url_base + '/'+filename;
                     open_url(file_url);
                 }
             }
             
+          
             function deleteClick(e) {
                 e.stopPropagation();
                 const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
@@ -563,6 +565,10 @@ ml(0,ml(1),[
                                
                                unmount : function (reqId) {
                                     // this zip file is being unmounted.
+                                    
+                                    if (self.onunmount) {
+                                        self.onunmount();
+                                    }
                                     const replyMsgId = 'zipFS_'+reqId;
                                     window.dispatchEvent( 
                                         new CustomEvent(replyMsgId,{  detail: {  resolve : reqId } })
@@ -577,6 +583,8 @@ ml(0,ml(1),[
                                     Object.keys(fs_api).forEach(function (fn){
                                         delete fs_api[fn];
                                     });
+                                    
+                                   
                                     
                                     Object.keys(self).forEach(function (fn){
                                         delete self[fn];
@@ -630,23 +638,18 @@ ml(0,ml(1),[
                 function prependSlash(x) { return "/"+x.replace(leadingSlash,'');}
                 
                 function removePrependedSlash (x) { return x.replace(leadingSlash,'') }
-                
-            
+
                 function getZedState(cb) {
                     if (!zedstate) {
                         zedstate = JSON.stringify({"session.current": [ '/'+initial_path  ]});
                     }
                     return cb (zedstate);
                 } 
-                
-                
+
                 function setZedState (json,cb) {
                     zedstate = json;
                     cb();
                 }
-                
-                
-                
                 
             }
             
@@ -683,14 +686,7 @@ ml(0,ml(1),[
                     if (msg.hash && msg.writeFileString) {
                         
                         if (msg.writeFileString.replace(/^\//,'') !== '.zedstate') {
-                            
-                            if (initial_path!==msg.writeFileString) {
-                                const el = find_li(initial_path);
-                                el.classList.remove("editing");
-                               
-                            }
-                            
-                            initial_path = msg.writeFileString.replace(/^\//,'');
+                                 initial_path = msg.writeFileString.replace(/^\//,'');
                             cb (initial_path);
                             const anchor = qs('a[data-filename="'+initial_path+'"]');
                             if (anchor) {
@@ -699,8 +695,9 @@ ml(0,ml(1),[
                                 if (sh) {
                                     sh.innerHTML=msg.hash;
                                 }
-                                el.classList.remove("editing");
+                                el.classList.add("editing");
                                 el.classList.add("edited");
+                                modified_files[initial_path]=1;
                             } else {
                                
                                     qs("ul",function(el){
@@ -714,6 +711,8 @@ ml(0,ml(1),[
                                         addViewClick(qs("#"+newid+" a span.normal"));
                                         let edBtn = qs("#"+newid+" a span.editinzed");
                                         el.classList.add("edited");
+                                        el.classList.add("editing");
+                                        modified_files[initial_path]=1;
                                         pwaApi.isHidden(initial_path,function(hidden){
                                             if (hidden) {
                                                 el.classList.add("hidden");
@@ -740,8 +739,20 @@ ml(0,ml(1),[
                 });
             }
             
+            
+            function onEditorClose () {
+                Object.keys(modified_files).forEach(function(file){
+                    const li = find_li(file);
+                    if (li) {
+                        li.classList.remove("editing");
+                    }
+                    delete modified_files[file];
+                });
+            }
+            
+            
             function find_li (file) {
-                  const anchor = qs('a[data-filename="'+file+'"]');
+                  const anchor = qs('a[data-filename="'+file.replace(/^\//,'')+'"]');
                   return anchor && anchor.parentElement;
             }
 
@@ -876,8 +887,10 @@ ml(0,ml(1),[
             
             
             //registerForNotifications("/",function(){});
+            zipFS_apiHook ().onunmount = function () {
+                
+            };
             
-            zipFS_apiHook ();
             
             return lib;
         } 
