@@ -53,7 +53,7 @@ ml(0,ml(1),[
                  
              };
              
-             const { resolveZipListing, resolveFullZipDownload }  =  listingLib( 
+             const { resolveZipListing, resolveZipDownload }  =  listingLib( 
                 getZipObject,fetchUpdatedURLContents,getZipFileUpdates,
                 getZipDirMetaTools,fileisEdited,response200
             );
@@ -97,11 +97,28 @@ ml(0,ml(1),[
                     response.json().then(function(x){return cb(undefined,x)}).catch(cb); 
                  }).catch(cb);
              }
+             
+             function queryToObject(q) {
+                 var
+                 i = 0,
+                 retObj = {},
+                 pair = null,
+                 qArr = q.substr(1).split('&');
+              
+                 for (; i < qArr.length; i++){
+                     pair = qArr[i].split('=');
+                     retObj[pair[0]] = pair[1];
+                 }
+              
+                 return retObj;
+             }
+           
 
              function processFetchRequestInternal(event,cb) {
                   const querySplit  = event.request.url.indexOf('?');
                   event.fixup_url   = querySplit < 0 ? event.request.url : event.request.url.substr(0,querySplit);
                   event.fixup_query = querySplit < 0 ? '' : event.request.url.substr(querySplit);
+                  event.fixup_params = queryToObject.bind(this,event.fixup_query);
                   
                   const chain = [
                       
@@ -465,7 +482,7 @@ ml(0,ml(1),[
              }
 
              function fetchFileFromZipEvent (event) {
-                return  doFetchZipUrl(event.request,event.fixup_url,event.fixup_query);
+                return  doFetchZipUrl(event.request,event.fixup_url,event.fixup_params());
              }
              
              function fetchFileFromCacheEvent(event) {
@@ -1341,6 +1358,31 @@ ml(0,ml(1),[
                                 }); 
                              },
                              
+                             allFiles : function (cb) {
+                                 // get all files currently in the zip, regardless of weather they are "deleted" or not.
+                                 cb(Object.keys(zipFileMeta.files));
+                             },
+                             files : function (cb) {
+                                 // get all files currently in the zip, and are not flagged as deleted
+                                 cb(zipFileMeta.tools.filterFileList(Object.keys(zipFileMeta.files)));
+                             },
+                             editedFiles : function (cb) {
+                                 // get files that are in the updated files list
+                                 getZipFileUpdates(url,function(err,files){
+                                    if (err) return cb([]);
+                                    // and have not been deleted.
+                                   cb(zipFileMeta.tools.filterFileList(files));
+                                 });
+                             },
+                             hiddenFiles : function (cb) {
+                                 const hidden=meta.hidden?meta.hidden.slice():[];
+                                 cb(hidden);
+                             },
+                             deletedFiles : function (cb) {
+                                 const deleted=meta.deleted?meta.deleted.slice():[];
+                                 cb(deleted);
+                             },
+                             
                              deleteFile : function (file_name,cb) {
                                  meta.deleted = meta.deleted || [];
                                  const msgReply = {deleted:file_name};
@@ -1672,10 +1714,8 @@ ml(0,ml(1),[
                          // we don't let you download the zip. we do however give you the file list when you ask for a zip
                          // which provides links to each file inside
                          
-                         switch (params) {
-                             
-                             case '?fulldownload' :  return resolveFullZipDownload( url );
-                         
+                         if (params.download) {
+                             return resolveZipDownload( url, params.download );
                          }
                          return resolveZipListing ( url ) ; 
                          

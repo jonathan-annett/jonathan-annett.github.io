@@ -30,7 +30,8 @@ ml(0,ml(1),[
                 return  {
                     
                    resolveZipListing:resolveZipListing,
-                   resolveFullZipDownload:resolveFullZipDownload
+                   resolveZipDownload:resolveZipDownload,
+                   getUpdatedZipFile:getUpdatedZipFile
 
                 };
                 
@@ -209,7 +210,8 @@ ml(0,ml(1),[
                         
                         '<span id="show_hidden">show hidden files</span><input class="hidden_chk" type="checkbox">' ,
                         
-                        '<a class="download" href="/'+uri+'?fulldownload">&nbsp;&nbsp;&nbsp;</a>','<a class="newfile">&nbsp;&nbsp;&nbsp;</a>',
+                        '<a class="downloadfull" href="/'+uri+'?download=full" data-balloon-pos="down-left" aria-label="Download full (with edits)">&nbsp;&nbsp;&nbsp;</a>',
+                        '<a class="download" href="/'+uri+'?download=edits" data-balloon-pos="down-left" aria-label="Download edited files">&nbsp;&nbsp;&nbsp;</a>',
                         '</h1>',
                            
                         '<div id="inputModal" class="modal">',
@@ -243,11 +245,11 @@ ml(0,ml(1),[
                 
                 
                 
-                function resolveFullZipDownload( url) {
+                function resolveZipDownload( url, mode) {
                     
                     return new Promise(function(resolve){
                         
-                        getUpdatedZipFile(url,function(err,buffer){
+                        getUpdatedZipFile(url,mode,function(err,buffer){
                             if (err) {
                                 return resolve(new Response('', {
                                     status: 500,
@@ -271,45 +273,54 @@ ml(0,ml(1),[
                 }
                 
                 
-                function getUpdatedZipFile (zip_url,cb) {
+                function getUpdatedZipFile (zip_url,mode,cb) {
+                    if (typeof mode==='function') {
+                        cb = mode; mode = 'files'
+                    }
+                    
+                    if (['files','editedFiles','hidden','allFiles','deleted'].indexOf(mode)<0) {
+                        mode='files';
+                    }
                     getZipObject(zip_url,function(err,zip,zipFileMeta){
                         if (err) return cb(err);
                         getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
-                            const filenames = tools.filterFileList(Object.keys(zipFileMeta.files));
-                            const newZip = new JSZip();
-                            function nextFile(i) {
-                                if (i<filenames.length) {
-                                    const filename  = filenames[i];
-                                    const fileEntry = zipFileMeta.files[filename];
-                                    fetchUpdatedURLContents(zip_url+'/'+filename,function(err,buffer){
-                                        if (err) return cb (err);
-                                        newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false });
-                                        nextFile(i+1);
-                                    });
-                                    
-                                } else {
-                                    
-                                    newZip.generateAsync({
-                                        type: "arraybuffer",
-                                        compression: "DEFLATE",
-                                        compressionOptions: {
-                                            level: 9
-                                        },
-                                        platform : 'UNIX'
-                                    },function updateCallback(metadata) {
-                                          console.log("progression: " + metadata.percent.toFixed(2) + " %");
-                                          if(metadata.currentFile) {
-                                              console.log("current file = " + metadata.currentFile);
-                                          }
-                                      }).then(function (buffer) {
-                                         cb(undefined,buffer)
-                                    }).catch(cb);
-                                    
+                            tools[mode](function(filenames){
+                                const newZip = new JSZip();
+                                function nextFile(i) {
+                                    if (i<filenames.length) {
+                                        const filename  = filenames[i];
+                                        const fileEntry = zipFileMeta.files[filename];
+                                        fetchUpdatedURLContents(zip_url+'/'+filename,function(err,buffer){
+                                            if (err) return cb (err);
+                                            newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false });
+                                            nextFile(i+1);
+                                        });
+                                        
+                                    } else {
+                                        
+                                        newZip.generateAsync({
+                                            type: "arraybuffer",
+                                            compression: "DEFLATE",
+                                            compressionOptions: {
+                                                level: 9
+                                            },
+                                            platform : 'UNIX'
+                                        },function updateCallback(metadata) {
+                                              console.log("progression: " + metadata.percent.toFixed(2) + " %");
+                                              if(metadata.currentFile) {
+                                                  console.log("current file = " + metadata.currentFile);
+                                              }
+                                          }).then(function (buffer) {
+                                             cb(undefined,buffer)
+                                        }).catch(cb);
+                                        
+                                    }
                                 }
-                            }
-                            nextFile(0);
+                                nextFile(0);
+                            });
                         });
                     });
+                    
                 }
                 
         
