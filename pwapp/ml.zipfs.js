@@ -7,7 +7,7 @@ ml(0,ml(1),[
     'JSZipUtils@ServiceWorkerGlobalScope | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
     'JSZip@ServiceWorkerGlobalScope      | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
     'ml_db_Lib@ServiceWorkerGlobalScope  | ml.db.js',
-    'zipUpLib@ServiceWorkerGlobalScope   | ml.fetch.updated.js'
+    'zipUpLib@ServiceWorkerGlobalScope   | ml.zipfs.fetch.updated.js'
 
     ],function(){ml(2,ml(3),ml(4),
 
