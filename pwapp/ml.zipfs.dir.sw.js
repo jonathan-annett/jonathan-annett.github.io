@@ -248,6 +248,13 @@ ml(0,ml(1),[
                     return new Promise(function(resolve){
                         
                         getUpdatedZipFile(url,function(err,buffer){
+                            if (err) {
+                                return resolve(new Response('', {
+                                    status: 500,
+                                    statusText: err.message|| err
+                                }));
+                            }
+                            
                             sha1(buffer,function(err,hash){
                                 const fileEntry = {
                                     contentType   : 'application/zip',
@@ -276,7 +283,7 @@ ml(0,ml(1),[
                                     const fileEntry = zipFileMeta.files[filename];
                                     
                                     fetchInternalBuffer(zip_url+'/'+filename,function(err,buffer){
-                                        
+                                        if (err) return cb (err);
                                         zip.file(filename,buffer,{date : fileEntry.date,createFolders: false })
                                            .then (function (){
                                                nextFile(i+1);
