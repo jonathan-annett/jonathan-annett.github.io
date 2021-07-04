@@ -209,7 +209,7 @@ ml(0,ml(1),[
                         
                         '<span id="show_hidden">show hidden files</span><input class="hidden_chk" type="checkbox">' ,
                         
-                        '<a class="download" href="'+uri+'?fulldowload">&nbsp;&nbsp;&nbsp;</a>','<a class="newfile">&nbsp;&nbsp;&nbsp;</a>',
+                        '<a class="download" href="'+uri+'?fulldownload">&nbsp;&nbsp;&nbsp;</a>','<a class="newfile">&nbsp;&nbsp;&nbsp;</a>',
                         '</h1>',
                            
                         '<div id="inputModal" class="modal">',
