@@ -1364,14 +1364,31 @@ ml(0,ml(1),[
                              },
                              files : function (cb) {
                                  // get all files currently in the zip, and are not flagged as deleted
-                                 cb(zipFileMeta.tools.filterFileList(Object.keys(zipFileMeta.files)));
+                                 cb(
+                                     
+                                     
+                                     zipFileMeta.tools.filterFileList(Object.keys(zipFileMeta.files))
+                                       .filter(function(file){
+                                           return !isHidden(file);
+                                       })
+                                     
+                                );
                              },
                              editedFiles : function (cb) {
                                  // get files that are in the updated files list
                                  getZipFileUpdates(url,function(err,files){
                                     if (err) return cb([]);
                                     // and have not been deleted.
-                                   cb(zipFileMeta.tools.filterFileList(files));
+                                   cb(
+                                       
+                                       zipFileMeta
+                                         .tools
+                                           .filterFileList(files)
+                                             .filter(function(file){
+                                               return !isHidden(file);
+                                             })
+                                       
+                                   )
                                  });
                              },
                              hiddenFiles : function (cb) {
