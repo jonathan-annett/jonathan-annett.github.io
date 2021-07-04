@@ -284,11 +284,8 @@ ml(0,ml(1),[
                                     
                                     fetchInternalBuffer(zip_url+'/'+filename,function(err,buffer){
                                         if (err) return cb (err);
-                                        newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false })
-                                           .then (function (){
-                                               nextFile(i+1);
-                                           }).catch(cb);
-                                           
+                                        newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false });
+                                        nextFile(i+1);
                                     });
                                     
                                 } else {
