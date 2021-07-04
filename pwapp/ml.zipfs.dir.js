@@ -355,6 +355,7 @@ ml(0,ml(1),[
                 
                 if (!e.shiftKey) {
                    li.classList.add("editing");
+                   modified_files[filename]=1;
                    zipFS_apiHook(filename).onunmount = onEditorClose;
                    
                 } else {

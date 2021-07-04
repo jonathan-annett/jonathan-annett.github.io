@@ -2,12 +2,13 @@
 
 ml(0,ml(1),[ 
     
-    'sha1Lib                             | sha1.js',
-    'zipFSListingLib                     | ml.zipfs.dir.sw.js',
-    'JSZipUtils@ServiceWorkerGlobalScope | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
-    'JSZip@ServiceWorkerGlobalScope      | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
-    'ml_db_Lib@ServiceWorkerGlobalScope  | ml.db.js',
-    'zipUpLib@ServiceWorkerGlobalScope   | ml.zipfs.fetch.updated.js'
+    'sha1Lib                                | sha1.js',
+    'zipFSListingLib                        | ml.zipfs.dir.sw.js',
+    'JSZipUtils@ServiceWorkerGlobalScope    | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
+    'JSZip@ServiceWorkerGlobalScope         | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
+    'ml_db_Lib@ServiceWorkerGlobalScope     | ml.db.js',
+    'zipUpWriteLib@ServiceWorkerGlobalScope | ml.zipfs.fetch.updated-write.js'
+   
 
     ],function(){ml(2,ml(3),ml(4),
 
@@ -23,7 +24,7 @@ ml(0,ml(1),[
 
         },
         
-        ServiceWorkerGlobalScope: function swResponseZipLib (sha1,fnSrc, listingLib,ml_db, upLib) {
+        ServiceWorkerGlobalScope: function swResponseZipLib (sha1,fnSrc, listingLib,ml_db) {
         
         
         return function (dbKeyPrefix) {
@@ -37,7 +38,7 @@ ml(0,ml(1),[
                        fetchUpdatedURLContents,
                        removeUpdatedURLContents,
                        fixupKeys
-                   } = upLib(databases,processFetchRequestInternal,mimeForFilename);
+                   } = self.zipUpWriteLib(databases,processFetchRequestInternal,mimeForFilename);
 
              const lib = {
                  processFetchRequest      : processFetchRequest,
@@ -1745,8 +1746,7 @@ ml(0,ml(1),[
             () => self.sha1Lib.cb,  
             () => fnSrc, 
             () => self.zipFSListingLib, 
-            () => self.ml_db_Lib,
-            () => self.zipUpLib ]
+            () => self.ml_db_Lib ]
     };
       
       

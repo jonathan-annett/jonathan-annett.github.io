@@ -4,8 +4,6 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),[
     
-   'sha1Lib                             | sha1.js'
-  
     
     ],function(){ml(2,ml(3),ml(4),
 
@@ -38,56 +36,13 @@ ml(0,ml(1),[
     );
 
             
-    function fetchUpdatedLib(databases,processFetchRequestInternal,mimeForFilename) {
-        
-        
-    const sha1 = self.sha1Lib.cb;
+    function fetchUpdatedLib(databases,processFetchRequestInternal) {
 
     return {
-        updateURLContents,
         fetchUpdatedURLContents,
-        removeUpdatedURLContents,
-        fixupKeys
+        fixupKeys,
+        full_URL
     };
-
-    function updateURLContents(url,db,responseData,responseState,cb) {
-        
-        if (typeof responseState==='function') {
-            cb            = responseState;
-            responseState = undefined;
-        }
-        
-        if (typeof db==='string') {
-            db = databases[db];
-        }
-        
-        url = full_URL(location.origin,url);
-        
-        getPayload(function(payload){
-            fixupKeys(payload[1].headers);
-            db.setItem(url,payload,cb);
-        });
-    
-        function getPayload (cb) {
-            if (responseState) return cb ([responseData,responseState]);
-            
-            sha1(responseData,function(err,hash){
-                cb([
-                    responseData,
-                    {
-                       status : 200,
-                       headers:{     'Content-Type'   : mimeForFilename(url),
-                          'Content-Length' : responseData.byteLength || responseData.length,
-                          'ETag'           : hash,
-                          'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                          'Last-Modified'  : new Date().toString()
-                       }
-                        
-                    }
-                ]);
-            });
-        }
-    }
     
     function fetchUpdatedURLContents(url,cb) {
         
@@ -114,12 +69,6 @@ ml(0,ml(1),[
             }
         });
     }
-    
-    function removeUpdatedURLContents(url,cb) {
-        url = full_URL(location.origin,url);
-        databases.updatedURLS.removeItem(url,cb);
-    }
-    
     
     function fetchInternal(url,cb) {
         const fakeEvent = {
