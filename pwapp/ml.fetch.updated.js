@@ -48,43 +48,34 @@ ml(0,ml(1),[
             full_URL
         };
         
+        
         function fetchUpdatedURLContents(url,cb) {
-            
             url = full_URL(location.origin,url);
-            
-            databases.updatedURLS.getItem(url,function(err,args){
+            virtualDirQuery(url).then(function(entry){
                 
-                if(err) {
-                    return cb(err);
-                }
-                if (args) {
-                    const buffer = args[0];
-                    return cb (undefined,buffer,true);
+                if (entry) {
+                    doFetch(entry.fixup_url);
                 } else {
-                    
-                    
-                    virtualDirQuery(url).then(function(entry){
-                        
-                        if (entry) {
-                            
-                            if (entry.response) {
-                                
-                                entry.response.clone().arrayBuffer().then(function(buffer) {
-                                   cb(undefined,buffer);
-                                });
-                                
-                            } else {
-                                fetchInternalBuffer(url,entry.fixup_url,cb);
-                            }
-                            
-                        } else {
-                            fetchInternalBuffer(url,cb);
-                        }
-                        
-                    });
-
+                    doFetch(url);
                 }
+                
             });
+            
+            
+            function doFetch(use_url) {
+                databases.updatedURLS.getItem(use_url,function(err,args){
+                    
+                    if(err) {
+                        return cb(err);
+                    }
+                    if (args) {
+                        const buffer = args[0];
+                        return cb (undefined,buffer,true);
+                    }
+                    fetchInternalBuffer(use_url,cb);
+                    
+                });
+            }
         }
         
         function full_URL(base,url) {
