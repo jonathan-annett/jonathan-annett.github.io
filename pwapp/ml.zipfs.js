@@ -263,7 +263,8 @@ ml(0,ml(1),[
              }
              
              const fixupLog = console.info.bind(console);
-
+            
+             
              function fixupUrlEvent (event) {
                   const stamp = performance.now();
                   const url_in = event.fixup_url;
@@ -272,16 +273,16 @@ ml(0,ml(1),[
                       if (fixupUrlEvent.rules) {
                           
                           if (fixupUrlEvent.eventCache) {
-                             /* const previous = fixupUrlEvent.eventCache[url_in];
+                              const previous = fixupUrlEvent.eventCache[url_in];
                               if ( previous ) {
                                   Object.keys(previous).forEach(function(k){
                                       event[k]=previous[k];
                                   });
                                   fixupLog("reused previous url rulesmap: ",url_in,"-->",event.fixup_url,"details:",previous,performance.now()-stamp,"ms");
                                   return addEvents();
-                              }*/
+                              }
                           } else {
-                              //fixupLog("creating fixupUrlEvent.eventCache");
+                              fixupLog("creating fixupUrlEvent.eventCache");
                               fixupUrlEvent.eventCache={};
                           }
                           
