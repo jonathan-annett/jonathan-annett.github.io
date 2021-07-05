@@ -621,19 +621,18 @@ ml(0,ml(1),[
                             return recurse(temp,rules[ix]);
                         });
                     }
-                    const replacements = function (dest,src,k) {
-                        if (src[k]) {
-                           dest[k] = src[k].replace(/\$\{base\}/g,baseURI);
-                        }
-                    };
-                    const text_reps = function(x,i){
-                       replacements(template[i],x,'with');
-                       replacements(template[i],x,'addPrefix');
-                       return x;
-                    };
-                    rules.forEach(text_reps);
+                   
+                    replacements(template,rules,'with');
+                    replacements(template,rules,'addPrefix');
                     return template;
                 }
+                
+                function replacements(dest,src,k) {
+                    if (src[k]) {
+                       dest[k] = src[k].replace(/\$\{base\}/g,baseURI);
+                    }
+                }
+                
             }
              
              function newFixupRulesArray(arr) {
