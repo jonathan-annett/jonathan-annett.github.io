@@ -1774,7 +1774,7 @@ ml(0,ml(1),[
                          // which provides links to each file inside
                          
                          if (params.download) {
-                             return resolveZipDownload( url, params.download );
+                             return resolveZipDownload( url, params.download, virtual_prefix  );
                          }
                          return resolveZipListing ( url,undefined,virtual_prefix  ) ; 
                          

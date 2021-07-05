@@ -216,8 +216,8 @@ ml(0,ml(1),[
                         
                         '<span id="show_hidden">show hidden files</span><input class="hidden_chk" type="checkbox">' ,
                         
-                        '<a class="downloadfull" href="'+(virtual? virtual:'/'+uri)+'?download=files" data-balloon-pos="down-left" aria-label="Download full (including edits)">&nbsp;&nbsp;&nbsp;</a>',
-                        '<a class="download" href="'+(virtual? virtual:'/'+uri)+'?download=editedFiles" data-balloon-pos="down-left" aria-label="Download edited files">&nbsp;&nbsp;&nbsp;</a>',
+                        '<a class="downloadfull" href="/'+uri+'?download=files" data-balloon-pos="down-left" aria-label="Download full (including edits)">&nbsp;&nbsp;&nbsp;</a>',
+                        '<a class="download" href="/'+uri+'?download=editedFiles" data-balloon-pos="down-left" aria-label="Download edited files">&nbsp;&nbsp;&nbsp;</a>',
                         '</h1>',
                            
                         '<div id="inputModal" class="modal">',
@@ -251,11 +251,11 @@ ml(0,ml(1),[
                 
                 
                 
-                function resolveZipDownload( url, mode) {
+                function resolveZipDownload( url, mode, alias) {
                     
                     return new Promise(function(resolve){
                         
-                        getUpdatedZipFile(url,mode,function(err,buffer){
+                        getUpdatedZipFile(url,mode,alias,function(err,buffer){
                             if (err) {
                                 return resolve(new Response('', {
                                     status: 500,
@@ -279,9 +279,13 @@ ml(0,ml(1),[
                 }
                 
                 
-                function getUpdatedZipFile (zip_url,mode,cb) {
+                function getUpdatedZipFile (zip_url,mode,alias,cb) {
+                    if (typeof alias==='function') {
+                        cb = alias; alias = undefined;
+                    }
+                    
                     if (typeof mode==='function') {
-                        cb = mode; mode = 'files'
+                        cb = mode; mode = 'files' ; alias = undefined;
                     }
                     
                     if (['files','editedFiles','hidden','allFiles','deleted'].indexOf(mode)<0) {
@@ -301,7 +305,8 @@ ml(0,ml(1),[
                                         const fileEntry = zipFileMeta.files[filename];
                                          
                                         if (fileEntry) {
-                                            fetchUpdatedURLContents(zip_url+'/'+filename,function(err,buffer){
+                                            const file_url = (alias ? alias : zip_url)  + '/'+filename ;
+                                            fetchUpdatedURLContents(file_url,function(err,buffer){
                                                 if (err) return cb (err);
                                                 newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false });
                                                 log.push('added '+filename);
