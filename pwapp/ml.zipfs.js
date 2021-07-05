@@ -1,4 +1,4 @@
-/* global ml,self, JSZipUtils,JSZip,Response,Headers,BroadcastChannel */
+/* global ml,self, JSZipUtils,JSZip,Response,Headers,BroadcastChannel,performance */
 
 ml(0,ml(1),[ 
     
@@ -262,11 +262,31 @@ ml(0,ml(1),[
                  setTimeout(cleanupOld,60*1000);
              }
              
+             function fixupLog() {
+                 console.info.apply(console,arguments);
+             }
+             
              function fixupUrlEvent (event) {
-                 
-                  let url = event.fixup_url;
+                  const stamp = performance.now();
+                  const url_in = event.fixup_url;
+                  let url_out = url_in;
                       
                       if (fixupUrlEvent.rules) {
+                          
+                          if (fixupUrlEvent.eventCache) {
+                              const previous = fixupUrlEvent.eventCache[url_in];
+                              if ( previous ) {
+                                  Object.keys(previous).forEach(function(k){
+                                      event[k]=previous[k];
+                                  });
+                                  fixupLog("reused previous url rulesmap: ",url_in,"-->",event.fixup_url,"details:",previous,performance.now()-stamp,"ms");
+                                  return addEvents();
+                              }
+                          } else {
+                              fixupLog("creating fixupUrlEvent.eventCache");
+                              fixupUrlEvent.eventCache={};
+                          }
+                          
                           const referrer = event.request.referrer;
                           const basepath = referrer === '' ? location.origin : 
                           
@@ -274,61 +294,79 @@ ml(0,ml(1),[
                                ? referrer.substr(0,referrer.lastIndexOf("/"))
                                : referrer;  
                                
-                          console.log("referrer",referrer,"--> basepath",basepath);
-                          const rules = fixupUrlEvent.rules(basepath);
-                          const enforce = function(x){
-                              if (x.replace&&x.replace.test(url)) { 
-                                  url = url.replace(x.replace,x.with);
-                                  return true;
-                              } else {
-                                  if (x.match && x.addPrefix && x.match.test(url)) { 
-                                      url = x.addPrefix + url;
-                                      return true;
-                                  }
-                              }
-                           };
-                           
-                          while ( rules.some( enforce ) );
+                          fixupLog("referrer",referrer,"--> basepath",basepath);
+                          
+                          check_rules(fixupUrlEvent.rules(basepath));
                          
-                          event.fixup_url   = url;
-                          event.use_no_cors = url.indexOf(location.origin)!==0;
-                          event.shouldCache = url.indexOf(location.origin)===0 ||  event.request.referrer && event.request.referrer.indexOf(location.origin)===0;
-                        
-                          if (event.use_no_cors) {
-                               event.cacheDB = databases.offsiteURLS;
-                               event.fetchBuffer  = function(cb) { 
-                                  return fetchBufferViaNoCors(event.request,event.fixup_url,cb);
-                               };
-                               event.toFetchUrl   = function(db) { 
-                                   return function (resolve,reject) {
-                                       return toFetchUrl (db||event.cacheDB,url,false,resolve,event.fetchBuffer);
-                                   };
-                               };
-                          } else {
-                               event.cacheDB = databases.cachedURLS;
-                               event.fetchBuffer = function(cb) { 
-                                   return fetchBuffer(event.fixup_url,cb);
-                               };
-                               event.toFetchUrl   = function(db) { 
-                                   return function (resolve,reject) {
-                                     return toFetchUrl (db||event.cacheDB,url,false,resolve,event.fetchBuffer);
-                                   };
-                               };
-                          }
+                          const cache       = fixupUrlEvent.eventCache[url_in] = {};
+                          event.fixup_url   = cache.fixup_url   = url_out;
+                          event.use_no_cors = cache.use_no_cors = url_out.indexOf(location.origin)!==0;
+                          event.shouldCache = cache.shouldCache = url_out.indexOf(location.origin)===0 ||  event.request.referrer && event.request.referrer.indexOf(location.origin)===0;
+                          event.cacheDB     = cache.cacheDB     = "cachedURLS";
 
-                          return ;
+                          fixupLog("defined url rulesmap: ",url_in,"-->",event.fixup_url,"details:",cache,performance.now()-stamp,"ms");
+                          return addEvents() ;
+
                       }
                       
                       return new Promise (function (resolve,reject){
-
+                          fixupLog("downloading fstab.json");
                           fetchLocalJson("fstab.json",function(err,arr){
                                if (err) return reject(err);
                                newFixupRulesArray(arr);
+                               
+                               fixupLog("downloaded and parsed fstab.json",performance.now()-stamp,"ms");
+                          
                                fixupUrlEvent(event);
                                resolve();
                           });
                           
                       });
+                      
+                      
+                     
+                      
+                      function addEvents() {
+                          if (event.use_no_cors) {
+                               event.fetchBuffer  = function(cb) { 
+                                  return fetchBufferViaNoCors(event.request,event.fixup_url,cb);
+                               };
+                               event.toFetchUrl   = function(db) { 
+                                   return function (resolve,reject) {
+                                       return toFetchUrl (db||databases[event.cacheDB],url_out,false,resolve,event.fetchBuffer);
+                                   };
+                               };
+                          } else {
+                               event.fetchBuffer = function(cb) { 
+                                   return fetchBuffer(event.fixup_url,cb);
+                               };
+                               event.toFetchUrl   = function(db) { 
+                                   return function (resolve,reject) {
+                                     return toFetchUrl (db||databases[event.cacheDB],url_out,false,resolve,event.fetchBuffer);
+                                   };
+                               };
+                          }
+                      }
+                      
+                      
+                      function check_rules(rules ) {
+                          return rules.forEach(checkRulesGroup);
+                          function checkRulesGroup(){
+                              while ( rules.some( enforceRule ) );
+                          }
+                      }
+                      
+                      function enforceRule (x){
+                         if (x.replace&&x.replace.test(url_out)) { 
+                             url_out = url_out.replace(x.replace,x.with);
+                             return true;
+                         } else {
+                             if (x.match && x.addPrefix && x.match.test(url_out)) { 
+                                 url_out = x.addPrefix + url_out;
+                                 return true;
+                             }
+                         }
+                      }
 
              }
              
@@ -511,7 +549,7 @@ ml(0,ml(1),[
                              }
                              
                              if (ok && event.cacheDB) {
-                                    updateURLContents (url,event.cacheDB,buffer,{status:status,headers:headers},function(){
+                                    updateURLContents (url,databases[event.cacheDB],buffer,{status:status,headers:headers},function(){
                                        resolve(new Response (buffer,{status:status,headers:headers}));
                                     });
                                     
@@ -563,10 +601,50 @@ ml(0,ml(1),[
                 
              }
              
+             
+            function prepareRules(baseURI,template,rulesJson) {
+                const stamp = performance.now();
+                if (!prepareRules.cache) {
+                    prepareRules.cache={};
+                }
+                
+                let result = prepareRules.cache[baseURI];
+                if (!result) {
+                    result = (prepareRules.cache[baseURI]=recurse(template,JSON.parse(rulesJson)));
+                    fixupLog("prepared rules for",baseURI,result,performance.now()-stamp,"ms");
+                }
+                return result;
+
+                function recurse(template,rules) {
+                    if (Array.isArray(template)) {
+                        return template.map(function(temp,ix){
+                            return recurse(temp,rules[ix]);
+                        });
+                    }
+                    const replacements = function (dest,src,k) {
+                        if (src[k]) {
+                           dest[k] = src[k].replace(/\$\{base\}/g,baseURI);
+                        }
+                    };
+                    const text_reps = function(x,i){
+                       replacements(template[i],x,'with');
+                       replacements(template[i],x,'addPrefix');
+                       return x;
+                    };
+                    rules.forEach(text_reps);
+                    return template;
+                }
+            }
+             
              function newFixupRulesArray(arr) {
-                 const source = arr.filter(function(x){
+                 
+                  fixupUrlEventClearCached();
+                 
+                  // extract virtualdirs and remove comments from source array
+                  const source = removeComments(arr).filter(function(x){
+                     
                       if (x.virtualDirs) {
-                          virtualDir.virtualDirs = x.virtualDirs;
+                          virtualDir.virtualDirs    = x.virtualDirs;
                           virtualDir.virtualDirUrls = Object.keys(x.virtualDirs);
                           virtualDir.virtualDirFoundUrls = {};
                           
@@ -577,40 +655,59 @@ ml(0,ml(1),[
                       
                       return true;
                   });
-                  arr.splice(0,arr.length);
                   const json = JSON.stringify(source);
-                  const regexs = function (x,k) {
-                     if (x[k]) {
-                         x[k]= new RegExp(x[k],x.flags||'');
-                     }
-                  };
-                  const replacements = function (x,k) {
-                      if (x[k]) {
-                         x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
-                      }
-                  };
-                  const rules_template = source.map(function(x){
-                       regexs(x,'match');   
-                       regexs(x,'replace'); 
-                       replacements(x,'with');
-                       replacements(x,'addPrefix');
-                       return x;
-                  });
-                  source.splice(0,source.length);
+                  const rules_template = parseTemplate(source);
+                  fixupLog("parsed rules_template",rules_template);
                   fixupUrlEvent.rules = function (baseURI) {
-                      const replacements = function (dest,src,k) {
-                          if (src[k]) {
-                             dest[k] = src[k].replace(/\$\{base\}/g,baseURI);
-                          }
-                      };
-                      const rules = JSON.parse(json);
-                      const text_reps = function(x,i){
-                         replacements(rules_template[i],x,'with');
-                         replacements(rules_template[i],x,'addPrefix');
-                         return x;
-                      };
-                      rules.forEach(text_reps);
-                      return rules_template;
+                      return prepareRules(baseURI,rules_template,json);
+                  };
+
+                 function isCommentFilter(el) { return typeof el !== 'string';}
+                 function removeComments(arr) {
+                     return (Array.isArray(arr)) ? arr.map(removeComments) : arr.filter(isCommentFilter);
+                 }
+
+                 function parseTemplate(source) {
+                     
+                     if (Array.isArray(source)) {
+                         return source.map(parseTemplate);
+                     } else {
+                         const regexs = function (x,k) {
+                            if (x[k]) {
+                                x[k]= new RegExp(x[k],x.flags||'');
+                            }
+                         };
+                         const replacements = function (x,k) {
+                             if (x[k]) {
+                                x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
+                             }
+                         };
+                         return source.map(function(x){
+                             regexs(x,'match');   
+                             regexs(x,'replace'); 
+                             replacements(x,'with');
+                             replacements(x,'addPrefix');
+                             return x;
+                         }); 
+                     }
+                 }
+             }
+             
+             
+             function fixupUrlEventClearCached() {
+                 if (fixupUrlEvent.eventCache) {
+                      
+                     Object.keys(fixupUrlEvent.eventCache).forEach(function(k){
+                         const cache = fixupUrlEvent.eventCache[k];
+                         Object.keys(cache).forEach(function(k){
+                             delete cache[k];
+                         });
+                         delete fixupUrlEvent.eventCache[k];
+                     });
+                        
+                     fixupLog("cleared fixupUrlEvent.eventCache");
+                          
+                     delete fixupUrlEvent.eventCache;
                  }
              }
              

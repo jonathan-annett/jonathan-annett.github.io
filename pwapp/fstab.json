@@ -1,34 +1,53 @@
 [
-   {
-      "replace":"^\\/\\/|http\\:\\/\\/",
-      "with":"https://"
-   },
-   {
-      "replace":"^\\/",
-      "with":"${origin}/"
-   },
-   {
-      "replace":"^\\.\\/",
-      "with":"${base}/"
-   },
-   {
-      "match":"^((?!https:)(?:[a-z]))",
-      "addPrefix":"${base}/"
-   },
-   {
-       "replace":"\\/pwapp\\/$",
-       "with":"/pwapp/index.html"
-   },
-   {
-        "replace":"\\/pwapp\\/update\\/$",
-        "with":"/pwapp/index.html"
-   },
-   {
-      "virtualDirs":{
-         "https://jonathan-annett.github.io/pwapp":[
-            "https://jonathan-annett.github.io/pwapp/js-keygen-master.1.zip/js-keygen-master",
-            "https://jonathan-annett.github.io/pwapp/js-keygen-master.zip/js-keygen-master"
-         ]
-      }
-   }
+    "fstab.json contains rules for parsing urls",
+    
+    "(strings in this array are ignored)",
+    
+    
+    "group 1 - form fully formatted url",
+    [
+        "replace ALL http:// urls with https://",
+        {
+            "replace": "^\\/\\/|http\\:\\/\\/",
+            "with": "https://"
+        }, 
+        "fix partial urls based off the root ",
+        {
+            "replace": "^\\/",
+            "with": "${origin}/"
+        },
+        "fix ./ urls to be based off current document",
+        {
+            "replace": "^\\.\\/",
+            "with": "${base}/"
+        }, 
+        "fix other urls not starting with https:// to be under the current document",
+        {
+            "match": "^((?!https:)(?:[a-z]))",
+            "addPrefix": "${base}/"
+        }
+    ],
+    "group 2 - create main page alias",
+    [
+        "append index.html to /pwapp/", 
+        {
+            "replace": "\\/pwapp\\/$",
+            "with": "/pwapp/index.html"
+        }, 
+        "replace  /pwapp/update with /pwapp/index.html",
+        "   - used to force visibility of non-sw index.html when sw is running",
+        "     this allows installation as app etc when sw already started",
+        {
+            "replace": "\\/pwapp\\/update\\/$",
+            "with": "/pwapp/index.html"
+        }
+    ], 
+    "virtual directories",
+    {
+        "virtualDirs": {
+            "https://jonathan-annett.github.io/pwapp": [
+                "https://jonathan-annett.github.io/pwapp/js-keygen-master.1.zip/js-keygen-master",
+                "https://jonathan-annett.github.io/pwapp/js-keygen-master.zip/js-keygen-master"]
+        }
+    }
 ]
