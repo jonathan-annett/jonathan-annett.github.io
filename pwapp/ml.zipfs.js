@@ -500,7 +500,7 @@ ml(0,ml(1),[
                     delete event.cache_response;
                     return Promise.resolve(response);
                 } else {
-                    if (event.request.url==="/virtual.json") {
+                    if (event.fixup_url.endsWith("/virtual.json")) {
                         const json = JSON.stringify(virtualDirDB,undefined,4);
                         return new Response(json, {
                           status: 200,
