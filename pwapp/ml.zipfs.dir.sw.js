@@ -2,8 +2,9 @@
 
 ml(0,ml(1),[
     
-    'sha1Lib                             | sha1.js',
-    'UPNG                                | upng.js'
+    'sha1Lib  | sha1.js',
+    'UPNG     | upng.js',
+    'pako     | pako.js'
 
     ],function(){ml(2,ml(3),ml(4),
 
