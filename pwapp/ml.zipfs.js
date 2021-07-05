@@ -251,9 +251,6 @@ ml(0,ml(1),[
                     new Promise(function(resolve,reject){
                         processFetchRequestInternal(event,function(err,response){
                             if (err) return reject (err);
-                            if (event.virtual_prefix) {
-                                response.headers.set('x-virtual_prefix',event.virtual_prefix);
-                            }
                             resolve(response);
                         });
                     })

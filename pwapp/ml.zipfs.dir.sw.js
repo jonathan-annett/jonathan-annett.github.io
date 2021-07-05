@@ -96,7 +96,7 @@ ml(0,ml(1),[
                                     
                                     const html_details = all_files.map(html_file_item);
                 
-                                    const html = renderHtml (uri,virtual,all_files,hidden_files_exist,html_details,parent_link);
+                                    const html = renderHtml (uri,virtual,zipFileMeta.alias_root,all_files,hidden_files_exist,html_details,parent_link);
                 
                                     return resolve( 
                                         
@@ -185,7 +185,7 @@ ml(0,ml(1),[
                 
                    
                     
-                    function renderHtml (uri,virtual,files, hidden_files_exist,html_details,parent_link) {
+                    function renderHtml (uri,virtual,alias_root,files, hidden_files_exist,html_details,parent_link) {
                         
                         const html = [
                             
@@ -197,6 +197,7 @@ ml(0,ml(1),[
                           '<script>',
                           'var zip_url_base='+JSON.stringify('/'+uri)+',',
                           'zip_virtual_dir'+(virtual?'='+JSON.stringify(virtual):'')+',',
+                          'alias_rootv'+(alias_root?'='+JSON.stringify(alias_root):'')+',',
                           'zip_files='+JSON.stringify(files)+',',
                           'parent_link='+JSON.stringify(parent_link)+';',
                           '</script>',

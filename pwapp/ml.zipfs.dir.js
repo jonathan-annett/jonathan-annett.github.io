@@ -1,4 +1,4 @@
-/* global zip_url_base,zip_virtual_dir,zip_files, parent_link,BroadcastChannel*/
+/* global zip_url_base,zip_virtual_dir,zip_files, alias_root, parent_link,BroadcastChannel*/
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
@@ -19,7 +19,8 @@ ml(0,ml(1),[
              
           
             
-            const full_zip_uri     = location.origin+zip_url_base;
+            const full_zip_uri           = location.origin+zip_url_base;
+            const zip_virtual_trim_chars = alias_root ? alias_root.length : 0;
             const pwaApi = {
                
                toggleDeleteFile : function (file,cb) {
@@ -150,7 +151,7 @@ ml(0,ml(1),[
                        hash=false;
                    }
                    sendMessage('fetchUpdatedURLContents',{
-                       url    : zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
+                       url    : zip_virtual_dir ? zip_virtual_dir +'/'+file.substr(zip_virtual_trim_chars) : full_zip_uri+'/'+file,
                        hash   : hash
                    },function(err,msg){
                        if (err) return cb (err);
