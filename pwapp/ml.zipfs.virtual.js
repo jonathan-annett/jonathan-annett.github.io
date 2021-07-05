@@ -89,7 +89,7 @@ ml(0,ml(1),[
                                 
                                return new Promise(function (resolve){
                                    const subpath = url.substr(prefix.length);
-                                   if (subpath === "edit") {
+                                   if (subpath === "/edit") {
                                       const fixup_url = virtualDirDB.virtualDirZipBase[prefix];
                                       const entry = virtualDirDB.cache[url]={
                                           fixup_url : fixup_url,
