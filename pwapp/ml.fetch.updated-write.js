@@ -71,7 +71,7 @@ ml(0,ml(1),[
                 // this is updating a virtual item - so we need to patch the correct fixup_url
                 getPayload(function(payload){
                     fixupKeys(payload[1].headers);
-                    db.setItem(entry.fixup_url,payload,function(){
+                    db.setItem(entry.aliased_url,payload,function(){
                         if (entry.response) {
                            delete entry.response;
                            entry.response = new Response(payload[0],payload[1]);
