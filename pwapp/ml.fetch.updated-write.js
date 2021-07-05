@@ -35,11 +35,11 @@ ml(0,ml(1),[
     );
 
             
-    function fetchUpdatedLib(databases,fetchInternalBuffer,mimeForFilename) {
+    function fetchUpdatedLib(databases,fetchInternalBuffer,virtualDirQuery,mimeForFilename) {
         
         
     const sha1 = self.sha1Lib.cb;
-    const { fetchUpdatedURLContents,fixupKeys,full_URL }  = self.zipUpLib(databases,fetchInternalBuffer);
+    const { fetchUpdatedURLContents,fixupKeys,full_URL }  = self.zipUpLib(databases,fetchInternalBuffer,virtualDirQuery);
     
             
     return {

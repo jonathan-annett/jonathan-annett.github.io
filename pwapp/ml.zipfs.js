@@ -39,7 +39,7 @@ ml(0,ml(1),[
                        fetchUpdatedURLContents,
                        removeUpdatedURLContents,
                        fixupKeys
-                   } = self.zipUpWriteLib(databases,fetchInternalBuffer,mimeForFilename);
+                   } = self.zipUpWriteLib(databases,fetchInternalBuffer,virtualDirQuery,mimeForFilename);
 
              const lib = {
                  
