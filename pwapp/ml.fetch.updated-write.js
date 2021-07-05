@@ -1,7 +1,7 @@
 /* global zip_url_base,zip_files, parent_link,BroadcastChannel*/
 
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
+/* global ml,self,caches,BroadcastChannel, swResponseZipLib,Response  */
 ml(0,ml(1),[
     
    'zipUpLib                            | ml.fetch.updated.js',
@@ -60,12 +60,37 @@ ml(0,ml(1),[
             db = databases[db];
         }
         
+        // first make a full url
         url = full_URL(location.origin,url);
         
-        getPayload(function(payload){
-            fixupKeys(payload[1].headers);
-            db.setItem(url,payload,cb);
+        // now see if that full url is inside a virtual directory, which will resolve to specific file inside a specific zip.
+        // we need to update the correct overlayed url, so local reads well get the correct data.
+        virtualDirQuery(url).then(function(entry){
+            
+            if (entry) {
+                // this is updating a virtual item - so we need to patch the correct fixup_url
+                getPayload(function(payload){
+                    fixupKeys(payload[1].headers);
+                    db.setItem(entry.fixup_url,payload,function(){
+                        if (entry.response) {
+                           delete entry.response;
+                           entry.response = new Response(payload[0],payload[1]);
+                        }
+                        cb();
+                    });
+                });
+
+            } else {
+                // not a virtual item
+                getPayload(function(payload){
+                    fixupKeys(payload[1].headers);
+                    db.setItem(url,payload,cb);
+                });
+            }
+            
         });
+        
+       
     
         function getPayload (cb) {
             if (responseState) return cb ([responseData,responseState]);
