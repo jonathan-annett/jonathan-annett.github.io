@@ -206,7 +206,7 @@ ml(0,ml(1),[
                  const fakeEvent = {
                      request : {
                          url      : url,
-                         referrer : 'about:client',
+                         referrer : '',
                          headers  : {
                              get : function () {}
                          }
