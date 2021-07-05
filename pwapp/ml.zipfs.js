@@ -293,7 +293,7 @@ ml(0,ml(1),[
                                ? referrer.substr(0,referrer.lastIndexOf("/"))
                                : referrer;  
                                
-                          fixupLog("referrer",referrer,"--> basepath",basepath);
+                          //fixupLog("referrer",referrer,"--> basepath",basepath);
                           
                           check_rules(fixupUrlEvent.rules(basepath));
                          
@@ -350,8 +350,8 @@ ml(0,ml(1),[
                       
                       function check_rules(rules ) {
                           return rules.forEach(checkRulesGroup);
-                          function checkRulesGroup(){
-                              while ( rules.some( enforceRule ) );
+                          function checkRulesGroup(group){
+                              while ( group.some( enforceRule ) );
                           }
                       }
                       
