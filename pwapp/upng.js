@@ -27,6 +27,8 @@ SOFTWARE.
 
 */
 
+/* jshint maxerr: 10000*/
+
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),[
     
@@ -67,10 +69,10 @@ ml(0,ml(1),[
                    
                    if     (frm.dispose==0) {}
                    else if(frm.dispose==1) UPNG._copyTile(empty, fw, fh, img, w, h, fx, fy, 0);
-                   else if(frm.dispose==2) for(var j=0; j<len; j++) img[j]=prev[j];
+                   else if(frm.dispose==2) for(var k=0; k<len; k++) img[k]=prev[k];
                }
                return frms;
-           }
+           };
            UPNG.toRGBA8.decodeImage = function(data, w, h, out)
            {
                var area = w*h, bpp = UPNG.decode._getBPP(out);
@@ -82,17 +84,17 @@ ml(0,ml(1),[
                
                //console.log(ctype, depth);
                var time = Date.now();
-           
+               var i;
                if     (ctype==6) { // RGB + alpha
                    var qarea = area<<2;
-                   if(depth== 8) for(var i=0; i<qarea;i+=4) {  bf[i] = data[i];  bf[i+1] = data[i+1];  bf[i+2] = data[i+2];  bf[i+3] = data[i+3]; }
-                   if(depth==16) for(var i=0; i<qarea;i++ ) {  bf[i] = data[i<<1];  }
+                   if(depth== 8) for(i=0; i<qarea;i+=4) {  bf[i] = data[i];  bf[i+1] = data[i+1];  bf[i+2] = data[i+2];  bf[i+3] = data[i+3]; }
+                   if(depth==16) for(i=0; i<qarea;i++ ) {  bf[i] = data[i<<1];  }
                }
                else if(ctype==2) {    // RGB
-                   var ts=out.tabs["tRNS"];
+                   var ts=out.tabs.tRNS;
                    if(ts==null) {
-                       if(depth== 8) for(var i=0; i<area; i++) {  var ti=i*3;  bf32[i] = (255<<24)|(data[ti+2]<<16)|(data[ti+1]<<8)|data[ti];  }
-                       if(depth==16) for(var i=0; i<area; i++) {  var ti=i*6;  bf32[i] = (255<<24)|(data[ti+4]<<16)|(data[ti+2]<<8)|data[ti];  }
+                       if(depth== 8) for(i=0; i<area; i++) {  var ti=i*3;  bf32[i] = (255<<24)|(data[ti+2]<<16)|(data[ti+1]<<8)|data[ti];  }
+                       if(depth==16) for(i=0; i<area; i++) {  var ti=i*6;  bf32[i] = (255<<24)|(data[ti+4]<<16)|(data[ti+2]<<8)|data[ti];  }
                    }
                    else {  var tr=ts[0], tg=ts[1], tb=ts[2];
                        if(depth== 8) for(var i=0; i<area; i++) {  var qi=i<<2, ti=i*3;  bf32[i] = (255<<24)|(data[ti+2]<<16)|(data[ti+1]<<8)|data[ti];
@@ -102,7 +104,7 @@ ml(0,ml(1),[
                    }
                }
                else if(ctype==3) {    // palette
-                   var p=out.tabs["PLTE"], ap=out.tabs["tRNS"], tl=ap?ap.length:0;
+                   var p=out.tabs.PLTE, ap=out.tabs.tRNS, tl=ap?ap.length:0;
                    //console.log(p, ap);
                    if(depth==1) for(var y=0; y<h; y++) {  var s0 = y*bpl, t0 = y*w;
                        for(var i=0; i<w; i++) { var qi=(t0+i)<<2, j=((data[s0+(i>>3)]>>(7-((i&7)<<0)))& 1), cj=3*j;  bf[qi]=p[cj];  bf[qi+1]=p[cj+1];  bf[qi+2]=p[cj+2];  bf[qi+3]=(j<tl)?ap[j]:255;  }
@@ -966,7 +968,7 @@ ml(0,ml(1),[
                leafs.sort(function(a,b) {  return b.bst.N-a.bst.N;  });
                for(var i=0; i<leafs.length; i++) leafs[i].ind=i;
                return [root, leafs];
-           }
+           };
            
            UPNG.quantize.getNearest = function(nd, r,g,b,a)
            {
@@ -981,8 +983,8 @@ ml(0,ml(1),[
                var rn = UPNG.quantize.getNearest(node1, r,g,b,a);
                return rn.tdst<ln.tdst ? rn : ln;
            }
-           UPNG.quantize.planeDst = function(est, r,g,b,a) {  var e = est.e;  return e[0]*r + e[1]*g + e[2]*b + e[3]*a - est.eMq;  }
-           UPNG.quantize.dist     = function(q,   r,g,b,a) {  var d0=r-q[0], d1=g-q[1], d2=b-q[2], d3=a-q[3];  return d0*d0+d1*d1+d2*d2+d3*d3;  }
+           UPNG.quantize.planeDst = function(est, r,g,b,a) {  var e = est.e;  return e[0]*r + e[1]*g + e[2]*b + e[3]*a - est.eMq;  };
+           UPNG.quantize.dist     = function(q,   r,g,b,a) {  var d0=r-q[0], d1=g-q[1], d2=b-q[2], d3=a-q[3];  return d0*d0+d1*d1+d2*d2+d3*d3;  };
            
            UPNG.quantize.splitPixels = function(nimg, nimg32, i0, i1, e, eMq)
            {
@@ -1001,7 +1003,7 @@ ml(0,ml(1),[
                }
                while(vecDot(nimg, i0, e)>eMq) i0-=4;
                return i0+4;
-           }
+           };
            UPNG.quantize.vecDot = function(nimg, i, e)
            {
                return nimg[i]*e[0] + nimg[i+1]*e[1] + nimg[i+2]*e[2] + nimg[i+3]*e[3];
@@ -1078,7 +1080,7 @@ ml(0,ml(1),[
                    noff += il;
                }
                return nimg.buffer;
-           }
+           };
            
            
            return UPNG;
@@ -1087,7 +1089,7 @@ ml(0,ml(1),[
            
         }
            
-        } 
+         
     }, {
         ServiceWorkerGlobalScope: [
             
