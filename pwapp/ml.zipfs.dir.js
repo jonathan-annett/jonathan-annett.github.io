@@ -117,9 +117,7 @@ ml(0,ml(1),[
                
                removeUpdatedURLContents  : function (file,cb) {
                   sendMessage('removeUpdatedURLContents',{
-                      url    : full_zip_uri+'/'+file,
-                      virtual: zip_virtual_dir ? zip_virtual_dir +'/'+file : false,
-                       
+                     url    : zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
                   },function(err,msg){
                       const el = find_li(file);
                       if (el) el.classList.remove('edited');
@@ -133,8 +131,7 @@ ml(0,ml(1),[
                        hash=false;
                    }
                    sendMessage('updateURLContents',{
-                       url     : full_zip_uri+'/'+file,
-                       virtual : zip_virtual_dir ? zip_virtual_dir +'/'+file : false,
+                       url    : zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
                        content : content,
                        hash    : hash
                    },function(err,msg){
@@ -153,9 +150,8 @@ ml(0,ml(1),[
                        hash=false;
                    }
                    sendMessage('fetchUpdatedURLContents',{
-                       url     : full_zip_uri+'/'+file,
-                       virtual : zip_virtual_dir ? zip_virtual_dir +'/'+file : false,
-                       hash    : hash
+                       url    : zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
+                       hash   : hash
                    },function(err,msg){
                        if (err) return cb (err);
                        cb(undefined,msg.content,msg.updated,msg.hash);
