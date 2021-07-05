@@ -36,26 +36,33 @@ ml(0,ml(1),[
              
              
              const {
+                 // import these items
                  virtualDirDB,
                  
-                 virtualDirQuery,
-                 virtualDirEvent,
-                 virtualDirResponseEvent,
-                 
-                 newVirtualDirs
-                 
-             } = self.virtualDirLib( getEmbeddedZipFileResponse );
+                 virtualDirQuery, virtualDirEvent,
+                 virtualDirResponseEvent, newVirtualDirs
+                 // from 
+             } = self.virtualDirLib( 
+                 // which uses :
+                 getEmbeddedZipFileResponse 
+             );
              
             
-             const {
-                       updateURLContents,
-                       fetchUpdatedURLContents,
-                       removeUpdatedURLContents,
-                       fixupKeys
-                   } = self.zipUpWriteLib(databases,fetchInternalBuffer,virtualDirQuery,mimeForFilename);
+             const {   // import these items...
+                       updateURLContents,        fetchUpdatedURLContents,
+                       removeUpdatedURLContents, fixupKeys
+                       // from...
+                   } = self.zipUpWriteLib (
+                       // which uses  these items
+                       databases, fetchInternalBuffer,
+                       virtualDirQuery, mimeForFilename
+                       
+                   );
+                       
+                       
 
              const lib = {
-                 
+                 // export these items.
                  processFetchRequest      : processFetchRequest,
                  newFixupRulesArray       : newFixupRulesArray,
                  
