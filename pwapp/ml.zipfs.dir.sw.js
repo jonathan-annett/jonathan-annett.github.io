@@ -410,11 +410,8 @@ ml(0,ml(1),[
                             if (storedSize === originalBuffer.byteLength ) {
                                 if (png.data[5]===0 && png.data[6]===0 && png.data[7]===0 ) {
                                     
-                                    if (hash.length === png.data[3] * 2) {
+                                    if (hash.length === png.data[4] * 2) {
                                         
-                                        
-                                        const pngView = new Uint8Array(png.data);
-    
                                         const hashBufferSlice = new Uint8Array(png.data.slice(8, 8+png.data[3]));
                                         // produces Int32Array [42, 0]
                                         
@@ -433,12 +430,14 @@ ml(0,ml(1),[
                                             return cb (new Error("stored header hash does not match sample"));
                                         }
                     
+                                    } else {
+                                        return cb (new Error("header hash size looks incorrect"));
                                     }
                                 } else {
-                                    return cb (new Error("header hash size looks incorrect"));
+                                    return cb (new Error("header reserved bytes not zero"));
                                 }
                             } else {
-                                return cb (new Error("header reserved bytes not zero"));
+                                return cb (new Error("stored size islooks incorrect"));
                             }
                             
                         } else {
