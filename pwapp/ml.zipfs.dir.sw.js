@@ -3,7 +3,7 @@
 ml(0,ml(1),[
     
     'sha1Lib                             | sha1.js',
-    'UPNG                                | https://cdnjs.cloudflare.com/ajax/libs/upng-js/2.1.0/UPNG.js'
+    'UPNG                                | upng.js'
 
     ],function(){ml(2,ml(3),ml(4),
 
