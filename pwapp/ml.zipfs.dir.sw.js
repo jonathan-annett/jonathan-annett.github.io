@@ -245,6 +245,7 @@ ml(0,ml(1),[
                             
                             '</ul>',
                             '</div>',
+                            '<img src="/'+uri+'.png">',
                             
                            
                             '</body>',
