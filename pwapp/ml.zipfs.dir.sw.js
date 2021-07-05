@@ -26,6 +26,7 @@ ml(0,ml(1),[
                 
                 
                 const sha1 = self.sha1Lib.cb;
+                const sha1Sync = self.sha1Lib.sync;
             
                 return  {
                     
@@ -296,7 +297,9 @@ ml(0,ml(1),[
                         const log = [];
                         const logname = (zipFileMeta.alias_root ?zipFileMeta.alias_root : '') + '.log.txt';
                         getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
-                            tools[mode](function(filenames){
+                            const fetchmode = mode==='editedFiles' ? 'files' : mode;
+                            tools[fetchmode](function(filenames){
+                                
                                 const newZip = new JSZip();
                                 function nextFile(i) {
                                     if (i<filenames.length) {
@@ -306,10 +309,19 @@ ml(0,ml(1),[
                                          
                                         if (fileEntry) {
                                             const file_url = (alias ? alias : zip_url)  + '/'+filename ;
-                                            fetchUpdatedURLContents(file_url,function(err,buffer){
+                                            fetchUpdatedURLContents(file_url,function(err,buffer,updated){
                                                 if (err) return cb (err);
-                                                newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false });
-                                                log.push('added '+filename);
+                                                if (mode==='editedFiles') {
+                                                    if (updated) {
+                                                        newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false });
+                                                        log.push('added edited file     '+sha1Sync(buffer)+' | '+ filename);
+                                                    } else {
+                                                        log.push('skipped unedited file '+sha1Sync(buffer)+' | '+ filename);
+                                                    }
+                                                } else {
+                                                    newZip.file(filename,buffer,{date : fileEntry.date,createFolders: false });
+                                                    log.push('added '+sha1Sync(buffer)+' | '+filename);
+                                                }
                                                 nextFile(i+1);
                                             });
                                         } else {
