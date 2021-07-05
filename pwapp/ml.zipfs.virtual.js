@@ -45,13 +45,17 @@ ml(0,ml(1),[
                                 newDirs[prefix] = vd.zips.map(function(path){
                                     return path + vd.alias_root;
                                 });
-                                virtualDirDB.virtualDirZipBase[prefix]=vd.zips[vd.zips.length-1]+vd.alias_root;
+                                virtualDirDB.virtualDirZipBase[prefix]={
+                                    zip  : vd.zips[vd.zips.length-1],
+                                    root : vd.alias_root
+                                };
                              }
                          }
                      });
                      virtualDirDB.cache = {};
                  
                     function clearVirtualDirsCache() {
+                        
                         if (virtualDirDB.cache) {
                             Object.keys (virtualDirDB.cache).forEach(function(u){
                                 const previous = virtualDirDB.cache[u];
@@ -62,10 +66,18 @@ ml(0,ml(1),[
                                 delete previous.fixup_url;
    
                             });
-                            
                             delete virtualDirDB.cache;
+                            
                         }
-                        
+
+                        if (virtualDirDB.virtualDirZipBase) {
+                            Object.keys(virtualDirDB.virtualDirZipBase).forEach(function(prefix){
+                                delete virtualDirDB.virtualDirZipBase[prefix].zip;
+                                delete virtualDirDB.virtualDirZipBase[prefix].root;
+                                delete virtualDirDB.virtualDirZipBase[prefix];
+                            });
+                            delete virtualDirDB.virtualDirZipBase;
+                        }
                     }
                 }
 
@@ -90,7 +102,7 @@ ml(0,ml(1),[
                                return new Promise(function (resolve){
                                    const subpath = url.substr(prefix.length);
                                    if (subpath === "/edit") {
-                                      const fixup_url = virtualDirDB.virtualDirZipBase[prefix];
+                                      const fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip;
                                       const entry = virtualDirDB.cache[url]={
                                           fixup_url : fixup_url,
                                           url: url,
