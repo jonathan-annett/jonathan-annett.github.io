@@ -259,7 +259,7 @@ ml(0,ml(1),[
              
              
              
-             const fixupLog = console.info.bind(console);
+             const fixupLog = function(){};//console.info.bind(console);
             
              
              function fixupUrlEvent (event) {
@@ -1230,7 +1230,7 @@ ml(0,ml(1),[
              }
              
              function resolveZip (parts,ifNoneMatch,ifModifiedSince,virtual_prefix) {
-                 console.log({resolveZip:{ifNoneMatch,ifModifiedSince,parts,virtual_prefix}});
+                 //console.log({resolveZip:{ifNoneMatch,ifModifiedSince,parts,virtual_prefix}});
                  const zip_url           = parts[0]+'.zip', 
                        subzip            = parts.length>2; 
                  let   file_path         = subzip ? parts[1]+'.zip' : parts[1],
