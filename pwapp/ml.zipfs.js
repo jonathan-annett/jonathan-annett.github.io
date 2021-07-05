@@ -664,7 +664,7 @@ ml(0,ml(1),[
 
                  function isCommentFilter(el) { return typeof el !== 'string';}
                  function removeComments(arr) {
-                     return (Array.isArray(arr)) ? arr.map(removeComments) : arr.filter(isCommentFilter);
+                     return (Array.isArray(arr)) ? arr.filter(isCommentFilter).map(removeComments): arr;
                  }
 
                  function parseTemplate(source) {
