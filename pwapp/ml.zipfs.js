@@ -33,6 +33,19 @@ ml(0,ml(1),[
             
              const databaseNames = ["updatedURLS","openZips","zipMetadata","cachedURLS","offsiteURLS"];
              const databases     = ml_db (databaseNames);
+             
+             
+             const {
+                 virtualDirDB,
+                 
+                 virtualDirQuery,
+                 virtualDirEvent,
+                 virtualDirResponseEvent,
+                 
+                 newVirtualDirs
+                 
+             } = self.virtualDirLib( getEmbeddedZipFileResponse );
+             
             
              const {
                        updateURLContents,
@@ -55,17 +68,7 @@ ml(0,ml(1),[
              };
              
              
-             const {
-                 virtualDirDB,
-                 
-                 virtualDirQuery,
-                 virtualDirEvent,
-                 virtualDirResponseEvent,
-                 
-                 newVirtualDirs
-                 
-             } = self.virtualDirLib( getEmbeddedZipFileResponse );
-             
+            
              
              const { resolveZipListing, resolveZipDownload }  =  listingLib( 
                 getZipObject,fetchUpdatedURLContents,getZipFileUpdates,
