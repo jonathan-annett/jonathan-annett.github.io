@@ -60,7 +60,7 @@ ml(0,ml(1),[
                               
              const openZipFileCache = { };
              
-             const virtualDir = {
+             const virtualDirDB = {
              
                  
              };
@@ -356,7 +356,7 @@ ml(0,ml(1),[
              
              function virtualDirEvent (event) {
                 const url = event.fixup_url;
-                const previous = virtualDir.cache[url];
+                const previous = virtualDirDB.cache && virtualDirDB.cache[url];
                 if (previous) {
                     event.fixup_url      = previous.fixup_url;
                     event.cache_response = previous.response;
@@ -364,9 +364,9 @@ ml(0,ml(1),[
                     return;
                 }
                 
-                if (virtualDir.virtualDirs && virtualDir.virtualDirUrls) {
+                if (virtualDirDB.virtualDirs && virtualDirDB.virtualDirUrls) {
                     // see if the url starts with one of the virtual directory path names
-                    const prefix = virtualDir.virtualDirUrls.find(function (u){
+                    const prefix = virtualDirDB.virtualDirUrls.find(function (u){
                         return url.indexOf(u)===0;
                     });
                     
@@ -377,7 +377,7 @@ ml(0,ml(1),[
                             // (earlier entries replace later entries, so we loop until we get a hit inside the zip file
                              // this also has the effect of precaching the zip file's data for the unzip process
                             const subpath = url.substr(prefix.length);
-                            const zipurlprefixes = virtualDir.virtualDirs[prefix].slice(0);
+                            const zipurlprefixes = virtualDirDB.virtualDirs[prefix].slice(0);
                             const locateZipMetadata = function (i) {
                                 
                                 if (i<zipurlprefixes.length) {
@@ -385,13 +385,13 @@ ml(0,ml(1),[
                                     getEmbeddedZipFileResponse(fixup_url,{virtual_prefix:event.virtual_prefix},function(err,response){
                                         if (err||!response) return locateZipMetadata(i+1);
                                         console.log("resolved vitualdir",url,"==>",fixup_url);
-                                        const entry = virtualDir.cache[url]={
+                                        const entry = virtualDirDB.cache[url]={
                                             fixup_url : fixup_url,
                                             url: url,
                                             response: response,
                                             prefix : prefix
                                         };
-                                        virtualDir.cache[fixup_url]=entry;
+                                        virtualDirDB.cache[fixup_url]=entry;
                                         
                                         
                                         event.fixup_url      = fixup_url;
@@ -484,7 +484,7 @@ ml(0,ml(1),[
                               'Content-Type'   : 'text/plain',
                               'Content-Length' : 2
                             })
-                        }));
+                          }));
                     }
                  
                  }
@@ -499,6 +499,17 @@ ml(0,ml(1),[
                     const response = event.cache_response.clone();
                     delete event.cache_response;
                     return Promise.resolve(response);
+                } else {
+                    if (event.request.url==="/virtual.json") {
+                        const json = JSON.stringify(virtualDirDB,undefined,4);
+                        return new Response(json, {
+                          status: 200,
+                          headers: new Headers({
+                            'Content-Type'   : 'application/json',
+                            'Content-Length' : json.length
+                          })
+                        });
+                    }
                 }
                   
              }
@@ -629,9 +640,28 @@ ml(0,ml(1),[
                   const source = removeComments(arr).filter(function(x){
                      
                       if (x.virtualDirs) {
-                          virtualDir.virtualDirs    = x.virtualDirs;
-                          virtualDir.virtualDirUrls = Object.keys(x.virtualDirs);
-                          virtualDir.cache = {};
+                          virtualDirDB.virtualDirs    = x.virtualDirs;
+                          virtualDirDB.virtualDirUrls = Object.keys(x.virtualDirs);
+                          virtualDirDB.virtualDirZipBase = {};
+                          virtualDirDB.virtualDirUrls.forEach(function(prefix){
+                              const vd = x.virtualDirs[prefix];
+                              
+                              if (Array.isArray(vd)) {
+                                  virtualDirDB.virtualDirZipBase[prefix]=vd[vd.length-1];
+                              } else {
+                                  
+                                  if(vd.alias_root && Array.isArray(vd.zips))  {
+                                     x.virtualDirs[prefix] = vd.zips.map(function(path){
+                                         return path + vd.alias_root;
+                                     });
+                                     virtualDirDB.virtualDirZipBase[prefix]=vd.zips[vd.zips.length-1]+vd.alias_root;
+                                  }
+
+                              }
+
+                              
+                          });
+                          virtualDirDB.cache = {};
                           delete x.virtualDirs;
                           return false;
                       }
@@ -675,18 +705,18 @@ ml(0,ml(1),[
                  }
                  
                  function clearVirtualDirsCache() {
-                     if (virtualDir.cache) {
-                         Object.keys (virtualDir.cache).forEach(function(u){
-                             const previous = virtualDir.cache[u];
-                             delete virtualDir.cache[previous.url];
-                             delete virtualDir.cache[previous.fixup_url];
+                     if (virtualDirDB.cache) {
+                         Object.keys (virtualDirDB.cache).forEach(function(u){
+                             const previous = virtualDirDB.cache[u];
+                             delete virtualDirDB.cache[previous.url];
+                             delete virtualDirDB.cache[previous.fixup_url];
                              delete previous.response;
                              delete previous.url;
                              delete previous.fixup_url;
 
                          });
                          
-                         delete virtualDir.cache;
+                         delete virtualDirDB.cache;
                      }
                      
                  }
