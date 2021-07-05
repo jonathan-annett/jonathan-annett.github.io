@@ -197,7 +197,7 @@ ml(0,ml(1),[
                           '<script>',
                           'var zip_url_base='+JSON.stringify('/'+uri)+',',
                           'zip_virtual_dir'+(virtual?'='+JSON.stringify(virtual):'')+',',
-                          'alias_rootv'+(alias_root?'='+JSON.stringify(alias_root):'')+',',
+                          'alias_root'+(alias_root?'='+JSON.stringify(alias_root):'')+',',
                           'zip_files='+JSON.stringify(files)+',',
                           'parent_link='+JSON.stringify(parent_link)+';',
                           '</script>',
