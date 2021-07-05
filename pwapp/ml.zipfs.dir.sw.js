@@ -216,8 +216,8 @@ ml(0,ml(1),[
                         
                         '<span id="show_hidden">show hidden files</span><input class="hidden_chk" type="checkbox">' ,
                         
-                        '<a class="downloadfull" href="/'+uri+'?download=files" data-balloon-pos="down-left" aria-label="Download full (including edits)">&nbsp;&nbsp;&nbsp;</a>',
-                        '<a class="download" href="/'+uri+'?download=editedFiles" data-balloon-pos="down-left" aria-label="Download edited files">&nbsp;&nbsp;&nbsp;</a>',
+                        '<a class="downloadfull" href="'+(virtual? virtual:'/'+uri)+'?download=files" data-balloon-pos="down-left" aria-label="Download full (including edits)">&nbsp;&nbsp;&nbsp;</a>',
+                        '<a class="download" href="'+(virtual? virtual:'/'+uri)+'?download=editedFiles" data-balloon-pos="down-left" aria-label="Download edited files">&nbsp;&nbsp;&nbsp;</a>',
                         '</h1>',
                            
                         '<div id="inputModal" class="modal">',
