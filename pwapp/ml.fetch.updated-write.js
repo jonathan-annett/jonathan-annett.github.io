@@ -13,15 +13,12 @@ ml(0,ml(1),[
     {
         Window: function zipUpWriteLib(   ) {
         
-            const lib = {
-            };
+            const lib = { };
             
             return lib;
         },
 
         ServiceWorkerGlobalScope: function zipUpWriteLib( lib ) {
-
-            // 
 
             return lib;
         } 

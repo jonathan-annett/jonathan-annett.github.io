@@ -40,7 +40,7 @@ ml(0,ml(1),[
    
 
             
-    function fetchUpdatedLib(databases,fetchInternalBuffer) {
+    function fetchUpdatedLib(databases,fetchInternalBuffer,virtualDirQuery) {
     
         return {
             fetchUpdatedURLContents,
@@ -48,14 +48,12 @@ ml(0,ml(1),[
             full_URL
         };
         
-        
-        
-        
         function fetchUpdatedURLContents(url,cb) {
             
             url = full_URL(location.origin,url);
             
             databases.updatedURLS.getItem(url,function(err,args){
+                
                 if(err) {
                     return cb(err);
                 }
@@ -64,8 +62,27 @@ ml(0,ml(1),[
                     return cb (undefined,buffer,true);
                 } else {
                     
-                    fetchInternalBuffer(url,cb);
                     
+                    virtualDirQuery(url).then(function(entry){
+                        
+                        if (entry) {
+                            
+                            if (entry.response) {
+                                
+                                entry.response.clone().arrayBuffer().then(function(buffer) {
+                                   cb(undefined,buffer);
+                                });
+                                
+                            } else {
+                                fetchInternalBuffer(url,entry.fixup_url,cb);
+                            }
+                            
+                        } else {
+                            fetchInternalBuffer(url,cb);
+                        }
+                        
+                    });
+
                 }
             });
         }
