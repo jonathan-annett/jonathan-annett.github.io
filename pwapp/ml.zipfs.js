@@ -238,29 +238,7 @@ ml(0,ml(1),[
                 );
              }
              
-             function cleanupOld() {
-                 if (virtualDir.virtualDirFoundUrls) {
-                     const watershed = Date.now - (  60 * 60 * 1000);// keeps stuff for an hour
-                     Object.keys (virtualDir.virtualDirFoundUrls).forEach(function(u){
-                         const previous = virtualDir.virtualDirFoundUrls[u];
-                        
-                         if (previous && previous.when < watershed) {
-                             delete virtualDir.virtualDirFoundUrls[previous.url];
-                             delete virtualDir.virtualDirFoundUrls[previous.fixup_url];
-                             delete previous.response;
-                             delete previous.url;
-                             delete previous.fixup_url;
-                             delete previous.when;
-                         }
-                         
-                     });
-                     
-                     
-                     //console.log("finished cleaning up cached files older than 60 mins.")
-                 }
-                 
-                 setTimeout(cleanupOld,60*1000);
-             }
+             
              
              const fixupLog = console.info.bind(console);
             
@@ -287,15 +265,16 @@ ml(0,ml(1),[
                           }
                           
                           const referrer = event.request.referrer;
-                          const basepath = referrer === '' ? location.origin : 
+                          const baseURI = referrer === '' ? location.origin : 
                           
                             ( referrer.lastIndexOf('.') > referrer.lastIndexOf('/') ) 
                                ? referrer.substr(0,referrer.lastIndexOf("/"))
                                : referrer;  
                                
-                          //fixupLog("referrer",referrer,"--> basepath",basepath);
-                          
-                          check_rules(fixupUrlEvent.rules(basepath));
+                          //fixupLog("referrer",referrer,"--> baseURI",baseURI);
+                          const baseURI_Rules = fixupUrlEvent.rules(baseURI);
+                          fixupLog("preflighting url with rules:",baseURI_Rules);
+                          check_rules(baseURI_Rules);
                          
                           const cache       = fixupUrlEvent.eventCache[url_in] = {};
                           event.fixup_url   = cache.fixup_url   = url_out;
@@ -349,7 +328,9 @@ ml(0,ml(1),[
                       
                       
                       function check_rules(rules ) {
+                          
                           return rules.forEach(checkRulesGroup);
+                          
                           function checkRulesGroup(group){
                               while ( group.some( enforceRule ) );
                           }
@@ -357,11 +338,15 @@ ml(0,ml(1),[
                       
                       function enforceRule (x){
                          if (x.replace&&x.replace.test(url_out)) { 
+                             const before = url_out;
                              url_out = url_out.replace(x.replace,x.with);
+                             fixupLog(before,">>>==replace[",x.replace,"]/with[",x.with,"]==>>>",url_out);
                              return true;
                          } else {
                              if (x.match && x.addPrefix && x.match.test(url_out)) { 
+                                 const before = url_out;
                                  url_out = x.addPrefix + url_out;
+                                 fixupLog(before,">>>==match[",x.match,"]/addPrefix[",x.addPrefix,"]==>>>",url_out);
                                  return true;
                              }
                          }
@@ -371,7 +356,7 @@ ml(0,ml(1),[
              
              function virtualDirEvent (event) {
                 const url = event.fixup_url;
-                const previous = virtualDir.virtualDirFoundUrls[url];
+                const previous = virtualDir.cache[url];
                 if (previous) {
                     previous.when = Date.now();
                     event.fixup_url = previous.fixup_url;
@@ -400,13 +385,13 @@ ml(0,ml(1),[
                                     getEmbeddedZipFileResponse(fixup_url,function(err,response){
                                         if (err||!response) return locateZipMetadata(i+1);
                                         console.log("resolved vitualdir",url,"==>",fixup_url);
-                                        const entry = virtualDir.virtualDirFoundUrls[url]={
+                                        const entry = virtualDir.cache[url]={
                                             fixup_url : fixup_url,
                                             url: url,
                                             response: response,
                                             when:Date.now()
                                         };
-                                        virtualDir.virtualDirFoundUrls[fixup_url]=entry;
+                                        virtualDir.cache[fixup_url]=entry;
                                         
                                         
                                         event.fixup_url = fixup_url;
@@ -637,6 +622,7 @@ ml(0,ml(1),[
              function newFixupRulesArray(arr) {
                  
                   fixupUrlEventClearCached();
+                  clearVirtualDirsCache();
                  
                   // extract virtualdirs and remove comments from source array
                   const source = removeComments(arr).filter(function(x){
@@ -644,9 +630,7 @@ ml(0,ml(1),[
                       if (x.virtualDirs) {
                           virtualDir.virtualDirs    = x.virtualDirs;
                           virtualDir.virtualDirUrls = Object.keys(x.virtualDirs);
-                          virtualDir.virtualDirFoundUrls = {};
-                          
-                          cleanupOld();
+                          virtualDir.cache = {};
                           delete x.virtualDirs;
                           return false;
                       }
@@ -687,6 +671,24 @@ ml(0,ml(1),[
                          replacements(source,'addPrefix');
                          return source;
                      }
+                 }
+                 
+                 function clearVirtualDirsCache() {
+                     if (virtualDir.cache) {
+                         Object.keys (virtualDir.cache).forEach(function(u){
+                             const previous = virtualDir.cache[u];
+                             delete virtualDir.cache[previous.url];
+                             delete virtualDir.cache[previous.fixup_url];
+                             delete previous.response;
+                             delete previous.url;
+                             delete previous.fixup_url;
+                             delete previous.when;
+
+                         });
+                         
+                         delete virtualDir.cache;
+                     }
+                     
                  }
              }
              
