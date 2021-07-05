@@ -12,6 +12,10 @@ ml(0,ml(1),[ 'Rusha | rusha.js' ],function(){ml(2,ml(3),ml(4),
             sha1Subtle.arrayToHex = arrayToHex;
             sha1Subtle.cb=sha1SubtleCB;
             sha1Subtle.sync=sha1RushaSync;// we need to use Rusha for sync 
+            
+            sha1Subtle.cb.raw=sha1SubtleRawCB;
+            sha1Subtle.sync.raw=sha1RushaRawSync;// we need to use Rusha for sync 
+            
             return sha1Subtle ;
         } ],
         ServiceWorkerGlobalScope: [ () => {
@@ -20,6 +24,11 @@ ml(0,ml(1),[ 'Rusha | rusha.js' ],function(){ml(2,ml(3),ml(4),
             sha1Rusha.arrayToHex=arrayToHex;
             sha1Rusha.cb=sha1RushaCB;
             sha1Rusha.sync=sha1RushaSync;
+            
+            sha1Rusha.cb.raw=sha1RushaRawCB;
+            sha1Rusha.sync.raw=sha1RushaRawSync;
+            
+            
             return sha1Rusha;
             
         }   ]
@@ -30,6 +39,11 @@ ml(0,ml(1),[ 'Rusha | rusha.js' ],function(){ml(2,ml(3),ml(4),
               return Promise.resolve(Rusha.createHash().update(buffer).digest('hex'));
 
       }
+      
+      function sha1RushaRaw(buffer){ 
+              return Promise.resolve(Rusha.createHash().update(buffer).digest());
+
+      }
 
       function sha1Subtle(buffer){ 
               return window.crypto.subtle.digest("SHA-1", buffer)
@@ -37,7 +51,9 @@ ml(0,ml(1),[ 'Rusha | rusha.js' ],function(){ml(2,ml(3),ml(4),
           
       }
       
-      
+      function sha1SubtleRaw(buffer){ 
+              return window.crypto.subtle.digest("SHA-1", buffer); 
+      }
       
       
       function sha1RushaCB(buffer,cb){ 
@@ -47,13 +63,31 @@ ml(0,ml(1),[ 'Rusha | rusha.js' ],function(){ml(2,ml(3),ml(4),
       
       }
       
+      function sha1RushaRawCB(buffer,cb){ 
+             cb(undefined,
+               Rusha.createHash().update(buffer).digest()
+             );
+      
+      }
+      
       function sha1RushaSync(buffer,cb){ 
           return Rusha.createHash().update(buffer).digest('hex');
+      }
+      
+      function sha1RushaRawSync(buffer,cb){ 
+          return Rusha.createHash().update(buffer).digest();
       }
       
       function sha1SubtleCB(buffer,cb){ 
               return window.crypto.subtle.digest("SHA-1", buffer)
                  .then(function(dig){cb(undefined,bufferToHex(dig));})
+                   .catch(cb); 
+          
+      }
+      
+      function sha1SubtleRawCB(buffer,cb){ 
+              return window.crypto.subtle.digest("SHA-1", buffer)
+                 .then(function(dig){cb(undefined,dig);})
                    .catch(cb); 
           
       }

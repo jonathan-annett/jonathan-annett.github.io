@@ -77,7 +77,7 @@ ml(0,ml(1),[
              
             
              
-             const { resolveZipListing, resolveZipDownload }  =  listingLib( 
+             const { resolveZipListing, resolveZipDownload, resolvePngZipDownload }  =  listingLib( 
                 getZipObject,fetchUpdatedURLContents,getZipFileUpdates,
                 getZipDirMetaTools,fileisEdited,response200
             );
@@ -1777,6 +1777,14 @@ ml(0,ml(1),[
                              return resolveZipDownload( url, params.download, virtual_prefix  );
                          }
                          return resolveZipListing ( url,undefined,virtual_prefix  ) ; 
+                         
+                        
+                     }
+                     
+                     
+                     if (url.endsWith('.zip.png')) {
+
+                         return resolvePngZipDownload( url.replace(/\.zip\.png$/,'.zip') , params.download || 'files', virtual_prefix  );
                          
                         
                      }
