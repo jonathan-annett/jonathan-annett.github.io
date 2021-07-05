@@ -262,10 +262,8 @@ ml(0,ml(1),[
                  setTimeout(cleanupOld,60*1000);
              }
              
-             function fixupLog() {
-                 console.info.apply(console,arguments);
-             }
-             
+             const fixupLog = console.info.bind(console);
+
              function fixupUrlEvent (event) {
                   const stamp = performance.now();
                   const url_in = event.fixup_url;
