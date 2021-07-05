@@ -402,20 +402,21 @@ ml(0,ml(1),[
                         
                         if (w === png.width && h === png.height && png.depth ==8 && png.data && png.data.byteLength >= (originalBuffer.byteLength + headerBuffer.byteLength )) {
                             
-                            const storedSize = png.data[0] | (png.data[1] << 8) | ( png.data[2] << 16) || (png.data[3] << 24);
+                            const storedDataSize = png.data[0] | (png.data[1] << 8) | ( png.data[2] << 16) || (png.data[3] << 24);
                             
-                            if (storedSize === originalBuffer.byteLength ) {
+                            if (storedDataSize === originalBuffer.byteLength ) {
                                 if (png.data[5]===0 && png.data[6]===0 && png.data[7]===0 ) {
                                     
                                     const storedHashLength = png.data[4];
                                     if (hash.length === storedHashLength * 2) {
-                                        
-                                        const hashBufferSlice = new Uint8Array(png.data.slice(8, 8 + storedHashLength ));
+                                        const storedHashStart = 8;
+                                        const hashBufferSlice = new Uint8Array(png.data.slice(storedHashStart, storedHashStart + storedHashLength ));
                                         // produces Int32Array [42, 0]
                                         
                                         if ( hash === bufferToHex(hashBufferSlice.buffer)) {
+                                            const storedDataStart = storedHashStart + storedHashLength;
                                             
-                                            const compareBufferSlice = new Uint8Array(png.data.slice(8 + storedHashLength,storedSize));
+                                            const compareBufferSlice = new Uint8Array(png.data.slice(storedDataStart,storedDataStart+storedDataSize));
                                             sha1(compareBufferSlice,function(err,hashTest){
                                                  if (err) return cb(err);
                                                  if (hashTest!==hash) {
