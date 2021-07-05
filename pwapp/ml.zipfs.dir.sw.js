@@ -287,6 +287,9 @@ ml(0,ml(1),[
                 }
                 
                 
+               
+                
+                
                 function resolvePngZipDownload( url, mode, alias) {
                     
                     return new Promise(function(resolve){
@@ -333,13 +336,26 @@ ml(0,ml(1),[
                                 const imgs  = [ concatBuffers(headerBuffer,paddedData) ];
                                 const pngData = UPNG.encodeLL(imgs, w, h, cc, ac, depth);
                                 
-                                const fileEntry = {
-                                    contentType   : 'image/png',
-                                    contentLength : pngData.byteLength,
-                                    etag          : hash,
-                                    date          : new Date()
-                                };
-                                response200(resolve,pngData,fileEntry);
+                                
+                                checkBuffer (buffer,hash,pngData,w,h,headerBuffer,function(err){
+                                    
+                                    if (err) {
+                                        return resolve(new Response('', {
+                                            status: 500,
+                                            statusText: err.message|| err
+                                        }));
+                                    }
+                                    
+                                    const fileEntry = {
+                                        contentType   : 'image/png',
+                                        contentLength : pngData.byteLength,
+                                        etag          : hash,
+                                        date          : new Date()
+                                    };
+                                    response200(resolve,pngData,fileEntry);
+                                });
+                                
+                                
                             
                             });
                             
@@ -380,6 +396,60 @@ ml(0,ml(1),[
                         });
                     }
                     
+                    
+                    function checkBuffer (originalBuffer,hash,pngBuffer,w,h,headerBuffer,cb) {
+                        
+                        
+                        const png = UPNG.decode(pngBuffer);
+                        
+                        
+                        if (w === png.width && h === png.height && png.depth ==8 && png.data && png.data.byteLength >= (originalBuffer.byteLength + headerBuffer.byteLength )) {
+                            
+                            const storedSize = png.data[0] | (png.data[1] << 8) | ( png.data[2] << 16) || (png.data[3] << 24);
+                            
+                            if (storedSize === originalBuffer.byteLength ) {
+                                if (png.data[5]===0 && png.data[6]===0 && png.data[7]===0 ) {
+                                    
+                                    if (hash.length === png.data[3] * 2) {
+                                        
+                                        
+                                        const pngView = new Uint8Array(png.data);
+    
+                                        const hashBufferSlice = new Uint8Array(png.data.slice(8, 8+png.data[3]));
+                                        // produces Int32Array [42, 0]
+                                        
+                                        if ( hash === bufferToHex(hashBufferSlice.buffer)) {
+                                            
+                                            const compareBufferSlice = new Uint8Array(png.data.slice(8+png.data[3],storedSize));
+                                            sha1(compareBufferSlice,function(err,hashTest){
+                                                 if (err) return cb(err);
+                                                 if (hashTest!==hash) {
+                                                     return cb (new Error("sha1 hash of stored data does not match stored hash"));
+                                                 }
+                                                 
+                                                 return cb (undefined,compareBufferSlice.buffer);
+                                            });
+                                        } else {
+                                            return cb (new Error("stored header hash does not match sample"));
+                                        }
+                    
+                                    }
+                                } else {
+                                    return cb (new Error("header hash size looks incorrect"));
+                                }
+                            } else {
+                                return cb (new Error("header reserved bytes not zero"));
+                            }
+                            
+                        } else {
+                            
+                            return cb (new Error("header size details don't match"));
+                        }
+                        
+                        
+    
+                        
+                    } 
                     
                 }
                 
