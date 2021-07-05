@@ -19,7 +19,7 @@ ml(0,ml(1),[
              
           
             
-            const full_zip_uri     = location.origin+zip_url_base;
+            const full_zip_uri     = zip_virtual_dir || location.origin+zip_url_base;
             const pwaApi = {
                
                toggleDeleteFile : function (file,cb) {
