@@ -286,10 +286,7 @@ ml(0,ml(1),[
                     
                 }
                 
-                
-               
-                
-                
+
                 function resolvePngZipDownload( url, mode, alias) {
                     
                     return new Promise(function(resolve){
@@ -391,7 +388,7 @@ ml(0,ml(1),[
                             const len2 = zipBuffer.byteLength >>16 & 0xff;
                             const len3 = zipBuffer.byteLength >>32 & 0xff;
                             
-                            const sizeBuffer = new Uint8Array([len0, len1, len2, len3, hashBuffer.length,0,0,0]);
+                            const sizeBuffer = new Uint8Array([len0, len1, len2, len3, hashBuffer.byteLength,0,0,0]);
                             cb(undefined,concatBuffers(sizeBuffer,hashBuffer),bufferToHex(hashBuffer));
                         });
                     }
