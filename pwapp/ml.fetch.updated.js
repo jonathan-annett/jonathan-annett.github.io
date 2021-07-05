@@ -67,6 +67,7 @@ ml(0,ml(1),[
                         doFetch(entry.fixup_url,cb);
                     });
                 } else {
+                    // it's not a virtual entry, so just fetch it
                     doFetch(url,cb);
                 }
                 
