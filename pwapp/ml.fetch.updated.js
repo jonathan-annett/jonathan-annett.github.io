@@ -54,15 +54,26 @@ ml(0,ml(1),[
             virtualDirQuery(url).then(function(entry){
                 
                 if (entry) {
-                    doFetch(entry.fixup_url);
+                    // this is a virtual entry. if it was updated, the "virtual" path will return contents and updated
+                    databases.updatedURLS.getItem(entry.url,function(err,args){
+                        if(err) {
+                            return cb(err);
+                        }
+                        if (args) {
+                            const buffer = args[0];
+                            return cb (undefined,buffer,true);
+                        }
+                        // ok it's a virtual entry that has NOT been updated, so get the correct version from the correct zip.
+                        doFetch(entry.fixup_url,cb);
+                    });
                 } else {
-                    doFetch(url);
+                    doFetch(url,cb);
                 }
                 
             });
             
             
-            function doFetch(use_url) {
+            function doFetch(use_url,cb) {
                 databases.updatedURLS.getItem(use_url,function(err,args){
                     
                     if(err) {
