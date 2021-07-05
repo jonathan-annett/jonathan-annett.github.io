@@ -2,7 +2,9 @@
 ml(0,ml(1),[
     
     'swResponseZipLib@ServiceWorkerGlobalScope  | ml.zipfs.js',
-    'pwaMessage@Window                          | ml.pwa-message.js'
+    'pwaMessage@Window                          | ml.pwa-message.js',
+    'sha1Lib                                    | sha1.js'
+   
 
     
     ],function(){ml(2,ml(3),ml(4),
@@ -73,7 +75,7 @@ ml(0,ml(1),[
                 const dbKeyPrefix = 'zip-files-cache.';
                 
                 const zipFS = swRespZip(dbKeyPrefix);
-                
+                const sha1 = self.sha1Lib.cb; 
                 ml.register("activate",function(event){
                     
                     if (dispatchCustomEvent) {
@@ -201,7 +203,14 @@ ml(0,ml(1),[
                     fetchUpdatedURLContents : function (msg,cb) {
                          zipFS.fetchUpdatedURLContents(msg.data.url,function(err,content, updated){
                              if (err) return cb({error:err.message||err});
-                             cb({content:content,updated:updated});
+                             
+                             if (msg.data.hash) {
+                                 sha1(content,function(err,hash){
+                                     cb({hash:hash,content:content,updated:updated});
+                                 });
+                             } else {
+                                cb({content:content,updated:updated});
+                             }
                          });
                     },
                     
@@ -229,7 +238,13 @@ ml(0,ml(1),[
                             contentBuffer,
                             function(err){
                                 if (err) return cb({error:err.message||err});
-                                cb({});
+                                if (data.hash) {
+                                    sha1(contentBuffer,function(err,hash){
+                                        cb({hash:hash})
+                                    });
+                                } else {
+                                    cb({});
+                                }
                             });
                         
                     },

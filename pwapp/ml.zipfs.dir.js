@@ -19,7 +19,7 @@ ml(0,ml(1),[
              
           
             
-            const full_zip_uri     = zip_virtual_dir || location.origin+zip_url_base;
+            const full_zip_uri     = location.origin+zip_url_base;
             const pwaApi = {
                
                toggleDeleteFile : function (file,cb) {
@@ -127,28 +127,38 @@ ml(0,ml(1),[
                   });
                },
                
-               updateURLContents : function (file,content,cb) {
+               updateURLContents : function (file,content,hash,cb) {
+                   if (typeof hash ==='function') {
+                       cb = hash;
+                       hash=false;
+                   }
                    sendMessage('updateURLContents',{
                        url     : full_zip_uri+'/'+file,
                        virtual : zip_virtual_dir ? zip_virtual_dir +'/'+file : false,
-                       content : content
+                       content : content,
+                       hash    : hash
                    },function(err,msg){
                        const el = find_li(file);
                        if (el) {
                            el.classList.add('edited');
                            el.classList.add('editing');
                        }
-                       if(cb)cb(err,msg);
+                       if(cb)cb(err,msg && msg.hash);
                    });
                },
                
-               fetchUpdatedURLContents : function (file,cb) {
+               fetchUpdatedURLContents : function (file,hash,cb) {
+                   if (typeof hash ==='function') {
+                       cb = hash;
+                       hash=false;
+                   }
                    sendMessage('fetchUpdatedURLContents',{
                        url     : full_zip_uri+'/'+file,
                        virtual : zip_virtual_dir ? zip_virtual_dir +'/'+file : false,
+                       hash    : hash
                    },function(err,msg){
                        if (err) return cb (err);
-                       cb(undefined,msg.content,msg.updated);
+                       cb(undefined,msg.content,msg.updated,msg.hash);
                    });
                    
                },
@@ -462,15 +472,16 @@ ml(0,ml(1),[
                                        });
                                    }
                                    
-                                   pwaApi.readFileString(filename,true,function (err,data) {
+                                   pwaApi.fetchUpdatedURLContents(filename,true,function (err,buffer,hash) {
+                                   //pwaApi.readFileString(filename,true,function (err,data) {
                                       if (err) {
                                           return window.dispatchEvent( 
                                               new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
                                           );
                                       }
-                                      tags[path] = data.hash;
+                                      tags[path] = hash;
                                       window.dispatchEvent( 
-                                          new CustomEvent('zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:data.text }})
+                                          new CustomEvent('zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:bufferToText(buffer) }})
                                       );
                                    });
                                    
@@ -491,7 +502,8 @@ ml(0,ml(1),[
                                        });
                                    }
                                    
-                                   pwaApi.writeFileString(filename,content,true,function (err,hash) {
+                                   pwaApi.updateURLContents(filename,content,true,function (err,hash) {
+                                   //pwaApi.writeFileString(filename,content,true,function (err,hash) {
                                        
                                        if (err) {
                                            return window.dispatchEvent( 
@@ -503,7 +515,8 @@ ml(0,ml(1),[
                                        window.dispatchEvent( 
                                            new CustomEvent(replyMsgId,{  detail: {  resolve : reqId } })
                                        );
-         
+                                       
+
                                    });
                                     
                                    
