@@ -358,9 +358,9 @@ ml(0,ml(1),[
                 const url = event.fixup_url;
                 const previous = virtualDir.cache[url];
                 if (previous) {
-                    previous.when = Date.now();
-                    event.fixup_url = previous.fixup_url;
+                    event.fixup_url      = previous.fixup_url;
                     event.cache_response = previous.response;
+                    event.virtual_prefix = previous.prefix;
                     return;
                 }
                 
@@ -382,21 +382,21 @@ ml(0,ml(1),[
                                 
                                 if (i<zipurlprefixes.length) {
                                     const fixup_url = zipurlprefixes[i]+subpath;
-                                    getEmbeddedZipFileResponse(fixup_url,function(err,response){
+                                    getEmbeddedZipFileResponse(fixup_url,{virtual_prefix:event.virtual_prefix},function(err,response){
                                         if (err||!response) return locateZipMetadata(i+1);
                                         console.log("resolved vitualdir",url,"==>",fixup_url);
                                         const entry = virtualDir.cache[url]={
                                             fixup_url : fixup_url,
                                             url: url,
                                             response: response,
-                                            when:Date.now()
+                                            prefix : prefix
                                         };
                                         virtualDir.cache[fixup_url]=entry;
                                         
                                         
-                                        event.fixup_url = fixup_url;
+                                        event.fixup_url      = fixup_url;
                                         event.cache_response = response;
-                                        
+                                        event.virtual_prefix = prefix;
                                         return resolve ();
                                     });
                                            
@@ -504,7 +504,8 @@ ml(0,ml(1),[
              }
 
              function fetchFileFromZipEvent (event) {
-                return  doFetchZipUrl(event.request,event.fixup_url,event.fixup_params());
+                 const params    = event.fixup_params();
+                return  doFetchZipUrl(event.request,event.fixup_url,params,event.virtual_prefix);
              }
              
              function fetchFileFromCacheEvent(event) {
@@ -682,7 +683,6 @@ ml(0,ml(1),[
                              delete previous.response;
                              delete previous.url;
                              delete previous.fixup_url;
-                             delete previous.when;
 
                          });
                          
@@ -691,7 +691,6 @@ ml(0,ml(1),[
                      
                  }
              }
-             
              
              function fixupUrlEventClearCached() {
                  if (fixupUrlEvent.eventCache) {
@@ -1151,8 +1150,8 @@ ml(0,ml(1),[
                  });
              }
              
-             function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince) {
-                 console.log({resolveSubzip:{ifNoneMatch,ifModifiedSince,zip_url,path_in_zip}});
+             function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince,virtual_prefix) {
+                 console.log({resolveSubzip:{ifNoneMatch,ifModifiedSince,zip_url,path_in_zip,virtual_prefix}});
                  const parts           = path_in_zip.split('.zip/');     
                  const subzip          = parts.length>1;
                  let   file_path       = subzip ? parts[0]+'.zip' : parts[0];
@@ -1257,12 +1256,12 @@ ml(0,ml(1),[
                                 }
                                 
                                 if (path_in_zip.endsWith('.zip')) {
-                                    return resolveZipListing (zip_url+"/"+path_in_zip,buffer).then(resolve).catch(reject);
+                                    return resolveZipListing (zip_url+"/"+path_in_zip,buffer,virtual_prefix).then(resolve).catch(reject);
                                 }
                                
                                 
                                 if (subzip) {
-                                    return resolveSubzip(buffer,subzip_url ,subzip_filepath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
+                                    return resolveSubzip(buffer,subzip_url ,subzip_filepath,ifNoneMatch,ifModifiedSince,virtual_prefix).then(resolve).catch(reject);
                                 }
                                 
                                 
@@ -1283,8 +1282,8 @@ ml(0,ml(1),[
                  return def;
              }
              
-             function resolveZip (parts,ifNoneMatch,ifModifiedSince) {
-                 console.log({resolveZip:{ifNoneMatch,ifModifiedSince,parts}});
+             function resolveZip (parts,ifNoneMatch,ifModifiedSince,virtual_prefix) {
+                 console.log({resolveZip:{ifNoneMatch,ifModifiedSince,parts,virtual_prefix}});
                  const zip_url           = parts[0]+'.zip', 
                        subzip            = parts.length>2; 
                  let   file_path         = subzip ? parts[1]+'.zip' : parts[1],
@@ -1375,11 +1374,11 @@ ml(0,ml(1),[
                                      }
                                      
                                      if (subzip) {
-                                         return resolveSubzip(buffer,subzip_url,subzip_filepath,ifNoneMatch,ifModifiedSince).then(resolve).catch(reject);
+                                         return resolveSubzip(buffer,subzip_url,subzip_filepath,ifNoneMatch,ifModifiedSince,virtual_prefix).then(resolve).catch(reject);
                                      }
                                      
                                      if (file_path.endsWith('.zip')) {
-                                         return resolveZipListing (zip_url+"/"+file_path,buffer).then(resolve).catch(reject);
+                                         return resolveZipListing (zip_url+"/"+file_path,buffer,virtual_prefix).then(resolve).catch(reject);
                                      }
                                      
                                      return response200 (resolve,buffer,fileEntry);
@@ -1758,7 +1757,7 @@ ml(0,ml(1),[
                      cb      = options;
                      options = {};
                  }
-                 const {ifNoneMatch,ifModifiedSince, showListing} = options;
+                 const {ifNoneMatch,ifModifiedSince, showListing,virtual_prefix } = options;
                      
                  //const url             = request.url; 
                  const parts           = url.split('.zip/');
@@ -1766,7 +1765,7 @@ ml(0,ml(1),[
                  if (parts.length>1) {
                      // this is a url in the format http://example.com/path/to/zipfile.zip/path/to/file/in/zip.ext
                      
-                     return resolveZip (parts,ifNoneMatch,ifModifiedSince)
+                     return resolveZip (parts,ifNoneMatch,ifModifiedSince,virtual_prefix)
                      
                             .then(function(response){
                                 if (response && response.status===200) {
@@ -1785,7 +1784,7 @@ ml(0,ml(1),[
                          // this is a url pointing to a possibly existing zip file
                          // we don't let you download the zip. we do however give you the file list when you ask for a zip
                          // which provides links to each file inside
-                         return resolveZipListing ( url )
+                         return resolveZipListing ( url,undefined,virtual_prefix )
                          
                                   .then(function(response){
                                          if (response && response.status===200) {
@@ -1807,7 +1806,7 @@ ml(0,ml(1),[
                  }
              }
              
-             function doFetchZipUrl(request,url,params) {
+             function doFetchZipUrl(request,url,params,virtual_prefix) {
                      
                  //const url             = request.url; 
                  const parts           = url.split('.zip/');
@@ -1818,7 +1817,7 @@ ml(0,ml(1),[
                  if (parts.length>1) {
                      // this is a url in the format http://example.com/path/to/zipfile.zip/path/to/file/in/zip.ext
                      
-                     return resolveZip (parts,ifNoneMatch,ifModifiedSince) ; 
+                     return resolveZip (parts,ifNoneMatch,ifModifiedSince,virtual_prefix) ; 
                      
                  } else {
                  
@@ -1830,7 +1829,7 @@ ml(0,ml(1),[
                          if (params.download) {
                              return resolveZipDownload( url, params.download );
                          }
-                         return resolveZipListing ( url ) ; 
+                         return resolveZipListing ( url,undefined,virtual_prefix  ) ; 
                          
                         
                      }
