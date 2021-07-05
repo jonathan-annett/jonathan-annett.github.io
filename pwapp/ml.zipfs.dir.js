@@ -20,13 +20,12 @@ ml(0,ml(1),[
           
             
             const full_zip_uri     = location.origin+zip_url_base;
-            const full_virtual_dir = zip_virtual_dir ? location.origin+zip_virtual_dir : false;
             const pwaApi = {
                
                toggleDeleteFile : function (file,cb) {
                    sendMessage('deleted',{
                         zip    : full_zip_uri,
-                        virtual: full_virtual_dir,
+                        virtual: zip_virtual_dir,
                         toggle : file
                    },function(err,msg){
                         if(cb)cb(err,msg);
@@ -36,7 +35,7 @@ ml(0,ml(1),[
                deleteFile       : function (file,cb) {
                    sendMessage('deleted',{
                        zip : full_zip_uri,
-                       virtual: full_virtual_dir,
+                       virtual: zip_virtual_dir,
                        add : file
                    },function(err,msg){
                        const ix = zip_files.indexOf(file);
@@ -50,7 +49,7 @@ ml(0,ml(1),[
                unDeleteFile     : function (file,cb) {
                    sendMessage('deleted',{
                        zip    : full_zip_uri,
-                       virtual: full_virtual_dir,
+                       virtual: zip_virtual_dir,
                        remove : file
                    },function(err,msg){
                        const ix = zip_files.indexOf(file);
@@ -64,7 +63,7 @@ ml(0,ml(1),[
                isDeleted     : function (file,cb) {
                    sendMessage('deleted',{
                         zip    : full_zip_uri,
-                        virtual: full_virtual_dir,
+                        virtual: zip_virtual_dir,
                         test   : file
                    },function(err,msg){
                         if(cb)cb(err,msg);
@@ -78,7 +77,7 @@ ml(0,ml(1),[
                    }
                    sendMessage('writeFileString',{
                        zip    : full_zip_uri,
-                       virtual: full_virtual_dir,
+                       virtual: zip_virtual_dir,
                        file   : file,
                        text   : text,
                        hash   : hash
@@ -92,7 +91,7 @@ ml(0,ml(1),[
                    }
                     sendMessage('readFileString',{
                         zip    : full_zip_uri,
-                        virtual: full_virtual_dir,
+                        virtual: zip_virtual_dir,
                         file   : file,
                         hash   : hash
                     },cb);
@@ -101,7 +100,7 @@ ml(0,ml(1),[
                isHidden : function (file,cb) {
                    sendMessage('hidden',{
                        zip    : full_zip_uri,
-                       virtual: full_virtual_dir,
+                       virtual: zip_virtual_dir,
                        test   : file
                    },function(err,msg){
                        const el = find_li(file);
@@ -119,7 +118,7 @@ ml(0,ml(1),[
                removeUpdatedURLContents  : function (file,cb) {
                   sendMessage('removeUpdatedURLContents',{
                       url    : full_zip_uri+'/'+file,
-                      virtual: full_virtual_dir ? full_virtual_dir +'/'+file : false,
+                      virtual: zip_virtual_dir ? zip_virtual_dir +'/'+file : false,
                        
                   },function(err,msg){
                       const el = find_li(file);
@@ -131,7 +130,7 @@ ml(0,ml(1),[
                updateURLContents : function (file,content,cb) {
                    sendMessage('updateURLContents',{
                        url     : full_zip_uri+'/'+file,
-                       virtual : full_virtual_dir ? full_virtual_dir +'/'+file : false,
+                       virtual : zip_virtual_dir ? zip_virtual_dir +'/'+file : false,
                        content : content
                    },function(err,msg){
                        const el = find_li(file);
@@ -146,7 +145,7 @@ ml(0,ml(1),[
                fetchUpdatedURLContents : function (file,cb) {
                    sendMessage('fetchUpdatedURLContents',{
                        url     : full_zip_uri+'/'+file,
-                       virtual : full_virtual_dir ? full_virtual_dir +'/'+file : false,
+                       virtual : zip_virtual_dir ? zip_virtual_dir +'/'+file : false,
                    },function(err,msg){
                        if (err) return cb (err);
                        cb(undefined,msg.content,msg.updated);
@@ -165,7 +164,7 @@ ml(0,ml(1),[
                 const persistent=true;
                 sendMessage('registerForNotifications',{
                     zip     : full_zip_uri,
-                    virtual : full_virtual_dir,
+                    virtual : zip_virtual_dir,
                 },persistent,function(err,msg){
                     if (err) return cb (err);
                     msg.channel = new BroadcastChannel(msg.notificationId);
@@ -176,7 +175,7 @@ ml(0,ml(1),[
                         msg.channel.close();
                         sendMessage('unregisterForNotifications',{
                             zip     : full_zip_uri,
-                            virtual : full_virtual_dir,
+                            virtual : zip_virtual_dir,
                             notificationId : msg.notificationId
                         },function(err,msg){
                             if (err) return cb (err);

@@ -171,6 +171,7 @@ ml(0,ml(1),[
                    });
     
                 }
+                
                  function virtualDirResponseEvent (event) {
                    
                    if (event.cache_response) {
