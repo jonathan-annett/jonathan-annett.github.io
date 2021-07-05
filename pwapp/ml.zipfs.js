@@ -502,13 +502,13 @@ ml(0,ml(1),[
                 } else {
                     if (event.fixup_url.endsWith("/virtual.json")) {
                         const json = JSON.stringify(virtualDirDB,undefined,4);
-                        return new Response(json, {
+                        return Promise.resolve(new Response(json, {
                           status: 200,
                           headers: new Headers({
                             'Content-Type'   : 'application/json',
                             'Content-Length' : json.length
                           })
-                        });
+                        }));
                     }
                 }
                   
