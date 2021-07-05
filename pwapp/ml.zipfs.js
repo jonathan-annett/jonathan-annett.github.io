@@ -682,13 +682,13 @@ ml(0,ml(1),[
                                 x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
                              }
                          };
-                         return source.map(function(x){
+                         //return source.map(function(x){
                              regexs(x,'match');   
                              regexs(x,'replace'); 
                              replacements(x,'with');
                              replacements(x,'addPrefix');
                              return x;
-                         }); 
+                         //}); 
                      }
                  }
              }
