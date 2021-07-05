@@ -407,14 +407,15 @@ ml(0,ml(1),[
                             if (storedSize === originalBuffer.byteLength ) {
                                 if (png.data[5]===0 && png.data[6]===0 && png.data[7]===0 ) {
                                     
-                                    if (hash.length === png.data[4] * 2) {
+                                    const storedHashLength = png.data[4];
+                                    if (hash.length === storedHashLength * 2) {
                                         
-                                        const hashBufferSlice = new Uint8Array(png.data.slice(8, 8+png.data[3]));
+                                        const hashBufferSlice = new Uint8Array(png.data.slice(8, 8 + storedHashLength ));
                                         // produces Int32Array [42, 0]
                                         
                                         if ( hash === bufferToHex(hashBufferSlice.buffer)) {
                                             
-                                            const compareBufferSlice = new Uint8Array(png.data.slice(8+png.data[3],storedSize));
+                                            const compareBufferSlice = new Uint8Array(png.data.slice(8 + storedHashLength,storedSize));
                                             sha1(compareBufferSlice,function(err,hashTest){
                                                  if (err) return cb(err);
                                                  if (hashTest!==hash) {
