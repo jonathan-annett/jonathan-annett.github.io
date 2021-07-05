@@ -55,7 +55,7 @@ ml(0,ml(1),[
                 
                 if (entry) {
                     // this is a virtual entry. if it was updated, the "virtual" path will return contents and updated
-                    databases.updatedURLS.getItem(entry.url,function(err,args){
+                    databases.updatedURLS.getItem(entry.aliased_url,function(err,args){
                         if(err) {
                             return cb(err);
                         }
