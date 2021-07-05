@@ -232,6 +232,9 @@ ml(0,ml(1),[
                     new Promise(function(resolve,reject){
                         processFetchRequestInternal(event,function(err,response){
                             if (err) return reject (err);
+                            if (event.virtual_prefix) {
+                                response.headers.set('x-virtual_prefix',event.virtual_prefix);
+                            }
                             resolve(response);
                         });
                     })
@@ -361,6 +364,7 @@ ml(0,ml(1),[
                     event.fixup_url      = previous.fixup_url;
                     event.cache_response = previous.response;
                     event.virtual_prefix = previous.prefix;
+                    
                     return;
                 }
                 
