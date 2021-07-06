@@ -1158,7 +1158,7 @@ ml(0,ml(1),[
                                               'Content-Length' : fileEntry.contentLength,
                                               'ETag'           : fileEntry.etag,
                                               'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                              'Last-Modified'  : fileEntry.date.toString(),
+                                              'Last-Modified'  : (fileEntry.date ? fileEntry.date : new Date()).toString(),
                                             })
                                     })
                 );
