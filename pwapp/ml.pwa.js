@@ -370,7 +370,7 @@ ml(0,ml(1),[
                         // returns a list of urls that the service worker loaded in order to boot, in the order they were loaded by ml.sw.js
                         // *does not include ml.sw.js itself
                         
-                        return { urls:ml.H.slice(0) };
+                        return ml.H.slice(0);
                         
                         
                     },
@@ -383,7 +383,7 @@ ml(0,ml(1),[
                                 retval[m]=u;
                             });    
                         });
-                        return { retval };
+                        return retval ;
                     }
 
                 });
