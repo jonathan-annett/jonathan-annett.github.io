@@ -203,7 +203,7 @@ ml(0,ml(1),[
                     
                     getPNGZipImage : function (msg,cb) {
                         const data = msg.data;
-                        if (data.zip ) {
+                        if (data.zip_url ) {
                             
                             
                             zipFS.createPNGZipFromZipUrl(
@@ -221,7 +221,7 @@ ml(0,ml(1),[
                             
                             
                         } else {
-                            cb({error:"needs zip + toggle/add/remove"});
+                            cb({error:"needs zip_url"});
                         }
                     },
                     
