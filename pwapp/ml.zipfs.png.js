@@ -31,6 +31,8 @@ ml(0,ml(1),[
                 const sha1Raw = self.sha1Lib.cb.raw;
                 const sha1Sync = self.sha1Lib.sync;
                 const bufferToHex = self.sha1Lib.bufferToHex;
+                
+                const expectHashLength = self.sha1Lib.sync.raw('x').byteLength;
             
                 return  {
                     
@@ -199,11 +201,13 @@ ml(0,ml(1),[
                             return cb (new Error("png.depth should be 8 bit"));
                             
                         }
+            
+                       
                         
                         const storedDataSize = png.data[0] | (png.data[1] << 8) | ( png.data[2] << 16) || (png.data[3] << 24);
                         const storedHashLength = png.data[4];
-                        if (storedHashLength !== 40) {
-                            return cb (new Error("Stored hash length is incorrect")) 
+                        if (storedHashLength !== expectHashLength) {
+                            return cb (new Error("Stored hash length is incorrect"));
                         }
                         
                         if (png.data[5]!==0 || png.data[6]!==0 || png.data[7]!==0 ) {
