@@ -258,12 +258,10 @@ ml(0,ml(1),[
                                       };
                                       
                                       
-                                     db.getSerializer().then(function(x){
+                                     DB.getSerializer(function(toString){
                                          
-                                         
-                                         const toString = x.serialize;
-                                         
-                                            
+                                  
+
                                         nextKey(0); 
                                         
                                         function nextKey(i) {
@@ -342,10 +340,7 @@ ml(0,ml(1),[
                                }
                                
                                
-                               db.getSerializer().then(function(x){
-                                   
-                                   
-                                    const fromString = x.deserialize;
+                              DB.getDeserializer(function(fromString){
                                     
                                     zip_fileobj.async('string').then(function(json){
                                         try {
@@ -414,6 +409,146 @@ ml(0,ml(1),[
                                
                           
                                
+                           },
+                           
+                           
+                           getSerializer : function (cb) {
+                               
+                                   db.getSerializer().then(function(lf){
+                                       
+                                        const lf_serialize = lf.serialize;
+                                        
+                                        return cb(function (x,cb) {
+                                        
+                                            return serialize(x,cb);
+                                            
+                                            function seralizeObject(o,cb) {
+                                                  const keys = Object.keys(o);
+                                                  const promises = keys.map(function(k){
+                                                                  
+                                                      return new Promise(function(resolve) {
+                                                          serialize(o[k],function(str){
+                                                              resolve(str);
+                                                          }); 
+                                                      });
+                                                      
+                                                  });
+                                                  Promise.all(promises).then(function(strs){
+                                                     const obj = {};
+                                                     keys.forEach(function(k,i){
+                                                         obj[k]=strs[i]
+                                                     });
+                                                     return cb(JSON.stringify(obj));
+                                                  });
+                                                 
+                                            }
+                                            
+                                            function serializeArray(a,cb) {
+                                                const promises = a.map(function(el){
+                                                    
+                                                    return new Promise(function(resolve) {
+                                                        serialize(el,function(str){
+                                                            resolve(str);
+                                                        }); 
+                                                    });
+                                                    
+                                                });
+                                                
+                                                Promise.all(promises).then(function(strs){
+                                                    return cb(JSON.stringify(strs));
+                                                });
+                                            }
+                                            
+                                            function serialize(x,cb) {
+                                                
+                                                 
+                                                if (typeof x === "object")  {
+                                                        if (Array.isArray(x)) {
+                                                            return serializeArray (x,cb);
+                                                        }
+                                                        
+                                                        if (x.constructor === ArrayBuffer || (x.buffer && x.buffer.constructor === ArrayBuffer) ) {
+                                                            return lf_serialize (x,cb);
+                                                        }
+                                                        
+                                                        return seralizeObject (x,cb);
+        
+                                                } else {
+                                                    return lf_serialize (x,cb);
+                                                }
+                                                
+                                            }
+                                       
+                                       
+                                       });
+                                   
+                               });
+                               
+                           },
+                           getDeserializer : function (cb) {
+                               
+                               
+                                var isArray     = /^\[/;
+                                var isObject    = /^\{/;
+                                db.getSerializer().then(function(lf){
+                                    
+                                     const lf_serialize = lf.deserialize;
+                                     
+                                     return cb(function (str,cb) {
+                                         
+                                         return deserialize (str,cb) ;
+                                         
+                                         function deserializeArray(str,cb) {
+                                             const a = JSON.parse(str);
+                                             const promises = a.map(function(str){
+                                                 
+                                                 return new Promise(function(resolve) {
+                                                     deserialize(str,function(el){
+                                                         resolve(el);
+                                                     }); 
+                                                 });
+                                                 
+                                             });
+                                             
+                                             Promise.all(promises).then(function(values){
+                                                 return cb(values);
+                                             });
+                                         }
+                                         
+                                         function deserializeObject(str,cb) {
+                                             const o = JSON.parses(str);
+                                             const keys = Object.keys(o);
+                                             const promises = keys.map(function(k){
+                                                             
+                                                 return new Promise(function(resolve) {
+                                                     deserialize(o[k],function(value){
+                                                         resolve(value);
+                                                     }); 
+                                                 });
+                                                 
+                                             });
+                                             Promise.all(promises).then(function(values){
+                                                const obj = {};
+                                                keys.forEach(function(k,i){
+                                                    obj[k]=values[i]
+                                                });
+                                                return cb(obj);
+                                             });
+                                         }
+                                         
+                                         function deserialize (str,cb) {
+                                             
+                                             switch (true) {
+                                                 case isArray.test(str)     : return deserializeArray(str,cb);
+                                                 case isObject.test(str)    : return deserializeObject(str,cb);
+                                             }
+                                             
+                                             return lf_serialize(str,cb);
+                                         }
+                                     
+                                     });
+                                  
+                                });
                            }
                    };
                    
