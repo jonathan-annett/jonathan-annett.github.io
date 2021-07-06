@@ -33,7 +33,10 @@ ml(0,ml(1),[
             
             
              const databaseNames = ["updatedURLS","openZips","zipMetadata","cachedURLS","offsiteURLS"];
-             const databases     = self.ml_db_Lib (databaseNames);
+             const databases     = self.ml_db_Lib (databaseNames,getZipObject);
+             
+             
+             const registeredMiddleware = [];
              
              
              const {
@@ -107,15 +110,25 @@ ml(0,ml(1),[
                 getUpdatedZipFile        : getUpdatedZipFile,
                 
                 createPNGZipFromZipUrl   : createPNGZipFromZipUrl,
-                extractBufferFromPng     : extractBufferFromPng
-
+                extractBufferFromPng     : extractBufferFromPng,
                 
+                
+                getZipObject             : getZipObject,
+                
+                addMiddlewareListener    : addMiddlewareListener,
+                
+                removeMiddlewareListener : removeMiddlewareListener 
+     
+
             };          
              
                               
              const openZipFileCache = { };
              
-            
+             
+            const fixupLog = function(){};//console.info.bind(console);
+           
+           
              
              const dir_meta_name  = '.dirmeta.json';
              const dir_meta_empty = {"deleted":[],"hidden":["^\\."]};
@@ -163,6 +176,20 @@ ml(0,ml(1),[
                  return retObj;
              }
            
+           
+           
+             function addMiddlewareListener (fn) {
+                 if (registeredMiddleware.indexOf(fn)<0) {
+                     registeredMiddleware.push(fn);
+                 }
+             }       
+              function removeMiddlewareListener (fn) {
+                  const ix = registeredMiddleware.indexOf(fn);
+                  if (ix>=0) {
+                       registeredMiddleware.splice(ix,1);
+                   }
+               }       
+             
 
              function processFetchRequestInternal(event,cb) {
                   const querySplit  = event.request.url.indexOf('?');
@@ -198,25 +225,36 @@ ml(0,ml(1),[
                                                 // these rules do things like append index.html to the root path
                                                 // and convert partial urls into complete urls, with respect to the referrer
                                                 
-                      virtualDirEvent,          // if event.fixup_url is inside a virtal modifies event.fixup_url, 
+                      virtualDirEvent,          // if event.fixup_url is inside a virtual directory, modifies event.fixup_url, 
                                                 // to point to the endpoint inside it's container zip, and saves saves the 
                                                 // potential response in event.cache_response. (potential, because it may 
-                                                // have been updated, if the site is in local edit mode.
+                                                // have been updated, if the site is in local edit mode.)
                                                 
                       fetchUpdatedURLEvent,     // if event.fixup_url has been updated, resolve with updated content
                                                 // production sites don't include this middleware vector.
                       
                       
                       virtualDirResponseEvent,  // if the virtual file wasn't updated resolves to the cache_response
+                                                // this vector has no effect if virtualDirEvent did not locate a virual directory
+                                                // entry for the current url.
                        
                       // we get here the url isn't inside a virtual dir  
                        
-                      fetchFileFromZipEvent,
+                      fetchFileFromZipEvent,    // this handles directly addressed zip urls (not virtual, but an explicit fetch from 
+                                                // inside a specific zip file)
+                                                
+                                                
+                ].concat(registeredMiddleware,[  // additional handlers handle loaded into registeredMiddleware                        
+                                                
                       
-                      fetchFileFromCacheEvent,
+                      fetchFileFromCacheEvent,  // for offline mode (or online, and file not modified), fetch the url from a cache
+                                                // database. fixupUrlEvent will have decided which database to used based on
+                                                // the domain - local urls are inside databases.cachedURLS. ohers are in databases.offsiteURLS
+                                                // we don't use the normal caches database here, as we utilize serialization to to intialize
+                                                // the database on site install.
                       
-                      defaultFetchEvent  
-                  ];
+                      defaultFetchEvent         // last but not least... if url has not been cached, download and cache it.
+                  ]);
                   
                   
                   const next = function (handler) {
@@ -289,9 +327,6 @@ ml(0,ml(1),[
              }
              
              
-             
-             const fixupLog = function(){};//console.info.bind(console);
-            
              
              function fixupUrlEvent (event) {
                   const stamp = performance.now();
@@ -485,8 +520,9 @@ ml(0,ml(1),[
 
              function fetchFileFromZipEvent (event) {
                  const params    = event.fixup_params();
-                return  doFetchZipUrl(event.request,event.fixup_url,params,event.virtual_prefix);
+                 return  doFetchZipUrl(event.request,event.fixup_url,params,event.virtual_prefix);
              }
+             
              
              function fetchFileFromCacheEvent(event) {
                  
@@ -902,9 +938,13 @@ ml(0,ml(1),[
                 return zipFileMeta;
             }
 
-             function getZipObject(url,buffer,cb/*function(err,zip,zipFileMeta){})*/) {
+             function getZipObject(url,buffer,cache,cb/*function(err,zip,zipFileMeta){})*/) {
+                 if (typeof cache==='function') {
+                     cb=cache;cache=true;
+                 }
+                 
                  if (typeof buffer==='function') {
-                     cb=buffer;buffer=undefined;
+                     cb=buffer;buffer=undefined;cache=true;
                  }
                  const entry = openZipFileCache[url];
                  if (entry) {
@@ -920,11 +960,15 @@ ml(0,ml(1),[
                          
                          limitZipFilesCache(9,function(){
                              
-                             openZipFileCache[url] = {
-                                 touched    : Date.now(),
-                                 zip        : zip,
-                                 metadata   : zipFileMeta
-                             };
+                             if (cache) {
+                                 openZipFileCache[url] = {
+                                     touched    : Date.now(),
+                                     zip        : zip,
+                                     metadata   : zipFileMeta
+                                 };
+                             } else {
+                                 return cb (undefined,zip);
+                             }
                              
                              if (zipFileMeta.files) {
                                  // file has been opened once before
@@ -952,6 +996,7 @@ ml(0,ml(1),[
                              });
             
                          });
+                         
                      }).catch(cb);
             
                  });
@@ -1886,6 +1931,9 @@ ml(0,ml(1),[
                  }
              }
              
+             
+             
+             
              function internalErrorEvent (event) {
                  event.respondWith( Promise.resolve(new Response('', {
                                                     status: 500,
@@ -1974,7 +2022,24 @@ ml(0,ml(1),[
              
             
            
-
+            addMiddlewareListener (function (event) {
+                // !event.use_no_cors means url is for this domain name,
+                if (!event.use_no_cors &&  /\/databases\.zip$/.test(event.fixup_url)) {
+                    return new Promise(function(resolve){
+                       databases.toZip(function(err,buffer){
+                           sha1(buffer,function(err,hash){
+                               response200 (resolve,buffer,{
+                                   contentType   : 'application/zip',
+                                   contentLength : buffer.byteLength,
+                                   etag          : hash,
+                               });
+                           });
+                       });
+                        
+                    });
+                }
+                
+            });
 
              return lib;
              
