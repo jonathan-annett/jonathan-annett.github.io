@@ -85,6 +85,9 @@ function ml(x,L, o, a, d, s){
            );
         },
         
+        //c.k = Object.keys();
+        k:(o)=>Object.keys(o)
+        
 
                 
         
@@ -102,8 +105,16 @@ function ml(x,L, o, a, d, s){
        0:()=>z.l(o),
        
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
-       l:(u)=>{
+       l:(u,L)=>{
              u = u.map(z.u).filter(z.y);
+             if (!u.length) {
+                 L=c[4]();
+                 ml.H[c.f](function(u){
+                    c.k(ml.d[u].e)[c.f]((m)=>{
+                       if (!ml.d[u].e[m]) ml.d[u].e[m]=L[m]; 
+                    }) 
+                 });
+             }
              return u.length?setTimeout(z.l, u.length+1, u):a();
        },
 
@@ -120,10 +131,10 @@ function ml(x,L, o, a, d, s){
              }
              N=R[1];
              U=c.B(R[3]);
-             if(c.c(U))ml.d[N]={h:U};
+             if(c.c(U)){ml.d[N]={h:U};ml.H.push(U);}
              importScripts(U);
              ml.h[U]=ml.h[U]||{e:{}};
-             ml.h[U].e[N]=self[N];
+             ml.h[U].e[N]=c[4]()[N]||false;
              return N;
        },
        
@@ -132,7 +143,7 @@ function ml(x,L, o, a, d, s){
        y:(x)=>!!x,
          
        //z.U() = history as an array of urls
-       U:()=>Object.keys(ml.h),
+       U:()=>c.k(ml.h),
 
        //z.e = resolve to etag in r.header or d (default)
        e:(r,d)=>r.headers.get("Etag")[c.r](/[\"\/\\\-]*/g,'')||d,
