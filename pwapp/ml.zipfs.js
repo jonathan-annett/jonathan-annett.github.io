@@ -1186,11 +1186,11 @@ ml(0,ml(1),[
             }
             
             function testPathIsZip (path) {
-                return path.test(/\.zip$/);
+                return /\.zip$/.test(path);
             }
             
             function testPathIsPngZip (path) {
-                return path.test(/(?<=\-[a-f0-9]{40})\.png$/);
+                return /(?<=\-[a-f0-9]{40})\.png$/.test(path);
             }
             
             
