@@ -36,12 +36,16 @@ ml(0,ml(1),[
             
                 return  {
                     
-                   resolvePngZipDownload  : resolvePngZipDownload,
-                   createPNGZipFromZipUrl : createAPNGZipFromZipUrl,
-                   createAPNGZipFromZipUrl : createAPNGZipFromZipUrl,
+                   resolvePngZipDownload   : resolveAPngZipDownload,
                    
-                   createPNGWrappedBuffer : createPNGWrappedBuffer,
-                   extractBufferFromPng   : extractBufferFromPng
+                   createPNGZipFromZipUrl  : createAPNGZipFromZipUrl,
+                   createPNGWrappedBuffer  : createAPNGWrappedBuffer,
+                   
+                   //resolveAPngZipDownload   : resolveAPngZipDownload,
+                   //createAPNGZipFromZipUrl : createAPNGZipFromZipUrl,
+                   //createAPNGWrappedBuffer : createAPNGWrappedBuffer,
+                   
+                   extractBufferFromPng    : extractBufferFromPng
 
                 };
                 
@@ -68,41 +72,7 @@ ml(0,ml(1),[
                         });
 
                     });
-                    
-                    
-                    
-                    
-                    function concatTypedArrays(a, b) { // a, b TypedArray of same type
-                        var c = new (a.constructor)(a.length + b.length);
-                        c.set(a, 0);
-                        c.set(b, a.length);
-                        return c;
-                    }
-                    
-                    
-                    function concatBuffers(a, b) {
-                        return concatTypedArrays(
-                            new Uint8Array(a.buffer || a), 
-                            new Uint8Array(b.buffer || b)
-                        ).buffer;
-                    }
-                        
-                        
-                    function createHeaderBuffer (zipBuffer,cb) {
-                        sha1Raw(zipBuffer,function(err,hashBuffer){
-                            if (err) return cb(err);
-                            const len0 = zipBuffer.byteLength      & 0xff;
-                            const len1 = zipBuffer.byteLength >>8  & 0xff;
-                            const len2 = zipBuffer.byteLength >>16 & 0xff;
-                            const len3 = zipBuffer.byteLength >>32 & 0xff;
-                            
-                            const sizeBuffer = new Uint8Array([len0, len1, len2, len3, hashBuffer.byteLength,0,0,0]);
-                            cb(undefined,concatBuffers(sizeBuffer,hashBuffer),bufferToHex(hashBuffer));
-                        });
-                    }
-                    
-                    
-                   
+
                     
                 }
                 
@@ -153,20 +123,7 @@ ml(0,ml(1),[
                             
                         });
            
-                        function concatTypedArrays(a, b) { // a, b TypedArray of same type
-                            var c = new (a.constructor)(a.length + b.length);
-                            c.set(a, 0);
-                            c.set(b, a.length);
-                            return c;
-                        }
-
-                        function concatBuffers(a, b) {
-                            return concatTypedArrays(
-                                new Uint8Array(a.buffer || a), 
-                                new Uint8Array(b.buffer || b)
-                            ).buffer;
-                        }
-
+                     
                         function createHeaderBuffer (zipBuffer,cb) {
                             sha1Raw(zipBuffer,function(err,hashBuffer){
                                 if (err) return cb(err);
@@ -316,6 +273,45 @@ ml(0,ml(1),[
                 
                 
                 
+                
+                function resolveAPngZipDownload( url, mode, alias) {
+                    
+                    return new Promise(function(resolve){
+                        
+                        createAPNGZipFromZipUrl(url,mode,alias,function(err,pngData,hash){
+                            if (err) {
+                                return resolve(new Response('', {
+                                    status: 500,
+                                    statusText: err.message|| err
+                                }));
+                            }
+                            
+                            const fileEntry = {
+                                contentType   : 'image/apng',
+                                contentLength : pngData.byteLength,
+                                etag          : hash,
+                                date          : new Date()
+                            };
+                            response200(resolve,pngData,fileEntry);
+                        });
+
+                    });
+                    
+                    
+                    
+                    
+                    
+                   
+                    
+                }
+                
+                function createAPNGZipFromZipUrl(url,mode,alias,cb) {
+                    getUpdatedZipFile(url,mode,alias,function(err,buffer){
+                        if (err) return cb (err);
+                        createAPNGWrappedBuffer( buffer,cb);
+                    });
+                }
+                
                 function createAPNGWrappedBuffer( buffer,cb) {
                     
                         createHeaderBuffer(buffer,function(err,headerBuffer,hash){
@@ -365,20 +361,6 @@ ml(0,ml(1),[
                             
                         });
            
-                        function concatTypedArrays(a, b) { // a, b TypedArray of same type
-                            var c = new (a.constructor)(a.length + b.length);
-                            c.set(a, 0);
-                            c.set(b, a.length);
-                            return c;
-                        }
-
-                        function concatBuffers(a, b) {
-                            return concatTypedArrays(
-                                new Uint8Array(a.buffer || a), 
-                                new Uint8Array(b.buffer || b)
-                            ).buffer;
-                        }
-
                         function createHeaderBuffer (zipBuffer,cb) {
                             sha1Raw(zipBuffer,function(err,hashBuffer){
                                 if (err) return cb(err);
@@ -429,6 +411,24 @@ ml(0,ml(1),[
 
                     
                 } 
+                
+                
+                
+                
+                function concatTypedArrays(a, b) { // a, b TypedArray of same type
+                    var c = new (a.constructor)(a.length + b.length);
+                    c.set(a, 0);
+                    c.set(b, a.length);
+                    return c;
+                }
+
+                function concatBuffers(a, b) {
+                    return concatTypedArrays(
+                        new Uint8Array(a.buffer || a), 
+                        new Uint8Array(b.buffer || b)
+                    ).buffer;
+                }
+
                 
                  
             }    
