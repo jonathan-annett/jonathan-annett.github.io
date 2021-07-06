@@ -1,10 +1,10 @@
 /* global zip_url_base,zip_virtual_dir,zip_files, alias_root_fix, parent_link,BroadcastChannel*/
 
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib, pwa  */
+/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),[
     
-    'pwaMessage@Window                          | ml.pwa-message.js',
+    'pwaWindow@Window                           | wl.pwa-win.js',
     'sha1Lib                                    | sha1.js'
    
     
@@ -12,7 +12,7 @@ ml(0,ml(1),[
 
     {
 
-        Window: function pwaZipDirListing(findWorker,sendMessage,sha1 ) {
+        Window: function pwaZipDirListing(findWorker,sendMessage,pwa,sha1 ) {
             
             
             var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
@@ -20,6 +20,7 @@ ml(0,ml(1),[
           
             
             const full_zip_uri           = location.origin+zip_url_base;
+            
             const pwaApi = {
                
                toggleDeleteFile : function (file,cb) {
@@ -237,6 +238,8 @@ ml(0,ml(1),[
                }
 
             };
+            
+            
             
             function ___registerForNotifications(cb) {
                 const persistent=true;
@@ -985,8 +988,9 @@ ml(0,ml(1),[
     }, {
         Window: [
             
-            ()=>self.pwaMessage.findWorker, 
-            ()=>self.pwaMessage.sendMessage,
+            ()=>self.pwaWindow.findWorker, 
+            ()=>self.pwaWindow.sendMessage,
+            ()=>self.pwaWindow,
             ()=>self.sha1Lib.cb
             
         ] 
