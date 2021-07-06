@@ -104,9 +104,9 @@ ml(0,ml(1),[
                                    if (subpath === "/edit") {
                                       const fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip;
                                       const entry = virtualDirDB.cache[url]={
-                                          fixup_url : fixup_url,
-                                          url: url,
-                                          prefix : prefix
+                                          fixup_url   : fixup_url,
+                                          url         : url,
+                                          prefix      : prefix
                                       };
                                       virtualDirDB.cache[fixup_url]=entry;
                                       return resolve (entry);
@@ -129,11 +129,11 @@ ml(0,ml(1),[
                                                    //console.log("resolved vitualdir",url,"==>",fixup_url);
                                                    const zip_root = virtualDirDB.virtualDirZipBase[prefix].root;
                                                    const entry = virtualDirDB.cache[url]={
-                                                       fixup_url : fixup_url,
+                                                       fixup_url   : fixup_url,
                                                        aliased_url : prefix + zip_root + url.substr(prefix.length),
-                                                       url: url,
-                                                       response: response,
-                                                       prefix : prefix
+                                                       url         : url,
+                                                       response    : response,
+                                                       prefix      : prefix
                                                    };
                                                    virtualDirDB.cache[fixup_url]=entry;
                                                    return resolve (entry);
@@ -155,7 +155,6 @@ ml(0,ml(1),[
                    
                    return Promise.resolve();
                 }
-                
                  
                 function virtualDirEvent (event) {
                     

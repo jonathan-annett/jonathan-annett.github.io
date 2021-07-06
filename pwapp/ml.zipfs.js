@@ -183,13 +183,13 @@ ml(0,ml(1),[
                      registeredMiddleware.push(fn);
                  }
              }       
-              function removeMiddlewareListener (fn) {
+              
+             function removeMiddlewareListener (fn) {
                   const ix = registeredMiddleware.indexOf(fn);
                   if (ix>=0) {
                        registeredMiddleware.splice(ix,1);
                    }
                }       
-             
 
              function processFetchRequestInternal(event,cb) {
                   const querySplit  = event.request.url.indexOf('?');
@@ -288,8 +288,7 @@ ml(0,ml(1),[
                   
                   next(chain.shift()); 
              }
-             
-             
+
              function fetchInternal(url,cb) {
                  const fakeEvent = {
                      request : {
@@ -438,11 +437,11 @@ ml(0,ml(1),[
              
              
              function fetchUpdatedURLEvent(event) {
-                 const url = event.fixup_url;
+                 const url = event.aliased_url || event.fixup_url;
                  const db  = databases.updatedURLS;
                  
                  switch (event.request.method) {
-                     case "GET"    : return  db.keyExists(url,true) ? new Promise ( event.toFetchUrl(databases.updatedURLS) ) : undefined;
+                     case "GET"    : return  db.keyExists(url,true) ? new Promise ( event.toFetchUrl(db) ) : undefined;
                      case "PUT"    : return new Promise ( toUpdateUrl );
                      case "DELETE" : return new Promise ( toRemoveUrl );
                  }
