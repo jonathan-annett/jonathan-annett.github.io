@@ -1168,8 +1168,8 @@ ml(0,ml(1),[
              
              function response500 (resolve,error) {
                  let errMessage = error.message||error;
-                 if (err.stack) {
-                     errMessage = '<h1>'+errMessage+'</h1>'+err.stack.split('\n').join('<br>\n');
+                 if (error.stack) {
+                     errMessage = '<h1>'+errMessage+'</h1>'+error.stack.split('\n').join('<br>\n');
                  }
                  return resolve( new Response(
                                     errMessage, {
