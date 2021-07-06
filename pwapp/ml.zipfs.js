@@ -330,7 +330,7 @@ ml(0,ml(1),[
                       event.fixup_url   = cache.fixup_url   = url_out;
                       event.use_no_cors = cache.use_no_cors = url_out.indexOf(location.origin)!==0;
                       event.shouldCache = cache.shouldCache = url_out.indexOf(location.origin)===0 ||  event.request.referrer && event.request.referrer.indexOf(location.origin)===0;
-                      event.cacheDB     = cache.cacheDB     = "cachedURLS";
+                      event.cacheDB     = cache.cacheDB     = event.use_no_cors ? "offsiteURLS" : "cachedURLS" ;
 
                       fixupLog("defined url rulesmap: ",url_in,"-->",event.fixup_url,"details:",cache,performance.now()-stamp,"ms");
                       return addEvents() ;
