@@ -32,6 +32,8 @@ ml(0,ml(1),[
                 const sha1Sync = self.sha1Lib.sync;
                 const bufferToHex = self.sha1Lib.bufferToHex;
                 
+                const apng_width_height = 64;
+                
                 const expectHashLength = self.sha1Lib.sync.raw('x').byteLength;
             
                 return  {
@@ -143,7 +145,10 @@ ml(0,ml(1),[
                 function extractBufferFromPng (pngBuffer,cb) {
                     
                     
-                        const png = UPNG.decode(pngBuffer);
+                        const png = pngBuffer.width && 
+                                    pngBuffer.height && 
+                                    pngBuffer.data && 
+                                    pngBuffer.depth ? pngBuffer : UPNG.decode(pngBuffer);
                         
                         if (!png) {
                             return cb (new Error("could not decode png image"));
@@ -216,7 +221,7 @@ ml(0,ml(1),[
                         if (w === png.width && h === png.height && png.depth ==8 && png.data && png.data.byteLength >= (originalBuffer.byteLength + headerBuffer.byteLength )) {
                             
                             
-                            extractBufferFromPng(pngBuffer,function(err,storedBuffer,storedHash){
+                            extractBufferFromPng(png,function(err,storedBuffer,storedHash){
                                 if (err) return cb (err);
                                 return cb (undefined,storedHash===hash&&storedBuffer&&storedBuffer.byteLength===originalBuffer.byteLength);
                             });
@@ -312,6 +317,7 @@ ml(0,ml(1),[
                     });
                 }
                 
+                
                 function createAPNGWrappedBuffer( buffer,cb) {
                     
                         createHeaderBuffer(buffer,function(err,headerBuffer,hash){
@@ -321,7 +327,7 @@ ml(0,ml(1),[
                             
                            
                             let 
-                            w = 64,
+                            w = apng_width_height,
                             h = w,
                             perFrame = 4 * w * h,
                             frames = Math.ceil(bytesNeeded / perFrame),
@@ -376,6 +382,87 @@ ml(0,ml(1),[
                         
                 }
                 
+                function extractBufferFromAPng (apngBuffer,cb) {
+                    
+                    
+                        const apng = apngBuffer.width && 
+                                    apngBuffer.height && 
+                                    apngBuffer.data && 
+                                    apngBuffer.depth &&
+                                    apngBuffer.frames ? apngBuffer : UPNG.decode(apngBuffer);
+                        
+                        if (!apng) {
+                            return cb (new Error("could not decode apng image"));
+                        }
+                        
+                        if (apng.width !== apng.height) {
+                            return cb (new Error("width should equal height"));
+                            
+                        }
+                        
+                         if (apng.width !== apng_width_height) {
+                            return cb (new Error("width and height should be "+apng_width_height));
+                            
+                        }
+                        
+                        if (apng.depth !== 8) {
+                            return cb (new Error("apng.depth should be 8 bit"));
+                            
+                        }
+            
+                        var frameData = UPNG.toRGBA8(apng).map(function(buf){ return new Uint8Array(buf);});
+                        var header = frameData[0];
+                        
+                        const storedDataSize = header[0] | (header[1] << 8) | ( header[2] << 16) || (header[3] << 24);
+                        const storedHashLength = header[4];
+                        if (storedHashLength !== expectHashLength) {
+                            return cb (new Error("Stored hash length is incorrect"));
+                        }
+                        
+                        if (header[5]!==0 || header[6]!==0 || header[7]!==0 ) {
+                            return cb (new Error("reserved header bytes are not zero")) ;
+                        }
+                        
+                        var combinedUint8Array;
+                        frameData.forEach(function (u8Array){
+                            if (combinedUint8Array) {
+                                combinedUint8Array = concatTypedArrays(combinedUint8Array,u8Array);
+                            } else {
+                                combinedUint8Array = u8Array;
+                            }
+                        });
+                        
+                        
+                        const storedHashStart = 8;
+                        const expectedHeaderSize = storedHashStart + storedHashLength;
+                        
+                        if (storedDataSize > combinedUint8Array.buffer.byteLength - expectedHeaderSize) {
+                            
+                            return cb (new Error("Stored data length looks suspect")) ;
+                        } 
+                        
+                        const combinedBuffer = combinedUint8Array.buffer;
+                        
+                        
+                        const hashBufferSlice = new Uint8Array(combinedBuffer.slice(storedHashStart, storedHashStart + storedHashLength ));
+                        const storedHash = bufferToHex(hashBufferSlice.buffer);
+                        
+                        
+                        const storedDataStart = storedHashStart + storedHashLength;
+                        const storedBuffer = new Uint8Array(combinedBuffer.slice(storedDataStart,storedDataStart+storedDataSize)).buffer;
+                                            
+                            
+                        compareBufferAgainstHash(storedBuffer,storedHash,storedDataSize,function(err,proceed){
+                            if (err) return cb(err);
+                            
+                            if (!proceed) {
+                                return cb (new Error("storedBuffer does not match storedHash"));
+                            }
+                            
+                            return cb (undefined,storedBuffer,storedHash);
+                        });
+
+                } 
                 
                 function checkAPngBuffer (originalBuffer,hash,apngBuffer,w,h,frames,headerBuffer,cb) {
                     
@@ -386,14 +473,23 @@ ml(0,ml(1),[
                             return cb (new Error("originalBuffer does not match supplied hash"));
                         }
                         
-                        const png = UPNG.decode(apngBuffer);
+                        const apng = UPNG.decode(apngBuffer);
                         
-                        console.log(png);
+                        console.log(apng);
                         
-                        if (w === png.width && h === png.height && png.depth ==8 && png.data && png.data.byteLength >= (originalBuffer.byteLength + headerBuffer.byteLength )) {
+                        if ( w === apng.width && 
+                             h === apng.height && 
+                             apng.frames &&
+                             frames === apng.frames.length && 
+                             apng.tabs &&
+                             apng.tabs.acTL &&
+                             frames === apng.tabs.acTL.num_frames && 
+                             apng.depth ==8 && 
+                             
+                             apng.data && apng.data.byteLength >= (originalBuffer.byteLength + headerBuffer.byteLength )) {
                             
                             
-                            extractBufferFromPng(apngBuffer,function(err,storedBuffer,storedHash){
+                            extractBufferFromAPng(apng,function(err,storedBuffer,storedHash){
                                 if (err) return cb (err);
                                 return cb (undefined,storedHash===hash&&storedBuffer&&storedBuffer.byteLength===originalBuffer.byteLength);
                             });
