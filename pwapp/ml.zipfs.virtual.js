@@ -126,7 +126,7 @@ ml(0,ml(1),[
                                                
                                                function(err,response){
                                                    if (err||!response) return locateZipMetadata(i+1);
-                                                   console.log("resolved vitualdir",url,"==>",fixup_url);
+                                                   //console.log("resolved vitualdir",url,"==>",fixup_url);
                                                    const zip_root = virtualDirDB.virtualDirZipBase[prefix].root;
                                                    const entry = virtualDirDB.cache[url]={
                                                        fixup_url : fixup_url,
