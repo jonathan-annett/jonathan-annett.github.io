@@ -45,6 +45,11 @@ ml(0,ml(1),[
         Object.defineProperties( databases,{
         
             toZip   : { value : function (names,cb) {
+                
+            if (typeof names === 'function') {
+                cb=names;
+                names = undefined;
+            }
             
             names = names || Object.keys(databases).filter(dbNameFilter);
             
