@@ -239,6 +239,15 @@ ml(0,ml(1),[
 
             };
             
+            let sw_urls,sw_mods;
+            pwa.getServiceWorkerUrls(function(err,urls){
+                sw_urls=urls;
+                console.log(urls);
+            })
+            pwa.getServiceWorkerModules(function(err,mods){
+                sw_mods=mods;
+                console.log(mods);
+            })
             
             
             function ___registerForNotifications(cb) {
@@ -981,6 +990,9 @@ ml(0,ml(1),[
             zipFS_apiHook ().onunmount = function () {
                 
             };
+            
+            
+            
             
             
             return lib;

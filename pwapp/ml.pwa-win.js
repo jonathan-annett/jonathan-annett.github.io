@@ -105,6 +105,13 @@ ml(0,ml(1),[
  
                 getPNGZipImage     : getPNGZipImage,
                 
+                getServiceWorkerModules : function (cb) {
+                    sendMessage('getServiceWorkerModules',{},cb);
+                },
+                
+                getServiceWorkerUrls: function (cb) {
+                    sendMessage('getServiceWorkerUrls',{},cb);
+                },
                 
                 findWorker   : findWorker,
                 

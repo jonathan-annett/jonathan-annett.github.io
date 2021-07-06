@@ -92,6 +92,30 @@ ml(0,ml(1),[
                 
                 ml.register("messages",{
                     
+                    
+                    /*
+                    
+                    functions in here respond when called by sendMessage (in ml.pwa-message.js), based on their name.
+                    they are passed a single object (the data argument passed in to sendMessage), and should call cb with a response.
+                    optionally, if an immediate response is available, they can just return it, and it will be sent.
+                    in that case don't call cb
+                    
+                    persistent callbacks (ie event listners can be created bby the caller to sendMessage by passing persitent as true )
+                    
+                    in those cases, an immediate response as well as calling cb 1 or more times is permitted.
+                    
+                    (basically, if persistent is not true, send message dumps the unique reply channel name so any replies will be ignored)
+                    
+                    whenever cb is called with data, a one time broacast channel is made to handle the single reply
+                    this is in keeping with being able to to be dumped from memory a any moment 
+                    
+                    if a function here retains cb for future callbacks, it can call it again later
+                    
+                     onCustomEvents is simplistic an example of this.
+                    
+                    
+                    */
+                    
                     ping : function(msg,cb){ 
                             
                             console.log(msg); 
@@ -225,9 +249,6 @@ ml(0,ml(1),[
                         }
                     },
                     
-                    
-              
-                    
                     fetchUpdatedURLContents : function (msg,cb) {
                          zipFS.fetchUpdatedURLContents(msg.data.url,function(err,content, updated){
                              if (err) return cb({error:err.message||err});
@@ -285,8 +306,7 @@ ml(0,ml(1),[
                             cb({error:"not an array"});
                         }
                     },
-                    
-                    
+
                     registerForNotifications :function (msg,cb) {
                         const data = msg.data;
                         if (data.zip ) {
@@ -301,7 +321,6 @@ ml(0,ml(1),[
                             cb({error:'need a zip'});
                         }
                     },
-                    
                     
                     unregisterForNotifications :function (msg,cb) {
                         const data = msg.data;
@@ -346,11 +365,30 @@ ml(0,ml(1),[
                         
                         setTimeout(cb,10,{});
                     },
+                    
+                    getServiceWorkerUrls : function (msg,cb) {
+                        // returns a list of urls that the service worker loaded in order to boot, in the order they were loaded by ml.sw.js
+                        // *does not include ml.sw.js itself
+                        
+                        return { urls:ml.H.slice(0) };
+                        
+                        
+                    },
+                    
+                    getServiceWorkerModules : function (msg,cb) {
+                        // returns a list of modules and their respective urls loaded by ml.sw.js
+                        const retval = {};
+                        Object.keys(ml.h).forEach(function(u){
+                            Object.keys(ml.h[u].e).forEach(function(m){
+                                retval[m]=u;
+                            });    
+                        });
+                        return { retval };
+                    }
 
                 });
                    
-               
-       
+              
                 
                 ml.register("fetch",zipFS.processFetchRequest);
                 
