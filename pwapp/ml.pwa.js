@@ -230,7 +230,7 @@ ml(0,ml(1),[
                     }
                 }
                 
-                throw vew Error ("incorrect arugments to getPNGZipImage");
+                throw new Error ("incorrect arugments to getPNGZipImage");
             }
 
           
