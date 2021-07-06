@@ -165,6 +165,7 @@ ml(0,ml(1),[
                                event.fixup_url      = entry.fixup_url;
                                event.cache_response = entry.response;
                                event.virtual_prefix = entry.prefix;
+                               event.aliased_url    = entry.aliased_url;
                            }
                            resolve();
                        });
