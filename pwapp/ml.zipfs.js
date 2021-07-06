@@ -1167,13 +1167,16 @@ ml(0,ml(1),[
              
              
              function response500 (resolve,error) {
-                 const errMessage = error.message||error
+                 let errMessage = error.message||error;
+                 if (err.stack) {
+                     errMessage = '<h1>'+errMessage+'</h1>'+err.stack.split('\n').join('<br>\n');
+                 }
                  return resolve( new Response(
                                     errMessage, {
                                             status: 500,
                                             statusText: 'ouch',
                                             headers: new Headers({
-                                              'Content-Type'   : 'text/plain',
+                                              'Content-Type'   : 'text/html',
                                               'Content-Length' : errMessage.length
                                             })
                                     })
@@ -2048,7 +2051,9 @@ ml(0,ml(1),[
                                return response500(resolve,err);
                            }
                            sha1(buffer,function(err,hash){
-                               return response500(resolve,err);
+                               if (err) {
+                                   return response500(resolve,err);
+                               }
                                response200 (resolve,buffer,{
                                    contentType   : 'application/zip',
                                    contentLength : buffer.byteLength,
