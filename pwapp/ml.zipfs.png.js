@@ -409,8 +409,13 @@ ml(0,ml(1),[
                             return cb (new Error("apng.depth should be 8 bit"));
                             
                         }
+                        
+                        
+                        // should not need to do this!!
+                        apng.frames[0].data = apng.data;
             
                         var frameDataObj = UPNG.toRGBA8(apng);
+                        
                         var frameData    = frameDataObj.map(function(buf){ return new Uint8Array(buf);});
                         var header = frameData[0];
                         
