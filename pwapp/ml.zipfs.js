@@ -3,11 +3,11 @@
 ml(0,ml(1),[ 
     
     'sha1Lib                                | sha1.js',
-    'zipFSListingLib                        | ml.zipfs.dir.sw.js',
     'JSZipUtils@ServiceWorkerGlobalScope    | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js',
     'JSZip@ServiceWorkerGlobalScope         | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
     'ml_db_Lib@ServiceWorkerGlobalScope     | ml.db.js',
     'zipUpWriteLib@ServiceWorkerGlobalScope | ml.fetch.updated-write.js',
+    'zipFSListingLib                        | ml.zipfs.dir.sw.js',
     'virtualDirLib@ServiceWorkerGlobalScope | ml.zipfs.virtual.js',
     'zipPNGLib@ServiceWorkerGlobalScope     | ml.zipfs.png.js'
     
@@ -67,7 +67,7 @@ ml(0,ml(1),[
                 resolveZipDownload,
                 getUpdatedZipFile  
                 // from
-            }  =  self.virtualDirLib( 
+            }  =  self.zipFSListingLib( 
                 // whch needs these items...
                 getZipObject,
                 fetchUpdatedURLContents,
