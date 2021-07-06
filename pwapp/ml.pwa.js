@@ -82,7 +82,7 @@ ml(0,ml(1),[
                     if (dispatchCustomEvent) {
                         
                         dispatchCustomEvent({
-                            eventName:ml.pwa.activated,
+                            eventName:'ml.pwa.activated',
                             eventData:1
                         });
                     }
