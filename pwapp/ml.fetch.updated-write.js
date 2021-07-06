@@ -70,6 +70,7 @@ ml(0,ml(1),[
             if (entry) {
                 // this is updating a virtual item - so we need to patch the correct fixup_url
                 getPayload(function(payload){
+                    
                     fixupKeys(payload[1].headers);
                     db.setItem(entry.aliased_url,payload,function(){
                         if (entry.response) {
@@ -78,6 +79,7 @@ ml(0,ml(1),[
                         }
                         cb();
                     });
+                    
                 });
 
             } else {
