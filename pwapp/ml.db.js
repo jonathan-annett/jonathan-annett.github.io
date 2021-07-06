@@ -262,65 +262,65 @@ ml(0,ml(1),[
                                          
                                          
                                          const toString = x.serialize;
-                                         DB.getKeys(function(keys){
+                                         
                                             
-                                            nextKey(0); 
-                                            
-                                            function nextKey(i) {
-                                                if (i<keys.length) {
-                                                    const key = keys[i];
-                                                    DB.getItem(key,function(_,value){
-                                                       toString(value,function(_,str){
-                                                          header.hash+=str;
-                                                          if (str.length<threshold) {
-                                                              header.keys[key]=str;
-                                                              nextKey(i+1);
-                                                          } else {
-                                                           
-                                                              sha1CB(str,function(_,datahash){
-                                                                   if (!header.values[datahash]) {
-                                                                        header.values[datahash]=1;
-                                                                        zip.file(datahash,str,{date : new Date(),createFolders: false });
-                                                                   }
-                                                                   header.keys[key]=datahash;
-                                                                   nextKey(i+1);
-                                                              });   
-                                                          }
-                                                       });
-                                                    });
-                                                } else {
-                                                    finalize();
-                                                }
-                                            }
-                                            
-                                            function finalize() {
-                                                delete header.values;
-                                                sha1CB(header.hash,function(_,hash){
-                                                    header.hash = hash;
-                                                    zip.file('keys.json',JSON.stringify(header),{date : new Date(),createFolders: false });
-                                                    
-                                                    
-                                                    zip.generateAsync({
-                                                        type: "arraybuffer",
-                                                        compression: "DEFLATE",
-                                                        compressionOptions: {
-                                                            level: 9
-                                                        },
-                                                        platform : 'UNIX'
-                                                    }/*,function updateCallback(metadata) {
-                                                          console.log("progression: " + metadata.percent.toFixed(2) + " %");
-                                                          if(metadata.currentFile) {
-                                                              console.log("current file = " + metadata.currentFile);
-                                                          }
-                                                      }*/).then(function (buffer) {
-                                                         cb(undefined,buffer)
-                                                    }).catch(cb);
+                                        nextKey(0); 
+                                        
+                                        function nextKey(i) {
+                                            if (i<keys.length) {
+                                                const key = keys[i];
+                                                DB.getItem(key,function(_,value){
+                                                   toString(value,function(_,str){
+                                                      header.hash+=str;
+                                                      if (str.length<threshold) {
+                                                          header.keys[key]=str;
+                                                          nextKey(i+1);
+                                                      } else {
+                                                       
+                                                          sha1CB(str,function(_,datahash){
+                                                               if (!header.values[datahash]) {
+                                                                    header.values[datahash]=1;
+                                                                    zip.file(datahash,str,{date : new Date(),createFolders: false });
+                                                               }
+                                                               header.keys[key]=datahash;
+                                                               nextKey(i+1);
+                                                          });   
+                                                      }
+                                                   });
                                                 });
-
-                                                
+                                            } else {
+                                                finalize();
                                             }
+                                        }
+                                        
+                                        function finalize() {
+                                            delete header.values;
+                                            sha1CB(header.hash,function(_,hash){
+                                                header.hash = hash;
+                                                zip.file('keys.json',JSON.stringify(header),{date : new Date(),createFolders: false });
+                                                
+                                                
+                                                zip.generateAsync({
+                                                    type: "arraybuffer",
+                                                    compression: "DEFLATE",
+                                                    compressionOptions: {
+                                                        level: 9
+                                                    },
+                                                    platform : 'UNIX'
+                                                }/*,function updateCallback(metadata) {
+                                                      console.log("progression: " + metadata.percent.toFixed(2) + " %");
+                                                      if(metadata.currentFile) {
+                                                          console.log("current file = " + metadata.currentFile);
+                                                      }
+                                                  }*/).then(function (buffer) {
+                                                     cb(undefined,buffer)
+                                                }).catch(cb);
+                                            });
+
                                             
-                                         });
+                                        }
+                                        
+                                 
 
                                      }).catch(cb);
                                        
