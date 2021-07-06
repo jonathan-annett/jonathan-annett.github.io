@@ -270,7 +270,7 @@ ml(0,ml(1),[
                                             if (i<keys.length) {
                                                 const key = keys[i];
                                                 DB.getItem(key,function(_,value){
-                                                   toString(value,function(_,str){
+                                                   toString(value,function(str){
                                                       header.hash+=str;
                                                       if (str.length<threshold) {
                                                           header.keys[key]=str;
@@ -382,8 +382,8 @@ ml(0,ml(1),[
                                                              cb(); 
                                                          }
                                                          
-                                                          function saveValue(err,value) {
-                                                               if (err) return cb (err);
+                                                          function saveValue(value) {
+                                                              // if (err) return cb (err);
                                                              
                                                                DB.setItem(keys[i],value,function(err){
                                                                    if (err) return cb (err);
