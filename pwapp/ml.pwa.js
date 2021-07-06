@@ -213,8 +213,8 @@ ml(0,ml(1),[
                                 function(err,buffer,hash){
                                     //https://stackoverflow.com/a/57824019/830899
                                     const blob = new Blob([buffer], {type: "image/png"});
-                                    const url = URL.createObjectURL(blob);
-                                    cb({link:url,hash:hash});
+                                   
+                                    cb({blob:blob,hash:hash});
 
                             });
                             

@@ -149,7 +149,9 @@ ml(0,ml(1),[
                             mode:mode,
                             alias_url:alias_url},function(err,data){
                             
-                            if (typeof cb==='function') cb(data.link);
+                            if (typeof cb==='function') cb(data.blob);
+                            
+                            data.link = URL.createObjectURL(data.blob);
                             
                             if (linkEl){    
                                 const link = document.createElement("a");
