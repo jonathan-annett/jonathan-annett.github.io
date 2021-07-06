@@ -410,7 +410,8 @@ ml(0,ml(1),[
                             
                         }
             
-                        var frameData = UPNG.toRGBA8(apng).map(function(buf){ return new Uint8Array(buf);});
+                        var frameDataObj = UPNG.toRGBA8(apng);
+                        var frameData    = frameDataObj.map(function(buf){ return new Uint8Array(buf);});
                         var header = frameData[0];
                         
                         const storedDataSize = header[0] | (header[1] << 8) | ( header[2] << 16) || (header[3] << 24);
