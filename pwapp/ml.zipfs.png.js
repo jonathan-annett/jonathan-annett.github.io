@@ -486,7 +486,7 @@ ml(0,ml(1),[
                              frames === apng.tabs.acTL.num_frames && 
                              apng.depth ==8 && 
                              
-                             apng.data && (apng.frames.length * (apng.width  * apng.height)) >= (originalBuffer.byteLength + headerBuffer.byteLength )) {
+                             apng.data && (apng.frames.length * (apng.width  * apng.height) * 4) >= (originalBuffer.byteLength + headerBuffer.byteLength )) {
                             
                             
                             extractBufferFromAPng(apng,function(err,storedBuffer,storedHash){
