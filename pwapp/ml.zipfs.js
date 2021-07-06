@@ -1128,7 +1128,7 @@ ml(0,ml(1),[
                  });
              }
              
-             //(?<=\-[a-f0-9]{40})\.png$
+             
              
              
              
@@ -1141,10 +1141,62 @@ ml(0,ml(1),[
                  });
              }
              
+            /*
+            
+            multiSplit(
+               "https://blah/file.zip/dir/file.zip/dir/js-keygen-master-3a1f4c1f1d4ffce91e4b7a65c5b3b4402cc82866.png/dir/file.zip",
+               [ ".zip/", /(?<=\-[a-f0-9]{40})\.png\// ],
+               [".zip",".png"])
+            
+            returns 
+            
+            ["https://blah/file.zip", "dir/file.zip", "dir/js-keygen-master-3a1f4c1f1d4ffce91e4b7a65c5b3b4402cc82866.png", "dir/file.zip"]
+            
+            */
+             function multiSplit(str,splits,replaces) {
+                const use_splits = splits.slice();
+                const use_replaces = replaces.slice();
+                const splitFirst = function () {
+                    const split   = use_splits.shift();
+                    const replace = use_replaces.shift();
+                    return function (str) {
+                       return inclusiveSplit(str,split,replace);
+                    }
+                };
+                const result = splitFirst()(str);
+                const collate = function(arr){
+                   result.push.apply(result,arr);
+                   arr.splice(0,arr.length);
+                };
+                while (use_splits.length>0) {
+                    const temp = result.map (splitFirst());
+                    result.splice(0,result.length);
+                    temp.forEach(collate);
+                    temp.splice(0,temp.length);
+                }
+                return result; 
+             }
+             
+            function splitZipPaths (str) {
+                
+                const splitters = [ /(?<=\-[a-f0-9]{40})\.png\// , /\.zip\// ];
+                const joiners   = [                     '.png',     '.zip'   ];
+                
+                return multiSplit(str,splitters,joiners);
+            }
+            
+            function testPathIsZip (path) {
+                return path.test(/\.zip$/);
+            }
+            
+            function testPathIsPngZip (path) {
+                return path.test(/(?<=\-[a-f0-9]{40})\.png$/);
+            }
+            
             
              function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince,virtual_prefix) {
                  console.log({resolveSubzip:{ifNoneMatch,ifModifiedSince,zip_url,path_in_zip,virtual_prefix}});
-                 const parts           = inclusiveSplit(path_in_zip,'.zip/','.zip');//path_in_zip.split('.zip/');     
+                 const parts           = splitZipPaths(path_in_zip);//path_in_zip.split('.zip/');     
                  const subzip          = parts.length>1;
                  let   file_path       = parts[0];  //subzip ? parts[0]+'.zip' : parts[0];
                  let   subzip_url      = zip_url + file_path  ;
@@ -1167,9 +1219,7 @@ ml(0,ml(1),[
                                      }
                                  }
                                  if (!fileEntry) {
-                                     
-                                     
-    
+
                                      console.log("returning 404",zip_url,path_in_zip);
                                      return resolve(new Response('', {
                                          status: 404,
@@ -1245,7 +1295,7 @@ ml(0,ml(1),[
                                     
                                 }
                                 
-                                if (path_in_zip.endsWith('.zip')) {
+                                if (  testPathIsZip(path_in_zip)  ) {
                                     return resolveZipListing (zip_url+"/"+path_in_zip,buffer,virtual_prefix).then(resolve).catch(reject);
                                 }
                                
@@ -1367,7 +1417,7 @@ ml(0,ml(1),[
                                          return resolveSubzip(buffer,subzip_url,subzip_filepath,ifNoneMatch,ifModifiedSince,virtual_prefix).then(resolve).catch(reject);
                                      }
                                      
-                                     if (file_path.endsWith('.zip')) {
+                                     if ( testPathIsZip(file_path) ) {
                                          return resolveZipListing (zip_url+"/"+file_path,buffer,virtual_prefix).then(resolve).catch(reject);
                                      }
                                      
@@ -1385,7 +1435,7 @@ ml(0,ml(1),[
              }
              
              function fileisEdited (url) {
-                 if (url.endsWith('.zip')) {
+                 if ( testPathIsZip(url) ) {
                      const re = new RegExp(  "^"+ regexpEscape(url+"/"),'g');
                      return databases.updatedURLS.allKeys().some(re.test.bind(re));
                  } else {
@@ -1750,7 +1800,7 @@ ml(0,ml(1),[
                  const {ifNoneMatch,ifModifiedSince, showListing,virtual_prefix } = options;
                      
                  //const url             = request.url; 
-                 const parts           = inclusiveSplit(url,'.zip/','.zip');//url.split('.zip/');  
+                 const parts           = splitZipPaths(url);//url.split('.zip/');  
 
                  if (parts.length>1) {
                      // this is a url in the format http://example.com/path/to/zipfile.zip/path/to/file/in/zip.ext
@@ -1769,7 +1819,7 @@ ml(0,ml(1),[
                      
                  } else {
                  
-                     if (showListing && url.endsWith('.zip')) {
+                     if (showListing &&  testPathIsZip(url) ) {
                          
                          // this is a url pointing to a possibly existing zip file
                          // we don't let you download the zip. we do however give you the file list when you ask for a zip
@@ -1799,7 +1849,7 @@ ml(0,ml(1),[
              function doFetchZipUrl(request,url,params,virtual_prefix) {
                      
                  //const url             = request.url; 
-                 const parts           = inclusiveSplit(url,'.zip/','.zip');//url.split('.zip/');
+                 const parts           = splitZipPaths(url);//url.split('.zip/');
                  const ifNoneMatch     = request.headers.get('If-None-Match');
                  const ifModifiedSince = request.headers.get('If-Modified-Since');
                  
@@ -1811,7 +1861,7 @@ ml(0,ml(1),[
                      
                  } else {
                  
-                     if (url.endsWith('.zip')) {
+                     if ( testPathIsZip(url) ) {
                          // this is a url pointing to a possibly existing zip file
                          // we don't let you download the zip. we do however give you the file list when you ask for a zip
                          // which provides links to each file inside
@@ -1826,6 +1876,8 @@ ml(0,ml(1),[
                      
                      
                      if (url.endsWith('.zip.png')) {
+                         
+                         // this creates an inline png zip file (but it won't save)
 
                          return resolvePngZipDownload( url.replace(/\.zip\.png$/,'.zip') , params.download || 'files', virtual_prefix  );
                          
