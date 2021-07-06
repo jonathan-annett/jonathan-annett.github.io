@@ -122,6 +122,8 @@ function ml(x,L, o, a, d, s){
              U=c.B(R[3]);
              if(c.c(U))ml.d[N]={h:U};
              importScripts(U);
+             ml.h[U]=ml.h[U]||{e:{}};
+             ml.h[U].e[N]=self[N];
              return N;
        },
        
