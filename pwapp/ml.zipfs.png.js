@@ -37,7 +37,8 @@ ml(0,ml(1),[
                 return  {
                     
                    resolvePngZipDownload  : resolvePngZipDownload,
-                   createPNGZipFromZipUrl : createPNGZipFromZipUrl,
+                   createPNGZipFromZipUrl : createAPNGZipFromZipUrl,
+                   createAPNGZipFromZipUrl : createAPNGZipFromZipUrl,
                    
                    createPNGWrappedBuffer : createPNGWrappedBuffer,
                    extractBufferFromPng   : extractBufferFromPng
@@ -312,6 +313,122 @@ ml(0,ml(1),[
                         throw new Error("expecting a callback as last argument");
                     }
                 }
+                
+                
+                
+                function createAPNGWrappedBuffer( buffer,cb) {
+                    
+                        createHeaderBuffer(buffer,function(err,headerBuffer,hash){
+                            if (err) return cb (err);
+
+                            const bytesNeeded = buffer.byteLength + headerBuffer.byteLength;
+                            
+                           
+                            let 
+                            w = 64,
+                            h = w,
+                            perFrame = 4 * w * h,
+                            frames = Math.ceil(bytesNeeded / perFrame),
+                            bytesAllocated = (frames * perFrame);
+
+                            while ( bytesAllocated < bytesNeeded ) {
+                                frames++;
+                                bytesAllocated = (frames * perFrame);
+                            }
+                            
+                            const paddingNeeded = bytesAllocated - bytesNeeded;
+                            
+                            const paddingBuffer = new ArrayBuffer(paddingNeeded);
+                            
+                            const paddedData  = concatBuffers(buffer,paddingBuffer);
+                            const fullPayload = concatBuffers(headerBuffer,paddedData);
+                            const imgs = [];
+                            
+                            for (let frame=0;frame<frames;frame++) {
+                                imgs.push(
+                                   fullPayload.slice(frame*perFrame,(frame+1)*perFrame).buffer
+                                );
+                            }
+                            
+                            const cc = 3;
+                            const ac = 1;
+                            const depth = 8;
+                            const delay = 100;
+                           
+                            const pngData = UPNG.encodeLL(imgs, w, h, cc, ac, depth,delay);
+                            
+                            
+                            checkAPngBuffer (buffer,hash,pngData,w,h,frames,headerBuffer,function(err){
+                                if (err) return cb (err);
+                                return cb (undefined,pngData,hash);
+                            });
+                            
+                        });
+           
+                        function concatTypedArrays(a, b) { // a, b TypedArray of same type
+                            var c = new (a.constructor)(a.length + b.length);
+                            c.set(a, 0);
+                            c.set(b, a.length);
+                            return c;
+                        }
+
+                        function concatBuffers(a, b) {
+                            return concatTypedArrays(
+                                new Uint8Array(a.buffer || a), 
+                                new Uint8Array(b.buffer || b)
+                            ).buffer;
+                        }
+
+                        function createHeaderBuffer (zipBuffer,cb) {
+                            sha1Raw(zipBuffer,function(err,hashBuffer){
+                                if (err) return cb(err);
+                                const len0 = zipBuffer.byteLength      & 0xff;
+                                const len1 = zipBuffer.byteLength >>8  & 0xff;
+                                const len2 = zipBuffer.byteLength >>16 & 0xff;
+                                const len3 = zipBuffer.byteLength >>32 & 0xff;
+                                
+                                const sizeBuffer = new Uint8Array([len0, len1, len2, len3, hashBuffer.byteLength,0,0,0]);
+                                cb(undefined,concatBuffers(sizeBuffer,hashBuffer),bufferToHex(hashBuffer));
+                            });
+                        }
+                        
+                }
+                
+                
+                function checkAPngBuffer (originalBuffer,hash,apngBuffer,w,h,frames,headerBuffer,cb) {
+                    
+                    
+                    compareBufferAgainstHash(originalBuffer,hash,function(err,proceed){
+                        if (err) return cb (err);
+                        if (!proceed) {
+                            return cb (new Error("originalBuffer does not match supplied hash"));
+                        }
+                        
+                        const png = UPNG.decode(apngBuffer);
+                        
+                        console.log(png);
+                        
+                        if (w === png.width && h === png.height && png.depth ==8 && png.data && png.data.byteLength >= (originalBuffer.byteLength + headerBuffer.byteLength )) {
+                            
+                            
+                            extractBufferFromPng(apngBuffer,function(err,storedBuffer,storedHash){
+                                if (err) return cb (err);
+                                return cb (undefined,storedHash===hash&&storedBuffer&&storedBuffer.byteLength===originalBuffer.byteLength);
+                            });
+                            
+
+                        } else {
+                            
+                            return cb (new Error("header size details don't match"));
+                        }
+                    });
+                    
+                   
+                    
+                    
+
+                    
+                } 
                 
                  
             }    
