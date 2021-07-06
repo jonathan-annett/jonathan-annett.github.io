@@ -1166,6 +1166,23 @@ ml(0,ml(1),[
              }
              
              
+             function response500 (resolve,error) {
+                 const errMessage = error.message||error
+                 return resolve( new Response(
+                                    errMessage, {
+                                            status: 500,
+                                            statusText: 'ouch',
+                                            headers: new Headers({
+                                              'Content-Type'   : 'text/plain',
+                                              'Content-Length' : errMessage.length
+                                            })
+                                    })
+                );
+                        
+             }
+             
+             
+             
              function getZipDirMetaToolsExternal(zip_url,cb) {
                  getZipObject(zip_url,function(err,zip,zipFileMeta){
                      if (err) return cb(err);
@@ -2027,7 +2044,11 @@ ml(0,ml(1),[
                 if (!event.use_no_cors &&  /\/databases\.zip$/.test(event.fixup_url)) {
                     return new Promise(function(resolve){
                        databases.toZip(function(err,buffer){
+                           if (err) {
+                               return response500(resolve,err);
+                           }
                            sha1(buffer,function(err,hash){
+                               return response500(resolve,err);
                                response200 (resolve,buffer,{
                                    contentType   : 'application/zip',
                                    contentLength : buffer.byteLength,
