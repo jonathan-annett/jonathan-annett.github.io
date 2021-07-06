@@ -311,7 +311,7 @@ ml(0,ml(1),[
                 
                 
                 qs("#img_dl_link",function click(){
-                    pwa.getPNGZipImage(full_zip_uri,"files",zip_virtual_dir,undefined,qs("#img_dl_link2"),qs("#show_dl_img"));
+                    pwa.getPNGZipImage(full_zip_uri,"files",zip_virtual_dir,undefined,qs("#img_dl_link2"),"Download Image",qs("#show_dl_img"));
                 });
                 
                 const filename_input = qs("#newfilename",function keydown(e){
