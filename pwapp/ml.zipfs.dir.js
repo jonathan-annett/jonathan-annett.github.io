@@ -4,7 +4,7 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),[
     
-    'pwaWindow@Window                           | wl.pwa-win.js',
+    'pwaWindow@Window                           | ml.pwa-win.js',
     'sha1Lib                                    | sha1.js'
    
     
