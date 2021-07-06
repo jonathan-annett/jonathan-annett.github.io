@@ -1,7 +1,7 @@
 /* global zip_url_base,zip_virtual_dir,zip_files, alias_root_fix, parent_link,BroadcastChannel*/
 
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
+/* global ml,self,caches,BroadcastChannel, swResponseZipLib, pwa  */
 ml(0,ml(1),[
     
     'pwaMessage@Window                          | ml.pwa-message.js',
@@ -23,16 +23,27 @@ ml(0,ml(1),[
             const pwaApi = {
                
                toggleDeleteFile : function (file,cb) {
+                   
+                   return pwa.toggleDeleteFile(full_zip_uri,file,cb);
+                   /*
                    sendMessage('deleted',{
                         zip    : full_zip_uri,
                         virtual: zip_virtual_dir,
                         toggle : file
                    },function(err,msg){
                         if(cb)cb(err,msg);
-                   });
+                   });*/
                },
                
                deleteFile       : function (file,cb) {
+                   return pwa.deleteFile(full_zip_uri,file,function(err,msg){
+                       const ix = zip_files.indexOf(file);
+                       if (ix >=0) {
+                           zip_files.splice(ix,1);
+                       }
+                       if(cb)cb(err,msg);
+                   });
+                   /*
                    sendMessage('deleted',{
                        zip : full_zip_uri,
                        virtual: zip_virtual_dir,
@@ -43,10 +54,19 @@ ml(0,ml(1),[
                            zip_files.splice(ix,1);
                        }
                        if(cb)cb(err,msg);
-                   });
+                   });*/
                },
                
                unDeleteFile     : function (file,cb) {
+                   
+                   return pwa.unDeleteFile(full_zip_uri,file,function(err,msg){
+                       const ix = zip_files.indexOf(file);
+                       if (ix <0) {
+                           zip_files.push(file);
+                       }
+                       if(cb)cb(err,msg);
+                   });
+                   /*
                    sendMessage('deleted',{
                        zip    : full_zip_uri,
                        virtual: zip_virtual_dir,
@@ -57,20 +77,26 @@ ml(0,ml(1),[
                            zip_files.push(file);
                        }
                        if(cb)cb(err,msg);
-                   });
+                   });*/
                },
                
                isDeleted     : function (file,cb) {
+                   
+                   return pwa.isDeleted(full_zip_uri,file,cb);
+                   /*
                    sendMessage('deleted',{
                         zip    : full_zip_uri,
                         virtual: zip_virtual_dir,
                         test   : file
                    },function(err,msg){
                         if(cb)cb(err,msg);
-                   });
+                   });*/
                },
                
                writeFileString : function (file,text,hash,cb) {
+                   return pwa.writeFileString(full_zip_uri,file,text,hash,cb);
+                   /*
+                   
                    if (typeof hash==='function') {
                        cb   = hash;
                        hash = false;
@@ -81,10 +107,12 @@ ml(0,ml(1),[
                        file   : file,
                        text   : text,
                        hash   : hash
-                   },cb);
+                   },cb);*/
                },
                
                readFileString : function (file,hash,cb) {
+                   return pwa.readFileString(full_zip_uri,file,hash,cb);
+                   /*
                    if (typeof hash==='function') {
                        cb   = hash;
                        hash = false;
@@ -94,10 +122,22 @@ ml(0,ml(1),[
                         virtual: zip_virtual_dir,
                         file   : file,
                         hash   : hash
-                    },cb);
+                    },cb);*/
                },
                
                isHidden : function (file,cb) {
+                   return pwa.isHidden(full_zip_uri,file,function(err,msg){
+                         const el = find_li(file);
+                         if (el) {
+                             if (msg.hidden) {
+                                  el.classList.add("hidden");
+                             } else {
+                                  el.classList.remove("hidden");
+                             }
+                         }
+                         if(cb)cb(msg.hidden);
+                     });
+                   /*
                    sendMessage('hidden',{
                        zip    : full_zip_uri,
                        virtual: zip_virtual_dir,
@@ -112,20 +152,43 @@ ml(0,ml(1),[
                            }
                        }
                        if(cb)cb(msg.hidden);
-                   });
+                   });*/
                },
                
                removeUpdatedURLContents  : function (file,cb) {
+                  return pwa.removeUpdatedURLContents(
+                      zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
+                      //zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,
+                      function(err,msg){
+                         const el = find_li(file);
+                         if (el) el.classList.remove('edited');
+                         if(cb)cb(err,msg); 
+                      });
+                  /* 
                   sendMessage('removeUpdatedURLContents',{
                      url    : zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
                   },function(err,msg){
                       const el = find_li(file);
                       if (el) el.classList.remove('edited');
                       if(cb)cb(err,msg);
-                  });
+                  });*/
                },
                
                updateURLContents : function (file,content,hash,cb) {
+                   return pwa.updateURLContents(
+                       zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
+                       //zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,
+                       content,hash,
+                       function(err,msg){
+                           const el = find_li(file);
+                           if (el) {
+                               el.classList.add('edited');
+                               el.classList.add('editing');
+                           }
+                           if(cb)cb(err,msg && msg.hash);
+                       }
+                   );
+                   /*
                    if (typeof hash ==='function') {
                        cb = hash;
                        hash=false;
@@ -141,10 +204,19 @@ ml(0,ml(1),[
                            el.classList.add('editing');
                        }
                        if(cb)cb(err,msg && msg.hash);
-                   });
+                   });*/
                },
                
                fetchUpdatedURLContents : function (file,hash,cb) {
+                   return pwa.fetchUpdatedURLContents(
+                       zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,hash,
+                       function(err,msg){
+                          if (err) return cb (err);
+                          cb(undefined,msg.content,msg.updated,msg.hash);
+                       }
+                   );
+                   /*
+                   
                    if (typeof hash ==='function') {
                        cb = hash;
                        hash=false;
@@ -156,7 +228,7 @@ ml(0,ml(1),[
                        if (err) return cb (err);
                        cb(undefined,msg.content,msg.updated,msg.hash);
                    });
-                   
+                   */
                },
                
                registerForNotifications : ___registerForNotifications,
@@ -233,6 +305,11 @@ ml(0,ml(1),[
                        inputModal.style.display = "none";
                     }
                 };
+                
+                
+                qs("#img_dl_link",function click(){
+                    pwa.getPNGZipImage(full_zip_uri,"files",zip_virtual_dir,undefined,qs("#img_dl_link2"),qs("#show_dl_img"));
+                });
                 
                 const filename_input = qs("#newfilename",function keydown(e){
                     if (e.keyCode===27) {

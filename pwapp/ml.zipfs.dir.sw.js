@@ -36,9 +36,7 @@ ml(0,ml(1),[
                     
                    resolveZipListing:resolveZipListing,
                    resolveZipDownload:resolveZipDownload,
-                   getUpdatedZipFile:getUpdatedZipFile,
-                   
-                   resolvePngZipDownload : resolvePngZipDownload,
+                   getUpdatedZipFile:getUpdatedZipFile
 
                 };
                 
@@ -225,7 +223,8 @@ ml(0,ml(1),[
                         
                         '<a class="downloadfull" href="/'+uri+'?download=files" data-balloon-pos="down-left" aria-label="Download full (including edits)">&nbsp;&nbsp;&nbsp;</a>',
                         '<a class="download" href="/'+uri+'?download=editedFiles" data-balloon-pos="down-left" aria-label="Download edited files">&nbsp;&nbsp;&nbsp;</a>',
-                        '<a class="download" href="/'+uri+'.png?download=files" data-balloon-pos="down-left" aria-label="Download zip png image">&nbsp;&nbsp;&nbsp;</a>',
+                        '<a class="download" id="img_dl_link" data-balloon-pos="down-left" aria-label="Download zip png image">&nbsp;&nbsp;&nbsp;</a>',
+                        '<span id="img_dl_link2"></span>',                        
                         '</h1>',
                            
                         '<div id="inputModal" class="modal">',
@@ -245,7 +244,7 @@ ml(0,ml(1),[
                             
                             '</ul>',
                             '</div>',
-                            '<img src="/'+uri+'.png">',
+                            '<img id="show_dl_img" src="/'+uri+'.png">',
                             
                            
                             '</body>',
@@ -288,172 +287,6 @@ ml(0,ml(1),[
                 }
                 
 
-                function resolvePngZipDownload( url, mode, alias) {
-                    
-                    return new Promise(function(resolve){
-                        
-                        getUpdatedZipFile(url,mode,alias,function(err,buffer){
-                            if (err) {
-                                return resolve(new Response('', {
-                                    status: 500,
-                                    statusText: err.message|| err
-                                }));
-                            }
-                            
-                            createHeaderBuffer(buffer,function(err,headerBuffer,hash){
-                                if (err) {
-                                    return resolve(new Response('', {
-                                        status: 500,
-                                        statusText: err.message|| err
-                                    }));
-                                }
-                                
-                                const bytesNeeded = buffer.byteLength + headerBuffer.byteLength;
-                                
-                               
-                                let 
-                                w =  Math.round (  Math.sqrt( bytesNeeded /4) ),h=w,
-                                
-                                bytesAllocated = (w * h * 4);
-    
-                                while ( bytesAllocated < bytesNeeded ) {
-                                    h++;
-                                    bytesAllocated = (w * h * 4);
-                                }
-                                
-                                const paddingNeeded = bytesAllocated - bytesNeeded;
-                                
-                                const paddingBuffer = new ArrayBuffer(paddingNeeded);
-                                
-                                const paddedData = concatBuffers(buffer,paddingBuffer);
-                                
-                                const cc = 3;
-                                const ac = 1;
-                                const depth = 8;
-                                
-                                const imgs  = [ concatBuffers(headerBuffer,paddedData) ];
-                                const pngData = UPNG.encodeLL(imgs, w, h, cc, ac, depth);
-                                
-                                
-                                checkBuffer (buffer,hash,pngData,w,h,headerBuffer,function(err){
-                                    
-                                    if (err) {
-                                        return resolve(new Response('', {
-                                            status: 500,
-                                            statusText: err.message|| err
-                                        }));
-                                    }
-                                    
-                                    const fileEntry = {
-                                        contentType   : 'image/png',
-                                        contentLength : pngData.byteLength,
-                                        etag          : hash,
-                                        date          : new Date()
-                                    };
-                                    response200(resolve,pngData,fileEntry);
-                                });
-                                
-                                
-                            
-                            });
-                            
-                            
-                        }); 
-                    
-                    });
-                    
-                    
-                    
-                    
-                    function concatTypedArrays(a, b) { // a, b TypedArray of same type
-                        var c = new (a.constructor)(a.length + b.length);
-                        c.set(a, 0);
-                        c.set(b, a.length);
-                        return c;
-                    }
-                    
-                    
-                    function concatBuffers(a, b) {
-                        return concatTypedArrays(
-                            new Uint8Array(a.buffer || a), 
-                            new Uint8Array(b.buffer || b)
-                        ).buffer;
-                    }
-                        
-                        
-                    function createHeaderBuffer (zipBuffer,cb) {
-                        sha1Raw(zipBuffer,function(err,hashBuffer){
-                            if (err) return cb(err);
-                            const len0 = zipBuffer.byteLength      & 0xff;
-                            const len1 = zipBuffer.byteLength >>8  & 0xff;
-                            const len2 = zipBuffer.byteLength >>16 & 0xff;
-                            const len3 = zipBuffer.byteLength >>32 & 0xff;
-                            
-                            const sizeBuffer = new Uint8Array([len0, len1, len2, len3, hashBuffer.byteLength,0,0,0]);
-                            cb(undefined,concatBuffers(sizeBuffer,hashBuffer),bufferToHex(hashBuffer));
-                        });
-                    }
-                    
-                    
-                    function checkBuffer (originalBuffer,hash,pngBuffer,w,h,headerBuffer,cb) {
-                        
-                        
-                        const png = UPNG.decode(pngBuffer);
-                        
-                        
-                        if (w === png.width && h === png.height && png.depth ==8 && png.data && png.data.byteLength >= (originalBuffer.byteLength + headerBuffer.byteLength )) {
-                            
-                            const storedDataSize = png.data[0] | (png.data[1] << 8) | ( png.data[2] << 16) || (png.data[3] << 24);
-                            
-                            if (storedDataSize === originalBuffer.byteLength ) {
-                                if (png.data[5]===0 && png.data[6]===0 && png.data[7]===0 ) {
-                                    
-                                    const storedHashLength = png.data[4];
-                                    if (hash.length === storedHashLength * 2) {
-                                        const storedHashStart = 8;
-                                        const hashBufferSlice = new Uint8Array(png.data.slice(storedHashStart, storedHashStart + storedHashLength ));
-                                        // produces Int32Array [42, 0]
-                                        
-                                        if ( hash === bufferToHex(hashBufferSlice.buffer)) {
-                                            const storedDataStart = storedHashStart + storedHashLength;
-                                            
-                                            const compareBufferSlice = new Uint8Array(png.data.slice(storedDataStart,storedDataStart+storedDataSize));
-                                            sha1(compareBufferSlice,function(err,hashTest){
-                                                 if (err) return cb(err);
-                                                 if (hashTest!==hash) {
-                                                     return cb (new Error("sha1 hash of stored data does not match stored hash"));
-                                                 }
-                                                 
-                                                 return cb (undefined,compareBufferSlice.buffer);
-                                            });
-                                        } else {
-                                            return cb (new Error("stored header hash does not match sample"));
-                                        }
-                    
-                                    } else {
-                                        return cb (new Error("header hash size looks incorrect"));
-                                    }
-                                } else {
-                                    return cb (new Error("header reserved bytes not zero"));
-                                }
-                            } else {
-                                return cb (new Error("stored size islooks incorrect"));
-                            }
-                            
-                        } else {
-                            
-                            return cb (new Error("header size details don't match"));
-                        }
-                        
-                        
-    
-                        
-                    } 
-                    
-                }
-                
-                
-                
                 
                 function getUpdatedZipFile (zip_url,mode,alias,cb) {
                     if (typeof alias==='function') {

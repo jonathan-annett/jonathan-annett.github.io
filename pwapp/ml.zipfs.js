@@ -8,8 +8,9 @@ ml(0,ml(1),[
     'JSZip@ServiceWorkerGlobalScope         | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
     'ml_db_Lib@ServiceWorkerGlobalScope     | ml.db.js',
     'zipUpWriteLib@ServiceWorkerGlobalScope | ml.fetch.updated-write.js',
-    'virtualDirLib@ServiceWorkerGlobalScope | ml.zipfs.virtual.js'
-   
+    'virtualDirLib@ServiceWorkerGlobalScope | ml.zipfs.virtual.js',
+    'zipPNGLib@ServiceWorkerGlobalScope     | ml.zipfs.png.js'
+    
 
     ],function(){ml(2,ml(3),ml(4),
 
@@ -25,14 +26,14 @@ ml(0,ml(1),[
 
         },
         
-        ServiceWorkerGlobalScope: function swResponseZipLib (sha1,fnSrc, listingLib,ml_db) {
+        ServiceWorkerGlobalScope: function swResponseZipLib (sha1,fnSrc) {
         
         
         return function (dbKeyPrefix) {
             
             
              const databaseNames = ["updatedURLS","openZips","zipMetadata","cachedURLS","offsiteURLS"];
-             const databases     = ml_db (databaseNames);
+             const databases     = self.ml_db_Lib (databaseNames);
              
              
              const {
@@ -41,9 +42,9 @@ ml(0,ml(1),[
                  
                  virtualDirQuery, virtualDirEvent,
                  virtualDirResponseEvent, newVirtualDirs
-                 // from 
+                 // from ...
              } = self.virtualDirLib( 
-                 // which uses :
+                 // which needs these items...
                  getEmbeddedZipFileResponse 
              );
              
@@ -53,34 +54,64 @@ ml(0,ml(1),[
                        removeUpdatedURLContents, fixupKeys
                        // from...
                    } = self.zipUpWriteLib (
-                       // which uses  these items
+                       // which needs  these items
                        databases, fetchInternalBuffer,
                        virtualDirQuery, mimeForFilename
                        
                    );
                        
-                       
 
-             const lib = {
-                 // export these items.
-                 processFetchRequest      : processFetchRequest,
-                 newFixupRulesArray       : newFixupRulesArray,
-                 
-                 fetchUpdatedURLContents  : fetchUpdatedURLContents,
-                 updateURLContents        : updateURLContents,
-                 removeUpdatedURLContents : removeUpdatedURLContents,
-                 
-                 getZipDirMetaTools       : getZipDirMetaToolsExternal
-                 
-             };
-             
-             
-            
-             
-             const { resolveZipListing, resolveZipDownload, resolvePngZipDownload }  =  listingLib( 
-                getZipObject,fetchUpdatedURLContents,getZipFileUpdates,
-                getZipDirMetaTools,fileisEdited,response200
+            const {
+                // import these items...
+                resolveZipListing, 
+                resolveZipDownload,
+                getUpdatedZipFile  
+                // from
+            }  =  self.virtualDirLib( 
+                // whch needs these items...
+                getZipObject,
+                fetchUpdatedURLContents,
+                getZipFileUpdates,
+                getZipDirMetaTools,
+                fileisEdited,
+                response200
             );
+             
+            const {
+                    //import these items ...  
+                     resolvePngZipDownload,
+                     
+                     createPNGZipFromZipUrl,
+                     extractBufferFromPng
+
+                     // from...
+  
+                  } = self.zipPNGLib (
+                      // which needs these items..
+                      getUpdatedZipFile,
+                      response200);
+                      
+                      
+                      
+            const lib = {
+                // export these items.
+                processFetchRequest      : processFetchRequest,
+                newFixupRulesArray       : newFixupRulesArray,
+                
+                fetchUpdatedURLContents  : fetchUpdatedURLContents,
+                updateURLContents        : updateURLContents,
+                removeUpdatedURLContents : removeUpdatedURLContents,
+                
+                getZipDirMetaTools       : getZipDirMetaToolsExternal,
+                
+                getUpdatedZipFile        : getUpdatedZipFile,
+                
+                createPNGZipFromZipUrl   : createPNGZipFromZipUrl,
+                extractBufferFromPng     : extractBufferFromPng
+
+                
+            };          
+             
                               
              const openZipFileCache = { };
              
@@ -1895,9 +1926,7 @@ ml(0,ml(1),[
 
         ServiceWorkerGlobalScope: [ 
             () => self.sha1Lib.cb,  
-            () => fnSrc, 
-            () => self.zipFSListingLib, 
-            () => self.ml_db_Lib ]
+            () => fnSrc]
     };
       
       
