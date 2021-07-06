@@ -1,6 +1,6 @@
 /* global self,importScripts,BroadcastChannel */
 function ml(x,L, o, a, d, s){
-    if (!ml.h){ml.h={};ml.H=[];ml.d={};ml.f={};}//create history db if none exists
+    if (!ml.h){ml.h={};ml.H=[];ml.d={};ml.f={};ml.l=['ml.sw.js']}//create history db if none exists
     let
     C=console,
     z,
@@ -106,7 +106,9 @@ function ml(x,L, o, a, d, s){
        
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u,L)=>{
+             ml.l.push(z.u);
              u = u.map(z.u).filter(z.y);
+             z.u.pop();
              if (!u.length) {
                  L=c[4]();
                  ml.H[c.f](function(U){
@@ -132,7 +134,11 @@ function ml(x,L, o, a, d, s){
              N=R[1];
              U=c.B(R[3]);
              if(c.c(U)){ml.d[N]={h:U};ml.H.push(U);}
-             importScripts(U);
+             try {
+               importScripts(U);
+             } catch (e){
+               c.l(e.message,'in',ml.l);  
+             }
              ml.h[U]=ml.h[U]||{e:{}};
              ml.h[U].e[N]=c[4]()[N]||false;
              return N;
