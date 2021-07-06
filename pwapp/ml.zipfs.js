@@ -1128,20 +1128,32 @@ ml(0,ml(1),[
                  });
              }
              
+             //(?<=\-[a-f0-9]{40})\.png$
+             
+             
+             
+             function inclusiveSplit(str,split,replaceText,splitAfter) {
+                 if (!replaceText) replaceText = split;
+                 return splitAfter ? str.split(split).map(function(e,i,a){
+                    return i > 0 ? replaceText+e : e;
+                 }): str.split(split).map(function(e,i,a){
+                     return i < a.length-1 ? e+replaceText : e;
+                 });
+             }
+             
+            
              function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince,virtual_prefix) {
                  console.log({resolveSubzip:{ifNoneMatch,ifModifiedSince,zip_url,path_in_zip,virtual_prefix}});
-                 const parts           = path_in_zip.split('.zip/');     
+                 const parts           = inclusiveSplit(path_in_zip,'.zip/');//path_in_zip.split('.zip/');     
                  const subzip          = parts.length>1;
-                 let   file_path       = subzip ? parts[0]+'.zip' : parts[0];
+                 let   file_path       = parts[0];  //subzip ? parts[0]+'.zip' : parts[0];
                  let   subzip_url      = zip_url + file_path  ;
-                 let   subzip_filepath = subzip ? parts.slice(1).join('.zip/') : false;
-                      
-                  
+                 let   subzip_filepath = subzip ? parts.slice(1).join('') : false;//parts.slice(0,2).join('.zip/') + '.zip' : false,
+
                  return new Promise(function(resolve,reject){     
 
                      getZipObject(zip_url,buffer,function(err,zip,zipFileMeta){
                          if (err)  throw err;
-                         
                         getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
                                 
                              let fileEntry = zipFileMeta.files[file_path];
@@ -1262,11 +1274,11 @@ ml(0,ml(1),[
              
              function resolveZip (parts,ifNoneMatch,ifModifiedSince,virtual_prefix) {
                  //console.log({resolveZip:{ifNoneMatch,ifModifiedSince,parts,virtual_prefix}});
-                 const zip_url           = parts[0]+'.zip', 
+                 const zip_url           = parts[0],//parts[0]+'.zip', 
                        subzip            = parts.length>2; 
-                 let   file_path         = subzip ? parts[1]+'.zip' : parts[1],
-                       subzip_url        = subzip ? parts.slice(0,2).join('.zip/') + '.zip' : false,
-                       subzip_filepath   = subzip ? parts.slice(2).join('.zip/')     : false;
+                 let   file_path         = parts[1],                                           //subzip ? parts[1]+'.zip' : parts[1],
+                       subzip_url        = subzip ? parts.slice(0,2).join('')    : false,      //parts.slice(0,2).join('.zip/') + '.zip' : false,
+                       subzip_filepath   = subzip ? parts.slice(2).join('')     : false;       //parts.slice(2).join('.zip/')     : false
                        
                  return new Promise(function (resolve,reject){
                      
@@ -1738,7 +1750,7 @@ ml(0,ml(1),[
                  const {ifNoneMatch,ifModifiedSince, showListing,virtual_prefix } = options;
                      
                  //const url             = request.url; 
-                 const parts           = url.split('.zip/');
+                 const parts           = inclusiveSplit(url,'.zip/');//url.split('.zip/');  
 
                  if (parts.length>1) {
                      // this is a url in the format http://example.com/path/to/zipfile.zip/path/to/file/in/zip.ext
@@ -1787,7 +1799,7 @@ ml(0,ml(1),[
              function doFetchZipUrl(request,url,params,virtual_prefix) {
                      
                  //const url             = request.url; 
-                 const parts           = url.split('.zip/');
+                 const parts           = inclusiveSplit(url,'.zip/');//url.split('.zip/');
                  const ifNoneMatch     = request.headers.get('If-None-Match');
                  const ifModifiedSince = request.headers.get('If-Modified-Since');
                  
