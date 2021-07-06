@@ -110,7 +110,7 @@ function ml(x,L, o, a, d, s){
              if (!u.length) {
                  L=c[4]();
                  ml.H[c.f](function(U){
-                    c.k(ml.h[U].e)[c.f]((m)=>{
+                    ml.h[U] && c.k(ml.h[U].e)[c.f]((m)=>{
                        if (!ml.h[U].e[m]) ml.h[U].e[m]=L[m]; 
                     }) 
                  });
