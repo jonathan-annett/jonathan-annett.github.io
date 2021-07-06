@@ -281,7 +281,7 @@ ml(0,ml(1),[
                     }
                     
                     if (typeof cb==='function' )  {
-                       if (typeof buffer===Object) {
+                       if (typeof buffer==='object') {
                            
                            if (typeof buffer.buffer ==='object' && typeof buffer.buffer.byteLength === 'number') {
                                buffer = buffer.buffer;
