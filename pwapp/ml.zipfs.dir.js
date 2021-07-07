@@ -299,7 +299,7 @@ ml(0,ml(1),[
                    
                     modified_files[filename]=1;
                     
-                    const dir_prefix = zip_virtual_dir ? zip_virtual_dir  : full_zip_uri + '/';
+                    const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
                     
                     self.editInZed(
                        
