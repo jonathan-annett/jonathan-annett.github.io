@@ -6,7 +6,8 @@ ml(0,ml(1),[
     
     'pwaWindow@Window                           | ml.pwa-win.js',
     'sha1Lib@Window                             | sha1.js',
-    'ErrorStackParser@ServiceWorkerGlobalScope  | error-stack-parser.js'
+    'ErrorStackParser@ServiceWorkerGlobalScope  | error-stack-parser.js',
+    'StackFrame@ServiceWorkerGlobalScope        | stack-frame.js'
    
     ],function(){ml(2,ml(3),ml(4),
 
