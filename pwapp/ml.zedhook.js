@@ -1,11 +1,12 @@
 /* global BroadcastChannel*/
 
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
+/* global ml,self,caches,BroadcastChannel, swResponseZipLib, ErrorStackParser, fixupUrl  */
 ml(0,ml(1),[
     
     'pwaWindow@Window                           | ml.pwa-win.js',
-    'sha1Lib                                    | sha1.js'
+    'sha1Lib@Window                             | sha1.js',
+    'ErrorStackParser@ServiceWorkerGlobalScope  | error-stack-parser.js'
    
     ],function(){ml(2,ml(3),ml(4),
 
@@ -23,6 +24,8 @@ ml(0,ml(1),[
                     }
             },0);
             
+           editFileInZed.zedhookHtml = zedhookHtml;
+           
            return editFileInZed;
            
 
@@ -33,11 +36,18 @@ ml(0,ml(1),[
                   
            }
            
-           function editFileInZed(url,cb){
+           function editFileInZed(url,urls,cb){
+               if (typeof urls==='function') {
+                   cb = urls; urls = [url];
+               }
              
               const parts    = url.split('/');
               const filename = parts.pop();
-              const url_root = parts.join('/');
+              const url_root = location.origin;
+              
+              const page_directory=['.zedstate'].concat(urls.map(function(u){
+                  return u.substr(url_root.length);
+              }));
                
               const modified_files = {};
                
@@ -95,7 +105,7 @@ ml(0,ml(1),[
                 
                 function zipFS_apiHook (initial_path) {
                     
-                    const page_directory=['.zedstate'];
+                    
                     
                     if (zipFS_apiHook.singleton) {
                         
@@ -408,7 +418,13 @@ ml(0,ml(1),[
             
            }
 
-        } 
+        },
+        ServiceWorkerGlobalScope : function editInZed() {
+            return {
+                zedhookHtml      : zedhookHtml,
+                zedhookErrorHtml : zedhookErrorHtml
+            }
+        }
     }, {
         Window: [
             
@@ -417,12 +433,146 @@ ml(0,ml(1),[
             ()=>self.pwaWindow,
             ()=>self.sha1Lib.cb
             
-        ] 
+        ],
+        ServiceWorkerGlobalScope: [
+            
+        ],
+        
     }
 
     );
 
+const isLocal = new RegExp( '^'+regexpEscape(location.origin), '' );
 
+
+const isSourceCodeLink = /^(https\:\/\/)(.*)(\.html|\.css|\.js)(\:[0-9]+)?\:[0-9]+$/;
+
+
+
+    function zedhookHtml ( url ) {
+        
+        
+        return [
+            '<html>',
+            
+            '<head>',
+            '</head>',
+            
+            
+            '<body>',
+            
+            '<h1> Editing ' + url.split('/').pop()|| url,
+            
+            
+            '</h1>',
+            
+            '<script src="ml.js"></script>',
+            '<script src="ml.zedhook.js"></script>',
+            '<script>',
+            
+            'var filename = '+JSON.stringify(url)+';',
+            
+            fnSrc((editInZed,filename)=>{
+                window.addEventListener('zedhookready',function(){
+                    editInZed(filename,function(){
+                        window.close();
+                    });
+                });
+            }),
+            
+            '</script>',
+            '</body>',
+            
+            '</html>',
+            
+        ].join('\n');
+        
+    }
+    
+    function zedhookErrorHtml (error) {
+       
+       const stack = ErrorStackParser.parse( error );
+       
+       const urls  = stack.map(function (el){
+           return {url : fixupUrl(el.filename), line : el.lineNumber, col : el.columnNumber };
+       }).filter(function (el){
+           return isLocal.test(el.url);
+       }).map(function (el) {
+           switch (typeof el.line+typeof el.col ) {
+               case 'numbernumber' : 
+                   return el.url+':'+el.line+':'+el.col;
+               case  'numberundefined' : return el.url+':'+el.line;
+           }
+
+           return el.url;
+       });
+       
+       
+       return [
+           '<html>',
+           
+           '<head>',
+           '</head>',
+           
+           
+           '<body>',
+           
+           '<h1> Error: ' + error.message,
+           
+           
+           '</h1>',
+           
+           '<h2>Stack:</h2>',
+           '<pre>',
+           
+           error.stack,
+           
+           '</pre>',
+           
+           '<h2>Zed Links</h2>',
+           
+           urls.map(function(u){
+               return '<a href="'+u+'">'+u.split('/').pop()+'</a>'
+           }).join('<br>\n'),
+           
+           '<script src="ml.js"></script>',
+           '<script src="ml.zedhook.js"></script>',
+           '<script>',
+           
+           'var filenames = '+JSON.stringify(urls)+',filename=filenames[0];',
+           
+           fnSrc((editInZed,filename,filenames)=>{
+               window.addEventListener('zedhookready',function(){
+                   editInZed(filename,filenames,function(){
+                       window.close();
+                   });
+               });
+           }),
+           
+           '</script>',
+           '</body>',
+           
+           '</html>',
+           
+       ].join('\n')
+       
+    }
+    
+      
+    function regexpEscape(str) {
+        return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
+    }
+    
+
+    
+    function fnSrc(f,k,c) {
+        f = f.toString();
+        if (c) {
+           f=f.replace(/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/)|\/\/.*?[\r\n])[\r\n]*/,'');
+        }
+        return k?f:f.substring(f.indexOf("{")+1,f.lastIndexOf("}")-1);
+    }
+    
  
 
 });

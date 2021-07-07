@@ -10,7 +10,8 @@ ml(0,ml(1),[
     'zipFSListingLib                        | ml.zipfs.dir.sw.js',
     'virtualDirLib@ServiceWorkerGlobalScope | ml.zipfs.virtual.js',
     'zipPNGLib@ServiceWorkerGlobalScope     | ml.zipfs.png.js',
-    'pwaMiddlewares                         | ml.pwa-middleware.js'
+    'pwaMiddlewares                         | ml.pwa-middleware.js',
+    'editInZed@ServiceWorkerGlobalScope     | ml.zedhook.js'
 
     ],function(){ml(2,ml(3),ml(4),
 
@@ -428,6 +429,54 @@ ml(0,ml(1),[
                   }
 
              }
+             
+             
+             self.fixupUrl = function (url) {
+                 
+                 const url_in = url;
+                 let url_out = url_in;
+                  if (fixupUrlEvent.rules) {
+                      
+                      if (fixupUrlEvent.eventCache) {
+                          const previous = fixupUrlEvent.eventCache[url_in];
+                          if ( previous ) {
+                              return previous.fixup_url;
+                          }
+                      }
+                      
+                      const baseURI = location.origin ; 
+                      const baseURI_Rules = fixupUrlEvent.rules(baseURI);
+                      check_rules(baseURI_Rules);
+                  }
+                  
+                  return url_out;
+                  
+                  function check_rules(rules ) {
+                      
+                      return rules.forEach(checkRulesGroup);
+                      
+                      function checkRulesGroup(group){
+                          while ( group.some( enforceRule ) );
+                      }
+                  }
+                  
+                  function enforceRule (x){
+                     if (x.replace&&x.replace.test(url_out)) { 
+                         const before = url_out;
+                         url_out = url_out.replace(x.replace,x.with);
+                         fixupLog(before,">>>==replace[",x.replace,"]/with[",x.with,"]==>>>",url_out);
+                         return true;
+                     } else {
+                         if (x.match && x.addPrefix && x.match.test(url_out)) { 
+                             const before = url_out;
+                             url_out = x.addPrefix + url_out;
+                             fixupLog(before,">>>==match[",x.match,"]/addPrefix[",x.addPrefix,"]==>>>",url_out);
+                             return true;
+                         }
+                     }
+                  }
+
+             };
              
              
              
@@ -1161,10 +1210,7 @@ ml(0,ml(1),[
              
              
              function response500 (resolve,error) {
-                 let errMessage = error.message||error;
-                 if (error.stack) {
-                     errMessage = '<h1>'+errMessage+'</h1>'+error.stack.split('\n').join('<br>\n');
-                 }
+                 let errMessage = error.stack ? self.editInZed.zedhookErrorHtml(error) : error.message||error;
                  return resolve( new Response(
                                     errMessage, {
                                             status: 500,

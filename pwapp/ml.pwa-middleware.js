@@ -5,7 +5,7 @@
 ml(0,ml(1),[
     
    'sha1Lib                                | sha1.js',
-
+   'editInZed                              | ml.zedhook.js'
     
     ],function(){ml(2,ml(3),ml(4),
 
@@ -22,6 +22,8 @@ ml(0,ml(1),[
             const isSourceCodeLink = /^(https\:\/\/)(.*)(\.html|\.css|\.js)(\:[0-9]+)?\:[0-9]+$/;
             
             
+            const editInZedHtml = self.editInZed.zedhookHtml;
+            
             return middlewares;
             
             
@@ -30,7 +32,7 @@ ml(0,ml(1),[
             }
             
 
-             function middlewares (addMiddlewareListener,databases,response200,response500,fnSrc) {
+             function middlewares (addMiddlewareListener,databases,response200,response500,fnSrc,fixupURL) {
                 
                 addMiddlewareListener (function (event) {
                     // !event.use_no_cors means url is for this domain name,
@@ -57,54 +59,13 @@ ml(0,ml(1),[
                     
                 });
                 
-                
-                
-                
                 addMiddlewareListener (function (event) {
                     // !event.use_no_cors means url is for this domain name,
                     if (!event.use_no_cors &&  isSourceCodeLink.test(event.fixup_url)) {
                         return new Promise(function(resolve){
-                                const html  =  [
-                                    '<html>',
-                                    
-                                    '<head>',
-                                    '</head>',
-                                    
-                                    
-                                    '<body>',
-                                    
-                                    '<h1> Editing ',
-                                    
-                                    event.fixup_url,
-                                    
-                                    
-                                    '</h1>',
-                                    
-                                    '<script src="ml.js"></script>',
-                                    '<script src="ml.zedhook.js"></script>',
-                                    '<script>',
-                                    
-                                    'var filename = '+JSON.stringify(event.fixup_url)+';',
-                                    
-                                    fnSrc((editInZed,filename)=>{
-                                        
-                                        window.addEventListener('zedhookready',function(){
-                                            editInZed(filename,function(){
-                                                window.close();
-                                            });
-                                        });
-
-                                    }),
-                                    
-                                    '</script>',
-                                    '</body>',
-                                    
-                                    '</html>',
-                                    
-                                ].join('\n')
-                                
-                                
-                                
+                            
+                                   const html  =  editInZedHtml (event.fixup_url);
+                                   
                                    response200 (resolve,html,{
                                        contentType   : 'text/html',
                                        contentLength : html.length
@@ -112,6 +73,7 @@ ml(0,ml(1),[
                         });
                     } 
                 });
+                
             }
             
 
