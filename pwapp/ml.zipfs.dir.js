@@ -296,7 +296,7 @@ ml(0,ml(1),[
                    li.classList.add("editing");
                    
                     modified_files[filename]=1;
-                   self.editInZed(filename,zip_files,full_zip_uri,function(){
+                    self.editInZed(filename,zip_files,zip_virtual_dir ? zip_virtual_dir  : full_zip_uri,function(){
                        
                    });
 
