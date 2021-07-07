@@ -51,14 +51,14 @@ ml(0,ml(1),[
                isDeleted     : function (file,cb) {
                    return pwa.isDeleted(full_zip_uri,file,cb);
                },
-               
+               /*
                writeFileString : function (file,text,hash,cb) {
-                   return pwa.writeFileString(full_zip_uri,file,text,hash,cb);
+                  return pwa.writeFileString(full_zip_uri,file,text,hash,cb);
                },
                
                readFileString : function (file,hash,cb) {
                    return pwa.readFileString(full_zip_uri,file,hash,cb);
-               },
+               },*/
                
                isHidden : function (file,cb) {
                    return pwa.isHidden(full_zip_uri,file,function(err,msg){
@@ -84,7 +84,7 @@ ml(0,ml(1),[
                          if(cb)cb(err,msg); 
                       });
                },
-               
+               /*
                updateURLContents : function (file,content,hash,cb) {
                    return pwa.updateURLContents(
                        zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
@@ -110,7 +110,7 @@ ml(0,ml(1),[
                        }
                    );
                },
-               
+               */
                registerForNotifications : ___registerForNotifications,
                unregisterForNotifications : function (cb) {
                     cb();
@@ -164,6 +164,8 @@ ml(0,ml(1),[
                     };
                 });
             }
+            
+            
             const modified_files = {};
             const lib = {
                pwaApi : pwaApi
@@ -296,9 +298,18 @@ ml(0,ml(1),[
                    li.classList.add("editing");
                    
                     modified_files[filename]=1;
-                    self.editInZed(filename,zip_files,zip_virtual_dir ? zip_virtual_dir  : full_zip_uri,function(){
+                    
+                    const dir_prefix = zip_virtual_dir ? zip_virtual_dir  : full_zip_uri + '/';
+                    
+                    self.editInZed(
                        
-                   });
+                       dir_prefix+filename,    
+                       
+                       zip_files.map(function (fn){ return dir_prefix+'/'+fn;}),
+                       
+                       function(){
+                       
+                    });
 
                 } else {
                     const file_url = zip_url_base + '/'+filename;
@@ -317,7 +328,7 @@ ml(0,ml(1),[
                    pwaApi.toggleDeleteFile(filename);
                 }
             }
-
+/*
             function registerForNotifications(initial_path,cb) {
                 pwaApi.registerForNotifications(function(msg){
     
@@ -402,7 +413,7 @@ ml(0,ml(1),[
     
                 });
             }
-
+*/
             function onEditorClose () {
                 Object.keys(modified_files).forEach(function(file){
                     const li = find_li(file);
