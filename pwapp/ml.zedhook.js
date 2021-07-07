@@ -479,7 +479,7 @@ const isSourceCodeLink = /^(https\:\/\/)(.*)(\.html|\.css|\.js)(\:[0-9]+)?\:[0-9
             fnSrc((editInZed,filename)=>{
                 window.addEventListener('zedhookready',function(){
                     editInZed(filename,function(){
-                        window.close();
+                        //window.close();
                     });
                 });
             }),
