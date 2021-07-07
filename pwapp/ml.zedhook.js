@@ -50,7 +50,7 @@ ml(0,ml(1),[
                    urls = [url];
                }
              
-              const fix_filename = function(u){ return u.indexOf(url_root) === 0 ? u.substr(url_root.length+1) : u; };
+              const fix_filename = function(u){ return u.indexOf(url_root) === 0 ? u.substr(url_root.length) : u; };
               
               const filename = fix_filename(url);
               
