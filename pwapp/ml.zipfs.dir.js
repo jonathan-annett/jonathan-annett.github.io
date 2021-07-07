@@ -5,6 +5,7 @@
 ml(0,ml(1),[
     
     'pwaWindow@Window                           | ml.pwa-win.js',
+    'editInZed                                  | ml.zedhook.js', 
     'sha1Lib                                    | sha1.js'
    
     
@@ -24,16 +25,7 @@ ml(0,ml(1),[
             const pwaApi = {
                
                toggleDeleteFile : function (file,cb) {
-                   
                    return pwa.toggleDeleteFile(full_zip_uri,file,cb);
-                   /*
-                   sendMessage('deleted',{
-                        zip    : full_zip_uri,
-                        virtual: zip_virtual_dir,
-                        toggle : file
-                   },function(err,msg){
-                        if(cb)cb(err,msg);
-                   });*/
                },
                
                deleteFile       : function (file,cb) {
@@ -44,22 +36,9 @@ ml(0,ml(1),[
                        }
                        if(cb)cb(err,msg);
                    });
-                   /*
-                   sendMessage('deleted',{
-                       zip : full_zip_uri,
-                       virtual: zip_virtual_dir,
-                       add : file
-                   },function(err,msg){
-                       const ix = zip_files.indexOf(file);
-                       if (ix >=0) {
-                           zip_files.splice(ix,1);
-                       }
-                       if(cb)cb(err,msg);
-                   });*/
                },
                
                unDeleteFile     : function (file,cb) {
-                   
                    return pwa.unDeleteFile(full_zip_uri,file,function(err,msg){
                        const ix = zip_files.indexOf(file);
                        if (ix <0) {
@@ -67,63 +46,18 @@ ml(0,ml(1),[
                        }
                        if(cb)cb(err,msg);
                    });
-                   /*
-                   sendMessage('deleted',{
-                       zip    : full_zip_uri,
-                       virtual: zip_virtual_dir,
-                       remove : file
-                   },function(err,msg){
-                       const ix = zip_files.indexOf(file);
-                       if (ix <0) {
-                           zip_files.push(file);
-                       }
-                       if(cb)cb(err,msg);
-                   });*/
                },
                
                isDeleted     : function (file,cb) {
-                   
                    return pwa.isDeleted(full_zip_uri,file,cb);
-                   /*
-                   sendMessage('deleted',{
-                        zip    : full_zip_uri,
-                        virtual: zip_virtual_dir,
-                        test   : file
-                   },function(err,msg){
-                        if(cb)cb(err,msg);
-                   });*/
                },
                
                writeFileString : function (file,text,hash,cb) {
                    return pwa.writeFileString(full_zip_uri,file,text,hash,cb);
-                   /*
-                   
-                   if (typeof hash==='function') {
-                       cb   = hash;
-                       hash = false;
-                   }
-                   sendMessage('writeFileString',{
-                       zip    : full_zip_uri,
-                       virtual: zip_virtual_dir,
-                       file   : file,
-                       text   : text,
-                       hash   : hash
-                   },cb);*/
                },
                
                readFileString : function (file,hash,cb) {
                    return pwa.readFileString(full_zip_uri,file,hash,cb);
-                   /*
-                   if (typeof hash==='function') {
-                       cb   = hash;
-                       hash = false;
-                   }
-                    sendMessage('readFileString',{
-                        zip    : full_zip_uri,
-                        virtual: zip_virtual_dir,
-                        file   : file,
-                        hash   : hash
-                    },cb);*/
                },
                
                isHidden : function (file,cb) {
@@ -138,24 +72,8 @@ ml(0,ml(1),[
                          }
                          if(cb)cb(msg.hidden);
                      });
-                   /*
-                   sendMessage('hidden',{
-                       zip    : full_zip_uri,
-                       virtual: zip_virtual_dir,
-                       test   : file
-                   },function(err,msg){
-                       const el = find_li(file);
-                       if (el) {
-                           if (msg.hidden) {
-                                el.classList.add("hidden");
-                           } else {
-                                el.classList.remove("hidden");
-                           }
-                       }
-                       if(cb)cb(msg.hidden);
-                   });*/
                },
-               
+               /*
                removeUpdatedURLContents  : function (file,cb) {
                   return pwa.removeUpdatedURLContents(
                       zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
@@ -165,14 +83,6 @@ ml(0,ml(1),[
                          if (el) el.classList.remove('edited');
                          if(cb)cb(err,msg); 
                       });
-                  /* 
-                  sendMessage('removeUpdatedURLContents',{
-                     url    : zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
-                  },function(err,msg){
-                      const el = find_li(file);
-                      if (el) el.classList.remove('edited');
-                      if(cb)cb(err,msg);
-                  });*/
                },
                
                updateURLContents : function (file,content,hash,cb) {
@@ -189,23 +99,6 @@ ml(0,ml(1),[
                            if(cb)cb(err,msg && msg.hash);
                        }
                    );
-                   /*
-                   if (typeof hash ==='function') {
-                       cb = hash;
-                       hash=false;
-                   }
-                   sendMessage('updateURLContents',{
-                       url    : zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
-                       content : content,
-                       hash    : hash
-                   },function(err,msg){
-                       const el = find_li(file);
-                       if (el) {
-                           el.classList.add('edited');
-                           el.classList.add('editing');
-                       }
-                       if(cb)cb(err,msg && msg.hash);
-                   });*/
                },
                
                fetchUpdatedURLContents : function (file,hash,cb) {
@@ -216,22 +109,8 @@ ml(0,ml(1),[
                           cb(undefined,msg.content,msg.updated,msg.hash);
                        }
                    );
-                   /*
-                   
-                   if (typeof hash ==='function') {
-                       cb = hash;
-                       hash=false;
-                   }
-                   sendMessage('fetchUpdatedURLContents',{
-                       url    : zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,
-                       hash   : hash
-                   },function(err,msg){
-                       if (err) return cb (err);
-                       cb(undefined,msg.content,msg.updated,msg.hash);
-                   });
-                   */
                },
-               
+               */
                registerForNotifications : ___registerForNotifications,
                unregisterForNotifications : function (cb) {
                     cb();
@@ -239,6 +118,7 @@ ml(0,ml(1),[
 
             };
             
+            /*
             let sw_urls,sw_mods;
             pwa.getServiceWorkerUrls(function(err,urls){
                 sw_urls=urls;
@@ -247,7 +127,7 @@ ml(0,ml(1),[
             pwa.getServiceWorkerModules(function(err,mods){
                 sw_mods=mods;
                 console.log(mods);
-            })
+            })*/
             
             
             function ___registerForNotifications(cb) {
@@ -456,6 +336,11 @@ ml(0,ml(1),[
                 
                 if (!e.shiftKey) {
                    li.classList.add("editing");
+                   
+                   self.editInZed(filename,zip_files,full_zip_uri,function(){
+                       
+                   });
+                   
                    modified_files[filename]=1;
                    zipFS_apiHook(filename).onunmount = onEditorClose;
                    
@@ -990,11 +875,7 @@ ml(0,ml(1),[
             zipFS_apiHook ().onunmount = function () {
                 
             };
-            
-            
-            
-            
-            
+
             return lib;
         } 
     }, {

@@ -37,15 +37,21 @@ ml(0,ml(1),[
                   
            }
            
-           function editFileInZed(url,urls,cb){
-               if (typeof urls==='function') {
-                   cb = urls; urls = [url];
+           function editFileInZed(url,urls,url_root,cb){
+               if (typeof url_root==='function') {
+                   cb   = url_root;  
+                   url_root = location.href.substr(0,location.href.lastIndexOf("/"));
                }
              
-              const parts    = url.split('/');
-              const filename = parts.pop();
-              const url_root = location.href.substr(0,location.href.lastIndexOf("/"));
-              
+               
+               if (typeof urls==='function') {
+                   cb   = urls; 
+                   url_root = location.href.substr(0,location.href.lastIndexOf("/"));
+                   urls = [url];
+               }
+             
+              const filename = url.substr(url_root.length);
+
               const page_directory=['.zedstate'].concat(urls.map(function(u){
                   return u.substr(url_root.length);
               }));
@@ -100,9 +106,6 @@ ml(0,ml(1),[
                 function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
                
                 function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
-                
-               
-              
                 
                 function zipFS_apiHook (initial_path) {
                     

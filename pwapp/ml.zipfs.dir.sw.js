@@ -212,6 +212,7 @@ ml(0,ml(1),[
                         '</head>',
                         '<body class="disable-select">',
                         '<script src="ml.js"></script>',
+                        '<script src="ml.zedhook.js"></script>',
                         '<script src="ml.zipfs.dir.js"></script>',
                         
                         '<h1> files in '+uri,
@@ -226,16 +227,12 @@ ml(0,ml(1),[
                         '<a class="download" id="img_dl_link" data-balloon-pos="down-left" aria-label="Download zip png image">&nbsp;&nbsp;&nbsp;</a>',
                         '<span id="img_dl_link2"></span>',                        
                         '</h1>',
-                           
                         '<div id="inputModal" class="modal">',
-                        '',
                         '  <div class="modal-content">',
                         '    <span class="close">&times;</span>',
                         '    <p>Filename:<input id="newfilename" placeholder"file.js" value=""></p>',
                         '  </div>',
-                        '',
                         '</div>',
-                        
                         '<div>',
                         '<ul class="hide_hidden hide_full_path ' + (hidden_files_exist ? + 'hidden_files_exist' :'' ) + '">'
                         
