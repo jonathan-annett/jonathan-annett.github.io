@@ -73,7 +73,7 @@ ml(0,ml(1),[
                          if(cb)cb(msg.hidden);
                      });
                },
-               /*
+               
                removeUpdatedURLContents  : function (file,cb) {
                   return pwa.removeUpdatedURLContents(
                       zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
@@ -110,7 +110,7 @@ ml(0,ml(1),[
                        }
                    );
                },
-               */
+               
                registerForNotifications : ___registerForNotifications,
                unregisterForNotifications : function (cb) {
                     cb();
@@ -203,49 +203,7 @@ ml(0,ml(1),[
                     pwa.getPNGZipImage(full_zip_uri,"files",zip_virtual_dir,qs("#show_dl_img"),qs("#img_dl_link2"),"download");
                 });
                 
-                const filename_input = qs("#newfilename",function keydown(e){
-                    if (e.keyCode===27) {
-                        inputModal.style.display = "none";
-                    } else {
-                       if (e.keyCode===13) {
-                           inputModal.style.display = "none";
-                           let filename = filename_input.value.trim();
-                           if (filename.length >0) {
 
-                               // find the ul element
-                               qs("ul",function(el){
-                                   // make a new id for the new element, as we are creating it on the fly
-                                   let newid="li_"+Math.random().toString(36).substr(-8);
-                                   
-                                   // patch the ul element to include new file
-                                   el.innerHTML += html_file_item(newid,filename);
-                                   
-                                   // add some button events (if relel)
-                                   addViewClick(qs("#"+newid+" a span.normal"));
-                                   let edBtn = qs("#"+newid+" a span.editinzed");
-                                   
-                                   // create the file using the service worker 
-                                   pwaApi.updateURLContents(filename,'\n',function(){
-                                        
-                                        if (edBtn) {
-                                            // if editable, open the editor 
-                                           addEditClick(edBtn);
-                                           // make a dummy event object on the fly to "fool" the click handler
-                                           edBtnClick({target:edBtn,stopPropagation(){/*ok!*/}});
-                                       }
-                                   
-                                   });
-                                   
-                               });
-                           }
-                       }
-                    }
-                });
-                
-                qs("h1 a.newfile",function click(){
-                    inputModal.style.display = "block";
-                });
-                    
                 [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
                 
                 [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
@@ -337,13 +295,11 @@ ml(0,ml(1),[
                 if (!e.shiftKey) {
                    li.classList.add("editing");
                    
+                    modified_files[filename]=1;
                    self.editInZed(filename,zip_files,full_zip_uri,function(){
                        
                    });
-                   
-                   modified_files[filename]=1;
-                   zipFS_apiHook(filename).onunmount = onEditorClose;
-                   
+
                 } else {
                     const file_url = zip_url_base + '/'+filename;
                     open_url(file_url);
@@ -361,286 +317,7 @@ ml(0,ml(1),[
                    pwaApi.toggleDeleteFile(filename);
                 }
             }
-            
-            function zipFS_apiHook (initial_path) {
-                
-                if (zipFS_apiHook.singleton) {
-                    
-                    return zipFS_apiHook.singleton.open(initial_path);
-                    
-                }
-                
-                var zedstate;
-                const api_id = Math.random().toString(36).substr(-8),
-                      api_call_event_name = 'zipFS_apiCall_'+api_id,
-                      tags = {
-                          
-                          
-                      },
-                      leadingSlash = /^\//,
-                      self = {},
-                      fs_api = fsZipApi();
-      
-                window.addEventListener(api_call_event_name,apiCall);
-                
-                
-                window.addEventListener('beforeunload',windowUnloading);
 
-
-                Object.defineProperties (self,{
-                    open : { value : openFile }
-                });
-                
-                zipFS_apiHook.singleton = self;
-                return self.open(initial_path);
-                
-                
-                function windowUnloading () {
-                    // invoked by browser when user closes BROWSER window
-                    window.removeEventListener('beforeunload',windowUnloading);
-                    window.removeEventListener(api_call_event_name,apiCall);
-                    window.dispatchEvent( 
-                        new CustomEvent( 'zipFS_apiHook',{  detail: {  api_id : api_id,  zipfs: full_zip_uri, unloading:true  } })
-                    );
-                     
-                }
-                
-                function openFile(file) {
-                     initial_path = file;
-                     window.dispatchEvent( 
-                         new CustomEvent( 'zipFS_apiHook',{  detail: {  api_id : api_id,  zipfs: full_zip_uri, file : initial_path  } })
-                     );
-                     registerForNotifications(initial_path,function(ip){
-                         initial_path=ip;
-                     });
-                     return zipFS_apiHook.singleton;
-                }
-                
-                function fsZipApi() {
-                    return {
-                               
-                               listFiles: function(reqId) { 
-                                   window.dispatchEvent( 
-                                       new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:zip_files.map(prependSlash) } })
-                                   );
-                               },
-                               
-                               readFile: function(reqId,path) { 
-                                   
-                                   const filename = path.replace(leadingSlash,'');
-                                   const replyMsgId = 'zipFS_'+reqId;
-                                   if (path === "/.zedstate") {
-                                       
-                                       getZedState(function(json){
-                                           return window.dispatchEvent(
-                                               new CustomEvent('zipFS_'+reqId,{  
-                                                   detail: {  
-                                                       resolve : reqId, 
-                                                       resolveData:json
-                                                   }})
-                                           );
-                                       });
-                                   }
-                                   
-                                   pwaApi.fetchUpdatedURLContents(filename,true,function (err,buffer,hash) {
-                                   //pwaApi.readFileString(filename,true,function (err,data) {
-                                      if (err) {
-                                          return window.dispatchEvent( 
-                                              new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
-                                          );
-                                      }
-                                      tags[path] = hash;
-                                      window.dispatchEvent( 
-                                          new CustomEvent('zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:bufferToText(buffer) }})
-                                      );
-                                   });
-                                   
-                               },
-                               
-                               writeFile: function(reqId,path,content) { 
-                                   const filename = path.replace(leadingSlash,'');
-                                   const replyMsgId = 'zipFS_'+reqId;
-                                   
-                                   
-                                   
-                                   if (path === "/.zedstate") {
-                                       
-                                       setZedState(content,function(){
-                                          window.dispatchEvent( 
-                                              new CustomEvent(replyMsgId,{  detail: {  resolve : reqId } })
-                                          );
-                                       });
-                                   }
-                                   
-                                   pwaApi.updateURLContents(filename,content,true,function (err,hash) {
-                                   //pwaApi.writeFileString(filename,content,true,function (err,hash) {
-                                       
-                                       if (err) {
-                                           return window.dispatchEvent( 
-                                               new CustomEvent( replyMsgId,{  detail: {  reject : reqId, resolveData:err.message||err }})
-                                           );
-                                       }
-                                       
-                                       tags[path] = hash;
-                                       window.dispatchEvent( 
-                                           new CustomEvent(replyMsgId,{  detail: {  resolve : reqId } })
-                                       );
-                                       
-
-                                   });
-                                    
-                                   
-                               },
-                               
-                               deleteFile: function(reqId,path) { 
-                                   const filename = path.replace(leadingSlash,'');
-                                   const replyMsgId = 'zipFS_'+reqId;
-                                   
-                                   pwaApi.deleteFile(filename,function (err) {
-                                       
-                                       if (err) {
-                                           return window.dispatchEvent( 
-                                               new CustomEvent( replyMsgId,{  detail: {  reject : reqId, resolveData:err.message||err }})
-                                           );
-                                       }
-                                       
-                                       window.dispatchEvent( 
-                                           new CustomEvent(replyMsgId,{  detail: {  resolve : reqId } })
-                                       );
-         
-                                   });
-                                   
-                                   
-                                   
-                               },
-               
-                              // watchFile: function(reqId) {},
-                               
-                              // unwatchFile: function(reqId) {},
-                               
-                               getCacheTag: function(reqId,path) { 
-                                   
-                                   
-                                   const filename = path.replace(leadingSlash,'');
-                                   const replyMsgId = 'zipFS_'+reqId;
-                                   
-                                    if (tags[path]) {
-                                         return window.dispatchEvent( 
-                                             new CustomEvent(replyMsgId,{  detail: {  resolve : tags[path] }})
-                                         );
-                                    } else {
-                                        
-                                        pwaApi.readFileString(filename,true,function (err,data) {
-                                            if (err) {
-                                               return window.dispatchEvent( 
-                                                   new CustomEvent( replyMsgId,{  detail: {  resolve : '1' }})
-                                               );
-                                            }
-                                            
-                                            tags[path] = data.hash;
-                                            delete data.text;
-                                            delete data.hash;
-                                            
-                                            return window.dispatchEvent( 
-                                                new CustomEvent( replyMsgId,{  detail: {  resolve : tags[path] }})
-                                            );
-                                        });
-                                        
-                                    }
-                               },
-                               
-                               getCapabilities: function(reqId) { },
-                               
-                               unmount : function (reqId) {
-                                    // this zip file is being unmounted.
-                                    
-                                    if (self.onunmount) {
-                                        self.onunmount();
-                                    }
-                                    const replyMsgId = 'zipFS_'+reqId;
-                                    window.dispatchEvent( 
-                                        new CustomEvent(replyMsgId,{  detail: {  resolve : reqId } })
-                                    );
-                                    window.removeEventListener(api_call_event_name,apiCall);
-                                    window.removeEventListener('beforeunload',windowUnloading);
-                                    zedstate=undefined;
-                                    initial_path=undefined;
-                                    delete zipFS_apiHook.singleton;
-                                    
-                                    // pedantically releas each refrenceed object / function
-                                    Object.keys(fs_api).forEach(function (fn){
-                                        delete fs_api[fn];
-                                    });
-                                    
-                                   
-                                    
-                                    Object.keys(self).forEach(function (fn){
-                                        delete self[fn];
-                                    });
-                               } 
-                           };
-                    
-                    
-                }
-
-                function apiCall (event) {
-                    
-                    if (event.detail.closed) {
-                        return window.removeEventListener(api_call_event_name,apiCall);   
-                    }
-
-                    const cmd     = Object.keys(event.detail.api_msg)[0];
-                    const args    = event.detail.api_msg[cmd];
-                    const handler = fs_api[cmd];
-                    if (handler && args) {
-                        handler.apply(this,[event.detail.request].concat(args));
-                    }
-                    
-
-                }
-                
-                function bufferToHash(path,buffer,cb) {
-                    sha1(buffer,function(err,hash){
-                        if (err) {
-                            tags[path]=1;
-                        } else {
-                            tags[path]=hash;
-                        }
-                        const anchor = qs('a[data-filename="'+path.replace(leadingSlash,'')+'"]');
-                        if (anchor) {
-                            const sh = anchor.parentElement.querySelector('span.sha1');
-                            if (sh) {
-                                sh.innerHTML=hash;
-                            }
-                        }
-                        cb(hash);
-                    });
-                }
-                
-                function bufferToTextAndHash(path,buffer,cb) {
-                    bufferToHash(path,buffer,function(hash){
-                        cb(bufferToText(buffer),hash);
-                    })
-                }
-               
-                function prependSlash(x) { return "/"+x.replace(leadingSlash,'');}
-                
-                function removePrependedSlash (x) { return x.replace(leadingSlash,'') }
-
-                function getZedState(cb) {
-                    if (!zedstate) {
-                        zedstate = JSON.stringify({"session.current": [ '/'+initial_path  ]});
-                    }
-                    return cb (zedstate);
-                } 
-
-                function setZedState (json,cb) {
-                    zedstate = json;
-                    cb();
-                }
-                
-            }
-            
             function registerForNotifications(initial_path,cb) {
                 pwaApi.registerForNotifications(function(msg){
     
@@ -870,12 +547,7 @@ ml(0,ml(1),[
                window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
             }
             
-            
-            //registerForNotifications("/",function(){});
-            zipFS_apiHook ().onunmount = function () {
-                
-            };
-
+          
             return lib;
         } 
     }, {
