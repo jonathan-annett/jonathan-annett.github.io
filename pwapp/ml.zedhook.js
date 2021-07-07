@@ -27,7 +27,10 @@ ml(0,ml(1),[
            
 
            function onDOMContentLoaded (){
-                  window.dispatchEvent('zedhookready',{});
+                  window.dispatchEvent( 
+                      new CustomEvent( 'zedhookready',{  detail: {    } })
+                  );
+                  
            }
            
            function editFileInZed(url,cb){
