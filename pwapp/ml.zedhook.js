@@ -70,7 +70,7 @@ ml(0,ml(1),[
                    
                    removeUpdatedURLContents  : function (file,cb) {
                       return pwa.removeUpdatedURLContents(
-                          url_root+'/'+file,
+                          url_root+file,
                           //zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,
                           function(err,msg){
                              if(cb)cb(err,msg); 
@@ -79,7 +79,7 @@ ml(0,ml(1),[
                    
                    updateURLContents : function (file,content,hash,cb) {
                        return pwa.updateURLContents(
-                           url_root+'/'+file,
+                           url_root+file,
                            //zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,
                            content,hash,
                            function(err,msg){
@@ -90,7 +90,7 @@ ml(0,ml(1),[
                    
                    fetchUpdatedURLContents : function (file,hash,cb) {
                        return pwa.fetchUpdatedURLContents(
-                           url_root+'/'+file,hash,
+                           url_root+file,hash,
                            function(err,msg){
                               if (err) return cb (err);
                               cb(undefined,msg.content,msg.updated,msg.hash);
