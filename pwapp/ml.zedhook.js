@@ -54,7 +54,7 @@ ml(0,ml(1),[
               
               const filename = fix_filename(url);
               
-              const page_directory=['.zedstate'].concat(urls.map(fix_filename));
+              const page_directory=['/.zedstate'].concat(urls.map(fix_filename));
                
               const modified_files = {};
                
