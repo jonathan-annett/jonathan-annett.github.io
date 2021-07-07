@@ -175,7 +175,7 @@ ml(0,ml(1),[
                                    
                                    readFile: function(reqId,path) { 
                                        
-                                       const filename = path.replace(leadingSlash,'');
+                                       const filename = path.replace(leadingSlash,'/');
                                        const replyMsgId = 'zipFS_'+reqId;
                                        if (path === "/.zedstate") {
                                            
