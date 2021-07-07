@@ -50,11 +50,11 @@ ml(0,ml(1),[
                    urls = [url];
                }
              
-              const filename = url.substr(url_root.length);
-
-              const page_directory=['.zedstate'].concat(urls.map(function(u){
-                  return u.substr(url_root.length);
-              }));
+              const fix_filename = function(u){ return u.indexOf(url_root) === 0 ? u.substr(url_root.length) : u; };
+              
+              const filename = fix_filename(url);
+              
+              const page_directory=['.zedstate'].concat(urls.map(fix_filename));
                
               const modified_files = {};
                
@@ -190,7 +190,6 @@ ml(0,ml(1),[
                                        }
                                        
                                        pwaApi.fetchUpdatedURLContents(filename,true,function (err,buffer,hash) {
-                                       //pwaApi.readFileString(filename,true,function (err,data) {
                                           if (err) {
                                               return window.dispatchEvent( 
                                                   new CustomEvent( 'zipFS_'+reqId,{  detail: {  reject : reqId, resolveData:err.message||err }})
@@ -220,7 +219,6 @@ ml(0,ml(1),[
                                        }
                                        
                                        pwaApi.updateURLContents(filename,content,true,function (err,hash) {
-                                       //pwaApi.writeFileString(filename,content,true,function (err,hash) {
                                            
                                            if (err) {
                                                return window.dispatchEvent( 
