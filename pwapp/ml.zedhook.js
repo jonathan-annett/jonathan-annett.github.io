@@ -43,7 +43,7 @@ ml(0,ml(1),[
              
               const parts    = url.split('/');
               const filename = parts.pop();
-              const url_root = location.origin;
+              const url_root = location.href.substr(0,location.href.lastIndexOf("/"));
               
               const page_directory=['.zedstate'].concat(urls.map(function(u){
                   return u.substr(url_root.length);
