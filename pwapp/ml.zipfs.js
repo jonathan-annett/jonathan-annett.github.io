@@ -388,16 +388,16 @@ ml(0,ml(1),[
                            };
                            event.toFetchUrl   = function(db) { 
                                return function (resolve,reject) {
-                                   return toFetchUrl (db||databases[event.cacheDB],url_out,false,resolve,event.fetchBuffer);
+                                   return toFetchUrl (db||databases[event.cacheDB],event.fixup_url,false,resolve,event.fetchBuffer);
                                };
                            };
                       } else {
                            event.fetchBuffer = function(cb) { 
-                               return fetchBuffer(event.fixup_url,cb);
+                               return fetchBuffer(event.aliased_url || event.fixup_url,cb);
                            };
                            event.toFetchUrl   = function(db) { 
                                return function (resolve,reject) {
-                                 return toFetchUrl (db||databases[event.cacheDB],url_out,false,resolve,event.fetchBuffer);
+                                 return toFetchUrl (db||databases[event.cacheDB],event.aliased_url || event.fixup_url,false,resolve,event.fetchBuffer);
                                };
                            };
                       }
