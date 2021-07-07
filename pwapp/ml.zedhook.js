@@ -495,7 +495,7 @@ const isSourceCodeLink = /^(https\:\/\/)(.*)(\.html|\.css|\.js)(\:[0-9]+)?\:[0-9
        const stack = ErrorStackParser.parse( error );
        
        const urls  = stack.map(function (el){
-           return {url : fixupUrl(el.filename), line : el.lineNumber, col : el.columnNumber };
+           return {url : fixupUrl(el.fileName), line : el.lineNumber, col : el.columnNumber };
        }).filter(function (el){
            return isLocal.test(el.url);
        }).map(function (el) {
