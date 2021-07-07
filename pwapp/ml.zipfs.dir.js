@@ -303,9 +303,9 @@ ml(0,ml(1),[
                     
                     self.editInZed(
                        
-                       dir_prefix+filename,    
+                       dir_prefix+filename.replace(alias_root_fix,''),    
                        
-                       zip_files.map(function (fn){ return dir_prefix+'/'+fn;}),
+                       zip_files.map(function (fn){ return dir_prefix+'/'+fn.replace(alias_root_fix,'');}),
                        
                        function(){
                        
