@@ -307,7 +307,7 @@ ml(0,ml(1),[
                        
                        zip_files.map(function (fn){ return dir_prefix+fn.replace(alias_root_fix,'');}),
                        
-                       zip_virtual_dir.substr(location.origin.length),
+                       zip_virtual_dir,
                        
                        function(){
                        
