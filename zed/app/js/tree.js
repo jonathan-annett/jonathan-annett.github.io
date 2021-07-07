@@ -30,7 +30,8 @@ define(function(require, exports, module) {
                         hideTree();
                     }
                 });
-            }
+            },
+            showTree:showTree
         };
 
         eventbus.declare("tree");

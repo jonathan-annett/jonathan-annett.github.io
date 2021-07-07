@@ -682,7 +682,7 @@ ml(0,ml(1),[
              function newFixupRulesArray(arr) {
                  
                   fixupUrlEventClearCached();
-                  clearVirtualDirsCache();
+                  //clearVirtualDirsCache(); // happens in newVirtualDirs() now
                  
                   // extract virtualdirs and remove comments from source array
                   const source = removeComments(arr).filter(function(x){
