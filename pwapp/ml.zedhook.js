@@ -400,11 +400,6 @@ ml(0,ml(1),[
                 
                
                 
-                zipFS_apiHook ().onunmount = function () {
-                    
-                };
-                
-            
             
            }
 
