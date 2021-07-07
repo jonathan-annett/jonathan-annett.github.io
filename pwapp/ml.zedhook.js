@@ -375,7 +375,7 @@ ml(0,ml(1),[
     
                     function getZedState(cb) {
                         if (!zedstate) {
-                            zedstate = JSON.stringify({"session.current": [ '/'+initial_path  ]});
+                            zedstate = JSON.stringify({"session.current": [ '/'+initial_path.replace(leadingSlash,'')  ]});
                         }
                         return cb (zedstate);
                     } 
