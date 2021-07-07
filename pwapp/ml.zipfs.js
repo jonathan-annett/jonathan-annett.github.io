@@ -9,8 +9,8 @@ ml(0,ml(1),[
     'zipUpWriteLib@ServiceWorkerGlobalScope | ml.fetch.updated-write.js',
     'zipFSListingLib                        | ml.zipfs.dir.sw.js',
     'virtualDirLib@ServiceWorkerGlobalScope | ml.zipfs.virtual.js',
-    'zipPNGLib@ServiceWorkerGlobalScope     | ml.zipfs.png.js'
-    
+    'zipPNGLib@ServiceWorkerGlobalScope     | ml.zipfs.png.js',
+    'pwaMiddlewares                         | ml.pwa-middleware.js'
 
     ],function(){ml(2,ml(3),ml(4),
 
@@ -178,11 +178,6 @@ ml(0,ml(1),[
            
            
            
-             function addMiddlewareListener (fn) {
-                 if (registeredMiddleware.indexOf(fn)<0) {
-                     registeredMiddleware.push(fn);
-                 }
-             }       
               
              function removeMiddlewareListener (fn) {
                   const ix = registeredMiddleware.indexOf(fn);
@@ -2038,33 +2033,15 @@ ml(0,ml(1),[
                });
 
            }
-             
-            
+        
+           function addMiddlewareListener (fn) {
+               if (registeredMiddleware.indexOf(fn)<0) {
+                   registeredMiddleware.push(fn);
+               }
+           }       
+
+           self.pwaMiddlewares(addMiddlewareListener,databases,response200,response500,fnSrc);
            
-            addMiddlewareListener (function (event) {
-                // !event.use_no_cors means url is for this domain name,
-                if (!event.use_no_cors &&  /\/databases\.zip$/.test(event.fixup_url)) {
-                    return new Promise(function(resolve){
-                       databases.toZip(function(err,buffer){
-                           if (err) {
-                               return response500(resolve,err);
-                           }
-                           sha1(buffer,function(err,hash){
-                               if (err) {
-                                   return response500(resolve,err);
-                               }
-                               response200 (resolve,buffer,{
-                                   contentType   : 'application/zip',
-                                   contentLength : buffer.byteLength,
-                                   etag          : hash,
-                               });
-                           });
-                       });
-                        
-                    });
-                }
-                
-            });
 
              return lib;
              
