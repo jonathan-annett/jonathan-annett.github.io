@@ -64,10 +64,6 @@ ml(0,ml(1),[
                     // !event.use_no_cors means url is for this domain name,
                     if (!event.use_no_cors &&  isSourceCodeLink.test(event.fixup_url)) {
                         return new Promise(function(resolve){
-                           databases.toZip(function(err,buffer){
-                               if (err) {
-                                   return response500(resolve,err);
-                               }
                                 const html  =  [
                                     '<html>',
                                     
@@ -109,14 +105,10 @@ ml(0,ml(1),[
                                 
                                 
                                 
-                                   response200 (resolve,buffer,{
-                                       contentType   : 'application/zip',
-                                       contentLength : buffer.byteLength,
-                                       etag          : hash,
+                                   response200 (resolve,html,{
+                                       contentType   : 'text/html',
+                                       contentLength : html.length
                                    });
-                               
-                            
-                        });
                         });
                     } 
                 });
