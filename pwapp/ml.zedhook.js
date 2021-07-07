@@ -1,4 +1,4 @@
-/* global zip_url_base,zip_virtual_dir,zip_files, alias_root_fix, parent_link,BroadcastChannel*/
+/* global BroadcastChannel*/
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
@@ -34,7 +34,7 @@ ml(0,ml(1),[
            }
            
            function editFileInZed(url,cb){
-              
+             
               const parts    = url.split('/');
               const filename = parts.pop();
               const url_root = parts.join('/');
@@ -95,6 +95,8 @@ ml(0,ml(1),[
                 
                 function zipFS_apiHook (initial_path) {
                     
+                    const page_directory=['.zedstate'];
+                    
                     if (zipFS_apiHook.singleton) {
                         
                         return zipFS_apiHook.singleton.open(initial_path);
@@ -138,6 +140,9 @@ ml(0,ml(1),[
                     
                     function openFile(file) {
                          initial_path = file;
+                         if(page_directory.indexOf(file)<0) {
+                             page_directory.push(file);
+                         }
                          window.dispatchEvent( 
                              new CustomEvent( 'zipFS_apiHook',{  detail: {  api_id : api_id,  zipfs: url_root, file : initial_path  } })
                          );
@@ -149,7 +154,7 @@ ml(0,ml(1),[
                                    
                                    listFiles: function(reqId) { 
                                        window.dispatchEvent( 
-                                           new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:zip_files.map(prependSlash) } })
+                                           new CustomEvent( 'zipFS_'+reqId,{  detail: {  resolve : reqId, resolveData:page_directory.map(prependSlash) } })
                                        );
                                    },
                                    
