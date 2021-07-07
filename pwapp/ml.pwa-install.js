@@ -91,6 +91,42 @@ runhere.onclick = function() {
   }
   
 
+function updateProgressBar(step,ofStep) {
+    const maxWidth =120;
+    const NOW = Date.now();
+    if (update.id) clearInterval(update.id);
+    if (step>=ofStep) {
+        delete update.id;
+        if (update.elem) {
+           update.elem.style.width = maxWidth + 'px';
+        }
+        delete update.elem;
+        return;
+    }
+    
+  if (step===0) {
+      update.started=NOW;
+      update.lastStep = 0;
+      update.elem = document.getElementById("loadBar");
+  }
+  
+  const elapsed   = NOW-update.started;
+  const msPerStep = elapsed <= 2 ? 0 : step / elapsed;
+  const newWidth = Math.floor(step/ofStep * maxWidth);
+  update.elem.style.width = newWidth + 'px';
+  
+
+ 
+  update.id = setInterval(frame, 20);
+
+  function frame() {
+      const elapsed     = Date.now()-update.started;
+      const step        = elapsed * msPerStep;
+      const newWidth    = Math.floor(step/ofStep * maxWidth);
+      update.elem.style.width = newWidth + 'px';
+    }
+  
+}
  
 
  function betaTesterApproval() {

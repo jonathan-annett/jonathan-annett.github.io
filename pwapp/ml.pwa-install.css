@@ -7,3 +7,15 @@ html.notbeta div.notbeta,
 html.beta div.beta {
    display : block;
 }
+
+
+#loadProgress {
+  width: 120px;
+  background-color: #ddd;
+}
+
+#loadBar {
+  width: 2px;
+  height: 10px;
+  background-color: #4CAF50;
+}
