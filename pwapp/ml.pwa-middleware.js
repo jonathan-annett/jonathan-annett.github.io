@@ -74,6 +74,18 @@ ml(0,ml(1),[
                     } 
                 });
                 
+                
+                
+                addMiddlewareListener (function (event) {
+                    // !event.use_no_cors means url is for this domain name,
+                    if (!event.use_no_cors &&  /force-error$/.test(event.fixup_url)) {
+                        return new Promise(function(resolve){
+                            return response500(resolve,new Error("Forced Error to Test Browser"));
+                        });
+                    } 
+                });
+                
+                
             }
             
 
