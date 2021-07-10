@@ -91,21 +91,15 @@ ml(0,ml(1),[
             ],function(){ml(2,ml(3),ml(4),
         
             {
-                Window: function AMDLoaderLib(  ) {
-                
-                    const lib = {
-                    };
-                    
+                Window: function AMDLoaderLib( lib ) {
+
                 
                     return lib;
                 },
         
-                ServiceWorkerGlobalScope: function AMDLoaderLib(  ) {
+                ServiceWorkerGlobalScope: function AMDLoaderLib( lib ) {
         
-                    const lib = {
-                    };
-                    
-        
+
                     return lib;
                 } 
             }, {
