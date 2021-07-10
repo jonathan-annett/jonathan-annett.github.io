@@ -1,10 +1,7 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),[`
-    
     pwaMessage@Window                          | ml.pwa-message.js
-    
     AMDLoaderLib                               | ml.amd.js
-
 
 `],function(){ml(2,ml(3),ml(4),
 
