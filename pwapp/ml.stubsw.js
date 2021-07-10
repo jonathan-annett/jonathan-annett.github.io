@@ -9,22 +9,29 @@ ml(0,ml(1),[
     ],function(){ml(2,ml(3),ml(4),
 
     {
-
-        ServiceWorkerGlobalScope: function stubLib(  ) {
-
-            const lib = {
-            };
+        ServiceWorkerGlobalScope: function sampleLib( lib ) {
+            lib = lib ||{};
+            // add / override service worker specific methods here
             
-
+            
             return lib;
         } 
     }, {
         ServiceWorkerGlobalScope: [
-            
-        ] 
+            ()=> sampleLib ()
+        ]
+        
     }
 
     );
+
+
+    function sampleLib () {
+        const lib = {}   
+        
+        
+        return lib;
+    }
 
 
  

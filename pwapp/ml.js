@@ -1,6 +1,6 @@
 /*global self*/
 function ml(x,L,o,a,d,s){
-    if (!ml.h){ml.h={};ml.H=[];ml.d={};ml.f={};}//create history db if none exists
+    if (!ml.h){ml.h={};ml.H=[];ml.d={};ml.f={}}//create history db if none exists
     let
     C=console,//shortcut for console
     z,
@@ -124,8 +124,9 @@ function ml(x,L,o,a,d,s){
        t:(n)=>Math.min(100,ml.t=(ml.t?ml.t*2:1)),
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u)=>{
-             u = u.map(z.u).filter(z.y);
-             return u.length?setTimeout(z.l, z.t(u.length), u)&&c.l("pending...",u):a();
+          u=typeof u===t[2]?u.replace(/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'').split('\n'):u; 
+          u = u.map(z.u).filter(z.y);
+          return u.length?setTimeout(z.l, z.t(u.length), u)&&c.l("pending...",u):a();
        },
 
        //z.u = map iterator z.l

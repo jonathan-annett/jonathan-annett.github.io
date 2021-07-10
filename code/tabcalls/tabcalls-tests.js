@@ -1,4 +1,4 @@
-/* global htmlRenderer*/
+// /* global htmlRenderer*/
 
 function tabCallsApp() {
     

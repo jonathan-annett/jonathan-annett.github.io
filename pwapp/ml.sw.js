@@ -48,6 +48,14 @@ function ml(x,L, o, a, d, s){
                 enumerable: !0,
                 configurable: !0
             }) : r;
+            if (!ml.i){  
+                ml.i=new Proxy({},{
+                    get:(t,p)=>c.I(x=p),
+                    ownKeys:()=>c.k(ml.d),
+                    getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
+                    has:(t,p)=>!!ml.d[p]
+                });
+            }
         },
         
         // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
@@ -106,7 +114,7 @@ function ml(x,L, o, a, d, s){
        
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u,L)=>{
-            
+             u=typeof u===t[2]?u.replace(/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'').split('\n'):u; 
              u = u.map(z.u).filter(z.y);
             
              if (!u.length) {

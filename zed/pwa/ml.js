@@ -1,6 +1,6 @@
 /*global self*/
 function ml(x,L,o,a,d,s){
-    if (!ml.h){ml.h={};ml.H=[];ml.d={};ml.f={};}//create history db if none exists
+    if (!ml.h){ml.h={};ml.H=[];ml.d={};ml.f={};ml.e=new Proxy({},{get:(x,n)=>ml.h[ml.d[n]].e[n]})}//create history db if none exists
     let
     C=console,//shortcut for console
     z,

@@ -34,6 +34,7 @@ ml(0,ml(1),[ 'Rusha | rusha.js' ],function(){ml(2,ml(3),ml(4),
         }   ]
     };
             
+            
         
       function sha1Rusha(buffer){ 
               return Promise.resolve(Rusha.createHash().update(buffer).digest('hex'));
