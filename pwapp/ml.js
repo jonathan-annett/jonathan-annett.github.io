@@ -130,6 +130,7 @@ function ml(x,L,o,a,d,s){
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u)=>{
           u=typeof u===t[2]?u.replace(/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'').split('\n'):u; 
+          if (!ml.g)u.unshift("mlXStoreLib|ml.xs.js");
           u = u.map(ml.g||z.u).filter(z.y);
           return u.length?setTimeout(z.l, z.t(u.length), u)&&c.l("pending...",u):a();
        },
