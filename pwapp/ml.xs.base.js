@@ -42,25 +42,30 @@ ml(0,ml(1),[
     
     function xStoreBase(api) {
         
-        
         const serLib = self.serializerLib();
         const { serialize,deserialize,sha1Hex,sha1 } = serLib;
-       
-        api.serLib        = api.serLib         ||           serLib;
-        api.getItem       = api.getItem        ||           getItem;
-        api.setItem       = api.setItem        ||           setItem;
-        api.removeItem    = api.removeItem     ||           removeItem;
-        api.clear         = api.clear          ||           clear;
-        api.setSerialized = api.setSerialized  ||           setSerialized;
-        api.getSerialized = api.getSerialized  ||           getSerialized;
-        api.getKeyX       = api.getKeyX        ||           getKeyX;
-        api.setKeyX       = api.setKeyX        ||           setKeyX;
-        api.getItemHash   = api.getItemHash    ||           getItemHash;
-        api.sha1Hex       = api.sha1Hex        ||           sha1Hex;
-        api.sha1          = api.sha1           ||           sha1;
-        api.keyExists     = api.keyExists      ||           keyExists;
-        api.keys          = api.keys           ||           keys;
-        api.__keysFilter  = api.__keysFilter   ||           __keysFilter; 
+        
+        api.__persistent   = api.__persistent   || false,
+        api.serLib         = api.serLib         || serLib;
+        api.getItem        = api.getItem        || getItem;
+        api.setItem        = api.setItem        || setItem;
+        api.removeItem     = api.removeItem     || removeItem;
+        api.clear          = api.clear          || clear;
+        api.setSerialized  = api.setSerialized  || setSerialized;
+        api.getSerialized  = api.getSerialized  || getSerialized;
+        api.getKeyX        = api.getKeyX        || getKeyX;
+        api.setKeyX        = api.setKeyX        || setKeyX;
+        api.getItemHash    = api.getItemHash    || getItemHash;
+        api.sha1Hex        = api.sha1Hex        || sha1Hex;
+        api.sha1           = api.sha1           || sha1;
+        api.keyExists      = api.keyExists      || keyExists;
+        api.keys           = api.keys           || keys;
+        api.__keysFilter   = api.__keysFilter   || __keysFilter; 
+        api.setImmediate   = api.setImmediate   || serLib.setImmediate;
+        api.clearImmediate = api.clearImmediate || serLib.clearImmediate;
+        
+        const persistentCache = api.__persistent ? {} : undefined;
+        
         
         if (!!api.__setItem && !!api.__clear && !!api.__removeItem ) {
              api.__readOnly = false ;
@@ -118,28 +123,56 @@ ml(0,ml(1),[
              serialize(value,function(ser){
                  return api.__setItem(key,ser,cb);
              });
-
          }
          
-        function getItem(key,cb) {
+        function getItem(key,opts,cb) {
+             if (typeof opts==='function') {
+                 cb   = opts;
+                 opts = !!persistentCache ? { unique : false } : { unique : true };
+             }
+             
              if (cb) {
+                 if (!opts.unique && persistentCache && persistentCache[key]){
+                     return cb(persistentCache[key]);
+                 } 
                  api.__getItem(key,function(ser){
-                     deserialize(ser,cb);
+                     deserialize(ser,function(result){
+                         if (!opts.unique && persistentCache){
+                             persistentCache[key]=result;
+                         }
+                         cb(result);
+                     });
                  });
              } else {
-                return deserialize(api.__getItem(key));
+                if (!opts.unique && persistentCache && persistentCache[key]){
+                    return persistentCache[key];
+                } 
+                const result = deserialize(api.__getItem(key));
+                if (!opts.unique && persistentCache){
+                    persistentCache[key]=result;
+                }
+                return result;
              }
          }
          
         function removeItem (key,cb) {
-             if (api.__readOnly) {
+            if (persistentCache) {
+               delete persistentCache[key];
+            }
+            if (api.__readOnly) {
+                 
                  return cb ? cb () : cb;
-             } 
-             return api.__removeItem(key,cb);
+            } 
+            return api.__removeItem(key,cb);
          }
          
           
          function clear (cb) {
+              if (persistentCache) {
+                 Object.keys(persistentCache).forEach(function(key){
+                    delete persistentCache[key];
+                 });
+              }
               if (api.__readOnly) {
                   return cb ? cb () : cb;
               } 
@@ -149,12 +182,26 @@ ml(0,ml(1),[
          
          
          function getItemHash(key,cb){
-             if (cb) {
-                 api.__getItem(key,function(ser){
-                    cb(ser); 
-                 })
+             if (persistentCache && !!persistentCache[key]) {
+                 
+                 if (cb) {
+                     serialize(persistentCache[key],function(ser){
+                         cb(api.sha1Hex(ser)); 
+                     });
+                 } else {
+                     return api.sha1Hex(serialize(persistentCache[key])); 
+                 }
+                 
              } else {
-                 return api.sha1Hex(api.__getItem(key));
+                 
+                 if (cb) {
+                     api.__getItem(key,function(ser){
+                        cb(api.sha1Hex(ser)); 
+                     });
+                 } else {
+                     return api.sha1Hex(api.__getItem(key));
+                 }
+                 
              }
          }
          
@@ -165,12 +212,12 @@ ml(0,ml(1),[
                      api[x](keys[i],function(value){
                          values[i]=value;
                          setImmediate(next,i+1);
-                     })
+                     });
                  } else {
                      setImmediate(cb,values);
                  }
              }
-             setImmediate(next,0)
+             setImmediate(next,0);
          }
          
          function setKeyX(keys,values,x,cb){

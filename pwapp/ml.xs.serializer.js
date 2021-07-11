@@ -1,11 +1,11 @@
 
 /* global ml,self,BigInt64Array,BigUint64Array,BigInt  */
-ml(0,ml(1),[
+ml(0,ml(1),`
     
-   'setImmediateLib | ml.xs.setImmediate.js',
-   'Rusha           | rusha.js'
+   setImmediateLib | ml.xs.setImmediate.js
+   Rusha           | rusha.js
     
-    ],function(){ml(2,ml(3),ml(4),
+`,function(){ml(2,ml(3),ml(4),
 
     {
         Window: function serializerLib( lib ) {
@@ -198,6 +198,29 @@ ml(0,ml(1),[
                            });
                            J(obj2,assign);
                        });
+                };
+                
+                serialize.object.HTMLScriptElement = function(x,cb) {
+                    if (x.src&&x.src.length) {
+                      fetch( x.src, {mode:'no-cors'}).then(
+                            function(res){
+                              res.arrayBuffer()
+                                 .then(function(buf){ 
+                                     J(["HTMLScriptElement",x.src,x.innerText,buf],cb); 
+                                 })
+                                 
+                                 .catch (function(err){
+                                     J(["HTMLScriptElement",x.src,x.innerText,null,err.message],cb); 
+                                 });
+                            })
+                            
+                        .catch(function(err){
+                            J(["HTMLScriptElement",x.src,x.innerText,null,err.message],cb); 
+                        });
+                      
+                    } else {
+                       J(["HTMLScriptElement",x.src,x.innerText],cb); 
+                    }
                 };
                 
                 serialize.object.Date = function(x,cb) {
@@ -761,6 +784,21 @@ ml(0,ml(1),[
                 deserialize['['].RegExp=function(arr,objRestore) {
                     return new RegExp(arr[0],arr[1]);
                 };
+                deserialize['['].HTMLScriptElement=function(arr,objRestore) {
+                    const amd  = ml.i.AMDLoaderLib;
+                    const {src,innerText,buffer,err} = arr; 
+                    const source  = innerText && innerText.length ? innerText : buffer ? new TextEncoder().encode(buffer) : (err?'/*'+err+'*/\n':'/*no source*/\n') ;
+                    const args    = amd ? ['ml',             'define',           'require'] : ['ml'   ];
+                    const argVals = amd ? [ ml,           amd.define,         amd.require ] : [ ml    ];
+                    const module     = amd ? { ml:ml, define:amd.define, require:amd.require}  : { ml:ml };
+                    
+                    if (typeof window ==='object') module.window=module;
+                    module.self = module;
+                    
+                    const fn = new Function(args,'/*script:'+(src?src:'(inlined)')+'*/\n'+source);
+                    fn.apply(module,ml,argVals);
+                    return module;
+                };
                 deserialize['['].function = function (arr,objRestore,index,child,bound) {
                     
                     const [ nm,args,sourceTrimmed,vars_ser ] = arr;
@@ -803,13 +841,14 @@ ml(0,ml(1),[
                     });
                     return child;
                 };
-                
-                
+
                 serializerLib.cached =  {
-                    serialize   : serialize,
-                    deserialize : deserialize,
-                    sha1Hex     : sha1Hex,
-                    sha1        : sha1
+                    serialize      : serialize,
+                    deserialize    : deserialize,
+                    sha1Hex        : sha1Hex,
+                    sha1           : sha1,
+                    setImmediate   : setImmediate,
+                    clearImmediate : clearImmediate
                 };
                 
                 return serializerLib.cached;

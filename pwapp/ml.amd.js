@@ -58,44 +58,51 @@ ml(0,ml(1),[
         } 
     }, {
         Window: [
-            ()=> AMDLoaderLib 
+            ()=> AMDLoaderLib() 
         ],
         ServiceWorkerGlobalScope: [
-            ()=> AMDLoaderLib
+            ()=> AMDLoaderLib()
         ],
         
     }
 
     );
 
-  
-        
-       
-        
-        
-        
+
       function AMDLoaderLib (env,resourceLoader,anonymousId) {
             
             if (AMDLoaderLib.cached) return AMDLoaderLib.cached;
             
+            const 
+            _op = Object.prototype,
+            _os = _op.toString,
+            _oseq = function(x,o){return !!o&&x===_os.call(o);},
+            hasProp = _op.hasOwnProperty.call.bind(_op.hasOwnProperty),
+            _a      = Array.prototype,
+            cpArgs  = _a.slice.call.bind (_a.slice),
+            isArray = Array.isArray || _oseq.bind(this,_os.call([])),
+            isObject= function(o){return typeof o==='object'&&o.constructor===Object;},
+            isFunction = function(f){return typeof f==='function'};
+            
+            
+            
+            
+                   
             
             return (function(
                 env,
                 loadResources,
                 _anonymousId,
-                cpArgs,
-                _op,
-                _os,
                 api) {
                     
-                reqr.sync = requireSync;
+                reqr.sync = rsnc;
                 defn.amd = {};
                 defn.version = '0.9.0';
                 
                 api = {
                     define        : defn,
                     require       : reqr,
-                    requireSync   : requireSync,
+                    requireSync   : rsnc,
                     getModule     : getModule,
                     loadResources : loadResources,
                     moduleMap     : loadResources._moduleMap,
@@ -152,7 +159,7 @@ ml(0,ml(1),[
                         deps = [deps];
                     }
                     if (deps.length === 1 && arguments.length === 1) {
-                        return requireSync(deps.join(''));
+                        return reqr.sync(deps.join(''));
                     }
             
                     var loadDeps = filterLoadDeps(deps);
@@ -193,7 +200,7 @@ ml(0,ml(1),[
                     function allResolved() {
                         var exports = [];
                         for (var index = 0; index < depsLen; index++) {
-                            exports.push(requireSync(deps[index]));
+                            exports.push(reqr.sync(deps[index]));
                         }
                         callback && callback.apply(undefined, exports);
                         exports = null;
@@ -209,7 +216,7 @@ ml(0,ml(1),[
                  * @access public
                  * @return {Void}
                 **/
-                function requireSync(id) {
+                function rsnc(id) {
                     var module;
                     var exports;
                     var deps;
@@ -230,7 +237,7 @@ ml(0,ml(1),[
                             var dep = deps[i];
                             args.push(dep === 'require' ?
                                 reqr : (dep === 'module' ?
-                                    module : (dep === 'exports' ? exports : requireSync(dep))
+                                    module : (dep === 'exports' ? exports : reqr.sync(dep))
                                 )
                             );
                         }
@@ -291,27 +298,14 @@ ml(0,ml(1),[
                  * @param {string} prop property to check
                  * @return {boolean}
                 **/
-                function hasProp(obj, prop) {
-                    return _op.hasOwnProperty.call(obj, prop);
-                }
-            
-                function isFunction(obj) {
-                    return _os.call(obj) === '[object Function]';
-                }
-            
-                function isArray(obj) {
-                    return _os.call(obj) === '[object Array]';
-                }
-            
-                function isObject(obj) {
-                    return _os.call(obj) === '[object Object]';
-                }
-            
+
+                
+
                 function log() {
                     if (!env.debug) {
                         return;
                     }
-                    var apc = Array.prototype.slice;
+                    //var apc = Array.prototype.slice;
                    // win.console && win.console.log.apply(console, apc.call(arguments));
                 }
             
@@ -329,26 +323,18 @@ ml(0,ml(1),[
                    env                            || {debug: 1, ts: 0},
                    resourceLoader                 || loadResourcesLib (),
                    anonymousId                    || 0,
-                   [].slice.call.bind ([].slice),
-                   Object.prototype,
-                   Object.prototype.toString
-                //  window, 
-                //   document
+                   typeof window==='object'?window:typeof self==='object'?self:{}
                );
 
                function loadResourcesLib (){
-                   return (function (doc,_op,_os) {
-                   
-                                   
-                  
-                                   
-                    
+                   return (function (doc) {
+
                    var
-                   
                    _moduleMap    = (loadResources.moduleMap = {}), 
                    _loadedMap    = {}, 
                    _loadingMap   = {}, 
-                   _definedStack = (loadResources.definedStack = []);
+                   _definedStack = (loadResources.definedStack = []),
+                   loadScript    = typeof window==='object'?loadScript1:loadScript2;
                    
                    return loadResources;
                    
@@ -359,7 +345,8 @@ ml(0,ml(1),[
                    **/
                
                    
-                   function loadScript(url, callback) {
+                   function loadScript1(url, callback) {
+                       
                        if (hasProp(_loadedMap, url)) {
                            callback && isFunction(callback) && callback();
                        }
@@ -378,20 +365,43 @@ ml(0,ml(1),[
                
                            if (isFunction(callback)) {
                                if (doc.addEventListener) {
-                                   script.addEventListener('load', scriptLoaded, false);
+                                   script.addEventListener('load', winScriptLoaded, false);
                                }
                                else {
                                    script.onreadystatechange = function() {
                                        if (/loaded|complete/.test(script.readyState)) {
                                            script.onreadystatechange = null;
-                                           scriptLoaded();
+                                           winScriptLoaded();
                                        }
                                    };
                                }
                            }
                        }
+                       
+                       function winScriptLoaded() {
+                           scriptLoaded(url,callback);
+                           script = null;
+                       }
                
-                       function scriptLoaded() {
+               
+                   }
+                   
+                   function loadScript2(url,callback) {
+                       if (hasProp(_loadedMap, url)) {
+                           callback && isFunction(callback) && callback();
+                       }
+                       else if (hasProp(_loadingMap, url)) {
+                           _loadingMap[url] = _loadingMap[url] || [];
+                           _loadingMap[url].push(callback);
+                       }
+                       else {
+                           _loadingMap[url] = [];
+                           self.importScripts(url);// happens syncronously
+                           scriptLoaded(url,callback);
+                       }
+                   }
+                   
+                   function scriptLoaded(url,callback) {
                            _loadedMap[url] = true;
                            //if (!env.debug) {
                         //       _head.removeChild(script);
@@ -404,8 +414,7 @@ ml(0,ml(1),[
                            if (mod && pathId !== modName) {
                                _moduleMap[pathId] = {alias: modName};
                            }
-                           script = null;
-               
+                           
                            var cbStack = _loadingMap[url] || [];
                            var cb = null;
                            if (cbStack.length > 0) {
@@ -416,8 +425,8 @@ ml(0,ml(1),[
                            }
                            callback && callback();
                        }
-                   }
-               
+                       
+                       
                    /**
                     * @description According to the given depModName module name, load the corresponding resource, according to whether different loading methods are used in the clouda environment and whether to handle the merge relationship
                     * @param {string} depModName Depends module name
@@ -433,17 +442,7 @@ ml(0,ml(1),[
                            callback(depModName);
                        });
                    }
-                   
-                   
-                   function hasProp(obj, prop) {
-                       return _op.hasOwnProperty.call(obj, prop);
-                   }
-               
-                   function isFunction(obj) {
-                       return _os.call(obj) === '[object Function]';
-                   }
-                   
-                     
+
                    /**
                     * @description Same as php realpath, generate absolute path
                     * @param {string} path relative path
@@ -477,7 +476,7 @@ ml(0,ml(1),[
                        return path;
                    }
                   
-                   })(document,Object.prototype,Object.prototype.toString);
+                   })(typeof document==='object'?document:undefined);
                
                }
 

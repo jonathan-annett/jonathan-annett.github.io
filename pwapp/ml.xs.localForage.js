@@ -1,11 +1,11 @@
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),[
-    
-   'localforage                         | https://unpkg.com/localforage@1.9.0/dist/localforage.js',
+ml(0,ml(1),`
+
+   xStoreBase     | ml.xs.base.js
+   localforage    | https://unpkg.com/localforage@1.9.0/dist/localforage.js
    
-    
-    ],function(){ml(2,ml(3),ml(4),
+    `,function(){ml(2,ml(3),ml(4),
 
     {
         Window: function localForageStore( lib  ) {
