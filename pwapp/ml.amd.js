@@ -105,9 +105,10 @@ ml(0,ml(1),[
                     requireSync   : rsnc,
                     getModule     : getModule,
                     loadResources : loadResources,
-                    moduleMap     : loadResources._moduleMap,
-                    definedStack  : loadResources._definedStack
+                    moduleMap     : loadResources.moduleMap,
+                    definedStack  : loadResources.definedStack
                 };
+
                 
                 return api;
             
