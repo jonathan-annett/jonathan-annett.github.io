@@ -116,7 +116,7 @@ function ml(x,L, o, a, d, s){
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u,L)=>{
              u=typeof u===t[2]?u.replace(/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'').split('\n'):u; 
-             u = u.map(z.u).filter(z.y);
+             u = u.map(ml.g||z.u).filter(z.y);
             
              if (!u.length) {
                  L=c[4]();
