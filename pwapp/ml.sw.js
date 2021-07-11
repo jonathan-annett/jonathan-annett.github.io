@@ -1,6 +1,6 @@
 /* global self,importScripts,BroadcastChannel */
 function ml(x,L, o, a, d, s){
-    let c,t,T=(G)=>typeof G;
+    let z,c,t,T=(G)=>typeof G;
     if (!ml.h){
         //create history db if none exists
         
@@ -12,11 +12,11 @@ function ml(x,L, o, a, d, s){
         C=console;
         // "t" contains an array of types - object,function,string,undefined
         // used for comparisions later
-        ml.t=t=[C,ml,'',t].map(T);
+        ml.t=[C,ml,'',t].map(T);
         // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
         // any constants/worker functions they need. also contains some code used later by z
         // note that t doubles as a proxy for "undefined" in the type array "t" above 
-        ml.c=c={
+        ml.c={
             
             //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
             //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
@@ -108,12 +108,10 @@ function ml(x,L, o, a, d, s){
         };
         
         
-    } else {
-        c=ml.c;
-        t=ml.t;
-    }
-    
-    let z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
+    }   
+    c=ml.c;
+    t=ml.t;
+    z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
     
     if (z!==c)return z;
         

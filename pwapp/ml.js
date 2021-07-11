@@ -1,6 +1,6 @@
 /*global self*/
 function ml(x,L,o,a,d,s){
-    let t,c,X;
+    let z,c,t,X,T=(G)=>typeof G;
     if (!ml.h){
         //create history db if none exists
         ml.h={};ml.H=[];ml.d={};ml.f={};
@@ -9,11 +9,11 @@ function ml(x,L,o,a,d,s){
         C=console;//shortcut for console
         // "t" contains an array of types - object,function,string,undefined
         // used for comparisions later
-        ml.t=t=[C,ml,'',X].map((G)=>typeof G);
+        ml.T=[C,ml,'',t].map((G)=>typeof G);
         // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
         // any constants/worker functions they need. also contains some code used later by z
-        // note that z doubles as a proxy for "undefined" in the type array "t" above 
-        ml.c=c={// holder for "constants", also a few holds outer scope commands, common functions
+        // note that t doubles as a proxy for "undefined" in the type array "t" above 
+        ml.c={// holder for "constants", also a few holds outer scope commands, common functions
             //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
             //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
             r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
@@ -110,14 +110,12 @@ function ml(x,L,o,a,d,s){
             k:(o)=>Object.keys(o)
     
         };
-    } else {
-        c=ml.c;
-        t=ml.t;
     }
-    
+    c=ml.c;
+    t=ml.T;
     X=typeof x===t[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?'I':'L':x;//X =: L= x is filename, I= x is keyword, otherwise x
     // here X will be 'L' if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x
-    let z=typeof c[X]===t[1]?c[X](L,o,a,d,s):c;// if c[X] resolves to a function, execute it, putting result in z, otherwise set z to c
+    z=typeof c[X]===t[1]?c[X](L,o,a,d,s):c;// if c[X] resolves to a function, execute it, putting result in z, otherwise set z to c
     
     if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
         
