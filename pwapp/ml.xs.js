@@ -105,7 +105,7 @@ ml(0,ml(1),[
                      };
 
             //console.log("installing defaultLoader in ml.xs.js");
-            lib.ml_g = ml.g = getLoader();//defaultLoader;
+            //lib.ml_g = ml.g = getLoader();//defaultLoader;
             
             //lib.getLoader = getLoader ;
 
