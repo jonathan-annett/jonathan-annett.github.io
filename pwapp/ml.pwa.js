@@ -2,7 +2,11 @@
 ml(0,ml(1),`  swResponseZipLib@ServiceWorkerGlobalScope  | ml.zipfs.js
               pwaMessage@Window                          | ml.pwa-message.js
               sha1Lib                                    | sha1.js
-              AMDLoaderLib                               | ml.amd.js`,
+              AMDLoaderLib                               | ml.amd.js
+              mlXStoreLib                                | ml.xs.js
+              
+              
+              `,
               
     function(){ml(2,ml(3),ml(4),
 

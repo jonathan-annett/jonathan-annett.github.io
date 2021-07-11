@@ -7,7 +7,7 @@ ml(0,ml(1),[
     ],function(){ml(2,ml(3),ml(4),
 
     {
-        Window: function sampleLib( ) {
+        Window: function mlXStoreLib( ) {
             const lib = {};
             // add / override window specific methods here
             const l=location,O=l.origin;
@@ -221,7 +221,7 @@ ml(0,ml(1),[
             return lib;
         },
 
-        ServiceWorkerGlobalScope: function sampleLib( ) {
+        ServiceWorkerGlobalScope: function mlXStoreLib( ) {
             const lib = {};
             // add / override window specific methods here
             const l=location,O=l.origin;
