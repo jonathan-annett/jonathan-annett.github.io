@@ -32,8 +32,9 @@ function ml(x,L, o, a, d, s){
            // d:"document",
             
             //c.u: convert string to array, remove comments, and whitespace
-            u:(u)=>u=typeof u===t[2]?u[c.R](/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'')[c.R](/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/)|\/\/.*?[\r\n])[\r\n]*/g,'').trim().split('\n'):u, 
-
+            u:(u)=>u=typeof u===t[2]?u[c.R](/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'')
+                                      [c.R](/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/)|\/\/.*?[\r\n])[\r\n]*/g,'')
+                                      .trim().split('\n').filter((x)=>x.length):u, 
             
             //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
             B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
