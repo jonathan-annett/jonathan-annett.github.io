@@ -3,9 +3,10 @@
 ml(0,ml(1),[
     
       `
-      AMDLoaderLib                               | ml.amd.js
-      httpsStore  | ml.xs.https.js
-      memoryStore | ml.xs.memory.js
+      AMDLoaderLib  | ml.amd.js
+      xStoreBase    | ml.xs.base.js
+      httpsStore    | ml.xs.https.js
+      memoryStore   | ml.xs.memory.js
       
       `
     
