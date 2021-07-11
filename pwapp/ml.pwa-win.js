@@ -1,6 +1,5 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),`
-    mlXStoreLib                                | ml.xs.js
     pwaMessage@Window                          | ml.pwa-message.js
 `,function(){ml(2,ml(3),ml(4),
 
