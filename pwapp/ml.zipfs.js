@@ -1333,6 +1333,7 @@ ml(0,ml(1),`
                                  }
                              }
                              
+                             fileEntry.name = file_path;
                             
                              const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
                             
@@ -1462,6 +1463,10 @@ ml(0,ml(1),`
                                      }));
                                  }
                              }
+                             
+                             
+                             
+                             fileEntry.name = file_path;
                             
                              
                              const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';

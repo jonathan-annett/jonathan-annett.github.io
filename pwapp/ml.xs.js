@@ -105,6 +105,8 @@ ml(0,ml(1),[
                      };
 
             lib.ml_g = ml.g = defaultLoader;
+            
+            lib.getLoader = getLoader ;
 
             return lib;
             
@@ -150,13 +152,15 @@ ml(0,ml(1),[
                   N=R[1];
                   U=c.B(R[3]);
                   if(c.c(U))ml.d[N]={h:U};
+                  
+                  console.log("loading",U,"via defaultLoader in ml.xl.js");
                   z.T(window,"script",(s)=>{
                      z.p(U,s.setAttribute.bind(s,"src"),s);    
                   });
                   return N;
             }
             
-            function xsLoader () {
+            function getLoader () {
                  const amd = ml.i.AMDLoaderLib;
                 if ( !!amd && !window.define) {
                         amd.loadResources = amd_loader;
