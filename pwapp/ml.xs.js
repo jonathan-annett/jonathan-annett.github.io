@@ -104,10 +104,10 @@ ml(0,ml(1),[
                         //9:(L,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?ml=' + encodeURIComponent(L)).then(C?C:()=>{})
                      };
 
-            console.log("installing defaultLoader in ml.xs.js");
-            lib.ml_g = ml.g = defaultLoader;
+            //console.log("installing defaultLoader in ml.xs.js");
+            lib.ml_g = ml.g = getLoader();//defaultLoader;
             
-            lib.getLoader = getLoader ;
+            //lib.getLoader = getLoader ;
 
             return lib;
             
@@ -178,7 +178,7 @@ ml(0,ml(1),[
                 const noCorsTest = new RegExp('^(?!'+regexpEscape(location.origin+'/')+').+','');
                 
                 const fetcher = ml.i.httpsStore ( urls , noCorsTest, modules, ready );
-                
+                console.log("installing ml xstorage loader");
                 return ml_g_loader;
                 
                 
