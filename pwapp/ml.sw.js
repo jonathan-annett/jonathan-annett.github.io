@@ -124,11 +124,11 @@ function ml(x,L, o, a, d, s){
        
        //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
        //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
-       0:()=>z.l(o),
+       0:()=>z.l(c.u(o)),
        
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u,L)=>{
-             u=c.u(u).map(ml.g||z.u).filter(z.y);
+             u=u.map(ml.g||z.u).filter(z.y);
             
              if (!u.length) {
                  L=c[4]();

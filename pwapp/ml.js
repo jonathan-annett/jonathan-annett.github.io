@@ -127,12 +127,12 @@ function ml(x,L,o,a,d,s){
 
        //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
        //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
-       0:()=>z.l(o),
+       0:()=>z.l(c.u(o)),
        
        t:(n)=>Math.min(100,ml.t=(ml.t?ml.t*2:1)),
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u)=>{
-          u=c.u(u).map(ml.g||z.u).filter(z.y);
+          u=u.map(ml.g||z.u).filter(z.y);
           return u.length?setTimeout(z.l, z.t(u.length), u)&&c.l("pending...",u):a();
        },
 
