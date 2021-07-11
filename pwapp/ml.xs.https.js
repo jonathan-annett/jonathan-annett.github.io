@@ -31,15 +31,20 @@ ml(0,ml(1),`
     );
     
     
-    function httpsStore ( urls , isText, noCorsTest, cacheStore, ready ) {
+    function httpsStore ( urls , noCorsTest, cacheStore, ready  ) {
         
         const api = ml.i.xStoreBase({
 
              getItemHash,
+             setItem,         // overides the default serilization, 
+                              // because a) technically this is read only, 
+                              //         b) to enable custom custom handlers __serialize & __deserialize
              __getItem,
              __keys,
              __canSync:false,
-             __hashesKey:".__hashes"
+             __hashesKey:".__hashes",
+             __serialize   : default__serialize,    // allow wrapping of buffer or converting to text etc
+             __deserialize : default__deserialize   // allow unwrapping
          });
          
         
@@ -92,24 +97,70 @@ ml(0,ml(1),`
          // return api to immediate caller.
          return api;
          
-         function getTextOrBuffer(cb) {
-             return function (buffer) {
-                 const text = isText ? new TextEncoder().encode(buffer) : buffer ;
-                 return cb ? cb(text) : text;
-             };
+         
+         function default__serialize (serialize,url,buffer,cb) {
+             serialize(buffer,cb);
          }
+         
+         
+         function default__deserialize (deserialize,url,ser,cb) {
+            deserialize(ser,cb);
+         }
+         
+         function textBufferUnwrap(buffer,cb) {
+            return cb (new TextEncoder().encode(buffer));
+         }
+         
+         function textBufferWrap(text,cb) {
+            return cb (new TextDecoder().decode(text));
+         }
+         
+          
+         function setItem(url,buffer,cb,getting) {
+             
+             api.__serialize (api.serLib.serialize,url,buffer,function(ser){
+                 hashes[url] = {
+                     sha1 : sha1Hex(ser)
+                 };
+                 
+                 if (cacheStore) {
+                     cacheStore.__setItem(url,ser,function(){
+                         cacheStore.setItem(".__hashes",hashes,function(){
+                             if (getting) {
+                                cb(ser);
+                             } else {
+                                 cb();
+                             }
+                         });
+                     });
+                 } else {
+                     if (getting) {
+                        cb(ser,hashes[url]);
+                     } else {
+                        cb(); 
+                     }
+                 }
+             });
+         }
+         
          
          function __getItem(url,cb) {
              if (noCorsTest && noCorsTest.test(url)) {
-                 return __getItem_normal(url,cb);
+                 
+                 return (cacheStore  ? __getItem_viaCache :  __getItem_normal)(url,cb);
              }
-             return __getItem_noCors(url,cb);
+             return (cacheStore  ? __getItem_viaCache_noCors :  __getItem_noCors) (url,cb);
          }
          
          function getItemHash(url,cb) {
-             if (hashes[url]){
-                 
+             const hash = hashes[url];
+             if (hash){
+                 return cb(hash);
              }
+             __getItem(url,function(){
+                 return cb(hashes[url]);
+             });
+    
          }
          
          function __getItem_viaCache(url,cb){
@@ -166,32 +217,42 @@ ml(0,ml(1),`
          function saveItemAndExit(url,response,mode,cb){
              response.arrayBuffer()
              
-             .then(getTextOrBuffer(function(textOrBuffer){
-                 api.serLib.serialize(textOrBuffer,function(ser){
-                    
-                     hashes[url] = {
-                         sha1 : sha1Hex(ser),
-                         etag : mode === "nocors" ? false : response.headers.get('etag'),
-                         last : mode === "nocors" ? false : response.headers.get('last-modified')
-                     }
-                     
-                     if (mode==="cached" && cacheStore) {
-                         cacheStore.__setItem(url,ser,function(){
-                             cacheStore.setItem(".__hashes",hashes,function(){
-                                 cb(ser);
-                             });
-                         });
-                     } else {
-                         cb(ser,hashes[url]);
-                     }
-                 });
-             }))
+             .then(function(buffer){
+                 
+                   setItem(url,buffer,cb,true);
+
+             })
              
              .catch(function(){
                  cb();
              });
          }
          
+         
+         function __getItem_viaCache_noCors(url,cb){
+             if (cacheStore && hashes[url] && hashes[url].last || hashes[url].etag) {
+                cacheStore.keyExists(url,function(exists){
+                    if (!exists) {
+                        return __getItem_normal(url,cb);
+                    }
+                    fetch(url,{mode:'no-cors'})
+                    
+                    
+                    .then(function(response){ 
+                        if (response && response.status>=200 && response.status < 300) { 
+                            return saveItemAndExit(url,response,"cached",cb);
+                        }
+                        // get the serialized data
+                        cacheStore.__getItem(url,cb);
+                    });
+                    
+                    
+            
+                })
+             } else {
+                return __getItem_normal(url,cb);
+             }
+         }
          
          function __getItem_noCors(url,cb){
              // __getItem is a mandtory item, but expect serialzied data

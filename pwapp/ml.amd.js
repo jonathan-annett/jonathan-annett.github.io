@@ -188,7 +188,7 @@ ml(0,ml(1),[
                             loadCount += filterLen - 1;
                             for (var i = 0; i < filterLen; i++) {
                                 var dep = filterDeps[i];
-                                api.loadResources(dep, arguments.callee);
+                                api.loadResources(dep,modResolved);// arguments.callee);
                             }
                         }
                         else {

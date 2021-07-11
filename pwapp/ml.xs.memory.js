@@ -31,10 +31,11 @@ ml(0,ml(1),`
     );
     
     
-     function memoryStore ( ) {
+    
+     function memoryStore ( opts ) {
          
          const store={};
-    
+         
          const api = self.xStoreBase({
              __getItem,
              __setItem,
@@ -42,7 +43,7 @@ ml(0,ml(1),`
              __clear,
              __removeItem,
              __keys
-         });
+         },opts);
          
          return api;
          

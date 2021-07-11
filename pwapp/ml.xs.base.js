@@ -26,6 +26,26 @@ ml(0,ml(1),[
 
     );
     
+    
+    
+    function merge(a,b) {
+        if (typeof a==='object') {
+            if (typeof b==='object') {
+                Object.keys(b).forEach(function(k){
+                    if (!a[k]) {
+                        a[k]=b[k];
+                    }
+                });
+                
+            } 
+            return a;
+        } else {
+            return b;
+        }
+    }
+    
+    
+    
           
     // all store variants are based on this (they call this quasi constructor to add common methods)
     // the api object should have been populated with these primitives:
@@ -40,10 +60,12 @@ ml(0,ml(1),[
     // key(cb) - filtered value of __keys (via __keysFilter see below) - removes hidden keys
     // __keysFilter - default hides keys beginning with ".__"
     
-    function xStoreBase(api) {
+    function xStoreBase(baseApi,thisApi) {
         
         const serLib = self.serializerLib();
         const { serialize,deserialize,sha1Hex,sha1 } = serLib;
+        
+        const api = merge(baseApi,thisApi);
         
         api.__persistent   = api.__persistent   || false,
         api.serLib         = api.serLib         || serLib;
@@ -117,6 +139,11 @@ ml(0,ml(1),[
         }
         
         function setItem(key,value,cb) {
+            
+             if (persistentCache) {
+                persistentCache[key]=value;
+             }
+             
              if (api.__readOnly) {
                  return cb ? cb () : cb;
              }       

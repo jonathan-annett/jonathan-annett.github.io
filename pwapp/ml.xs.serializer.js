@@ -205,21 +205,25 @@ ml(0,ml(1),`
                       fetch( x.src, {mode:'no-cors'}).then(
                             function(res){
                               res.arrayBuffer()
-                                 .then(function(buf){ 
-                                     J(["HTMLScriptElement",x.src,x.innerText,buf],cb); 
+                                 .then(function(buf){
+                                     const code = new TextDecoder().decode(buf);
+                                     J(["HTMLScriptElement",x.src,code],cb); 
                                  })
                                  
                                  .catch (function(err){
-                                     J(["HTMLScriptElement",x.src,x.innerText,null,err.message],cb); 
+                                     const code = x.innerText || x.text || x.textContent || '/*no script content*/\n';
+                                     J(["HTMLScriptElement",x.src,code,err.message],cb); 
                                  });
                             })
                             
                         .catch(function(err){
-                            J(["HTMLScriptElement",x.src,x.innerText,null,err.message],cb); 
+                            const code = x.innerText || x.text || x.textContent || '/*no script content*/\n';
+                            J(["HTMLScriptElement",x.src,code,err.message],cb); 
                         });
                       
                     } else {
-                       J(["HTMLScriptElement",x.src,x.innerText],cb); 
+                        const code = x.innerText || x.text || x.textContent;
+                       J(["HTMLScriptElement",x.src,code],cb); 
                     }
                 };
                 
@@ -786,18 +790,65 @@ ml(0,ml(1),`
                 };
                 deserialize['['].HTMLScriptElement=function(arr,objRestore) {
                     const amd  = ml.i.AMDLoaderLib;
-                    const {src,innerText,buffer,err} = arr; 
-                    const source  = innerText && innerText.length ? innerText : buffer ? new TextEncoder().encode(buffer) : (err?'/*'+err+'*/\n':'/*no source*/\n') ;
+                    const [src,code,err] = arr; 
+                    const source  = code && code.length ? code : (err?'/*'+err+'*/\n':'/*no source*/\n') ;
                     const args    = amd ? ['ml',             'define',           'require'] : ['ml'   ];
                     const argVals = amd ? [ ml,           amd.define,         amd.require ] : [ ml    ];
-                    const module     = amd ? { ml:ml, define:amd.define, require:amd.require}  : { ml:ml };
-                    
-                    if (typeof window ==='object') module.window=module;
+                    const module     = amd ? { path:src, ml:ml, define:amd.define, require:amd.require, exports:{} }  : { path:src,  ml:ml, exports:{} };
                     module.self = module;
+                        
+                    if (typeof window ==='object' && window.document && typeof window.document.createElement === 'function') {
+                        const script = window.document.createElement("script");
+                        script.textContent === code;
+                        module.script = script;
+                        const head = window.document.getElementsByTagName('head')[0];
+                        let notified = false,onready;
+                        module.ready = false;
+                        module.on(function(e,fn){
+                            if (e==='load'&& typeof fn==='function' && !notified && module.ready) {
+                                notified=true;
+                                setImmediate(fn,module);
+                            } else {
+                                onready=fn;
+                            }
+                        });
+                        
+                        script.onload = function () {
+                            const mod = src && src.length && ml.h [ src ];
+                            if (mod && mod.e) {
+                                Object.keys(mod.e).forEach(function(k){
+                                    module.exports[k] = mod.e[k];
+                                });
+                                head.removeChild(script);
+                            }
+                            module.ready = true;
+                            if (typeof onready==='function') {
+                                notified = true;
+                                onready(module);
+                                onready=undefined;
+                            }
+                        }
+                        head.appendChild(script);
+                        return module;
+                    } else { 
+                        // fall back for service worker - create function inside sandboxed module
+                        const fn = new Function(args,'/*script:'+(src?src:'(inlined)')+'*/\n'+source);
+                        fn.apply(module,ml,argVals);
+                        const mod = ml.h [ src ];
+                        Object.keys(mod.e).forEach(function(k){
+                            module.export[k] = mod.e[k];
+                        });
+                        module.ready = true;
+                        let notified = false;
+                        module.on(function(e,fn){
+                            if (e==='load'&& typeof fn==='function' && !notified) {
+                                notified=true;
+                                setImmediate(fn,module);
+                            }
+                        });
+                        return module;
+                    }
                     
-                    const fn = new Function(args,'/*script:'+(src?src:'(inlined)')+'*/\n'+source);
-                    fn.apply(module,ml,argVals);
-                    return module;
                 };
                 deserialize['['].function = function (arr,objRestore,index,child,bound) {
                     

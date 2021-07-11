@@ -1,10 +1,11 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),`  swResponseZipLib@ServiceWorkerGlobalScope  | ml.zipfs.js
+ml(0,ml(1),`  
+              
+              mlXStoreLib                                | ml.xs.js
+              swResponseZipLib@ServiceWorkerGlobalScope  | ml.zipfs.js
               pwaMessage@Window                          | ml.pwa-message.js
               sha1Lib                                    | sha1.js
-              AMDLoaderLib                               | ml.amd.js
-              mlXStoreLib                                | ml.xs.js
-              
+                
               
               `,
               

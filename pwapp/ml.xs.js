@@ -2,7 +2,12 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),[
     
-   
+      `
+      AMDLoaderLib                               | ml.amd.js
+      httpsStore  | ml.xs.https.js
+      memoryStore | ml.xs.memory.js
+      
+      `
     
     ],function(){ml(2,ml(3),ml(4),
 
@@ -103,15 +108,27 @@ ml(0,ml(1),[
 
             return lib;
             
-            function resolveId( id ) {
+            function resolveUrl( href ,id ) {
+                 const mod  = href && ml_h [ href ];
+                 const exp  = mod && mod.e;
+                 id = id || exp && Object.keys(exp)[0];
+                 return exp && id && exp [id];
+            } 
+            
+            function resolveIdFromUrl (url) {
+                const mod  = url && ml_h [ url ];
+                const exp  = mod && mod.e;
+                return exp && Object.keys(exp)[0];
+            }
+             
+            
+            function resolveModuleFromId( id ) {
                  
                  const url  = ml_d [ id ];
                  const href = url && url.h;
-                 const mod  = href && ml_h [ href ];
-                 const exp  = mod && mod.e;
-                 
-                 return exp && exp [id];
+                 return resolveUrl( href , id)
             } 
+            
             
             
             function defaultLoader(x,R,U,N) {
@@ -138,6 +155,131 @@ ml(0,ml(1),[
                   });
                   return N;
             }
+            
+            function xsLoader () {
+                 const amd = ml.i.AMDLoaderLib;
+                if ( !!amd && !window.define) {
+                        amd.loadResources = amd_loader;
+                        amd.moduleMap     = {};
+                        amd.definedStack  = [];
+                        
+                        window.require = amd.require;
+                        window.define  = amd.define;
+                }
+                
+                const modules = ml.i.memoryStore({__persistent:true}); 
+                
+                const urls=ml.H.slice();
+                const noCorsTest = new RegExp('^(?!'+regexpEscape(location.origin+'/')+').+','');
+                
+                const fetcher = ml.i.httpsStore ( urls , noCorsTest, modules, ready );
+                
+                return ml_g_loader;
+                
+                
+                function amd_loader (U,cb){
+                    fetcher.getItem(U,function(module){
+                        if (isModule(module)) {
+                            module.on('load',function(){
+                                console.log('loaded',module);    
+                            });
+                        } else {
+                            console.log('could not load',module);
+                        }
+                    });
+                }
+                
+                function ready (api) {
+                    
+                    api.__serialize = customSerialize;
+                    const additional = ml.H.map(function(u){ return urls.indexOf(u)<0;});
+                    
+                    additional.forEach(function(u){
+                        urls.push(u);
+                    });
+                    
+                    urls.forEach(function(u){
+                       const id = resolveIdFromUrl (u) ;
+                       const module = {
+                           id      : u,// for amd compatiblity
+                           path    : u,
+                           ml      : ml,
+                           exports : resolveUrl( u , id ),
+                           ready   : true,
+                           on : function(){},
+                       };
+                       
+                       amd.definedStack.push(u);
+                       amd.moduleMap[u]=module;
+                       
+                    });
+                }
+                
+               
+                
+                function isBuffer(x) {
+                    return typeof x==='object' && typeof x.constructor === ArrayBuffer || x.buffer && x.buffer.constructor === ArrayBuffer;
+                }
+                
+                function isModule(x) {
+                    return typeof x==='object' && 
+                           typeof typeof x.path+ x.on +typeof x.ml +typeof x.ready +typeof exports === "stringfunctionfunctionbooleanobject" ;
+                }
+                
+                
+                function isString(x) {
+                    return typeof x === 'string';
+                }
+                
+                
+                function isScript(x) {
+                    return typeof x==='object' && (x.constructor.name === "HTMLScriptElement" || typeof x.src + typeof x.innerText === 'stringstring') ;
+                }
+                
+                function customSerialize (serialize,url,x,cb) {
+                    if ( url.slice(-3)!=='.js' || isScript(x)) return serialize(x,cb);
+                    const code = isBuffer(x) ? new TextDecoder().decode(x) : isString(x) ? x : '/* unsupported type : '+typeof x +' */';
+                    cb(JSON.stringify(["HTMLScriptElement",url,code]));
+                }
+                
+                function ml_g_loader (x,R,U,N) {
+                    R=c.r(x);
+                    if (!R) {
+                        if (L[x]) return !1;
+                        
+                        return x;
+                    } else {
+                        // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
+                       if ((N=R[2])&&N!==selfname) return !1; 
+                    }
+                    N=R[1];
+                    U=c.B(R[3]);
+                    if(c.c(U))ml.d[N]={h:U};
+                    
+    
+                    fetcher.getItem(U,function(module){
+                        if (isModule(module)) {
+                            module.on('load',function(){
+                                console.log('loaded',module);    
+                            });
+                        } else {
+                            console.log('could not load',module);
+                        }
+                    });
+                    
+                    
+                     
+                   
+                    
+                    return N;
+                }
+            }
+            
+            
+            function regexpEscape(str) {
+                return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
+            }
+            
 
            
         },
