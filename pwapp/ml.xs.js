@@ -208,8 +208,8 @@ ml(0,ml(1),[
                         r:()=>Math.random().toString(36).substr(-8),
                          
                         
-                        //V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
-                        //v:(u,v,s)=>(ml.h[u]={v:v,s:s,e:{}}),
+                        V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
+                        v:(u,v,s)=>(ml.h[u]={v:v,s:s,e:{}}),
                        // 8:(m,c)=>{
                             
                         //},
