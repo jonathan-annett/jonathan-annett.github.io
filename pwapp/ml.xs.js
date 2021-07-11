@@ -129,30 +129,6 @@ ml(0,ml(1),[
                         },*/
                  
                         //z.u = map iterator z.l
-                        u:(x,R,U,N)=>{
-                              R=c.r(x);
-                              if (!R) {
-                                  if (L[x]) return !1;
-                                  
-                                  return x;
-                                  
-                                  //if(ml.d[x]) return !1;
-                                  
-                                  //if(ml.h[x]) return !1;
-                                  
-                                  //return x;
-                              } else {
-                                  // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
-                                 if ((N=R[2])&&N!==selfname) return !1; 
-                              }
-                              N=R[1];
-                              U=c.B(R[3]);
-                              if(c.c(U))ml.d[N]={h:U};
-                              z.T(window,"script",(s)=>{
-                                 z.p(U,s.setAttribute.bind(s,"src"),s);    
-                              });
-                              return N;
-                        },
                         
                         //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
                         //y:(x)=>!!x,
@@ -216,9 +192,37 @@ ml(0,ml(1),[
                         //9:(L,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?ml=' + encodeURIComponent(L)).then(C?C:()=>{})
                      };
 
-            lib.ml_g = ml.g = z.u;
+            lib.ml_g = ml.g = defaultLoader;
 
             return lib;
+            
+            
+            function defaultLoader(x,R,U,N) {
+                  R=c.r(x);
+                  if (!R) {
+                      if (L[x]) return !1;
+                      
+                      return x;
+                      
+                      //if(ml.d[x]) return !1;
+                      
+                      //if(ml.h[x]) return !1;
+                      
+                      //return x;
+                  } else {
+                      // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
+                     if ((N=R[2])&&N!==selfname) return !1; 
+                  }
+                  N=R[1];
+                  U=c.B(R[3]);
+                  if(c.c(U))ml.d[N]={h:U};
+                  z.T(window,"script",(s)=>{
+                     z.p(U,s.setAttribute.bind(s,"src"),s);    
+                  });
+                  return N;
+            }
+
+           
         },
 
         ServiceWorkerGlobalScope: function mlXStoreLib( ) {
@@ -344,33 +348,6 @@ ml(0,ml(1),[
                  
                         //z.u = map iterator z.l
                         //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
-                        u:(x,R,U,N)=>{
-                             
-                              R=c.r(x);
-                              if (!R) {
-                                  if (L[x]) return !1;
-                                  
-                                  return x;
-                              } else {
-                                  // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
-                                 if ((N=R[2])&&N!==(selfname)) return !1; 
-                              }
-                              
-                              N=R[1];
-                              U=c.B(R[3]);
-                              ml.l.push(N+'='+U);
-                              if(c.c(U)){ml.d[N]={h:U};ml.H.push(U);}
-                              try {
-                                self.importScripts(U);
-                              } catch (e){
-                                c.l(e.message,'in',ml.l);  
-                              }
-                              ml.h[U]=ml.h[U]||{e:{}};
-                              ml.h[U].e[N]=c[4]()[N]||false;
-                              ml.l.pop();
-                              return N;
-                        },
-                        
                         //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
                         //y:(x)=>!!x,
                           
@@ -414,10 +391,42 @@ ml(0,ml(1),[
                         //},
                         //9:(L,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?ml=' + encodeURIComponent(L)).then(C?C:()=>{})
                      };
-
-            lib.ml_g = ml.g = z.u;
+                     
+                     
+                     
+            lib.ml_g = ml.g = defaultLoader;
 
             return lib;
+            
+            function defaultLoader(x,R,U,N) {
+                R=c.r(x);
+                if (!R) {
+                    if (L[x]) return !1;
+                    
+                    return x;
+                } else {
+                    // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
+                   if ((N=R[2])&&N!==(selfname)) return !1; 
+                }
+                
+                N=R[1];
+                U=c.B(R[3]);
+                ml.l.push(N+'='+U);
+                if(c.c(U)){ml.d[N]={h:U};ml.H.push(U);}
+                try {
+                  self.importScripts(U);
+                } catch (e){
+                  c.l(e.message,'in',ml.l);  
+                }
+                ml.h[U]=ml.h[U]||{e:{}};
+                ml.h[U].e[N]=c[4]()[N]||false;
+                ml.l.pop();
+                return N;
+                
+            }
+
+            
+            
         } 
     }, {
         Window: [
