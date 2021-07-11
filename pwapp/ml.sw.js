@@ -1,108 +1,119 @@
 /* global self,importScripts,BroadcastChannel */
 function ml(x,L, o, a, d, s){
-    if (!ml.h){ml.h={};ml.H=[];ml.d={};ml.f={};ml.l=['ml.sw.js']}//create history db if none exists
-    let
-    C=console,
-    z,
-    // "t" contains an array of types - object,function,string,undefined
-    // used for comparisions later
-    T=(G)=>typeof G,
-    t=[C,ml,'',z,x].map(T),
-    l=location,O=l.origin,
-    // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
-    // any constants/worker functions they need. also contains some code used later by z
-    // note that z doubles as a proxy for "undefined" in the type array "t" above 
-    c = {
+    let c,t,T=(G)=>typeof G;
+    if (!ml.h){
+        //create history db if none exists
         
-        //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
-        //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
-        r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
-        //c.b=document base
-        b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
-        //c.c returns true if url is under current domain.
-        c:(u)=>u.startsWith(O),
-        R:'replace',
-        f:'forEach',
-       // w:'serviceWorker',
-       // n:'navigator',
-       // d:"document",
+        ml.h={};ml.H=[];ml.d={};ml.f={};ml.l=['ml.sw.js'];
         
-        //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
-        B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
-
         
-        // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
-        1:()=>c[4]()||{},
+        let
+        l=location,O=l.origin,
+        C=console;
+        // "t" contains an array of types - object,function,string,undefined
+        // used for comparisions later
+        ml.t=t=[C,ml,'',t].map(T);
+        // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
+        // any constants/worker functions they need. also contains some code used later by z
+        // note that t doubles as a proxy for "undefined" in the type array "t" above 
+        ml.c=c={
+            
+            //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
+            //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
+            r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+            //c.b=document base
+            b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
+            //c.c returns true if url is under current domain.
+            c:(u)=>u.startsWith(O),
+            R:'replace',
+            f:'forEach',
+           // w:'serviceWorker',
+           // n:'navigator',
+           // d:"document",
+            
+            //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
+            B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
+    
+            
+            // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
+            1:()=>c[4]()||{},
+            
+            // ml(2)-->c[2](L,o,a,d,e,r) 
+            
+            // L = "Window", "ServiceWorkerGlobalScope" (result of ml(1)--> c[1]
+            // o = exports (ie self ie window)
+            // a = dictionary of dependants per window type
+            // d = array of loaded dependants 
+            // e = unuused argument doubles as a variable
+            // r = undefined
+            2:(L,o,a,d,e,r)=>{
+                    e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
+                    value: a[L].apply(this, d[L].map(c.x)),
+                    enumerable: !0,
+                    configurable: !0
+                }) : r;
+                if (!ml.i){  
+                    ml.i=new Proxy({},{
+                        get:(t,p)=>c.I(x=p),
+                        ownKeys:()=>c.k(ml.d),
+                        getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
+                        has:(t,p)=>!!ml.d[p]
+                    });
+                }
+            },
+            
+            // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
+            3:()=>c[4]().constructor.name || "x",
+            
+            // ml(1)->c[1] = resolve to self or undefined
+            4:()=>typeof self === t[0] && self,
+            
+            //c.x = map iterator to execure every function in an array of functions
+            //      (used to resolve each loaded module)
+            x:(f)=>f(),
+            l:C.log.bind(C),
+            //c.L = loader hoist function (called when first argument to ml is a string)
+            L:(S,R,t,w)=>{
+               // ml("/path/to/mod.js",function(mod){...}) 
+               //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ }
+               // ml("/path/to/mod.js",function(mod){...},window,"modName") 
+               //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ } o=window,a="modName"
+               w=!!o;
+               S=w?o:{};  // S=dummy self, contains "t" temporarily
+                      // R=holder for S.t between deletion and return
+               R=c.r(x)||[x,'t',0,x];// [fullurl,tempname,ignored,url]
+               t=a||R[1];
+               return ml(
+                   0,S,[
+                   t+"@T|"+R[3]],
+                   ()=>ml(  2,'T',S,
+                           {T:L},
+                           {T:[()=>{ R=S[t];
+                                     if (!w) delete S[t];
+                                     return R;
+                                    }
+                              ]}),
+                   'T'
+               );
+            },
+            I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
+            
+            //c.k = Object.keys();
+            k:(o)=>Object.keys(o)
+            
+    
+                    
+            
+              
+        };
         
-        // ml(2)-->c[2](L,o,a,d,e,r) 
         
-        // L = "Window", "ServiceWorkerGlobalScope" (result of ml(1)--> c[1]
-        // o = exports (ie self ie window)
-        // a = dictionary of dependants per window type
-        // d = array of loaded dependants 
-        // e = unuused argument doubles as a variable
-        // r = undefined
-        2:(L,o,a,d,e,r)=>{
-                e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
-                value: a[L].apply(this, d[L].map(c.x)),
-                enumerable: !0,
-                configurable: !0
-            }) : r;
-            if (!ml.i){  
-                ml.i=new Proxy({},{
-                    get:(t,p)=>c.I(x=p),
-                    ownKeys:()=>c.k(ml.d),
-                    getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
-                    has:(t,p)=>!!ml.d[p]
-                });
-            }
-        },
-        
-        // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
-        3:()=>c[4]().constructor.name || "x",
-        
-        // ml(1)->c[1] = resolve to self or undefined
-        4:()=>typeof self === t[0] && self,
-        
-        //c.x = map iterator to execure every function in an array of functions
-        //      (used to resolve each loaded module)
-        x:(f)=>f(),
-        l:C.log.bind(C),
-        //c.L = loader hoist function (called when first argument to ml is a string)
-        L:(S,R,t,w)=>{
-           // ml("/path/to/mod.js",function(mod){...}) 
-           //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ }
-           // ml("/path/to/mod.js",function(mod){...},window,"modName") 
-           //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ } o=window,a="modName"
-           w=!!o;
-           S=w?o:{};  // S=dummy self, contains "t" temporarily
-                  // R=holder for S.t between deletion and return
-           R=c.r(x)||[x,'t',0,x];// [fullurl,tempname,ignored,url]
-           t=a||R[1];
-           return ml(
-               0,S,[
-               t+"@T|"+R[3]],
-               ()=>ml(  2,'T',S,
-                       {T:L},
-                       {T:[()=>{ R=S[t];
-                                 if (!w) delete S[t];
-                                 return R;
-                                }
-                          ]}),
-               'T'
-           );
-        },
-        I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
-        
-        //c.k = Object.keys();
-        k:(o)=>Object.keys(o)
-        
-
-                
-        
-          
-    };
-    z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
+    } else {
+        c=ml.c;
+        t=ml.t;
+    }
+    
+    let z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
     
     if (z!==c)return z;
         
