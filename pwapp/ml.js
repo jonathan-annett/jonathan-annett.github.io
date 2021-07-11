@@ -30,6 +30,9 @@ function ml(x,L,o,a,d,s){
             //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
             B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
     
+            //c.u: convert string to array, remove comments, and whitespace
+            u:(u)=>u=typeof u===t[2]?u[c.R](/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'')[c.R](/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/)|\/\/.*?[\r\n])[\r\n]*/g,'').split('\n'):u, 
+
             // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
             
             1:()=>c[4]()||{},
@@ -129,9 +132,7 @@ function ml(x,L,o,a,d,s){
        t:(n)=>Math.min(100,ml.t=(ml.t?ml.t*2:1)),
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u)=>{
-          u=typeof u===t[2]?u.replace(/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'').split('\n'):u; 
-          //if (!ml.g)u.unshift("mlXStoreLib|ml.xs.js");
-          u = u.map(ml.g||z.u).filter(z.y);
+          u=c.u(u).map(ml.g||z.u).filter(z.y);
           return u.length?setTimeout(z.l, z.t(u.length), u)&&c.l("pending...",u):a();
        },
 

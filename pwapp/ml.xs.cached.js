@@ -1,10 +1,10 @@
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),[
+ml(0,ml(1),`
     
-   'xStoreBase | ml.xs.base.js'
+   xStoreBase | ml.xs.base.js
     
-    ],function(){ml(2,ml(3),ml(4),
+    `,function(){ml(2,ml(3),ml(4),
 
     {
         Window: function cachedStoreWrapper( lib  ) {

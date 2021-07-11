@@ -31,6 +31,10 @@ function ml(x,L, o, a, d, s){
            // n:'navigator',
            // d:"document",
             
+            //c.u: convert string to array, remove comments, and whitespace
+            u:(u)=>u=typeof u===t[2]?u[c.R](/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'')[c.R](/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/)|\/\/.*?[\r\n])[\r\n]*/g,'').split('\n'):u, 
+
+            
             //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
             B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
     
@@ -124,9 +128,7 @@ function ml(x,L, o, a, d, s){
        
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u,L)=>{
-             u=typeof u===t[2]?u.replace(/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'').split('\n'):u; 
-             //if (!ml.g)u.unshift("mlXStoreLib|ml.xs.js");
-             u = u.map(ml.g||z.u).filter(z.y);
+             u=c.u(u).map(ml.g||z.u).filter(z.y);
             
              if (!u.length) {
                  L=c[4]();
