@@ -104,6 +104,7 @@ ml(0,ml(1),[
                         //9:(L,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?ml=' + encodeURIComponent(L)).then(C?C:()=>{})
                      };
 
+            console.log("installing defaultLoader in ml.xs.js");
             lib.ml_g = ml.g = defaultLoader;
             
             lib.getLoader = getLoader ;
@@ -361,6 +362,7 @@ ml(0,ml(1),[
                      
                      
                      
+            console.log("installing defaultLoader in ml.xs.js");
             lib.ml_g = ml.g = defaultLoader;
 
             return lib;

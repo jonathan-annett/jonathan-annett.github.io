@@ -47,6 +47,7 @@ ml(0,ml(1),[
                                        return response500(resolve,err);
                                    }
                                    response200 (resolve,buffer,{
+                                       name          : event.fixup_url.replace(isLocal,''),
                                        contentType   : 'application/zip',
                                        contentLength : buffer.byteLength,
                                        etag          : hash,
@@ -67,6 +68,7 @@ ml(0,ml(1),[
                                    const html  =  editInZedHtml (event.fixup_url);
                                    
                                    response200 (resolve,html,{
+                                       name          : event.fixup_url.replace(isLocal,''),
                                        contentType   : 'text/html',
                                        contentLength : html.length
                                    });
