@@ -68,9 +68,15 @@
                 ifrm.onload = function (e) {
                     ifrm.onload=undefined;
                     
-                    ifrm.document.getElementsByTagName("head")[0].appendChild(script);
-    
-                    hook("onload");
+                    const start() {
+                        if (ifrm.document && ifrm.document.getElementsByTagName ) {
+                            ifrm.document.getElementsByTagName("head")[0].appendChild(script);
+                            hook("onload");
+                        } else {
+                            setTimeout(start,1);
+                        }
+                    }
+                    start();
                 };
                      
                 document.body.appendChild(ifrm); // to place at end of document
