@@ -21,7 +21,7 @@
                 if (loadScript.iframe) {
                     proceed();
                 } else {
-                    createIframe() 
+                    createIframe();
                 }
                 
                 function createIframe() {
@@ -35,6 +35,7 @@
                 }
                 
                 function iframe_ready() {
+                    let iframe = loadScript.iframe;
                     iframe.require = function () {
                         if (loadScript.cleanup_timer) clearTimeout(loadScript.cleanup_timer);
                         loadScript.cleanup_timer  = setTimeout(cleanup,15000);
@@ -70,10 +71,11 @@
                 
                 function cleanup () {
                     loadScript.cleanup_timer = undefined;
-                    if (script) {
-                        iframe.contentWindow.document.body.removeChild(script);
-                    }
+                    let iframe = loadScript.iframe;
                     if (iframe) {
+                        if (script) {
+                            iframe.contentWindow.document.body.removeChild(script);
+                        }
                         document.body.removeChild(iframe);
                     }
                 }
