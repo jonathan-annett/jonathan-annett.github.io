@@ -13,27 +13,23 @@
         <script>
         
         
-            function loadScript(src,cb) {
+            function loadScript(src,def,req) {
                 
                 const _a         = Array.prototype, cpArgs = _a.slice.call.bind (_a.slice);
                 
-                var iframe = document.createElement('iframe');
+                let iframe = document.createElement('iframe');
+                let cleanup_timer,script;
                 iframe.onload = function() {
-                     
-                    const hooked = []; 
-                    function hook(fn,args){
-                        if (fn==='define' || fn==='require') {
-                           hooked.push([fn,src,iframe,script,args]);
-                           cb (hooked);
-                        }
-                    }
-                     
                     iframe.require = function () {
-                        hook("require",cpArgs(arguments));
+                        if (cleanup_timer) clearTimeout(cleanup_timer);
+                        cleanup_timer  = setTimeout(cleanup,15000);
+                        return req.apply(undefined,cpArgs(arguments));
                     };        
                             
                     iframe.define = function () {
-                        hook("define",cpArgs(arguments));
+                        if (cleanup_timer) clearTimeout(cleanup_timer);
+                        cleanup_timer  = setTimeout(cleanup,15000);
+                        return def.apply(undefined,cpArgs(arguments));
                     };
                     iframe.define.amd={};
                     
@@ -49,20 +45,22 @@
                 };
                 iframe.src = 'about:blank';
                 document.body.appendChild(iframe);
+                
+                
+                function cleanup () {
+                    cleanup_timer = undefined;
+                    iframe.contentWindow.document.body.removChild(script);
+                    document.body.removeChild(iframe);
+                }
 
             } 
             
-            
-
-            loadScript("test.js",function(args) {
-                
-                
-                console.log(args);
+            loadScript("test.js",function(){
+                console.log("define",cpArgs(arguments));
+            },function(){
+                console.log("require",cpArgs(arguments));
             });
-            
-            
-            
-            
+
         </script>
         
     </body>
