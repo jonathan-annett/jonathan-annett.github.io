@@ -19,11 +19,14 @@
                 
                 var ifrm = document.createElement('iframe');
                 ifrm.setAttribute('id', 'ifrm'); // assign an id
+                document.body.appendChild(ifrm); // to place at end of document
                 
                 
                 
                 let script = document.createElement("script");
-                document.body.appendChild(ifrm); // to place at end of document
+                script.src = src;
+                
+                
                 
                 
                 const hooked = []; 
@@ -72,6 +75,11 @@
                 
                 function onDOMContentLoaded () {
                     ifrm.removeEventListener('DOMContentLoaded',onDOMContentLoaded);
+                    
+                     
+                    var iFrameHead = ifrm.document.getElementsByTagName("head")[0];
+                    
+                    iFrameHead.appendChild(script);
                     hook("DOMContentLoaded"); 
                 }
                 
@@ -82,11 +90,8 @@
                 
                 ifrm.addEventListener('DOMContentLoaded',onDOMContentLoaded);
                 
-                script.src = src;
-                
-                var iFrameHead = ifrm.document.getElementsByTagName("head")[0];
-                
-                iFrameHead.appendChild(script);
+            
+               
                 
                 timeout = setTimeout(scriptLoadTimeout,1000);
                
