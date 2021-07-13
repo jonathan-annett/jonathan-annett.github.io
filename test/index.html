@@ -17,11 +17,13 @@
                 
                 const _a         = Array.prototype, cpArgs = _a.slice.call.bind (_a.slice);
                 
+                
+                
+                
+                
                 var ifrm = document.createElement('iframe');
-                ifrm.setAttribute('id', 'ifrm'); // assign an id
-                document.body.appendChild(ifrm); // to place at end of document
-                
-                
+                var html = '<html><head></head><body></body></html>';
+                ifrm.src = 'data:text/html;charset=utf-8,' + encodeURI(html);
                 
                 let script = document.createElement("script");
                 script.src = src;
@@ -75,11 +77,6 @@
                 
                 function onDOMContentLoaded () {
                     ifrm.removeEventListener('DOMContentLoaded',onDOMContentLoaded);
-                    
-                     
-                    var iFrameHead = ifrm.document.getElementsByTagName("head")[0];
-                    
-                    iFrameHead.appendChild(script);
                     hook("DOMContentLoaded"); 
                 }
                 
@@ -90,13 +87,12 @@
                 
                 ifrm.addEventListener('DOMContentLoaded',onDOMContentLoaded);
                 
-            
-               
-                
                 timeout = setTimeout(scriptLoadTimeout,1000);
-               
-                
-    
+
+                document.body.appendChild(ifrm); // to place at end of document
+
+                ifrm.document.getElementsByTagName("head")[0].appendChild(script);
+
             } 
             
             
