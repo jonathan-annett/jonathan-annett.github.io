@@ -18,6 +18,8 @@
                 const _a         = Array.prototype, cpArgs = _a.slice.call.bind (_a.slice);
                 
                 let iframe = document.createElement('iframe');
+                iframe.style.display="none";
+                
                 let cleanup_timer,script;
                 iframe.onload = function() {
                     iframe.require = function () {
@@ -49,7 +51,7 @@
                 
                 function cleanup () {
                     cleanup_timer = undefined;
-                    iframe.contentWindow.document.body.removChild(script);
+                    iframe.contentWindow.document.body.removeChild(script);
                     document.body.removeChild(iframe);
                 }
 
