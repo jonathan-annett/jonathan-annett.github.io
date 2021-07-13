@@ -13,44 +13,63 @@
         <script>
         
         
-            function loadScript(src,def,req) {
+            function loadScript(src,def,req,meta) {
                 
                 const _a         = Array.prototype, cpArgs = _a.slice.call.bind (_a.slice);
                 
-                let iframe = document.createElement('iframe');
-                iframe.style.display="none";
                 
-                var cleanup_timer,script;
-                iframe.onload = function() {
+                if (loadScript.iframe) {
+                    function proceed();
+                } else {
+                    createIframe() 
+                }
+                
+                function createIframe() {
+                    let iframe = document.createElement('iframe');
+                    iframe.style.display="none";
+                    
+                    iframe.onload = proceed; 
+                    iframe.src = 'about:blank';
+                    loadScript.iframe=iframe;
+                    document.body.appendChild(iframe);
+                }
+                
+                function iframe_ready() {
                     iframe.require = function () {
-                        if (cleanup_timer) clearTimeout(cleanup_timer);
-                        cleanup_timer  = setTimeout(cleanup,15000);
-                        return req.apply(undefined,cpArgs(arguments));
+                        if (loadScript.cleanup_timer) clearTimeout(loadScript.cleanup_timer);
+                        loadScript.cleanup_timer  = setTimeout(cleanup,15000);
+                        script.meta.href=script.src;
+                        script.meta.baseURI=script.baseURI;
+                        return req.apply(undefined,[script.meta].concat(cpArgs(arguments)));
                     };        
                             
                     iframe.define = function () {
-                        if (cleanup_timer) clearTimeout(cleanup_timer);
-                        cleanup_timer  = setTimeout(cleanup,15000);
-                        return def.apply(undefined,cpArgs(arguments));
+                        if (loadScript.cleanup_timer) clearTimeout(loadScript.cleanup_timer);
+                        loadScript.cleanup_timer  = setTimeout(cleanup,15000);
+                        script.meta.href=script.src;
+                        script.meta.baseURI=script.baseURI;
+                        return def.apply(undefined,[script.meta].concat(cpArgs(arguments)));
                     };
                     iframe.define.amd={};
                     
                     
                     iframe.contentWindow.define  = iframe.define;
                     iframe.contentWindow.require = iframe.require;
-                    
-                    
-                    script = document.createElement("script");
-                    script.src=src;
-                    iframe.contentWindow.document.body.appendChild(script);
-                    
-                };
-                iframe.src = 'about:blank';
-                document.body.appendChild(iframe);
+
+               }
                 
+               function proceed() {     
+                   let iframe = loadScript.iframe;
+                   var script;
+                   script = document.createElement("script");
+                   script.meta=meta||{};
+                   script.meta.src=src;
+                   script.src=src;
+                   iframe.contentWindow.document.body.appendChild(script);
+                };
                 
                 function cleanup () {
-                    cleanup_timer = undefined;
+                    loadScript.cleanup_timer = undefined;
                     if (script) {
                         iframe.contentWindow.document.body.removeChild(script);
                     }
@@ -58,7 +77,8 @@
                         document.body.removeChild(iframe);
                     }
                 }
-
+                
+                
             } 
             
             const _a         = Array.prototype, cpArgs = _a.slice.call.bind (_a.slice);
