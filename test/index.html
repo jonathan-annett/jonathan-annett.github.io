@@ -41,11 +41,11 @@
                     iframe.contentWindow.define  = iframe.define;
                     iframe.contentWindow.require = iframe.require;
                     
-                    function addScript( ) {
-                        if (ifrm.document) {
-                            ifrm.document.addChild(script);
-                        }
-                    }
+                    
+                    const script = document.createElement("script");
+                    script.src=src;
+                    iframe.contentWindow.document.appendChild(script);
+                    
                 };
                 iframe.src = 'about:blank';
                 document.body.appendChild(iframe);
