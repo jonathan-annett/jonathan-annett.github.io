@@ -17,37 +17,38 @@
                 
                 const _a         = Array.prototype, cpArgs = _a.slice.call.bind (_a.slice);
                 
-                
-                var ifrm = document.createElement('iframe');
-                var html = '<html><head></head><body><script src="'+src+'"></'+'script></body></html>';
-                ifrm.src = 'data:text/html;charset=utf-8,' + encodeURI(html);
-                
-                let script = document.createElement("script");
-                script.src = src;
-                
-                
-                const hooked = []; 
-                function hook(fn,args){
-                    if (fn==='define' || fn==='require') {
-                       hooked.push([fn,src,ifrm,script,args]);
-                       cb (hooked);
-                    } else {
-                        timeout = setTimeout(scriptLoadTimeout,100);
+                var iframe = document.createElement('iframe');
+                iframe.onload = function() {
+                     
+                    const hooked = []; 
+                    function hook(fn,args){
+                        if (fn==='define' || fn==='require') {
+                           hooked.push([fn,src,ifrm,script,args]);
+                           cb (hooked);
+                        }
                     }
-                }
-                        
-                ifrm.require = ifrm.contentWindow.require = function () {
-                    hook("require",cpArgs(arguments));
-                };        
-                        
-                ifrm.define = ifrm.contentWindow.define = function () {
-                    hook("define",cpArgs(arguments));
+                     
+                    iframe.require = function () {
+                        hook("require",cpArgs(arguments));
+                    };        
+                            
+                    iframe.define = function () {
+                        hook("define",cpArgs(arguments));
+                    };
+                    iframe.define.amd={};
+                    
+                    
+                    iframe.contentWindow.define  = iframe.define;
+                    iframe.contentWindow.require = iframe.require;
+                    
+                    function addScript( ) {
+                        if (ifrm.document) {
+                            ifrm.document.addChild(script);
+                        }
+                    }
                 };
-                ifrm.define.amd={};
-                
-                
-                
-                document.body.appendChild(ifrm); // to place at end of document
+                iframe.src = 'about:blank';
+                document.body.appendChild(iframe);
 
             } 
             
