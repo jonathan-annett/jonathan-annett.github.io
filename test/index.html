@@ -41,16 +41,12 @@
                     iframe.require = function () {
                         if (loadScript.cleanup_timer) clearTimeout(loadScript.cleanup_timer);
                         loadScript.cleanup_timer  = setTimeout(cleanup,15000);
-                        script.meta.href=script.src;
-                        script.meta.baseURI=script.baseURI;
                         return req.apply(undefined,[script.meta].concat(cpArgs(arguments)));
                     };        
                             
                     iframe.define = function () {
                         if (loadScript.cleanup_timer) clearTimeout(loadScript.cleanup_timer);
                         loadScript.cleanup_timer  = setTimeout(cleanup,15000);
-                        script.meta.href=script.src;
-                        script.meta.baseURI=script.baseURI;
                         return def.apply(undefined,[script.meta].concat(cpArgs(arguments)));
                     };
                     iframe.define.amd={};
@@ -68,6 +64,8 @@
                    script.meta=meta||{};
                    script.meta.src=src;
                    script.src=src;
+                   script.meta.href=script.src;
+                   script.meta.baseURI=script.baseURI;
                    iframe.contentWindow.document.body.appendChild(script);
                 };
                 
