@@ -23,8 +23,8 @@
                 
                 
                 let script = document.createElement("script");
+                document.body.appendChild(ifrm); // to place at end of document
                 
-                var iFrameHead = ifrm.document.getElementsByTagName("head")[0];
                 
                 const hooked = []; 
                 let   timeout;
@@ -83,10 +83,13 @@
                 ifrm.addEventListener('DOMContentLoaded',onDOMContentLoaded);
                 
                 script.src = src;
+                
+                var iFrameHead = ifrm.document.getElementsByTagName("head")[0];
+                
                 iFrameHead.appendChild(script);
                 
                 timeout = setTimeout(scriptLoadTimeout,1000);
-                document.body.appendChild(ifrm); // to place at end of document
+               
                 
     
             } 
