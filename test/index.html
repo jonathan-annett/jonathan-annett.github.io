@@ -44,7 +44,7 @@
                     
                     const script = document.createElement("script");
                     script.src=src;
-                    iframe.contentWindow.document.appendChild(script);
+                    iframe.contentWindow.document.body.appendChild(script);
                     
                 };
                 iframe.src = 'about:blank';
