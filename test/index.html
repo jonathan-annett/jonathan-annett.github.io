@@ -20,7 +20,7 @@
                 let iframe = document.createElement('iframe');
                 iframe.style.display="none";
                 
-                let cleanup_timer,script;
+                var cleanup_timer,script;
                 iframe.onload = function() {
                     iframe.require = function () {
                         if (cleanup_timer) clearTimeout(cleanup_timer);
@@ -40,7 +40,7 @@
                     iframe.contentWindow.require = iframe.require;
                     
                     
-                    const script = document.createElement("script");
+                    script = document.createElement("script");
                     script.src=src;
                     iframe.contentWindow.document.body.appendChild(script);
                     
@@ -51,8 +51,12 @@
                 
                 function cleanup () {
                     cleanup_timer = undefined;
-                    iframe.contentWindow.document.body.removeChild(script);
-                    document.body.removeChild(iframe);
+                    if (script) {
+                        iframe.contentWindow.document.body.removeChild(script);
+                    }
+                    if (iframe) {
+                        document.body.removeChild(iframe);
+                    }
                 }
 
             } 
