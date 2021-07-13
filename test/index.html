@@ -32,7 +32,6 @@
                     
                     iframe.onload = iframe_ready; 
                     iframe.src = 'about:blank';
-                    iframe.scriptCache = {};
                     document.body.appendChild(iframe);
                 }
                 
@@ -41,15 +40,13 @@
                     iframe.require = function () {
                         if (loadScript.cleanup_timer) clearTimeout(loadScript.cleanup_timer);
                         loadScript.cleanup_timer  = setTimeout(cleanup,15000);
-                        const script = iframe.scriptCache[script.src];
-                        return req.apply(undefined,[script.meta].concat(cpArgs(arguments)));
+                        return req.apply(undefined,[currentScript.meta].concat(cpArgs(arguments)));
                     };        
                             
                     iframe.define = function () {
                         if (loadScript.cleanup_timer) clearTimeout(loadScript.cleanup_timer);
                         loadScript.cleanup_timer  = setTimeout(cleanup,15000);
-                        const script = iframe.scriptCache[script.src];
-                        return def.apply(undefined,[script.meta].concat(cpArgs(arguments)));
+                        return def.apply(undefined,[currentScript.meta].concat(cpArgs(arguments)));
                     };
                     iframe.define.amd={};
                     
@@ -68,7 +65,6 @@
                    script.src=src;
                    script.meta.href=script.src;
                    script.meta.baseURI=script.baseURI;
-                   iframe.scriptCache[script.src]=script;
                    iframe.contentWindow.document.body.appendChild(script);
                 };
                 
