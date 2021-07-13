@@ -17,16 +17,12 @@
                 
                 const _a         = Array.prototype, cpArgs = _a.slice.call.bind (_a.slice);
                 
+                let iframe,script,cleanup_timer;
                 
-                if (loadScript.iframe) {
-                    proceed();
-                } else {
-                    createIframe();
-                }
+                createIframe();
                 
                 function createIframe() {
-                    loadScript.iframe= document.createElement('iframe');
-                    let iframe = loadScript.iframe;
+                    iframe= document.createElement('iframe');
                     
                     iframe.style.display="none";
                     
@@ -36,17 +32,16 @@
                 }
                 
                 function iframe_ready() {
-                    let iframe = loadScript.iframe;
                     iframe.require = function () {
-                        if (loadScript.cleanup_timer) clearTimeout(loadScript.cleanup_timer);
-                        loadScript.cleanup_timer  = setTimeout(cleanup,15000);
-                        return req.apply(undefined,[currentScript.meta].concat(cpArgs(arguments)));
+                        if (cleanup_timer) clearTimeout(cleanup_timer);
+                        cleanup_timer  = setTimeout(cleanup,15000);
+                        return req.apply(undefined,[script.meta].concat(cpArgs(arguments)));
                     };        
                             
                     iframe.define = function () {
-                        if (loadScript.cleanup_timer) clearTimeout(loadScript.cleanup_timer);
-                        loadScript.cleanup_timer  = setTimeout(cleanup,15000);
-                        return def.apply(undefined,[currentScript.meta].concat(cpArgs(arguments)));
+                        if (cleanup_timer) clearTimeout(cleanup_timer);
+                        cleanup_timer  = setTimeout(cleanup,15000);
+                        return def.apply(undefined,[script.meta].concat(cpArgs(arguments)));
                     };
                     iframe.define.amd={};
                     
@@ -57,8 +52,6 @@
                }
                 
                function proceed() {     
-                   let iframe = loadScript.iframe;
-                   var script;
                    script = document.createElement("script");
                    script.meta=meta||{};
                    script.meta.src=src;
@@ -69,8 +62,7 @@
                 };
                 
                 function cleanup () {
-                    loadScript.cleanup_timer = undefined;
-                    let iframe = loadScript.iframe;
+                    cleanup_timer = undefined;
                     if (iframe) {
                         if (script) {
                             iframe.contentWindow.document.body.removeChild(script);
