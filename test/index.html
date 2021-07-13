@@ -25,12 +25,14 @@
                 }
                 
                 function createIframe() {
-                    let iframe = document.createElement('iframe');
+                    loadScript.iframe= document.createElement('iframe');
+                    let iframe = loadScript.iframe;
+                    
                     iframe.style.display="none";
                     
                     iframe.onload = proceed; 
                     iframe.src = 'about:blank';
-                    loadScript.iframe=iframe;
+                    
                     document.body.appendChild(iframe);
                 }
                 
