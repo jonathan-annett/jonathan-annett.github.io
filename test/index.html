@@ -18,67 +18,35 @@
                 const _a         = Array.prototype, cpArgs = _a.slice.call.bind (_a.slice);
                 
                 
-                
-                
-                
                 var ifrm = document.createElement('iframe');
-                var html = '<html><head></head><body></body></html>';
+                var html = '<html><head></head><body><script src="'+src'"></'+'script></body></html>';
                 ifrm.src = 'data:text/html;charset=utf-8,' + encodeURI(html);
                 
                 let script = document.createElement("script");
                 script.src = src;
                 
                 
-                
-                
                 const hooked = []; 
-                let   timeout;
                 function hook(fn,args){
-                    if (timeout) {
-                        clearTimeout(timeout);
-                    }
-                    
                     if (fn==='define' || fn==='require') {
-                        hooked.push([fn,src,ifrm,script,args]);
-                    
+                       hooked.push([fn,src,ifrm,script,args]);
                        cb (hooked);
-                       timeout = undefined;
                     } else {
                         timeout = setTimeout(scriptLoadTimeout,100);
                     }
                 }
                         
-                ifrm.require = function () {
-                    if (timeout) {
-                        clearTimeout(timeout);
-                        timeout=undefined;
-                    }
+                ifrm.require = ifrm.contentWindow.require = function () {
                     hook("require",cpArgs(arguments));
                 };        
                         
-                ifrm.define = function () {
-                    if (timeout) {
-                        clearTimeout(timeout);
-                        timeout=undefined;
-                    }
+                ifrm.define = ifrm.contentWindow.define = function () {
                     hook("define",cpArgs(arguments));
                 };
                 ifrm.define.amd={};
                 
-                ifrm.onload = function (e) {
-                    ifrm.onload=undefined;
-                    
-                    const start = function()  {
-                        if (ifrm.document && ifrm.document.getElementsByTagName ) {
-                            ifrm.document.getElementsByTagName("head")[0].appendChild(script);
-                            hook("onload");
-                        } else {
-                            setTimeout(start,1);
-                        }
-                    }
-                    start();
-                };
-                     
+                
+                
                 document.body.appendChild(ifrm); // to place at end of document
 
             } 
@@ -88,7 +56,7 @@
             loadScript("test.js",function(args) {
                 
                 
-                
+                console.log(args);
             });
             
             
