@@ -23,7 +23,7 @@
                     const hooked = []; 
                     function hook(fn,args){
                         if (fn==='define' || fn==='require') {
-                           hooked.push([fn,src,ifrm,script,args]);
+                           hooked.push([fn,src,iframe,script,args]);
                            cb (hooked);
                         }
                     }
