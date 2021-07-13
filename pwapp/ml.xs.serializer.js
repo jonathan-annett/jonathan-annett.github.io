@@ -1,5 +1,8 @@
 
 /* global ml,self,BigInt64Array,BigUint64Array,BigInt  */
+
+/*jshint -W054 */
+
 ml(0,ml(1),`
     
    setImmediateLib | ml.xs.setImmediate.js
@@ -267,10 +270,8 @@ ml(0,ml(1),`
                          source.indexOf('{')+1,
                          source.lastIndexOf('}')
                     );
-                    
-                    const sourceNoComments = source.replace(/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/)|\/\/.*?[\r\n])[\r\n]*/g,'');
-                    const args = sourceNoComments.split('(')[1].split(')')[0].split(',').map(function(fn){ return fn.trim();});
-                    
+                    const args = serialize.function.args(source);
+
                     // make a temp object that has each key enumerated by the function's object
                     keys.forEach(function(k){vars[k]=fn[k];});
                     
@@ -292,7 +293,12 @@ ml(0,ml(1),`
                     });
                     
                 };
-                
+                serialize.function.args = function (x) {
+                    const source = typeof x==='string'?x:x.toString();
+                    const sourceNoComments = source.replace(/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/)|\/\/.*?[\r\n])[\r\n]*/g,'');
+                    const args = sourceNoComments.split('(')[1].split(')')[0].split(',').map(function(fn){ return fn.trim();});
+                    return args
+                };
                 
                 function SOME(array,iterator) {
                     let 
@@ -831,7 +837,7 @@ ml(0,ml(1),`
                         head.appendChild(script);
                         return module;
                     } else { 
-                        // fall back for service worker - create function inside sandboxed module
+                        // fall back for service worker  create function inside sandboxed module
                         const fn = new Function(args,'/*script:'+(src?src:'(inlined)')+'*/\n'+source);
                         fn.apply(module,ml,argVals);
                         const mod = ml.h [ src ];

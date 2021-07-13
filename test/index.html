@@ -1,0 +1,108 @@
+
+
+
+<html>
+    
+    <head>
+        
+    </head>
+    
+    
+    <body>
+        
+        <script>
+        
+        
+            function loadScript(src,cb) {
+                
+                const _a         = Array.prototype, cpArgs = _a.slice.call.bind (_a.slice);
+                
+                var ifrm = document.createElement('iframe');
+                ifrm.setAttribute('id', 'ifrm'); // assign an id
+                
+                
+                
+                let script = document.createElement("script");
+                
+                var iFrameHead = ifrm.document.getElementsByTagName("head")[0];
+                
+                const hooked = []; 
+                let   timeout;
+                function hook(fn,args){
+                    if (timeout) {
+                        clearTimeout(timeout);
+                    }
+                    
+                    if (fn==='define' || fn==='require') {
+                        hooked.push([fn,src,ifrm,script,args]);
+                    
+                       ifrm.onload = null;
+                       ifrm.removeEventListener('DOMContentLoaded', (event) => {
+                          hook("DOMContentLoaded",cpArgs(arguments)); 
+                       });
+                       
+                       cb (hooked);
+                       timeout = undefined;
+                    } else {
+                        timeout = setTimeout(scriptLoadTimeout,100);
+                    }
+                }
+                        
+                ifrm.require = function () {
+                    if (timeout) {
+                        clearTimeout(timeout);
+                        timeout=undefined;
+                    }
+                    hook("require",cpArgs(arguments));
+                };        
+                        
+                ifrm.define = function () {
+                    if (timeout) {
+                        clearTimeout(timeout);
+                        timeout=undefined;
+                    }
+                    hook("define",cpArgs(arguments));
+                };
+                ifrm.define.amd={};
+                
+                ifrm.onload = function (e) {
+                    ifrm.onload=undefined;
+                    hook("onload");
+                };
+                
+                function onDOMContentLoaded () {
+                    ifrm.removeEventListener('DOMContentLoaded',onDOMContentLoaded);
+                    hook("DOMContentLoaded"); 
+                }
+                
+                function scriptLoadTimeout() {
+                    timeout = undefined;
+                    hook("timeout");
+                } 
+                
+                ifrm.addEventListener('DOMContentLoaded',onDOMContentLoaded);
+                
+                script.src = src;
+                iFrameHead.appendChild(script);
+                
+                timeout = setTimeout(scriptLoadTimeout,1000);
+                document.body.appendChild(ifrm); // to place at end of document
+                
+    
+            } 
+            
+            
+
+            loadScript("test.js",function(args) {
+                
+                
+                
+            });
+            
+            
+            
+            
+        </script>
+        
+    </body>
+</html>

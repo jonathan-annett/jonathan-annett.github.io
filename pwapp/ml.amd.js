@@ -74,22 +74,18 @@ ml(0,ml(1),[
             if (AMDLoaderLib.cached) return AMDLoaderLib.cached;
             
             const 
-            _op = Object.prototype,
-            _os = _op.toString,
-            _oseq = function(x,o){return !!o&&x===_os.call(o);},
-            hasProp = _op.hasOwnProperty.call.bind(_op.hasOwnProperty),
-            _a      = Array.prototype,
-            cpArgs  = _a.slice.call.bind (_a.slice),
-            isArray = Array.isArray || _oseq.bind(this,_os.call([])),
-            isObject= function(o){return typeof o==='object'&&o.constructor===Object;},
+            _op        = Object.prototype,
+            _os        = _op.toString,
+            _oseq      = function(x,o){return !!o&&x===_os.call(o);},
+            hasProp    = _op.hasOwnProperty.call.bind(_op.hasOwnProperty),
+            _a         = Array.prototype,
+            cpArgs     = _a.slice.call.bind (_a.slice),
+            isArray    = Array.isArray || _oseq.bind(this,_os.call([])),
+            isObject   = function(o){return typeof o==='object'&&o.constructor===Object;},
             isFunction = function(f){return typeof f==='function'};
             
-            
-            
-            
-                   
-            
             return (function(
+                slf,
                 env,
                 loadResources,
                 _anonymousId,
@@ -98,18 +94,19 @@ ml(0,ml(1),[
                 reqr.sync = rsnc;
                 defn.amd = {};
                 defn.version = '0.9.0';
-                
                 api = {
-                    define        : defn,
-                    require       : reqr,
-                    requireSync   : rsnc,
-                    getModule     : getModule,
-                    loadResources : loadResources,
-                    moduleMap     : loadResources.moduleMap,
-                    definedStack  : loadResources.definedStack
+                    define         : defn,
+                    require        : reqr,
+                    requireSync    : rsnc,
+                    filterLoadDeps : typeof Array.prototype.filter === 'function' ? filterLoadDeps1 : filterLoadDeps2,
+                    getModule      : getModule,
+                    loadResources  : loadResources,
+                    moduleMap      : loadResources.moduleMap,
+                    definedStack   : loadResources.definedStack,
+                    implement      : implement
                 };
 
-                
+                AMDLoaderLib.cached = api;
                 return api;
             
                 /**
@@ -139,12 +136,11 @@ ml(0,ml(1),[
                         deps = null;
                     }
                     api.moduleMap[id] = {
-                        id: id,
-                        deps: deps,
+                        id:      id,
+                        deps:    deps,
                         factory: factory
                     };
                     api.definedStack.push(id);
-            
                 }
             
                 /**
@@ -163,7 +159,7 @@ ml(0,ml(1),[
                         return reqr.sync(deps.join(''));
                     }
             
-                    var loadDeps = filterLoadDeps(deps);
+                    var loadDeps = api.filterLoadDeps(deps);
                     var depsLen = loadDeps.length;
                     var loadCount = depsLen;
                     if (depsLen) {
@@ -181,7 +177,7 @@ ml(0,ml(1),[
                         var filterDeps = [];
                         var filterLen = 0;
                         if (hasProp(mod, 'deps') && mod.deps) {
-                            filterDeps = filterLoadDeps(mod.deps);
+                            filterDeps = api.filterLoadDeps(mod.deps);
                             filterLen = filterDeps.length;
                         }
                         if (filterLen > 0) {
@@ -238,12 +234,26 @@ ml(0,ml(1),[
                             var dep = deps[i];
                             args.push(dep === 'require' ?
                                 reqr : (dep === 'module' ?
-                                    module : (dep === 'exports' ? exports : reqr.sync(dep))
+                                    module : (dep === 'exports' ? exports : api.requireSync(dep))
                                 )
                             );
                         }
                     }
-            
+                    return api.implement(module,args) ; /*
+                    if (isObject(module.factory)) {
+                        module.exports = module.factory;
+                    }
+                    else if (isFunction(module.factory)) {
+                        var ret = module.factory.apply(undefined, args);
+                        if (ret !== undefined && ret !== exports) {
+                            module.exports = ret;
+                        }
+                    }
+                    return module.exports;*/
+                }
+                
+                
+                function implement(module,args) {
                     if (isObject(module.factory)) {
                         module.exports = module.factory;
                     }
@@ -262,9 +272,12 @@ ml(0,ml(1),[
                  * @param {Array} depsMod Depends modules
                  * @return {Array} filterDeps
                 **/
-                function filterLoadDeps(depsMod) {
+                function filterLoadDeps1(depsMod) {
                     return depsMod.filter(function(f){return !/^require|exports|module$/.test(f);});
-                    /*var filterDeps = [];
+                }
+                
+                function filterLoadDeps2(depsMod) {
+                    var filterDeps = [];
                     if (depsMod && depsMod.length > 0) {
                         for (var i = 0, len = depsMod.length; i < len; i++) {
                             if (depsMod[i] !== 'require' && depsMod[i] !== 'exports' && depsMod[i] !== 'module') {
@@ -272,7 +285,7 @@ ml(0,ml(1),[
                             }
                         }
                     }
-                    return filterDeps;*/
+                    return filterDeps;
                 }
             
                 /**
@@ -303,11 +316,7 @@ ml(0,ml(1),[
                 
 
                 function log() {
-                    if (!env.debug) {
-                        return;
-                    }
-                    //var apc = Array.prototype.slice;
-                   // win.console && win.console.log.apply(console, apc.call(arguments));
+                    env.debug && slf && slf.console && slf.console.log.apply(console, cpArgs(arguments));
                 }
             
 
@@ -321,6 +330,7 @@ ml(0,ml(1),[
             
             })
                (
+                   slf,
                    env                            || {debug: 1, ts: 0},
                    resourceLoader                 || loadResourcesLib (),
                    anonymousId                    || 0,
@@ -346,7 +356,7 @@ ml(0,ml(1),[
                    **/
                
                    
-                   function loadScript1(url, callback) {
+                   function loadScript1(url,callback) {
                        
                        if (hasProp(_loadedMap, url)) {
                            callback && isFunction(callback) && callback();
