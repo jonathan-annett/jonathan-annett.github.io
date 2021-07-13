@@ -68,7 +68,7 @@
                 ifrm.onload = function (e) {
                     ifrm.onload=undefined;
                     
-                    const start() {
+                    const start = function()  {
                         if (ifrm.document && ifrm.document.getElementsByTagName ) {
                             ifrm.document.getElementsByTagName("head")[0].appendChild(script);
                             hook("onload");
