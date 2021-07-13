@@ -41,15 +41,16 @@
                     iframe.define = function () {
                         if (cleanup_timer) clearTimeout(cleanup_timer);
                         cleanup_timer  = setTimeout(cleanup,15000);
+                        const define_args = cpArgs(arguments);
                         if (!script.meta.arrayBuffer) {
                             fetch(script.src,{mode:"no-cors"}).then(function(response){
                                response.arrayBuffer().then(function(buffer){
                                   script.meta.arrayBuffer=buffer;
-                                  def.apply(undefined,[script.meta].concat(cpArgs(arguments)));
+                                  def.apply(undefined,[script.meta].concat(define_args));
                                }); 
                             });
                         } else {
-                            return def.apply(undefined,[script.meta].concat(cpArgs(arguments)));
+                            return def.apply(undefined,[script.meta].concat(define_args));
                         }
                     };
                     iframe.define.amd={};
