@@ -55,6 +55,9 @@
 
             } 
             
+            const _a         = Array.prototype, cpArgs = _a.slice.call.bind (_a.slice);
+                
+            
             loadScript("test.js",function(){
                 console.log("define",cpArgs(arguments));
             },function(){
