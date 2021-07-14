@@ -43,6 +43,9 @@ ml(0,ml(1),`
              __removeItem,
              __keys
          });
+         
+         const setImmediate = api.setImmediate;
+         
 
          return api;
          

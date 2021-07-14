@@ -45,6 +45,8 @@ ml(0,ml(1),`
              __keys
          },opts);
          
+         const setImmediate = api.setImmediate;
+         
          return api;
          
          function __setItem(key,ser,cb){
