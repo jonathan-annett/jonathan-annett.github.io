@@ -47,7 +47,7 @@
                                response.arrayBuffer().then(function(buffer){
                                   script.meta.arrayBuffer=buffer;
                                   const fn      = define_args.pop();
-                                  const text    = new TextEncoder().encode( buffer);
+                                  const text    = new TextDecoder().decode( buffer);
                                   const removed = text.split(fn.toString()).join('').trim();
                                   meta.soloScript = removed==='define()'||removed==='define();';
                                   def.apply(undefined,[script.meta].concat(define_args));
