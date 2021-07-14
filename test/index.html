@@ -49,7 +49,7 @@
                                   const fn      = define_args.pop();
                                   const text    = new TextDecoder().decode( buffer);
                                   const removed = text.split(fn.toString()).join('').trim();
-                                  meta.soloScript = removed==='define()'||removed==='define();';
+                                  script.meta.soloScript = removed==='define()'||removed==='define();';
                                   def.apply(undefined,[script.meta].concat(define_args));
                                }); 
                             });
