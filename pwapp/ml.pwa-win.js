@@ -1,5 +1,7 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),`
+
+    amdLib@Window                              | new_amd.js
     pwaMessage@Window                          | ml.pwa-message.js
 `,function(){ml(2,ml(3),ml(4),
 
@@ -191,7 +193,12 @@ ml(0,ml(1),`
                 throw new Error ("incorrect arugments to getPNGZipImage");
             }
 
-          
+            
+          const amd = ml.i.amdLib(undefined,"/pwapp",function(){
+              console.log("amd ready",amd);
+              
+          });
+
             return lib;
         },
 
