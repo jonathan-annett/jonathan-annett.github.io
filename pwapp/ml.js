@@ -18,6 +18,8 @@ function ml(x,L,o,a,d,s){
             r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
             //c.b=document base
             b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
+            //x.ri() = a random id generator
+            ri:()=>Math.random().toString(36).substr(-8),
             //c.c returns true if url is under current domain.
             c:(u)=>u.startsWith(O),
             //c.R=shortcut to replace keyword
@@ -54,8 +56,8 @@ function ml(x,L,o,a,d,s){
                     if(typeof e+typeof o[e]===t[2]+t[3]) {//valdidate named import is a function
                         c.S(o,e,a[L].apply(this, d[L].map(c.x))); // do the import into o[e]
                         if (!ml.d[e]) {
-                            ml.d[e]={h:e};
-                            ml.h[e]={};
+                            ml.d[e]={h:c.ri()+".js"};
+                            ml.h[ ml.d[e].h ]={e:{}};
                         }
                         c.S(ml.h[ ml.d[e].h ].e,e,o[e]);
                         
@@ -199,7 +201,7 @@ function ml(x,L,o,a,d,s){
        
        //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
        p:(u,l,s/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
-           r=z.r();//prepare a random version number (in case we need it)
+           r=c.ri();//prepare a random version number (in case we need it)
            L=(v)=>l(z.V(u,v));                  // load script with version
            V=(v)=>L(z.v(u,v,s));                   // save version v in history, load script with version
            R=()=>V(r);                           // save random verison in history, load scipt with random version
@@ -215,8 +217,7 @@ function ml(x,L,o,a,d,s){
        //z.e = resolve to etag in r.header or d (default)
        e:(r,d)=>r.headers.get("Etag")[c.R](/[\"\/\\\-]*/g,'')||d,
        
-       //z.r() = a random id generator
-       r:()=>Math.random().toString(36).substr(-8),
+       
         
        
        V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
