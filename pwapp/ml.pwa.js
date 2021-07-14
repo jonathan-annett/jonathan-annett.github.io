@@ -1,7 +1,7 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),`  
               
-              AMDLoaderLib@Window                        | new_amd.js
+              amdLib@Window                              | new_amd.js
               swResponseZipLib@ServiceWorkerGlobalScope  | ml.zipfs.js
               pwaMessage@Window                          | ml.pwa-message.js
               sha1Lib                                    | sha1.js
