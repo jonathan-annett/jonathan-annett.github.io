@@ -88,13 +88,16 @@ ml(0,ml(1),`
         const persistentCache = api.__persistent ? {} : undefined;
         
         
-        if (!!api.__setItem && !!api.__clear && !!api.__removeItem ) {
-             api.__readOnly = false ;
+        if (!api.__setItem && !api.__clear && !api.__removeItem ) {
+             api.__readOnly = true ;
+             if (!api.__getItem || !api.__keys  ) {
+                 throw new Error ("missing implementation");
+             }
         } else {
             if (!api.__setItem || !api.__clear || !api.__removeItem || !api.__getItem || !api.__keys  ) {
                 throw new Error ("missing implementation");
             } else {
-                api.__readOnly = true ;
+                api.__readOnly = false ;
             }
         }
 
