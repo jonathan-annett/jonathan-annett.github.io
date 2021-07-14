@@ -68,6 +68,12 @@ ml(0,ml(1),`
             function newFixupRulesArray(rules,cb) {
                 sendMessage("newFixupRulesArray",{rules:rules},cb);
             }
+            
+            
+            const amd = ml.i.amdLib(undefined,"/pwapp",function(){
+                console.log("amd ready",amd);
+                
+            });
 
             return lib;
         },
