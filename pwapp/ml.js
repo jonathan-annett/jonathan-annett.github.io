@@ -1,11 +1,10 @@
 /*global self*/
 function ml(x,L,o,a,d,s){
-    let z,c,t,X,T=(G)=>typeof G;
+    let z,c,t,X,T=(G)=>typeof G,l=location,O=l.origin;
     if (!ml.h){
         //create history db if none exists
         ml.h={};ml.H=[];ml.d={};ml.f={};
         let
-        l=location,O=l.origin,
         C=console;//shortcut for console
         // "t" contains an array of types - object,function,string,undefined
         // used for comparisions later
@@ -54,9 +53,12 @@ function ml(x,L,o,a,d,s){
                     
                     if(typeof e+typeof o[e]===t[2]+t[3]) {//valdidate named import is a function
                         c.S(o,e,a[L].apply(this, d[L].map(c.x))); // do the import into o[e]
-                        if (ml.d[e]) {
-                           c.S(ml.h[ ml.d[e].h ].e,e,o[e]);
+                        if (!ml.d[e]) {
+                            ml.d[e]={h:e};
+                            ml.h[e]={};
                         }
+                        c.S(ml.h[ ml.d[e].h ].e,e,o[e]);
+                        
                     } 
 
             },

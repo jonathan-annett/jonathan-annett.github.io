@@ -1,6 +1,6 @@
 /* global self,importScripts,BroadcastChannel */
 function ml(x,L, o, a, d, s){
-    let z,c,t,T=(G)=>typeof G;
+    let z,c,t,T=(G)=>typeof G,l=location,O=l.origin;
     if (!ml.h){
         //create history db if none exists
         
@@ -8,7 +8,7 @@ function ml(x,L, o, a, d, s){
         
         
         let
-        l=location,O=l.origin,
+        
         C=console;
         // "t" contains an array of types - object,function,string,undefined
         // used for comparisions later
