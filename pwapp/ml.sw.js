@@ -16,7 +16,7 @@ function ml(x,L, o, a, d, s){
         // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
         // any constants/worker functions they need. also contains some code used later by z
         // note that t doubles as a proxy for "undefined" in the type array "t" above 
-        ml.c={
+        ml.c=c={
             
             //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
             //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
@@ -57,14 +57,6 @@ function ml(x,L, o, a, d, s){
                     enumerable: !0,
                     configurable: !0
                 }) : r;
-                if (!ml.i){  
-                    ml.i=new Proxy({},{
-                        get:(t,p)=>c.I(x=p),
-                        ownKeys:()=>c.k(ml.d),
-                        getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
-                        has:(t,p)=>!!ml.d[p]
-                    });
-                }
             },
             
             // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
@@ -111,6 +103,14 @@ function ml(x,L, o, a, d, s){
             
               
         };
+        
+        
+        ml.i=new Proxy({},{
+            get:(t,p)=>c.I(x=p),
+            ownKeys:()=>c.k(ml.d),
+            getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
+            has:(t,p)=>!!ml.d[p]
+        });
         
         
     }   

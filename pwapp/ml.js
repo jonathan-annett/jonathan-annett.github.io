@@ -13,7 +13,7 @@ function ml(x,L,o,a,d,s){
         // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
         // any constants/worker functions they need. also contains some code used later by z
         // note that t doubles as a proxy for "undefined" in the type array "t" above 
-        ml.c={// holder for "constants", also a few holds outer scope commands, common functions
+        ml.c=c={// holder for "constants", also a few holds outer scope commands, common functions
             //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
             //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
             r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
@@ -58,15 +58,7 @@ function ml(x,L,o,a,d,s){
                            c.S(ml.h[ ml.d[e].h ].e,e,o[e]);
                         }
                     } 
-                   if (!ml.i){  
-                       ml.i=new Proxy({},{
-                           get:(t,p)=>c.I(x=p),
-                           ownKeys:()=>c.k(ml.d),
-                           getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
-                           has:(t,p)=>!!ml.d[p]
-                       });
-                   }
-                
+
             },
             //c.P property descriptor
             P:(v)=>1&&{value: v,enumerable: !0,configurable: !0},
@@ -115,6 +107,13 @@ function ml(x,L,o,a,d,s){
             k:(o)=>Object.keys(o)
     
         };
+        
+        ml.i=new Proxy({},{
+            get:(t,p)=>c.I(x=p),
+            ownKeys:()=>c.k(ml.d),
+            getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
+            has:(t,p)=>!!ml.d[p]
+        });
     }
     c=ml.c;
     t=ml.T;
