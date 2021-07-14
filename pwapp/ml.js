@@ -9,7 +9,7 @@ function ml(x,L,o,a,d,s){
         C=console;//shortcut for console
         // "t" contains an array of types - object,function,string,undefined
         // used for comparisions later
-        ml.T=[C,ml,'',t].map((G)=>typeof G);
+        ml.T=t=[C,ml,'',t].map((G)=>typeof G);
         // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
         // any constants/worker functions they need. also contains some code used later by z
         // note that t doubles as a proxy for "undefined" in the type array "t" above 
