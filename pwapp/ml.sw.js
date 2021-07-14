@@ -33,7 +33,7 @@ function ml(x,L, o, a, d, s){
             
             //c.u: convert string to array, remove comments, and whitespace
             u:(u)=>u=typeof u===t[2]?u[c.R](/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'')
-                                      [c.R](/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/)|\/\/.*?[\r\n])[\r\n]*/g,'')
+                                      [c.R](/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/))[\r\n]*/g,'')
                                       .trim().split('\n').map((x)=>x.trim()).filter((x)=>x.length):u, 
             
             //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
