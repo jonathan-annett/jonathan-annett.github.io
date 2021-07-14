@@ -143,7 +143,8 @@ memoryStore   | ml.xs.memory.js
             const urls = [  ];
             
             moduleStore = ml.i.httpsStore ( urls , noCorsTest, moduleCache, function() {
-
+                if (typeof ready === 'function') 
+                    ready(DEFINE,REQUIRE);
             });
         }
 

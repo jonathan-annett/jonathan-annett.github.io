@@ -194,8 +194,10 @@ ml(0,ml(1),`
             }
 
             
-          const amd = ml.i.amdLib(undefined,"/pwapp",function(){
+          const amd = ml.i.amdLib(undefined,"/pwapp",function(def,req){
               console.log("amd ready",amd);
+              window.require=req;
+              window.define=def;
               
           });
 
