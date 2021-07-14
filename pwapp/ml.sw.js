@@ -60,7 +60,7 @@ function ml(x,L, o, a, d, s){
             },
             
             // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
-            3:()=>c[4]().constructor.name || "x",
+            3:()=>"ServiceWorkerGlobalScope",
             
             // ml(1)->c[1] = resolve to self or undefined
             4:()=>typeof self === t[0] && self,
