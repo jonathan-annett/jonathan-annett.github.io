@@ -13,6 +13,16 @@
         <script>
         
         
+        function fn_args  (x,sourceNoComments) {
+            if (!sourceNoComments) {
+               const source = typeof x==='string'?x:x.toString();
+               const stripCommentsRegExp = /(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/)|\/\/.*?[\r\n])[\r\n]*/g;
+               sourceNoComments = source.replace(stripCommentsRegExp,'');
+            }
+            return  sourceNoComments.split('(')[1].split(')')[0].split(',').map(function(fn){ return fn.trim();});
+        }
+        
+        
             function loadScript(src,def,req,meta) {
                 
                 const _a         = Array.prototype, cpArgs = _a.slice.call.bind (_a.slice);
@@ -45,11 +55,26 @@
                         if (!script.meta.arrayBuffer) {
                             fetch(script.src,{mode:"no-cors"}).then(function(response){
                                response.arrayBuffer().then(function(buffer){
-                                  script.meta.arrayBuffer=buffer;
                                   const fn      = define_args.pop();
+                                  cnst  fn_src  = fn.toString();
                                   const text    = new TextDecoder().decode( buffer);
-                                  const removed = text.split(fn.toString()).join('').trim();
+                                  const removed = text.split(fn_src).join('').trim();
                                   script.meta.soloScript = removed==='define()'||removed==='define();';
+                                  if (script.meta.soloScript) {
+                                      meta.alternate = JSON.stringify([
+                                          'function',   
+                                          '',
+                                          fn_args(fn_src),
+                                          text
+                                      ]);
+                                  } else {
+                                      meta.alternate = JSON.stringify([
+                                          'function',   
+                                          '',
+                                          ['define','require'],
+                                          text
+                                      ]);
+                                  }
                                   def.apply(undefined,[script.meta].concat(define_args));
                                }); 
                             });

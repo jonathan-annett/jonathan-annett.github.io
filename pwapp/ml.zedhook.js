@@ -2,14 +2,14 @@
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib, ErrorStackParser, fixupUrl  */
-ml(0,ml(1),[
+ml(0,ml(1),`
     
-    'pwaWindow@Window                           | ml.pwa-win.js',
-    'sha1Lib@Window                             | sha1.js',
-    'ErrorStackParser@ServiceWorkerGlobalScope  | error-stack-parser.js',
-    'StackFrame@ServiceWorkerGlobalScope        | stack-frame.js'
+    pwaWindow@Window                           | ml.pwa-win.js'
+    sha1Lib@Window                             | sha1.js'
+    ErrorStackParser@ServiceWorkerGlobalScope  | error-stack-parser.js'
+    StackFrame@ServiceWorkerGlobalScope        | stack-frame.js
    
-    ],function(){ml(2,ml(3),ml(4),
+    `,function(){ml(2,ml(3),ml(4),
 
     {
 

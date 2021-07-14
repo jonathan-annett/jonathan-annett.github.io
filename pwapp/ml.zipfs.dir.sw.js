@@ -1,12 +1,12 @@
 /* global ml,self, JSZipUtils,JSZip,localforage,Response,Headers,BroadcastChannel,UPNG */
 
-ml(0,ml(1),[
+ml(0,ml(1),`
     
-    'sha1Lib  | sha1.js',
-    'UPNG     | upng.js',
-    'pako     | pako.js'
+    sha1Lib  | sha1.js
+    UPNG     | upng.js
+    pako     | pako.js
 
-    ],function(){ml(2,ml(3),ml(4),
+    `,function(){ml(2,ml(3),ml(4),
 
     {   
         ServiceWorkerGlobalScope: function zipFSListingLib (  listingLib ) {
@@ -212,7 +212,7 @@ ml(0,ml(1),[
                         '</head>',
                         '<body class="disable-select">',
                         '<script src="ml.js"></script>',
-                        '<script src="ml.xs.js"></script',
+                        '<script src="new_amd.js"></script',
                         '<script src="ml.zedhook.js"></script>',
                         '<script src="ml.zipfs.dir.js"></script>',
                         

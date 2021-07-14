@@ -8,9 +8,16 @@ jshint maxerr:10000
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),[
-    'serializerLib | ml.xs.serializer.js'
-],function(){ml(2,ml(3),ml(4),
+ml(0,ml(1),
+
+`
+serializerLib | ml.xs.serializer.js
+xStoreBase    | ml.xs.base.js
+httpsStore    | ml.xs.https.js
+memoryStore   | ml.xs.memory.js
+
+`
+,function(){ml(2,ml(3),ml(4),
 
     {
         Window: function amdLib( lib ) {
@@ -21,7 +28,7 @@ ml(0,ml(1),[
         }
     }, {
         Window: [
-            ()=> amdLib ()
+            ()=> amdLib 
         ]
 
     }
@@ -29,7 +36,10 @@ ml(0,ml(1),[
     );
 
 
-    function amdLib () {
+    function amdLib (
+        moduleStore,
+        scripts_root,
+        ready) {
        
         const { deserialize, serialize, setImmediate } = self.serializerLib(),
               _a         = Array.prototype,
@@ -37,11 +47,9 @@ ml(0,ml(1),[
               commonJSArgs   = ['require','module','exports'],
               
               amd_require_arg_names = ['define'].concat(commonJSArgs),
-              module_rename_wrap_args = ['loadModule','createModule','self','DEF','REQ','module'],
 
-              
               commonJSRegExp = /^require|exports|module$/,
-              stripCommentsRegExp = /(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/)|\/\/.*?[\r\n])[\r\n]*/g,
+              stripCommentsRegExp = /\/\/(?![\S]{2,}\.[\w]).*|\/\*(.|\n)+?\*\//g,
               commonJSRequireScan = /(?<=require\s*\(\s*[\'\"])([a-z0-9\_\-\.]*)(?=[\'\"]\s*\))/,
               commonJSRequireSplit = commonJSRequireScan[Symbol.split].bind(commonJSRequireScan),
               commonJSQuotedRequires=/(\'.*(require\s*\(\s*(\"|\\\"|\\\')).*\')|(\".*(require\s*\(\s*(\'|\\\"|\\\')).*\")|(\`.*(require\s*\(\s*(\"|\'|\\\"|\\\')).*\`)/g,
@@ -89,11 +97,60 @@ ml(0,ml(1),[
             define  : DEFINE
             
         };
+        
+        
+        const origin  = window.location.origin.replace(/\/$/,'')+'/';
+        scripts_root = typeof scripts_root==='string' && scripts_root.length > 0 ?   (origin+scripts_root+'/').replace(/^\/\//g,'/')  : origin;
+        
+        const noCorsTest = function ( url ) {
+                 return  ! (
+                     
+                      url.indexOf("/")===0 || 
+                      url.indexOf(".")===0 || 
+                      url.indexOf(origin)===0
+                      
+                    ) ;
+        };
+        
+        const idToFullUrl = function ( id , base ) {
+                base = base || scripts_root;
+                // "main/   ---> "main/index/js"     ---> https://wherever.com/main/index.js
+                // "main"   ---> "main.js"           ---> https://wherever.com/main/index.js
+                // "lib/func"   ---> "lib/func.js"
+                id = id.slice(-3)===".js" ? id : id.slice(-1)==="/" ? id+"index.js" : id + ".js";
+                switch (true) {
+                    case id.indexOf("/")===0 :      return id.replace(/^\/*/,scripts_root);
+                    case /^http(s):\/\//.test(id):  return id;
+                    case /^\.\//.test(id) :         return id.replace(/^\.\//,base); 
+                    default :                       return base + id;
+                }
+                
+        };
+    
+        //const main_id_url = typeof main_id === 'string' ? idToFullUrl(main_id) : idToFullUrl( "index.js") ;
+        
+        
+        // report back when main_id is ready to start loading
+        // does not actually preload anything, just primes the moduleStore cache to include the item for main_id
+        
+        
+        if (!moduleStore) { 
+            // set up a memory cached http fetch moduleStore.
+            
+            const moduleCache = ml.i.memoryStore({__persistent:true});
+            
+            
+            const urls = [  ];
+            
+            moduleStore = ml.i.httpsStore ( urls , noCorsTest, moduleCache, function() {
+
+            });
+        }
 
         
         return lib;
-              
         
+
         function typ (x) {
             return Array.isArray(x)?'array':typeof x;
         }
@@ -106,7 +163,7 @@ ml(0,ml(1),[
             return typeof def==='function'&&def.apply(undefined,args); 
         }
     
-        function REQUIRE (){
+        function REQUIRE () {
           const url = getScriptPath(undefined,'require');
           const args = cpArgs(arguments),
           def=requires[args.map(typ).join('_')];
@@ -153,16 +210,138 @@ ml(0,ml(1),[
             return cb.apply(undefined,loaded);
         }
 
-        function fn_args  (x,sourceNoComments) {
+        // returns the array of named arguments (with a few optional extraIds)
+        function fn_args  (fn,sourceNoComments,ids,reqr,modl,index,extraIds) {
+            // to avoid double processing, caller can pass in source without comments
+            // in which case fn ( the function itself, a string of the function source) is ignored.
             if (!sourceNoComments) {
-               const source = typeof x==='string'?x:x.toString();
+               const source = typeof fn==='string'?fn:fn.toString();
                sourceNoComments = source.replace(stripCommentsRegExp,'');
             }
-            return  sourceNoComments.split('(')[1].split(')')[0].split(',').map(function(fn){ return fn.trim();});
+            
+            //locate and clean up each argument name (ie remove whitespace)
+            const args = sourceNoComments.split('(')[1].split(')')[0].split(',').map(function(a){ return a.trim();});
+           
+            
+            // ids is the array that proceeded the function in a call to define. eg define([...],function(...){...}) 
+            // validate the ids array and it's length vs args length before attempting to it further.
+            if (Array.isArray(ids) && ids.length===args.length) {
+                
+                
+                // when extra info is returned, it's in an object.
+                const dict = {
+                    args     : args,               // the names of each argument, to pass into new Function()
+                    ids      : ids,                // the ids for each argument, to locate the dependancy
+                    //deps : tdb                   // the loaded dependancy (populated below if reqr is supplied by caller)
+                    commonJS : args[0]==='require' // a boolean indicating the function is a commonJS module
+                };
+                
+                // by providing reqr (the require implementation relevant to the function), caller indicates they want 
+                // an array of preloaded dependancies to be generated for each argument
+                if (typeof reqr ==='function') {
+                    
+                    // validate the passed in index argument
+                    const valid_index = typeof index ==='object' && typeof index.i +typeof index.a ==='objectobject' ;
+                    
+                    // wrap reqr with an array iterator, which optionally saves the module into an external object
+                    const req = valid_index ? function(id,ix){
+                       // pull in the module by it's id
+                       const mod = reqr(id); 
+                       // save it into the index by id
+                       index.i[ id ] = mod;
+                       // save it into the index by argument name
+                       index.a[ args[ix] ] = mod;
+                       
+                       return mod;
+                    } : function(id) { return reqr(id); };
+                    
+                    // map dependancy to it's loaded module 
+                    dict.deps = ids.map(req);
+                    if ( Array.isArray( extraIds ) ) {
+                        dict.extraIds  = extraIds;
+                        dict.extraDeps = extraIds.map(req);
+                    }
+                }
+                
+                // and we need to take things further for functions that call require.
+                if (dict.commonJS) {
+                    // rework the arguments array to conform to require,module,exports,others, even if exports and module were not included
+                    dict.commonJSArgs = commonJSArgs.concat(
+                        
+                        args.filter(
+                            function(x){
+                                return !commonJSRegExp.test(x); 
+                            }
+                        )
+                        
+                    );
+                    dict.commonJSIds = [ '','','' ].concat(
+                        // we need to map before filtering, because the arrays are index linked.
+                        args.map(function(a,ix){
+                           // convert the argument to it's id (or null if one of require,module,exports )
+                           return commonJSRegExp.test(a) ? null : ids[ix];
+                        }).filter( function(a) { return a !==null; } )
+                    );
+                        
+                    // pre populate a commonJSDeps array ready to instantiate the module
+                    if (typeof reqr+typeof modl ==='functionobject' && typeof modl.exports==='object') {
+                        dict.commonJSDeps = [ reqr, modl, modl.exports ].concat(
+                            
+                           // we need to map before filtering, because the arrays are index linked.
+                           args.map(function(a,ix){
+                              // convert the argument to it's id (or null if one of require,module,exports )
+                              return commonJSRegExp.test(a) ? null : dict.deps[ix];
+                           }).filter( function(a) { return a !==null; } )
+                           
+                        );
+                        
+                    }
+                    
+                    
+
+                }
+                // when extra info is returned, it's in an object.
+                return dict;
+            }
+            
+            return args;
         }
         
+        // returns the code segment (with heeader and arguments removed, and first and last curly brace)
+        // embeded comments are preserved
+        function fn_src (x,sourceNoComments) {
+          const stripCommentsRegExp = /\/\/(?![\S]{2,}\.[\w]).*|\/\*(.|\n)+?\*\//g;
+          const source = typeof x==='string'?x:x.toString();
+          let offset = 0,located;
+          
+          // white out any comments before the first brace
+          let src     = source;
+          let braceAt = src.indexOf('{');
+          let match   = stripCommentsRegExp.exec(src);
+          while (match) {
+               if (braceAt<match.index) {
+                   // first/next comment is after the first brace, so we can use braceAt as a valid index
+                   return source.substr(braceAt+1,source.lastIndexOf('}'));
+               }
+               // white out the commment
+               const matchlen = match[0].length;
+               src     = src.substr(0,match.index) + new Array ( matchlen+1).join(' ') + src.substr(match.index+matchlen);
+               
+               // have another go around
+               braceAt = src.indexOf('{');
+               match   = stripCommentsRegExp.exec(src);
+          }
+          
+          braceAt = source.indexOf('{');
+          return source.substr(braceAt+1,source.lastIndexOf('}'));
+        }
+        
+        
+        // returns any embeded require statements
         function fn_requires (x,sourceNoComments) {
             
+            // first remove any comments that are in the source.
+            // this deals with the issue of commented out code that includes require statements
            if (!sourceNoComments) {
               const source     = typeof x==='string'?x:x.toString();
               sourceNoComments = source.replace(stripCommentsRegExp,'');
@@ -170,7 +349,15 @@ ml(0,ml(1),[
            
            const result = [];
            
-           commonJSRequireSplit( sourceNoComments.replace(commonJSQuotedRequires,'') ) .forEach(
+           // now remove any require statements that are inside strings or template strings
+           
+           const dequotedSource = sourceNoComments.replace(commonJSQuotedRequires,'');
+           
+           
+           // now split on require statements, which will yeild an array where every second element is 
+           
+           
+           commonJSRequireSplit( dequotedSource ) .forEach(
                
                function (x,ix){
                   if (ix % 2 === 1) {
@@ -182,6 +369,7 @@ ml(0,ml(1),[
            
            return result;
         }
+        
         
         function urlIdHash (domain_prefix,referrer_prefix,url) {
             const hasQuery=url.indexOf('?'), dot_dir = /^\.\//, slash_dir = /^\//;
@@ -211,67 +399,74 @@ ml(0,ml(1),[
             }
         }
         
-        
-        
       
-        let loadModule = function loadModule (
-            /*these args are for linting only*/createModule,define,require,module,exports
-            /*he function is converted to as string starting from the first curly brace--->*/) {
-            const _a   = Array.prototype,
-            cpArgs     = _a.slice.call.bind (_a.slice),
-            boot_args  = [define,require,module,exports].concat(cpArgs(arguments));
-            
-            if (module.__booted) {
-                return module.exports;
-            } else {
-                module.exports =  (createModule.apply(self,boot_args) || module.exports) ;
-                
-                Object.defineProperty("__booted",{value:true,enumerable:false,writable:false});
-                return module.exports;
-            }
-            
-        }.toString();
-        // save the source code for the above function as a string, as RuntimeModule uses it to create
-        // a wrapper function to boostrap a module.
-        loadModule = ' ()'+ loadModule.substring(loadModule.indexOf(')')+1);
-       
-            
-        loadModule = function loadModule (createModule,doLoadModule,module) {
-            return doLoadModule(createModule,module);
-        }.toString();
-        // save the source code for the above function as a string, as RuntimeModule uses it to create
-        // a wrapper function to boostrap a module.
-        loadModule = ' ()'+ loadModule.substring(loadModule.indexOf(')')+1);
-
-
-        
-        function DEF () {
-            console.log("this in define:",this);
-        }
-        
+        // REQ wrapp require, preventing a call to REQUIRE if id is not available.
+        // REQ (id) will either return the loaded module, or throw an exception
+        // REQ is safe to call as an array iterator, since it filters out the second and third args  
         function REQ (id) {
-            console.log("REQ invoked with",id);
-            return {
-              id:id
-            };
+            if (AVAIL(id)) {
+                return REQUIRE(id);
+            } else {
+                throw new Error (id+" is not available");
+            }
         }
-       
+        
+        
+        // AVAIL returns true or false indicating if the module referenced by id is available
+        // additionally, if the module IS NOT available, and "preload" is true, it will 
+        // asynchronously do what is needed to make it potentially available the next time AVAIL is called.
+        // so whilst it will not block, a true return indicates the module is availble for a blocking load via REQ
+        // also, assuming preload===true, if cb is a function, call it when the module is available to be preloaded 
+        function AVAIL (id,preload,cb) {
+            const id_url = idToFullUrl(id);
+            if (moduleStore.exists(id_url)) {
+                if (preload && typeof cb=== 'function' ) {
+                    cb();
+                }
+                return true;
+            } else {
+               if (preload) {
+                   moduleStore.___getItem(id_url,function(ser){
+                       console.log("preloaded",id,"(",id_url,ser,"bytes)");
+                       if (typeof cb==='function' && moduleStore.exists(id)  ) {
+                           cb();
+                       }
+                   });
+               }
+               return false;
+            }
+        }
            
-       function doLoadModule (createModule,module) {
-           const boot_args  = [DEF,REQ,module,module.exports].concat(module.__runtime_args);
+       function doLoadModule (createModule,module,THIS) {
+           const boot_args  = [DEFINE,REQ,module,module.exports].concat(module.__runtime_args);
            if (module.__booted) {
                return module.exports;
            } else {
-               module.exports =  (createModule.apply(self,boot_args) || module.exports) ;
+               module.exports =  (createModule.apply(THIS,boot_args) || module.exports) ;
                Object.defineProperty(module,"__booted",{value:true,enumerable:false,writable:false});
                return module.exports;
            }
        }
        
+       
+       
+       /*
+       
+            serialized data / scriptElement / commonJS function wrapper --> SerializedModule ---> RuntimeModule
+            
+            
+            
+            RuntimeModule
+       
+       
+       
+       
+       */
+       
        function RuntimeModule (
            name,         // 
-           coded_args,   // array of arguments from:  define (function(these,args,here){}) ---->["these","args","here"]
-           require_list, // array of ids for coded_args followed by any require statements not included in coded_args
+           coded_args,   // array of strings representing arguments from:  define (function(these,args,here){}) ---->["these","args","here"]
+           require_list, // array of strings representing ids for coded_args followed by any require statements not included in coded_args
            source,       // 
            THIS) {
            const args = cpArgs(arguments)
@@ -290,41 +485,51 @@ ml(0,ml(1),[
                }
               
            }
-           
+            
            function createFromSource(name, coded_args, require_list, source, THIS) {
                name = name || "unnamed_module";
-               const module = { 
+               const module = {
                    exports : {}  
                };
                
                Object.defineProperties(module,{
+                   
+                  // array of argument names
                   __coded_arg_names  : { 
                       value:coded_args.slice(),
                       enumerable:false,
                       writable:false,
                       configurable:true},
                       
-                  __preload_arg_names :{ 
+                  // array of ids this module needs. the first __coded_arg_names.length elements maps to __coded_arg_names
+                  __preload_ids : { 
                       value:require_list.slice(),
                       enumerable:false,
                       writable:false,
                       configurable:true},
                       
+                      
+                  // on first touch, attempts to load each module needed, and if sucesfull, returns an array of each preloaded dependancy 
+                  // subsequent touches just returns that array.
                   __preload_args     : { 
                       get : function () {
                           const def = { 
-                              value:module.__preload_arg_names.map(REQ),
+                              value:module.__preload_ids.map(REQ),
                               enumerable:false,
                               writable:false,
                               configurable:true
                           };
                           delete module.__preload_args;
-                          Object.defineProperty (module,'__runtime_args',def);
+                          Object.defineProperty (module,'__preload_args',def);
                           return def.value;
                       }, 
                       enumerable   : false,
                       configurable : true
                   },
+                  
+                  // this is effecttivey a slice of the __preload_args array ( which maps to __coded_arg_names)
+                  // in otherwords, __runtime_args [ n ] ===  loaded module for __coded_arg_names[ n ]
+                  // like __preload_args, this is populated on first touch.
                   __runtime_args     : { 
                       get : function () {
                           const def = { 
@@ -339,18 +544,70 @@ ml(0,ml(1),[
                       }, 
                       enumerable   : false,
                       configurable : true
-                  }
+                  },
+                  
+                  // returns true if the RuntimeModule is able to be instantiated
+                  // in otherwords, if __preload_avail is false, touching __preload_ids or __runtime_args will result in an exception
+                  // this function is non destructive. it does not attempt to preload anything, simply tells you if EVERYTHING is available. 
+                  __preload_avail    : {
+                      
+                      get : function () {
+                               
+                          return module.__preload_args.reduce(function(n,id){
+                              return AVAIL(id,true) ? n+1 : n;
+                          },0) === module.__preload_args.length;
+                          
+                      },
+                      enumerable   : false,
+                      configurable : true
+                  },
+                  
+                  // assuming all objects are availble this will preload the module's dependants, but not the module itself
+                  // returns true or false, and does not attempt to load anything unless all dependants are available.
+                  // optionally, a callback will return an array of missing modules, or the module itself. 
+                  // eg __preload(function(missing,module) {});
+                  __preload : {
+                      
+                      value : function (cb) {
+                          const missing = [];
+                          const avail = module.__preload_args.reduce(function(n,id){
+                               if (AVAIL(id,true)) return n+1;
+                               missing.push(id);
+                               return n;
+                          },0) === module.__preload_args.length;
+                          
+                          if (avail) {
+                              const ignored = module.__preload_ids.slice();
+                              ignored.splice(0,ignored.length);
+                              return typeof cb === 'function' ? cb(undefined,module) : true;
+                          } 
+                          if (typeof cb === 'function') return cb(missing);
+                          missing.splice(0,missing.length);
+                          return false;
+                      },
+                       enumerable   : false,
+                       configurable : true
+                },
+                  
                   
                });
+               
                
                const module_arg_names  = amd_require_arg_names.concat(coded_args);
                const module_definition = new Function(module_arg_names,source);
                
+               
+               // this wrapper construct is multi purpose
+               // 1) allows naming of the funcition
+               // 2) to prevent source from being exposed simply calling toString()
+               // 3) to reduce code size by not having to include loader code in the module itself 
                const newModule      = (new Function (
-                                         module_rename_wrap_args,
-                                         'return function ' + (name ? name : '') + loadModule 
-                                    ))(loadModule,module_definition,doLoadModule,DEF,REQ,module);
-               newModule.constructor = RuntimeModule; 
+                                      ['loadModule', 'createModule', 'module', 'THIS' ],
+                                            'return function ' + (name ? name : '') + ' () return loadModule(createModule,module,THIS);' 
+                                    ))(doLoadModule, module_definition, module, THIS);
+                                    
+               newModule.constructor = RuntimeModule;
+               newModule.__module = module;
                return  newModule;
            }
            
@@ -358,20 +615,11 @@ ml(0,ml(1),[
            function createFromSerializedModule(ser,THIS) {
                const arr = JSON.parse(ser);
                return createFromSource(
-                   ser[1],//name, 
-                   ser[2],//coded_args, 
-                   ser[3],//require_list, 
-                   ser[4],//source, 
+                   arr[1],//name, 
+                   arr[2],//coded_args, 
+                   arr[3],//require_list, 
+                   arr[4],//source, 
                    THIS);
-           }
-           
-           function createFromScriptElement(doc,script,THIS) {
-               
-           }
-           
-           
-           function createFromArrayBuffer(arraybuffer,THIS) {
-               
            }
 
        }
@@ -393,14 +641,14 @@ ml(0,ml(1),[
           this
        );
        
-               
-
+       
+ 
         
-        function SerializedModule() {
+        function SerializedModule(meta) {
             
             let fnArgs = cpArgs(arguments);
             
-            let name,coded_args,require_list,source;
+            let name,coded_args,require_list,source,loaded;
             
             switch (fnArgs.map(typ).join('_')) {
                 
@@ -408,65 +656,114 @@ ml(0,ml(1),[
                     
                     throw new Error("expecting arguments in call to SerializedModule");
                     
-                case 'objectfunction' : {
-                   /*
-                   new SerializedModule( meta, function(require,module,exports,other1,other2) { }) 
-                   */
-                   const fn = fnArgs[1];
-                   const src = fn.toString(); 
-                   const src_nocom   = src.replace(stripCommentsRegExp,'');
-                   const _coded_args_  = fn_args(src,src_nocom);
-                   const internal_requires = fn_requires(src,src_nocom);
-                   
-                   coded_args = _coded_args_.filter(function(x){return !commonJSRegExp.test(x);});
-                   
-                   
-                   source = src.substring(src.indexOf('{')+1,src.lastIndexOf('}'));
+                // eg define ('mylib',['otherlib'],function(require,module,exports,otherlib) { ... });
+                // ---> new SerializedModule (meta,'mylib',['otherlib'],function(require,module,exports,otherlib) { ... });
                 
-                   break;
+                case 'string': { 
+                    fromSerial (fnArgs[0]);
+                    break;
                 }
-                
-                case "string" : {
-                    /*
-                    new SerializedModule( serialzied_data ) 
-                    */
-                    
-                    break;  
-                }
-                
-                case 'object_array_string' : {
-                    /*
-                    new SerializedModule( meta, dependants, source ) 
-                    */
-                    
-                    meta = { deps : fnArgs[0] };
-                    source = fnArgs[1];
+                case 'object_string_array_function': {
+                    const ids      = fnArgs[2];
+                    source         = '/*file:'+meta.url+' ('+meta.href+') */\n'+
+                                     fnArgs[3].toString();
+                    const sourceNoComments = source.replace(stripCommentsRegExp,'');
+                    const dict     = fn_args (source,sourceNoComments,ids);
+                    const requires = fn_args(source,sourceNoComments);
+                    coded_args     = (dict.commonJS ? dict.commonJSArgs : dict.args);
+                    require_list   = (dict.commonJS ? dict.commonJSIds : dict.ids).concat (requires);
                     break;
                 }
                 
+                // eg define (['otherlib'],function(require,module,exports,otherlib) { ... });
+                // ---> new SerializedModule (meta,['otherlib'],function(require,module,exports,otherlib) { ... });
+                case 'object_array_function': {
+                    const ids      = fnArgs[1];
+                    source         = '/*file:'+meta.url+' ('+meta.href+') */\n'+
+                                     fnArgs[2].toString();
+                    const sourceNoComments = source.replace(stripCommentsRegExp,'');
+                    const dict     = fn_args (source,sourceNoComments,ids);
+                    const requires = fn_args(source,sourceNoComments);
+                    coded_args     = (dict.commonJS ? dict.commonJSArgs : dict.args);
+                    require_list   = (dict.commonJS ? dict.commonJSIds : dict.ids).concat (requires);
+                    break;
+                }
                 
+                // eg define (function(require,module,exports,otherlib) { ... });
+                // ---> new SerializedModule (meta,function(require,module,exports,otherlib) { ... });
+                case 'object_function': {
+                    const ids      = [ meta.url ];
+                    source         = '/*file:'+meta.url+' ('+meta.href+') */\n'+
+                                     fnArgs[1].toString();
+                    const sourceNoComments = source.replace(stripCommentsRegExp,'');
+                    const dict     = fn_args (source,sourceNoComments,ids);
+                    const requires = fn_args(source,sourceNoComments);
+                    coded_args     = (dict.commonJS ? dict.commonJSArgs : dict.args);
+                    require_list   = (dict.commonJS ? dict.commonJSIds : dict.ids).concat (requires);
+                    break;
+                }
                 
             }
 
             Object.call(this);
             Object.defineProperties(this,{
-                source    : { value : source, enumerable : true, writable : false },
-                deps      : { value : source, enumerable : true, writable : false },
-                serialize : { value : source, enumerable : true, writable : false },
-                
+                name          : { value : name,         enumerable : true, writable  : false },
+                coded_args    : { value : coded_args,   enumerable : true, writable  : false },
+                require_list  : { value : require_list, enumerable : true, writable  : false },
+                source        : { value : source,       enumerable : true, writable  : false },
+                toJSON        : { value : toSerial,     enumerable : false, writable : false },
+                ser           : { get   : toSerial,     enumerable : false, writable : false },
+                load          : { value : loader,       enumerable : false, writable : false },
             });
             
+            
+            function available (THIS) {
+                if (!loaded) {
+                    loaded = new RuntimeModule(name,     
+                    coded_args,   // array of strings representing arguments from:  define (function(these,args,here){}) ---->["these","args","here"]
+                    require_list, // array of strings representing ids for coded_args followed by any require statements not included in coded_args
+                    source,       // 
+                    THIS);
+                }
+                return loaded.__module.__preload_avail;
+                
+            }
+            
+            function loader (THIS){
+                if (!loaded) {
+                    loaded = new RuntimeModule(name,     
+                    coded_args,   // array of strings representing arguments from:  define (function(these,args,here){}) ---->["these","args","here"]
+                    require_list, // array of strings representing ids for coded_args followed by any require statements not included in coded_args
+                    source,       // 
+                    THIS);
+                }
+                
+                return loaded.__module.preload(function(missing,module){
+                    if (missing) {
+                        throw new Error ( 'missing sources: \n'+missing.join('\n') ) ;
+                    }
+                    return module;
+                });
+
+            }
             
             function toSerial (){
                 return JSON.stringify([
                    "SerializedModule",
                    name,
-                   deps,
-                   internal_requires,
+                   coded_args,
+                   require_list,
                    source
                 ]);
             }
             
+            function fromSerial (ser) {
+               const arr    = JSON.parse(ser);
+               name         = arr[1];
+               coded_args   = arr[2];
+               require_list = arr[3];
+               source       = arr[4];
+            }
         }
      
      

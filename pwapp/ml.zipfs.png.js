@@ -1,12 +1,12 @@
 /* global ml,self, JSZipUtils,JSZip,localforage,Response,Headers,BroadcastChannel,UPNG */
 
-ml(0,ml(1),[
+ml(0,ml(1),`
     
-    'sha1Lib  | sha1.js',
-    'UPNG     | upng.js',
-    'pako     | pako.js'
+    sha1Lib  | sha1.js
+    UPNG     | upng.js
+    pako     | pako.js
 
-    ],function(){ml(2,ml(3),ml(4),
+    `,function(){ml(2,ml(3),ml(4),
 
     {   
         ServiceWorkerGlobalScope: function zipPNGLib (  lib ) {
