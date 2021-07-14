@@ -156,7 +156,8 @@ function ml(x,L,o,a,d,s){
              }
              N=R[1];
              U=c.B(R[3]);
-             if(c.c(U))ml.d[N]={h:U};
+             //if(c.c(U))
+             ml.d[N]={h:U};
              z.T(window,"script",(s)=>{
                 z.p(U,s.setAttribute.bind(s,"src"),s);    
              });
