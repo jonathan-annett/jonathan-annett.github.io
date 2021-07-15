@@ -110,11 +110,11 @@ function ml(x,L,o,a,d,s){
                 // ml("/path/to/mod.js",function(mod){...},window,"modName") 
                 //   ==>  x="/path/to/mod.js", L=window, o=function(mod){ /* do something with mod*/ } a="modName"
                 R=c.r(x);
-                S={};    
+                S=L||{};    
                 R=R||[x,'t',0,x];// [fullurl,tempname,ignored,url]
                 t=a||R[1];        // t = temp name "t" or supplied module name
-                Y={};Y[c.C]=function tmp(){};
-                Z={};Z[c.C]=[()=>{R= ml.i[t]; o(R);return R;}];// import named module
+                Y={};Y[c.C]=function tmp(){o.apply(this,arguments)};
+                Z={};Z[c.C]=[()=>ml.i[t]];// import named module
                 return ml( t+"@"+c.C+"|"+R[3],()=>c[2](c.C,S,Y,Z));
                 
             },
@@ -257,7 +257,10 @@ function ml(x,L,o,a,d,s){
     return z[x]&&z[x](L,o,a,d,s);
 }
 
-ml('setImmediateLib|ml.setImmediate.js',window,function (s){s(function(i){ml.c.i = i;});});
+ml(`
+setImmediateLib | ml.setImmediate.js
+amdLib          | ml.amd.js
+`,window,function (si,amd){si(function(i){ml.c.i = i;}); console.log(amd);});
 
 
 
