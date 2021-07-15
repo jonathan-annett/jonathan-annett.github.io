@@ -197,12 +197,6 @@ function ml(x,L,o,a,d,s){
                  if (L[x]) return !1;
                  
                  return x;
-                 
-                 //if(ml.d[x]) return !1;
-                 
-                 //if(ml.h[x]) return !1;
-                 
-                 //return x;
              } else {
                  // for module@Window|filename.js format - return if wrong name:  c.C is "Window","ServiceWorkerGlobalScope"
                 if ((N=R[2])&&N!==(d||c.C)) return !1; 
@@ -237,12 +231,6 @@ function ml(x,L,o,a,d,s){
 
 
 
-       //document.getElementById('targetFrame').contentWindow.targetFunction();
-       
-     
-
-       
-              
        //z.U() = history as an array of urls
        
        U:()=>c.k(ml.h),
@@ -278,8 +266,8 @@ function ml(x,L,o,a,d,s){
     };
     return z[x]&&z[x](L,o,a,d,s);
 }
-ml('ml.setImmediate.js',{},function(lib){
+ml('setImmediateLib|ml.setImmediate.js',{},function(lib){
     lib(function(x){
        ml.c.i = x.setImmediate;
-    })
-},"setImmediateLib");
+    });
+});
