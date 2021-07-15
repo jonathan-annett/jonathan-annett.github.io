@@ -104,8 +104,8 @@ function ml(x,L,o,a,d,s){
             L:(O,A,D)=>{
                 x=c.u(x);// arrayify string dependants
                 O=L||{};
-                A={};A[c.C]= x.map((s,i,a,R)=>{R=c.r(s);return R ? ()=>{ o(R[1],ml.i[ R[1] ]);} : ()=>{}});// import named module
-                D={};D[c.C]=function tmp(){};// invoke callback with loaded modules
+                A={};A[c.C]=function tmp(){};// invoke callback with loaded modules
+                D={};D[c.C]= x.map((s,i,a,R)=>{R=c.r(s);return R ? ()=>{ o(R[1],ml.i[ R[1] ]);} : ()=>{}});// import named module
                 return ml(0,O,x,()=>c[2](c.C,O,A,D));
                 
             },
