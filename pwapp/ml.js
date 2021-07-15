@@ -101,7 +101,7 @@ function ml(x,L,o,a,d,s){
             //c.l = console.log shortcut
             l:C.log.bind(C),
             //c.L = loader hoist function (called when first argument to ml is a string)
-            L:(S,R,t)=>{
+            L:(S,R,t,Y,Z)=>{
                 
                 // outer scope args: x,L,o,a,d,s...
                 // ml("/path/to/mod.js",{},function(mod){...}) 
@@ -110,22 +110,13 @@ function ml(x,L,o,a,d,s){
                 // ml("/path/to/mod.js",function(mod){...},window,"modName") 
                 //   ==>  x="/path/to/mod.js", L=window, o=function(mod){ /* do something with mod*/ } a="modName"
                 R=c.r(x);
-                S={};       // S=dummy self, contains "t" temporarily
-                            // R=holder for S.t between deletion and return
+                S=L;    
                 R=R||[x,'t',0,x];// [fullurl,tempname,ignored,url]
                 t=a||R[1];        // t = temp name "t" or supplied module name
-                return ml(
-                    0,S,[
-                    t+"@T|"+R[3]],
-                    ()=>ml(  2,'T',S,
-                            {T:o},
-                            {T:[()=>{  R=S[t];
-                                       c.m(S,t,R);// save result into ml.d and ml.h (and S, but we delete it)
-                                       return R;
-                                     }
-                               ]}),
-                    'T'
-                );
+                Y={};Y[c.C]=o;
+                Z={};Z[c.C]=[()=>{R=S[t];c.m(S,t,R);return R;}];// save result into ml.d and ml.h
+                return ml( t+"@"+c.C+"|"+R[3],()=>c[2](2,c.C,S,Y,Z));
+                
             },
             //c.I = import query
             I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
