@@ -5,7 +5,7 @@
 
 ml(0,ml(1),`
     
-   setImmediateLib | ml.xs.setImmediate.js
+   setImmediateLib | ml.setImmediate.js
    Rusha           | rusha.js
     
 `,function(){ml(2,

@@ -104,7 +104,7 @@ function ml(x,L,o,a,d,s){
                 R=c.r(x);
                 w=R?c.S:!!o;
                 S=w?o:{};  // S=dummy self, contains "t" temporarily
-                       // R=holder for S.t between deletion and return
+                           // R=holder for S.t between deletion and return
                 R=R||[x,'t',0,x];// [fullurl,tempname,ignored,url]
                 t=a||R[1];
                 return ml(
@@ -268,3 +268,4 @@ function ml(x,L,o,a,d,s){
     };
     return z[x]&&z[x](L,o,a,d,s);
 }
+ml('ml.setImmediate.js');

@@ -5,12 +5,12 @@
 // "native" ml encoded files are encoded into serilized modules where are deserialized to load them
 
 // the file "/pwapp/stub.js" (when loaded in a <script\> tag):
-ml(0,ml(1),[
+ml(`
     
-    " neededMod |   /path/needed.js",
-    " x@Window  | https://somecdn/x.min.js",
+    neededMod |   /path/needed.js
+    x@Window  | https://somecdn/x.min.js
     
-],function(){ml(2,
+`,function(){ml(2,
 
     {
         Window: function stubLib( lib ) {
