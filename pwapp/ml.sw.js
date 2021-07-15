@@ -125,10 +125,8 @@ function ml(x,L, o, a, d, s){
               K=c.k(c.S);
               if (f) {
                   K.filter((k)=>{c.K.indexOf(k)<0;}).some(f);
-                  delete c.K;
-              } else {
-                 c.K=K;
               }
+              c.K=K;
             }
                     
             
