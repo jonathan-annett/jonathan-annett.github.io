@@ -119,14 +119,22 @@ function ml(x,L, o, a, d, s){
             //c.k = Object.keys();
             k:(o)=>Object.keys(o),
             //quasi setImmediate (can be swapped out by replacing ml.c.i)
-            i:(f,a,b)=>setTimeout(f,0,a,b)
+            i:(f,a,b)=>setTimeout(f,0,a,b),
             
-    
+            n:(f,K)=>{
+              K=c.k(c.S);
+              if (f) {
+                  K.filter((k)=>{c.K.indexOf(k)<0;}).some(f);
+                  delete c.K;
+              } else {
+                 c.K=K;
+              }
+            }
                     
             
               
         };
-        
+       
         
         ml.i=new Proxy({},{
             get:(t,p)=>c.I(x=p),
@@ -194,7 +202,6 @@ function ml(x,L, o, a, d, s){
              R=c.r(x);
              if (!R) {
                  if (L[x]) return !1;
-                 
                  return x;
              } else {
                  // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
@@ -204,17 +211,19 @@ function ml(x,L, o, a, d, s){
              N=R[1];
              U=c.B(R[3]);
              ml.l.push(N+'='+U);
-             //if(c.c(U)){
-                 ml.d[N]={h:U};ml.H.push(U);
-            // }
+             ml.d[N]={h:U};
+             ml.H.push(U);
              try {
-               debugger;
+                c.n();//save self keys
                 importScripts(U);
+                c.n((e)=>{
+                    ml.h[U] = ml.h[U]   || {e:{}};
+                    ml.h[U].e[N]=c.S[N] || false;
+                });
              } catch (e){
-               c.e(e.message,'while loading',U,'in',ml.l);  
+                c.e(e.message,'while loading',U,'in',ml.l);  
              }
-             //ml.h[U]=ml.h[U]||{e:{}};
-             //ml.h[U].e[N]=c.S[N]||false;
+
              ml.l.pop();
              return N;
        },
