@@ -1,499 +1,962 @@
- 
 /*
 
-
-loosely based on (with refactoring and a few  modifications)
-
-https://raw.githubusercontent.com/enimo/amd-loader/master/cdn/amd.loader/0.9.0/amd.loader.js
-
-
-license:
-https://raw.githubusercontent.com/enimo/amd-loader/master/LICENSE
-
-Copyright (c) 2014, Rocky LUO
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-* Neither the name of amd-loader nor the names of its
-  contributors may be used to endorse or promote products derived from
-  this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
+jshint maxerr:10000
 
 */
+
+/*jslint bitwise: true */
+
+
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),[
-    
-   
-    
-    ],function(){ml(2,ml(3),ml(4),
+ml(0,ml(1),
+
+`
+serializerLib | ml.xs.serializer.js
+xStoreBase    | ml.xs.base.js
+httpsStore    | ml.xs.https.js
+memoryStore   | ml.xs.memory.js
+
+`
+,function(){ml(2,ml(3),ml(4),
 
     {
-        Window: function AMDLoaderLib( lib ) {
+        Window: function amdLib( lib ) {
+            lib = lib ||{};
+            // add / override window specific methods here
+            
             return lib;
-        },
-
-        ServiceWorkerGlobalScope: function AMDLoaderLib( lib ) {
-            return lib;
-        } 
+        }
     }, {
         Window: [
-            ()=> AMDLoaderLib() 
-        ],
-        ServiceWorkerGlobalScope: [
-            ()=> AMDLoaderLib()
-        ],
-        
+            ()=> amdLib (undefined,"/pwapp",function(def,req){
+                console.log("amd ready");
+                window.require=req;
+                window.define=def;
+            })
+        ]
+
     }
 
     );
 
 
-      function AMDLoaderLib (env,resourceLoader,anonymousId) {
+    function amdLib (
+        moduleStore,
+        scripts_root,
+        ready) {
+       
+        const { deserialize, serialize, setImmediate } = self.serializerLib(),
+              _a         = Array.prototype,
+              cpArgs     = _a.slice.call.bind (_a.slice),
+              commonJSArgs   = ['require','module','exports'],
+              
+              amd_require_arg_names = ['define'].concat(commonJSArgs),
+
+              commonJSRegExp = /^require|exports|module$/,
+              stripCommentsRegExp = /\/\/(?![\S]{2,}\.[\w]).*|\/\*(.|\n)+?\*\//g,
+              commonJSRequireScan = /(?<=require\s*\(\s*[\'\"])([a-z0-9\_\-\.]*)(?=[\'\"]\s*\))/,
+              commonJSRequireSplit = commonJSRequireScan[Symbol.split].bind(commonJSRequireScan),
+              commonJSQuotedRequires=/(\'.*(require\s*\(\s*(\"|\\\"|\\\')).*\')|(\".*(require\s*\(\s*(\'|\\\"|\\\')).*\")|(\`.*(require\s*\(\s*(\"|\'|\\\"|\\\')).*\`)/g,
+              
+              
+              
+              defines    = {
+                  
+                  "function"            : define_commonJS,
+                  
+                  array_function        : define_dependants_moduleFactory,
+                  array_object          : define_dependants_object,
+                  
+                  string_array_function : define_id_dependants_moduleFactory,
+                  string_array_object   : define_id_dependants_object, 
+                  
+              },
+              requires = {
+                  string         : require_sync,
+                  array          : require_sync2,
+                  array_function : require_async,
+              },
+              defined = {
+                  href : {},
+                  id : {},
+              },
+              loaded = {
+                  
+              };
+              
+              
+        /*
+        Converts a String that is of the form [module ID] + '.extension' to an URL path. require.toUrl 
+        resolves the module ID part of the string using its normal module ID-to-path resolution rules, 
+        except it does not resolve to a path with a ".js" extension. 
+        Then, the '.extension' part is then added to that resolved path. 
+        */
+        REQUIRE.toUrl = function (x){
             
-            if (AMDLoaderLib.cached) return AMDLoaderLib.cached;
+        };
+        
+        const lib = {
             
-            const 
-            _op        = Object.prototype,
-            _os        = _op.toString,
-            _oseq      = function(x,o){return !!o&&x===_os.call(o);},
-            hasProp    = _op.hasOwnProperty.call.bind(_op.hasOwnProperty),
-            _a         = Array.prototype,
-            cpArgs     = _a.slice.call.bind (_a.slice),
-            isArray    = Array.isArray || _oseq.bind(this,_os.call([])),
-            isObject   = function(o){return typeof o==='object'&&o.constructor===Object;},
-            isFunction = function(f){return typeof f==='function'};
+            require : REQUIRE,
+            define  : DEFINE
             
-            return (function(
-                slf,
-                env,
-                loadResources,
-                _anonymousId,
-                api) {
-                    
-                reqr.sync = rsnc;
-                defn.amd = {};
-                defn.version = '0.9.0';
-                api = {
-                    define         : defn,
-                    require        : reqr,
-                    requireSync    : rsnc,
-                    filterLoadDeps : typeof Array.prototype.filter === 'function' ? filterLoadDeps1 : filterLoadDeps2,
-                    getModule      : getModule,
-                    loadResources  : loadResources,
-                    moduleMap      : loadResources.moduleMap,
-                    definedStack   : loadResources.definedStack,
-                    implement      : implement
+        };
+        
+        
+        const origin  = window.location.origin.replace(/\/$/,'')+'/';
+        scripts_root = typeof scripts_root==='string' && scripts_root.length > 0 ?   (origin+scripts_root+'/').replace(/^\/\//g,'/')  : origin;
+        
+        const noCorsTest = function ( url ) {
+                 return  ! (
+                     
+                      url.indexOf("/")===0 || 
+                      url.indexOf(".")===0 || 
+                      url.indexOf(origin)===0
+                      
+                    ) ;
+        };
+        
+        const idToFullUrl = function ( id , base ) {
+                base = base || scripts_root;
+                // "main/   ---> "main/index/js"     ---> https://wherever.com/main/index.js
+                // "main"   ---> "main.js"           ---> https://wherever.com/main/index.js
+                // "lib/func"   ---> "lib/func.js"
+                id = id.slice(-3)===".js" ? id : id.slice(-1)==="/" ? id+"index.js" : id + ".js";
+                switch (true) {
+                    case id.indexOf("/")===0 :      return id.replace(/^\/*/,scripts_root);
+                    case /^http(s):\/\//.test(id):  return id;
+                    case /^\.\//.test(id) :         return id.replace(/^\.\//,base); 
+                    default :                       return base + id;
+                }
+                
+        };
+    
+        //const main_id_url = typeof main_id === 'string' ? idToFullUrl(main_id) : idToFullUrl( "index.js") ;
+        
+        
+        // report back when main_id is ready to start loading
+        // does not actually preload anything, just primes the moduleStore cache to include the item for main_id
+        
+        
+        if (!moduleStore) { 
+            // set up a memory cached http fetch moduleStore.
+            
+            const moduleCache = ml.i.memoryStore({__persistent:true});
+            
+            
+            const urls = [  ];
+            
+            moduleStore = ml.i.httpsStore ( urls , noCorsTest, moduleCache, function() {
+                if (typeof ready === 'function') {
+                    ready(DEFINE,REQUIRE);
+                }
+            });
+        }
+
+        
+        return lib;
+        
+
+        function typ (x) {
+            return Array.isArray(x)?'array':typeof x;
+        }
+        
+        function DEFINE () {
+             const url = getScriptPath(undefined,'define');
+             const args = cpArgs(arguments),
+             def=defines[args.map(typ).join('_')];
+             args.unshift(urlIdHash(url));
+            return typeof def==='function'&&def.apply(undefined,args); 
+        }
+    
+        function REQUIRE () {
+          const url = getScriptPath(undefined,'require');
+          const args = cpArgs(arguments),
+          def=requires[args.map(typ).join('_')];
+          args.unshift(urlIdHash(url));
+          return typeof def==='function'&&def.apply(undefined,args); 
+        }
+
+        function require_sync(meta,id) {
+            const mod = loaded[id];
+            if (mod) return mod.exports;
+            
+            const defn = defined.id[ id ];
+            const subreq = require_sync.bind(undefined,meta);
+            if (defn) {
+                 const loader = deserialize(defn);
+                 if (typeof loader==='function') {
+                     if (loader.meta.deps.length===0) return setLoaded(loader());
+                     const args = loader.meta.deps.map(subreq);
+                     return setLoaded(loader.apply(undefined,args));
+                 }
+            } 
+            
+            throw new Error ("not found: require('"+ id +"')");
+            
+            
+            function setLoaded(e) {
+                loaded[id]={
+                    exports:e
                 };
+                
+                return loaded[id].exports;
+            }
+        }
+        
+        function require_sync2(meta,deps) {
+            if (deps.length===1) {
+                return require_sync(meta,deps[0]);
+            }
+            throw new Error ("unsupported require syntax: require([ <"+deps.length.toString()+" elements> ] )");
+        }
+        
+        function require_async(meta,deps,cb) {
+            const loaded = deps.map(require_sync.bind(undefined,meta));
+            return cb.apply(undefined,loaded);
+        }
 
-                AMDLoaderLib.cached = api;
-                return api;
+        // returns the array of named arguments (with a few optional extraIds)
+        function fn_args  (fn,sourceNoComments,ids,reqr,modl,index,extraIds) {
+            // to avoid double processing, caller can pass in source without comments
+            // in which case fn ( the function itself, a string of the function source) is ignored.
+            if (!sourceNoComments) {
+               const source = typeof fn==='string'?fn:fn.toString();
+               sourceNoComments = source.replace(stripCommentsRegExp,'');
+            }
             
-                /**
-                 * @description Define function implement
-                 *
-                 * @param {string} id module name
-                 * @param {Array} deps dependent modules
-                 * @param {Function} factory module function
-                 * @access public
-                **/
-                function defn(id, deps, factory) {
-                    if (hasProp(api.moduleMap, id)) {
-                        return;
-                    }
-                    if (isFunction(id) || isArray(id) || isObject(id)) {
-                        var modName = '_anonymous_mod_' + _anonymousId++;
-                        if (arguments.length === 1) {
-                            factory = id;
-                            deps = null;
-                        } else if (arguments.length === 2) {
-                            factory = deps;
-                            deps = id;
-                        }
-                        id = modName;
-                    } else if (isFunction(deps) && arguments.length === 2) {
-                        factory = deps;
-                        deps = null;
-                    }
-                    api.moduleMap[id] = {
-                        id:      id,
-                        deps:    deps,
-                        factory: factory
-                    };
-                    api.definedStack.push(id);
-                }
+            //locate and clean up each argument name (ie remove whitespace)
+            const args = sourceNoComments.split('(')[1].split(')')[0].split(',').map(function(a){ return a.trim();});
+           
             
-                /**
-                 * @description require function implement
-                 *
-                 * @param {Array} deps dependent modules
-                 * @param {Function} callback callback function
-                 * @access public
-                 * @return {Void}
-                **/
-                function reqr (deps, callback) {
-                    if (typeof deps === 'string') {
-                        deps = [deps];
-                    }
-                    if (deps.length === 1 && arguments.length === 1) {
-                        return reqr.sync(deps.join(''));
-                    }
-            
-                    var loadDeps = api.filterLoadDeps(deps);
-                    var depsLen = loadDeps.length;
-                    var loadCount = depsLen;
-                    if (depsLen) {
-                        for (var i = 0; i < depsLen; i++) {
-                            var depModName = loadDeps[i];
-                            api.loadResources(depModName, modResolved);
-                        }
-                    }
-                    else {
-                        allResolved();
-                    }
-            
-                    function modResolved(modName) {
-                        var mod = api.getModule(modName) || {};
-                        var filterDeps = [];
-                        var filterLen = 0;
-                        if (hasProp(mod, 'deps') && mod.deps) {
-                            filterDeps = api.filterLoadDeps(mod.deps);
-                            filterLen = filterDeps.length;
-                        }
-                        if (filterLen > 0) {
-                            loadCount += filterLen - 1;
-                            for (var i = 0; i < filterLen; i++) {
-                                var dep = filterDeps[i];
-                                api.loadResources(dep,modResolved);// arguments.callee);
-                            }
-                        }
-                        else {
-                            if (--loadCount <= 0) {
-                                allResolved();
-                            }
-                        }
-                    }
-            
-                    function allResolved() {
-                        var exports = [];
-                        for (var index = 0; index < depsLen; index++) {
-                            exports.push(reqr.sync(deps[index]));
-                        }
-                        callback && callback.apply(undefined, exports);
-                        exports = null;
-                    }
-                }
-            
-                /**
-                 * @description require function implement
-                 * Compatible with CMD synchronization call:
-                 * var mod = require.sync("mod");
-                 *
-                 * @param {string} id dependent module
-                 * @access public
-                 * @return {Void}
-                **/
-                function rsnc(id) {
-                    var module;
-                    var exports;
-                    var deps;
-                    var args = [];
-            
-                    if (!hasProp(api.moduleMap, id)) {
-                        throw new Error('Required unknown module, id: "' + id + '"');
-                    }
-            
-                    module = api.getModule(id) || {};
-                    if (hasProp(module, 'exports')) {
-                        return module.exports;
-                    }
-                    module.exports = exports = {};
-                    deps =  module.deps;
-                    if (deps) {
-                        for (var depsLen = deps.length, i = 0; i < depsLen; i++) {
-                            var dep = deps[i];
-                            args.push(dep === 'require' ?
-                                reqr : (dep === 'module' ?
-                                    module : (dep === 'exports' ? exports : api.requireSync(dep))
-                                )
-                            );
-                        }
-                    }
-                    return api.implement(module,args) ; /*
-                    if (isObject(module.factory)) {
-                        module.exports = module.factory;
-                    }
-                    else if (isFunction(module.factory)) {
-                        var ret = module.factory.apply(undefined, args);
-                        if (ret !== undefined && ret !== exports) {
-                            module.exports = ret;
-                        }
-                    }
-                    return module.exports;*/
-                }
+            // ids is the array that proceeded the function in a call to define. eg define([...],function(...){...}) 
+            // validate the ids array and it's length vs args length before attempting to it further.
+            if (Array.isArray(ids) && ids.length===args.length) {
                 
                 
-                function implement(module,args) {
-                    if (isObject(module.factory)) {
-                        module.exports = module.factory;
+                // when extra info is returned, it's in an object.
+                const dict = {
+                    args     : args,               // the names of each argument, to pass into new Function()
+                    ids      : ids,                // the ids for each argument, to locate the dependancy
+                    //deps : tdb                   // the loaded dependancy (populated below if reqr is supplied by caller)
+                    commonJS : args[0]==='require' // a boolean indicating the function is a commonJS module
+                };
+                
+                // by providing reqr (the require implementation relevant to the function), caller indicates they want 
+                // an array of preloaded dependancies to be generated for each argument
+                if (typeof reqr ==='function') {
+                    
+                    // validate the passed in index argument
+                    const valid_index = typeof index ==='object' && typeof index.i +typeof index.a ==='objectobject' ;
+                    
+                    // wrap reqr with an array iterator, which optionally saves the module into an external object
+                    const req = valid_index ? function(id,ix){
+                       // pull in the module by it's id
+                       const mod = reqr(id); 
+                       // save it into the index by id
+                       index.i[ id ] = mod;
+                       // save it into the index by argument name
+                       index.a[ args[ix] ] = mod;
+                       
+                       return mod;
+                    } : function(id) { return reqr(id); };
+                    
+                    // map dependancy to it's loaded module 
+                    dict.deps = ids.map(req);
+                    if ( Array.isArray( extraIds ) ) {
+                        dict.extraIds  = extraIds;
+                        dict.extraDeps = extraIds.map(req);
                     }
-                    else if (isFunction(module.factory)) {
-                        var ret = module.factory.apply(undefined, args);
-                        if (ret !== undefined && ret !== exports) {
-                            module.exports = ret;
-                        }
-                    }
-                    return module.exports;
                 }
-            
+                
+                // and we need to take things further for functions that call require.
+                if (dict.commonJS) {
+                    // rework the arguments array to conform to require,module,exports,others, even if exports and module were not included
+                    dict.commonJSArgs = commonJSArgs.concat(
+                        
+                        args.filter(
+                            function(x){
+                                return !commonJSRegExp.test(x); 
+                            }
+                        )
+                        
+                    );
+                    dict.commonJSIds = [ '','','' ].concat(
+                        // we need to map before filtering, because the arrays are index linked.
+                        args.map(function(a,ix){
+                           // convert the argument to it's id (or null if one of require,module,exports )
+                           return commonJSRegExp.test(a) ? null : ids[ix];
+                        }).filter( function(a) { return a !==null; } )
+                    );
+                        
+                    // pre populate a commonJSDeps array ready to instantiate the module
+                    if (typeof reqr+typeof modl ==='functionobject' && typeof modl.exports==='object') {
+                        dict.commonJSDeps = [ reqr, modl, modl.exports ].concat(
+                            
+                           // we need to map before filtering, because the arrays are index linked.
+                           args.map(function(a,ix){
+                              // convert the argument to it's id (or null if one of require,module,exports )
+                              return commonJSRegExp.test(a) ? null : dict.deps[ix];
+                           }).filter( function(a) { return a !==null; } )
+                           
+                        );
+                        
+                    }
+                    
+                    
 
-                /**
-                 * @description Filter reserved ids when loading deps resources: module, require, exports
-                 * @param {Array} depsMod Depends modules
-                 * @return {Array} filterDeps
-                **/
-                function filterLoadDeps1(depsMod) {
-                    return depsMod.filter(function(f){return !/^require|exports|module$/.test(f);});
                 }
-                
-                function filterLoadDeps2(depsMod) {
-                    var filterDeps = [];
-                    if (depsMod && depsMod.length > 0) {
-                        for (var i = 0, len = depsMod.length; i < len; i++) {
-                            if (depsMod[i] !== 'require' && depsMod[i] !== 'exports' && depsMod[i] !== 'module') {
-                                filterDeps.push(depsMod[i]);
-                            }
-                        }
-                    }
-                    return filterDeps;
+                // when extra info is returned, it's in an object.
+                return dict;
+            }
+            
+            return args;
+        }
+        
+        // returns the code segment (with heeader and arguments removed, and first and last curly brace)
+        // embeded comments are preserved
+        function fn_src (x,sourceNoComments) {
+          const stripCommentsRegExp = /\/\/(?![\S]{2,}\.[\w]).*|\/\*(.|\n)+?\*\//g;
+          const source = typeof x==='string'?x:x.toString();
+          let offset = 0,located;
+          
+          // white out any comments before the first brace
+          let src     = source;
+          let braceAt = src.indexOf('{');
+          let match   = stripCommentsRegExp.exec(src);
+          while (match) {
+               if (braceAt<match.index) {
+                   // first/next comment is after the first brace, so we can use braceAt as a valid index
+                   return source.substr(braceAt+1,source.lastIndexOf('}'));
+               }
+               // white out the commment
+               const matchlen = match[0].length;
+               src     = src.substr(0,match.index) + new Array ( matchlen+1).join(' ') + src.substr(match.index+matchlen);
+               
+               // have another go around
+               braceAt = src.indexOf('{');
+               match   = stripCommentsRegExp.exec(src);
+          }
+          
+          braceAt = source.indexOf('{');
+          return source.substr(braceAt+1,source.lastIndexOf('}'));
+        }
+        
+        
+        // returns any embeded require statements
+        function fn_requires (x,sourceNoComments) {
+            
+            // first remove any comments that are in the source.
+            // this deals with the issue of commented out code that includes require statements
+           if (!sourceNoComments) {
+              const source     = typeof x==='string'?x:x.toString();
+              sourceNoComments = source.replace(stripCommentsRegExp,'');
+           }
+           
+           const result = [];
+           
+           // now remove any require statements that are inside strings or template strings
+           
+           const dequotedSource = sourceNoComments.replace(commonJSQuotedRequires,'');
+           
+           
+           // now split on require statements, which will yeild an array where every second element is 
+           
+           
+           commonJSRequireSplit( dequotedSource ) .forEach(
+               
+               function (x,ix){
+                  if (ix % 2 === 1) {
+                      result.push( x );
+                   }
+               }
+               
+           );
+           
+           return result;
+        }
+        
+        
+        function urlIdHash (domain_prefix,referrer_prefix,url) {
+            const hasQuery=url.indexOf('?'), dot_dir = /^\.\//, slash_dir = /^\//;
+            const trimmed = hasQuery < 0 ? url : url.substr(0,hasQuery);
+            const prefixed = /^http(s?)\:\/\//.test(trimmed) ? trimmed :
+                             dot_dir.test(trimmed)   ? trimmed.replace(dot_dir,referrer_prefix) :
+                             slash_dir.test(trimmed) ? trimmed.replace(slash_dir,domain_prefix) :
+                             referrer_prefix+trimmed;
+                             
+            return {
+                id    : getHash(prefixed),
+                url   : prefixed,
+                input : url
+            };
+            
+            function getHash(text) {
+                'use strict';
+            
+                var hash = 5381,
+                    index = text.length;
+            
+                while (index) {
+                    hash = (hash * 33) ^ text.charCodeAt(--index);
                 }
             
-                /**
-                 * @description Get the module entity object according to the module id
-                 * @param {string} id mod id
-                 * @return {Object} module
-                **/
-                function getModule(id) {
-                    if (!id || !hasProp(api.moduleMap, id)) {
-                       log('%c_moduleMap does not exist the module: "'+ id +'"','color:red');
-                       return false;
-                    }
-                    var module = api.moduleMap[id];
-                    if (hasProp(module, 'alias')) {
-                        module = api.moduleMap[module.alias];
+                return hash >>> 0;
+            }
+        }
+        
+      
+        // REQ wrapp require, preventing a call to REQUIRE if id is not available.
+        // REQ (id) will either return the loaded module, or throw an exception
+        // REQ is safe to call as an array iterator, since it filters out the second and third args  
+        function REQ (id) {
+            if (AVAIL(id)) {
+                return REQUIRE(id);
+            } else {
+                throw new Error (id+" is not available");
+            }
+        }
+        
+        
+        // AVAIL returns true or false indicating if the module referenced by id is available
+        // additionally, if the module IS NOT available, and "preload" is true, it will 
+        // asynchronously do what is needed to make it potentially available the next time AVAIL is called.
+        // so whilst it will not block, a true return indicates the module is availble for a blocking load via REQ
+        // also, assuming preload===true, if cb is a function, call it when the module is available to be preloaded 
+        function AVAIL (id,preload,cb) {
+            const id_url = idToFullUrl(id);
+            if (moduleStore.exists(id_url)) {
+                if (preload && typeof cb=== 'function' ) {
+                    cb();
+                }
+                return true;
+            } else {
+               if (preload) {
+                   moduleStore.___getItem(id_url,function(ser){
+                       console.log("preloaded",id,"(",id_url,ser,"bytes)");
+                       if (typeof cb==='function' && moduleStore.exists(id)  ) {
+                           cb();
+                       }
+                   });
+               }
+               return false;
+            }
+        }
+           
+       function doLoadModule (createModule,module,THIS) {
+           const boot_args  = [DEFINE,REQ,module,module.exports].concat(module.__runtime_args);
+           if (module.__booted) {
+               return module.exports;
+           } else {
+               module.exports =  (createModule.apply(THIS,boot_args) || module.exports) ;
+               Object.defineProperty(module,"__booted",{value:true,enumerable:false,writable:false});
+               return module.exports;
+           }
+       }
+       
+       
+       
+       /*
+       
+            serialized data / scriptElement / commonJS function wrapper --> SerializedModule ---> RuntimeModule
+            
+            
+            
+            RuntimeModule
+       
+       
+       
+       
+       */
+       
+       function RuntimeModule (
+           name,         // 
+           coded_args,   // array of strings representing arguments from:  define (function(these,args,here){}) ---->["these","args","here"]
+           require_list, // array of strings representing ids for coded_args followed by any require statements not included in coded_args
+           source,       // 
+           THIS) {
+           const args = cpArgs(arguments)
+           if (new.target) { 
+             // basically we invert things and throw away the new'd object, forcing invocation as
+             // a "normal function", because we a returning a function, and there's no real
+             // simple way to override Function AND bind it to a runtime defined argument
+             // so instead we create a normal function, and then patch it's constructor back to RuntimeModule
+             return RuntimeModule.apply(undefined,args); 
+             
+           } else {
+               switch (args.map(typ).join('_')) {
+                   case 'string_array_array_string_object' : return createFromSource.apply(undefined,args);
+                   case 'string_object': return createFromSerializedModule.apply(undefined,args);
+                   
+               }
+              
+           }
+            
+           function createFromSource(name, coded_args, require_list, source, THIS) {
+               name = name || "unnamed_module";
+               const module = {
+                   exports : {}  
+               };
+               
+               Object.defineProperties(module,{
+                   
+                  // array of argument names
+                  __coded_arg_names  : { 
+                      value:coded_args.slice(),
+                      enumerable:false,
+                      writable:false,
+                      configurable:true},
+                      
+                  // array of ids this module needs. the first __coded_arg_names.length elements maps to __coded_arg_names
+                  __preload_ids : { 
+                      value:require_list.slice(),
+                      enumerable:false,
+                      writable:false,
+                      configurable:true},
+                      
+                      
+                  // on first touch, attempts to load each module needed, and if sucesfull, returns an array of each preloaded dependancy 
+                  // subsequent touches just returns that array.
+                  __preload_args     : { 
+                      get : function () {
+                          const def = { 
+                              value:module.__preload_ids.map(REQ),
+                              enumerable:false,
+                              writable:false,
+                              configurable:true
+                          };
+                          delete module.__preload_args;
+                          Object.defineProperty (module,'__preload_args',def);
+                          return def.value;
+                      }, 
+                      enumerable   : false,
+                      configurable : true
+                  },
+                  
+                  // this is effecttivey a slice of the __preload_args array ( which maps to __coded_arg_names)
+                  // in otherwords, __runtime_args [ n ] ===  loaded module for __coded_arg_names[ n ]
+                  // like __preload_args, this is populated on first touch.
+                  __runtime_args     : { 
+                      get : function () {
+                          const def = { 
+                              value:module.__preload_args.slice(0,module.__coded_arg_names.length),
+                              enumerable:false,
+                              writable:false,
+                              configurable:true
+                          };
+                          delete module.__runtime_args;
+                          Object.defineProperty (module,'__runtime_args',def);
+                          return def.value;
+                      }, 
+                      enumerable   : false,
+                      configurable : true
+                  },
+                  
+                  // returns true if the RuntimeModule is able to be instantiated
+                  // in otherwords, if __preload_avail is false, touching __preload_ids or __runtime_args will result in an exception
+                  // this function is non destructive. it does not attempt to preload anything, simply tells you if EVERYTHING is available. 
+                  __preload_avail    : {
+                      
+                      get : function () {
+                               
+                          return module.__preload_args.reduce(function(n,id){
+                              return AVAIL(id,true) ? n+1 : n;
+                          },0) === module.__preload_args.length;
+                          
+                      },
+                      enumerable   : false,
+                      configurable : true
+                  },
+                  
+                  // assuming all objects are availble this will preload the module's dependants, but not the module itself
+                  // returns true or false, and does not attempt to load anything unless all dependants are available.
+                  // optionally, a callback will return an array of missing modules, or the module itself. 
+                  // eg __preload(function(missing,module) {});
+                  __preload : {
+                      
+                      value : function (cb) {
+                          const missing = [];
+                          const avail = module.__preload_args.reduce(function(n,id){
+                               if (AVAIL(id,true)) return n+1;
+                               missing.push(id);
+                               return n;
+                          },0) === module.__preload_args.length;
+                          
+                          if (avail) {
+                              const ignored = module.__preload_ids.slice();
+                              ignored.splice(0,ignored.length);
+                              return typeof cb === 'function' ? cb(undefined,module) : true;
+                          } 
+                          if (typeof cb === 'function') return cb(missing);
+                          missing.splice(0,missing.length);
+                          return false;
+                      },
+                       enumerable   : false,
+                       configurable : true
+                },
+                  
+                  
+               });
+               
+               
+               const module_arg_names  = amd_require_arg_names.concat(coded_args);
+               const module_definition = new Function(module_arg_names,source);
+               
+               
+               // this wrapper construct is multi purpose
+               // 1) allows naming of the funcition
+               // 2) to prevent source from being exposed simply calling toString()
+               // 3) to reduce code size by not having to include loader code in the module itself 
+               const newModule      = (new Function (
+                                      ['loadModule', 'createModule', 'module', 'THIS' ],
+                                            'return function ' + (name ? name : '') + ' () return loadModule(createModule,module,THIS);' 
+                                    ))(doLoadModule, module_definition, module, THIS);
+                                    
+               newModule.constructor = RuntimeModule;
+               newModule.__module = module;
+               return  newModule;
+           }
+           
+           
+           function createFromSerializedModule(ser,THIS) {
+               const arr = JSON.parse(ser);
+               return createFromSource(
+                   arr[1],//name, 
+                   arr[2],//coded_args, 
+                   arr[3],//require_list, 
+                   arr[4],//source, 
+                   THIS);
+           }
+
+       }
+       
+       
+       
+       let x = new RuntimeModule (
+           "testMod",
+           'a,b,c'.split(','),
+           'a,b,c'.split(','),
+           
+           `
+       console.log({this:this,self:self,require,define,exports,module,a,b,c});
+       require () ;
+       module.exports = function (){
+           return 4;
+       }; `,
+       
+          this
+       );
+       
+       
+ 
+        
+        function SerializedModule(meta) {
+            
+            let fnArgs = cpArgs(arguments);
+            
+            let name,coded_args,require_list,source,loaded;
+            
+            switch (fnArgs.map(typ).join('_')) {
+                
+                case '': 
+                    
+                    throw new Error("expecting arguments in call to SerializedModule");
+                    
+                // eg define ('mylib',['otherlib'],function(require,module,exports,otherlib) { ... });
+                // ---> new SerializedModule (meta,'mylib',['otherlib'],function(require,module,exports,otherlib) { ... });
+                
+                case 'string': { 
+                    fromSerial (fnArgs[0]);
+                    break;
+                }
+                case 'object_string_array_function': {
+                    const ids      = fnArgs[2];
+                    source         = '/*file:'+meta.url+' ('+meta.href+') */\n'+
+                                     fnArgs[3].toString();
+                    const sourceNoComments = source.replace(stripCommentsRegExp,'');
+                    const dict     = fn_args (source,sourceNoComments,ids);
+                    const requires = fn_args(source,sourceNoComments);
+                    coded_args     = (dict.commonJS ? dict.commonJSArgs : dict.args);
+                    require_list   = (dict.commonJS ? dict.commonJSIds : dict.ids).concat (requires);
+                    break;
+                }
+                
+                // eg define (['otherlib'],function(require,module,exports,otherlib) { ... });
+                // ---> new SerializedModule (meta,['otherlib'],function(require,module,exports,otherlib) { ... });
+                case 'object_array_function': {
+                    const ids      = fnArgs[1];
+                    source         = '/*file:'+meta.url+' ('+meta.href+') */\n'+
+                                     fnArgs[2].toString();
+                    const sourceNoComments = source.replace(stripCommentsRegExp,'');
+                    const dict     = fn_args (source,sourceNoComments,ids);
+                    const requires = fn_args(source,sourceNoComments);
+                    coded_args     = (dict.commonJS ? dict.commonJSArgs : dict.args);
+                    require_list   = (dict.commonJS ? dict.commonJSIds : dict.ids).concat (requires);
+                    break;
+                }
+                
+                // eg define (function(require,module,exports,otherlib) { ... });
+                // ---> new SerializedModule (meta,function(require,module,exports,otherlib) { ... });
+                case 'object_function': {
+                    const ids      = [ meta.url ];
+                    source         = '/*file:'+meta.url+' ('+meta.href+') */\n'+
+                                     fnArgs[1].toString();
+                    const sourceNoComments = source.replace(stripCommentsRegExp,'');
+                    const dict     = fn_args (source,sourceNoComments,ids);
+                    const requires = fn_args(source,sourceNoComments);
+                    coded_args     = (dict.commonJS ? dict.commonJSArgs : dict.args);
+                    require_list   = (dict.commonJS ? dict.commonJSIds : dict.ids).concat (requires);
+                    break;
+                }
+                
+            }
+
+            Object.call(this);
+            Object.defineProperties(this,{
+                name          : { value : name,         enumerable : true, writable  : false },
+                coded_args    : { value : coded_args,   enumerable : true, writable  : false },
+                require_list  : { value : require_list, enumerable : true, writable  : false },
+                source        : { value : source,       enumerable : true, writable  : false },
+                toJSON        : { value : toSerial,     enumerable : false, writable : false },
+                ser           : { get   : toSerial,     enumerable : false, writable : false },
+                load          : { value : loader,       enumerable : false, writable : false },
+            });
+            
+            
+            function available (THIS) {
+                if (!loaded) {
+                    loaded = new RuntimeModule(name,     
+                    coded_args,   // array of strings representing arguments from:  define (function(these,args,here){}) ---->["these","args","here"]
+                    require_list, // array of strings representing ids for coded_args followed by any require statements not included in coded_args
+                    source,       // 
+                    THIS);
+                }
+                return loaded.__module.__preload_avail;
+                
+            }
+            
+            function loader (THIS){
+                if (!loaded) {
+                    loaded = new RuntimeModule(name,     
+                    coded_args,   // array of strings representing arguments from:  define (function(these,args,here){}) ---->["these","args","here"]
+                    require_list, // array of strings representing ids for coded_args followed by any require statements not included in coded_args
+                    source,       // 
+                    THIS);
+                }
+                
+                return loaded.__module.preload(function(missing,module){
+                    if (missing) {
+                        throw new Error ( 'missing sources: \n'+missing.join('\n') ) ;
                     }
                     return module;
-                }
+                });
 
+            }
             
-                /**
-                 * @description Helper function, same as: 1,prop in obj; 2,key_exists(); 3.obj[prop]
-                 * @param {Object} obj original object
-                 * @param {string} prop property to check
-                 * @return {boolean}
-                **/
-
-                
-
-                function log() {
-                    env.debug && slf && slf.console && slf.console.log.apply(console, cpArgs(arguments));
-                }
+            function toSerial (){
+                return JSON.stringify([
+                   "SerializedModule",
+                   name,
+                   coded_args,
+                   require_list,
+                   source
+                ]);
+            }
             
-
-                /*In the testing phase, if requirejs has not been loaded, it can be directly exposed to the window*/
-                //if (env.debug && typeof win.define === 'undefined') {
-                    //win.define = win._define_;
-                   // win.require = win._require_;
-                //}
-            
-                
-            
-            })
-               (
-                   slf,
-                   env                            || {debug: 1, ts: 0},
-                   resourceLoader                 || loadResourcesLib (),
-                   anonymousId                    || 0,
-                   typeof window==='object'?window:typeof self==='object'?self:{}
-               );
-
-               function loadResourcesLib (){
-                   return (function (doc) {
-
-                   var
-                   _moduleMap    = (loadResources.moduleMap = {}), 
-                   _loadedMap    = {}, 
-                   _loadingMap   = {}, 
-                   _definedStack = (loadResources.definedStack = []),
-                   loadScript    = typeof window==='object'?loadScript1:loadScript2;
-                   
-                   return loadResources;
-                   
-                   /**
-                    * @description loads the js file according to the unique url address
-                    * @param {string} url load script uri
-                    * @param {Function} callback callback after loaded
-                   **/
-               
-                   
-                   function loadScript1(url,callback) {
-                       
-                       if (hasProp(_loadedMap, url)) {
-                           callback && isFunction(callback) && callback();
-                       }
-                       else if (hasProp(_loadingMap, url)) {
-                           _loadingMap[url] = _loadingMap[url] || [];
-                           _loadingMap[url].push(callback);
-                       }
-                       else {
-                           _loadingMap[url] = [];
-                           var _head = doc.getElementsByTagName('head')[0];
-                           var script = doc.createElement('script');
-                           script.type = 'text/javascript';
-                           script.src = url;
-                           script.setAttribute('_md_', '_anymoore_' + url);
-                           _head.appendChild(script);
-               
-                           if (isFunction(callback)) {
-                               if (doc.addEventListener) {
-                                   script.addEventListener('load', winScriptLoaded, false);
-                               }
-                               else {
-                                   script.onreadystatechange = function() {
-                                       if (/loaded|complete/.test(script.readyState)) {
-                                           script.onreadystatechange = null;
-                                           winScriptLoaded();
-                                       }
-                                   };
-                               }
-                           }
-                       }
-                       
-                       function winScriptLoaded() {
-                           scriptLoaded(url,callback);
-                           script = null;
-                       }
-               
-               
-                   }
-                   
-                   function loadScript2(url,callback) {
-                       if (hasProp(_loadedMap, url)) {
-                           callback && isFunction(callback) && callback();
-                       }
-                       else if (hasProp(_loadingMap, url)) {
-                           _loadingMap[url] = _loadingMap[url] || [];
-                           _loadingMap[url].push(callback);
-                       }
-                       else {
-                           _loadingMap[url] = [];
-                           self.importScripts(url);// happens syncronously
-                           scriptLoaded(url,callback);
-                       }
-                   }
-                   
-                   function scriptLoaded(url,callback) {
-                           _loadedMap[url] = true;
-                           //if (!env.debug) {
-                        //       _head.removeChild(script);
-                           //}
-               
-                           var pathId = url.slice(0, -3);
-                           var modName = _definedStack.pop();
-                           var mod = _moduleMap[modName];
-               
-                           if (mod && pathId !== modName) {
-                               _moduleMap[pathId] = {alias: modName};
-                           }
-                           
-                           var cbStack = _loadingMap[url] || [];
-                           var cb = null;
-                           if (cbStack.length > 0) {
-                               while ((cb = cbStack.shift())) {
-                                   cb && cb();
-                               }
-                               _loadingMap[url] = null;
-                           }
-                           callback && callback();
-                       }
-                       
-                       
-                   /**
-                    * @description According to the given depModName module name, load the corresponding resource, according to whether different loading methods are used in the clouda environment and whether to handle the merge relationship
-                    * @param {string} depModName Depends module name
-                    * @param {Function} callback callbak after loaded
-                   **/
-                   function loadResources(depModName, callback) {
-                       var url = null;
-                       if (depModName) {
-                           var realId = realpath(depModName);
-                           url = (realId.slice(-3) !== '.js') ? (realId + '.js') : realId;
-                       }
-                       url && loadScript(url, function() {
-                           callback(depModName);
-                       });
-                   }
-
-                   /**
-                    * @description Same as php realpath, generate absolute path
-                    * @param {string} path relative path
-                    * @return {string} realpath
-                   **/
-                  
-                   function realpath(path) {
-                       var arr = [];
-                       if (path.indexOf('://') !== -1) {
-                           return path;
-                       }
-                       arr = path.split('/');
-                       path = [];
-                       for (var k = 0, len = arr.length; k < len; k++) {
-                           if (arr[k] === '.') {
-                               continue;
-                           }
-                           if (arr[k] === '..') {
-                               if (path.length >= 2) {
-                                   path.pop();
-                               }
-                           }
-                           else {
-                               if (!path.length || (arr[k] !== '')) {
-                                   path.push(arr[k]);
-                               }
-                           }
-                       }
-                       path = path.join('/');
-                       /* return path.indexOf('/') === 0? path:'/' + path; //Don't add'/' before path temporarily */
-                       return path;
-                   }
-                  
-                   })(typeof document==='object'?document:undefined);
-               
-               }
-
+            function fromSerial (ser) {
+               const arr    = JSON.parse(ser);
+               name         = arr[1];
+               coded_args   = arr[2];
+               require_list = arr[3];
+               source       = arr[4];
+            }
         }
-         
+     
+     
+    
+        function define_id_dependants_object (url,id,deps,obj) {
+            const fn_name = '';
+            const href = typeof url==='string' ? url : url.url;
+            const mod   = defined.id [ id ] = JSON.stringify(
+                
+                
+                [
+                
+              
+                "SerializedModule",fn_name, [], [
+                    
+                'ml.xs(',
+                   'function () {',
+                       'return '+JSON.stringify(obj)+';',
+                   '}',
+                ');'].join('\n'),
+                
+                JSON.stringify({
+                    meta:{
+                        id   : id,
+                        url  : href,
+                        deps : deps,
+                        isObject:true
+                    }
+                })
+            ]); 
+            
+            
+            
+            
+            
+            const hrefIndex = defined.href [ href ] || {};
+            hrefIndex[ id ] = mod;
+            defined.href [ href ]=hrefIndex;
+        }
+        
+        function define_id_dependants_moduleFactory (url,id,deps,factory) {
+            const href = typeof url==='string' ? url : url.url;
+            const source   = factory.toString();
+            const args     = fn_args(source);
+            const commonJS = args.some(isCommonJS);
+            
+            if (commonJS) return define_id_dependants_commonJS (href,id,deps,source,args) ;
+            
+            const fn_name = '';
+            
+            const mod   = defined.id [ id ] = JSON.stringify([
+                
+                "function", fn_name, args, [
+                'ml.xs(',
+                   source,
+                ');'].join('\n'),
+                
+                JSON.stringify({
+                    meta:{
+                        id   : id,
+                        url  : href,
+                        deps : deps.filter(strip_repeats),
+                        commonJS:false,
+                    }
+                })
+            ]);
+            
+            const hrefIndex = defined.href [ href ] || {};
+            hrefIndex[ id ] = mod;
+            defined.href [ href ]=hrefIndex;
+        }
+        
+        function define_id_dependants_commonJS (href,id,deps,source,args,sourceNoComments) {
+            args = removeCommonJS(args);
+            const internal_deps = fn_requires(source,sourceNoComments);
+            const all_args = commonJSArgs.concat(args);
+            const fn_name = '';
+            const mod   = defined.id [ id ] = JSON.stringify([
+                
+                "function", fn_name, all_args, [
+                'ml.xs(',
+                   source,
+                ');'].join('\n'),
+                
+                JSON.stringify({
+                    meta:{
+                        id       : id,
+                        url      : href,
+                        deps     : deps.concat(internal_deps).filter(strip_repeats),
+                        commonJS : true,
+                    }
+                })
+            ]);
+            
+            const hrefIndex = defined.href [ href ] || {};
+            hrefIndex[ id ] = mod;
+            defined.href [ href ]=hrefIndex;
+        }
+    
+        function define_dependants_object (url,deps,obj) {
+            const id       = url.id;
+            const href     = url.url;
+        
+            return define_id_dependants_object (href,id,deps,obj);
+        }
+        
+        function define_dependants_moduleFactory (url,deps,factory) {
+            const id       = url.id;
+            const href     = url.url;
+            return define_id_dependants_moduleFactory (href,id,deps,factory);
+        }
+        
+        function define_commonJS (url, factory) {
+            const id               = url.id;
+            const href             = url.url;   
+            const source           = factory.toString();
+            const sourceNoComments = source.replace(stripCommentsRegExp,'');
+            const args             = fn_args(source,sourceNoComments);
+        
+            return define_id_dependants_commonJS (href,id,[],source,args,sourceNoComments);
+        }
+        
+        function strip_repeats(x,i,a){return a.indexOf(x)===i;}
+        
+        function getScriptPath (hint,caller) {
+            if (  !caller && typeof document === "object" && 
+                  typeof document.currentScript === 'object' && 
+                  document.currentScript && // null detect
+                  typeof document.currentScript.src==='string' && 
+                  document.currentScript.src.length > 0) {
+                return document.currentScript.src;
+            }
+            
+            caller = typeof caller === 'string' ? caller : (typeof caller ==='function' ? caller.name : 'getScriptPath');
+            
+            let here = new Error();
+            if (!here.stack) {
+                try { throw here;} catch (e) {here=e;}
+            }
+            if (here.stack) {
+                
+                const stacklines = here.stack.split('\n');
+                //console.log("parsing:",stacklines);
+                let result,ok=false;
+                stacklines.some(function(line){
+                    if (ok) {
+                       const httpSplit=line.split(':/');
+                       const linetext = httpSplit.length===1?line.split(':')[0]:httpSplit[0]+':/'+( httpSplit.slice(1).join(':/').split(':')[0]);
+                       const chop = linetext.split('at ');
+                       if (chop.length>1) {
+                           result = chop[1];
+                           if ( result[0]!=='<') {
+                              //console.log("selected script from stack line:",line);               
+                              return true;
+                           }
+                           result=undefined;
+                       }
+                       return false; 
+                    }
+                    ok = line.indexOf(caller)>0;
+                    return false;
+                });
+                return result;
+            }
+            
+            if ( hint && typeof document === "object") {
+               const script = document.querySelector('script[src="'+hint+'"]');
+               return script && script.src && script.src.length && script.src;
+            }
+            
+        }
+           
+        function isNotCommonJS(f){return !/^require|exports|module$/.test(f);}
+        
+        function isCommonJS(f){return /^require|exports|module$/.test(f);}
+           
+        function removeCommonJS(depsMod) {
+            return depsMod.filter(isNotCommonJS);
+        }
+        
+        
+        
+       
+    }
 
+ 
 
 });
+
 

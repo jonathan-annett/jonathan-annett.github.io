@@ -1,7 +1,6 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),`  
               
-              amdLib@Window                              | new_amd.js
               swResponseZipLib@ServiceWorkerGlobalScope  | ml.zipfs.js
               pwaMessage@Window                          | ml.pwa-message.js
               sha1Lib                                    | sha1.js
@@ -70,10 +69,6 @@ ml(0,ml(1),`
             }
             
             
-            const amd = ml.i.amdLib(undefined,"/pwapp",function(){
-                console.log("amd ready",amd);
-                
-            });
 
             return lib;
         },
