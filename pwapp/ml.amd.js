@@ -158,7 +158,7 @@ memoryStore   | ml.xs.memory.js
         return lib;
         
         
-        function import_ml (removeFrom) {
+        function import_ml (removeFrom,baseurl) {
             var store = {};
             Object.keys(ml.d).forEach(function( modName ){
                 
@@ -172,6 +172,16 @@ memoryStore   | ml.xs.memory.js
                         delete removeFrom[modName];
                     }
                     store [modName] = module;
+                    store [url] = module;
+                    
+                    if (baseurl && url.indexOf(baseurl)===0) {
+                        var shorturl = url.substr(baseurl.length);
+                        store [shorturl] = module;
+                        if (shorturl.slice(-3)===".js") {
+                           store [shorturl.slice(0,-3)] = module;   
+                        }
+                    }
+                    
                 }
             });
             return store;
