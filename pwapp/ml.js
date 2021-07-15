@@ -115,7 +115,7 @@ function ml(x,L,o,a,d,s){
                 t=a||R[1];        // t = temp name "t" or supplied module name
                 Y={};Y[c.C]=o;
                 Z={};Z[c.C]=[()=>{R=S[t];c.m(S,t,R);return R;}];// save result into ml.d and ml.h
-                return ml( t+"@"+c.C+"|"+R[3],()=>c[2](2,c.C,S,Y,Z));
+                return ml( t+"@"+c.C+"|"+R[3],()=>c[2](c.C,S,Y,Z));
                 
             },
             //c.I = import query
