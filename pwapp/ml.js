@@ -30,7 +30,7 @@ function ml(x,L,o,a,d,s){
             r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
             //c.b=document base
             b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
-            //x.ri() = a random id generator
+            //c.ri() = a random id generator
             ri:()=>Math.random().toString(36).substr(-8),
             //c.c returns true if url is under current domain.
             c:(u)=>u.startsWith(O),
