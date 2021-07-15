@@ -258,7 +258,7 @@ function ml(x,L,o,a,d,s){
 }
 
 
-ml('setImmediateLib|ml.setImmediate.js',window,function(lib){
+ml('setImmediateLib|ml.setImmediate.js',window,function setImmediateLib(lib){
     lib(function(x){
        ml.c.i = x.setImmediate;
     });
