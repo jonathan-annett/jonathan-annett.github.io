@@ -113,8 +113,8 @@ function ml(x,L,o,a,d,s){
                 S={};    
                 R=R||[x,'t',0,x];// [fullurl,tempname,ignored,url]
                 t=a||R[1];        // t = temp name "t" or supplied module name
-                Y={};Y[c.C]=function tmp(){return ml.i[t];};
-                Z={};Z[c.C]=[()=>{R=S[t];c.m(S,t,R);o(R);return R;}];// save result into ml.d and ml.h
+                Y={};Y[c.C]=function tmp(){};
+                Z={};Z[c.C]=[()=>{R= ml.i[t]; c.m(S,t,R);o(R);return R;}];// save result into ml.d and ml.h
                 return ml( t+"@"+c.C+"|"+R[3],()=>c[2](c.C,S,Y,Z));
                 
             },
