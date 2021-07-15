@@ -101,7 +101,7 @@ function ml(x,L,o,a,d,s){
             //c.l = console.log shortcut
             l:C.log.bind(C),
             //c.L = loader hoist function (called when first argument to ml is a string)
-            L:(S,R,t,w)=>{
+            L:(S,R,t)=>{
                 
                 // outer scope args: x,L,o,a,d,s...
                 // ml("/path/to/mod.js",{},function(mod){...}) 
@@ -278,4 +278,8 @@ function ml(x,L,o,a,d,s){
     };
     return z[x]&&z[x](L,o,a,d,s);
 }
-ml('ml.setImmediate.js');
+ml('ml.setImmediate.js',{},function(lib){
+    lib(function(x){
+       ml.c.i = x.setImmediate;
+    })
+},"setImmediateLib");
