@@ -122,6 +122,14 @@ function ml(x,L,o,a,d,s){
     c=ml.c;
     t=ml.T;
     X=typeof x===t[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?'I':'L':x;//X =: L= x is filename, I= x is keyword, otherwise x
+    if (x===2&&!(L===c[3]()&&o===c[4]())) {
+        debugger;
+        s=a;
+        d=o;
+        a=L;
+        o=c[4]();
+        L=c[3]();
+    }
     // here X will be 'L' if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x
     z=typeof c[X]===t[1]?c[X](L,o,a,d,s):c;// if c[X] resolves to a function, execute it, putting result in z, otherwise set z to c
     
