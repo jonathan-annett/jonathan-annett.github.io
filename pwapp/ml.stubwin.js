@@ -2,7 +2,7 @@
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),[],function(){ml(2,
+ml([],function(){ml(2,
 
     {
         Window: function sampleLib( lib ) {

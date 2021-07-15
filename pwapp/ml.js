@@ -111,7 +111,7 @@ function ml(x,L,o,a,d,s){
             k:(o)=>Object.keys(o),
             //quasi setImmediate (can be swapped out by replacing ml.c.i)
             i:(f,a,b)=>setTimeout(f,0,a,b),
-            //A:A// save initial args into ml.c.A
+            A:A// save initial args into ml.c.A
     
         };
         
