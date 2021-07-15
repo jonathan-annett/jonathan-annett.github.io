@@ -194,6 +194,11 @@ memoryStore   | ml.xs.memory.js
                 
                 
                 if (remove && urlData && urlData.s) {
+                    
+                    if ( urlData.s.parentElement ) {
+                       urlData.s.parentElement.removeChild(urlData.s);
+                    }
+                    
                     delete urlData.s;
                 }
                 
