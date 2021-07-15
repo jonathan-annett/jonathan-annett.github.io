@@ -160,32 +160,18 @@ memoryStore   | ml.xs.memory.js
         
         function import_ml (removeFrom) {
             var store = {};
-            Object.keys(ml.d).forEach(function( href ){
-                const mod = ml.h [ href ];
-                const exps = mod && mod.e;
-                let first;
+            Object.keys(ml.d).forEach(function( modName ){
+                
+                const mod = ml.d [ modName ];
+                const url = mod && mod.h;
+                const exps = url && ml.h [ url ] && ml.h [ url ].e;
+                const module = exps && exps [ modName ];
                 if (exps) {
-                    Object.keys(exps).forEach(function( modName ) {
-                        
-                        const module = exps [modName];
-                        
-                        if (removeFrom && removeFrom[modName]) {
-                            delete removeFrom[modName];
-                        }
-                        
-                        store [modName] = module;
-                        
-                        if ( store[href] ) {
-                            if (first) {
-                                store[href+'#'+first] = store[href];
-                                first = undefined;
-                            }
-                            store[href+'#'+modName] = module;
-                        } else {
-                            store[href] = module;
-                            first = modName;
-                        }
-                    });
+                    
+                    if (removeFrom && removeFrom[modName]) {
+                        delete removeFrom[modName];
+                    }
+                    store [modName] = module;
                 }
             });
             return store;
