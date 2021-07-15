@@ -1,4 +1,12 @@
 /*global self*/
+
+// note some functions in this use some arguments as stack based locals ( (a,b,c,d,e)=> {}  a,b,c are args d,e are local vars.
+// in most cases this is documented. also, rather than longhand code "undefined", a shorthand for a known undefined value 
+// based on context, may sometimes used. these optimization are to faciliate further reducing code size on minification.
+// also, the c construct is created on first call, and stored externaly as ml.c this is done for several reasons.
+// firstly, as it's mostly function and contstants, there is no need to create it each time, so it is effectively an external module
+// which is self extracted on first run. 
+// secondly it's to allow configuation and method swizzling to allow plugins to modify the behaviour of ml
 function ml(x,L,o,a,d,s){
     let z,c,t,X,T=(G)=>typeof G,l=location,O=l.origin;
     if (!ml.h){
@@ -47,29 +55,32 @@ function ml(x,L,o,a,d,s){
             // o = exports (ie self ie window)
             // a = dictionary of dependants per window type
             // d = array of loaded dependants 
-            // e = unuused argument doubles as a variable
+            // e = variable - used for name of export
             // D = constant
             2:(L,o,a,d,e,D)=>{
                     D="defined";//define a constant
                     e= a[L] && a[L].name; //evaluate name of import
                     
                     if(typeof e+typeof o[e]===t[2]+t[3]) {//valdidate named import is a function
-                        c.S(o,e,a[L].apply(this, d[L].map(c.x))); // do the import into o[e]
+                        c.s(o,e,a[L].apply(this, d[L].map(c.x))); // do the import into o[e]
                         if (!ml.d[e]) {
                             ml.d[e]={h:c.ri()+".js"};
                             ml.h[ ml.d[e].h ]={e:{}};
                         }
-                        c.S(ml.h[ ml.d[e].h ].e,e,o[e]);
+                        c.s(ml.h[ ml.d[e].h ].e,e,o[e]);
                         
                     } 
 
             },
             //c.P property descriptor
             P:(v)=>1&&{value: v,enumerable: !0,configurable: !0},
-            //c.S set key value in obj, returning value
-            S:(o,k,v)=>{Object.defineProperty(o,k,c.P(v));return v;},
+            //c.s set key value in obj, returning value
+            s:(o,k,v)=>{Object.defineProperty(o,k,c.P(v));return v;},
             // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
-            3:()=>"Window",//c[4]().constructor.name || "x",
+            
+            3:()=>c.C,//legacy for old module format
+            //c.C context
+            C:"Window",//
             
             // ml(1)->c[1] = resolve to self or undefined
             4:()=>typeof self === t[0] && self,
@@ -122,13 +133,12 @@ function ml(x,L,o,a,d,s){
     c=ml.c;
     t=ml.T;
     X=typeof x===t[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?'I':'L':x;//X =: L= x is filename, I= x is keyword, otherwise x
-    if (x===2&&!(L===c[3]()&&o===c[4]())) {
-        debugger;
+    if (x===2&&!(L===c.C&&o===c[4]())) {
         s=a;
         d=o;
         a=L;
         o=c[4]();
-        L=c[3]();
+        L=c.C;
     }
     // here X will be 'L' if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x
     z=typeof c[X]===t[1]?c[X](L,o,a,d,s):c;// if c[X] resolves to a function, execute it, putting result in z, otherwise set z to c
@@ -163,8 +173,8 @@ function ml(x,L,o,a,d,s){
                  
                  //return x;
              } else {
-                 // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
-                if ((N=R[2])&&N!==(d||c[3]())) return !1; 
+                 // for module@Window|filename.js format - return if wrong name:  c.C is "Window","ServiceWorkerGlobalScope"
+                if ((N=R[2])&&N!==(d||c.C)) return !1; 
              }
              N=R[1];
              U=c.B(R[3]);

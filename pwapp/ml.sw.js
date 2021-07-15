@@ -49,18 +49,21 @@ function ml(x,L, o, a, d, s){
             // o = exports (ie self ie window)
             // a = dictionary of dependants per window type
             // d = array of loaded dependants 
-            // e = unuused argument doubles as a variable
+            // e = variable - used for exports container 
             // r = undefined
             2:(L,o,a,d,e,r)=>{
-                    e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? Object.defineProperty(o, e, {
-                    value: a[L].apply(this, d[L].map(c.x)),
-                    enumerable: !0,
-                    configurable: !0
-                }) : r;
+                    e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? c.s(o,e,a[L].apply(this, d[L].map(c.x))) : r;
             },
             
+            //c.P property descriptor
+            P:(v)=>1&&{value: v,enumerable: !0,configurable: !0},
+            //c.s set key value in obj, returning value
+            s:(o,k,v)=>{Object.defineProperty(o,k,c.P(v));return v;},
+            
+            
             // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
-            3:()=>"ServiceWorkerGlobalScope",
+            3:()=>c.C,//legacy for old module format
+            C:"ServiceWorkerGlobalScope",//
             
             // ml(1)->c[1] = resolve to self or undefined
             4:()=>typeof self === t[0] && self,
@@ -116,13 +119,12 @@ function ml(x,L, o, a, d, s){
     }   
     c=ml.c;
     t=ml.t;
-    if (x===2&&!(L===c[3]()&&o===c[4]())) {
-        debugger;
+    if (x===2&&!(L===c.C&&o===c[4]())) {
         s=a;
         d=o;
         a=L;
         o=c[4]();
-        L=c[3]();
+        L=c.C;
     }
     z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
     
@@ -160,7 +162,7 @@ function ml(x,L, o, a, d, s){
                  return x;
              } else {
                  // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
-                if ((N=R[2])&&N!==(d||c[3]())) return !1; 
+                if ((N=R[2])&&N!==(d||c.C)) return !1; 
              }
              
              N=R[1];
