@@ -204,13 +204,13 @@ function ml(x,L, o, a, d, s){
              N=R[1];
              U=c.B(R[3]);
              ml.l.push(N+'='+U);
-             if(c.c(U)){
+             //if(c.c(U)){
                  ml.d[N]={h:U};ml.H.push(U);
-             }
+            // }
              try {
-               importScripts(U);
-             } catch (e){
                debugger;
+                importScripts(U);
+             } catch (e){
                c.e(e.message,'while loading',U,'in',ml.l);  
              }
              //ml.h[U]=ml.h[U]||{e:{}};
