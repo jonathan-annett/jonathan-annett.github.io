@@ -2,7 +2,7 @@
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),[],function(){ml(2,ml(3),ml(4),
+ml(0,ml(1),[],function(){ml(2,
 
     {
         ServiceWorkerGlobalScope: function sampleLib( lib ) {

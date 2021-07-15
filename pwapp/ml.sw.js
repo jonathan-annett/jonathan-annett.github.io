@@ -41,7 +41,7 @@ function ml(x,L, o, a, d, s){
     
             
             // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
-            1:()=>c[4]()||{},
+            1:()=>c.S||{},
             
             // ml(2)-->c[2](L,o,a,d,e,r) 
             
@@ -66,7 +66,9 @@ function ml(x,L, o, a, d, s){
             C:"ServiceWorkerGlobalScope",//
             
             // ml(1)->c[1] = resolve to self or undefined
-            4:()=>typeof self === t[0] && self,
+            4:()=>c.S,// legacy for old module format
+            //c.S === self
+            S:typeof self === t[0] && self,
             
             //c.x = map iterator to execure every function in an array of functions
             //      (used to resolve each loaded module)
@@ -119,11 +121,11 @@ function ml(x,L, o, a, d, s){
     }   
     c=ml.c;
     t=ml.t;
-    if (x===2&&!(L===c.C&&o===c[4]())) {
+    if (x===2&&!(L===c.C&&o===c.S)) {
         s=a;
         d=o;
         a=L;
-        o=c[4]();
+        o=c.S;
         L=c.C;
     }
     z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
@@ -142,7 +144,7 @@ function ml(x,L, o, a, d, s){
              u=u.map(ml.g||z.u).filter(z.y);
             
              if (!u.length) {
-                 L=c[4]();
+                 L=c.S;
                  ml.H[c.f](function(U){
                     ml.h[U] && c.k(ml.h[U].e)[c.f]((m)=>{
                        if (!ml.h[U].e[m]) ml.h[U].e[m]=L[m]; 
@@ -175,7 +177,7 @@ function ml(x,L, o, a, d, s){
                c.l(e.message,'while loading',U,'in',ml.l);  
              }
              ml.h[U]=ml.h[U]||{e:{}};
-             ml.h[U].e[N]=c[4]()[N]||false;
+             ml.h[U].e[N]=c.S[N]||false;
              ml.l.pop();
              return N;
        },

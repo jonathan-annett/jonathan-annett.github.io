@@ -46,7 +46,7 @@ function ml(x,L,o,a,d,s){
 
             // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
             
-            1:()=>c[4]()||{},
+            1:()=>c.S||{},
             
             
             // ml(2)-->c[2](L,o,a,d,e,r) 
@@ -83,7 +83,9 @@ function ml(x,L,o,a,d,s){
             C:"Window",//
             
             // ml(1)->c[1] = resolve to self or undefined
-            4:()=>typeof self === t[0] && self,
+            4:()=>c.S,// legacy for old module format
+            // c.S === self, assuming self is an object, otherwise undefined
+            S:typeof self === t[0] && self,
             
             //c.x = map iterator to execure every function in an array of functions
             //      (used to resolve each loaded module)
@@ -97,7 +99,7 @@ function ml(x,L,o,a,d,s){
                 // ml("/path/to/mod.js",function(mod){...},window,"modName") 
                 //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ } o=window,a="modName"
                 R=c.r(x);
-                w=R?c[4]():!!o;
+                w=R?c.S:!!o;
                 S=w?o:{};  // S=dummy self, contains "t" temporarily
                        // R=holder for S.t between deletion and return
                 R=R||[x,'t',0,x];// [fullurl,tempname,ignored,url]
@@ -133,11 +135,11 @@ function ml(x,L,o,a,d,s){
     c=ml.c;
     t=ml.T;
     X=typeof x===t[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?'I':'L':x;//X =: L= x is filename, I= x is keyword, otherwise x
-    if (x===2&&!(L===c.C&&o===c[4]())) {
+    if (x===2&&!(L===c.C&&o===c.S)) {
         s=a;
         d=o;
         a=L;
-        o=c[4]();
+        o=c.S;
         L=c.C;
     }
     // here X will be 'L' if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x

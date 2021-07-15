@@ -10,7 +10,7 @@ ml(0,ml(1),[
     " neededMod |   /path/needed.js",
     " x@Window  | https://somecdn/x.min.js",
     
-],function(){ml(2,ml(3),ml(4),
+],function(){ml(2,
 
     {
         Window: function stubLib( lib ) {
