@@ -2,7 +2,7 @@
 
 
 /* global ml,self,Rusha */
-ml(0,ml(1),[ 'Rusha | rusha.js' ],function(){ml(2,
+ml([ 'Rusha | rusha.js' ],function(){ml(2,
 
     {   Window: function sha1Lib(lib) { return lib ;},
         ServiceWorkerGlobalScope: function sha1Lib(lib) { return lib ;}

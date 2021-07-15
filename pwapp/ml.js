@@ -1,12 +1,15 @@
 /*global self*/
 
-// note some functions in this use some arguments as stack based locals ( (a,b,c,d,e)=> {}  a,b,c are args d,e are local vars.
-// in most cases this is documented. also, rather than longhand code "undefined", a shorthand for a known undefined value 
-// based on context, may sometimes used. these optimization are to faciliate further reducing code size on minification.
-// also, the c construct is created on first call, and stored externaly as ml.c this is done for several reasons.
-// firstly, as it's mostly function and contstants, there is no need to create it each time, so it is effectively an external module
+// note some functions in this use some arguments as stack based locals 
+// for example (a,b,c,d,e) => {...}  a,b,c are args d,e are local vars.
+// in most cases this is documented. 
+// also, rather than longhand code "undefined", a shorthand for a known undefined value, based on context
+// may sometimes be used. 
+// these optimization are to faciliate further reducing code size on minification.
+// also, the "c" object is created on first call, and stored externaly as ml.c this is done for several reasons.
+// firstly, as it's mostly functions and constants, there is no need to create it each time, so it is effectively an external module
 // which is self extracted on first run. 
-// secondly it's to allow configuation and method swizzling to allow plugins to modify the behaviour of ml
+// secondly it's to allow configuration and method swizzling to allow plugins to modify the behaviour of ml
 function ml(x,L,o,a,d,s){
     let z,c,t,X,T=(G)=>typeof G,l=location,O=l.origin;
     if (!ml.h){
