@@ -130,18 +130,22 @@ function ml(x,L, o, a, d, s){
         o=c.S;
         L=c.C;
     }
-    // if first arg is array/string second is function, no third ie ml(['blah|blah.js'],function(){...}   ml("blah|blah.js",function(){...}   
-    else if (!o&&(Array.isArray(x)||T(x)===t[2])&&T(L)===t[1]){
-       o=L;
-       L=x;
-       x=0;
-    }
+    
+    
     // see if we can get away without instantiating z to service this query, if so, do it and set z to something other than c
     z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
     
     // if z===c it means we could not service the query, so we need to instantiate z
     // otherwise z is the return value of the query
     if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
+
+    // if first arg is array/string second is function, no third ie ml(['blah|blah.js'],function(){...}   ml("blah|blah.js",function(){...}   
+    if (!o&&(Array.isArray(x)||T(x)===t[2])&&T(L)===t[1]){
+       a=L
+       o=x;
+       L=c.S;
+       x=0;
+    }
 
     z = {
        //F:ml.fetch||false,// F:t[1] = use fetch, F:false,  = don't use fetch
