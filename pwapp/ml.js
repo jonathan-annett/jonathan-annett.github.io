@@ -105,9 +105,9 @@ function ml(x,L,o,a,d,s){
                 x=c.u(x);// arrayify string dependants
                 O=L||{};
                 L=c.C;    
-                A={};A[L]= x.map((s,i,a,R)=>{R=c.r(s);return R ? ()=>ml.i[ R[1] ] : ()=>{}});// import named module
-                D={};D[L]=function tmp(){o.apply(this,arguments)};// invoke callback with loaded modules
-                return ml(x,()=>c[2](L,O,A,D));
+                A={};A[L]= x.map((s,i,a,R)=>{R=c.r(s);return R ? ()=>{ o(R[1],ml.i[ R[1] ]);} : ()=>{}});// import named module
+                D={};D[L]=function tmp(){};// invoke callback with loaded modules
+                return ml(0,O,x,()=>c[2](L,O,A,D));
                 
             },
             //c.I = import query
@@ -252,7 +252,7 @@ function ml(x,L,o,a,d,s){
 ml(`
 setImmediateLib | ml.setImmediate.js
 amdLib          | ml.amd.js
-`,window,function (si,amd){si(function(i){ml.c.i = i;}); console.log(amd);});
+`,window,function (n,m){ if (n!=="amdLib") m(function(i){ml.c.i = i;}); console.log(n.m);});
 
 
 
