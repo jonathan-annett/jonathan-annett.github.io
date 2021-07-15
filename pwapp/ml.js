@@ -121,7 +121,6 @@ function ml(x,L,o,a,d,s){
                             {T:o},
                             {T:[()=>{  R=S[t];
                                        c.m(S,t,R);// save result into ml.d and ml.h (and S, but we delete it)
-                                       delete S[t];
                                        return R;
                                      }
                                ]}),
