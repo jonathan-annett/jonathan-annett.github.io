@@ -16,7 +16,7 @@ function ml(x,L,o,a,d,s){
         C=console;//shortcut for console
         // "t" contains an array of types - object,function,string,undefined
         // used for comparisions later
-        ml.T=t=[C,ml,'',t].map((G)=>typeof G);
+        ml.T=t=[C,ml,'',t].map(T);
         // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
         // any constants/worker functions they need. also contains some code used later by z
         // note that t doubles as a proxy for "undefined" in the type array "t" above 
@@ -40,7 +40,7 @@ function ml(x,L,o,a,d,s){
             B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
     
             //c.u: convert string to array, remove comments, and whitespace
-            u:(u)=>u=typeof u===t[2]?u[c.R](/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'')
+            u:(u)=>u=T(u)===t[2]?u[c.R](/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'')
                                       [c.R](/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/))[\r\n]*/g,'')
                                       .trim().split('\n').map((x)=>x.trim()).filter((x)=>x.length):u, 
 
@@ -134,7 +134,9 @@ function ml(x,L,o,a,d,s){
     }
     c=ml.c;
     t=ml.T;
-    X=typeof x===t[2]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?'I':'L':x;//X =: L= x is filename, I= x is keyword, otherwise x
+    // for ml("string") ie first arg is string, no second arg, 
+    X=T(x)===t[2]&&!L?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?'I':'L':x;//X =: L= x is filename, I= x is keyword, otherwise x
+    //for inner module hoist, we can drop the need for ml(3) and ml(4) now, since ml.js became ml.sw.js so we don't need to deduce context anymore
     if (x===2&&!(L===c.C&&o===c.S)) {
         s=a;
         d=o;
@@ -142,11 +144,22 @@ function ml(x,L,o,a,d,s){
         o=c.S;
         L=c.C;
     }
-    // here X will be 'L' if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x
-    z=typeof c[X]===t[1]?c[X](L,o,a,d,s):c;// if c[X] resolves to a function, execute it, putting result in z, otherwise set z to c
     
+    // if first arg is array/string second is function, no third ie ml(['blah|blah.js'],function(){...}   ml("blah|blah.js",function(){...}   
+    else if (!o&&(Array.isArray(x)||T(x)===t[2])&&T(L)===t[1]){
+       o=L;
+       L=x;
+       X=x=0;
+    }
+    // here X will be 'L' if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x
+    // see if we can get away without instantiating z to service this query, if so, do it and set z to something other than c
+    z=typeof c[X]===t[1]?c[X](L,o,a,d,s):c;
+    
+    // if z===c it means we could not service the query, so we need to instantiate z
+    // otherwise z is the return value of the query
     if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
-        
+    
+
     z = {
        F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),// F:t[1] = use fetch, F:false,  = don't use fetch
 

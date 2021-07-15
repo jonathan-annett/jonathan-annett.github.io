@@ -2,7 +2,7 @@
 ml(0,ml(1),`
 
     pwaMessage@Window                          | ml.pwa-message.js
-`,function(){ml(2,ml(3),ml(4),
+`,function(){ml(2,
 
     {
 

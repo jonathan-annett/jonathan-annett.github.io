@@ -7,7 +7,7 @@ ml(0,ml(1),[
    'sha1Lib                                | sha1.js',
    'editInZed                              | ml.zedhook.js'
     
-    ],function(){ml(2,ml(3),ml(4),
+    ],function(){ml(2,
 
     {
 

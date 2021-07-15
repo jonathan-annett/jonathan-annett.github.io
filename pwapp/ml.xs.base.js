@@ -4,7 +4,7 @@ ml(0,ml(1),`
     
    serializerLib | ml.xs.serializer.js
     
-    `,function(){ml(2,ml(3),ml(4),
+    `,function(){ml(2,
 
     {
         Window: function xStoreBase( lib ) {
