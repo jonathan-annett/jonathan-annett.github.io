@@ -9,7 +9,7 @@
 // also, the "c" object is created on first call, and stored externaly as ml.c this is done for several reasons.
 // firstly, as it's mostly functions and constants, there is no need to create it each time, so it is effectively an external module
 // which is self extracted on first run. 
-// secondly it's to allow configuration and method swizzling to allow plugins to modify the behaviour of ml
+// secondly it's to allow configuation and method swizzling to allow plugins to modify the behaviour of ml
 function ml(x,L,o,a,d,s){
     let z,c,t,X,T=(G)=>typeof G,l=location,O=l.origin;
     if (!ml.h){
@@ -124,7 +124,9 @@ function ml(x,L,o,a,d,s){
             },
             //c.I = import query
             I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
-            k:(o)=>Object.keys(o)
+            k:(o)=>Object.keys(o),
+            //quasi setImmediate (can be swapped out by replacing ml.c.i)
+            i:(f,a,b)=>setTimeout(f,0,a,b)
     
         };
         
@@ -175,7 +177,7 @@ function ml(x,L,o,a,d,s){
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u)=>{
           u=u.map(ml.g||z.u).filter(z.y);
-          return u.length?setTimeout(z.l, z.t(u.length), u)&&c.l("pending...",u):a();
+          return u.length?c.i(z.l, u)&&c.l("pending...",u):a();
        },
 
        //z.u = map iterator z.l

@@ -102,7 +102,9 @@ function ml(x,L, o, a, d, s){
             I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
             
             //c.k = Object.keys();
-            k:(o)=>Object.keys(o)
+            k:(o)=>Object.keys(o),
+            //quasi setImmediate (can be swapped out by replacing ml.c.i)
+            i:(f,a,b)=>setTimeout(f,0,a,b)
             
     
                     
@@ -168,7 +170,7 @@ function ml(x,L, o, a, d, s){
                     }) 
                  });
              }
-             return u.length?setTimeout(z.l, u.length+1, u):a();
+             return u.length?c.i(z.l,u):a();
        },
 
        //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
