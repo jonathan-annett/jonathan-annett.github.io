@@ -11,7 +11,9 @@
 // which is self extracted on first run. 
 // secondly it's to allow configuation and method swizzling to allow plugins to modify the behaviour of ml
 function ml(x,L,o,a,d,s){
-    let z,c,t,X,T=(G)=>typeof G,l=location,O=l.origin;
+    let z,c,t,X,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
+
+    
     if (!ml.h){
         //create history db if none exists
         ml.h={};ml.H=[];ml.d={};ml.f={};
@@ -65,13 +67,7 @@ function ml(x,L,o,a,d,s){
                     e= a[L] && a[L].name; //evaluate name of import
                     
                     if(typeof e+typeof o[e]===t[2]+t[3]) {//valdidate named import is a function
-                        c.s(o,e,a[L].apply(this, d[L].map(c.x))); // do the import into o[e]
-                        if (!ml.d[e]) {
-                            ml.d[e]={h:c.ri()+".js"};
-                            ml.h[ ml.d[e].h ]={e:{}};
-                        }
-                        c.s(ml.h[ ml.d[e].h ].e,e,o[e]);
-                        
+                        c.m(o,e,a[L].apply(this, d[L].map(c.x))); // do the import into o[e]
                     } 
 
             },
@@ -79,6 +75,15 @@ function ml(x,L,o,a,d,s){
             P:(v)=>1&&{value: v,enumerable: !0,configurable: !0},
             //c.s set key value in obj, returning value
             s:(o,k,v)=>{Object.defineProperty(o,k,c.P(v));return v;},
+            m:(o,e,v)=>{
+                c.s(o,e,v); // do the import into o[e]
+                if (!ml.d[e]) {
+                    ml.d[e]={h:c.ri()+".js"};
+                    ml.h[ ml.d[e].h ]={e:{}};
+                }
+                c.s(ml.h[ ml.d[e].h ].e,e,v);
+            },
+            
             // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
             
             3:()=>c.C,//legacy for old module format
@@ -97,26 +102,27 @@ function ml(x,L,o,a,d,s){
             l:C.log.bind(C),
             //c.L = loader hoist function (called when first argument to ml is a string)
             L:(S,R,t,w)=>{
-                // ml("/path/to/mod.js",function(mod){...}) 
-                //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ }
+                
+                // outer scope args: x,L,o,a,d,s...
+                // ml("/path/to/mod.js",{},function(mod){...}) 
+                //   ==>  x = "/path/to/mod.js", L=window, o=function(mod){ /* do something with mod*/ }
+                //        L =   
                 // ml("/path/to/mod.js",function(mod){...},window,"modName") 
-                //   ==>  x="/path/to/mod.js", L=function(mod){ /* do something with mod*/ } o=window,a="modName"
+                //   ==>  x="/path/to/mod.js", L=window, o=function(mod){ /* do something with mod*/ } a="modName"
                 R=c.r(x);
-                w=R?c.S:!!o;
-                S=w?o:{};  // S=dummy self, contains "t" temporarily
-                           // R=holder for S.t between deletion and return
+                S={};       // S=dummy self, contains "t" temporarily
+                            // R=holder for S.t between deletion and return
                 R=R||[x,'t',0,x];// [fullurl,tempname,ignored,url]
-                t=a||R[1];
+                t=a||R[1];        // t = temp name "t" or supplied module name
                 return ml(
                     0,S,[
                     t+"@T|"+R[3]],
                     ()=>ml(  2,'T',S,
-                            {T:L},
-                            {T:[(x)=>{ R=S[t];
-                                      if (!w) delete S[t];
-                                      x=t&&ml.d[t];
-                                      if(x)ml.h[ x.h ].e[t]=R;
-                                      return R;
+                            {T:o},
+                            {T:[()=>{  R=S[t];
+                                       c.m(S,t,R);// save result into ml.d and ml.h (and S, but we delete it)
+                                       delete S[t];
+                                       return R;
                                      }
                                ]}),
                     'T'
@@ -126,7 +132,8 @@ function ml(x,L,o,a,d,s){
             I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
             k:(o)=>Object.keys(o),
             //quasi setImmediate (can be swapped out by replacing ml.c.i)
-            i:(f,a,b)=>setTimeout(f,0,a,b)
+            i:(f,a,b)=>setTimeout(f,0,a,b),
+            A:A// save initial args into ml.c.A
     
         };
         
@@ -139,8 +146,17 @@ function ml(x,L,o,a,d,s){
     }
     c=ml.c;
     t=ml.T;
-    // for ml("string") ie first arg is string, no second arg, 
-    X=T(x)===t[2]&&!L?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?'I':'L':x;//X =: L= x is filename, I= x is keyword, otherwise x
+    // for ml("string") ie first arg is string, second arg is not a function, 
+    
+    // if first arg is array/string second is function, no third ie ml(['blah|blah.js'],function(){...}   ml("blah|blah.js",function(){...}   
+    if (A.length===2&&(Array.isArray(x)||W[0]===t[2])&&W[1]===t[1]){
+       a=L
+       o=x;
+       L=c.S;
+       X=x=0;
+    } else {
+        X=T(x)===t[2]&&T(L)!==t[1]?/^[a-zA-Z0-9\-\_\$]*$/.test(x)?'I':'L':x;//X =: L= x is filename, I= x is keyword, otherwise x
+    }
     //for inner module hoist, we can drop the need for ml(3) and ml(4) now, since ml.js became ml.sw.js so we don't need to deduce context anymore
     if (x===2&&!(L===c.C&&o===c.S)) {
         s=a;
@@ -158,13 +174,7 @@ function ml(x,L,o,a,d,s){
     // otherwise z is the return value of the query
     if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
     
-    // if first arg is array/string second is function, no third ie ml(['blah|blah.js'],function(){...}   ml("blah|blah.js",function(){...}   
-    if (!o&&(Array.isArray(x)||T(x)===t[2])&&T(L)===t[1]){
-       a=L
-       o=x;
-       L=c.S;
-       X=x=0;
-    }
+    
 
     z = {
        F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),// F:t[1] = use fetch, F:false,  = don't use fetch
