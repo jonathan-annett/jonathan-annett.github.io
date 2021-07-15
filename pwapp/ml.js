@@ -101,21 +101,12 @@ function ml(x,L,o,a,d,s){
             //c.l = console.log shortcut
             l:C.log.bind(C),
             //c.L = loader hoist function (called when first argument to ml is a string)
-            L:(S,R,t,Y,Z)=>{
-                
-                // outer scope args: x,L,o,a,d,s...
-                // ml("/path/to/mod.js",{},function(mod){...}) 
-                //   ==>  x = "/path/to/mod.js", L=window, o=function(mod){ /* do something with mod*/ }
-                //        L =   
-                // ml("/path/to/mod.js",function(mod){...},window,"modName") 
-                //   ==>  x="/path/to/mod.js", L=window, o=function(mod){ /* do something with mod*/ } a="modName"
-                R=c.r(x);
-                S=L||{};    
-                R=R||[x,'t',0,x];// [fullurl,tempname,ignored,url]
-                t=a||R[1];        // t = temp name "t" or supplied module name
-                Y={};Y[c.C]=function tmp(){o.apply(this,arguments)};
-                Z={};Z[c.C]=[()=>ml.i[t]];// import named module
-                return ml( t+"@"+c.C+"|"+R[3],()=>c[2](c.C,S,Y,Z));
+            L:(O,A,D)=>{
+                O=L||{};
+                L=c.C;    
+                A={};A[L]=[()=>ml.i[t]];// import named module
+                D={};D[L]=function tmp(){o.apply(this,arguments)};// invoke callback with loaded modules
+                return ml(x,()=>c[2](L,O,A,D));
                 
             },
             //c.I = import query
