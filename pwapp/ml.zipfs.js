@@ -34,7 +34,7 @@ ml(0,ml(1),`
             
             
              const databaseNames = ["updatedURLS","openZips","zipMetadata","cachedURLS","offsiteURLS"];
-             const databases     = self.ml_db_Lib (databaseNames,getZipObject);
+             const databases     = ml.i.ml_db_Lib (databaseNames,getZipObject);
              
              
              const registeredMiddleware = [];
@@ -47,7 +47,7 @@ ml(0,ml(1),`
                  virtualDirQuery, virtualDirEvent,
                  virtualDirResponseEvent, newVirtualDirs
                  // from ...
-             } = self.virtualDirLib( 
+             } = ml.i.virtualDirLib( 
                  // which needs these items...
                  getEmbeddedZipFileResponse 
              );
@@ -57,7 +57,7 @@ ml(0,ml(1),`
                        updateURLContents,        fetchUpdatedURLContents,
                        removeUpdatedURLContents, fixupKeys
                        // from...
-                   } = self.zipUpWriteLib (
+                   } = ml.i.zipUpWriteLib (
                        // which needs  these items
                        databases, fetchInternalBuffer,
                        virtualDirQuery, mimeForFilename
@@ -71,7 +71,7 @@ ml(0,ml(1),`
                 resolveZipDownload,
                 getUpdatedZipFile  
                 // from
-            }  =  self.zipFSListingLib( 
+            }  =  ml.i.zipFSListingLib( 
                 // whch needs these items...
                 getZipObject,
                 fetchUpdatedURLContents,
@@ -90,7 +90,7 @@ ml(0,ml(1),`
 
                      // from...
   
-                  } = self.zipPNGLib (
+                  } = ml.i.zipPNGLib (
                       // which needs these items..
                       getUpdatedZipFile,
                       response200);
@@ -1210,7 +1210,7 @@ ml(0,ml(1),`
              
              
              function response500 (resolve,error) {
-                 let errMessage = error.stack ? self.editInZed.zedhookErrorHtml(error) : error.message||error;
+                 let errMessage = error.stack ? ml.i.editInZed.zedhookErrorHtml(error) : error.message||error;
                  return resolve( new Response(
                                     errMessage, {
                                             status: 500,
@@ -2091,7 +2091,7 @@ ml(0,ml(1),`
                }
            }       
 
-           self.pwaMiddlewares(addMiddlewareListener,databases,response200,response500,fnSrc);
+           ml.i.pwaMiddlewares(addMiddlewareListener,databases,response200,response500,fnSrc);
            
 
              return lib;
@@ -2107,7 +2107,7 @@ ml(0,ml(1),`
         Window: [  ],
 
         ServiceWorkerGlobalScope: [ 
-            () => self.sha1Lib.cb,  
+            () => ml.i.sha1Lib.cb,  
             () => fnSrc]
     };
       
