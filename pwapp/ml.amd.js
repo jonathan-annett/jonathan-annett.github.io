@@ -98,7 +98,8 @@ memoryStore   | ml.xs.memory.js
         const lib = {
             
             require : REQUIRE,
-            define  : DEFINE
+            define  : DEFINE,
+            import_ml :import_ml 
             
         };
         
@@ -155,6 +156,40 @@ memoryStore   | ml.xs.memory.js
 
         
         return lib;
+        
+        
+        function import_ml (removeFrom) {
+            var store = {};
+            Object.keys(ml.d).forEach(function( href ){
+                const mod = ml.h [ href ];
+                const exps = mod && mod.e;
+                let first;
+                if (exps) {
+                    Object.keys(exps).forEach(function( modName ) {
+                        
+                        const module = exps [modName];
+                        
+                        if (removeFrom && removeFrom[modName]) {
+                            delete removeFrom[modName];
+                        }
+                        
+                        store [modName] = module;
+                        
+                        if ( store[href] ) {
+                            if (first) {
+                                store[href+'#'+first] = store[href];
+                                first = undefined;
+                            }
+                            store[href+'#'+modName] = module;
+                        } else {
+                            store[href] = module;
+                            first = modName;
+                        }
+                    });
+                }
+            });
+            return store;
+        }
         
 
         function typ (x) {
