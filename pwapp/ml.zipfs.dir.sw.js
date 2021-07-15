@@ -212,7 +212,7 @@ ml(0,ml(1),`
                         '</head>',
                         '<body class="disable-select">',
                         '<script src="ml.js"></script>',
-                        '<script src="new_amd.js"></script>',
+                        '<script src="ml.amd.js"></script>',
                         '<script src="ml.zedhook.js"></script>',
                         '<script src="ml.zipfs.dir.js"></script>',
                         
