@@ -256,7 +256,7 @@ amdLib          | ml.amd.js
         case "amdLib":
             window.define=lib.define;
             window.require=lib.require;
-            console.log(lib.import_ml (window,location.origin));
+            //console.log(lib.import_ml (window,location.origin));
             break;
         case "setImmediateLib":lib(function(i){
             ml.c.i = i;
