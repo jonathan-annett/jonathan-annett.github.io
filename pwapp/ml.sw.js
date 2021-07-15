@@ -120,13 +120,19 @@ function ml(x,L, o, a, d, s){
             k:(o)=>Object.keys(o),
             //quasi setImmediate (can be swapped out by replacing ml.c.i)
             i:(f,a,b)=>setTimeout(f,0,a,b),
-            
-            n:(f,K)=>{
-              K=c.k(c.S);
-              if (f) {
-                  K.filter((k)=>{c.K.indexOf(k)<0;}).some(f);
-              }
-              c.K=K;
+            K:{},
+            n:(N,f,K)=>{
+              if(c.K[N]){c.K[N].push(f);}else{c.K[N]=[f];}
+              c.j();
+            },
+            j:()=>{
+                c.k(c.K).forEach((k)=>{
+                   if (c.S[k]) {
+                       c.K[k].forEach((f)=>f(c.S[k]));
+                       delete c.K[k];
+                   }
+                });
+                c.k(c.K).length && c.i(c.j);
             }
                     
             
@@ -212,14 +218,12 @@ function ml(x,L, o, a, d, s){
              ml.d[N]={h:U};
              ml.H.push(U);
              try {
-                c.n();//save self keys
                 importScripts(U);
-                c.n((e)=>{
+                c.n(N,(e)=>{
                     ml.h[U] = ml.h[U]   || {e:{}};
                     ml.h[U].e[N]=c.S[N] || false;
                 });
              } catch (e){
-                 debugger;
                 c.e(e.message,'while loading',U,'in',ml.l);  
              }
 
