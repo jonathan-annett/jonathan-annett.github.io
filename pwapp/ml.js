@@ -102,9 +102,10 @@ function ml(x,L,o,a,d,s){
             l:C.log.bind(C),
             //c.L = loader hoist function (called when first argument to ml is a string)
             L:(O,A,D)=>{
+                x=c.u(x);// arrayify string dependants
                 O=L||{};
                 L=c.C;    
-                A={};A[L]=[()=>ml.i[t]];// import named module
+                A={};A[L]= x.map((s,i,a,R)=>{R=c.r(s);return R ? ()=>ml.i[ R[1] ] : ()=>{}});// import named module
                 D={};D[L]=function tmp(){o.apply(this,arguments)};// invoke callback with loaded modules
                 return ml(x,()=>c[2](L,O,A,D));
                 
