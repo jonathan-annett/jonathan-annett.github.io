@@ -158,34 +158,186 @@ memoryStore   | ml.xs.memory.js
         return lib;
         
         
-        function import_ml (removeFrom,baseurl) {
+        function import_ml (selfObj,baseurl,remove) {
             var store = {};
             Object.keys(ml.d).forEach(function( modName ){
                 
-                const mod = ml.d [ modName ];
-                const url = mod && mod.h;
-                const exps = url && ml.h [ url ] && ml.h [ url ].e;
-                const module = exps && exps [ modName ];
+                const mod     = ml.d [ modName ];
+                const url     = mod  && mod.h;
+                const urlData = url  && ml.h [ url ];
+                
+                const exps    = urlData && urlData.e;
+                
+                const module = exps && exps [ modName ] || selfObj [ modName ];
                 if (exps) {
                     
-                    if (removeFrom && removeFrom[modName]) {
-                        delete removeFrom[modName];
+                    if (selfObj && 
+                        selfObj [modName] && remove) {
+                        delete selfObj[modName];
                     }
+                    
                     store [modName] = module;
-                    store [url] = module;
+                    store [url]     = module;
                     
                     if (baseurl && url.indexOf(baseurl)===0) {
+                        
                         var shorturl = url.substr(baseurl.length);
                         store [shorturl] = module;
+                        
                         if (shorturl.slice(-3)===".js") {
                            store [shorturl.slice(0,-3)] = module;   
                         }
+                        
                     }
                     
                 }
+                
+                
+                if (remove && urlData && urlData.s) {
+                    delete urlData.s;
+                }
+                
+
             });
+            
+            ml.g = function(x,R,U,N){
+                 R=ml.c.r(x);
+                 if (!R) {
+                     if (selfObj[x]) return false;
+                     
+                     return x;
+                 } else {
+                     // for module@Window|filename.js format - return if wrong name:  c.C is "Window","ServiceWorkerGlobalScope"
+                    if ((N=R[2])&&N!==ml.c.C) return true; 
+                 }
+                 N=R[1];
+                 U=ml.c.B(R[3]);
+                 if(ml.c.c(U))ml.d[N]={h:U};
+                 console.log("loading",U);
+                 loadScript(U,undefined,function(){
+                     console.log("loaded",N,U);
+                 });
+                 
+                 return N;
+           };
+           
+            ml.c[2] = function (L,o,a,d,e,r){
+                      e = a[L] && a[L].name; //evaluate name of import
+                      console.log("inline define via captured ml.c[2] vector:",e);
+                      
+                      if(typeof e+typeof o[e]===ml.T[2]+ml.T[3]) {//valdidate named import is a function
+                          ml.c.m(o,e,a[L].apply(this, d[L].map(ml.c.x))); // do the import into o[e]
+                      } 
+  
+            }
+        
             return store;
         }
+        
+        
+        
+        function loadScript(src,meta,cb) {     
+           const
+           script = document.createElement("script");
+           script.meta=meta||{};
+           script.meta.src=src;
+           script.src=src;
+           script.meta.href=script.src;
+           script.meta.baseURI=script.baseURI;
+           script.onload = cb;
+           document.body.appendChild(script);
+        }
+        
+        
+        function loadScriptInIframe(src,def,req,meta) {
+            
+            const _a         = Array.prototype, cpArgs = _a.slice.call.bind (_a.slice);
+            
+            let iframe,script,cleanup_timer,scripts={};
+            
+            createIframe();
+            
+            function createIframe() {
+                iframe= document.createElement('iframe');
+                
+                iframe.style.display="none";
+                
+                iframe.onload = iframe_ready; 
+                iframe.src = 'about:blank';
+                document.body.appendChild(iframe);
+            }
+            
+            function iframe_ready() {
+                iframe.require = function () {
+                    if (cleanup_timer) clearTimeout(cleanup_timer);
+                    cleanup_timer  = setTimeout(cleanup,15000);
+                    return req.apply(undefined,[script.meta].concat(cpArgs(arguments)));
+                };        
+                        
+                iframe.define = function () {
+                    if (cleanup_timer) clearTimeout(cleanup_timer);
+                    cleanup_timer  = setTimeout(cleanup,15000);
+                    const define_args = cpArgs(arguments);
+                    if (!script.meta.arrayBuffer) {
+                        fetch(script.src,{mode:"no-cors"}).then(function(response){
+                           response.arrayBuffer().then(function(buffer){
+                              const fn      = define_args.pop();
+                              const source  = fn.toString();
+                              const text    = new TextDecoder().decode( buffer);
+                              const removed = text.split(source).join('').trim();
+                              script.meta.soloScript = removed==='define()'||removed==='define();';
+                              if (script.meta.soloScript) {
+                                  meta.alternate = JSON.stringify([
+                                      'function',   
+                                      '',
+                                      fn_args(source),
+                                      text
+                                  ]);
+                              } else {
+                                  meta.alternate = JSON.stringify([
+                                      'function',   
+                                      '',
+                                      ['define','require'],
+                                      text
+                                  ]);
+                              }
+                              def.apply(undefined,[script.meta].concat(define_args));
+                           }); 
+                        });
+                    } else {
+                        return def.apply(undefined,[script.meta].concat(define_args));
+                    }
+                };
+                iframe.define.amd={};
+                
+                
+                iframe.contentWindow.define  = iframe.define;
+                iframe.contentWindow.require = iframe.require;
+                proceed();
+           }
+            
+            function proceed() {     
+               script = document.createElement("script");
+               script.meta=meta||{};
+               script.meta.src=src;
+               script.src=src;
+               script.meta.href=script.src;
+               script.meta.baseURI=script.baseURI;
+               iframe.contentWindow.document.body.appendChild(script);
+            };
+            
+            function cleanup () {
+                cleanup_timer = undefined;
+                if (iframe) {
+                    if (script) {
+                        iframe.contentWindow.document.body.removeChild(script);
+                    }
+                    document.body.removeChild(iframe);
+                }
+            }
+            
+            
+        } 
         
 
         function typ (x) {

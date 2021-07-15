@@ -13,7 +13,6 @@
 function ml(x,L,o,a,d,s){
     let z,c,t,X,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
 
-    
     if (!ml.h){
         //create history db if none exists
         ml.h={};ml.H=[];ml.d={};ml.f={};
@@ -61,9 +60,8 @@ function ml(x,L,o,a,d,s){
             // a = dictionary of dependants per window type
             // d = array of loaded dependants 
             // e = variable - used for name of export
-            // D = constant
-            2:(L,o,a,d,e,D)=>{
-                    D="defined";//define a constant
+            // r = undefined
+            2:(L,o,a,d,e,r)=>{
                     e= a[L] && a[L].name; //evaluate name of import
                     
                     if(typeof e+typeof o[e]===t[2]+t[3]) {//valdidate named import is a function
@@ -125,6 +123,7 @@ function ml(x,L,o,a,d,s){
             has:(t,p)=>!!ml.d[p]
         });
     }
+    
     c=ml.c;
     t=ml.T;
     // for ml("string") ie first arg is string, second arg is not a function, 
@@ -155,8 +154,6 @@ function ml(x,L,o,a,d,s){
     // otherwise z is the return value of the query
     if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
     
-    
-
     z = {
        F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),// F:t[1] = use fetch, F:false,  = don't use fetch
 
@@ -164,7 +161,6 @@ function ml(x,L,o,a,d,s){
        //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
        0:()=>z.l(c.u(o)),
        
-       t:(n)=>Math.min(100,ml.t=(ml.t?ml.t*2:1)),
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u)=>{
           u=u.map(ml.g||z.u).filter(z.y);
@@ -191,7 +187,7 @@ function ml(x,L,o,a,d,s){
              return N;
        },
        
-       //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
+       //z.y = filter to remove elements that are truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
        y:(x)=>!!x,
          
        //z.s = create and append empty script element
@@ -248,6 +244,8 @@ function ml(x,L,o,a,d,s){
     return z[x]&&z[x](L,o,a,d,s);
 }
 
+
+// async load 1-callback per module to pull in tools that bootstrap the amd loader
 ml(`
 setImmediateLib | ml.setImmediate.js
 amdLib          | ml.amd.js
@@ -256,7 +254,7 @@ amdLib          | ml.amd.js
         case "amdLib":
             window.define=lib.define;
             window.require=lib.require;
-            //console.log(lib.import_ml (window,location.origin));
+            console.log(lib.import_ml (window,location.origin,true));
             break;
         case "setImmediateLib":lib(function(i){
             ml.c.i = i;
