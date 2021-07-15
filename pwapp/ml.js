@@ -249,9 +249,17 @@ function ml(x,L,o,a,d,s){
 }
 
 ml(`
+
 setImmediateLib | ml.setImmediate.js
 amdLib          | ml.amd.js
-`,window,function (n,m){ if (n!=="amdLib") m(function(i){ml.c.i = i;}); console.log(n.m);});
 
-
+`,window,function (n,m){ 
+    switch(n) {
+        case "amdLib":
+            window.define=m.define;
+            window.require=m.require;
+            break;
+        case "setImmediateLib":m(function(i){ml.c.i = i;});
+    }
+});
 
