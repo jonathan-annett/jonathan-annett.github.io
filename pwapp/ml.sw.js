@@ -187,7 +187,7 @@ function ml(x,L, o, a, d, s){
              try {
                importScripts(U);
              } catch (e){
-               c.l(e.message,'while loading',U,'in',ml.l);  
+               c.e(e.message,'while loading',U,'in',ml.l);  
              }
              ml.h[U]=ml.h[U]||{e:{}};
              ml.h[U].e[N]=c.S[N]||false;
