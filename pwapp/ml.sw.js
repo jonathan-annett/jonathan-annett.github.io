@@ -61,12 +61,18 @@ function ml(x,L, o, a, d, s){
             P:(v)=>1&&{value: v,enumerable: !0,configurable: !0},
             //c.s set key value in obj, returning value
             s:(o,k,v)=>{Object.defineProperty(o,k,c.P(v));return v;},
-            m:(o,e,v)=>{
+            m:(o,e,v,h)=>{
                 c.s(o,e,v); // do the import into o[e]
+                
                 if (!ml.d[e]) {
-                    ml.d[e]={h:c.ri()+".js"};
-                    ml.h[ ml.d[e].h ]={e:{}};
+                    h = c.ri()+".js";
+                    ml.d[e]={h:h};
+                } else {
+                    h = ml.d[e].h;
                 }
+                
+                ml.h[ h ] = ml.h[ h ] || {e:{}};
+                
                 c.s(ml.h[ ml.d[e].h ].e,e,v);
             },
             
@@ -198,17 +204,16 @@ function ml(x,L, o, a, d, s){
              N=R[1];
              U=c.B(R[3]);
              ml.l.push(N+'='+U);
-             //if(c.c(U)){
+             if(c.c(U)){
                  ml.d[N]={h:U};ml.H.push(U);
-           
-              //}
+             }
              try {
                importScripts(U);
              } catch (e){
                c.e(e.message,'while loading',U,'in',ml.l);  
              }
-             ml.h[U]=ml.h[U]||{e:{}};
-             ml.h[U].e[N]=c.S[N]||false;
+             //ml.h[U]=ml.h[U]||{e:{}};
+             //ml.h[U].e[N]=c.S[N]||false;
              ml.l.pop();
              return N;
        },
