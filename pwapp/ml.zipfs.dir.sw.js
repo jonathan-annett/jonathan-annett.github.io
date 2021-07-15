@@ -6,7 +6,7 @@ ml(0,ml(1),`
     UPNG     | upng.js
     pako     | pako.js
 
-    `,function(){ml(2,ml(3),ml(4),
+    `,function(){ml(2,
 
     {   
         ServiceWorkerGlobalScope: function zipFSListingLib (  listingLib ) {

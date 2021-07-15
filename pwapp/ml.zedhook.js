@@ -9,7 +9,7 @@ ml(0,ml(1),`
     ErrorStackParser@ServiceWorkerGlobalScope  | error-stack-parser.js'
     StackFrame@ServiceWorkerGlobalScope        | stack-frame.js
    
-    `,function(){ml(2,ml(3),ml(4),
+    `,function(){ml(2,
 
     {
 
