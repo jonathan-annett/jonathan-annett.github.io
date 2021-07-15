@@ -52,14 +52,21 @@ function ml(x,L, o, a, d, s){
             // e = variable - used for exports container 
             // r = undefined
             2:(L,o,a,d,e,r)=>{
-                    e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? c.s(o,e,a[L].apply(this, d[L].map(c.x))) : r;
+                    e = a[L] && a[L].name; e=typeof e+typeof o[e]===t[2]+t[3]? c.m(o,e,a[L].apply(this, d[L].map(c.x))) : r;
             },
             
             //c.P property descriptor
             P:(v)=>1&&{value: v,enumerable: !0,configurable: !0},
             //c.s set key value in obj, returning value
             s:(o,k,v)=>{Object.defineProperty(o,k,c.P(v));return v;},
-            
+            m:(o,e,v)=>{
+                c.s(o,e,v); // do the import into o[e]
+                if (!ml.d[e]) {
+                    ml.d[e]={h:c.ri()+".js"};
+                    ml.h[ ml.d[e].h ]={e:{}};
+                }
+                c.s(ml.h[ ml.d[e].h ].e,e,v);
+            },
             
             // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
             3:()=>c.C,//legacy for old module format
