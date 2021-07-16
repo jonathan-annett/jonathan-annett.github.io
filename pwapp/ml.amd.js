@@ -8,16 +8,15 @@ jshint maxerr:10000
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),
+ml(0,ml(1),`
 
-`
 serializerLib | ml.xs.serializer.js
 xStoreBase    | ml.xs.base.js
 httpsStore    | ml.xs.https.js
 memoryStore   | ml.xs.memory.js
 
-`
-,function(){ml(2,
+
+`,function(){ml(2,
 
     {
         Window: function amdLib( lib ) {
