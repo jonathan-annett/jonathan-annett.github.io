@@ -47,6 +47,20 @@ function ml(x,L,o,a,d,s){
             u:(u)=>u=T(u)===t[2]?u[c.R](/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'')
                                       [c.R](/(^(\/\*+[\s\S]*?\*\/)|(\/\*+.*\*\/))[\r\n]*/g,'')
                                       .trim().split('\n').map((x)=>x.trim()).filter((x)=>x.length):u, 
+                
+                
+            //ml(0)->c[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
+            //     (o is the result of c[1]() which was invoked earlier in outer script scope, when it called ml(1) 
+            
+            //c[0]() = load list of urls, then call outer (a) function (the module ready completion callback)
+
+            0:(u)=>{
+               u = c.u(u);
+               u=u.map(ml.g).filter(c.y);
+               return u.length?c.i(c[0], u)/*&&c.l("pending...",u)*/:a();
+            },
+                               
+                                      
 
             // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
             
@@ -117,8 +131,81 @@ function ml(x,L,o,a,d,s){
             
             //c.H(u) === url not loaded
             H:(u) => ml.H.indexOf(u)<0,
+            
+            
+            //c.y = filter to remove elements that are truthy. (c.m returns false when a module is loaded, so truthy = name of still to be loaded module)
+            y:(x)=>!!x,
+            
+            V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
+            v:(u,v,s)=>(ml.h[u]={v:v,s:s,e:{}}),
+            
+            //c.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
+            p:(u,l,s/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
+                r=c.ri();//prepare a random version number (in case we need it)
+                L=(v)=>l(c.V(u,v));                    // load script with version
+                V=(v)=>L(c.v(u,v,s));                  // save version v in history, load script with version
+                R=()=>V(r);                            // save random verison in history, load scipt with random version
+                return (ml.h [ u ] ?                   // does url exist in history? 
+                         !1// V(ml.h[u].v)             // yes = load script using version from history
+                         : R()                         // Gretchen didn't make fetch happen. so random.
+                       );
+            },
+            
+            //c.T = create script in same window.
+            T:(w,s,C)=>c.T2(w[c.d],s,C),
+            
+            //c.T2 = create and append empty script element
+            T2:(d,S,C)=>{s = c.E(d,S);s.type = "text/java"+S;C(c.T3(d,s));},
+            
+            //c.E = create script element
+            E:(d,S)=>d.createElement(S),
+            
+            //c.T3 = append element x to document d
+            T3:(d,x)=>d.body.appendChild(x),
+            
+            
+            
+            //c.T4 = create hidden iframe
+            T4:(d,i,l)=>{ i=z.E(d,"iframe");
+                       i.style.display="none";
+                       i.src="ml.html";
+                       i.onload=l;
+                       return c.T3(d,i);},
+            
+            //z.T5 = create empty script in it's own empty iframe
+            T5:(w,s,C,D)=>{D=c.T4(w[c.d],()=>c.T2(D.contentWindow[c.d],s,C));},
+              
+            
+            8:(m,c)=>{
+                
+            },
+            9:(L,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?ml=' + encodeURIComponent(L)).then(C?C:()=>{}),
+          
     
         };
+        //ml.g = map iterator for c[0]
+        ml.g = (x,R,U,N)=>{
+                  R=c.r(x);// regex x--> [x,module,(context),url]
+                  if (!R) {
+                     if (L[x]) {
+                        return !1;
+                     }
+                     return x;
+                  } else {
+                      // for module@Window|filename.js format - return if wrong name:  c.C is "Window","ServiceWorkerGlobalScope"
+                     if ((N=R[2])&&N!==(d||c.C)) return !1; 
+                  }
+                  N=R[1];                     // get moduleName from regex results
+                  U=c.B(R[3]);                // get URL from regex results
+                  if (c.H(U)) {               // mutex check (we only want 1 copy of each script)
+                      ml.H.push(U);
+                      if(c.c(U))ml.d[N]={h:U};    //
+                      c.T(window,"script",(s)=>{  
+                         c.p(U,s.setAttribute.bind(s,"src"),s); 
+                      });
+                  }
+                  return N;                   //
+               };
         
         ml.i=new Proxy({},{
             get:(t,p)=>c.I(x=p),
@@ -154,89 +241,25 @@ function ml(x,L,o,a,d,s){
     
     // here X will be 'L' if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x
     // see if we can get away without instantiating z to service this query, if so, do it and set z to something other than c
-    z=typeof c[X]===t[1]?c[X](L,o,a,d,s):c;
-    
+    return typeof c[X]===t[1] ? c[X](L,o,a,d,s) : z ;
+/*    
     // if z===c it means we could not service the query, so we need to instantiate z
     // otherwise z is the return value of the query
     if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
     
     z = {
        
-       //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
-       //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
-       0:()=>z.l(c.u(o)),
        
-       //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
-       l:(u)=>{
-          u=u.map(ml.g||z.u).filter(z.y);
-          return u.length?c.i(z.l, u)/*&&c.l("pending...",u)*/:a();
-       },
+       
+       
+     
 
-       //z.u = map iterator z.l
-       u:(x,R,U,N)=>{
-          R=c.r(x);// regex x--> [x,module,(context),url]
-          if (!R) {
-             if (L[x]) {
-                return !1;
-             }
-             return x;
-          } else {
-              // for module@Window|filename.js format - return if wrong name:  c.C is "Window","ServiceWorkerGlobalScope"
-             if ((N=R[2])&&N!==(d||c.C)) return !1; 
-          }
-          N=R[1];                     // get moduleName from regex results
-          U=c.B(R[3]);                // get URL from regex results
-          if (c.H(U)) {               // mutex check (we only want 1 copy of each script)
-              ml.H.push(U);
-              if(c.c(U))ml.d[N]={h:U};    //
-              z.T(window,"script",(s)=>{  
-                 z.p(U,s.setAttribute.bind(s,"src"),s); 
-              });
-          }
-          return N;                   //
-       },
-       
-       //z.y = filter to remove elements that are truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
-       y:(x)=>!!x,
-         
-       //z.s = create and append empty script element
-       s:(d,S,C)=>{s = z.E(d,S);s.type = "text/java"+S;C(z.A(d,s));},
-       //z.s = create empty script in it's own empty iframe
-       S:(w,s,C,D)=>{D=z.f(w[c.d],()=>z.s(D.contentWindow[c.d],s,C));},
-       T:(w,s,C)=>z.s(w[c.d],s,C),
-       //z.E = create script element
-       E:(d,S)=>d.createElement(S),
-       //z.A = append element x to document d
-       A:(d,x)=>d.body.appendChild(x),
-       //z.f = create hidden iframe
-       f:(d,i,l)=>{ i=z.E(d,"iframe");
-                  i.style.display="none";
-                  i.src="ml.html";
-                  i.onload=l;
-                  return z.A(d,i);},
+      
 
-       //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
-       p:(u,l,s/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
-           r=c.ri();//prepare a random version number (in case we need it)
-           L=(v)=>l(z.V(u,v));                    // load script with version
-           V=(v)=>L(z.v(u,v,s));                  // save version v in history, load script with version
-           R=()=>V(r);                            // save random verison in history, load scipt with random version
-           return (ml.h [ u ] ?                   // does url exist in history? 
-                    !1// V(ml.h[u].v)             // yes = load script using version from history
-                    : R()                         // Gretchen didn't make fetch happen. so random.
-                  );
-       },
-       //z.e = resolve to etag in r.header or d (default)
-       e:(r,d)=>r.headers.get("Etag")[c.R](/[\"\/\\\-]*/g,'')||d,
-       
-       V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
-       v:(u,v,s)=>(ml.h[u]={v:v,s:s,e:{}}),
-       8:(m,c)=>{
-           
-       },
-       9:(L,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?ml=' + encodeURIComponent(L)).then(C?C:()=>{})
+
     };
-    return z[x]&&z[x](L,o,a,d,s);
+    return z[x]&&z[x](L,o,a,d,s); */
+    
 }
 
 
