@@ -11,7 +11,7 @@
 // which is self extracted on first run. 
 // secondly it's to allow configuation and method swizzling to allow plugins to modify the behaviour of ml
 function ml(x,L,o,a,d,s){
-    let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T),here=document.currentScript.src;
+    let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T),here=document.currentScript;
 
     if (!ml.h){
         //create history db if none exists
@@ -58,11 +58,16 @@ function ml(x,L,o,a,d,s){
             0:(L,o,a,d)=>{
                o = c.u(o);
                
-               if (!d) {
-                   d = {
-                      fn:a,
-                      dp:o,
-                   };
+               if (!d) {// first call
+                   d = c.h(here);// get current script href
+                   if (d) {// validate href
+                       d = ml.h [d];// index to url load db
+                       if (d) {//validate db exists
+                          d.dp=o;//save dependants into db
+                          d.fn=a;//save factory function into db
+                       }
+                   }
+                   d=1;// no longer first time
                } else {
                    if (!d.fn) {
                        d.fn=a;
@@ -178,7 +183,7 @@ function ml(x,L,o,a,d,s){
             //c.T3 = append element x to document d
             T3:(d,x)=>d.body.appendChild(x),
             
-            
+            h:(h)=>h&&h.src&& ml.h[ c.B(h.src) ],
             
             //c.T4 = create hidden iframe
             T4:(d,i,l)=>{ i=c.E(d,"iframe");
@@ -236,10 +241,6 @@ function ml(x,L,o,a,d,s){
     
     c=ml.c;
     t=ml.T;
-    if (here) {
-      here=c.B(here);
-      if (here.slice(-6)!== "/ml.js") console.log(here);
-    }
     
     // for ml("string") ie first arg is string, second arg is not a function, 
     
