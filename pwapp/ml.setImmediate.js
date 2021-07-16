@@ -114,6 +114,7 @@ ml([],function(){ml(2,
                 if (task) {
                     currentlyRunningATask = true;
                     try {
+                        console.log("running task #",handle);
                         run(task);
                     } finally {
                         clearImmediate(handle);

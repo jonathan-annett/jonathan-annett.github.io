@@ -261,7 +261,7 @@ amdLib          | ml.amd.js
           //  console.log(lib.import_ml (window,location.origin,true));
             break;
         case "setImmediateLib":lib(function(i){
-            //ml.c.i = i;
+            ml.c.i = i;
         });
     }
 });
