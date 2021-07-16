@@ -225,6 +225,10 @@ memoryStore   | ml.xs.memory.js
                  return N;
            };
            
+
+    
+           
+           
             ml.c[2] = function (L,o,a,d,e,r){
                       e = a[L] && a[L].name; //evaluate name of import
                       console.log("inline define via captured ml.c[2] vector:",e);

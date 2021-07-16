@@ -1,6 +1,6 @@
 /* global self,importScripts,BroadcastChannel */
 function ml(x,L, o, a, d, s){
-    let z,c,t,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
+    let c,t,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
     if (!ml.h){
         //create history db if none exists
         
@@ -14,7 +14,7 @@ function ml(x,L, o, a, d, s){
         // used for comparisions later
         ml.t=t=[C,ml,'',t].map(T);
         // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
-        // any constants/worker functions they need. also contains some code used later by z
+        // any constants/worker functions they need. 
         // note that t doubles as a proxy for "undefined" in the type array "t" above 
         ml.c=c={
             
@@ -40,6 +40,24 @@ function ml(x,L, o, a, d, s){
             
             //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
             B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
+            
+            
+            //ml(0)->c[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
+            //     (o is the result of c[1]() which was invoked earlier in outer script scope, when it called ml(1) 
+         
+            0:(L,u,a)=>{
+               u=u.map(ml.g).filter(c.y);
+              
+               if (!u.length) {
+                   L=c.S;
+                   ml.H[c.f](function(U){
+                      ml.h[U] && c.k(ml.h[U].e)[c.f]((m)=>{
+                         if (!ml.h[U].e[m]) ml.h[U].e[m]=L[m]; 
+                      }) 
+                   });
+               }
+               return u.length?c.i(c[0], L,u,a):a();
+            },
     
             
             // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
@@ -138,10 +156,89 @@ function ml(x,L, o, a, d, s){
             //c.H(u) === url not loaded
             H:(u) => ml.H.indexOf(u)<0,
                     
+            //c.y = filter to remove elements that truthy. (c.m returns false when a module is loaded, so truthy = name of still to be loaded module)
+            y:(x)=>!!x,
             
+            
+            
+            //c.G wrap event E to call X, whhich is stored as c[E]
+            G:(E,X)=>{ml[E]=X;return (e)=>ml[E](e);},
+            
+              
+            
+            //install final event handler,and return captured promise for install event
+            8:(E,f)=>{
+                ml[E]=f;
+                return ml.p.splice(0,ml.p.length);
+            },
+            
+            //c.In = install initial event handler wrapper 
+            In:(S,E,X)=>S.addEventListener(E,c.G(E,X?X:(e)=>{c.l(E,e.data);})), 
+            M:'message',
+            9:(S)=>{
+                     ml.p=[];
+                     c.In(S,'install',(e)=>self.skipWaiting());
+                     c.In(S,'activate');
+                     c.In(S,'fetch',(e)=>fetch(e.request));
+                     c.In(S,c.M,(e,r,m,d,M,Z)=>{
+                         d=e.data;m=ml[c.M+'s'];r=m&&d.m;
+                         Z=(x,c)=>{
+                             c = new BroadcastChannel(d.r);
+                             c.postMessage(x);
+                             c.close();
+                             Z=0;
+                         };
+                         if (r){ 
+                             r=m[r];
+                             r=T(r)===t[1]&&r(d,Z);
+                             if (r&&Z){Z(r);}
+                         }
+                     });
+                     importScripts( new URL(location).searchParams.get('ml') );
+            }
+              
+           
               
         };
        
+       
+        //ml.g = map iterator for c[0]
+        ml.g = (x,R,U,N)=>{
+                    
+                     R=c.r(x);
+                     if (!R) {
+                         if (L[x]) return !1;
+                         return x;
+                     } else {
+                         // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
+                        if ((N=R[2])&&N!==(d||c.C)) return !1; 
+                     }
+                     
+                     N=R[1];
+                     U=c.B(R[3]);
+                     if (c.H(U)) {
+                         ml.l.push(N+'='+U);
+                         ml.d[N]={h:U};
+                         ml.H.push(U);
+                         try {
+                            importScripts(U);
+                            c.n(N,(e)=>{
+                                ml.h[U] = ml.h[U]   || {e:{}};
+                                ml.h[U].e[N]=c.S[N] || false;
+                            });
+                         } catch (e){
+                            c.e(e.message,'while loading',U,'in',ml.l);  
+                         }
+                         ml.l.pop();
+                     }
+                     
+                     return N;
+               };
+               
+               
+               
+        
+            
         
         ml.i=new Proxy({},{
             get:(t,p)=>c.I(x=p),
@@ -164,13 +261,6 @@ function ml(x,L, o, a, d, s){
     }
     
     
-    // see if we can get away without instantiating z to service this query, if so, do it and set z to something other than c
-    z=typeof c[x]===t[1]?c[x](L,o,a,d,s):c;
-    
-    // if z===c it means we could not service the query, so we need to instantiate z
-    // otherwise z is the return value of the query
-    if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
-
     // if first arg is array/string second is function, no third ie ml(['blah|blah.js'],function(){...}   ml("blah|blah.js",function(){...}   
     if (!o&&(Array.isArray(x)||T(x)===t[2])&&T(L)===t[1]){
        a=L
@@ -179,114 +269,9 @@ function ml(x,L, o, a, d, s){
        x=0;
     }
 
-    z = {
+    // see if we can get away without instantiating z to service this query, if so, do it and set z to something other than c
+    return typeof c[x]===t[1] && c[x](L,o,a,d,s);
 
-       //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
-       //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
-       0:()=>z.l(c.u(o)),
-       
-       //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
-       l:(u,L)=>{
-             u=u.map(ml.g||z.u).filter(z.y);
-            
-             if (!u.length) {
-                 L=c.S;
-                 ml.H[c.f](function(U){
-                    ml.h[U] && c.k(ml.h[U].e)[c.f]((m)=>{
-                       if (!ml.h[U].e[m]) ml.h[U].e[m]=L[m]; 
-                    }) 
-                 });
-             }
-             return u.length?c.i(z.l,u):a();
-       },
-
-       //z.u = map iterator z.l (note - R argument is a cheat - used as local var, originally index for interator)
-       u:(x,R,U,N)=>{
-            
-             R=c.r(x);
-             if (!R) {
-                 if (L[x]) return !1;
-                 return x;
-             } else {
-                 // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
-                if ((N=R[2])&&N!==(d||c.C)) return !1; 
-             }
-             
-             N=R[1];
-             U=c.B(R[3]);
-             if (c.H(U)) {
-                 ml.l.push(N+'='+U);
-                 ml.d[N]={h:U};
-                 ml.H.push(U);
-                 try {
-                    importScripts(U);
-                    c.n(N,(e)=>{
-                        ml.h[U] = ml.h[U]   || {e:{}};
-                        ml.h[U].e[N]=c.S[N] || false;
-                    });
-                 } catch (e){
-                    c.e(e.message,'while loading',U,'in',ml.l);  
-                 }
-                 ml.l.pop();
-             }
-             
-             return N;
-       },
-       
-       
-       //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
-       y:(x)=>!!x,
-         
-      
-
-       //z.e = resolve to etag in r.header or d (default)
-       e:(r,d)=>r.headers.get("Etag")[c.r](/[\"\/\\\-]*/g,'')||d,
-
-       //z.V chooses final script url load tag, depending on fetch precache setting
-       V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
-       //z.v saves the version tag into version history (also acts as flag for "i've seen this module")
-       v:(u,v)=>(ml.h[u]=v), 
-       
-       //z.r() = a random id generator
-       r:()=>Math.random().toString(36).substr(-8),
-           
-       //wrap event E to call X, whhich is stored as z[E]
-       G:(E,X)=>{ml[E]=X;return (e)=>ml[E](e);},
-       
-         
-       
-       //install final event handler,and return captured promise for install event
-       8:(E,f)=>{
-           ml[E]=f;
-           return ml.p.splice(0,ml.p.length);
-       },
-       
-       //z.I = install initial event handler wrapper 
-       I:(S,E,X)=>S.addEventListener(E,z.G(E,X?X:(e)=>{c.l(E,e.data);})), 
-       m:'message',
-       9:(S)=>{
-                ml.p=[];
-                z.I(S,'install',(e)=>self.skipWaiting());
-                z.I(S,'activate');
-                z.I(S,'fetch',(e)=>fetch(e.request));
-                z.I(S,z.m,(e,r,m,d,M,Z)=>{
-                    d=e.data;m=ml[z.m+'s'];r=m&&d.m;
-                    Z=(x,c)=>{
-                        c = new BroadcastChannel(d.r);
-                        c.postMessage(x);
-                        c.close();
-                        Z=0;
-                    };
-                    if (r){ 
-                        r=m[r];
-                        r=T(r)===t[1]&&r(d,Z);
-                        if (r&&Z){Z(r);}
-                    }
-                });
-                importScripts( new URL(location).searchParams.get('ml') );
-       }
-    };
-    return z[x]?z[x](L,o,a,d,s):undefined;
 }
 ml(9,self);
 ml.register=ml.bind(self,8);

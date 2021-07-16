@@ -185,7 +185,6 @@ ml(0,ml(1),`
                                    
                                '<!DOCTYPE html>',
                                '<html>',
-                              
                                '<head>',
                                  '<title>files in '+uri+'</title>',
                                  '<script>',
@@ -203,14 +202,9 @@ ml(0,ml(1),`
                                '<script src="ml.js"></script>',
                                '<script src="ml.zedhook.js"></script>',
                                '<script src="ml.zipfs.dir.js"></script>',
-                               
                                '<h1> files in '+uri,
-                               
                                '<span>show full path</span><input class="fullpath_chk" type="checkbox">',
-                               
-                               
-                               '<span id="show_hidden">show hidden files</span><input class="hidden_chk" type="checkbox">' ,
-                               
+                               '<span id="show_hidden">show hidden files</span><input class="hidden_chk" type="checkbox">',
                                '<a class="downloadfull" href="/'+uri+'?download=files" data-balloon-pos="down-left" aria-label="Download full (including edits)">&nbsp;&nbsp;&nbsp;</a>',
                                '<a class="download" href="/'+uri+'?download=editedFiles" data-balloon-pos="down-left" aria-label="Download edited files">&nbsp;&nbsp;&nbsp;</a>',
                                '<a class="download" id="img_dl_link" data-balloon-pos="down-left" aria-label="Download zip png image">&nbsp;&nbsp;&nbsp;</a>',
@@ -227,14 +221,12 @@ ml(0,ml(1),`
                                
                                ].concat (html_details,
                                [
-                                   
                                    '</ul>',
                                    '</div>',
                                    '<img id="show_dl_img" src="/'+uri+'.png">',
-                                   
-                                  
                                    '</body>',
                                    '</html>'
+                                   
                                ]).join('\n');
                                
                                return html;
@@ -242,8 +234,6 @@ ml(0,ml(1),`
                            }
                        
                        }
-                       
-                       
                        
                        function resolveZipDownload( url, mode, alias) {
                            
@@ -271,8 +261,6 @@ ml(0,ml(1),`
                            });
                            
                        }
-                       
-       
                        
                        function getUpdatedZipFile (zip_url,mode,alias,cb) {
                            if (typeof alias==='function') {
@@ -351,7 +339,6 @@ ml(0,ml(1),`
                            });
                            
                        }
-                       
                
                    };    
        
