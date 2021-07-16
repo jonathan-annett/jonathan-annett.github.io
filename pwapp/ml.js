@@ -11,8 +11,7 @@
 // which is self extracted on first run. 
 // secondly it's to allow configuation and method swizzling to allow plugins to modify the behaviour of ml
 function ml(x,L,o,a,d,s){
-    console.log(document.currentScript);
-    let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
+    let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T),here=document.currentScript.src;
 
     if (!ml.h){
         //create history db if none exists
@@ -233,6 +232,9 @@ function ml(x,L,o,a,d,s){
     } else {
         ml.c.A=ml.c.A||A;
     }
+    here=c.B(here);
+    
+    if (here.slice(-6)!== "/ml.js") console.log(here);
     
     c=ml.c;
     t=ml.T;
