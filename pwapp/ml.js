@@ -169,7 +169,7 @@ function ml(x,L,o,a,d,s){
        //z.l = load list of urls, then call outer (a) function (the module ready completion callback)
        l:(u)=>{
           u=u.map(ml.g||z.u).filter(z.y);
-          return u.length?c.i(z.l, u)&&c.l("pending...",u):a();
+          return u.length?c.i(z.l, u)/*&&c.l("pending...",u)*/:a();
        },
 
        //z.u = map iterator z.l
