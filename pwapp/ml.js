@@ -62,7 +62,7 @@ function ml(x,L,o,a,d,s){
                d = d && ml.h[ d ];
                if (d) {
                    d.fn=a;
-                   d.dp=a;
+                   d.dp=o;
                }
                
                o = o.map(ml.g).filter(c.y);
