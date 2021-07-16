@@ -214,20 +214,22 @@ function ml(x,L, o, a, d, s){
              
              N=R[1];
              U=c.B(R[3]);
-             ml.l.push(N+'='+U);
-             ml.d[N]={h:U};
-             ml.H.push(U);
-             try {
-                importScripts(U);
-                c.n(N,(e)=>{
-                    ml.h[U] = ml.h[U]   || {e:{}};
-                    ml.h[U].e[N]=c.S[N] || false;
-                });
-             } catch (e){
-                c.e(e.message,'while loading',U,'in',ml.l);  
+             if (ml.H.indexOf(U)<0) {
+                 ml.l.push(N+'='+U);
+                 ml.d[N]={h:U};
+                 ml.H.push(U);
+                 try {
+                    importScripts(U);
+                    c.n(N,(e)=>{
+                        ml.h[U] = ml.h[U]   || {e:{}};
+                        ml.h[U].e[N]=c.S[N] || false;
+                    });
+                 } catch (e){
+                    c.e(e.message,'while loading',U,'in',ml.l);  
+                 }
+                 ml.l.pop();
              }
-
-             ml.l.pop();
+             
              return N;
        },
        
