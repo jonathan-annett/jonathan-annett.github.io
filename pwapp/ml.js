@@ -59,7 +59,7 @@ function ml(x,L,o,a,d,s){
                o = c.u(o);
                
                d = ml.H[ml.H.length-1];
-               d = d && ml.d[ d ];
+               d = d && ml.h[ d ];
                if (d) {
                    d.fn=a;
                    d.dp=a;
