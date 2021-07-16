@@ -56,7 +56,7 @@ function ml(x,L,o,a,d,s){
 
             0:(L,o,a,d)=>{
                d = c.u(d||o);
-               d=d.map(function(k,K){K=ml.g(k); K && ml.d[K] && ml.d[K].fn=a; return K;}).filter(c.y);
+               d=d.map(function(k,K){K=ml.g(k);if(K && ml.d[K]) ml.d[K].fn=a; return K;}).filter(c.y);
                if( d.length ) return c.i(c[0],L,o,a,d);
                a();
             },
