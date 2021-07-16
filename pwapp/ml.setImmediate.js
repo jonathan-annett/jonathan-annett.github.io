@@ -74,7 +74,7 @@ ml([],function(){ml(2,
     
         function clearImmediate(handle) {
             delete tasksByHandle[handle];
-            delete stacksByHandle[nextHandle];
+            delete stacksByHandle[handle];
         }
     
         function run(task) {
@@ -117,7 +117,7 @@ ml([],function(){ml(2,
                 if (task) {
                     currentlyRunningATask = true;
                     try {
-                        console.log("running task #",handle,stacksByHandle[nextHandle].split());
+                        console.log("running task #",handle,stacksByHandle[handle].split());
                         run(task);
                     } finally {
                         clearImmediate(handle);
