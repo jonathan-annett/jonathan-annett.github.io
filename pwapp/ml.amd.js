@@ -174,17 +174,19 @@ memoryStore   | ml.xs.memory.js
                     const deps    = urlData.d && urlData.d.map(function(x,ix){
                         x = x && ml.c.r(x);
                         if( x ) {
-                           const [ modName, context , url] = x;
+                           const [ unparsed,modName, context , url] = x;
                            const fullUrl = ml.c.B(url);
                            if (!context || context==="Window") {
                               return {
                                  mod : modName,
-                                 url : fullUrl  
+                                 url : fullUrl,
+                                 dep : unparsed
                               };
                            }
                            
                         } else {
-                             return {url :  ml.c.B(urlData.d[ix]) };
+                             x = urlData.d[ix];
+                             return {url :  ml.c.B(x), dep : x };
                         }
                         return null;
                     });
