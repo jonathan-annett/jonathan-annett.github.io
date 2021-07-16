@@ -172,6 +172,7 @@ memoryStore   | ml.xs.memory.js
                 if (exps) {
                     
                     const deps    = urlData.d && urlData.d.map(function(x,ix){
+                        x = x && ml.c.B(x);
                         if( x ) {
                            const [ modName, context , url] = x;
                            const fullUrl = ml.c.B(url);
