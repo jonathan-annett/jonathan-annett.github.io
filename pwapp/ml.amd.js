@@ -171,8 +171,8 @@ memoryStore   | ml.xs.memory.js
                 const module = exps && exps [ modName ] || selfObj [ modName ];
                 if (exps) {
                     
-                    const deps    = urlData.d.map(ml.c.r).map(function(x,ix){
-                        if( x ) {
+                    const deps    = urlData.d && urlData.d.map(function(x,ix){
+                        if( deps ) {
                            const [ modName, context , url] = x;
                            const fullUrl = ml.c.B(url);
                            if (!context || context==="Window") {
@@ -193,7 +193,9 @@ memoryStore   | ml.xs.memory.js
                         selfObj [modName] && remove) {
                         delete selfObj[modName];
                     }
-                    
+                    if ('objectfunction'.indexOf(typeof module) >=0) {
+                        module.__deps = deps;
+                    }
                     store [modName] = module;
                     store [url]     = module;
                     
