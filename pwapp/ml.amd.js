@@ -225,11 +225,10 @@ memoryStore   | ml.xs.memory.js
                  return N;
            };
            
-
-    
            
            
-            ml.c[2] = function (L,o,a,d,e,r){
+           
+            ml.c[ 2 ] = function (L,o,a,d,e,r){
                       e = a[L] && a[L].name; //evaluate name of import
                       console.log("inline define via captured ml.c[2] vector:",e);
                       
@@ -660,6 +659,7 @@ memoryStore   | ml.xs.memory.js
        
        */
        
+       
        function RuntimeModule (
            name,         // 
            coded_args,   // array of strings representing arguments from:  define (function(these,args,here){}) ---->["these","args","here"]
@@ -667,7 +667,7 @@ memoryStore   | ml.xs.memory.js
            source,       // 
            THIS) {
            const args = cpArgs(arguments)
-           if (new.target) { 
+           if (this instanceof RuntimeModule) { 
              // basically we invert things and throw away the new'd object, forcing invocation as
              // a "normal function", because we a returning a function, and there's no real
              // simple way to override Function AND bind it to a runtime defined argument
@@ -820,7 +820,6 @@ memoryStore   | ml.xs.memory.js
            }
 
        }
-       
        
        
        let x = new RuntimeModule (

@@ -54,14 +54,40 @@ function ml(x,L,o,a,d,s){
             
             //c[0]() = load list of urls, then call outer (a) function (the module ready completion callback)
 
-            0:(L,u,a)=>{
-               u = c.u(u);
-               u=u.map(ml.g).filter(c.y);
-               return u.length ? c.i(c[0], L,u,a)/*&&c.l("pending...",u)*/ : a();
+            0:(L,o,a,d)=>{
+               d = c.u(d||o);
+               d=d.map(ml.g).filter(c.y);
+               if( d.length ) return c.i(c[0],L,o,a,d);
+               
+               a();
             },
-                               
-                                      
-
+            7: (t,e,n,i) => {
+                e = new Error();
+                if (!e.stack) try {
+                    throw e
+                } catch (t) {
+                    e = t
+                }
+                if (e.stack) {
+                    t = e.stack.split("\n");
+                    n, i = !1;
+                    return t.some(function(t) {
+                        if (i) {
+                            e = t.split(":/"), i = (1 === e.length ? t.split(":")[0] : e[0] + ":/" + e.slice(1).join(":/").split(":")[0]).split("at ");
+                            if (i.length > 1) {
+                                if ("<" !== (n = i[1])[0]) return !0;
+                                n = void 0
+                            }
+                            return !1
+                        }
+                        return i = t.indexOf("ml") > 0, !1
+                    }), n
+                }
+                if (t && "object" == typeof document) {
+                    e = document.querySelector('script[src="' + t + '"]');
+                    return e && e.src && e.src.length && e.src
+                }
+            },
             // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
             
             1:()=>c.S||{},
@@ -89,7 +115,7 @@ function ml(x,L,o,a,d,s){
             m:(o,e,v)=>{
                 c.s(o,e,v); // do the import into o[e]
                 if (!ml.d[e]) {
-                    ml.d[e]={h:c.ri()+".js"};
+                    ml.d[e]={h:c.ri()+".js",guess:c[7]()};
                     ml.h[ ml.d[e].h ]={e:{}};
                 }
                 c.s(ml.h[ ml.d[e].h ].e,e,v);
@@ -238,7 +264,13 @@ function ml(x,L,o,a,d,s){
         o=c.S;
         L=c.C;
     }
-    
+    /*
+    x     L          o     a          d      s     x     L     o     a        d     s
+    0,    self,      deps, factory
+    deps, factory                              --->0,    self, deps, factory
+    2,    "window"   self, deps,     loaded,       
+    deps, self,      cb                         
+    */
     return typeof c[X]===t[1] && c[X](L,o,a,d,s) ;
 }
 
@@ -252,7 +284,7 @@ amdLib          | ml.amd.js
         case "amdLib":
             window.define=lib.define;
             window.require=lib.require;
-          //  console.log(lib.import_ml (window,location.origin,true));
+            console.log(lib.import_ml (window,location.origin,true));
             break;
         case "setImmediateLib":lib(function(i){
             ml.c.i = i;

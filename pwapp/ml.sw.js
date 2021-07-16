@@ -238,19 +238,13 @@ function ml(x,L, o, a, d, s){
                      return N;
                };
                
-               
-               
-        
-            
-        
         ml.i=new Proxy({},{
             get:(t,p)=>c.I(x=p),
             ownKeys:()=>c.k(ml.d),
             getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
             has:(t,p)=>!!ml.d[p]
         });
-        
-        
+
     }   
     c=ml.c;
     t=ml.t;
@@ -262,8 +256,7 @@ function ml(x,L, o, a, d, s){
         o=c.S;
         L=c.C;
     }
-    
-    
+
     // if first arg is array/string second is function, no third ie ml(['blah|blah.js'],function(){...}   ml("blah|blah.js",function(){...}   
     if (!o&&(Array.isArray(x)||T(x)===t[2])&&T(L)===t[1]){
        a=L
