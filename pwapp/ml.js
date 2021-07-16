@@ -115,7 +115,7 @@ function ml(x,L,o,a,d,s){
             m:(o,e,v)=>{
                 c.s(o,e,v); // do the import into o[e]
                 if (!ml.d[e]) {
-                    ml.d[e]={h:c.ri()+".js",guess:c[7]()};
+                    ml.d[e]={h:c.ri()+".js"};
                     ml.h[ ml.d[e].h ]={e:{}};
                 }
                 c.s(ml.h[ ml.d[e].h ].e,e,v);
