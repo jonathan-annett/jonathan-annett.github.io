@@ -11,6 +11,7 @@
 // which is self extracted on first run. 
 // secondly it's to allow configuation and method swizzling to allow plugins to modify the behaviour of ml
 function ml(x,L,o,a,d,s){
+    console.log(document.currentScript);
     let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
 
     if (!ml.h){
@@ -58,16 +59,25 @@ function ml(x,L,o,a,d,s){
             0:(L,o,a,d)=>{
                o = c.u(o);
                
-               d = ml.H[ml.H.length-1];
-               d = d && ml.h[ d ];
-               if (d) {
-                   d.fn=a;
-                   d.dp=o;
+               if (!d) {
+                   d = {
+                      fn:a,
+                      dp:o,
+                   };
+               } else {
+                   if (!d.fn) {
+                       d.fn=a;
+                       d.dp=o;
+                   }
                }
                
                o = o.map(ml.g).filter(c.y);
-               if( o.length ) return c.i(c[0],L,o,a);
-               a();
+               if( o.length ) {
+                   c.i(c[0],L,o,a,d);
+               } else {
+                   a();
+               }
+               return d;
             },
              
             1:()=>c.S||{},
