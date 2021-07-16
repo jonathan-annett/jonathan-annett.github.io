@@ -55,7 +55,7 @@ function ml(x,L,o,a,d,s){
             //c[0]() = load list of urls, then call outer (a) function (the module ready completion callback)
 
             0:(u)=>{
-               u = c.u(u);
+               u = c.u(o);
                u=u.map(ml.g).filter(c.y);
                return u.length?c.i(c[0], u)/*&&c.l("pending...",u)*/:a();
             },
