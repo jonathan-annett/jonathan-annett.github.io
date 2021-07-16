@@ -136,6 +136,7 @@ function ml(x,L,o,a,d,s){
             },
             //c.I = import query
             I:(M,I)=>(M=ml.d[x])&&(I=ml.h[ M.h ])&&I.e[x],
+            I2:(I)=>(I=ml.h[c.B(x)])&&I.e[ c.k(I.e)[0] ],
             k:(o)=>Object.keys(o),
             //quasi setImmediate (can be swapped out by replacing ml.c.i)
             i:(f,a,b,c,d)=>setTimeout(f,0,a,b,c,d),
@@ -220,7 +221,7 @@ function ml(x,L,o,a,d,s){
        };
         
         ml.i=new Proxy({},{
-            get:(t,p)=>c.I(x=p),
+            get:(t,p)=>c.I(x=p)||c.I2(x=p),
             ownKeys:()=>c.k(ml.d),
             getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
             has:(t,p)=>!!ml.d[p]

@@ -159,6 +159,7 @@ memoryStore   | ml.xs.memory.js
         
         function import_ml (selfObj,baseurl,remove) {
             var store = {};
+            
             Object.keys(ml.d).forEach(function( modName ){
                 
                 const mod     = ml.d [ modName ];
@@ -166,9 +167,27 @@ memoryStore   | ml.xs.memory.js
                 const urlData = url  && ml.h [ url ];
                 
                 const exps    = urlData && urlData.e;
-                
+              
                 const module = exps && exps [ modName ] || selfObj [ modName ];
                 if (exps) {
+                    
+                    const deps    = urlData.d.map(ml.c.r).map(function(x,ix){
+                        if( x ) {
+                           const [ modName, context , url] = x;
+                           const fullUrl = ml.c.B(url);
+                           if (!context || context==="Window") {
+                              return {
+                                 mod : modName,
+                                 url : fullUrl  
+                              };
+                           }
+                           
+                        } else {
+                             return {url :  ml.c.B(urlData.d[ix]) };
+                        }
+                        return null;
+                    });
+                    
                     
                     if (selfObj && 
                         selfObj [modName] && remove) {
@@ -188,6 +207,8 @@ memoryStore   | ml.xs.memory.js
                         }
                         
                     }
+                    
+                    
                     
                 }
                 
@@ -331,7 +352,7 @@ memoryStore   | ml.xs.memory.js
                script.meta.href=script.src;
                script.meta.baseURI=script.baseURI;
                iframe.contentWindow.document.body.appendChild(script);
-            };
+            }
             
             function cleanup () {
                 cleanup_timer = undefined;
