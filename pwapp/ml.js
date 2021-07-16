@@ -111,7 +111,10 @@ function ml(x,L,o,a,d,s){
             k:(o)=>Object.keys(o),
             //quasi setImmediate (can be swapped out by replacing ml.c.i)
             i:(f,a,b)=>setTimeout(f,0,a,b),
-            A:A// save initial args into ml.c.A
+            A:A,// save initial args into ml.c.A,
+            
+            //c.H(u) === url not loaded
+            H:(u) => ml.H.indexOf(u)<0,
     
         };
         
@@ -220,7 +223,7 @@ function ml(x,L,o,a,d,s){
            L=(v)=>l(z.V(u,v));                  // load script with version
            V=(v)=>L(z.v(u,v,s));                   // save version v in history, load script with version
            R=()=>V(r);                           // save random verison in history, load scipt with random version
-           return (ml.h[u] ?                     // does url exist in history? 
+           return (!c.H(u) ?                     // does url exist in history? 
                      !1// V(ml.h[u].v)                  //yes = load script using version from history
                     : ml.H.push(u) && ( typeof fetch===z.F ?    // did Gretchen make fetch happen ? 
                           fetch(u,{method: 'HEAD'}) // yes= fetch header and 

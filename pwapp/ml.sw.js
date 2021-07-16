@@ -1,6 +1,6 @@
 /* global self,importScripts,BroadcastChannel */
 function ml(x,L, o, a, d, s){
-    let z,c,t,T=(G)=>typeof G,l=location,O=l.origin;
+    let z,c,t,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
     if (!ml.h){
         //create history db if none exists
         
@@ -133,7 +133,10 @@ function ml(x,L, o, a, d, s){
                    }
                 });
                 c.k(c.K).length && c.i(c.j);
-            }
+            },
+            A:A,// save initial args into ml.c.A,
+            //c.H(u) === url not loaded
+            H:(u) => ml.H.indexOf(u)<0,
                     
             
               
@@ -214,7 +217,7 @@ function ml(x,L, o, a, d, s){
              
              N=R[1];
              U=c.B(R[3]);
-             if (ml.H.indexOf(U)<0) {
+             if (c.H(U)) {
                  ml.l.push(N+'='+U);
                  ml.d[N]={h:U};
                  ml.H.push(U);
