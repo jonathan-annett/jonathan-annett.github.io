@@ -136,7 +136,7 @@ function ml(x,L,o,a,d,s){
             //c.y = filter to remove elements that are truthy. (c.m returns false when a module is loaded, so truthy = name of still to be loaded module)
             y:(x)=>!!x,
             
-            V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
+            V:(u,v)=>c.F?u+"?v="+v:u,// if using fetch,  append v=version
             v:(u,v,s)=>(ml.h[u]={v:v,s:s,e:{}}),
             
             //c.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
@@ -166,13 +166,13 @@ function ml(x,L,o,a,d,s){
             
             
             //c.T4 = create hidden iframe
-            T4:(d,i,l)=>{ i=z.E(d,"iframe");
+            T4:(d,i,l)=>{ i=c.E(d,"iframe");
                        i.style.display="none";
                        i.src="ml.html";
                        i.onload=l;
                        return c.T3(d,i);},
             
-            //z.T5 = create empty script in it's own empty iframe
+            //c.T5 = create empty script in it's own empty iframe
             T5:(w,s,C,D)=>{D=c.T4(w[c.d],()=>c.T2(D.contentWindow[c.d],s,C));},
               
             
