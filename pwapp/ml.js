@@ -232,12 +232,15 @@ function ml(x,L,o,a,d,s){
     } else {
         ml.c.A=ml.c.A||A;
     }
-    here=c.B(here);
     
-    if (here.slice(-6)!== "/ml.js") console.log(here);
     
     c=ml.c;
     t=ml.T;
+    if (here) {
+      here=c.B(here);
+      if (here.slice(-6)!== "/ml.js") console.log(here);
+    }
+    
     // for ml("string") ie first arg is string, second arg is not a function, 
     
     // if first arg is array/string second is function, no third ie ml(['blah|blah.js'],function(){...}   ml("blah|blah.js",function(){...}   
