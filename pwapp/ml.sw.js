@@ -46,6 +46,9 @@ function ml(x,L, o, a, d, s){
             //     (o is the result of c[1]() which was invoked earlier in outer script scope, when it called ml(1) 
          
             0:(L,u,a)=>{
+               
+               u = c.u(u);
+               
                u=u.map(ml.g).filter(c.y);
               
                if (!u.length) {
