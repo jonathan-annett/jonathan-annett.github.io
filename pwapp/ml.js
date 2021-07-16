@@ -55,9 +55,13 @@ function ml(x,L,o,a,d,s){
             //c[0]() = load list of urls, then call outer (a) function (the module ready completion callback)
 
             0:(L,o,a,d)=>{
-               d = c.u(d||o);
-               d=d.map(function(k,K){K=ml.g(k);if(K && ml.d[K]) ml.d[K].fn=a; return K;}).filter(c.y);
-               if( d.length ) return c.i(c[0],L,o,a,d);
+               o = c.u(o);
+               if (d) {
+                   d.fn=a;
+                   d.dp=o;
+               }
+               o = o.map(ml.g).filter(c.y);
+               if( o.length ) return c.i(c[0],L,o,a);
                a();
             },
              
@@ -242,6 +246,14 @@ function ml(x,L,o,a,d,s){
     2,    "window"   self, deps,     loaded,       
     deps, self,      cb                         
     */
+    
+    if (X===0 && !d) {
+        d = {};
+        c[X](L,o,a,d,s);
+        console.log(d);
+        return;
+    }
+    
     return typeof c[X]===t[1] && c[X](L,o,a,d,s) ;
 }
 
