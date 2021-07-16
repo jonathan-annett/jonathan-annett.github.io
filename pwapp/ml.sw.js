@@ -180,10 +180,7 @@ function ml(x,L, o, a, d, s){
     }
 
     z = {
-       //F:ml.fetch||false,// F:t[1] = use fetch, F:false,  = don't use fetch
-       F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),// F:t[1] = use fetch, F:false,  = don't use fetch
 
-       
        //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
        //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
        0:()=>z.l(c.u(o)),
