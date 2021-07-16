@@ -14,7 +14,7 @@ ml([],function(){ml(2,
 
         ],
         ServiceWorkerGlobalScope: [
-            
+
         ]
         
     }
