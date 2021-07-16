@@ -28,7 +28,6 @@ function ml(x,L,o,a,d,s){
             //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
             //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
             r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
-            z:(R)=>R?{n:R[1],c:R[2],u:R[3]}:{u:R},
             //c.b=document base
             b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
             //c.ri() = a random id generator
@@ -61,8 +60,8 @@ function ml(x,L,o,a,d,s){
                if (!d) {// first call
                    d = c.h(document.currentScript);// get current script href
                    if (d) {// validate href
-                      d.dp=o;//save dependants into db
-                      d.fn=a;//save factory function into db
+                      d.d=o;//save dependants into db
+                      d.f=a;//save factory function into db
                    }
                    d=1;// no longer first time
                }
@@ -213,7 +212,6 @@ function ml(x,L,o,a,d,s){
               ml.H.push(U);
               if(c.c(U))ml.d[N]={h:U};    //
               c.T(window,"script",(s)=>{  
-                 s.meta = c.z(R);
                  c.p(U,s.setAttribute.bind(s,"src"),s); 
               });
           }
