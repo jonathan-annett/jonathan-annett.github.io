@@ -61,11 +61,8 @@ function ml(x,L,o,a,d,s){
                if (!d) {// first call
                    d = c.h(document.currentScript);// get current script href
                    if (d) {// validate href
-                       d = ml.h [d];// index to url load db
-                       if (d) {//validate db exists
-                          d.dp=o;//save dependants into db
-                          d.fn=a;//save factory function into db
-                       }
+                      d.dp=o;//save dependants into db
+                      d.fn=a;//save factory function into db
                    }
                    d=1;// no longer first time
                } else {
