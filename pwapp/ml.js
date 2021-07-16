@@ -63,8 +63,6 @@ function ml(x,L,o,a,d,s){
                         if (d) {// validate href
                            d.d=o;//save dependants into db
                            d.f=a;//save factory function into db
-                        } else {
-                            d = { s : s && s.src }
                         }
                     }
                     d=1;// no longer first time
@@ -103,7 +101,8 @@ function ml(x,L,o,a,d,s){
             m:(o,e,v)=>{
                 c.s(o,e,v); // do the import into o[e]
                 if (!ml.d[e]) {
-                    ml.d[e]={h:c.ri()+".js"};
+                    //ml.d[e]={h:c.ri()+".js"};
+                    ml.d[e]={h:document.currentScript.src};
                     ml.h[ ml.d[e].h ]={e:{}};
                 }
                 c.s(ml.h[ ml.d[e].h ].e,e,v);
