@@ -11,7 +11,7 @@
 // which is self extracted on first run. 
 // secondly it's to allow configuation and method swizzling to allow plugins to modify the behaviour of ml
 function ml(x,L,o,a,d,s){
-    let z,c,t,X,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
+    let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
 
     if (!ml.h){
         //create history db if none exists
@@ -22,7 +22,7 @@ function ml(x,L,o,a,d,s){
         // used for comparisions later
         ml.T=t=[C,ml,'',t].map(T);
         // "c" contains initial parameter parser(wraps for argument calls eg ml(1), ml(2), and 
-        // any constants/worker functions they need. also contains some code used later by z
+        // any constants/worker functions they need. 
         // note that t doubles as a proxy for "undefined" in the type array "t" above 
         ml.c=c={// holder for "constants", also a few holds outer scope commands, common functions
             //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
@@ -118,7 +118,7 @@ function ml(x,L,o,a,d,s){
                 A={};A[c.C] = function (){};// invoke callback with loaded modules
                 D={};D[c.C] = x.map((s,i,a,R)=>{
                     R=c.r(s);
-                    return R ? ()=>{ o(R[1],ml.i[ R[1] ]);} : ()=>{}
+                    return R ? ()=>{ o(R[1],ml.i[ R[1] ]);} : ()=>{};
                 });// import named module
                 return ml(0,O,x,()=>c[2](c.C,O,A,D));
             },
@@ -197,7 +197,7 @@ function ml(x,L,o,a,d,s){
                   }
                   N=R[1];                     // get moduleName from regex results
                   U=c.B(R[3]);                // get URL from regex results
-                  if (c.H(U)) {               // mutex check (we only want 1 copy of each script)
+                  if (c.H(U) && !ml.d[N]) {               // mutex check (we only want 1 copy of each script)
                       ml.H.push(U);
                       if(c.c(U))ml.d[N]={h:U};    //
                       c.T(window,"script",(s)=>{  
@@ -239,27 +239,7 @@ function ml(x,L,o,a,d,s){
         L=c.C;
     }
     
-    // here X will be 'L' if first arg(x) is a string, ie a file name to be loaded. otherwise X will be x
-    // see if we can get away without instantiating z to service this query, if so, do it and set z to something other than c
-    return typeof c[X]===t[1] ? c[X](L,o,a,d,s) : z ;
-/*    
-    // if z===c it means we could not service the query, so we need to instantiate z
-    // otherwise z is the return value of the query
-    if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
-    
-    z = {
-       
-       
-       
-       
-     
-
-      
-
-
-    };
-    return z[x]&&z[x](L,o,a,d,s); */
-    
+    return typeof c[X]===t[1] && c[X](L,o,a,d,s) ;
 }
 
 
