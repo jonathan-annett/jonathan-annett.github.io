@@ -65,11 +65,6 @@ function ml(x,L,o,a,d,s){
                       d.fn=a;//save factory function into db
                    }
                    d=1;// no longer first time
-               } else {
-                   if (!d.fn) {
-                       d.fn=a;
-                       d.dp=o;
-                   }
                }
                
                o = o.map(ml.g).filter(c.y);
