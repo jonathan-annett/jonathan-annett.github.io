@@ -75,7 +75,7 @@ function ml(x,L,o,a,d,s){
                         if (i) {
                             e = t.split(":/"), i = (1 === e.length ? t.split(":")[0] : e[0] + ":/" + e.slice(1).join(":/").split(":")[0]).split("at ");
                             if (i.length > 1) {
-                                if ("<" !== (n = i[1])[0]) return !0;
+                                if ("<" !== (n = i[1])[0].replace(/^.*https:\/\//,'https://')) return !0;
                                 n = void 0
                             }
                             return !1
@@ -85,7 +85,7 @@ function ml(x,L,o,a,d,s){
                 }
                 if (t && "object" == typeof document) {
                     e = document.querySelector('script[src="' + t + '"]');
-                    return e && e.src && e.src.length && e.src
+                    return e && e.src && e.src.length && e.src;
                 }
             },
             // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
