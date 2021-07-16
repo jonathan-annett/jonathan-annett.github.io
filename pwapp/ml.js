@@ -161,8 +161,7 @@ function ml(x,L,o,a,d,s){
     if (z!==c)return z;// if z === c it's because c[X] was not a function, so we need to loook further, otherwise exit
     
     z = {
-       F:((r)=>{r=ml.fetch||false;if (!r) c.l=()=>{};return r;})(0),// F:t[1] = use fetch, F:false,  = don't use fetch
-
+       
        //ml(0)->z[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
        //     (o is the result of z[1]() which was invoked earlier in outer script scope, when it called ml(1) 
        0:()=>z.l(c.u(o)),
@@ -175,22 +174,26 @@ function ml(x,L,o,a,d,s){
 
        //z.u = map iterator z.l
        u:(x,R,U,N)=>{
-             R=c.r(x);
-             if (!R) {
-                 if (L[x]) return !1;
-                 
-                 return x;
-             } else {
-                 // for module@Window|filename.js format - return if wrong name:  c.C is "Window","ServiceWorkerGlobalScope"
-                if ((N=R[2])&&N!==(d||c.C)) return !1; 
+          R=c.r(x);// regex x--> [x,module,(context),url]
+          if (!R) {
+             if (L[x]) {
+                return !1;
              }
-             N=R[1];
-             U=c.B(R[3]);
-             if(c.c(U))ml.d[N]={h:U};
-             z.T(window,"script",(s)=>{
-                z.p(U,s.setAttribute.bind(s,"src"),s);    
-             });
-             return N;
+             return x;
+          } else {
+              // for module@Window|filename.js format - return if wrong name:  c.C is "Window","ServiceWorkerGlobalScope"
+             if ((N=R[2])&&N!==(d||c.C)) return !1; 
+          }
+          N=R[1];                     // get moduleName from regex results
+          U=c.B(R[3]);                // get URL from regex results
+          if (c.H(U)) {               // mutex check (we only want 1 copy of each script)
+              ml.h.push(U);
+              if(c.c(U))ml.d[N]={h:U};    //
+              z.T(window,"script",(s)=>{  
+                 z.p(U,s.setAttribute.bind(s,"src"),s); 
+              });
+          }
+          return N;                   //
        },
        
        //z.y = filter to remove elements that are truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
@@ -212,33 +215,19 @@ function ml(x,L,o,a,d,s){
                   i.onload=l;
                   return z.A(d,i);},
 
-
-
-       //z.U() = history as an array of urls
-       
-       U:()=>c.k(ml.h),
-       
-       
        //z.p = prefetch script to bust cache, and then load call l() which assigns url to src attribute of script element
        p:(u,l,s/*vars->*/,r,L,V,R)=>{//u = url, l() = load script, r=randomId, C= load script with version, R=call V with r
            r=c.ri();//prepare a random version number (in case we need it)
-           L=(v)=>l(z.V(u,v));                  // load script with version
-           V=(v)=>L(z.v(u,v,s));                   // save version v in history, load script with version
-           R=()=>V(r);                           // save random verison in history, load scipt with random version
-           return (!c.H(u) ?                     // does url exist in history? 
-                     !1// V(ml.h[u].v)                  //yes = load script using version from history
-                    : ml.H.push(u) && ( typeof fetch===z.F ?    // did Gretchen make fetch happen ? 
-                          fetch(u,{method: 'HEAD'}) // yes= fetch header and 
-                            .then((h)=>V(z.e(h,r))) // use etag as version, or random if no etag
-                            .catch(R)                               // if fetch(HEAD) fails,use random version
-                        : R())                     // Gretchen didn't make fetch happen. so random.
+           L=(v)=>l(z.V(u,v));                    // load script with version
+           V=(v)=>L(z.v(u,v,s));                  // save version v in history, load script with version
+           R=()=>V(r);                            // save random verison in history, load scipt with random version
+           return (ml.h [ u ] ?                   // does url exist in history? 
+                    !1// V(ml.h[u].v)             // yes = load script using version from history
+                    : R()                         // Gretchen didn't make fetch happen. so random.
                   );
        },
        //z.e = resolve to etag in r.header or d (default)
        e:(r,d)=>r.headers.get("Etag")[c.R](/[\"\/\\\-]*/g,'')||d,
-       
-       
-        
        
        V:(u,v)=>z.F?u+"?v="+v:u,// if using fetch,  append v=version
        v:(u,v,s)=>(ml.h[u]={v:v,s:s,e:{}}),

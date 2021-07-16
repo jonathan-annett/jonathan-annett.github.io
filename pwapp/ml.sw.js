@@ -240,8 +240,7 @@ function ml(x,L, o, a, d, s){
        //z.y = filter to remove elements that truthy. (z.m returns false when a module is loaded, so truthy = name of still to be loaded module)
        y:(x)=>!!x,
          
-       //z.U() = history as an array of urls
-       U:()=>c.k(ml.h),
+      
 
        //z.e = resolve to etag in r.header or d (default)
        e:(r,d)=>r.headers.get("Etag")[c.r](/[\"\/\\\-]*/g,'')||d,
