@@ -187,7 +187,7 @@ function ml(x,L,o,a,d,s){
           N=R[1];                     // get moduleName from regex results
           U=c.B(R[3]);                // get URL from regex results
           if (c.H(U)) {               // mutex check (we only want 1 copy of each script)
-              ml.h.push(U);
+              ml.H.push(U);
               if(c.c(U))ml.d[N]={h:U};    //
               z.T(window,"script",(s)=>{  
                  z.p(U,s.setAttribute.bind(s,"src"),s); 
