@@ -56,40 +56,11 @@ function ml(x,L,o,a,d,s){
 
             0:(L,o,a,d)=>{
                d = c.u(d||o);
-               d=d.map(ml.g).filter(c.y);
+               d=d.map(function(k,K){K=ml.g(k); K && ml.d[K] && ml.d[K].fn=a; return K;}).filter(c.y);
                if( d.length ) return c.i(c[0],L,o,a,d);
-               
                a();
             },
-            7: (t,e,n,i) => {
-                e = new Error();
-                if (!e.stack) try {
-                    throw e
-                } catch (t) {
-                    e = t
-                }
-                if (e.stack) {
-                    t = e.stack.split("\n");
-                    n, i = !1;
-                    return t.some(function(t) {
-                        if (i) {
-                            e = t.split(":/"), i = (1 === e.length ? t.split(":")[0] : e[0] + ":/" + e.slice(1).join(":/").split(":")[0]).split("at ");
-                            if (i.length > 1) {
-                                if ("<" !== (n = i[1])[0].replace(/^.*https:\/\//,'https://')) return !0;
-                                n = void 0
-                            }
-                            return !1
-                        }
-                        return i = t.indexOf("ml") > 0, !1
-                    }), n
-                }
-                if (t && "object" == typeof document) {
-                    e = document.querySelector('script[src="' + t + '"]');
-                    return e && e.src && e.src.length && e.src;
-                }
-            },
-            // ml(1)->c[1] = resolve to self or an empty object - becomes exports section
-            
+             
             1:()=>c.S||{},
             
             
