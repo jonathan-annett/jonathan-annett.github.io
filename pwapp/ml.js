@@ -57,6 +57,14 @@ function ml(x,L,o,a,d,s){
 
             0:(L,o,a,d)=>{
                o = c.u(o);
+               
+               d = ml.H[ml.H.length-1];
+               d = d && ml.d[ d ];
+               if (d) {
+                   d.fn=a;
+                   d.dp=a;
+               }
+               
                o = o.map(ml.g).filter(c.y);
                if( o.length ) return c.i(c[0],L,o,a);
                a();
@@ -183,28 +191,28 @@ function ml(x,L,o,a,d,s){
         };
         //ml.g = map iterator for c[0]
         ml.g = (x,R,U,N)=>{
-                  R=c.r(x);// regex x--> [x,module,(context),url]
-                  if (!R) {
-                     if (L[x]) {
-                        return !1;
-                     }
-                     return x;
-                  } else {
-                      // for module@Window|filename.js format - return if wrong name:  c.C is "Window","ServiceWorkerGlobalScope"
-                     if ((N=R[2])&&N!==(d||c.C)) return !1; 
-                  }
-                  N=R[1];                     // get moduleName from regex results
-                  U=c.B(R[3]);                // get URL from regex results
-                  if (c.H(U) && !ml.d[N]) {               // mutex check (we only want 1 copy of each script)
-                      ml.H.push(U);
-                      if(c.c(U))ml.d[N]={h:U};    //
-                      c.T(window,"script",(s)=>{  
-                         s.meta = c.z(R);
-                         c.p(U,s.setAttribute.bind(s,"src"),s); 
-                      });
-                  }
-                  return N;                   //
-               };
+          R=c.r(x);// regex x--> [x,module,(context),url]
+          if (!R) {
+             if (L[x]) {
+                return !1;
+             }
+             return x;
+          } else {
+              // for module@Window|filename.js format - return if wrong name:  c.C is "Window","ServiceWorkerGlobalScope"
+             if ((N=R[2])&&N!==(d||c.C)) return !1; 
+          }
+          N=R[1];                     // get moduleName from regex results
+          U=c.B(R[3]);                // get URL from regex results
+          if (c.H(U) && !ml.d[N]) {               // mutex check (we only want 1 copy of each script)
+              ml.H.push(U);
+              if(c.c(U))ml.d[N]={h:U};    //
+              c.T(window,"script",(s)=>{  
+                 s.meta = c.z(R);
+                 c.p(U,s.setAttribute.bind(s,"src"),s); 
+              });
+          }
+          return N;                   //
+       };
         
         ml.i=new Proxy({},{
             get:(t,p)=>c.I(x=p),
@@ -245,12 +253,6 @@ function ml(x,L,o,a,d,s){
     deps, self,      cb                         
     */
     
-    if (X===0 && !d) {
-        d = {};
-        c[X](L,o,a,d,s);
-        console.log(d);
-        return;
-    }
     
     return typeof c[X]===t[1] && c[X](L,o,a,d,s) ;
 }
