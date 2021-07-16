@@ -12,7 +12,7 @@
 // secondly it's to allow configuation and method swizzling to allow plugins to modify the behaviour of ml
 function ml(x,L,o,a,d,s){
     let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
-
+    ml.cur = document.currentScript;
     if (!ml.h){
         //create history db if none exists
         ml.h={};ml.H=[];ml.d={};ml.f={};
@@ -92,7 +92,7 @@ function ml(x,L,o,a,d,s){
                     r = a[L].apply(this, d[L].map(c.x));
                     if(typeof e+typeof o[e]===t[2]+t[3]&&e.length) {//valdidate named import is a function
                         c.m(o,e,r); // do the import into o[e]
-                    } 
+                    }
             },
             //c.P property descriptor
             P:(v)=>1&&{value: v,enumerable: !0,configurable: !0},
@@ -101,8 +101,7 @@ function ml(x,L,o,a,d,s){
             m:(o,e,v)=>{
                 c.s(o,e,v); // do the import into o[e]
                 if (!ml.d[e]) {
-                    //ml.d[e]={h:c.ri()+".js"};
-                    ml.d[e]={h:document.currentScript.src};
+                    ml.d[e]={h: ml.cur ? ml.cur.src : c.ri()+".js"};
                     ml.h[ ml.d[e].h ]={e:{}};
                 }
                 c.s(ml.h[ ml.d[e].h ].e,e,v);
