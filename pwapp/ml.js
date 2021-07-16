@@ -55,24 +55,27 @@ function ml(x,L,o,a,d,s){
             //c[0]() = load list of urls, then call outer (a) function (the module ready completion callback)
 
             0:(L,o,a,d)=>{
-               o = c.u(o);
-               
-               if (!d) {// first call
-                   d = c.h(document.currentScript);// get current script href
-                   if (d) {// validate href
-                      d.d=o;//save dependants into db
-                      d.f=a;//save factory function into db
-                   }
-                   d=1;// no longer first time
-               }
-               
-               o = o.map(ml.g).filter(c.y);
-               if( o.length ) {
-                   c.i(c[0],L,o,a,d);
-               } else {
-                   a();
-               }
-               return d;
+                o = c.u(o);
+                if (!d) {// first call
+                    s = document.currentScript;
+                    if(s) {
+                        d = c.h(s);// get current script href
+                        if (d) {// validate href
+                           d.d=o;//save dependants into db
+                           d.f=a;//save factory function into db
+                        } else {
+                            d = { s : s && s.src }
+                        }
+                    }
+                    d=1;// no longer first time
+                }
+                o = o.map(ml.g).filter(c.y);
+                if( o.length ) {
+                    c.i(c[0],L,o,a,d);
+                } else {
+                    a();
+                }
+                return d;
             },
              
             1:()=>c.S||{},
