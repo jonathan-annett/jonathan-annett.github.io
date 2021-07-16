@@ -44,6 +44,7 @@ ml([],function(){ml(2,
     
         var nextHandle = 1; // Spec says greater than zero
         var tasksByHandle = {};
+        var stacksByHandle = {};
         var currentlyRunningATask = false;
         var doc = global.document;
         var registerImmediate;
@@ -66,12 +67,14 @@ ml([],function(){ml(2,
           // Store and register the task
           var task = { callback: callback, args: args };
           tasksByHandle[nextHandle] = task;
+          stacksByHandle[nextHandle] = new Error().stack;
           registerImmediate(nextHandle);
           return nextHandle++;
         }
     
         function clearImmediate(handle) {
             delete tasksByHandle[handle];
+            delete stacksByHandle[nextHandle];
         }
     
         function run(task) {
@@ -114,7 +117,7 @@ ml([],function(){ml(2,
                 if (task) {
                     currentlyRunningATask = true;
                     try {
-                        console.log("running task #",handle);
+                        console.log("running task #",handle,stacksByHandle[nextHandle].split());
                         run(task);
                     } finally {
                         clearImmediate(handle);
