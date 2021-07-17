@@ -166,56 +166,36 @@ memoryStore   | ml.xs.memory.js
                 const url     = mod  && mod.h;
                 const urlData = url  && ml.h [ url ];
                 
-                const exps    = urlData && urlData.e;
-              
-                const module = exps && exps [ modName ] || selfObj [ modName ];
-                if (exps) {
-                    
-                    const deps    = urlData.d && urlData.d.map(function(x,ix){
-                        x = x && ml.c.r(x);
-                        if( x ) {
-                           const [ unparsed,modName, context , url] = x;
-                           const fullUrl = ml.c.B(url);
-                           if (!context || context==="Window") {
-                              return {
-                                 mod : modName,
-                                 url : fullUrl,
-                                 dep : unparsed
-                              };
-                           }
-                           
-                        } else {
-                             x = urlData.d[ix];
-                             return {url :  ml.c.B(x), dep : x };
-                        }
-                        return null;
-                    });
-                    
-                    
-                    if (selfObj && 
-                        selfObj [modName] && remove) {
-                        delete selfObj[modName];
-                    }
-                    if ('objectfunction'.indexOf(typeof module) >=0) {
-                        module.__deps = deps;
-                    }
-                    store [modName] = module;
-                    store [url]     = module;
-                    
-                    if (baseurl && url.indexOf(baseurl)===0) {
-                        
-                        var shorturl = url.substr(baseurl.length);
-                        store [shorturl] = module;
-                        
-                        if (shorturl.slice(-3)===".js") {
-                           store [shorturl.slice(0,-3)] = module;   
-                        }
-                        
-                    }
-                    
-                    
-                    
-                }
+                
+                let src = urlData.f && urlData.f.toString();
+                src = src.substring(src.indexOf("{")+1,src.lastIndexOf("}"));
+                
+                const deps    = urlData.d && urlData.d.map(function(x,ix){
+                   x = x && ml.c.r(x);
+                   if( x ) {
+                      const [ unparsed,modName, context , url] = x;
+                      const fullUrl = ml.c.B(url);
+                      if (!context || context==="Window") {
+                         return {
+                            mod : modName,
+                            url : fullUrl,
+                            dep : unparsed
+                         };
+                      }
+                      
+                   } else {
+                        x = urlData.d[ix];
+                        return {url :  ml.c.B(x), dep : x };
+                   }
+                   return null;
+               });
+               
+                store [url] = {
+                    modName : modName,
+                    deps    : deps,
+                    deps_src: urlData.d,
+                    src     : src
+                };
                 
                 
                 if (remove && urlData && urlData.s) {
@@ -226,10 +206,10 @@ memoryStore   | ml.xs.memory.js
                     
                     delete urlData.s;
                 }
-                
 
             });
             
+             /*
             ml.g = function(x,R,U,N){
                  R=ml.c.r(x);
                  if (!R) {
@@ -262,7 +242,7 @@ memoryStore   | ml.xs.memory.js
                           ml.c.m(o,e,a[L].apply(this, d[L].map(ml.c.x))); // do the import into o[e]
                       } 
   
-            }
+            }*/
         
             return store;
         }

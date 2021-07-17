@@ -98,42 +98,48 @@ ml('pwa | ml.pwa.js',function(){ml(2,
               }
               
             
-            function updateProgressBar(step,ofStep) {
-                const maxWidth =120;
-                const NOW = Date.now();
-                if (update.id) clearInterval(update.id);
-                if (step>=ofStep) {
-                    delete update.id;
-                    if (update.elem) {
-                       update.elem.style.width = maxWidth + 'px';
-                    }
-                    delete update.elem;
-                    return;
-                }
-                
-              if (step===0) {
-                  update.started=NOW;
-                  update.lastStep = 0;
-                  update.elem = document.getElementById("loadBar");
-              }
-              
-              const elapsed   = NOW-update.started;
-              const msPerStep = elapsed <= 2 ? 0 : step / elapsed;
-              const newWidth = Math.floor(step/ofStep * maxWidth);
-              update.elem.style.width = newWidth + 'px';
-              
             
-             
-              update.id = setInterval(frame, 20);
-            
-              function frame() {
-                  const elapsed     = Date.now()-update.started;
-                  const step        = elapsed * msPerStep;
-                  const newWidth    = Math.floor(step/ofStep * maxWidth);
-                  update.elem.style.width = newWidth + 'px';
-                }
+            function progressHandler(complete,total,id,idtxt) {
+               let outer = qs("#"+id),inner = qs(outer,"div"),status = qs("#"+idtxt),maxWidth = outer.offsetWidth, barHeight=outer.offsetHeight;
+               update();
+               if (status) {
+                  status.style= "position:relative;left:"+(maxWidth+2)+"px;top:-"+barHeight+"px;"; 
+               }
+               return {
+                   setTotal:setTotal,
+                   setComplete:setComplete,
+                   addToTotal:addToTotal,
+                   updateBar : updateBar,
+                   logComplete: logComplete
+               };
               
-            }
+               function setTotal(n) {
+                   total=n;
+               }
+              
+               function setComplete(n) {
+                   complete=n;
+               }
+              
+               function logComplete(n) {
+                 complete += n;
+                  updateBar();
+               }
+              
+               function addToTotal (n) {
+                   total+=n;
+                   updateBar();
+               }
+              
+               function updateBar (){
+                 
+                 inner.style.width = Math.floor(Math.min((complete/total),1)*maxWidth)+"px";
+                 if (status) {
+                   status.textContent = complete+"/"+total;
+                 }
+               }
+            } 
+            
              
             
              function betaTesterApproval() {
