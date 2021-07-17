@@ -224,9 +224,11 @@ function ml(x,L,o,a,d,s){
           }
           return N;                   //
        };
+       
+        // ml.i (proxy importer) eg ml.i.modname    or ml.i["/some/path.js"]
         
         ml.i=new Proxy({},{
-            get:(t,p)=>c.I(x=p)||c.I2(x=p),
+            get:(t,p)=>c.I(x=p)||c.I2(x=p)||(p.slice&&p.slice(-3)!==".js"&&c.I2(x=p+".js")),
             ownKeys:()=>c.k(ml.d),
             getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
             has:(t,p)=>!!ml.d[p]
