@@ -212,7 +212,7 @@ function ml(x,L,o,a,d,s){
           }
           N=R[1];                        // get moduleName from regex results
           U=c.B(R[3]);                   // get URL from regex results
-          if (N===0&&ml.h[U]&&ml.h[U].e){
+          if (N===1&&ml.h[U]&&ml.h[U].e){
               return !1;
           }
           if (c.H(U) && !ml.d[N]) {      // we only want 1 copy of each script
@@ -273,7 +273,7 @@ function ml(x,L,o,a,d,s){
 
 // async load 1-callback per module to pull in tools that bootstrap the amd loader
 ml(`setImmediateLib | ml.setImmediate.js
-    0 | ml.amd.js `,window,function (lib,url,mod,id){ 
+    1 | ml.amd.js `,window,function (lib,url,mod,id){ 
     console.log({lib,url,mod,id});
     switch(mod) {
         case "amdLib":
