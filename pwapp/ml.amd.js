@@ -130,6 +130,27 @@ memoryStore   | ml.xs.memory.js
                 }
                 
         };
+        
+        const fullUrlToIds = function(url,unique,base)  {
+            const result = [], add = unique ? function(i) {
+                if (unique.indexOf(i)<0 && result.indexOf(i)<0) {result.push(i);} 
+            } : function(i) {
+                if (result.indexOf(i)<0) {result.push(i);} 
+            };
+            
+            if (base && url.indexOf(base)===0) {
+                add(url.substr(base.length)) ;
+                add(url.substr(scripts_root.length)) ;
+                add(url.substr(origin.length)) ;
+            } else if (url.indexOf(scripts_root)===0) {
+                add(url.substr(scripts_root.length)) ;
+                add(url.substr(origin.length)) ;
+            } else if (url.indexOf(origin)===0) {
+                add(url.substr(origin.length)) ;
+               
+            }
+            return result;
+        }
     
         //const main_id_url = typeof main_id === 'string' ? idToFullUrl(main_id) : idToFullUrl( "index.js") ;
         
@@ -358,18 +379,19 @@ memoryStore   | ml.xs.memory.js
         }
         
         function DEFINE () {
-             const url = getScriptPath(undefined,'define');
+             DEFINE.stk=DEFINE.stk||[];
+             const url = DEFINE.stk.slice(-1)[0];
              const args = cpArgs(arguments),
              def=defines[args.map(typ).join('_')];
-             args.unshift(urlIdHash(url));
-            return typeof def==='function'&&def.apply(undefined,args); 
+             args.unshift(url);
+             return typeof def==='function'&&def.apply(undefined,args); 
         }
     
         function REQUIRE () {
           const url = getScriptPath(undefined,'require');
           const args = cpArgs(arguments),
           def=requires[args.map(typ).join('_')];
-          args.unshift(urlIdHash(url));
+          args.unshift(url);
           return typeof def==='function'&&def.apply(undefined,args); 
         }
 
@@ -570,35 +592,6 @@ memoryStore   | ml.xs.memory.js
            );
            
            return result;
-        }
-        
-        
-        function urlIdHash (domain_prefix,referrer_prefix,url) {
-            const hasQuery=url.indexOf('?'), dot_dir = /^\.\//, slash_dir = /^\//;
-            const trimmed = hasQuery < 0 ? url : url.substr(0,hasQuery);
-            const prefixed = /^http(s?)\:\/\//.test(trimmed) ? trimmed :
-                             dot_dir.test(trimmed)   ? trimmed.replace(dot_dir,referrer_prefix) :
-                             slash_dir.test(trimmed) ? trimmed.replace(slash_dir,domain_prefix) :
-                             referrer_prefix+trimmed;
-                             
-            return {
-                id    : getHash(prefixed),
-                url   : prefixed,
-                input : url
-            };
-            
-            function getHash(text) {
-                'use strict';
-            
-                var hash = 5381,
-                    index = text.length;
-            
-                while (index) {
-                    hash = (hash * 33) ^ text.charCodeAt(--index);
-                }
-            
-                return hash >>> 0;
-            }
         }
         
       
@@ -1006,36 +999,57 @@ memoryStore   | ml.xs.memory.js
             defined.href [ href ]=hrefIndex;
         }
         
-        function define_id_dependants_moduleFactory (url,id,deps,factory) {
-            const href = typeof url==='string' ? url : url.url;
+        
+        function getHash(text) {
+            'use strict';
+        
+            var hash = 5381,
+                index = text.length;
+        
+            while (index) {
+                hash = (hash * 33) ^ text.charCodeAt(--index);
+            }
+        
+            return hash >>> 0;
+        }
+        
+        function define_dependants_moduleFactory (deps,factory) {
             const source   = factory.toString();
             const args     = fn_args(source);
             const commonJS = args.some(isCommonJS);
+            const deps_array = deps.map(function(f){
+                return ()=>ml.i[f];
+            });
             
-            if (commonJS) return define_id_dependants_commonJS (href,id,deps,source,args) ;
+            //if (commonJS) return define_dependants_commonJS (deps,source,args) ;
             
-            const fn_name = '';
+            const mod_id = "m_"+Date.now().toString(36).substr(-6)+Math.random().toString(36).substr(-8);
             
-            const mod   = defined.id [ id ] = JSON.stringify([
-                
-                "function", fn_name, args, [
-                'ml.xs(',
-                   source,
-                ');'].join('\n'),
-                
-                JSON.stringify({
-                    meta:{
-                        id   : id,
-                        url  : href,
-                        deps : deps.filter(strip_repeats),
-                        commonJS:false,
-                    }
-                })
-            ]);
-            
-            const hrefIndex = defined.href [ href ] || {};
-            hrefIndex[ id ] = mod;
-            defined.href [ href ]=hrefIndex;
+            const mod = {
+                d : deps.map(function(i){
+                      return '0 | ' +idToFullUrl(i);
+                }),
+                f :function(){ml(2,
+                   {
+                       Window: (new Function(['THIS','factory'],[
+                           
+                           'return function '+mod_id+'() {',
+                           '   return factory.apply(THIS,arguments);',
+                           '};'
+                         ].join("\n")))(
+                             factory
+                          ) ,
+                       
+                   }, {
+                       
+                       Window: deps_array
+                   }
+               
+                   );
+                     
+                }
+            };
+
         }
         
         function define_id_dependants_commonJS (href,id,deps,source,args,sourceNoComments) {
@@ -1072,20 +1086,13 @@ memoryStore   | ml.xs.memory.js
             return define_id_dependants_object (href,id,deps,obj);
         }
         
-        function define_dependants_moduleFactory (url,deps,factory) {
-            const id       = url.id;
-            const href     = url.url;
-            return define_id_dependants_moduleFactory (href,id,deps,factory);
-        }
-        
+
         function define_commonJS (url, factory) {
-            const id               = url.id;
-            const href             = url.url;   
             const source           = factory.toString();
             const sourceNoComments = source.replace(stripCommentsRegExp,'');
             const args             = fn_args(source,sourceNoComments);
         
-            return define_id_dependants_commonJS (href,id,[],source,args,sourceNoComments);
+            return define_id_dependants_commonJS (url,id,[],source,args,sourceNoComments);
         }
         
         function strip_repeats(x,i,a){return a.indexOf(x)===i;}

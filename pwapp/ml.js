@@ -104,6 +104,7 @@ function ml(x,L,o,a,d,s){
                   ml.d[e]={h: ml.cur ? ml.cur.src : c.ri()+".js"};
                   ml.h[ ml.d[e].h ]={e:{}};
               }
+              
               c.s(ml.h[ ml.d[e].h ].e,e,v);
             },
             
@@ -130,7 +131,8 @@ function ml(x,L,o,a,d,s){
                 A={};A[c.C] = function (){};// invoke callback with loaded modules
                 D={};D[c.C] = x.map((s,i,a,R)=>{
                     R=c.r(s);
-                    return R ? ()=>{ o(R[1],ml.i[ R[1] ]);} : ()=>{};
+                    // cb (mod,url,modname)
+                    return R ? ()=>{ o(ml.i[ R[1] ],R[3],R[1]);} : ()=>{};
                 });// import named module
                 return ml(0,O,x,()=>c[2](c.C,O,A,D));
             },
@@ -210,6 +212,9 @@ function ml(x,L,o,a,d,s){
           }
           N=R[1];                        // get moduleName from regex results
           U=c.B(R[3]);                   // get URL from regex results
+          if (N===0&&ml.h[U]&&ml.h[U].e){
+              return !1;
+          }
           if (c.H(U) && !ml.d[N]) {      // we only want 1 copy of each script
               ml.H.push(U);
               if(c.c(U))ml.d[N]={h:U,p:ml.H[ml.H.length-2]};    //
@@ -266,7 +271,8 @@ function ml(x,L,o,a,d,s){
 
 // async load 1-callback per module to pull in tools that bootstrap the amd loader
 ml(`setImmediateLib | ml.setImmediate.js
-    amdLib          | ml.amd.js `,window,function (mod,lib){ 
+    amdLib          | ml.amd.js `,window,function (lib,url,mod){ 
+    console.log({lib,url,mod});
     switch(mod) {
         case "amdLib":
             window.define=lib.define;
@@ -278,6 +284,5 @@ ml(`setImmediateLib | ml.setImmediate.js
         });
     }
 });
-
 
 
