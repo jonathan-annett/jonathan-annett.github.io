@@ -88,23 +88,23 @@ function ml(x,L,o,a,d,s){
             // e = variable - used for name of export
             // r = undefined
             2:(L,o,a,d,e,r)=>{
-                    e = a[L] && a[L].name; //evaluate name of import
-                    r = a[L].apply(this, d[L].map(c.x));
-                    if(typeof e+typeof o[e]===t[2]+t[3]&&e.length) {//valdidate named import is a function
-                        c.m(o,e,r); // do the import into o[e]
-                    }
+              e = a[L] && a[L].name; //evaluate name of import
+              r = a[L].apply(this, d[L].map(c.x));
+              if(typeof e+typeof o[e]===t[2]+t[3]&&e.length) {//valdidate named import is a function
+                  c.m(o,e,r); // do the import into o[e]
+              }
             },
             //c.P property descriptor
             P:(v)=>1&&{value: v,enumerable: !0,configurable: !0},
             //c.s set key value in obj, returning value
             s:(o,k,v)=>{Object.defineProperty(o,k,c.P(v));return v;},
             m:(o,e,v)=>{
-                c.s(o,e,v); // do the import into o[e]
-                if (!ml.d[e]) {
-                    ml.d[e]={h: ml.cur ? ml.cur.src : c.ri()+".js"};
-                    ml.h[ ml.d[e].h ]={e:{}};
-                }
-                c.s(ml.h[ ml.d[e].h ].e,e,v);
+              c.s(o,e,v); // do the import into o[e]
+              if (!ml.d[e]) {
+                  ml.d[e]={h: ml.cur ? ml.cur.src : c.ri()+".js"};
+                  ml.h[ ml.d[e].h ]={e:{}};
+              }
+              c.s(ml.h[ ml.d[e].h ].e,e,v);
             },
             
             // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
@@ -208,9 +208,9 @@ function ml(x,L,o,a,d,s){
               // for module@Window|filename.js format - return if wrong name:  c.C is "Window","ServiceWorkerGlobalScope"
              if ((N=R[2])&&N!==(d||c.C)) return !1; 
           }
-          N=R[1];                     // get moduleName from regex results
-          U=c.B(R[3]);                // get URL from regex results
-          if (c.H(U) && !ml.d[N]) {               // mutex check (we only want 1 copy of each script)
+          N=R[1];                        // get moduleName from regex results
+          U=c.B(R[3]);                   // get URL from regex results
+          if (c.H(U) && !ml.d[N]) {      // we only want 1 copy of each script
               ml.H.push(U);
               if(c.c(U))ml.d[N]={h:U};    //
               c.T(window,"script",(s)=>{  
@@ -282,4 +282,42 @@ amdLib          | ml.amd.js
         });
     }
 });
+
+function sl(src){
+    const d = Object.keys(ml.d);
+    const w = Object.keys(window);
+    let xhr = new XMLHttpRequest();
+    debugger;
+    let source;
+    xhr.open('GET', src, false);
+    try {
+      xhr.send();
+      if (xhr.status === 200) {
+         source =xhr.response;
+      }
+    } catch(err) { // instead of onerror
+    }
+    
+    if (source) {
+        const fn = new Function (['self'],'return (function(){console.log(this);'+source+'}).call(self);');
+        fn({});
+        const added_w =Object.keys(window).filter(function(k){ return w.indexOf(k)<0;});
+        const added_d =Object.keys(ml.d).filter(function(k){ return d.indexOf(k)<0;});
+        const new_w = {};
+        const new_d = {};
+        added_w.forEach(function(k){
+            new_w[k]=window[k];
+        });
+        added_d.forEach(function(k){
+            new_d[k]=window[k];
+        });
+        
+        return {
+            new_d,new_w
+        };
+    
+    }
+    
+    
+}
 
