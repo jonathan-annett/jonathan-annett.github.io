@@ -15,7 +15,7 @@ function ml(x,L,o,a,d,s){
     ml.cur = document.currentScript;
     if (!ml.h){
         //create history db if none exists
-        ml.h={};ml.H=[];ml.d={};ml.f={};
+        ml.h={};ml.H=[];ml.d={};ml.f={},ml.S=[];
         let
         C=console;//shortcut for console
         // "t" contains an array of types - object,function,string,undefined
@@ -212,7 +212,7 @@ function ml(x,L,o,a,d,s){
           U=c.B(R[3]);                   // get URL from regex results
           if (c.H(U) && !ml.d[N]) {      // we only want 1 copy of each script
               ml.H.push(U);
-              if(c.c(U))ml.d[N]={h:U};    //
+              if(c.c(U))ml.d[N]={h:U,p:ml.H[ml.H.length-2]};    //
               c.T(window,"script",(s)=>{  
                  c.p(U,s.setAttribute.bind(s,"src"),s); 
               });
@@ -260,17 +260,13 @@ function ml(x,L,o,a,d,s){
     2,    "window"   self, deps,     loaded,       
     deps, self,      cb                         
     */
-    
-    
-    return typeof c[X]===t[1] && c[X](L,o,a,d,s) ;
+    return typeof c[X]===t[1] && c[X](L,o,a,d,s);
 }
 
 
 // async load 1-callback per module to pull in tools that bootstrap the amd loader
-ml(`
-setImmediateLib | ml.setImmediate.js
-amdLib          | ml.amd.js
-`,window,function (mod,lib){ 
+ml(`setImmediateLib | ml.setImmediate.js
+    amdLib          | ml.amd.js `,window,function (mod,lib){ 
     switch(mod) {
         case "amdLib":
             window.define=lib.define;
@@ -283,41 +279,5 @@ amdLib          | ml.amd.js
     }
 });
 
-function sl(src){
-    const d = Object.keys(ml.d);
-    const w = Object.keys(window);
-    let xhr = new XMLHttpRequest();
-    debugger;
-    let source;
-    xhr.open('GET', src, false);
-    try {
-      xhr.send();
-      if (xhr.status === 200) {
-         source =xhr.response;
-      }
-    } catch(err) { // instead of onerror
-    }
-    
-    if (source) {
-        const fn = new Function (['self'],'return (function(){console.log(this);'+source+'}).call(self);');
-        fn({});
-        const added_w =Object.keys(window).filter(function(k){ return w.indexOf(k)<0;});
-        const added_d =Object.keys(ml.d).filter(function(k){ return d.indexOf(k)<0;});
-        const new_w = {};
-        const new_d = {};
-        added_w.forEach(function(k){
-            new_w[k]=window[k];
-        });
-        added_d.forEach(function(k){
-            new_d[k]=window[k];
-        });
-        
-        return {
-            new_d,new_w
-        };
-    
-    }
-    
-    
-}
+
 

@@ -168,7 +168,7 @@ memoryStore   | ml.xs.memory.js
                 
                 
                 let src = urlData.f && urlData.f.toString();
-                src = src && src.substring(src.indexOf("{")+1,src.lastIndexOf("}"));
+                src = src &&src.substring(src.indexOf("{")+1,src.lastIndexOf("}"));
                 
                 const deps    = urlData.d && urlData.d.map(function(x,ix){
                    x = x && ml.c.r(x);
