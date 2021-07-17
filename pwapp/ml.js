@@ -131,8 +131,8 @@ function ml(x,L,o,a,d,s){
                 A={};A[c.C] = function (){};// invoke callback with loaded modules
                 D={};D[c.C] = x.map((s,i,a,R)=>{
                     R=c.r(s);
-                    // cb (mod,url,modname)
-                    return R ? ()=>{ o(ml.i[ R[1] ],R[3],R[1]);} : ()=>{};
+                    // cb (mod,full_url,modname, uri/id)
+                    return R ? ()=>{ o(ml.i[ R[1] ],c.B(R[3]),R[1],R[3]);} : ()=>{};
                 });// import named module
                 return ml(0,O,x,()=>c[2](c.C,O,A,D));
             },
@@ -271,8 +271,8 @@ function ml(x,L,o,a,d,s){
 
 // async load 1-callback per module to pull in tools that bootstrap the amd loader
 ml(`setImmediateLib | ml.setImmediate.js
-    amdLib          | ml.amd.js `,window,function (lib,url,mod){ 
-    console.log({lib,url,mod});
+    amdLib          | ml.amd.js `,window,function (lib,url,mod,id){ 
+    console.log({lib,url,mod,id});
     switch(mod) {
         case "amdLib":
             window.define=lib.define;
