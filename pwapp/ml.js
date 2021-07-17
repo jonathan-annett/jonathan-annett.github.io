@@ -212,7 +212,7 @@ function ml(x,L,o,a,d,s){
           }
           N=R[1];                        // get moduleName from regex results
           U=c.B(R[3]);                   // get URL from regex results
-          if (N===0&&ml.h[U]&&ml.h[U].e){
+          if (N==0){
               N=U;
           }
           if (c.H(U) && !ml.d[N]) {      // we only want 1 copy of each script
