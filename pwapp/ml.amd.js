@@ -66,7 +66,7 @@ memoryStore   | ml.xs.memory.js
                   array_function        : define_dependants_moduleFactory,
                   array_object          : define_dependants_object,
                   
-                  string_array_function : define_id_dependants_moduleFactory,
+                //  string_array_function : define_id_dependants_moduleFactory,
                   string_array_object   : define_id_dependants_object, 
                   
               },
