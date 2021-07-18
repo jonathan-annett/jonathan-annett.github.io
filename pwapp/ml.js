@@ -22,7 +22,7 @@ function amd(root_js,bound_self){
     
     // loads script as a string/arraybuffer
     loadScriptText=loadScriptText_xhr,
-    compile=compile_newfunc,
+    compile=compile_viascript;//compile_newfunc,
 
     
     splitURLRegExp = /((http(?:s?)|ftp):\/\/)?((([^:\n\r]+):([^@\n\r]+))@)?((www\.)?([^\/\n\r]+))\/?([^?\n\r]+)?\??([^#\n\r]*)?#?([^\n\r]*)/,
@@ -940,6 +940,23 @@ function amd(root_js,bound_self){
         return (!err && status>=200 && status <300);
     }
     
+    
+    
+    
+     
+    function compile_viascript(args,src,arg_values,cb){
+        
+        const script = document.createElement("script");
+        script.textContent = [
+            'document.currentScript.exec=function('+args.join(',')+'){',
+            src,
+            '};'
+        ].join('\n');
+        script.onload=function(){
+            cb(undefined,script.exec.call(undefined,arg_values) );
+        };
+        document.body.appendChild(script);
+    }
     //preloadScriptModuleFunction downloads and "compiles" a script into a loadable module
     
 
