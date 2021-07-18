@@ -972,11 +972,13 @@ function compile_viascript(args,src,arg_values,cb){
     script.onload=function(){
         cb(undefined,script.exec.call(undefined,arg_values) );
     };
-    script.appendChild(document.createTextNode([
-        'document.currentScript.exec=function('+args.join(',')+'){',
-        src,
-        '};'
-    ].join('\n')));
+    const scriptText = document.createTextNode([
+                         'document.currentScript.exec=function('+args.join(',')+'){',
+                         src,
+                         '};'
+                     ].join('\n'));
+                     
+    script.appendChild(scriptText);
     document.body.appendChild(script);
 }
 
