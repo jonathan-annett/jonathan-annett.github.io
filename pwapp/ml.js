@@ -953,7 +953,7 @@ function amd(root_js,bound_self){
         
         const script = document.createElement("script");
         script.onload=function(){
-            cb(undefined,script.exec.call(undefined,arg_values) );
+            cb(undefined,script.exec.apply(undefined,arg_values) );
         };
         script.src = "data:text/plain;base64," + btoa([
             'document.currentScript.exec=function('+args.join(',')+'){',
@@ -980,7 +980,7 @@ function compile_viascript(args,src,arg_values,cb){
                      
     script.appendChild(scriptText);
     document.body.appendChild(script);
-    cb(undefined,script.exec.call(undefined,arg_values) );
+    cb(undefined,script.exec.apply(undefined,arg_values) );
 }
 
 
