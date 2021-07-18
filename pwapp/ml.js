@@ -202,11 +202,6 @@ function amd(root_js,bound_self){
         const entry = urlIndex [url];
         if (entry ) {
             
-            if (entry.module && !entry.modDef) {
-                // this has already been installed
-                return entry.exports;
-            }
-            
             if (entry.module && entry.exports) {
             
                 return entry.exports;
