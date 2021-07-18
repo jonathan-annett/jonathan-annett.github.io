@@ -40,6 +40,9 @@ function amd(root_js,bound_self){
     scriptBase             = getPathDir(getUrlPath(root_js)),
     
     urlIndex = {};
+    
+    
+    bound_self.ml = ml;
         
     // attempt to preload the prescribed root javascrpt file
     // preloading does not execute the script, but instead "compiles" it into a function that can be called later
@@ -1246,6 +1249,6 @@ ml(`setImmediateLib | ml.setImmediate.js
 
 }
 
-function ml() {
-    console.log(document.currentScript.src);
-}
+this.ml = function () {
+    amd(document.currentScript.src,this);
+};
