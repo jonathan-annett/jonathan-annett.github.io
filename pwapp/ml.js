@@ -547,6 +547,7 @@ function amd(root_js,bound_self){
         // "execute" the script in a context that traps define, require and supplies module, exports
         
         try {
+            localDef.amd={};
             urlIndex[script_url].load.call(this,ml,localDef,moduleRequireId,module,exports);
         } catch (e) {
             return cb (e);
@@ -956,25 +957,25 @@ function amd(root_js,bound_self){
     }
     //preloadScriptModuleFunction downloads and "compiles" a script into a loadable module
     
-
-
-function compile_viascript(args,src,arg_values,cb){
     
-    const script = document.createElement("script");
-   // script.onload=function(){
-    //    cb(undefined,script.exec.call(undefined,arg_values) );
-    //};
-    const scriptText = document.createTextNode([
-                         'document.currentScript.exec=function('+args.join(',')+'){',
-                         src,
-                         '};'
-                     ].join('\n'));
-                     
-    script.appendChild(scriptText);
-    document.body.appendChild(script);
-    cb(undefined,script.exec.apply(undefined,arg_values) );
-}
-
+    
+    function compile_viascript(args,src,arg_values,cb){
+        
+        const script = document.createElement("script");
+       // script.onload=function(){
+        //    cb(undefined,script.exec.call(undefined,arg_values) );
+        //};
+        const scriptText = document.createTextNode([
+                             'document.currentScript.exec=function('+args.join(',')+'){',
+                             src,
+                             '};'
+                         ].join('\n'));
+                         
+        script.appendChild(scriptText);
+        document.body.appendChild(script);
+        cb(undefined,script.exec.apply(undefined,arg_values) );
+    }
+    
 
 
     
