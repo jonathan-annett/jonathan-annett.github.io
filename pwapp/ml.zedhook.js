@@ -1,10 +1,10 @@
-/*ml.debug*/
+
 
 /* global BroadcastChannel*/
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib, ErrorStackParser, fixupUrl  */
-ml(0,ml(1),`
+ml(`
     
     pwaWindow@Window                           | ml.pwa-win.js'
     sha1Lib@Window                             | sha1.js'

@@ -2,7 +2,7 @@
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),`
+ml(`
     
     pwaWindow@Window                           | ml.pwa-win.js
     editInZed                                  | ml.zedhook.js
