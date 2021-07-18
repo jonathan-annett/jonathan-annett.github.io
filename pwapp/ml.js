@@ -207,6 +207,11 @@ function amd(root_js,bound_self){
                 return entry.exports;
             }
             
+            if (entry.module && entry.exports) {
+            
+                return entry.exports;
+            }
+            
             
             if (entry.module && entry.modDef) {
 
