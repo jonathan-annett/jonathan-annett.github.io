@@ -195,6 +195,62 @@ function amd(root_js,bound_self){
         
     });
     
+    function globalRequireId(id,base) {
+        const url   = idToUrl (id,base||scriptBase);
+        const entry = urlIndex [url];
+        if (entry ) {
+            
+            if (entry.module && !entry.modDef) {
+                // this has already been installed
+                return entry.exports;
+            }
+            
+            
+            if (entry.module && entry.modDef) {
+
+                delete entry.exports;
+                entry.exports = entry.modDef.factory.apply(this,entry.modDef.dependency_urls.map(function(url){
+                    return globalRequireId(url,base);
+                }));
+                
+                
+                delete entry.modDef.dependencies;
+                delete entry.modDef.dependency_urls;   
+                delete entry.modDef.extra_urls;        
+                delete entry.modDef.factory;           
+                
+                return entry.exports;
+            }
+        }            
+            
+        throw new Error (id+" ("+url+") not available")
+        
+    }
+    
+    
+   
+    /*
+    function globalRequire(id,base) {
+        const script_url   = idToUrl (id,base||scriptBase);
+        if (globalAvail(id,base)) {
+            return Promise.resolve(globalRequireId(id,base));
+        }
+        return new Promise (function (resolve,reject){
+             preloadScriptModuleFunction(script_url,function(err){
+                 if (err) return reject(err);
+                 
+                 
+                 
+                 installScriptModuleFn(script_url,function(err,mod){
+                     if (err) return reject(err);
+                     
+                     
+                 });
+                 
+             });
+        });
+    }*/
+    
     
     /*
     
@@ -296,31 +352,14 @@ function amd(root_js,bound_self){
                 dependency_urls   : urls,
                 extra_urls        : requires.filter(function(u){ return urls.indexOf(u)<0; }),
                 factory           : factory,
-                require           : moduleRequireId,
             };
             
               
-            function moduleRequireId(id) {
-                return globalRequireId(id,base);
-            }
             
             cb (undefined,urlIndex[ use_url ]);
         
     }
-    
-    function globalRequireId(id,base) {
-        const url   = idToUrl (id,base||scriptBase);
-        const entry = urlIndex [url];
-        if (entry ) {
-            if (entry.module) return entry.module;
-            
-            entry.module = entry.modDef.factory.apply(this,entry.modDef.dependency_urls.map(function(url){
-                return globalRequireId(url,base);
-            }));
-        }
-    }
-    
-    
+
     // returns any embeded require statements
     function fn_requires (x,sourceNoComments) {
 
@@ -451,9 +490,14 @@ function amd(root_js,bound_self){
         // calling define can happen more than once, as can calling ml
         // it's presumed that modifying window, replacing exports, or calling define happens synchronously, while require may happen at any time going forward
         
-        if (urlIndex [script_url].module) {
-            // thii has already been installed
+        if (urlIndex [script_url].module && !urlIndex [script_url].modDef) {
+            // this has already been installed
             return cb(undefined,urlIndex [script_url].module);
+        }
+        
+        if (urlIndex [script_url].module && urlIndex [script_url].modDef) {
+            // this has already been loaded but not fully installed
+            return cb(undefined,globalRequireId(script_url));
         }
         
         const 
@@ -463,17 +507,10 @@ function amd(root_js,bound_self){
         // determine the base dir for scripts under this script
         script_dir = getPathDir( getUrlPath(script_url) ),
         // capture the current set of keys for "this"
-        selfKeys = Object.keys(this),
-        
-        export_trap = [],
-        trap = function (x) {
-            if (export_trap.indexOf(x)<0) {
-                export_trap.push(x);
-            }
-        };
+        selfKeys = Object.keys(this);
         
         // "execute" the script in a context that traps define, require and supplies module, exports
-
+        urlIndex [script_url].module = module;
         try {
             urlIndex[script_url].load.call(this,ml,localDef,moduleRequireId,module,exports);
         } catch (e) {
@@ -482,23 +519,17 @@ function amd(root_js,bound_self){
 
         if (module.exports !== exports) {
             // module.exports has been replaced, that's most likely the export
-           trap(module.exports);
+            return cb(undefined,globalRequireId(script_url));
         } else {
             if( Object.keys(module.exports).length > 0 ) {
                 //module.exports has had keys added - so most likely that's the export]
-                trap(module.exports);
-            } else {
-                // executing the script did not immediately modify module.exports   
-                // this most likely means the module is going to eventually update self or ml.h
-                // this could have already happended, or dependants are still being pulled in
-                // just in case it has already happened, check now. 
-               
+               return cb(undefined,globalRequireId(script_url));
             }
         }
         
+        
         checkAsyncDeferred ();
              
-       
 
         function localDef (a,b,c) {
             switch (arguments.length) {
@@ -510,57 +541,30 @@ function amd(root_js,bound_self){
             function onDefine(err,mod) {
                 
                 if (!err && mod) {
-                   export_trap.push(mod);
+                   mod
                 }
                 
             }
         }
          
         function moduleRequireId(id) {
-            const url = idToUrl (id,script_dir);
-            const entry = urlIndex [url];
-            if (entry ) {
-                if (entry.module) return entry.module;
-                
-                entry.module = entry.modDef.factory.apply(this,entry.modDef.dependency_urls.map(function(url){
-                    return moduleRequireId(url);
-                }));
-            }
+            return globalRequireId(id,script_dir);
         }
+        
         
         function checkAsyncDeferred () {
             
             // see if any new objects have been added to window since we started loading
-            Object.keys(this).forEach(function(k){
+            if (Object.keys(this).some(function(k){
                 if ( selfKeys.indexOf(k)<0 ) {
-                    trap(this[k]);
-                    selfKeys.push(k);
+                    module.exports = self[k];
+                    return true;
                 }
-            });
+            })) return cb(undefined,globalRequireId(script_url));
         
-            // scoop up any exports from ml.h for this script
-            // they may be the same object added to window, that's fine as trap filters for dupes
-            const ml_mod = ml.h[script_url];
-            if ( ml_mod ) {
-                Object.keys(ml_mod.e).forEach(function(k) {
-                    trap(ml_mod.e[k]);
-                });
-            }
-            
-            if (export_trap.length>0) {
-                    
-                urlIndex [script_url].all_exports =  export_trap;
-                
-                // whatever got trapped last is the exports object
-                module.exports = export_trap[export_trap.length-1];
-                
-                cb (undefined,module);
-                
-            } else {
-                
-                setTimeout(checkAsyncDeferred,1);
-            }
-            
+           
+            setTimeout(checkAsyncDeferred,1);
+           
         }
     }
     
@@ -657,6 +661,11 @@ function amd(root_js,bound_self){
                   if (!ml.d[e]) {
                       ml.d[e]={h: ml.cur ? ml.cur.src : c.ri()+".js"};
                       ml.h[ ml.d[e].h ]={e:{}};
+                      
+                      urlIndex[ ml.d[e].h ] = {
+                          module  : {exports : v },
+                          exports : v
+                      };
                   }
                   
                   c.s(ml.h[ ml.d[e].h ].e,e,v);
