@@ -966,9 +966,9 @@ function amd(root_js,bound_self){
                            // on first call, execute the script wrapper function
                            mod_fn.call(this,ml,define,require,module,exports);
                            // save module
-                           mod.module  = module;
+                           //mod.module  = module;
                            // create a virtual exports that always returns module.exports, even if it's replaced later
-                           Object.defineProperty (mod,'exports',{get: function(){return module.exports;}});
+                           //Object.defineProperty (mod,'exports',{get: function(){return module.exports;}});
                            // swap out the load function, so calling this twice has no effect
                            mod.load = function () {
                            };
