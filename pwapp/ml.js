@@ -22,7 +22,7 @@ function amd(root_js,bound_self){
     
     // loads script as a string/arraybuffer
     loadScriptText=loadScriptText_xhr,
-    compile=compile_viascript;//compile_newfunc,
+    compile=compile_viascript,//compile_newfunc,
 
     
     splitURLRegExp = /((http(?:s?)|ftp):\/\/)?((([^:\n\r]+):([^@\n\r]+))@)?((www\.)?([^\/\n\r]+))\/?([^?\n\r]+)?\??([^#\n\r]*)?#?([^\n\r]*)/,
@@ -949,7 +949,7 @@ function amd(root_js,bound_self){
     }
     
      
-    function compile_viascript(args,src,arg_values,cb){
+    function compile_viascript_base64(args,src,arg_values,cb){
         
         const script = document.createElement("script");
         script.onload=function(){
@@ -964,6 +964,23 @@ function amd(root_js,bound_self){
     }
     //preloadScriptModuleFunction downloads and "compiles" a script into a loadable module
     
+
+
+function compile_viascript(args,src,arg_values,cb){
+    
+    const script = document.createElement("script");
+    script.onload=function(){
+        cb(undefined,script.exec.call(undefined,arg_values) );
+    };
+    script.appendChild(document.createTextNode([
+        'document.currentScript.exec=function('+args.join(',')+'){',
+        src,
+        '};'
+    ].join('\n')));
+    document.body.appendChild(script);
+}
+
+
 
     
     function compile_newfunc(args,src,arg_values,cb){
