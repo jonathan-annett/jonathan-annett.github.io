@@ -43,7 +43,9 @@ function amd(root_js,bound_self){
     
     
     bound_self.ml = ml;
-    ml.req=globalRequireId;
+    ml.req=function (id) {
+        return globalIdAvail(id) && globalRequireId (id);
+    };
         
     // attempt to preload the prescribed root javascrpt file
     // preloading does not execute the script, but instead "compiles" it into a function that can be called later
@@ -224,6 +226,37 @@ function amd(root_js,bound_self){
         }            
             
         throw new Error (id+" ("+url+") not available")
+        
+    }
+    
+    
+    
+    function globalIdAvail(id,base) {
+        const url   = idToUrl (id,base||scriptBase);
+        const entry = urlIndex [url];
+        const depsAvail = function(deps) {
+            return deps.filter(function(url){
+                return globalIdAvail(url);
+            }).length === deps.length;
+        };
+        
+        if ( entry ) {
+            
+            if (entry.module && !entry.modDef) {
+                // this has already been installed
+                return true;
+            }
+            
+            
+            if (entry.module && entry.modDef) {
+
+                return  depsAvail(entry.modDef.dependency_urls) &&
+                        depsAvail(entry.modDef.extra_urls);
+                
+            }
+        }            
+            
+        return false;
         
     }
     
