@@ -880,7 +880,7 @@ function amd(root_js,bound_self){
            
            if (url.slice(-3)===".js") {
                const filename = getUrlPath(url);
-               const dirname  = getPathDir(url);
+               const dirname  = getPathDir(filename);
                try {
                    
                    // create a wrapper function that locks in the file path 
