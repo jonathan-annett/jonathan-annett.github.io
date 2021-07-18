@@ -387,10 +387,7 @@ function amd(root_js,bound_self){
                 factory           : factory,
             };
             
-              
-            
             cb (undefined,urlIndex[ use_url ]);
-        
     }
 
     // returns any embeded require statements
@@ -543,7 +540,7 @@ function amd(root_js,bound_self){
         selfKeys = Object.keys(this);
         
         // "execute" the script in a context that traps define, require and supplies module, exports
-        urlIndex [script_url].module = module;
+        
         try {
             urlIndex[script_url].load.call(this,ml,localDef,moduleRequireId,module,exports);
         } catch (e) {
@@ -552,11 +549,13 @@ function amd(root_js,bound_self){
 
         if (module.exports !== exports) {
             // module.exports has been replaced, that's most likely the export
+            urlIndex [script_url].module = module;
             return cb(undefined,globalRequireId(script_url));
         } else {
             if( Object.keys(module.exports).length > 0 ) {
                 //module.exports has had keys added - so most likely that's the export]
-               return cb(undefined,globalRequireId(script_url));
+                urlIndex [script_url].module = module;
+                return cb(undefined,globalRequireId(script_url));
             }
         }
         
@@ -571,10 +570,12 @@ function amd(root_js,bound_self){
                 case 3 : return do_defn3(script_url,module,exports,a,b,c, onDefine );
             }
             
-            function onDefine(err,mod) {
+            function onDefine(err,entry) {
                 
-                if (!err && mod) {
-                   mod
+                if (!err && entry === urlIndex [script_url]) {
+                    // only to the callback for the primary module
+                    // (module may be defining submodules)
+                    return cb(undefined,globalRequireId(script_url));
                 }
                 
             }
@@ -591,6 +592,7 @@ function amd(root_js,bound_self){
             if (Object.keys(this).some(function(k){
                 if ( selfKeys.indexOf(k)<0 ) {
                     module.exports = self[k];
+                    urlIndex [script_url].module = module;
                     return true;
                 }
             })) return cb(undefined,globalRequireId(script_url));
