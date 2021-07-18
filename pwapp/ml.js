@@ -969,9 +969,9 @@ function amd(root_js,bound_self){
 function compile_viascript(args,src,arg_values,cb){
     
     const script = document.createElement("script");
-    script.onload=function(){
-        cb(undefined,script.exec.call(undefined,arg_values) );
-    };
+   // script.onload=function(){
+    //    cb(undefined,script.exec.call(undefined,arg_values) );
+    //};
     const scriptText = document.createTextNode([
                          'document.currentScript.exec=function('+args.join(',')+'){',
                          src,
@@ -980,6 +980,7 @@ function compile_viascript(args,src,arg_values,cb){
                      
     script.appendChild(scriptText);
     document.body.appendChild(script);
+    cb(undefined,script.exec.call(undefined,arg_values) );
 }
 
 
