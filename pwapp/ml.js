@@ -1005,7 +1005,7 @@ function compile_viascript(args,src,arg_values,cb){
                const dirname  = getPathDir(filename);
                const compile_mode = comile_debug_regex.test(text) ? compile_viascript_base64 : compile;
                
-               compile(   [  'self', '__filename', '__dirname'], 
+               compile_mode(   [  'self', '__filename', '__dirname'], 
                           [
                             'return function (ml,define,require,module,exports){',
                             text,    
