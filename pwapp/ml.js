@@ -224,6 +224,9 @@ function amd(root_js,bound_self){
         } else {
            if (id.slice(-3)!=='.js') id += ".js";
         }
+        if (/^http(s?)\:\/\//.test(id)) {
+            return id;
+        }
         
         if (id.indexOf("/")===0) {
             return id.replace(/^\//,scriptBase);
