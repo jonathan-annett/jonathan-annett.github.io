@@ -20,8 +20,9 @@ function amd(root_js,bound_self){
     
     const
     
-    scriptDownloadMode = 'xhr',
-    scriptCompileMode  = 'newfunc',
+    // loads script as a string/arraybuffer
+    loadScriptText=loadScriptText_xhr,
+    compile=compile_newfunc,
 
     
     splitURLRegExp = /((http(?:s?)|ftp):\/\/)?((([^:\n\r]+):([^@\n\r]+))@)?((www\.)?([^\/\n\r]+))\/?([^?\n\r]+)?\??([^#\n\r]*)?#?([^\n\r]*)/,
@@ -875,13 +876,9 @@ function amd(root_js,bound_self){
         return typeof c[X]===t[1] && c[X](L,o,a,d,s);
     }
     
-    // loads script as a string/arraybuffer
-    function loadScriptText(url,cb) {
-        return loadScriptText[scriptDownloadMode](url,cb);
-    } 
     
     // loads script as a string/arraybuffer
-    loadScriptText.xhr = function loadScriptText(url,cb){
+    function loadScriptText_xhr(url,cb){
         var notified,xhr = new XMLHttpRequest();
         
         xhr.onerror = function(){
@@ -912,9 +909,9 @@ function amd(root_js,bound_self){
         xhr.responseType = "arraybuffer";
         xhr.send();
         
-    };
+    }
     
-    loadScriptText.fetch = function loadScriptText(url,cb){
+    function loadScriptText_fetch(url,cb){
         
         fetch(url,{mode:'no-cors'}).then(function(response){
             response.arrayBuffer().then(function(buffer){
@@ -922,7 +919,7 @@ function amd(root_js,bound_self){
             }).catch(cb);
         }).catch(cb);
         
-    };
+    }
     
     function scriptTextAvailable(url){
         var status,err;
@@ -945,20 +942,16 @@ function amd(root_js,bound_self){
     
     //preloadScriptModuleFunction downloads and "compiles" a script into a loadable module
     
+
     
-    function compile (args,src,arg_values,cb){
-        return compile[scriptCompileMode](args,arg_values,cb);
-    }
-    
-    
-    compile.newfunc = function (args,src,arg_values,cb){
+    function compile_newfunc(args,src,arg_values,cb){
         try {
             const mod_fn = new Function (args,src);
             cb(undefined,mod_fn.apply(undefined,arg_values))
         } catch (e) {
             cb(e);
         }
-    };
+    }
     
     
     
