@@ -812,6 +812,8 @@ function amd(root_js,bound_self){
     
     // loads script as a string/arraybuffer
     function loadScriptText(url,cb){
+        if (typeof cb !== 'function') throw new Error ("expecting cb to be a function");
+        
         var notified,xhr = new XMLHttpRequest();
         
         xhr.onerror = function(){
@@ -866,7 +868,7 @@ function amd(root_js,bound_self){
     //preloadScriptModuleFunction downloads and "compiles" a script into a loadable module
     
     function preloadScriptModuleFunction (url,cb) {
-        
+        if (typeof cb !== 'function') throw new Error ("expecting cb to be a function");
         if (urlIndex[url]) {
             // already loaded
             return cb(undefined,urlIndex[url]);
@@ -874,7 +876,7 @@ function amd(root_js,bound_self){
         
         loadScriptText(url,function(err,text){
             
-           if (cb) return cb(err);
+           if (err) return cb(err);
            
            if (url.slice(-3)===".js") {
                const filename = getUrlPath(url);
@@ -943,6 +945,7 @@ function amd(root_js,bound_self){
     }
     
     function preloadScriptModules(urls,cb,i,results) {
+        if (typeof cb !== 'function') throw new Error ("expecting cb to be a function");
         
         
         if (!Array.isArray(urls)) {
