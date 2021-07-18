@@ -768,14 +768,16 @@ function amd(root_js,bound_self){
               if (c.H(U) && !ml.d[N]) {      // we only want 1 copy of each script
                   ml.H.push(U);
                   if(c.c(U))ml.d[N]={h:U};
-                  
-                  preloadScriptModuleFunction (U,function(err){
-                      if (!err) {
-                         installScriptModuleFn(U,function(mod){
-                             
-                         }); 
-                      }
+                  c.p(U,function(U){
+                     preloadScriptModuleFunction (U,function(err){
+                         if (!err) {
+                            installScriptModuleFn(U,function(mod){
+                                
+                            }); 
+                         }
+                     }); 
                   });
+                  
                   /*
                   c.T(window,"script",(s)=>{  
                      c.p(U,s.setAttribute.bind(s,"src"),s); 
