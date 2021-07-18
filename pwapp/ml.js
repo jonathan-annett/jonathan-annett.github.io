@@ -22,8 +22,8 @@ function amd(root_js,bound_self){
     
     // loads script as a string/arraybuffer
     loadScriptText=loadScriptText_xhr,
-    compile=compile_viascript,//compile_newfunc,
-
+    compile=compile_newfunc,
+    comile_debug_regex =/^\/\*ml\.debug\*\//,
     
     splitURLRegExp = /((http(?:s?)|ftp):\/\/)?((([^:\n\r]+):([^@\n\r]+))@)?((www\.)?([^\/\n\r]+))\/?([^?\n\r]+)?\??([^#\n\r]*)?#?([^\n\r]*)/,
     removeCredentialsRegExp=/(?<=http(s?):\/\/)(.*\:.*\@)/,
@@ -940,15 +940,7 @@ function amd(root_js,bound_self){
         return (!err && status>=200 && status <300);
     }
     
-    
-    function executeScript(source) {
-        var script = document.createElement("script");
-        script.onload = script.onerror = function(){ this.remove(); };
-        script.src = "data:text/plain;base64," + btoa(source);
-        document.body.appendChild(script);
-    }
-    
-     
+      
     function compile_viascript_base64(args,src,arg_values,cb){
         
         const script = document.createElement("script");
@@ -1011,6 +1003,7 @@ function compile_viascript(args,src,arg_values,cb){
            if (url.slice(-3)===".js") {
                const filename = getUrlPath(url);
                const dirname  = getPathDir(filename);
+               const compile_mode = comile_debug_regex.test(text) ? compile_viascript_base64 : compile;
                
                compile(   [  'self', '__filename', '__dirname'], 
                           [
