@@ -244,7 +244,7 @@ function amd(root_js,bound_self){
             
             if (entry.module && !entry.modDef) {
                 // this has already been installed
-                return true;
+                return !!entry.exports;
             }
             
             
@@ -550,11 +550,13 @@ function amd(root_js,bound_self){
         if (module.exports !== exports) {
             // module.exports has been replaced, that's most likely the export
             urlIndex [script_url].module = module;
+            urlIndex [script_url].exports = module.exports;
             return cb(undefined,globalRequireId(script_url));
         } else {
             if( Object.keys(module.exports).length > 0 ) {
                 //module.exports has had keys added - so most likely that's the export]
-                urlIndex [script_url].module = module;
+                urlIndex [script_url].module  = module;
+                urlIndex [script_url].exports = module.exports;
                 return cb(undefined,globalRequireId(script_url));
             }
         }
