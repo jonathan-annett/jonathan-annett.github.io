@@ -20,7 +20,7 @@ function amd(root_js,bound_self){
     
     const
     
-    splitURLRegExp = /((http(?:s?)|ftp):\/\/)?(([^:\n\r]+):([^@\n\r]+)@)?((www\.)?([^\/\n\r]+))\/?([^?\n\r]+)?\??([^#\n\r]*)?#?([^\n\r]*)/,
+    splitURLRegExp = /((http(?:s?)|ftp):\/\/)?((([^:\n\r]+):([^@\n\r]+))@)?((www\.)?([^\/\n\r]+))\/?([^?\n\r]+)?\??([^#\n\r]*)?#?([^\n\r]*)/,
     removeCredentialsRegExp=/(?<=http(s?):\/\/)(.*\:.*\@)/,
     getUrlPartIx = function(i,p,s,u){ u=splitURLRegExp.exec(u);return u&&p+u[i]+s;},
     getUrlOrigin = function(u) {return getUrlPartIx(1,'','/',u).replace(removeCredentialsRegExp,'');},
