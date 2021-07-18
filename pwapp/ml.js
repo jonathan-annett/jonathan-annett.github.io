@@ -20,6 +20,10 @@ function amd(root_js,bound_self){
     
     const
     
+    scriptDownloadMode = 'xhr',
+    scriptCompileMode  = 'newfunc',
+
+    
     splitURLRegExp = /((http(?:s?)|ftp):\/\/)?((([^:\n\r]+):([^@\n\r]+))@)?((www\.)?([^\/\n\r]+))\/?([^?\n\r]+)?\??([^#\n\r]*)?#?([^\n\r]*)/,
     removeCredentialsRegExp=/(?<=http(s?):\/\/)(.*\:.*\@)/,
     getUrlPartIx = function(i,p,s,u){ u=splitURLRegExp.exec(u);return u&&p+u[i]+s;},
@@ -872,9 +876,12 @@ function amd(root_js,bound_self){
     }
     
     // loads script as a string/arraybuffer
-    function loadScriptText(url,cb){
-        if (typeof cb !== 'function') throw new Error ("expecting cb to be a function");
-        
+    function loadScriptText(url,cb) {
+        return loadScriptText[scriptDownloadMode](url,cb);
+    } 
+    
+    // loads script as a string/arraybuffer
+    loadScriptText.xhr = function loadScriptText(url,cb){
         var notified,xhr = new XMLHttpRequest();
         
         xhr.onerror = function(){
@@ -891,7 +898,7 @@ function amd(root_js,bound_self){
         xhr.onreadystatechange = function() {
             if (xhr.readyState == 4 && xhr.status >= 200 && xhr.status <300 ) {
                 var buffer = xhr.response;
-                var text = new TextDecoder().decode(buffer);
+                var text = new TextEncoder().encode(buffer);
                 notified=true;
                 cb (undefined,text,buffer,xhr.status); 
             } else if (xhr.readyState == 4  ) {
@@ -905,7 +912,17 @@ function amd(root_js,bound_self){
         xhr.responseType = "arraybuffer";
         xhr.send();
         
-    }
+    };
+    
+    loadScriptText.fetch = function loadScriptText(url,cb){
+        
+        fetch(url,{mode:'no-cors'}).then(function(response){
+            response.arrayBuffer().then(function(buffer){
+                return cb (undefined,new TextEncoder().encode(buffer),buffer,response.status);
+            }).catch(cb);
+        }).catch(cb);
+        
+    };
     
     function scriptTextAvailable(url){
         var status,err;
@@ -928,6 +945,23 @@ function amd(root_js,bound_self){
     
     //preloadScriptModuleFunction downloads and "compiles" a script into a loadable module
     
+    
+    function compile (args,src,arg_values,cb){
+        return compile[scriptCompileMode](args,arg_values,cb);
+    }
+    
+    
+    compile.newfunc = function (args,src,arg_values,cb){
+        try {
+            const mod_fn = new Function (args,src);
+            cb(undefined,mod_fn.apply(undefined,arg_values))
+        } catch (e) {
+            cb(e);
+        }
+    };
+    
+    
+    
     function preloadScriptModuleFunction (url,cb) {
         if (typeof cb !== 'function') throw new Error ("expecting cb to be a function");
         if (urlIndex[url]) {
@@ -942,6 +976,32 @@ function amd(root_js,bound_self){
            if (url.slice(-3)===".js") {
                const filename = getUrlPath(url);
                const dirname  = getPathDir(filename);
+               
+               compile(   [  'self', '__filename', '__dirname'], 
+                          [
+                            'return function (ml,define,require,module,exports){',
+                            text,    
+                            '};' 
+                          ].join('\n'),
+                        [bound_self,filename,dirname],
+                        function(err,mod_fn){
+                            if (err) return cb(err);
+                                         
+                            // create the module object, which has a loader func, ready to execute the script
+                            const mod = {            
+                                load : function (ml,define,require,module,exports) {
+                                    // on first call, execute the script wrapper function
+                                    mod_fn.call(this,ml,define,require,module,exports);
+                                    mod.load = function () {
+                                    };
+                                }
+                            };
+                            
+                            urlIndex[url] = mod;
+                            return cb (undefined, mod);
+                        });
+                   
+               /*
                try {
                    
                    // create a wrapper function that locks in the file path 
@@ -975,6 +1035,8 @@ function amd(root_js,bound_self){
                    
                    cb(err);
                }
+               
+               */
                
            } else if (url.slice(-5)===".json") {
              try {
