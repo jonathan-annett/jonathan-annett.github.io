@@ -560,7 +560,7 @@ function amd(root_js,bound_self){
         }
         
         
-        checkAsyncDeferred ();
+        //checkAsyncDeferred ();
              
 
         function localDef (a,b,c) {
@@ -586,6 +586,7 @@ function amd(root_js,bound_self){
         }
         
         
+        /*
         function checkAsyncDeferred () {
             
             // see if any new objects have been added to window since we started loading
@@ -600,7 +601,7 @@ function amd(root_js,bound_self){
            
             setTimeout(checkAsyncDeferred,1);
            
-        }
+        }*/
     }
     
     function ml(x,L,o,a,d,s){
