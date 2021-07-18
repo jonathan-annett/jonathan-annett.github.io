@@ -483,16 +483,13 @@ function amd(root_js,bound_self){
                 // this most likely means the module is going to eventually update self or ml.h
                 // this could have already happended, or dependants are still being pulled in
                 // just in case it has already happened, check now. 
-                checkAsyncDeferred ();
+               
             }
         }
-            
-        urlIndex [script_url].all_exports =  export_trap;
         
-        // whatever got trapped last is the exports object
-        module.exports = export_trap[export_trap.length-1];
-        
-        cb (undefined,module);
+        checkAsyncDeferred ();
+             
+       
 
         function localDef (a,b,c) {
             switch (arguments.length) {
@@ -540,6 +537,21 @@ function amd(root_js,bound_self){
                     trap(ml_mod.e[k]);
                 });
             }
+            
+            if (export_trap.length>0) {
+                    
+                urlIndex [script_url].all_exports =  export_trap;
+                
+                // whatever got trapped last is the exports object
+                module.exports = export_trap[export_trap.length-1];
+                
+                cb (undefined,module);
+                
+            } else {
+                
+                setTimeout(checkAsyncDeferred,1);
+            }
+            
         }
     }
     
