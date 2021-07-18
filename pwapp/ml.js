@@ -753,7 +753,8 @@ function amd(root_js,bound_self){
             ml.g = (x,R,U,N)=>{
               R=c.r(x);// regex x--> [x,module,(context),url]
               if (!R) {
-                 if (L[x]) {
+                 //if (L[x]) {
+                 if (ml.i[x]) {
                      // 
                     return !1;
                  }
@@ -786,7 +787,8 @@ function amd(root_js,bound_self){
             // ml.i (proxy importer) eg ml.i.modname    or ml.i["/some/path.js"]
             
             ml.i=new Proxy({},{
-                get:(t,p)=>c.I(x=p)||c.I2(x=p)||(p.slice&&p.slice(-3)!==".js"&&c.I2(x=p+".js")),
+                //get:(t,p)=>c.I(x=p)||c.I2(x=p)||(p.slice&&p.slice(-3)!==".js"&&c.I2(x=p+".js")),
+                get:(t,p)=>c.I(x=p)||c.I2(x=p)||(p.slice&&p.slice(-3)!==".js"&&c.I2(x=p+".js"))||(x=ml.d[p])&&(x=x.h&&ml.req(x.h)),
                 ownKeys:()=>c.k(ml.d),
                 getOwnPropertyDescriptor:(t,p)=>!!ml.d[p]&&c.P(c.I(p)),
                 has:(t,p)=>!!ml.d[p]
