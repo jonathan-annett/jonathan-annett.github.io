@@ -22,7 +22,7 @@ function amd(root_js,bound_self){
     
     splitURLRegExp = /((http(?:s?)|ftp):\/\/)?(([^:\n\r]+):([^@\n\r]+)@)?((www\.)?([^\/\n\r]+))\/?([^?\n\r]+)?\??([^#\n\r]*)?#?([^\n\r]*)/,
     removeCredentialsRegExp=/(?<=http(s?):\/\/)(.*\:.*\@)/,
-    getUrlPartIx = function(i,u,p,s){ u=splitURLRegExp.test(u);return u&&p+u[i]+s;},
+    getUrlPartIx = function(i,u,p,s){ u=splitURLRegExp.exec(u);return u&&p+u[i]+s;},
     getUrlOrigin = function(u) {return getUrlPartIx(u,1,'','/').replace(removeCredentialsRegExp,'');},
     getUrlDomain = getUrlPartIx.bind(undefined,7,'',''),
     getUrlPath   = getUrlPartIx.bind(undefined,10,'/',''),
