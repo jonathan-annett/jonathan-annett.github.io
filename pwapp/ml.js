@@ -754,7 +754,7 @@ function amd(root_js,bound_self){
               R=c.r(x);// regex x--> [x,module,(context),url]
               if (!R) {
                  //if (L[x]) {
-                 if (ml.i[x]) {
+                 if (L[x]||ml.i[x]) {
                      // 
                     return !1;
                  }
