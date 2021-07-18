@@ -941,20 +941,25 @@ function amd(root_js,bound_self){
     }
     
     
-    
+    function executeScript(source) {
+        var script = document.createElement("script");
+        script.onload = script.onerror = function(){ this.remove(); };
+        script.src = "data:text/plain;base64," + btoa(source);
+        document.body.appendChild(script);
+    }
     
      
     function compile_viascript(args,src,arg_values,cb){
         
         const script = document.createElement("script");
-        script.textContent = [
-            'document.currentScript.exec=function('+args.join(',')+'){',
-            src,
-            '};'
-        ].join('\n');
         script.onload=function(){
             cb(undefined,script.exec.call(undefined,arg_values) );
         };
+        script.src = "data:text/plain;base64," + btoa([
+            'document.currentScript.exec=function('+args.join(',')+'){',
+            src,
+            '};'
+        ].join('\n'));
         document.body.appendChild(script);
     }
     //preloadScriptModuleFunction downloads and "compiles" a script into a loadable module
