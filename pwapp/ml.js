@@ -1237,7 +1237,7 @@ function ml(x,L,o,a,d,s){
         ml.g = (x,R,U,N)=>{
           R=c.r(x);// regex x--> [x,module,(context),url]
           if (!R) {
-             if (L[x]) {
+             if (c.S[x]) {
                 return !1;
              }
              return x;
