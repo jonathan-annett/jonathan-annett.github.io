@@ -43,6 +43,7 @@ function amd(root_js,bound_self){
     
     
     bound_self.ml = ml;
+    ml.req=globalRequireId;
         
     // attempt to preload the prescribed root javascrpt file
     // preloading does not execute the script, but instead "compiles" it into a function that can be called later
@@ -297,20 +298,25 @@ function amd(root_js,bound_self){
             
               
             function moduleRequireId(id) {
-                const url   = idToUrl (id,base);
-                const entry = urlIndex [url];
-                if (entry ) {
-                    if (entry.module) return entry.module;
-                    
-                    entry.module = entry.modDef.factory.apply(this,entry.modDef.dependency_urls.map(function(url){
-                        return moduleRequireId(url);
-                    }));
-                }
+                return globalRequireId(id,base);
             }
             
             cb (undefined,urlIndex[ use_url ]);
         
     }
+    
+    function globalRequireId(id,base) {
+        const url   = idToUrl (id,base||scriptBase);
+        const entry = urlIndex [url];
+        if (entry ) {
+            if (entry.module) return entry.module;
+            
+            entry.module = entry.modDef.factory.apply(this,entry.modDef.dependency_urls.map(function(url){
+                return globalRequireId(url,base);
+            }));
+        }
+    }
+    
     
     // returns any embeded require statements
     function fn_requires (x,sourceNoComments) {
