@@ -895,7 +895,7 @@ function amd(root_js,bound_self){
         xhr.onreadystatechange = function() {
             if (xhr.readyState == 4 && xhr.status >= 200 && xhr.status <300 ) {
                 var buffer = xhr.response;
-                var text = new TextEncoder().encode(buffer);
+                var text = new TextDecoder().decode(buffer);
                 notified=true;
                 cb (undefined,text,buffer,xhr.status); 
             } else if (xhr.readyState == 4  ) {
@@ -915,7 +915,7 @@ function amd(root_js,bound_self){
         
         fetch(url,{mode:'no-cors'}).then(function(response){
             response.arrayBuffer().then(function(buffer){
-                return cb (undefined,new TextEncoder().encode(buffer),buffer,response.status);
+                return cb (undefined,new TextDecoder().decode(buffer),buffer,response.status);
             }).catch(cb);
         }).catch(cb);
         
