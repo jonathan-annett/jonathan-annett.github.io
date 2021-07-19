@@ -383,7 +383,7 @@ ml(`
             
             
             function aceModeForFile(fn ) {
-                const ext = fn.substr(fn.lastIndexOf('.')-1);
+                const ext = fn.substr(fn.lastIndexOf('.')+1);
                 return {
                     html : "ace/mode/html",
                     js   : "ace/mode/javascript",
@@ -392,7 +392,7 @@ ml(`
             }
             
             function aceThemeForFile(fn ) {
-                const ext = fn.substr(fn.lastIndexOf('.')-1);
+                const ext = fn.substr(fn.lastIndexOf('.')+1);
                 return {
                     html : "ace/theme/cobalt",
                     js   : "ace/theme/chaos",
