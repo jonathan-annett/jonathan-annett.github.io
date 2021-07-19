@@ -505,9 +505,9 @@ ml(`
             function toggleInBuiltEditor (filename,li) {
                 li=li||find_li (filename);
                 if (!!li.dataset.editor_id) {
-                   closeInbuiltEditor(li,filename);
+                   closeInbuiltEditor(filename,li);
                 } else {
-                   openInBuiltEditor (li,filename);
+                   openInBuiltEditor (filename,li);
                 }
             }
             
