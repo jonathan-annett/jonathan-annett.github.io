@@ -433,8 +433,23 @@ ml(`
                         
                         
                         editor.session.setValue(new TextDecoder().decode(text));
+                        const hashDisplay = qs(li,".sha1");
                         
-                        qs(li,".sha1").textContent=hash;
+                        hashDisplay.textContent=hash;
+                        
+                        
+                        editor.session.on('change', function(delta) {
+                            // delta.start, delta.end, delta.lines, delta.action
+                            
+                            const buffer = new TextEncoder().encode(editor.session.getValue());
+                            
+                            pwaApi.updateURLContents (filename,buffer,true,function(err,hash) {
+                                if (err) {
+                                    return ;
+                                }
+                                hashDisplay.textContent=hash;
+                            });
+                        });
                         
                     }
                 });
