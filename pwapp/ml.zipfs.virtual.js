@@ -48,23 +48,10 @@ ml([],function(){ml(2,
                              }
                          }
                      });
-                     virtualDirDB.cache = {};
-                 
+                     
                     function clearVirtualDirsCache() {
                         
-                        if (virtualDirDB.cache) {
-                            Object.keys (virtualDirDB.cache).forEach(function(u){
-                                const previous = virtualDirDB.cache[u];
-                                delete virtualDirDB.cache[previous.url];
-                                delete virtualDirDB.cache[previous.fixup_url];
-                                delete previous.response;
-                                delete previous.url;
-                                delete previous.fixup_url;
-   
-                            });
-                            delete virtualDirDB.cache;
-                            
-                        }
+                       
 
                         if (virtualDirDB.virtualDirZipBase) {
                             Object.keys(virtualDirDB.virtualDirZipBase).forEach(function(prefix){
@@ -78,11 +65,6 @@ ml([],function(){ml(2,
                 }
 
                 function virtualDirQuery (url) {
-                   
-                   const previous = virtualDirDB.cache && virtualDirDB.cache[url];
-                   if (previous) {
-                       return Promise.resolve(previous);
-                   }
                    
                    if (virtualDirDB.virtualDirs && virtualDirDB.virtualDirUrls) {
                        // see if the url starts with one of the virtual directory path names
@@ -99,12 +81,11 @@ ml([],function(){ml(2,
                                    const subpath = url.substr(prefix.length);
                                    if (subpath === "/edit") {
                                       const fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip;
-                                      const entry = virtualDirDB.cache[url]={
+                                      const entry = {
                                           fixup_url   : fixup_url,
                                           url         : url,
                                           prefix      : prefix
                                       };
-                                      virtualDirDB.cache[fixup_url]=entry;
                                       return resolve (entry);
                                    }
                                    const zipurlprefixes = virtualDirDB.virtualDirs[prefix].slice(0);
@@ -124,14 +105,13 @@ ml([],function(){ml(2,
                                                    if (err||!response) return locateZipMetadata(i+1);
                                                    //console.log("resolved vitualdir",url,"==>",fixup_url);
                                                    const zip_root = virtualDirDB.virtualDirZipBase[prefix].root;
-                                                   const entry = virtualDirDB.cache[url]={
+                                                   const entry = {
                                                        fixup_url   : fixup_url,
                                                        aliased_url : prefix + zip_root + url.substr(prefix.length),
                                                        url         : url,
                                                        response    : response,
                                                        prefix      : prefix
                                                    };
-                                                   virtualDirDB.cache[fixup_url]=entry;
                                                    return resolve (entry);
                                                }
                                                
