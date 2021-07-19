@@ -107,6 +107,11 @@ ml(`
                        zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,hash,
                        function(err,msg){
                           if (err) return cb (err);
+                          const el = find_li(file);
+                          if (el) {
+                              el.classList[msg.updated?"add":"remove"]('edited');
+                              el.classList[msg.updated?"add":"remove"]('editing');
+                          }
                           cb(undefined,msg.content,msg.updated,msg.hash);
                        }
                    );
@@ -331,7 +336,16 @@ ml(`
                 if (e.shiftKey) {
                    pwaApi.removeUpdatedURLContents(filename);
                 } else {
-                   pwaApi.toggleDeleteFile(filename);
+                   pwaApi.toggleDeleteFile(filename,function(err,msg){
+                       if (err) return;
+                       
+                       
+                       
+                       const el = find_li(filename);
+                       if (el) {
+                           el.classList[msg.deleted?"add":"remove"]('deleted');
+                       }
+                   });
                 }
             }
 
