@@ -272,7 +272,7 @@ ml(`
                const is_deleted   = false;
                const is_editable  = true;
                const is_zip       = false;
-               const is_edited    = true;
+               const is_edited    = true;// new files are by definition,edited
                
                
                const sha1span     = '<span class="sha1"></span>';
