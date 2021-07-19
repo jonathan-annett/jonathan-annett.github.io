@@ -1,42 +1,51 @@
-/*ml.debug*/
-
-
-/* global ml,self,Rusha */
+/* global ml,self,Rusha, crypto */
 ml(`
 Rusha | rusha.js
 `,function(){ml(2,
 
     {   Window: function sha1Lib(lib) { return lib ;},
         ServiceWorkerGlobalScope: function sha1Lib(lib) { return lib ;}
-    }, (()=>{  return {
-        Window:                   [ () => { 
-            sha1Subtle.bufferToHex = bufferToHex;
-            sha1Subtle.arrayToHex = arrayToHex;
-            sha1Subtle.cb=sha1SubtleCB;
-            sha1Subtle.sync=sha1RushaSync;// we need to use Rusha for sync 
-            
-            sha1Subtle.cb.raw=sha1SubtleRawCB;
-            sha1Subtle.sync.raw=sha1RushaRawSync;// we need to use Rusha for sync 
-            
-            return sha1Subtle ;
-        } ],
-        ServiceWorkerGlobalScope: [ () => {
-            
-            sha1Rusha.bufferToHex=bufferToHex;
-            sha1Rusha.arrayToHex=arrayToHex;
-            sha1Rusha.cb=sha1RushaCB;
-            sha1Rusha.sync=sha1RushaSync;
-            
-            sha1Rusha.cb.raw=sha1RushaRawCB;
-            sha1Rusha.sync.raw=sha1RushaRawSync;
-            
-            
-            return sha1Rusha;
-            
-        }   ]
-    };
-            
-            
+    }, (()=>{  
+        
+        // see if crypto.subtle exists in browser context
+        const SUBTLE = typeof crypto==='object' && typeof crypto.subtle === "object" &&  crypto.subtle;
+        
+        return {
+            Window:                   [ chooseSha1Lib () ],
+            ServiceWorkerGlobalScope: [ chooseSha1Lib () ]
+        };
+     
+
+     function chooseSha1Lib () {
+         // return the most applicable sha1 lib, based on availability of crypto.subtle
+         return !!SUBTLE ? subtleAvailable : rushaFallback;
+     }
+
+     function subtleAvailable () { 
+         
+         sha1Subtle.bufferToHex = bufferToHex;
+         sha1Subtle.arrayToHex = arrayToHex;
+         sha1Subtle.cb=sha1SubtleCB;
+         sha1Subtle.sync=sha1RushaSync;// we need to use Rusha for sync 
+         
+         sha1Subtle.cb.raw=sha1SubtleRawCB;
+         sha1Subtle.sync.raw=sha1RushaRawSync;// we need to use Rusha for sync 
+         
+         return sha1Subtle ;
+     }
+     
+     function rushaFallback () {
+         sha1Rusha.bufferToHex=bufferToHex;
+         sha1Rusha.arrayToHex=arrayToHex;
+         sha1Rusha.cb=sha1RushaCB;
+         sha1Rusha.sync=sha1RushaSync;
+         
+         sha1Rusha.cb.raw=sha1RushaRawCB;
+         sha1Rusha.sync.raw=sha1RushaRawSync;
+
+         return sha1Rusha;
+     }
+     
         
       function sha1Rusha(buffer){ 
               return Promise.resolve(Rusha.createHash().update(buffer).digest('hex'));
@@ -49,13 +58,13 @@ Rusha | rusha.js
       }
 
       function sha1Subtle(buffer){ 
-              return window.crypto.subtle.digest("SHA-1", buffer)
+              return SUBTLE.digest("SHA-1", buffer)
                  .then(function(digest){ return Promise.resolve(bufferToHex(digest));}); 
           
       }
       
       function sha1SubtleRaw(buffer){ 
-              return window.crypto.subtle.digest("SHA-1", buffer); 
+              return SUBTLE.digest("SHA-1", buffer); 
       }
       
       
@@ -73,23 +82,23 @@ Rusha | rusha.js
       
       }
       
-      function sha1RushaSync(buffer,cb){ 
+      function sha1RushaSync(buffer){ 
           return Rusha.createHash().update(buffer).digest('hex');
       }
       
-      function sha1RushaRawSync(buffer,cb){ 
+      function sha1RushaRawSync(buffer){ 
           return Rusha.createHash().update(buffer).digest();
       }
       
       function sha1SubtleCB(buffer,cb){ 
-              return window.crypto.subtle.digest("SHA-1", buffer)
+              return SUBTLE.digest("SHA-1", buffer)
                  .then(function(dig){cb(undefined,bufferToHex(dig));})
                    .catch(cb); 
           
       }
       
       function sha1SubtleRawCB(buffer,cb){ 
-              return window.crypto.subtle.digest("SHA-1", buffer)
+              return SUBTLE.digest("SHA-1", buffer)
                  .then(function(dig){cb(undefined,dig);})
                    .catch(cb); 
           

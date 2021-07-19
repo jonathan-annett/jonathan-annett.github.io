@@ -273,7 +273,6 @@ function ml(x,L, o, a, d, s){
 // async load 1-callback per module to pull in tools that bootstrap the amd loader
 ml(`
 setImmediateLib | ml.setImmediate.js
-amdLib          | ml.amd.js
 `,self,function (mod,lib){ 
     switch(mod) {
         case "amdLib":
