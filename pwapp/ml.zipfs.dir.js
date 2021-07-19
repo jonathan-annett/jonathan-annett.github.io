@@ -309,20 +309,19 @@ ml(`
             function  zoomBtnClick( e ) {
                 e.stopPropagation();
                 
+                const zoomClass=function(addRemove) {
+                   qs("#"+zoomEl.dataset.editor_id).parentNode.classList[addRemove]("zooming");
+                   zoomEl.classList[addRemove]("zooming");
+                   qs('html').classList[addRemove]("zooming"); 
+                };
+                
                 if (zoomEl) {
-                    zoomEl.classList.remove("zooming");
-                    qs('html').classList.remove("zooming");
+                    zoomClass("remove");
                     zoomEl=undefined;
                 } else {
                     const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                    const li = btn.parentElement;
-                    const filename = btn.dataset.filename.replace(/(^\/)/,'');
-                   
-                    zoomEl = li;
-                    
-                    zoomEl.classList.add("zooming");
-                    qs('html').classList.add("zooming");
-                    
+                    zoomEl = btn.parentElement;
+                    zoomClass("add");
                 }
                 
             }
