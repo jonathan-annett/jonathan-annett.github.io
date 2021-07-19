@@ -82,6 +82,7 @@ html.zooming li.zooming {
 }
 
 html.zooming li.zoomingEditor {
+     display : block;
      position: absolute;
      top: 20; bottom: 0; right: 0; left: 0;
 }

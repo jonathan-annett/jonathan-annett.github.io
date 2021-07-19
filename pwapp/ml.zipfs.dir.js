@@ -358,6 +358,7 @@ ml(`
                        const file_url = zip_url_base + '/'+filename;
                        open_url(file_url);
                     } else {
+                        li.classList.add("editing");
                         const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
                         toggleInBuiltEditor ( filename,li )
                     }
