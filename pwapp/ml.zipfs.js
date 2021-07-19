@@ -837,31 +837,61 @@ ml(`
                      
                  });
                  
-                 function download() {
+                 
+                 function getRealUrl(url) {
+                     const prefix = 'https://';
+                     const re1 =  /(?:^https:\/\/.*)(?:https-zip-mirror@)(.*)(?:@\.zip)/;
+                     const re2 =  /(?:^https:\/\/.*)(?:https-zip-mirror@)(.*\.zip)/;
+                     const match1 = re1.exec(url)
+                     if (match1) {
+                         return prefix+match1[1];
+                     }
+                     const match2 = re2.exec(url)
+                     if (match2) {
+                         return prefix+match2[1];
+                     }
                      
-                     fetch(url)
-                     .then(getBuffer)
-                       .catch(function(err){
+                     return url;
+                 }
+                 
+                 function download() {
+                     const real_url = getRealUrl(url);
+                     
+                     if (real_url===url) {
+                         // for non-mirrored urls, try normal fetch first.
+                         fetch(real_url)
+                            .then(getBuffer)
+                          // fallback 1 attempt with no-cors mde fetch, then fail to error callback
+                            .catch(fetchNoCors).catch(cb);
+                       
+                     } else {
+                         // for mirrored zips, go straight to no-cors mode
+                         fetchNoCors().catch(cb);
+                     }
+                       
+                       
+                       function fetchNoCors(){
                            
-                            fetch(url,{mode:'no-cors'})
+                            fetch(real_url,{mode:'no-cors'})
                                .then(getBuffer)
                                .catch(function(err){
                                    
                                     fetch(url+"?r="+Math.random().toString(36).substr(-8),{
-                                        mode:'no-cors',
+                                        mode:'no-cors' /*,
                                         headers:{
                                             'if-none-match':Math.random().toString(36).substr(-8),
                                             'if-modified-since':new Date( Date.now() - ( 5 * 365 * 24 * 60 * 60 * 1000) ).toString()
-                                        }
+                                        } */
                                         
                                     },'')
+                                    
                                        .then(getBuffer)
                                        .catch(cb);
                                        
                                        
                                });
                                
-                       }).catch(cb);
+                       }
                  }
                  
                  function getBuffer(response) {

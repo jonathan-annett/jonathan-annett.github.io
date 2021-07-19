@@ -1,4 +1,4 @@
-/* global zip_url_base,zip_virtual_dir,zip_files, alias_root_fix, parent_link,BroadcastChannel*/
+/* global zip_url_base,zip_virtual_dir,zip_files, alias_root_fix, parent_link,BroadcastChannel,ace*/
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
@@ -328,92 +328,7 @@ ml(`
                    pwaApi.toggleDeleteFile(filename);
                 }
             }
-/*
-            function registerForNotifications(initial_path,cb) {
-                pwaApi.registerForNotifications(function(msg){
-    
-                    if (msg.deleted) {
-                        const el = find_li(msg.deleted);
-                        if (el) {
-                           el.classList.add("deleted");
-                           el.classList.add("hidden");
-                        }
-                        return;
-                    }
-                    if (msg.undeleted) {
-                        const el = find_li(msg.undeleted);
-                        if (el) {
-                           el.classList.remove("deleted");
-                           el.classList.remove("hidden");
-                        }
-                        return;
-                    }
-                    if (msg.hidden) {
-                        const el = find_li(msg.hidden);
-                        return el && el.classList.add("hidden");
-                    }
-                    
-                    if (msg.unhidden) {
-                        const el = find_li(msg.unhidden);
-                        return el && el.classList.remove("hidden");
-                    }
-                    
-                    if (msg.hash && msg.writeFileString) {
-                        
-                        if (msg.writeFileString.replace(/^\//,'') !== '.zedstate') {
-                                 initial_path = msg.writeFileString.replace(/^\//,'');
-                            cb (initial_path);
-                            const anchor = qs('a[data-filename="'+initial_path+'"]');
-                            if (anchor) {
-                                const el = anchor.parentElement;
-                                const sh = el.querySelector('span.sha1');
-                                if (sh) {
-                                    sh.innerHTML=msg.hash;
-                                }
-                                el.classList.add("editing");
-                                el.classList.add("edited");
-                                modified_files[initial_path]=1;
-                            } else {
-                               
-                                    qs("ul",function(el){
-                                        // make a new id for the new element, as we are creating it on the fly
-                                        let newid="li_"+Math.random().toString(36).substr(-8);
-                                        
-                                        // patch the ul element to include new file
-                                        el.innerHTML += html_file_item(newid,initial_path);
-                                        
-                                        // add some button events (if relel)
-                                        addViewClick(qs("#"+newid+" a span.normal"));
-                                        let edBtn = qs("#"+newid+" a span.editinzed");
-                                        el.classList.add("edited");
-                                        el.classList.add("editing");
-                                        modified_files[initial_path]=1;
-                                        pwaApi.isHidden(initial_path,function(hidden){
-                                            if (hidden) {
-                                                el.classList.add("hidden");
-                                            }
-                                        });
-                                    });
-                                
-                            }
-                        }
-                    }
-                    
-                    if (msg.hash && msg.readFileString) {
-                        const anchor = qs('a[data-filename="'+msg.readFileString.replace(/^\//,'')+'"]');
-                        if (anchor) {
-                            const sh = anchor.parentElement.querySelector('span.sha1');
-                            if (sh) {
-                                sh.innerHTML=msg.hash;
-                            }
-                        }
-                    }
-                    
-                    
-    
-                });
-            }
-*/
+
             function onEditorClose () {
                 Object.keys(modified_files).forEach(function(file){
                     const li = find_li(file);
@@ -459,6 +374,21 @@ ml(`
                   function onClosed(){},
                   function onOpened(){}
                 );
+            }
+            
+            
+            
+            function inbuildEditor () {
+                
+                var editor = ace.edit("editor", {
+                    theme: "ace/theme/chaos",
+                    mode: "ace/mode/javascript",
+                    autoScrollEditorIntoView: true,
+                    maxLines: 30,
+                    minLines: 2
+                });
+                
+                
             }
             
             function open_window(
