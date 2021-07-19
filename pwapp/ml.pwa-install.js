@@ -1,4 +1,4 @@
-/* global ml  */
+/* global ml,Headers  */
 ml('pwa | ml.pwa.js',function(){ml(2,
 
     {
@@ -87,9 +87,15 @@ ml('pwa | ml.pwa.js',function(){ml(2,
               
               
               function getConfig(cb) {
+                  
+                 
                   return new Promise(function (resolve,reject){
-                      
-                      fetch("betakeys.json")
+                       var configHeaders = new Headers();
+                           configHeaders.append('pragma', 'no-cache');
+                           configHeaders.append('cache-control', 'no-cache');
+                  
+                  
+                      fetch("betakeys.json",{method:'GET',configHeaders})
                         .then(toJSON)
                             .then(resolve).catch(reject);
              
