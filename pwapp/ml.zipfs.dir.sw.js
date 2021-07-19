@@ -81,7 +81,7 @@ ml(`
                                                
                                                parent_link = cleanup_links(parent_link);
                                               
-                                               const updated_prefix = url + "/" ;
+                                               const updated_prefix = virtual ? virtual :  url + "/" ;
                                                        
                                                let   hidden_files_exist = false;
                                                

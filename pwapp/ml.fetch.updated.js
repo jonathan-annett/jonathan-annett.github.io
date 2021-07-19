@@ -44,6 +44,7 @@ ml(0,ml(1),[
     
         return {
             fetchUpdatedURLContents,
+            URLIsUpdated,
             fixupKeys,
             full_URL
         };
@@ -88,6 +89,23 @@ ml(0,ml(1),[
                     
                 });
             }
+        }
+        
+        
+        
+        function URLIsUpdated (url,cb) {
+            url = full_URL(location.origin,url);
+            virtualDirQuery(url).then(function(entry){
+                if (entry) {
+                    // this is a virtual entry. if it was updated, the "virtual" path will be in updatedURLS
+                    cb (databases.updatedURLS.keyExists(entry.aliased_url));
+                    
+                } else {
+                    // it's not a virtual entry, see if it has been updated
+                    cb (databases.updatedURLS.keyExists(url));
+                }
+                
+            });
         }
         
         function full_URL(base,url) {
