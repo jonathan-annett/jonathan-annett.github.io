@@ -34,6 +34,8 @@ ml(0,ml(1),[
 
              function middlewares (addMiddlewareListener,databases,response200,response500,fnSrc,fixupURL) {
                 
+                
+                // /databases.zip download the databases as a zip file -
                 addMiddlewareListener (function (event) {
                     // !event.use_no_cors means url is for this domain name,
                     if (!event.use_no_cors &&  /\/databases\.zip$/.test(event.fixup_url)) {
@@ -60,6 +62,7 @@ ml(0,ml(1),[
                     
                 });
                 
+                // hot link error messages to editor
                 addMiddlewareListener (function (event) {
                     // !event.use_no_cors means url is for this domain name,
                     if (!event.use_no_cors &&  isSourceCodeLink.test(event.fixup_url)) {
@@ -75,9 +78,8 @@ ml(0,ml(1),[
                         });
                     } 
                 });
-                
-                
-                
+            
+                // 
                 addMiddlewareListener (function (event) {
                     // !event.use_no_cors means url is for this domain name,
                     if (!event.use_no_cors &&  /force\-error\.js$/.test(event.fixup_url)) {

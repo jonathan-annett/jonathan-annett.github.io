@@ -1355,7 +1355,14 @@ ml(`
                      getZipObject(zip_url,buffer,function(err,zip,zipFileMeta){
                          if (err)  throw err;
                         getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
-                                
+                            
+                             if (tools.isDeleted(file_path)) {
+                                  return resolve(new Response('', {
+                                     status: 404,
+                                     statusText: 'Not found'
+                                  }));
+                             }
+                             
                              let fileEntry = zipFileMeta.files[file_path];
                              if (!fileEntry) {
                                  if (zipFileMeta.alias_root) {
@@ -1485,7 +1492,12 @@ ml(`
                           if (err)  throw err;
                          getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
                              
-                            
+                             if (tools.isDeleted(file_path)) {
+                                  return resolve(new Response('', {
+                                     status: 404,
+                                     statusText: 'Not found'
+                                  }));
+                             }
                              
                              let fileEntry = zipFileMeta.files[file_path];
                              if (!fileEntry) {
