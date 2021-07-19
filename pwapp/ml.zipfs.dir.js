@@ -215,6 +215,8 @@ ml(`
 
                 [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
                 
+                [].forEach.call(document.querySelectorAll("li a span.fullscreen"),addZoomClick);
+                
                 [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
                 
                 [].forEach.call(document.querySelectorAll("li a span.zipfile"),addOpenZipViewClick);
@@ -234,6 +236,13 @@ ml(`
                 if (el) {
                   el.addEventListener("click",edBtnClick);
                   el.parentElement.addEventListener("click",edBtnClick);
+                }
+            }
+            
+            function addZoomClick (el) {
+                if (el) {
+                  el.addEventListener("click",zoomBtnClick);
+                  el.parentElement.addEventListener("click",zoomBtnClick);
                 }
             }
             
@@ -294,6 +303,28 @@ ml(`
             function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
            
             function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
+            
+            
+            var zoomEl;            
+            function  zoomBtnClick( e ) {
+                e.stopPropagation();
+                
+                if (zoomEl) {
+                    zoomEl.classList.remove("zooming");
+                    qs('html').classList.remove("zooming");
+                } else {
+                    const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+                    const li = btn.parentElement;
+                    const filename = btn.dataset.filename.replace(/(^\/)/,'');
+                   
+                    zoomEl = li;
+                    
+                    zoomEl.classList.add("zooming");
+                    qs('html').classList.add("zooming");
+                    
+                }
+                
+            }
             
             function edBtnClick(e){
                 e.stopPropagation();
@@ -510,6 +541,7 @@ ml(`
                                     li_ed.setText(new TextDecoder().decode(text));
                                 });
                             }
+                           
                             
                             li_ed.inbuiltEditorOnSessionChange = function () {
                                     // delta.start, delta.end, delta.lines, delta.action
