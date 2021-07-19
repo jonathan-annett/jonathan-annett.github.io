@@ -388,7 +388,10 @@ ml(`
                 return {
                     html : "ace/mode/html",
                     js   : "ace/mode/javascript",
-                    json : "ace/mode/json"
+                    json : "ace/mode/json",
+                    md   : "ace/mode/markdown",
+                    css  : "ace/mode/css"
+                    
                 }[ext]||"ace/mode/text";
             }
             
@@ -398,6 +401,8 @@ ml(`
                     html : "ace/theme/cobalt",
                     js   : "ace/theme/chaos",
                     json : "ace/theme/monokai",
+                    md   : "ace/theme/dawn",
+                    css  : "ace/theme/pastel_on_dark",
                 }[ext] || "ace/theme/chrome";
             }
             
