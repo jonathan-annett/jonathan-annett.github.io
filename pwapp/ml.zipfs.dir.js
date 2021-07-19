@@ -310,9 +310,13 @@ ml(`
                 e.stopPropagation();
                 
                 const zoomClass=function(addRemove) {
-                   qs("#"+zoomEl.dataset.editor_id).parentNode.classList[addRemove]("zooming");
-                   zoomEl.classList[addRemove]("zoomingEditor");
+                   const li_ed=qs("#"+zoomEl.dataset.editor_id).parentNode;
+                   li_ed.classList[addRemove]("zoomingEditor");
+                   zoomEl.classList[addRemove]("zooming");
                    qs('html').classList[addRemove]("zooming"); 
+                   
+                   li_ed.editor.setOption("minLines", addRemove==="add"?undefined:2);
+                   li_ed.editor.setOption("maxLines", addRemove==="add"?undefined:30);
                 };
                 
                 if (zoomEl) {
