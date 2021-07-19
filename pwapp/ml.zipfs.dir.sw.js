@@ -121,11 +121,10 @@ ml(`
                                                  const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
                                                  const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
                                                  const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
-                                                 const test_offset  = zipFileMeta.alias_root ? zipFileMeta.alias_root.length : 0;
-                                                 const alt_name     = zipFileMeta.alias_root && zipFileMeta.alias_root+basename;
-                                                 const is_hidden    = tools.isHidden(filename.substr(test_offset));//  tools.isHidden(basename) || alt_name && tools.isHidden(alt_name) ;
+                                                 const test_name    = zipFileMeta.alias_root && filename.indexOf(zipFileMeta.alias_root)===0 ? filename.substr(zipFileMeta.alias_root.length) : filename;
+                                                 const is_hidden    = tools.isHidden(test_name);//  tools.isHidden(basename) || alt_name && tools.isHidden(alt_name) ;
                                                  const is_in_zip    = file_listing.indexOf(filename)>=0;
-                                                 const is_deleted   = is_hidden && tools.isDeleted(filename.substr(test_offset))  ;//( tools.isDeleted(basename) || alt_name && tools.isDeleted(alt_name) );
+                                                 const is_deleted   = is_hidden && tools.isDeleted(test_name)  ;//( tools.isDeleted(basename) || alt_name && tools.isDeleted(alt_name) );
                                                  const is_editable  = fileIsEditable(filename);
                                                  const is_zip       = filename.endsWith(".zip");
                                                  const is_edited    = fileisEdited( updated_prefix+filename );
