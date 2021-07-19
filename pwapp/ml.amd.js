@@ -800,7 +800,8 @@ function amd(root_js,bound_self){
               U=c.B(R[3]);                   // get URL from regex results
               if (c.H(U) && !ml.d[N]) {      // we only want 1 copy of each script
                   ml.H.push(U);
-                  if(c.c(U))ml.d[N]={h:U};
+                  //if(c.c(U))
+                  ml.d[N]={h:U};
                   c.p(U,function(U){
                      preloadScriptModuleFunction (U,function(err){
                          if (!err) {
