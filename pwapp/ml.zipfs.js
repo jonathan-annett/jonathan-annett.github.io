@@ -858,41 +858,53 @@ ml(`
                      
                      const real_url = getRealUrl(url);
                      
-                     //if (real_url===url) {
-                         // for non-mirrored urls, try normal fetch first.
-                         fetch(real_url)
+                     if (real_url===url) {
+                         fetch(url)
+                         
                             .then(getBuffer)
-                          // fallback 1 attempt with no-cors mde fetch, then fail to error callback
-                               .catch(fetchNoCors).catch(cb);
+                               .catch(function (){
+                                   
+                                   downloadNoCors(url);
+                                   
+                                   /*
+                                   return fetch(real_url,{mode:'no-cors'})
+                                      .then(getBuffer)
+                                          .catch(function(err){
+                                              
+                                               fetch(real_url+"?r="+Math.random().toString(36).substr(-8),{
+                                                   mode:'no-cors' ,
+                                                   headers: {
+                                                        'if-none-match':Math.random().toString(36).substr(-8),
+                                                        'if-modified-since':new Date( Date.now() - ( 5 * 365 * 24 * 60 * 60 * 1000) ).toString()
+                                                   } 
+                                                   
+                                               },'')
+                                               
+                                                  .then(getBuffer)
+                                                  
+                                                     .catch(cb);
+                                                  
+                                                  
+                                          });
+                                          
+                                          
+                                          */
+                                }).catch(cb);
                        
-                    // } else {
-                      //   fetchNoCors().catch(cb);
-                    // }
+                     } else {
+                         
+                         downloadNoCors(real_url);
+                         
+                    }
                        
                        
-                       function fetchNoCors(){
-                           
-                            return fetch(real_url,{mode:'no-cors'})
-                               .then(getBuffer)
-                                   .catch(function(err){
-                                       
-                                        fetch(real_url+"?r="+Math.random().toString(36).substr(-8),{
-                                            mode:'no-cors' ,
-                                            headers: {
-                                                 'if-none-match':Math.random().toString(36).substr(-8),
-                                                 'if-modified-since':new Date( Date.now() - ( 5 * 365 * 24 * 60 * 60 * 1000) ).toString()
-                                            } 
-                                            
-                                        },'')
-                                        
-                                           .then(getBuffer)
-                                           
-                                              .catch(cb);
-                                           
-                                           
-                                   });
-                               
-                       }
+                       
+                 }
+                 
+                 
+                 function downloadNoCors(url) {
+                     
+                     return fetch(url,{mode:'no-cors'}).then(getBuffer).catch(cb);
                  }
                  
                  function getBuffer(response) {
