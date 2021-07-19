@@ -346,6 +346,7 @@ ml(`
                        if (el) {
                            el.classList[msg.deleted?"add":"remove"]('deleted');
                            el.classList[msg.deleted?"add":"remove"]('hidden');
+                           el.classList.remove("editing");
                        }
                    });
                 }
