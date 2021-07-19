@@ -432,7 +432,7 @@ ml(`
                     } else {
                         
                         
-                        editor.session.setValue(text);
+                        editor.session.setValue(new TextDecoder().decode(text));
                         
                         qs(li,".sha1").textContent=hash;
                         
