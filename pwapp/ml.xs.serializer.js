@@ -3,7 +3,7 @@
 
 /*jshint -W054 */
 
-ml(0,ml(1),`
+ml(`
     
    setImmediateLib | ml.setImmediate.js
    Rusha           | rusha.js

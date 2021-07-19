@@ -1,6 +1,6 @@
 /* global ml,self, Response,Headers,BroadcastChannel */
 
-ml(0,ml(1),`
+ml(`
     
     sha1Lib  | sha1.js
     UPNG     | upng.js

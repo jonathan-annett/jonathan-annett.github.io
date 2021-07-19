@@ -1,6 +1,6 @@
 /* global ml,self,localforage,Response,Headers,BroadcastChannel */
 
-ml(0,ml(1),`
+ml(`
     
     sha1Lib  | sha1.js
     JSZip    | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js

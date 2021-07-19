@@ -1,6 +1,6 @@
 /* global ml,self, JSZipUtils,JSZip,Response,Headers,BroadcastChannel,performance */
 
-ml(0,ml(1),` 
+ml(` 
     
     sha1Lib                                | sha1.js
     JSZipUtils@ServiceWorkerGlobalScope    | https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js

@@ -1,8 +1,6 @@
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),
-    
-      `
+ml(`
       
       xStoreBase    | ml.xs.base.js
       httpsStore    | ml.xs.https.js

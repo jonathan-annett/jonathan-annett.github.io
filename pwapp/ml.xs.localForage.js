@@ -1,6 +1,6 @@
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),`
+ml(`
 
    xStoreBase     | ml.xs.base.js
    localforage    | https://unpkg.com/localforage@1.9.0/dist/localforage.js
