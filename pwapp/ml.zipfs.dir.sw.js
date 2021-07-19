@@ -141,7 +141,7 @@ ml(`
                                                  const sha1span     = '<span class="sha1"></span>';
                                                  
                                                  const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;&nbsp;&nbsp;</span>' : '';
-                                                 const zoom_full    = '<a class="fullscreen">&nbsp;&nbsp;</a>';
+                                                 const zoom_full    = '<a data-filename="' + filename + '"><span class="fullscreen">&nbsp;&nbsp;</span></a>';
                                                  const cls = is_deleted ? ["deleted"] : [];
                                                  if (is_edited)  cls.push("edited");
                                                  if (is_hidden)  cls.push("hidden");
