@@ -136,7 +136,6 @@ ml(`
                                                  if (is_edited)  cls.push("edited");
                                                  if (is_hidden)  cls.push("hidden");
                                                  const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
-                                                 
                                                  const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>' + sha1span +edited ] 
                                                                 : is_zip        ? [ '<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>' + sha1span +edited ]   
                                                                 :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + sha1span +edited ] ;
@@ -144,7 +143,6 @@ ml(`
                                                  if (is_hidden) hidden_files_exist = true;
                                                  return '<li'+li_class+'><a data-filename="' + filename + '" data-inzip="'+ (is_in_zip?'1':'0') + '"><span class="deletefile"></span></a><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
                                               }
-                                            
                                               
                                            });
                                        });

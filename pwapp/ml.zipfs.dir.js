@@ -294,7 +294,7 @@ ml(`
                 const li = btn.parentElement;
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
                 
-                if (!e.shiftKey) {
+                if (e.shiftKey) {
                    li.classList.add("editing");
                    
                     modified_files[filename]=1;
@@ -312,8 +312,13 @@ ml(`
                     });
 
                 } else {
-                    const file_url = zip_url_base + '/'+filename;
-                    open_url(file_url);
+                    if (e.ctrlKey) {
+                       const file_url = zip_url_base + '/'+filename;
+                       open_url(file_url);
+                    } else {
+                        const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
+                        inbuildEditor ( li,dir_prefix+filename.replace(alias_root_fix,'') )
+                    }
                 }
             }
             
@@ -378,15 +383,30 @@ ml(`
             
             
             
-            function inbuildEditor () {
+            function inbuildEditor (li,filename) {
                 
-                var editor = ace.edit("editor", {
+                let editor_id = li.dataset.editor_id;
+                if (!editor_id) {
+                    while (true) {
+                       editor_id = 'ed_'+Math.random().toString(36).substr(-8);
+                       if (!qs("#"+editor_id)) break;
+                    }
+                    
+                    const li_ed = document.createElement("li");
+                    li_ed.innerHTML = '<PRE id="'+editor_id+'">loading '+filename+'...</PRE>'; 
+                    
+                    li.parentNode.insertBefore(li_ed, li.nextSibling);
+                }
+                
+                var editor = ace.edit(editor_id, {
                     theme: "ace/theme/chaos",
                     mode: "ace/mode/javascript",
                     autoScrollEditorIntoView: true,
                     maxLines: 30,
                     minLines: 2
                 });
+                
+                
                 
                 
             }
