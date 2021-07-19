@@ -333,20 +333,39 @@ ml(`
                 e.stopPropagation();
                 const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
-                
+                const li = find_li(filename);
                 if (e.shiftKey) {
+                    
+                   // shift delete removes any edits to the file
                    pwaApi.removeUpdatedURLContents(filename);
+                   if (li) {
+                       // if the editor is open an editor id will exist in the li element 
+                       if (!!li.dataset.editor_id) {
+                           // note - opening an already open editor just returns the li_ed element
+                           openInBuiltEditor (filename,li).reload();
+                       }
+                   }
+                   
+                  
+                   
                 } else {
                     
-                   const el = find_li(filename);
-                   closeInbuiltEditor(filename,el);
+                   // delete click just toggles a delete flag, as well as the hidden flag 
+                   // if "show hidden files" is checked, the delete button changes the highlighting colour,
+                   // so the user can just undelete a deleted file by showing hidden files and  reclicking delete.
+                   // note that deleting a file does not delete any edits, it just prevents the browser from accessing the file
+                   // ( the only exception to this is if the file is inside a virtual zip file that onscures a physical file at the same
+                   //   path. for example, index.html usually replaces the installer index.html. so deleting the index.html inside the zip 
+                   //   allows testing of the installer while the app is techincally still loaded )
+                   
+                   closeInbuiltEditor(filename,li);
                    pwaApi.toggleDeleteFile(filename,function(err,msg){
                        if (err) return;
                        
-                       if (el) {
-                           el.classList[msg.deleted?"add":"remove"]('deleted');
-                           el.classList[msg.deleted?"add":"remove"]('hidden');
-                           el.classList.remove("editing");
+                       if (li) {
+                           li.classList[msg.deleted?"add":"remove"]('deleted');
+                           li.classList[msg.deleted?"add":"remove"]('hidden');
+                           li.classList.remove("editing");
                        }
                    });
                 }
@@ -438,6 +457,8 @@ ml(`
                     delete li_ed.inbuiltEditorOnSessionChange;
                     delete li_ed.editor;
                     delete li_ed.hashDisplay;
+                    delete li_ed.setText;
+                    delete li_ed.reload;
                     
                     li_ed.parentNode.removeChild(li_ed);
                     
@@ -446,6 +467,7 @@ ml(`
             }
             
             
+
             function openInBuiltEditor (filename,li) {
                 li=li||find_li (filename);
                 let editor_id = li.dataset.editor_id;
@@ -477,7 +499,17 @@ ml(`
                             li_ed.editor.session.setValue(new TextDecoder().decode(text));
                             li_ed.hashDisplay = qs(li,".sha1");
                             li_ed.hashDisplay.textContent=hash;
+                            li_ed.setText = function (text) {
+                                li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
+                                li_ed.editor.setValue(text);
+                                li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                            };
                             
+                            li_ed.reload = function () {
+                                pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
+                                    li_ed.setText(new TextDecoder().decode(text));
+                                });
+                            }
                             
                             li_ed.inbuiltEditorOnSessionChange = function () {
                                     // delta.start, delta.end, delta.lines, delta.action
@@ -499,7 +531,11 @@ ml(`
 
                         
                     });
-                    
+                    return li_ed;
+                } else {
+                    const ed = qs("#"+editor_id);
+                    const li_ed = ed.parentNode;
+                    return li_ed;
                 }
             }
            
