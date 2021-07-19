@@ -872,7 +872,7 @@ ml(`
                        
                        function fetchNoCors(){
                            
-                            fetch(real_url,{mode:'no-cors'})
+                            return fetch(real_url,{mode:'no-cors'})
                                .then(getBuffer)
                                .catch(function(err){
                                    
