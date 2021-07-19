@@ -3,6 +3,7 @@
 
 function amd(root_js,bound_self){
     
+    
     const
 
     // loads script as a string/arraybuffer
@@ -35,6 +36,10 @@ function amd(root_js,bound_self){
     ml.req=function (id) {
         return globalIdAvail(id) && globalRequireId (id);
     };
+    
+    ml(9,bound_self);
+    ml.register=ml.bind(bound_self,8);
+    
         
     // attempt to preload the prescribed root javascrpt file
     // preloading does not execute the script, but instead "compiles" it into a function that can be called later
