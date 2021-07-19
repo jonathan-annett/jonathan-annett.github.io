@@ -81,9 +81,14 @@ html.zooming li.zooming {
    display : block;
 }
 
- 
-html.zooming li.zooming pre.ace_editor {
+html.zooming li.zoomingEditor {
+     position: absolute;
+     top: 20; bottom: 0; right: 0; left: 0;
+}
+html.zooming li.zoomingEditor .ace_editor {
     position: absolute;
+    width: unset;
+    height:unset;
     top: 20; bottom: 0; right: 0; left: 0; height: auto;
 }
 

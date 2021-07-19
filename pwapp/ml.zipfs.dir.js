@@ -311,7 +311,7 @@ ml(`
                 
                 const zoomClass=function(addRemove) {
                    qs("#"+zoomEl.dataset.editor_id).parentNode.classList[addRemove]("zooming");
-                   zoomEl.classList[addRemove]("zooming");
+                   zoomEl.classList[addRemove]("zoomingEditor");
                    qs('html').classList[addRemove]("zooming"); 
                 };
                 
