@@ -51,14 +51,14 @@ ml(`
                isDeleted     : function (file,cb) {
                    return pwa.isDeleted(full_zip_uri,file,cb);
                },
-               /*
+                
                writeFileString : function (file,text,hash,cb) {
                   return pwa.writeFileString(full_zip_uri,file,text,hash,cb);
                },
                
                readFileString : function (file,hash,cb) {
-                   return pwa.readFileString(full_zip_uri,file,hash,cb);
-               },*/
+                  return pwa.readFileString(full_zip_uri,file,hash,cb);
+               },
                
                isHidden : function (file,cb) {
                    return pwa.isHidden(full_zip_uri,file,function(err,msg){
@@ -317,7 +317,7 @@ ml(`
                        open_url(file_url);
                     } else {
                         const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
-                        inbuildEditor ( li,dir_prefix+filename.replace(alias_root_fix,'') )
+                        inbuildEditor ( li, filename )
                     }
                 }
             }
@@ -382,6 +382,23 @@ ml(`
             }
             
             
+            function aceModeForFile(fn ) {
+                const ext = fn.substr(fn.lastIndexOf('.'));
+                return {
+                    html : "ace/mode/html",
+                    js   : "ace/mode/javascript",
+                    json : "ace/mode/json"
+                }[ext]||"ace/mode/text";
+            }
+            
+            function aceThemeForFile(fn ) {
+                const ext = fn.substr(fn.lastIndexOf('.'));
+                return {
+                    html : "ace/theme/cobalt",
+                    js   : "ace/theme/chaos",
+                    json : "ace/theme/monokai",
+                }[ext] || "ace/theme/chrome";
+            }
             
             function inbuildEditor (li,filename) {
                 
@@ -396,19 +413,26 @@ ml(`
                     li_ed.innerHTML = '<PRE id="'+editor_id+'">loading '+filename+'...</PRE>'; 
                     
                     li.parentNode.insertBefore(li_ed, li.nextSibling);
+                    
+                    
                 }
                 
                 var editor = ace.edit(editor_id, {
-                    theme: "ace/theme/chaos",
-                    mode: "ace/mode/javascript",
+                    theme:   aceThemeForFile(filename),
+                    mode:    aceModeForFile(filename),
                     autoScrollEditorIntoView: true,
                     maxLines: 30,
                     minLines: 2
                 });
                 
-                
-                
-                
+                pwaApi.readFileString(filename,function(err,text){
+                    if (err) {
+                        editor.session.setValue("error:"+err.message||err);
+                    } else {
+                        editor.session.setValue(text);
+                    }
+                });
+
             }
             
             function open_window(
