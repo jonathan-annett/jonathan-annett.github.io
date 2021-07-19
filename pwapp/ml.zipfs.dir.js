@@ -406,6 +406,7 @@ ml(`
                 }[ext] || "ace/theme/chrome";
             }
             
+           
             function inbuildEditor (li,filename) {
                 
                 let editor_id = li.dataset.editor_id;
@@ -420,44 +421,64 @@ ml(`
                     
                     li.parentNode.insertBefore(li_ed, li.nextSibling);
                     
+                    li_ed.editor = ace.edit(editor_id, {
+                        theme:   aceThemeForFile(filename),
+                        mode:    aceModeForFile(filename),
+                        autoScrollEditorIntoView: true,
+                        maxLines: 30,
+                        minLines: 2
+                    });
                     
+                    pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
+                        if (err) {
+                            li_ed.editor.session.setValue("error:"+err.message||err);
+                        } else {
+                            
+                            
+                            li_ed.editor.session.setValue(new TextDecoder().decode(text));
+                            li_ed.hashDisplay = qs(li,".sha1");
+                            li_ed.hashDisplay.textContent=hash;
+                            
+                            
+                            li_ed.inbuiltEditorOnSessionChange = function () {
+                                    // delta.start, delta.end, delta.lines, delta.action
+                                    
+                                    const buffer = new TextEncoder().encode(li_ed.editor.session.getValue());
+                                    
+                                    pwaApi.updateURLContents (filename,buffer,true,function(err,hash) {
+                                        if (err) {
+                                            return ;
+                                        }
+                                        li_ed.hashDisplay.textContent=hash;
+                                    });
+                            };
+                            
+                            li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                            
+                        }
+                        
+
+                        
+                    });
+                    
+                } else {
+                    const ed = qs("#"+editor_id);
+                    const li_ed = ed.parentNode;
+                    
+                    li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
+                    li_ed.removeChild(ed);
+                    
+                    
+                    delete li_ed.inbuiltEditorOnSessionChange;
+                    delete li_ed.editor;
+                    delete li_ed.hashDisplay;
+                    
+                    li_ed.parentNode.removeChild(li_ed);
+                    
+                    delete li.dataset.editor_id;
                 }
                 
-                var editor = ace.edit(editor_id, {
-                    theme:   aceThemeForFile(filename),
-                    mode:    aceModeForFile(filename),
-                    autoScrollEditorIntoView: true,
-                    maxLines: 30,
-                    minLines: 2
-                });
                 
-                pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
-                    if (err) {
-                        editor.session.setValue("error:"+err.message||err);
-                    } else {
-                        
-                        
-                        editor.session.setValue(new TextDecoder().decode(text));
-                        const hashDisplay = qs(li,".sha1");
-                        
-                        hashDisplay.textContent=hash;
-                        
-                        
-                        editor.session.on('change', function(delta) {
-                            // delta.start, delta.end, delta.lines, delta.action
-                            
-                            const buffer = new TextEncoder().encode(editor.session.getValue());
-                            
-                            pwaApi.updateURLContents (filename,buffer,true,function(err,hash) {
-                                if (err) {
-                                    return ;
-                                }
-                                hashDisplay.textContent=hash;
-                            });
-                        });
-                        
-                    }
-                });
 
             }
             
