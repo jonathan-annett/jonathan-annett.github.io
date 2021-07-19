@@ -15,7 +15,7 @@ ml(0,ml(1),`
                    sendMessage('deleted',{
                         zip    : zip_url,
                         toggle : file
-                   });
+                   },cb);
                },
                
                deleteFile       : function (zip_url,file,cb) {
