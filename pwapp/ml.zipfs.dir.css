@@ -72,13 +72,17 @@ html.zooming li.zooming {
 }
 
 html.zooming li.zooming pre.ace_editor {
-    border: 1px solid lightgray;
+   
+}
+html.zooming li.zooming pre.ace_editor {
     position: absolute;
     top: 0; bottom: 0; right: 0; left: 0; height: auto;
 }
 
-li.editing a span.fullscreen {
-    display:inline-block;
+
+li.editing a li.zooming  span.fullscreen {
+    position: absolute;
+    left: calc(100vw - 12px);
 }
 
 

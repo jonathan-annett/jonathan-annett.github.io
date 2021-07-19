@@ -312,6 +312,7 @@ ml(`
                 if (zoomEl) {
                     zoomEl.classList.remove("zooming");
                     qs('html').classList.remove("zooming");
+                    zoomEl=undefined;
                 } else {
                     const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
                     const li = btn.parentElement;
@@ -508,6 +509,7 @@ ml(`
                        if (!qs("#"+editor_id)) break;
                     }
                     li.dataset.editor_id =  editor_id;
+                    li.classList.add("editing");
                     const li_ed = document.createElement("li");
                     li_ed.innerHTML = '<PRE id="'+editor_id+'"></PRE>'; 
                     
