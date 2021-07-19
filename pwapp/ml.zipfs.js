@@ -855,6 +855,7 @@ ml(`
                  }
                  
                  function download() {
+                     
                      const real_url = getRealUrl(url);
                      
                      //if (real_url===url) {
@@ -862,7 +863,7 @@ ml(`
                          fetch(real_url)
                             .then(getBuffer)
                           // fallback 1 attempt with no-cors mde fetch, then fail to error callback
-                            .catch(fetchNoCors).catch(cb);
+                               .catch(fetchNoCors).catch(cb);
                        
                     // } else {
                    //      fetchNoCors().catch(cb);
@@ -873,22 +874,23 @@ ml(`
                            
                             return fetch(real_url,{mode:'no-cors'})
                                .then(getBuffer)
-                               .catch(function(err){
-                                   
-                                    fetch(url+"?r="+Math.random().toString(36).substr(-8),{
-                                        mode:'no-cors' /*,
-                                        headers:{
-                                            'if-none-match':Math.random().toString(36).substr(-8),
-                                            'if-modified-since':new Date( Date.now() - ( 5 * 365 * 24 * 60 * 60 * 1000) ).toString()
-                                        } */
+                                   .catch(function(err){
+                                       
+                                        fetch(real_url+"?r="+Math.random().toString(36).substr(-8),{
+                                            mode:'no-cors' ,
+                                            headers: {
+                                                 'if-none-match':Math.random().toString(36).substr(-8),
+                                                 'if-modified-since':new Date( Date.now() - ( 5 * 365 * 24 * 60 * 60 * 1000) ).toString()
+                                            } 
+                                            
+                                        },'')
                                         
-                                    },'')
-                                    
-                                       .then(getBuffer)
-                                       .catch(cb);
-                                       
-                                       
-                               });
+                                           .then(getBuffer)
+                                           
+                                              .catch(cb);
+                                           
+                                           
+                                   });
                                
                        }
                  }
