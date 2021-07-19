@@ -40,20 +40,6 @@ a span.normal {
     background-size: 10px 10px;
 }
 
-a span.fullscreen {
-    
-    background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgMzIgMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHBvbHlnb24gZmlsbD0iIzRlNGU1MCIgcG9pbnRzPSIyOS40MTQgMjYuNTg2IDIyLjgyOCAyMCAyMCAyMi44MjggMjYuNTg2IDI5LjQxNCAyNCAzMiAzMiAzMiAzMiAyNCIvPjxwb2x5Z29uIGZpbGw9IiM0ZTRlNTAiIHBvaW50cz0iMi41ODYgNS40MTQgOS4xNzIgMTIgMTIgOS4xNzIgNS40MTQgMi41ODYgOCAwIDAgMCAwIDgiLz48cG9seWdvbiBmaWxsPSIjNGU0ZTUwIiBwb2ludHM9IjI2LjU4NiAyLjU4NiAyMCA5LjE3MiAyMi44MjggMTIgMjkuNDE0IDUuNDE0IDMyIDggMzIgMCAyNCAwIi8+PHBvbHlnb24gZmlsbD0iIzRlNGU1MCIgcG9pbnRzPSIxMiAyMi44MjggOS4xNzIgMjAgMi41ODYgMjYuNTg2IDAgMjQgMCAzMiA4IDMyIDUuNDE0IDI5LjQxNCIvPjwvc3ZnPg")
-                      left center;
-    background-repeat: no-repeat;
-    background-size: 10px 10px;
-    display:none;
-}
-
-
-html.zooming li,
-html.zooming h1 {
-    display : none;
-}
 
    
 .ace_editor {
@@ -67,20 +53,38 @@ html.zooming h1 {
     text-align: center;
 }
 
+
+a span.fullscreen {
+    
+    background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgMzIgMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHBvbHlnb24gZmlsbD0iIzRlNGU1MCIgcG9pbnRzPSIyOS40MTQgMjYuNTg2IDIyLjgyOCAyMCAyMCAyMi44MjggMjYuNTg2IDI5LjQxNCAyNCAzMiAzMiAzMiAzMiAyNCIvPjxwb2x5Z29uIGZpbGw9IiM0ZTRlNTAiIHBvaW50cz0iMi41ODYgNS40MTQgOS4xNzIgMTIgMTIgOS4xNzIgNS40MTQgMi41ODYgOCAwIDAgMCAwIDgiLz48cG9seWdvbiBmaWxsPSIjNGU0ZTUwIiBwb2ludHM9IjI2LjU4NiAyLjU4NiAyMCA5LjE3MiAyMi44MjggMTIgMjkuNDE0IDUuNDE0IDMyIDggMzIgMCAyNCAwIi8+PHBvbHlnb24gZmlsbD0iIzRlNGU1MCIgcG9pbnRzPSIxMiAyMi44MjggOS4xNzIgMjAgMi41ODYgMjYuNTg2IDAgMjQgMCAzMiA4IDMyIDUuNDE0IDI5LjQxNCIvPjwvc3ZnPg")
+                      left center;
+    background-repeat: no-repeat;
+    background-size: 10px 10px;
+}
+
+a span.fullscreen,
+html.zooming li,
+html.zooming h1 {
+    display : none;
+}
+
+li.editing a span.fullscreen  {
+    display : inline-block;
+}
+
+
 html.zooming li.zooming {
     display : block;
 }
 
-html.zooming li.zooming pre.ace_editor {
-   
-}
+ 
 html.zooming li.zooming pre.ace_editor {
     position: absolute;
     top: 0; bottom: 0; right: 0; left: 0; height: auto;
 }
 
 
-li.editing a li.zooming  span.fullscreen {
+html.zooming a li.zooming  span.fullscreen {
     position: absolute;
     left: calc(100vw - 12px);
 }
