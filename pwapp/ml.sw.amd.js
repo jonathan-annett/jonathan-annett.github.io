@@ -1029,6 +1029,4 @@ function amd(root_js,bound_self){
 
 }
 
-this.ml = function () {
-    amd(new URL(location).searchParams.get('ml'),this);
-};
+amd(new URL(location).searchParams.get('ml'),this);
