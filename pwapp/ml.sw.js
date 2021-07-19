@@ -275,12 +275,7 @@ ml(`
 setImmediateLib | ml.setImmediate.js
 `,self,function (mod,lib){ 
     switch(mod) {
-        case "amdLib":
-            self.define=lib.define;
-            self.require=lib.require;
-          //  console.log(lib.import_ml (window,location.origin,true));
-            break;
-        case "setImmediateLib":lib(function(i){
+          case "setImmediateLib":lib(function(i){
             ml.c.i = i;
         });
     }
