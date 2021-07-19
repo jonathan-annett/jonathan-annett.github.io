@@ -25,11 +25,11 @@ ml(`
             const pwaApi = {
                
                toggleDeleteFile : function (file,cb) {
-                   return pwa.toggleDeleteFile(full_zip_uri,file,file,cb);
+                   return pwa.toggleDeleteFile(full_zip_uri,file,cb);
                },
                
                deleteFile       : function (file,cb) {
-                   return pwa.deleteFile(full_zip_uri,file,file,function(err,msg){
+                   return pwa.deleteFile(full_zip_uri,file,function(err,msg){
                        const ix = zip_files.indexOf(file);
                        if (ix >=0) {
                            zip_files.splice(ix,1);
@@ -39,7 +39,7 @@ ml(`
                },
                
                unDeleteFile     : function (file,cb) {
-                   return pwa.unDeleteFile(full_zip_uri,file,file,function(err,msg){
+                   return pwa.unDeleteFile(full_zip_uri,file,function(err,msg){
                        const ix = zip_files.indexOf(file);
                        if (ix <0) {
                            zip_files.push(file);
@@ -49,7 +49,7 @@ ml(`
                },
                
                isDeleted     : function (file,cb) {
-                   return pwa.isDeleted(full_zip_uri,file,file,cb);
+                   return pwa.isDeleted(full_zip_uri,file,cb);
                },
               /*    
                writeFileString : function (file,text,hash,cb) {
