@@ -324,7 +324,7 @@ ml(`
                        open_url(file_url);
                     } else {
                         const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
-                        inbuildEditor ( li, filename )
+                        toggleInBuiltEditor ( filename,li )
                     }
                 }
             }
@@ -337,12 +337,12 @@ ml(`
                 if (e.shiftKey) {
                    pwaApi.removeUpdatedURLContents(filename);
                 } else {
+                    
+                   const el = find_li(filename);
+                   closeInbuiltEditor(filename,el);
                    pwaApi.toggleDeleteFile(filename,function(err,msg){
                        if (err) return;
                        
-                       
-                       
-                       const el = find_li(filename);
                        if (el) {
                            el.classList[msg.deleted?"add":"remove"]('deleted');
                            el.classList[msg.deleted?"add":"remove"]('hidden');
@@ -422,9 +422,31 @@ ml(`
                 }[ext] || "ace/theme/chrome";
             }
             
-           
-            function inbuildEditor (li,filename) {
-                
+            
+            function closeInbuiltEditor(filename,li) {
+                li=li||find_li (filename);
+                let editor_id = li.dataset.editor_id;
+                if (editor_id) {
+                    const ed = qs("#"+editor_id);
+                    const li_ed = ed.parentNode;
+                    
+                    li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
+                    li_ed.removeChild(ed);
+                    
+                    
+                    delete li_ed.inbuiltEditorOnSessionChange;
+                    delete li_ed.editor;
+                    delete li_ed.hashDisplay;
+                    
+                    li_ed.parentNode.removeChild(li_ed);
+                    
+                    delete li.dataset.editor_id;
+                }
+            }
+            
+            
+            function openInBuiltEditor (filename,li) {
+                li=li||find_li (filename);
                 let editor_id = li.dataset.editor_id;
                 if (!editor_id) {
                     while (true) {
@@ -477,25 +499,16 @@ ml(`
                         
                     });
                     
-                } else {
-                    const ed = qs("#"+editor_id);
-                    const li_ed = ed.parentNode;
-                    
-                    li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
-                    li_ed.removeChild(ed);
-                    
-                    
-                    delete li_ed.inbuiltEditorOnSessionChange;
-                    delete li_ed.editor;
-                    delete li_ed.hashDisplay;
-                    
-                    li_ed.parentNode.removeChild(li_ed);
-                    
-                    delete li.dataset.editor_id;
                 }
-                
-                
-
+            }
+           
+            function toggleInBuiltEditor (filename,li) {
+                li=li||find_li (filename);
+                if (!!li.dataset.editor_id) {
+                   closeInbuiltEditor(li,filename);
+                } else {
+                   openInBuiltEditor (li,filename);
+                }
             }
             
             function open_window(
