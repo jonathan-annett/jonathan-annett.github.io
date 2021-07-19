@@ -857,17 +857,16 @@ ml(`
                  function download() {
                      const real_url = getRealUrl(url);
                      
-                     if (real_url===url) {
+                     //if (real_url===url) {
                          // for non-mirrored urls, try normal fetch first.
                          fetch(real_url)
                             .then(getBuffer)
                           // fallback 1 attempt with no-cors mde fetch, then fail to error callback
                             .catch(fetchNoCors).catch(cb);
                        
-                     } else {
-                         // for mirrored zips, go straight to no-cors mode
-                         fetchNoCors().catch(cb);
-                     }
+                    // } else {
+                   //      fetchNoCors().catch(cb);
+                   //  }
                        
                        
                        function fetchNoCors(){
