@@ -1,7 +1,8 @@
 /* global ml,self,Rusha, crypto */
-ml(`
-Rusha | https://cdnjs.cloudflare.com/ajax/libs/rusha/0.8.7/rusha.js
-`,function(){ml(2,
+ml(
+// rusha is only used as a fallback for crypto.subtle, or for sync usage 
+
+`Rusha | rusha.js`,function(){ml(2,
 
     {   Window: function sha1Lib(lib) { return lib ;},
         ServiceWorkerGlobalScope: function sha1Lib(lib) { return lib ;}

@@ -778,7 +778,7 @@ function amd(root_js,bound_self){
                 8:(m,c)=>{
                     
                 },
-                9:(L,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.amd.js?ml=' + encodeURIComponent(L)).then(C?C:()=>{}),
+                9:(L,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?ml=' + encodeURIComponent(L)).then(C?C:()=>{}),
               
         
             };
