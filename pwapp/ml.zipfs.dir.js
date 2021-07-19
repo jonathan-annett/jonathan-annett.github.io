@@ -383,7 +383,7 @@ ml(`
             
             
             function aceModeForFile(fn ) {
-                const ext = fn.substr(fn.lastIndexOf('.'));
+                const ext = fn.substr(fn.lastIndexOf('.')-1);
                 return {
                     html : "ace/mode/html",
                     js   : "ace/mode/javascript",
@@ -392,7 +392,7 @@ ml(`
             }
             
             function aceThemeForFile(fn ) {
-                const ext = fn.substr(fn.lastIndexOf('.'));
+                const ext = fn.substr(fn.lastIndexOf('.')-1);
                 return {
                     html : "ace/theme/cobalt",
                     js   : "ace/theme/chaos",
@@ -408,9 +408,9 @@ ml(`
                        editor_id = 'ed_'+Math.random().toString(36).substr(-8);
                        if (!qs("#"+editor_id)) break;
                     }
-                    
+                    li.dataset.editor_id =  editor_id;
                     const li_ed = document.createElement("li");
-                    li_ed.innerHTML = '<PRE id="'+editor_id+'">loading '+filename+'...</PRE>'; 
+                    li_ed.innerHTML = '<PRE id="'+editor_id+'"></PRE>'; 
                     
                     li.parentNode.insertBefore(li_ed, li.nextSibling);
                     
