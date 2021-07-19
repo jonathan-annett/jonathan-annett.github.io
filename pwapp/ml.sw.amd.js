@@ -1034,4 +1034,9 @@ function amd(root_js,bound_self){
 
 }
 
-amd(new URL(location).searchParams.get('ml'),this);
+amd((
+    
+    (u)=>u.searchParams.get('ml').replace(
+        /\.\//,u.origin+u.pathname.substr(0,u.pathname.lastIndexOf("/")+1)
+        )
+    )(new URL(location)),this);
