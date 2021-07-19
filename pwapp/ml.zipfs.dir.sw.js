@@ -121,6 +121,9 @@ ml(`
                                               
                                               
                                               function html_file_item (filename){
+                                                  
+                                                  
+                                                 if (filename === ".dirmeta.json") return "";
                              
                                                  const full_uri = "/"+uri+"/"+filename,
                                                        basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
