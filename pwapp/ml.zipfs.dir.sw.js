@@ -41,8 +41,14 @@ ml(`
                                    }
                                    getDirTemplateHtml (function (err,htmlTemplate){ 
                                        
-                                       const doRenderHtml = err||!htmlTemplate ? renderHtml_legacy : renderHtml;
-
+                                       if (err) {
+                                           return resolve(new Response('', {
+                                               status: 500,
+                                               statusText: err.message|| err
+                                           }));
+                                       }
+                                       
+                                       
                                        getZipFileUpdates(url,function(err,additonalFiles){
                                            
                                            getZipDirMetaTools(url,zip,zipFileMeta,function(tools){
@@ -95,7 +101,7 @@ ml(`
                                                
                                                const html_details = all_files.map(html_file_item);
                            
-                                               const html = doRenderHtml (htmlTemplate,uri,virtual,zipFileMeta.alias_root,all_files,hidden_files_exist,html_details,parent_link);
+                                               const html = renderHtml (htmlTemplate,uri,virtual,zipFileMeta.alias_root,all_files,hidden_files_exist,html_details,parent_link);
                            
                                                return resolve( 
                                                    
@@ -182,62 +188,7 @@ ml(`
                        
                           
                            
-                           function renderHtml_legacy (ignore,uri,virtual,alias_root,files, hidden_files_exist,html_details,parent_link) {
-                               
-                               const html = [
-                                   
-                               '<!DOCTYPE html>',
-                               '<!--legacy-->',
-                               '<html>',
-                               '<head>',
-                                 '<title>files in '+uri+'</title>',
-                                 '<script>',
-                                 'var zip_url_base='+JSON.stringify('/'+uri)+',',
-                                 'zip_virtual_dir'+(virtual?'='+JSON.stringify(virtual):'')+',',
-                                 'alias_root_fix='+(alias_root?"/^"+regexpEscape(alias_root)+"/":'/^\\s/')+',',
-                                 'zip_files='+JSON.stringify(files)+',',
-                                 'parent_link='+JSON.stringify(parent_link)+';',
-                                 '</script>',
-                                 '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/balloon-css/1.2.0/balloon.min.css" integrity="sha512-6jHrqOB5TcbWsW52kWP9TTx06FHzpj7eTOnuxQrKaqSvpcML2HTDR2/wWWPOh/YvcQQBGdomHL/x+V1Hn+AWCA==" crossorigin="anonymous" referrerpolicy="no-referrer" />',
-                                 '<link rel="stylesheet" href="ml.zipfs.dir.css"/>',
-                                 '</style>',
-                               '</head>',
-                               '<body class="disable-select">',
-                               '<script src="ml.zedhook.js" defer></script>',
-                               '<script src="ml.zipfs.dir.js" defer></script>',
-                               '<script src="ml.amd.js"></script>',
-                               '<h1> files in '+uri,
-                               '<span>show full path</span><input class="fullpath_chk" type="checkbox" autocomplete="off">',
-                               '<span id="show_hidden">show hidden files</span><input class="hidden_chk" type="checkbox" autocomplete="off">',
-                               '<a class="downloadfull" href="/'+uri+'?download=files" data-balloon-pos="down-left" aria-label="Download full (including edits)">&nbsp;&nbsp;&nbsp;</a>',
-                               '<a class="download" href="/'+uri+'?download=editedFiles" data-balloon-pos="down-left" aria-label="Download edited files">&nbsp;&nbsp;&nbsp;</a>',
-                               '<a class="download" id="img_dl_link" data-balloon-pos="down-left" aria-label="Download zip png image">&nbsp;&nbsp;&nbsp;</a>',
-                               '<span id="img_dl_link2"></span>',                        
-                               '</h1>',
-                               '<div id="inputModal" class="modal">',
-                               '  <div class="modal-content">',
-                               '    <span class="close">&times;</span>',
-                               '    <p>Filename:<input id="newfilename" placeholder"file.js" value=""></p>',
-                               '  </div>',
-                               '</div>',
-                               '<div>',
-                               '<ul class="hide_hidden hide_full_path ' + (hidden_files_exist ? + 'hidden_files_exist' :'' ) + '">'
-                               
-                               ].concat (html_details,
-                               [
-                                   '</ul>',
-                                   '</div>',
-                                   '<img id="show_dl_img" src="/'+uri+'.png">',
-                                   '</body>',
-                                   '</html>'
-                                   
-                               ]).join('\n');
-                               
-                               return html;
-                       
-                           }
-                           
-                           function renderHtml (htmlTemplate,uri,virtual,alias_root,files, hidden_files_exist,html_details,parent_link) {
+                            function renderHtml (htmlTemplate,uri,virtual,alias_root,files, hidden_files_exist,html_details,parent_link) {
                                
                                
                                const head_script = [
