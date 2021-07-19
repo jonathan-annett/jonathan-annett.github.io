@@ -51,7 +51,7 @@ ml(`
                isDeleted     : function (file,cb) {
                    return pwa.isDeleted(full_zip_uri,file,cb);
                },
-                
+              /*    
                writeFileString : function (file,text,hash,cb) {
                   return pwa.writeFileString(full_zip_uri,file,text,hash,cb);
                },
@@ -59,6 +59,7 @@ ml(`
                readFileString : function (file,hash,cb) {
                   return pwa.readFileString(full_zip_uri,file,hash,cb);
                },
+               */
                
                isHidden : function (file,cb) {
                    return pwa.isHidden(full_zip_uri,file,function(err,msg){
@@ -84,7 +85,7 @@ ml(`
                          if(cb)cb(err,msg); 
                       });
                },
-               /*
+               
                updateURLContents : function (file,content,hash,cb) {
                    return pwa.updateURLContents(
                        zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
@@ -110,7 +111,7 @@ ml(`
                        }
                    );
                },
-               */
+               
                registerForNotifications : ___registerForNotifications,
                unregisterForNotifications : function (cb) {
                     cb();
@@ -425,11 +426,16 @@ ml(`
                     minLines: 2
                 });
                 
-                pwaApi.readFileString(filename,function(err,text){
+                pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
                     if (err) {
                         editor.session.setValue("error:"+err.message||err);
                     } else {
+                        
+                        
                         editor.session.setValue(text);
+                        
+                        qs(li,".sha1").textContent=hash;
+                        
                     }
                 });
 
