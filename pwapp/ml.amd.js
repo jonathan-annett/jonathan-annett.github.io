@@ -564,9 +564,9 @@ function amd(root_js,bound_self){
 
         function localDef (a,b,c) {
             switch (arguments.length) {
-                case 1 : return do_defn1(script_url,module,exports,a,     onDefine );
-                case 2 : return do_defn2(script_url,module,exports,a,b,   onDefine );
-                case 3 : return do_defn3(script_url,module,exports,a,b,c, onDefine );
+                case 1 : return do_defn1(script_url,a,     onDefine );
+                case 2 : return do_defn2(script_url,a,b,   onDefine );
+                case 3 : return do_defn3(script_url,a,b,c, onDefine );
             }
             
             function onDefine(err,entry) {
