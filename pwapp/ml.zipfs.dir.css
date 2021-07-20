@@ -52,6 +52,7 @@ a span.normal {
     margin: auto;
     height: 200px;
     width: 96%;
+    resize : vertical;
 }
 .scrollmargin {
     height: 80px;
