@@ -2,8 +2,9 @@
 
 ml(`
     
-    sha1Lib  | sha1.js
-    JSZip    | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js
+    sha1Lib         | sha1.js
+    JSZip           | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js
+    htmlFileItemLib | ml.zipfs.dir.file.js
     
 
     `,function(){ml(2,
@@ -20,6 +21,8 @@ ml(`
                        const sha1Raw     = sha1Lib.cb.raw;
                        const sha1Sync    = sha1Lib.sync;
                        const bufferToHex = sha1Lib.bufferToHex;
+                       
+                       
                    
                        return  {
                            
@@ -52,6 +55,12 @@ ml(`
                                        getZipFileUpdates(url,function(err,additonalFiles){
                                            
                                            getZipDirMetaTools(url,zip,zipFileMeta,function(tools){
+                                               
+                                              const file_listing = Object.keys(zipFileMeta.files); 
+                                               
+                                               
+                                              const updated_prefix = (virtual ? virtual :  url).replace(/\/$/,'')+ "/" ;
+                                                
                                               
                                                
                                                const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
@@ -63,6 +72,26 @@ ml(`
                                                const top_uri_res = uri_split.map(function(uri){ 
                                                    return new RegExp( regexpEscape(uri+"/"),'g');
                                                });
+                                               
+                                               const htmlFileItemLibOpts = {
+                                                   uri,
+                                                   alias_root:zipFileMeta.alias_root,
+                                                   tools,
+                                                   file_listing,
+                                                   fileisEdited,
+                                                   updated_prefix,
+                                                   parent_link,
+                                                   hidden_files_exist : false // this gets updated by html_file_item()
+                                               };
+                                               
+                                               const {
+                                                   html_file_item,
+                                                   boldit,
+                                                   linkit,
+                                                   fileIsEditable
+                                               }  = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
+                                               
+                                              
                                                
                                                const cleanup_links = function(str) {
                                                    top_uri_res.forEach(function(re){
@@ -76,6 +105,9 @@ ml(`
                                                });
                                                
                                                var parent_link="";
+                                               
+                                               
+                                               
                                               
                                                parent_link = uri_full_split.map(function(href,i,a){
                                                    const parts = href.split('/.zip');
@@ -87,12 +119,9 @@ ml(`
                                                
                                                parent_link = cleanup_links(parent_link);
                                               
-                                               const updated_prefix = (virtual ? virtual :  url).replace(/\/$/,'')+ "/" ;
                                                        
-                                               let   hidden_files_exist = false;
-                                               
-                                     
-                                               const file_listing = Object.keys(zipFileMeta.files);
+                                             
+                                              
                                                const all_files = file_listing.concat(
                                                    
                                                    additonalFiles.filter(function(fn){return file_listing.indexOf(fn)<0;})
@@ -101,7 +130,7 @@ ml(`
                                                
                                                const html_details = all_files.map(html_file_item);
                            
-                                               const html = renderHtml (htmlTemplate,uri,virtual,zipFileMeta.alias_root,all_files,hidden_files_exist,html_details,parent_link);
+                                               const html = renderHtml (htmlTemplate,uri,virtual,zipFileMeta.alias_root,all_files,htmlFileItemLibOpts.hidden_files_exist,html_details,parent_link);
                            
                                                return resolve( 
                                                    
@@ -119,7 +148,7 @@ ml(`
                                               );
                                               
                                               
-                                              
+                                              /* 
                                               function html_file_item (filename){
                                                   
                                                   
@@ -153,7 +182,7 @@ ml(`
                                                  if (is_hidden) hidden_files_exist = true;
                                                  return '<li'+li_class+'><a data-filename="' + filename + '" data-inzip="'+ (is_in_zip?'1':'0') + '"><span class="deletefile"></span></a><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
                                               }
-                                              
+                                              */
                                            });
                                        });
                                        
@@ -166,29 +195,6 @@ ml(`
                                return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
                            }
                            
-                           
-                           function fileIsEditable (filename) {
-                               const p = filename.lastIndexOf('.');
-                               return p < 1 ? false:["js","json","css","md","html","htm"].indexOf(filename.substr(p+1))>=0;
-                           }
-                           
-                           
-                          function boldit(uri,disp){
-                              const split=(disp||uri).split("/");
-                              if (split.length===1) return '<b>'+(disp||uri)+'</b>';
-                              const last = split.pop();
-                              if (split.length===1) return split[0]+'/<b>'+last+'</b>';
-                              return split.join("/")+'/<b>'+last+'</b>';
-                          }
-                          
-                          function linkit(uri,disp,a_wrap){ 
-                              a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
-                              const split=(disp||uri).split("/");
-                              if (split.length===1) return a_wrap.join(disp||uri);
-                              const last = split.pop();
-                              if (split.length===1) return split[0]+'/'+ a_wrap.join(last);
-                              return split.join("/")+'/'+ a_wrap.join(last);
-                          }
                        
                           
                            
@@ -200,6 +206,7 @@ ml(`
                                                        'var zip_url_base='+JSON.stringify('/'+uri)+',',
                                                        'zip_virtual_dir'+(virtual?'='+JSON.stringify(virtual):'')+',',
                                                        'alias_root_fix='+(alias_root?"/^"+regexpEscape(alias_root)+"/":'/^\\s/')+',',
+                                                       'alias_root='+JSON.stringify(alias_root)+',',
                                                        'zip_files='+JSON.stringify(files)+',',
                                                        'parent_link='+JSON.stringify(parent_link)+';',
                                                        '</script>'

@@ -1,4 +1,4 @@
-/* global zip_url_base,zip_virtual_dir,zip_files, alias_root_fix, parent_link,BroadcastChannel,ace*/
+/* global zip_url_base,zip_virtual_dir,zip_files, alias_root_fix,alias_root, parent_link,BroadcastChannel,ace*/
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
@@ -263,10 +263,23 @@ ml(`
                 
                 
                 function uploadFile(file) {
-                    const url = zip_virtual_dir ? zip_virtual_dir +'/'+file.name : full_zip_uri+'/'+file.name;
+                    const filename = alias_root +file.name;
                     file.arrayBuffer().then (function(buffer){
                         
-                        console.log(url,"<- uploading to--",buffer);
+                        console.log(filename,"<- uploading to--",buffer);
+                        
+                        if (zip_files.indexOf(filename)<0) {
+                            zip_files.push(filename);
+                        } else {
+                            
+                        }
+                        
+                        pwaApi.updateURLContents (filename,buffer,true,function(err,hash) {
+                            if (err) {
+                                return ;
+                            }
+                            li_ed.hashDisplay.textContent=hash;
+                        });
 
                     });
                 }
