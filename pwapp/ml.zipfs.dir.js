@@ -265,6 +265,7 @@ ml(`
                         
                       fs_editor.setTheme(li_ed.editor.getTheme());
                       fs_editor.session.setMode(fs_editor.session.getMode());
+                      
                       li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
                       fs_editor.setValue(li_ed.editor.getValue());  
                       //const json = sessionToJSON(li_ed.editor.session);
@@ -277,8 +278,6 @@ ml(`
                        //li_ed.editor.setSession(sessionFromJSON(json));
                        li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
                    }
-                   li_ed.editor.setOption("minLines", addRemove==="add"?undefined:2);
-                   li_ed.editor.setOption("maxLines", addRemove==="add"?undefined:30);
                 };
                 
                 if (zoomEl) {
