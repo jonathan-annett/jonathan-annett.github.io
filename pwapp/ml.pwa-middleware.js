@@ -99,7 +99,13 @@ editInZed   | ml.zedhook.js
                              self.clients.matchAll().then(
                              function(clients) { 
                                  
-                                 const text = clients.map(client => client.url).join("\n"); 
+                                 const text = 
+                                    "connected clients:"
+                                    clients.map(
+                                     
+                                     function(client){
+                                         return "#"+client.id+" " +client.url + event.clientId === client.id ? "[ this browser ] " :+'';
+                                     }).join("\n"); 
                                  
                                  response200 (resolve,text,{
                                      name          : event.fixup_url.replace(isLocal,''),
@@ -113,6 +119,8 @@ editInZed   | ml.zedhook.js
                     }
                     
                 });
+                
+                 
             }
             
 
