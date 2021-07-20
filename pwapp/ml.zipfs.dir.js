@@ -68,19 +68,7 @@ ml(`
                     };
                 }
                 
-                
-                const inputModal = qs("#inputModal");
-                
-                qs("div.modal-content span.close",function click(){
-                    inputModal.style.display = "none";
-                });
-                // When the user clicks anywhere outside of the modal, close it
-                window.onclick = function(event) {
-                    if (event.target == inputModal) {
-                       inputModal.style.display = "none";
-                    }
-                };
-                
+
                 
                 qs("#img_dl_link",function click(){
                     pwa.getPNGZipImage(full_zip_uri,"files",zip_virtual_dir,qs("#show_dl_img"),qs("#img_dl_link2"),"download");

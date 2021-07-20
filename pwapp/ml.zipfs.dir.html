@@ -12,36 +12,41 @@
 <script src="ml.zedhook.js" defer></script>
 <script src="ml.zipfs.dir.js" defer></script>
 <script src="ml.amd.js"></script>
-<h1> files in ${uri}
-<span>show full path</span><input class="fullpath_chk" type="checkbox" autocomplete="off">
-<span id="show_hidden">show hidden files</span><input class="hidden_chk" type="checkbox" autocomplete="off">
-<a class="downloadfull" href="/${uri}?download=files" data-balloon-pos="down-left" aria-label="Download full (including edits)">&nbsp;&nbsp;&nbsp;</a>
-<a class="download" href="/${uri}?download=editedFiles" data-balloon-pos="down-left" aria-label="Download edited files">&nbsp;&nbsp;&nbsp;</a>
-<a class="download" id="img_dl_link" data-balloon-pos="down-left" aria-label="Download zip png image">&nbsp;&nbsp;&nbsp;</a>
-<a class="restart" href="stop" data-balloon-pos="down-left" aria-label="Restart service worker"><img src="refresh.gif"></a>
-<span id="img_dl_link2"></span>                        
-</h1>
-<div id="inputModal" class="modal">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <p>Filename:<input id="newfilename" placeholder"file.js" value=""></p>
-  </div>
-</div>
-<div>
-<ul class="hide_hidden hide_full_path ${hidden_files_class}">
-  ${html_details}
-</ul>
-</div>
-<pre id="fs_editor"></pre>
 <script src="/pwapp/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <!--img id="show_dl_img" src="/${uri}.png"-->
-<div id="drop-area">
-  <form class="drop-file-form">
-    <p>Upload multiple files with the file dialog or by dragging and dropping images onto the dashed region</p>
-    <input type="file" id="drop-file-elem" multiple accept="image/*" onchange="handleFiles(this.files)">
-    <label class="button" for="drop-file-elem">Select some files</label>
-  </form>
-</div>
+
+
+<section>
+  <header>
+     <h1> files in ${uri}
+     <span>show full path</span><input class="fullpath_chk" type="checkbox" autocomplete="off">
+     <span id="show_hidden">show hidden files</span><input class="hidden_chk" type="checkbox" autocomplete="off">
+     <a class="downloadfull" href="/${uri}?download=files" data-balloon-pos="down-left" aria-label="Download full (including edits)">&nbsp;&nbsp;&nbsp;</a>
+     <a class="download" href="/${uri}?download=editedFiles" data-balloon-pos="down-left" aria-label="Download edited files">&nbsp;&nbsp;&nbsp;</a>
+     <a class="download" id="img_dl_link" data-balloon-pos="down-left" aria-label="Download zip png image">&nbsp;&nbsp;&nbsp;</a>
+     <a class="restart" href="stop" data-balloon-pos="down-left" aria-label="Restart service worker"><img src="refresh.gif"></a>
+     <span id="img_dl_link2"></span>                        
+     </h1>
+     
+  </header>
+  <div>
+    <ul class="hide_hidden hide_full_path ${hidden_files_class}">
+      ${html_details}
+    </ul>
+    <pre id="fs_editor"></pre>
+  </div>
+  <footer>
+    <div id="drop-area">
+      <form class="drop-file-form">
+        <p>Upload multiple files with the file dialog or by dragging and dropping images onto the dashed region</p>
+        <input type="file" id="drop-file-elem" multiple accept="image/*" onchange="handleFiles(this.files)">
+        <label class="button" for="drop-file-elem">Select some files</label>
+      </form>
+    </div>
+    
+  </footer>
+</section>
+
 
 </body>
 </html>
