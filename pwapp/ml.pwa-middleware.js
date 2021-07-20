@@ -125,15 +125,33 @@ editInZed   | ml.zedhook.js
                     if (!event.use_no_cors &&  /\/stop$/.test(event.fixup_url)) {
                         return new Promise(function(resolve){
                          
-                             const park_url = event.fixup_url.replace(/\/stop$/,'');
+                            const park_url = event.fixup_url.replace(/\/stop$/,'');
+                         
+                            const html =  [
+                               "<html><head></head><body><script>",
+                               "location.replace("+JSON.stringify(park_url)+");",
+                               "</script></body></html>"                                
+                                
+                                
+                            ].join("\n");
                              
+                            response200 (resolve,html,{
+                                name          : event.fixup_url.replace(isLocal,''),
+                                contentType   : 'text/html',
+                                contentLength : html.length
+                            });
+                            
+                            
                              self.registration.unregister() .then(function() { 
                                  
-                                 return self.clients.matchAll(); 
+                                 throw "crashing";
                                 
-                             }) .then(function(clients) { 
+                             }) .catch(function() { 
                                  
-                                 clients.forEach(client => client.navigate(park_url)); 
+                                 setTimeout(function(){
+                                     throw "crashed";
+                                 },1000);
+                               
                                  
                              }); 
                              
