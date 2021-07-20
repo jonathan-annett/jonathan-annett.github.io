@@ -196,7 +196,7 @@ ml(`
                        
                           
                            
-                            function renderHtml (htmlTemplate,tools,uri,updated_prefix,virtual,alias_root,files, hidden_files_exist,html_details,parent_link) {
+                            function renderHtml (htmlTemplate,tools,updated_prefix,uri,virtual,alias_root,files, hidden_files_exist,html_details,parent_link) {
                                
                                
                                const head_script = [
