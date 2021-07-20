@@ -5,8 +5,6 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
         Window: function pwaInstallLib( pwa ) {
             const lib = {}  ;
             
-            
-             
             const  
             [ html,keyPRE,                   runhere,  update  ]   = 
             ["html","html .notbeta pre.key","#runBtn", "#updateBtn"].map(qs);
@@ -22,9 +20,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                     });
                 });
             };
-            
-            
-            
+
             [
                  "registered",
                  "activated"].forEach(function(x){
@@ -51,19 +47,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                  });
              });
              
-             function canRunAsApp() {
-                 return !!window.matchMedia('(display-mode: standalone)').matches;
-             }
-             
-             function canRunInBrowser() {
-                 const runningTimeout = Number.parseInt(sessionStorage.running)||0;
-                 const runInBrowser   = (runningTimeout > 0) && (runningTimeout<Date.now());
-                 if (!!sessionStorage.running && !runInBrowser) {
-                     delete sessionStorage.running;
-                 }
-                 return runInBrowser;
-             }
-             
+            
              betaTesterApproval().then(function(config){
                  
                  if (canRunInBrowser() || canRunAsApp()  ) {  
@@ -82,6 +66,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                  }
              }).catch(
                 function(err){
+                    betaTesterApproval(function(){}).catch(function(){});
                     console.log("site not available",err);
                 } 
              ); 
@@ -105,7 +90,19 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                   });
               }
               
-            
+             function canRunAsApp() {
+                 return !!window.matchMedia('(display-mode: standalone)').matches;
+             }
+             
+             function canRunInBrowser() {
+                 const runningTimeout = Number.parseInt(sessionStorage.running)||0;
+                 const runInBrowser   = (runningTimeout > 0) && (runningTimeout<Date.now());
+                 if (!!sessionStorage.running && !runInBrowser) {
+                     delete sessionStorage.running;
+                 }
+                 return runInBrowser;
+             }
+             
             
             function progressHandler(complete,total,id,idtxt,channelName) {
                let outer = qs("#"+id),inner = qs(outer,"div"),status = qs("#"+idtxt),maxWidth = outer.offsetWidth, barHeight=outer.offsetHeight;
@@ -175,9 +172,9 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                  }
             
                  return new Promise(function(resolve,reject) {
-                     const hashAlgo = "SHA-256";
-                     const seedSize = 512;
-                     const localStorageKey = "betaTesterKey";
+                      const hashAlgo = "SHA-256";
+                      const seedSize = 512;
+                      const localStorageKey = "betaTesterKey";
                      
                       getConfig().then(function(config){
                          
