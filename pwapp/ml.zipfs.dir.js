@@ -263,7 +263,12 @@ ml(`
                 
                 
                 function uploadFile(file) {
-                  console.log(file);
+                    const url = zip_virtual_dir ? zip_virtual_dir +'/'+file.name : full_zip_uri+'/'+file.name;
+                    file.arrayBuffer().then (function(buffer){
+                        
+                        console.log(url,"<- uploading to--",buffer);
+
+                    });
                 }
                 
             }
