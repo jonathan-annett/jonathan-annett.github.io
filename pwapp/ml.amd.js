@@ -808,8 +808,8 @@ function amd(root_js,bound_self){
                   c.p(U,function(U){
                      preloadScriptModuleFunction (U,function(err){
                          if (!err) {
-                            installScriptModuleFn(U,function(mod){
-                                
+                            installScriptModuleFn(U,function(err,mod){
+                                ml.h[ u ].e[ N ] = mod;
                             }); 
                          }
                      }); 
