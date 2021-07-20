@@ -1659,18 +1659,20 @@ ml(`
                              metaSrc : function () {
                                  return [
                                      
-                                     
+                                    "var regExps = "+zipFileMeta.tools.regexpsSrc()+";",
+                                      
                                     "var meta = "+JSON.stringify(
                                         {
                                             deleted : meta.deleted,
-                                            hidden  : meta.hidden
+                                            hidden  : meta.hidden,
+                                            tools : {
+                                                isDeleted : isDeleted.toString(),
+                                                isHidden  : isHidden.toString()
+                                            }
                                         }
                                      ) +";",
                                      
-                                     "var regExps = "+zipFileMeta.tools.regexpsSrc()+";",
                                      
-                                 isDeleted.toString(),
-                                 isHidden.toString(),
                                  ].join("\n\n");
                              },
                              isHidden : isHidden ,
