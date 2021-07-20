@@ -419,7 +419,20 @@ ml(`
                         return;
                     } else {
                         const html  = converter.makeHtml(new TextDecoder().decode(text));
-                        open_url("about:blank").document.write(html);
+                        
+                        pwaApi.updateURLContents (filename+".html",new TextEncoder().encode(html),true,function(err,hash) {
+                            if (err) {
+                                return ;
+                            }
+                            open_url(filename+".html");
+                            setTimeout(function(){
+                                pwaApi.removeUpdatedURLContents(filename+".html",function(){
+                                    
+                                });
+                            },5000);
+                        });
+                        
+                       
                     }
                 });
             }
