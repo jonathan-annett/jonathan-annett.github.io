@@ -201,7 +201,7 @@ ml(`
                 }
             }
             
-            function html_file_item (id,filename){
+            /*function html_file_item (id,filename){
                 
                 
                 const linkit=function(uri,disp,a_wrap){ 
@@ -239,7 +239,7 @@ ml(`
                
                
                return '<li'+li_class+'><a data-filename="' + filename + '"><span class="deletefile"></span></a><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
-            }
+            } */
             
             function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
            
