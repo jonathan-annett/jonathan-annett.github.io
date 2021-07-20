@@ -118,7 +118,7 @@ h1 a.download {
     
 }
 
-h1 a.restart_link img {
+h1 a.restart img {
    filter: invert(1);
    position: relative;
    top: 3px;
