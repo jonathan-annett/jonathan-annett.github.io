@@ -83,6 +83,9 @@ li.editing a span.fullscreen  {
     display : inline-block;
 }
 
+html.zooming main {
+    top : 0px;
+}
 
 html.zooming li.zooming {
    position:absolute;
