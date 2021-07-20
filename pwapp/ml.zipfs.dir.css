@@ -69,6 +69,7 @@ a span.fullscreen {
 
 a span.fullscreen,
 html.zooming li,
+html.zooming #drop-area,
 html.zooming h1 {
     display : none;
 }
