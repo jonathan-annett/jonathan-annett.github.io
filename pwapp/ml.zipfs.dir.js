@@ -101,7 +101,8 @@ ml(`
                 let dropArea = document.getElementById('drop-area');
                 
                 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                  dropArea.addEventListener(eventName, preventDefaults, false)
+                  dropArea.addEventListener(eventName, preventDefaults, false);
+                  document.body.addEventListener(eventName, preventDefaults, false)
                 });
                 
                 
