@@ -39,6 +39,9 @@ function amd(root_js,bound_self){
     ml.req=function (id) {
         return globalIdAvail(id) && globalRequireId (id);
     };
+    ml(1);// make sure ml.cl is exploded 
+    ml.c.l=()=>{};// turn of console.log
+    
         
     // attempt to preload the prescribed root javascrpt file
     // preloading does not execute the script, but instead "compiles" it into a function that can be called later
