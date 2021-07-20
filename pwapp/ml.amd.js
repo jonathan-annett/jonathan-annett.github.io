@@ -198,13 +198,13 @@ function amd(root_js,bound_self){
         const entry = urlIndex [url];
         if (entry ) {
             
-            if (entry.module && entry.exports) {
+            if (!!entry.exports) {
             
                 return entry.exports;
             }
             
             
-            if (entry.module && entry.modDef) {
+            if (entry.modDef) {
 
                 delete entry.exports;
                 entry.exports = entry.modDef.factory.apply(this,entry.modDef.dependency_urls.map(function(url){
