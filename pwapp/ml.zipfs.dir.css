@@ -95,6 +95,8 @@ html.zooming li.zooming {
     bottom: 20px;
     left: 0;
     right: 0;
+    height: calc(100% - 40px );
+    width: calc(100%  );
 
  }
  
