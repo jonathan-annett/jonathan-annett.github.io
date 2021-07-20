@@ -136,7 +136,12 @@ ml(
               const stringValue = value.toString(16);
               // We use concatenation and slice for padding
               const paddedValue = (padding + stringValue).slice(-padding.length);
-              hexCodes.push(paddedValue);
+              hexCodes.push(
+                  paddedValue.substr(6,2)+
+                  paddedValue.substr(4,2)+
+                  paddedValue.substr(2,2)+
+                  paddedValue.substr(0,2)
+             );
           }
           // Join all the hex strings into one
           return hexCodes.join("");

@@ -66,7 +66,6 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                  }
              }).catch(
                 function(err){
-                    betaTesterApproval(function(){}).catch(function(){});
                     console.log("site not available",err);
                 } 
              ); 
@@ -289,7 +288,12 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                      const stringValue = value.toString(16);
                      // We use concatenation and slice for padding
                      const paddedValue = (padding + stringValue).slice(-padding.length);
-                     hexCodes.push(paddedValue);
+                     hexCodes.push(
+                         paddedValue.substr(6,2)+
+                         paddedValue.substr(4,2)+
+                         paddedValue.substr(2,2)+
+                         paddedValue.substr(0,2)
+                    );
                  }
                  // Join all the hex strings into one
                  return hexCodes.join("");
