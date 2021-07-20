@@ -268,17 +268,19 @@ ml(`
                       fs_editor.session.setMode(fs_editor.session.getMode());
                       
                       li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
-                      //fs_editor.setValue(li_ed.editor.getValue());  
                       const json = sessionToJSON(li_ed.editor.session);
                       fs_editor.setSession(sessionFromJSON(json));
                       fs_editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
-                      
+                      fs_editor.focus();
                    } else {
                        fs_editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
                        const json = sessionToJSON(fs_editor.session);
-                       //li_ed.editor.setValue(fs_editor.getValue());  
                        li_ed.editor.setSession(sessionFromJSON(json));
                        li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                       li_ed.editor.focus();
+                       
+                       fs_editor.destroy();
+                       fs_editor = undefined;
                    }
                 };
                 
