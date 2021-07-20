@@ -87,7 +87,7 @@ ml([],function(){ml(2,
                        const el = find_li(file);
                        if (el) {
                            el.classList.add('edited');
-                           el.classList.add('editing');
+                           el.classList[!!el.dataset.editor_id ?"add":"remove"]('editing');
                        }
                        if(cb)cb(err,msg && msg.hash);
                    }
@@ -102,7 +102,7 @@ ml([],function(){ml(2,
                       const el = find_li(file);
                       if (el) {
                           el.classList[msg.updated?"add":"remove"]('edited');
-                          el.classList[msg.updated?"add":"remove"]('editing');
+                          el.classList[!!el.dataset.editor_id ?"add":"remove"]('editing');
                       }
                       cb(undefined,msg.content,msg.updated,msg.hash);
                    }
