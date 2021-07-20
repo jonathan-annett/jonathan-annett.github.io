@@ -409,8 +409,15 @@ ml(`
                         return;
                     } else {
                         const html  = converter.makeHtml(new TextDecoder().decode(text));
-                        let url = URL.createObjectURL(new Blob([html]))
-                        open_url(url);
+                        
+                        open_url('data:text/html;charset=utf-8,' +
+                            encodeURIComponent( // Escape for URL formatting
+                               html
+                            )
+                        );
+                        
+                        //let url = URL.createObjectURL(new Blob([html]))
+                        //open_url(url);
                     }
                 });
             }
