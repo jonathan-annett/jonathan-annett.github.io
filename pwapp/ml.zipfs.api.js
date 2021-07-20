@@ -6,14 +6,11 @@ ml([],function(){ml(2,
 
     {
         Window: function zipFSApiLib( lib ) {
-            lib = lib ||{};
-            // add / override window specific methods here
-            
             return lib;
         }
     }, {
         Window: [
-            ()=> zipFSApiLib ()
+            ()=> zipFSApiLib
         ]
 
     }
