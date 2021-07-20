@@ -195,11 +195,11 @@ ul.hide_full_path span.full_path { display : none; }
 
 #drop-area {
   border: 2px dashed #ccc;
-  border-radius: 20px;
-  width: 480px;
+  border-radius: 10px;
+  width: 80%;
   font-family: sans-serif;
-  margin: 100px auto;
-  padding: 20px;
+  margin: 40px auto;
+  padding: 4px;
 }
 #drop-area.highlight {
   border-color: purple;
