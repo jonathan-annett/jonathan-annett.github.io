@@ -574,7 +574,7 @@ function amd(root_js,bound_self){
                 if (!err && entry === urlIndex [script_url]) {
                     // only to the callback for the primary module
                     // (module may be defining submodules)
-                    return cb(undefined,entry);
+                    return cb(undefined,globalRequireId(script_url));
                 }
                 
             }
