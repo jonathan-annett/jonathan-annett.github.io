@@ -115,7 +115,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                }
                
                if (channelName) {
-                   const channel = new BroadcastChannel.create(channelName);
+                   const channel = new BroadcastChannel(channelName);
                    channel.onmessage =function(e){
                        const msg = e.data;
                        if (msg && msg.setTotal) {

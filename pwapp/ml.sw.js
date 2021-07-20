@@ -168,7 +168,7 @@ function ml(x,L, o, a, d, s){
             G:(E,X)=>{ml[E]=X;return (e)=>ml[E](e);},
             
             p:(complete,total,channelName) => {
-              const channel = new BroadcastChannel.create(channelName);
+              const channel = new BroadcastChannel(channelName);
               
               return {
                    setTotal:setTotal,
