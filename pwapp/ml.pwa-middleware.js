@@ -100,7 +100,7 @@ editInZed   | ml.zedhook.js
                              function(clients) { 
                                  
                                  const text = 
-                                    "connected clients:"
+                                    "connected clients:"+
                                     clients.map(
                                      
                                      function(client){
