@@ -538,7 +538,7 @@ ml(`
                         theme:   aceThemeForFile(filename),
                         mode:    aceModeForFile(filename),
                         autoScrollEditorIntoView: true,
-                        maxLines: 30,
+                        maxLines: 10,
                         minLines: 2
                     });
                     
