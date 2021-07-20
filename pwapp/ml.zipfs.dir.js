@@ -258,7 +258,7 @@ ml(`
                    zoomEl.classList[addRemove]("zooming");
                    qs('html').classList[addRemove]("zooming"); 
                    
-                   if (addRemove) {
+                   if (addRemove==="add") {
                       if (!fs_editor) {
                          fs_editor = ace.edit("fs_editor");
                       } 

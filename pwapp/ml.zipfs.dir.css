@@ -42,12 +42,6 @@ a span.normal {
 
 
 #fs_editor { 
-    margin: 0;
-    position: absolute;
-    top: 20px;
-    bottom: 20px;
-    left: 0;
-    right: 0;
     display:none;
 }
 
@@ -94,11 +88,16 @@ html.zooming li.zooming {
 
  html.zooming #fs_editor {
     display : block;
+    margin: 0;
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+
  }
  
-  
  
-
 html.zooming li.zooming a span.fullscreen {
     position: absolute;
     left: calc(100vw - 12px);
