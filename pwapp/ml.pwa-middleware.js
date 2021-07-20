@@ -96,26 +96,29 @@ editInZed   | ml.zedhook.js
                         return new Promise(function(resolve){
                          
                              const thisId = event.resultingClientId || event.clientId ; 
-                             self.clients.matchAll().then(
-                             function(clients) { 
-                                 
-                                 const text = 
-                                    "connected clients:"+
-                                    clients.map(
+                             self.clients.get(thisId).then(function(thisClient){
+                                 self.clients.matchAll().then(
+                                 function(clients) { 
                                      
-                                     function(client){
-                                         return "#" + client.id + " " + client.url + (thisId === client.id ? "[ this browser ] " :  '');
-                                     }
+                                     const text = 
+                                        "connected clients:"+
+                                        clients.map(
+                                         
+                                         function(client){
+                                             return "#" + client.id + " " + client.url + (thisClient === client ? "[ this browser ] " :  '');
+                                         }
+                                         
+                                     ).join("\n"); 
                                      
-                                 ).join("\n"); 
-                                 
-                                 response200 (resolve,text,{
-                                     name          : event.fixup_url.replace(isLocal,''),
-                                     contentType   : 'text/plain',
-                                     contentLength : text.length
-                                 });
-                                 
-                              }); 
+                                     response200 (resolve,text,{
+                                         name          : event.fixup_url.replace(isLocal,''),
+                                         contentType   : 'text/plain',
+                                         contentLength : text.length
+                                     });
+                                     
+                                  }); 
+                             });
+                             
                             
                         });
                     }
