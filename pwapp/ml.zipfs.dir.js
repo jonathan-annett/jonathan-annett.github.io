@@ -1,13 +1,14 @@
-/* global zip_url_base,zip_virtual_dir,zip_files, alias_root_fix,alias_root, parent_link,BroadcastChannel,ace*/
+/* global zip_url_base,zip_virtual_dir,zip_files,updated_prefix, alias_root_fix,alias_root, parent_link,BroadcastChannel,ace*/
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(`
     
-    pwaWindow@Window                           | ml.pwa-win.js
-    editInZed                                  | ml.zedhook.js
-    sha1Lib                                    | sha1.js
-   
+    pwaWindow@Window    | ml.pwa-win.js
+    editInZed           | ml.zedhook.js
+    sha1Lib             | sha1.js
+    htmlFileItemLib     | ml.zipfs.dir.file.js
+
     
     `,function(){ml(2,
 
@@ -21,6 +22,9 @@ ml(`
           
             
             const full_zip_uri           = location.origin+zip_url_base;
+            
+            
+            
             
             const pwaApi = {
                
@@ -124,6 +128,34 @@ ml(`
                }
 
             };
+            
+            
+            
+            const htmlFileItemLibOpts = {
+                uri:zip_url_base.replace(/^\//,''),
+                alias_root,
+                tools : {
+                    isHidden : function() {
+                        
+                    },
+                    isDeleted: function () {
+                        
+                    },
+                },
+                zip_files,
+                fileisEdited:function(){return true;},
+                updated_prefix,
+                parent_link,
+                hidden_files_exist : false // this gets updated by html_file_item()
+            };
+            
+            const {
+                html_file_item,
+                boldit,
+                linkit,
+                fileIsEditable
+            }  = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
+
             
             /*
             let sw_urls,sw_mods;

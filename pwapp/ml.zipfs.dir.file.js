@@ -27,7 +27,7 @@ ml(`
 
     function htmlFileItemLib (options) {
         
-        const {uri,alias_root,tools,file_listing,fileisEdited,updated_prefix,parent_link} = options;
+        const {uri,alias_root,meta,file_listing,fileisEdited,updated_prefix,parent_link} = options;
         
         return {
             html_file_item,
@@ -36,7 +36,22 @@ ml(`
             fileIsEditable
         };
         
-        function html_file_item (filename){
+        
+        function isDeleted (file_name) {
+            return meta.deleted && meta.deleted.indexOf(file_name)>=0;
+        }
+        
+        function isHidden (file_name) {
+           if (meta.deleted) { 
+               if (meta.deleted.indexOf(file_name)>=0) return true;
+           }
+           
+           return regexps.some(function(re){ 
+               return re.test(file_name);
+           });
+        }
+        
+        function html_file_item (filename,cb){
             
             
            if (filename === ".dirmeta.json") return "";

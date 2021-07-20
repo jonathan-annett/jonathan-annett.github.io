@@ -1646,7 +1646,33 @@ ml(`
                      const notificationIds = [];
                      const regexps = (meta && meta.hidden ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
                      zipFileMeta.tools = {
-                             
+                             regexps  : function () {
+                                const regexps = (meta && meta.hidden ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
+                                return regexps;
+                             },
+                             regexpsSrc : function () {
+                                const regexps = zipFileMeta.tools.regexps(); 
+                                return '['+regexps.map(function(re){
+                                    return 'new RegExp("'+re.source+'","'+re.flags+'")';
+                                }).join(',\n')+']';
+                             },
+                             metaSrc : function () {
+                                 return [
+                                     
+                                     
+                                    "var meta = "+JSON.stringify(
+                                        {
+                                            deleted : meta.deleted,
+                                            hidden  : meta.hidden
+                                        }
+                                     ) +";",
+                                     
+                                     "var regExps = "+zipFileMeta.tools.regexpsSrc()+";",
+                                     
+                                 isDeleted.toString(),
+                                 isHidden.toString(),
+                                 ].join("\n\n");
+                             },
                              isHidden : isHidden ,
                              
                              isDeleted : isDeleted,

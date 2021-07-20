@@ -90,9 +90,7 @@ ml(`
                                                    linkit,
                                                    fileIsEditable
                                                }  = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
-                                               
-                                              
-                                               
+
                                                const cleanup_links = function(str) {
                                                    top_uri_res.forEach(function(re){
                                                        str = str.replace(re,'/');
@@ -130,7 +128,7 @@ ml(`
                                                
                                                const html_details = all_files.map(html_file_item);
                            
-                                               const html = renderHtml (htmlTemplate,uri,virtual,zipFileMeta.alias_root,all_files,htmlFileItemLibOpts.hidden_files_exist,html_details,parent_link);
+                                               const html = renderHtml (htmlTemplate,tools,updated_prefix,uri,virtual,zipFileMeta.alias_root,all_files,htmlFileItemLibOpts.hidden_files_exist,html_details,parent_link);
                            
                                                return resolve( 
                                                    
@@ -198,17 +196,20 @@ ml(`
                        
                           
                            
-                            function renderHtml (htmlTemplate,uri,virtual,alias_root,files, hidden_files_exist,html_details,parent_link) {
+                            function renderHtml (htmlTemplate,tools,uri,updated_prefix,virtual,alias_root,files, hidden_files_exist,html_details,parent_link) {
                                
                                
                                const head_script = [
                                                        '<script>',
                                                        'var zip_url_base='+JSON.stringify('/'+uri)+',',
+                                                       'updated_prefix='+ JSON.stringify(updated_prefix)+',',
                                                        'zip_virtual_dir'+(virtual?'='+JSON.stringify(virtual):'')+',',
                                                        'alias_root_fix='+(alias_root?"/^"+regexpEscape(alias_root)+"/":'/^\\s/')+',',
                                                        'alias_root='+JSON.stringify(alias_root)+',',
                                                        'zip_files='+JSON.stringify(files)+',',
                                                        'parent_link='+JSON.stringify(parent_link)+';',
+                                                       
+                                                       tools.metaSrc(),
                                                        '</script>'
                                                    ];
                                                    

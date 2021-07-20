@@ -50,8 +50,11 @@
                 "alias_root" : "/js-keygen-master",
                 "zips" : [ "https://jonathan-annett.github.io/pwapp/js-keygen-master.1.zip",
                            "https://jonathan-annett.github.io/pwapp/js-keygen-master.zip" ]
+            }, 
+            "https://jonathan-annett.github.io/pwapp/ace": {
+                "alias_root" : "/ace-builds-master/src-noconflict",
+                "zips" : [ "https://jonathan-annett.github.io/pwapp/ace-builds-master.zip" ]
             } 
-            
         }
     }
 ]
