@@ -1650,31 +1650,54 @@ ml(`
                                 const regexps = (meta && meta.hidden ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
                                 return regexps;
                              },
-                             regexpsSrc : function () {
-                                const regexps = zipFileMeta.tools.regexps(); 
-                                return '['+regexps.map(function(re){
-                                    return 'new RegExp("'+re.source+'","'+re.flags+'")';
-                                }).join(',\n')+']';
-                             },
-                             metaSrc : function () {
+                             
+                             //metaSrc() creates a simulated meta.tools environment for the browser
+                              metaSrc : function () {
                                  return [
                                      
-                                    "var regExps = "+zipFileMeta.tools.regexpsSrc()+";",
+                                    "var regExps = ["+zipFileMeta.tools.regexps().map(function(re){
+                                                         return 'new RegExp("'+re.source+'","'+re.flags+'")';
+                                                     }).join(',\n')+"];",
                                       
                                     "var meta = "+JSON.stringify(
                                         {
                                             deleted : meta.deleted,
-                                            hidden  : meta.hidden,
-                                            tools : {
-                                                isDeleted : isDeleted.toString(),
-                                                isHidden  : isHidden.toString()
-                                            }
-                                        }
+                                        },undefined,4
                                      ) +";",
                                      
+                                     "meta.tools = {",
+                                        "       isDeleted : function (file,cb) {",
+                                        "           if (cb) {",          
+                                        "               return pwa.isDeleted(full_zip_uri,file,cb);",
+                                        "           } else {",
+                                        "               return isDeleted(file);",
+                                        "           }",
+                                                        isDeleted.toString(),
+                                        "        }",
+                                        "       isHidden : function (file,cb) {",
+                                        "           if (cb) {",          
+                                        "               return pwa.isHidden(full_zip_uri,file,function(err,msg){",
+                                        "                    const el = find_li(file);",
+                                        "                    if (el) {",
+                                        "                        if (msg.hidden) {",
+                                        "                             el.classList.add('hidden');",
+                                        "                        } else {",
+                                        "                             el.classList.remove('hidden');",
+                                        "                        }",
+                                        "                    }",
+                                        "                    if(cb)cb(msg.hidden);",
+                                        "                });",
+                                        "           } else {",
+                                        "               return isHidden(file);",
+                                        "           }",
+                                                     isHidden.toString(),
+                                        "       }",
+                                        "};"
                                      
+
                                  ].join("\n\n");
                              },
+                             
                              isHidden : isHidden ,
                              
                              isDeleted : isDeleted,

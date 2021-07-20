@@ -1,4 +1,4 @@
-/* global zip_url_base,zip_virtual_dir,zip_files,updated_prefix, alias_root_fix,alias_root, parent_link,BroadcastChannel,ace*/
+/* global zip_url_base,zip_virtual_dir,zip_files,full_zip_uri,updated_prefix, alias_root_fix,alias_root, parent_link,BroadcastChannel,ace*/
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
@@ -8,129 +8,19 @@ ml(`
     editInZed           | ml.zedhook.js
     sha1Lib             | sha1.js
     htmlFileItemLib     | ml.zipfs.dir.file.js
-
+    zipFSApiLib         | ml.zipfs.api.js
     
     `,function(){ml(2,
 
     {
 
-        Window: function pwaZipDirListing(findWorker,sendMessage,pwa,sha1 ) {
+        Window: function pwaZipDirListing(pwa,zipFSApiLib,sha1 ) {
             
             
             var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
              
-          
-            
-            const full_zip_uri           = location.origin+zip_url_base;
-            
-            
-            
-            
-            const pwaApi = {
-               
-               toggleDeleteFile : function (file,cb) {
-                   return pwa.toggleDeleteFile(full_zip_uri,file,cb);
-               },
-               
-               deleteFile       : function (file,cb) {
-                   return pwa.deleteFile(full_zip_uri,file,function(err,msg){
-                       const ix = zip_files.indexOf(file);
-                       if (ix >=0) {
-                           zip_files.splice(ix,1);
-                       }
-                       if(cb)cb(err,msg);
-                   });
-               },
-               
-               unDeleteFile     : function (file,cb) {
-                   return pwa.unDeleteFile(full_zip_uri,file,function(err,msg){
-                       const ix = zip_files.indexOf(file);
-                       if (ix <0) {
-                           zip_files.push(file);
-                       }
-                       if(cb)cb(err,msg);
-                   });
-               },
-               
-               isDeleted     : function (file,cb) {
-                   return pwa.isDeleted(full_zip_uri,file,cb);
-               },
-              /*    
-               writeFileString : function (file,text,hash,cb) {
-                  return pwa.writeFileString(full_zip_uri,file,text,hash,cb);
-               },
-               
-               readFileString : function (file,hash,cb) {
-                  return pwa.readFileString(full_zip_uri,file,hash,cb);
-               },
-               */
-               
-               isHidden : function (file,cb) {
-                   
-                   return pwa.isHidden(full_zip_uri,file,function(err,msg){
-                         const el = find_li(file);
-                         if (el) {
-                             if (msg.hidden) {
-                                  el.classList.add("hidden");
-                             } else {
-                                  el.classList.remove("hidden");
-                             }
-                         }
-                         if(cb)cb(msg.hidden);
-                     });
-               },
-               
-               removeUpdatedURLContents  : function (file,cb) {
-                  return pwa.removeUpdatedURLContents(
-                      zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
-                      //zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,
-                      function(err,msg){
-                         const el = find_li(file);
-                         if (el) el.classList.remove('edited');
-                         if(cb)cb(err,msg); 
-                      });
-               },
-               
-               updateURLContents : function (file,content,hash,cb) {
-                   return pwa.updateURLContents(
-                       zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
-                       //zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,
-                       content,hash,
-                       function(err,msg){
-                           const el = find_li(file);
-                           if (el) {
-                               el.classList.add('edited');
-                               el.classList.add('editing');
-                           }
-                           if(cb)cb(err,msg && msg.hash);
-                       }
-                   );
-               },
-               
-               fetchUpdatedURLContents : function (file,hash,cb) {
-                   return pwa.fetchUpdatedURLContents(
-                       zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,hash,
-                       function(err,msg){
-                          if (err) return cb (err);
-                          const el = find_li(file);
-                          if (el) {
-                              el.classList[msg.updated?"add":"remove"]('edited');
-                              el.classList[msg.updated?"add":"remove"]('editing');
-                          }
-                          cb(undefined,msg.content,msg.updated,msg.hash);
-                       }
-                   );
-               },
-               
-               registerForNotifications : ___registerForNotifications,
-               unregisterForNotifications : function (cb) {
-                    cb();
-               }
+             const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix) ;
 
-            };
-            
-            
-            
             const htmlFileItemLibOpts = {
                 uri:zip_url_base.replace(/^\//,''),
                 alias_root,
@@ -156,54 +46,6 @@ ml(`
                 fileIsEditable
             }  = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
 
-            
-            /*
-            let sw_urls,sw_mods;
-            pwa.getServiceWorkerUrls(function(err,urls){
-                sw_urls=urls;
-                console.log(urls);
-            })
-            pwa.getServiceWorkerModules(function(err,mods){
-                sw_mods=mods;
-                console.log(mods);
-            })*/
-            
-            
-            function ___registerForNotifications(cb) {
-                const persistent=true;
-                sendMessage('registerForNotifications',{
-                    zip     : full_zip_uri,
-                    virtual : zip_virtual_dir,
-                },persistent,function(err,msg){
-                    if (err) return cb (err);
-                    msg.channel = new BroadcastChannel(msg.notificationId);
-                    msg.channel.onmessage = function(e){
-                       cb(e.data); 
-                    }
-                    pwaApi.unregisterForNotifications = function (cb) {
-                        msg.channel.close();
-                        sendMessage('unregisterForNotifications',{
-                            zip     : full_zip_uri,
-                            virtual : zip_virtual_dir,
-                            notificationId : msg.notificationId
-                        },function(err,msg){
-                            if (err) return cb (err);
-                            cb(undefined);
-                        });
-                        
-                        pwaApi.unregisterForNotifications = function (cb) {
-                             cb();
-                        };
-                        
-                        pwaApi.registerForNotifications = ___registerForNotifications;
-                    };
-                    
-                    pwaApi.registerForNotifications = function (newcb) {
-                         cb=newcb;
-                    };
-                });
-            }
-            
             
             const modified_files = {};
             const lib = {
@@ -310,7 +152,7 @@ ml(`
                             if (err) {
                                 return ;
                             }
-                            li_ed.hashDisplay.textContent=hash;
+                           // li_ed.hashDisplay.textContent=hash;
                         });
 
                     });
@@ -788,10 +630,9 @@ ml(`
     }, {
         Window: [
             
-            ()=>self.pwaWindow.findWorker, 
-            ()=>self.pwaWindow.sendMessage,
-            ()=>self.pwaWindow,
-            ()=>self.sha1Lib.cb
+            ()=>ml.i.pwaWindow,
+            ()=>ml.i.zipFSApiLib,
+            ()=>ml.i.sha1Lib.cb
             
         ] 
     }

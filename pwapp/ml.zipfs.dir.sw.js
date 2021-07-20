@@ -207,9 +207,12 @@ ml(`
                                                        'alias_root_fix='+(alias_root?"/^"+regexpEscape(alias_root)+"/":'/^\\s/')+',',
                                                        'alias_root='+JSON.stringify(alias_root)+',',
                                                        'zip_files='+JSON.stringify(files)+',',
-                                                       'parent_link='+JSON.stringify(parent_link)+';',
+                                                       'parent_link='+JSON.stringify(parent_link)+',',
+                                                       'full_zip_uri           = location.origin+zip_url_base;',
                                                        
                                                        tools.metaSrc(),
+                                                       
+                                                       
                                                        '</script>'
                                                    ];
                                                    
