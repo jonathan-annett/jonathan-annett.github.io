@@ -5,7 +5,6 @@ ml(`
     xStoreBase | ml.xs.base.js
 
 `,function(){ml(2,
-
     {
         Window: function memoryStore( lib  ) {
              

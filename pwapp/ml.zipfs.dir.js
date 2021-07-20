@@ -19,7 +19,7 @@ ml(`
             
             var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
              
-             const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix) ;
+            const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix) ;
 
             const htmlFileItemLibOpts = {
                 uri:zip_url_base.replace(/^\//,''),

@@ -2,13 +2,10 @@
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib,Response  */
-ml(0,ml(1),[
-    
-   'zipUpLib                            | ml.fetch.updated.js',
-   'sha1Lib                             | sha1.js'
-  
-    
-    ],function(){ml(2,
+ml(`
+   zipUpLib                            | ml.fetch.updated.js
+   sha1Lib                             | sha1.js
+`,function(){ml(2,
 
     {
         Window: function zipUpWriteLib(   ) {

@@ -2,12 +2,12 @@
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),[
+ml(`
+
+sha1Lib     | sha1.js
+editInZed   | ml.zedhook.js
     
-   'sha1Lib                                | sha1.js',
-   'editInZed                              | ml.zedhook.js'
-    
-    ],function(){ml(2,
+`,function(){ml(2,
 
     {
 

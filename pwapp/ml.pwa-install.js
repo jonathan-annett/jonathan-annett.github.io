@@ -1,5 +1,5 @@
 /* global ml,Headers  */
-ml('pwa | ml.pwa.js',function(){ml(2,
+ml(`pwa | ml.pwa.js`,function(){ml(2,
 
     {
         Window: function pwaInstallLib( pwa ) {

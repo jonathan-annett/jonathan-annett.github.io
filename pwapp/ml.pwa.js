@@ -1,12 +1,11 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),`  
+ml(`  
               
               swResponseZipLib@ServiceWorkerGlobalScope  | ml.zipfs.js
               pwaMessage@Window                          | ml.pwa-message.js
               sha1Lib                                    | sha1.js
                 
-              
-              `,
+`,
               
     function(){ml(2,
 
