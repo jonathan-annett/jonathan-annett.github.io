@@ -10,6 +10,8 @@ ml(`
     htmlFileItemLib     | ml.zipfs.dir.file.js
     zipFSApiLib         | ml.zipfs.api.js
     
+    showdown            | https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.js
+    
     `,function(){ml(2,
 
     {
@@ -297,8 +299,12 @@ ml(`
 
                 } else {
                     if (e.ctrlKey) {
-                       const file_url = dir_prefix+filename.replace(alias_root_fix,'');
-                       open_url(file_url);
+                       if (filename.slice(-3)===".md") {
+                           open_markdown (filename);
+                       } else {
+                            const file_url = dir_prefix+filename.replace(alias_root_fix,'');
+                            open_url(file_url);
+                       }
                     } else {
                         li.classList.add("editing");
                         toggleInBuiltEditor ( filename,li )
@@ -394,6 +400,19 @@ ml(`
                   function onClosed(){},
                   function onOpened(){}
                 );
+            }
+            
+            function open_markdown (filename) {
+                var converter = new showdown.Converter();
+
+                pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
+                if (err) {
+                    return;
+                } else {
+                    const html  = converter.makeHtml(new TextDecoder().decode(text));
+                    let url = URL.createObjectURL(new Blob([html]))
+                    open_url(url);
+                }
             }
             
             
