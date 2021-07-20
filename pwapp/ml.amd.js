@@ -809,7 +809,7 @@ function amd(root_js,bound_self){
                      preloadScriptModuleFunction (U,function(err){
                          if (!err) {
                             installScriptModuleFn(U,function(err,mod){
-                                ml.h[ u ].e[ N ] = mod;
+                                ml.h[ U ].e[ N ] = mod;
                             }); 
                          }
                      }); 
