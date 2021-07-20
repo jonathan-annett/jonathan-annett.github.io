@@ -241,14 +241,11 @@ section {
   height: 100vh;
 }
 header {
-  background: tomato;
 }
-div {
+main {
   flex: 2 ;
-  background: gold;
   overflow: auto;
 }
 footer {
-  background: lightgreen;
   min-height: 20px; 
 }
