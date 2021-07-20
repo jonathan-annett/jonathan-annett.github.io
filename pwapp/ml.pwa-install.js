@@ -109,7 +109,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
             
             function progressHandler(complete,total,id,idtxt,channelName) {
                let outer = qs("#"+id),inner = qs(outer,"div"),status = qs("#"+idtxt),maxWidth = outer.offsetWidth, barHeight=outer.offsetHeight;
-               update();
+               updateBar();
                if (status) {
                   status.style= "position:relative;left:"+(maxWidth+2)+"px;top:-"+barHeight+"px;"; 
                }
