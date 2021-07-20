@@ -664,7 +664,8 @@ ml(`
                window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
             }
             
-          
+            zipPoller(0);
+            
             return lib;
         } 
     }, {
