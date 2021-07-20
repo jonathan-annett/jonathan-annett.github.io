@@ -297,7 +297,7 @@ ml(`
 
                 } else {
                     if (e.ctrlKey) {
-                       const file_url = dir_prefix + '/'+filename;
+                       const file_url = dir_prefix+fn.replace(alias_root_fix,'');
                        open_url(file_url);
                     } else {
                         li.classList.add("editing");
@@ -368,7 +368,7 @@ ml(`
                 const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
                 const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
-                const file_url = dir_prefix + '/' + filename;
+                const file_url = dir_prefix+fn.replace(alias_root_fix,'');
                 open_url(file_url);
             }
             
