@@ -272,6 +272,9 @@ ml(`
                       //const json = sessionToJSON(li_ed.editor.session);
                       //fs_editor.setSession(sessionFromJSON(json));
                       fs_editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                      
+                      fs_editor.resize();
+                      fs_editor.renderer.updateFull();
                    } else {
                        fs_editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
                        //const json = sessionToJSON(fs_editor.session);
