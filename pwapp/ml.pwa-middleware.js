@@ -95,7 +95,7 @@ editInZed   | ml.zedhook.js
                     if (!event.use_no_cors &&  /\/clients$/.test(event.fixup_url)) {
                         return new Promise(function(resolve){
                          
-                         
+                             const thisId = event.resultingClientId || event.clientId ; 
                              self.clients.matchAll().then(
                              function(clients) { 
                                  
@@ -104,7 +104,7 @@ editInZed   | ml.zedhook.js
                                     clients.map(
                                      
                                      function(client){
-                                         return "#" + client.id + " " + client.url + (event.clientId === client.id ? "[ this browser ] " :+'');
+                                         return "#" + client.id + " " + client.url + (thisId === client.id ? "[ this browser ] " :  '');
                                      }
                                      
                                  ).join("\n"); 
