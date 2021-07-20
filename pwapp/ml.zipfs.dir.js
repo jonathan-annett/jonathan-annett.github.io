@@ -582,15 +582,19 @@ ml(`
                 if (index < zip_files.length) {
                     const filename = zip_files[index];
                     const li = find_li (filename);
-                    let editor_id = li.dataset.editor_id;
-                    if (editor_id) {
-                        // files open in the editor hash themselves
-                        setTimeout(zipPoller,500,index+1);
-                    } else {
-                        pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
-                            qs(li,".sha1").textContent=hash;
+                    if (li) {
+                        let editor_id = li.dataset.editor_id;
+                        if (editor_id) {
+                            // files open in the editor hash themselves
                             setTimeout(zipPoller,500,index+1);
-                        });
+                        } else {
+                            pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
+                                qs(li,".sha1").textContent=hash;
+                                setTimeout(zipPoller,500,index+1);
+                            });
+                        }
+                    } else {
+                        setTimeout(zipPoller,500,index+1);
                     }
                 } else {
                     setTimeout(zipPoller,500,0); 
