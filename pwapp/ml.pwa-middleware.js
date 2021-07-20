@@ -104,8 +104,10 @@ editInZed   | ml.zedhook.js
                                     clients.map(
                                      
                                      function(client){
-                                         return "#"+client.id+" " +client.url + event.clientId === client.id ? "[ this browser ] " :+'';
-                                     }).join("\n"); 
+                                         return "#" + client.id + " " + client.url + (event.clientId === client.id ? "[ this browser ] " :+'');
+                                     }
+                                     
+                                 ).join("\n"); 
                                  
                                  response200 (resolve,text,{
                                      name          : event.fixup_url.replace(isLocal,''),
