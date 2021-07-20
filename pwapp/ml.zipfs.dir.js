@@ -261,6 +261,7 @@ ml(`
                    if (addRemove==="add") {
                       if (!fs_editor) {
                          fs_editor = ace.edit("fs_editor");
+                         fs_editor.setAutoScrollEditorIntoView(true);
                       } 
                         
                       fs_editor.setTheme(li_ed.editor.getTheme());
