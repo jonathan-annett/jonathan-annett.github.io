@@ -255,7 +255,7 @@ ml(`
                   
                   const next = function (handler) {
                       if (!handler) {
-                          ml.c.l("could not find for",event.fixup_url,"from",event.request.referrer); 
+                          //ml.c.l("could not find for",event.fixup_url,"from",event.request.referrer); 
                           return ;
                       }
                       
@@ -1219,7 +1219,7 @@ ml(`
              }
              
              function response304 (resolve,fileEntry) {
-                 ml.c.l("returning 304",fileEntry);
+                 //ml.c.l("returning 304",fileEntry);
                  return resolve( new Response('', {
                              status: 304,
                              statusText: 'Not Modifed',
@@ -1234,7 +1234,7 @@ ml(`
              }
              
              function response200 (resolve,buffer,fileEntry) {
-                 ml.c.l("returning 200",fileEntry.name);
+                 //ml.c.l("returning 200",fileEntry.name);
                  return resolve( new Response(
                                     buffer, {
                                             status: 200,
@@ -1343,7 +1343,7 @@ ml(`
             
             
              function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince,virtual_prefix) {
-                 ml.c.l({resolveSubzip:{ifNoneMatch,ifModifiedSince,zip_url,path_in_zip,virtual_prefix}});
+                 //ml.c.l({resolveSubzip:{ifNoneMatch,ifModifiedSince,zip_url,path_in_zip,virtual_prefix}});
                  const parts           = splitZipPaths(path_in_zip);//path_in_zip.split('.zip/');     
                  const subzip          = parts.length>1;
                  let   file_path       = parts[0];  //subzip ? parts[0]+'.zip' : parts[0];
@@ -1375,7 +1375,7 @@ ml(`
                                  }
                                  if (!fileEntry) {
 
-                                     ml.c.l("returning 404",zip_url,path_in_zip);
+                                     //ml.c.l("returning 404",zip_url,path_in_zip);
                                      return resolve(new Response('', {
                                          status: 404,
                                          statusText: 'Not found'
@@ -1431,7 +1431,7 @@ ml(`
                                     if (zipFileMeta.updating) {
                                         clearTimeout(zipFileMeta.updating);
                                     }
-                                    ml.c.l("updating zip entry",zip_url,file_path);
+                                    //ml.c.l("updating zip entry",zip_url,file_path);
                                     
                                     zipFileMeta.updating = setTimeout(function(){
                                         // in 10 seconds this and any other metadata changes to disk
@@ -1444,7 +1444,7 @@ ml(`
                                             if (saveTools) {
                                                 zipFileMeta.tools = saveTools; 
                                             }
-                                            ml.c.l("updated zip entry",zip_url);
+                                            //ml.c.l("updated zip entry",zip_url);
                                         });
                                         
                                     },10*10000);
@@ -1560,7 +1560,7 @@ ml(`
                                          if (zipFileMeta.updating) {
                                              clearTimeout(zipFileMeta.updating);
                                          }
-                                         ml.c.l("updating zip entry",zip_url,file_path);
+                                         //ml.c.l("updating zip entry",zip_url,file_path);
                                          
                                          zipFileMeta.updating = setTimeout(function(){
                                              // in 10 seconds this and any other metadata changes to disk
@@ -1571,7 +1571,7 @@ ml(`
                                              }
                                              databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
                                                  zipFileMeta.tools = saveTools;
-                                                 ml.c.l("updated zip entry",zip_url);
+                                                 //ml.c.l("updated zip entry",zip_url);
                                              });
                                              
                                          },10*10000);
