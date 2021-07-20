@@ -118,6 +118,20 @@ h1 a.download {
     
 }
 
+h1 a.restart_link {
+    
+    background: url("refresh.gif")
+                      left center;
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    
+    filter: invert(1);
+
+    
+}
+
+
+
 
 h1 a.downloadfull {
     
