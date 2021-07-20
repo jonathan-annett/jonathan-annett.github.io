@@ -1,7 +1,7 @@
 /* global zip_url_base,zip_virtual_dir,zip_files,full_zip_uri,updated_prefix, alias_root_fix,alias_root, parent_link,BroadcastChannel,ace*/
 
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib ,showdown */
+/* global ml,self,caches,BroadcastChannel  */
 ml(`
     
     pwaWindow@Window    | ml.pwa-win.js
@@ -9,14 +9,13 @@ ml(`
     sha1Lib             | sha1.js
     htmlFileItemLib     | ml.zipfs.dir.file.js
     zipFSApiLib         | ml.zipfs.api.js
-    
     showdown            | https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.js
     
     `,function(){ml(2,
 
     {
 
-        Window: function pwaZipDirListing(pwa,zipFSApiLib,sha1 ) {
+        Window: function pwaZipDirListing(pwa,zipFSApiLib,sha1,MarkdownConverter ) {
             
             
             var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
@@ -403,7 +402,7 @@ ml(`
             }
             
             function open_markdown (filename) {
-                var converter = new showdown.Converter();
+                var converter = new MarkdownConverter();
 
                 pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
                     if (err) {
@@ -653,7 +652,8 @@ ml(`
             
             ()=>ml.i.pwaWindow,
             ()=>ml.i.zipFSApiLib,
-            ()=>ml.i.sha1Lib.cb
+            ()=>ml.i.sha1Lib.cb,
+            ()=>ml.i.showdown.Converter
             
         ] 
     }
