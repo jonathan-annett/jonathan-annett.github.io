@@ -14,6 +14,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
             
             runhere.onclick = function() {
                 sessionStorage.running=((1000*60*2) + Date.now()).toString();
+                qs("#rungif").style.display = "inline-block";
                 pwa.start(function(){
                     betaTesterApproval().then(function(config){
                         location.replace(config.root);   

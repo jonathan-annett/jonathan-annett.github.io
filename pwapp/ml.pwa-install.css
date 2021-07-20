@@ -19,3 +19,10 @@ html.beta div.beta {
   height: 10px;
   background-color: #4CAF50;
 }
+
+#rungif {
+  display : none;  
+  width : 32px; 
+  height : 32px; 
+  
+}
