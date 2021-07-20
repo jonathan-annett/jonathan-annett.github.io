@@ -277,13 +277,13 @@ ml(`
                 const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
                 const li = btn.parentElement;
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
-                
+                const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
                 if (e.shiftKey) {
                    li.classList.add("editing");
                    
                     modified_files[filename]=1;
                     
-                    const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
+                  
                     
                     self.editInZed(
                        
@@ -297,11 +297,10 @@ ml(`
 
                 } else {
                     if (e.ctrlKey) {
-                       const file_url = zip_url_base + '/'+filename;
+                       const file_url = dir_prefix + '/'+filename;
                        open_url(file_url);
                     } else {
                         li.classList.add("editing");
-                        const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
                         toggleInBuiltEditor ( filename,li )
                     }
                 }
@@ -368,7 +367,8 @@ ml(`
                 e.stopPropagation();
                 const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
-                const file_url = zip_url_base + '/' + filename;
+                const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
+                const file_url = dir_prefix + '/' + filename;
                 open_url(file_url);
             }
             
