@@ -66,6 +66,9 @@ a span.fullscreen {
     background-repeat: no-repeat;
     background-size: 10px 10px;
     float: right;
+    position:relative;
+    left : -10px;
+    
 }
 
 a span.fullscreen,
@@ -239,7 +242,11 @@ header {
 }
 main {
   flex: 2 ;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+ top: 20px;
+ position: relative;
+ margin-left:-32px;
 }
 footer {
   min-height: 20px; 
