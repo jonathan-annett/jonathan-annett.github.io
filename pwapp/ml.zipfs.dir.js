@@ -223,6 +223,55 @@ ml(`
 
                 [].forEach.call(document.querySelectorAll("li a span.deletefile"),addDeleteClick);
                 
+                
+                let dropArea = document.getElementById('drop-area');
+                
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                  dropArea.addEventListener(eventName, preventDefaults, false)
+                });
+                
+                
+                ['dragenter', 'dragover'].forEach(addEvent(highlight));
+                ['dragleave', 'drop'].forEach(addEvent(unhighlight));
+
+                function addEvent(fn) {
+                    return function (eventName) {
+                        dropArea.addEventListener(eventName, fn, false);
+                    }
+                }
+                
+                function highlight(e) {
+                  dropArea.classList.add('highlight');
+                }
+                
+                function unhighlight(e) {
+                  dropArea.classList.remove('highlight');
+                }
+                
+               dropArea.addEventListener('drop', handleDrop, false);
+               
+               function handleDrop(e) {
+                 let dt = e.dataTransfer
+                 let files = dt.files
+               
+                 handleFiles(files)
+               }
+               
+                function handleFiles(files) {
+                  ([...files]).forEach(uploadFile)
+                }
+                
+                
+                function uploadFile(file) {
+                  console.log(file);
+                }
+                
+            }
+            
+             
+            function preventDefaults (e) {
+              e.preventDefault()
+              e.stopPropagation()
             }
             
             function addDeleteClick (el) {
