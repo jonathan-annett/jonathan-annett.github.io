@@ -127,13 +127,16 @@ editInZed   | ml.zedhook.js
                          
                              const park_url = event.fixup_url.replace(/\/stop$/,'');
                              
-                             self.clients.matchAll().then(
-                             function(clients) { 
-                                 self.registration.unregister() .then(function() { 
-                                     clients.forEach(client => client.navigate(park_url))
+                             self.registration.unregister() .then(function() { 
                                  
-                                });
-                             });
+                                 return self.clients.matchAll(); 
+                                
+                             }) .then(function(clients) { 
+                                 
+                                 clients.forEach(client => client.navigate(park_url)); 
+                                 
+                             }); 
+                             
                         });
                     }
                     
