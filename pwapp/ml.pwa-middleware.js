@@ -89,35 +89,6 @@ editInZed   | ml.zedhook.js
                     } 
                 });
                 
-                // /databases.zip download the databases as a zip file -
-                addMiddlewareListener (function (event) {
-                    // !event.use_no_cors means url is for this domain name,
-                    if (!event.use_no_cors &&  /\/clients$/.test(event.fixup_url)) {
-                        return new Promise(function(resolve){
-                         
-                             const thisId = event.resultingClientId || event.clientId ; 
-                             self.clients.get(thisId).then(function(thisClient){
-                                 self.clients.matchAll().then(
-                                 function(clients) { 
-                                     
-                                     const text = 
-                                        "connected clients:"+
-                                        clients.map((client)=>client.url).join("\n"); 
-                                     
-                                     response200 (resolve,text,{
-                                         name          : event.fixup_url.replace(isLocal,''),
-                                         contentType   : 'text/plain',
-                                         contentLength : text.length
-                                     });
-                                     
-                                  }); 
-                             });
-                             
-                            
-                        });
-                    }
-                    
-                });
                 
                 // /databases.zip download the databases as a zip file -
                 addMiddlewareListener (function (event) {
