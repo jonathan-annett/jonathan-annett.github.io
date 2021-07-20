@@ -1673,7 +1673,7 @@ ml(`
                                         "               return isDeleted(file);",
                                         "           }",
                                                         isDeleted.toString(),
-                                        "        }",
+                                        "        },",
                                         "       isHidden : function (file,cb) {",
                                         "           if (cb) {",          
                                         "               return pwa.isHidden(full_zip_uri,file,function(err,msg){",
