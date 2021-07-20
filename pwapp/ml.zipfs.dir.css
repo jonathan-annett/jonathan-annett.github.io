@@ -65,6 +65,7 @@ a span.fullscreen {
                       left center;
     background-repeat: no-repeat;
     background-size: 10px 10px;
+    float: right;
 }
 
 a span.fullscreen,
@@ -100,10 +101,6 @@ html.zooming li.zooming {
  }
  
  
-html.zooming li.zooming a span.fullscreen {
-    position: absolute;
-    left: calc(100vw - 12px);
-}
 
 
 a span.deletefile {
