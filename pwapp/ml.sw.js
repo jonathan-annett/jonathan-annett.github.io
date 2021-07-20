@@ -167,7 +167,34 @@ function ml(x,L, o, a, d, s){
             //c.G wrap event E to call X, whhich is stored as c[E]
             G:(E,X)=>{ml[E]=X;return (e)=>ml[E](e);},
             
+            p:(complete,total,channelName) => {
+              const channel = new BroadcastChannel.create(channelName);
               
+              return {
+                   setTotal:setTotal,
+                   setComplete:setComplete,
+                   addToTotal:addToTotal,
+                   logComplete: logComplete
+               };
+              
+               function setTotal(n) {
+                   channel.postMessage({setTotal:n});
+               }
+              
+               function setComplete(n) {
+                   channel.postMessage({setComplete:n});
+               }
+              
+               function logComplete(n) {
+                   channel.postMessage({logComplete:n});
+               }
+              
+               function addToTotal (n) {
+                   channel.postMessage({addToTotal:n});
+               }
+              
+               
+            },  
             
             //install final event handler,and return captured promise for install event
             8:(E,f)=>{
@@ -180,7 +207,9 @@ function ml(x,L, o, a, d, s){
             M:'message',
             9:(S)=>{
                      ml.p=[];
-                     c.In(S,'install',(e)=>self.skipWaiting());
+                     
+                     c.p = c.p("loadProgress","loadProgressText","installProgress");
+                     c.In(S,'install',(e)=>{c.p.logComplete(1);self.skipWaiting();});
                      c.In(S,'activate');
                      c.In(S,'fetch',(e)=>fetch(e.request));
                      c.In(S,c.M,(e,r,m,d,M,Z)=>{
@@ -224,6 +253,7 @@ function ml(x,L, o, a, d, s){
                          ml.d[N]={h:U};
                          ml.H.push(U);
                          try {
+                            c.p && c.p.addToTotal(1);
                             importScripts(U);
                             c.n(N,(e)=>{
                                 ml.h[U] = ml.h[U]   || {e:{}};
@@ -231,6 +261,8 @@ function ml(x,L, o, a, d, s){
                             });
                          } catch (e){
                             c.e(e.message,'while loading',U,'in',ml.l);  
+                         } finally {
+                             c.p && c.p.logComplete(1);
                          }
                          ml.l.pop();
                      }

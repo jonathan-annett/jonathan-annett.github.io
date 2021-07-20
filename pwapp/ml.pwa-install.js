@@ -1,4 +1,4 @@
-/* global ml,Headers  */
+/* global ml,Headers,BroadcastChannel  */
 ml(`pwa | ml.pwa.js`,function(){ml(2,
 
     {
@@ -15,6 +15,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
             runhere.onclick = function() {
                 sessionStorage.running=((1000*60*2) + Date.now()).toString();
                 qs("#rungif").style.display = "inline-block";
+                progressHandler(0,1,"loadProgress","loadProgressText","installProgress");
                 pwa.start(function(){
                     betaTesterApproval().then(function(config){
                         location.replace(config.root);   
@@ -106,11 +107,30 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
               
             
             
-            function progressHandler(complete,total,id,idtxt) {
+            function progressHandler(complete,total,id,idtxt,channelName) {
                let outer = qs("#"+id),inner = qs(outer,"div"),status = qs("#"+idtxt),maxWidth = outer.offsetWidth, barHeight=outer.offsetHeight;
                update();
                if (status) {
                   status.style= "position:relative;left:"+(maxWidth+2)+"px;top:-"+barHeight+"px;"; 
+               }
+               
+               if (channelName) {
+                   const channel = new BroadcastChannel.create(channelName);
+                   channel.onmessage =function(e){
+                       const msg = e.data;
+                       if (msg && msg.setTotal) {
+                           setTotal(msg.setTotal);
+                       } 
+                       else if (msg && msg.setComplete) {
+                          setComplete(msg.setComplete);
+                       }
+                       else if (msg && msg.addToTotal) {
+                          addToTotal(msg.addToTotal);
+                       }
+                       else if (msg && msg.logComplete) {
+                          logComplete(msg.logComplete);
+                       }
+                   };
                }
                return {
                    setTotal:setTotal,
@@ -146,9 +166,8 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                  }
                }
             } 
-            
-             
-            
+                        
+           
              function betaTesterApproval() {
                  
                  if (!window.crypto) {
