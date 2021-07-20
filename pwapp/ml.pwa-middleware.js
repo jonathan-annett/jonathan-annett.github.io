@@ -102,13 +102,7 @@ editInZed   | ml.zedhook.js
                                      
                                      const text = 
                                         "connected clients:"+
-                                        clients.map(
-                                         
-                                         function(client){
-                                             return "#" + client.id + " " + client.url + (thisClient === client ? "[ this browser ] " :  '');
-                                         }
-                                         
-                                     ).join("\n"); 
+                                        clients.map((client)=>client.url).join("\n"); 
                                      
                                      response200 (resolve,text,{
                                          name          : event.fixup_url.replace(isLocal,''),
@@ -125,7 +119,25 @@ editInZed   | ml.zedhook.js
                     
                 });
                 
-                 
+                // /databases.zip download the databases as a zip file -
+                addMiddlewareListener (function (event) {
+                    // !event.use_no_cors means url is for this domain name,
+                    if (!event.use_no_cors &&  /\/stop$/.test(event.fixup_url)) {
+                        return new Promise(function(resolve){
+                         
+                             const park_url = event.fixup_url.replace(/\/stop$/,'');
+                             
+                             self.clients.matchAll().then(
+                             function(clients) { 
+                                 self.registration.unregister() .then(function() { 
+                                     clients.forEach(client => client.navigate(park_url))
+                                 
+                                });
+                             });
+                        });
+                    }
+                    
+                }); 
             }
             
 
