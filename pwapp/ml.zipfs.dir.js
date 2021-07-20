@@ -19,7 +19,6 @@ ml(`
             
             
             var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
-             
             const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix) ;
 
             const htmlFileItemLibOpts = {
@@ -248,9 +247,10 @@ ml(`
             function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
             
             
-            var zoomEl;            
+            var zoomEl,fs_editor;            
             function  zoomBtnClick( e ) {
                 e.stopPropagation();
+                
                 
                 const zoomClass=function(addRemove) {
                    const li_ed=qs("#"+zoomEl.dataset.editor_id).parentNode;
@@ -258,6 +258,25 @@ ml(`
                    zoomEl.classList[addRemove]("zooming");
                    qs('html').classList[addRemove]("zooming"); 
                    
+                   if (addRemove) {
+                      if (!fs_editor) {
+                         fs_editor = ace.edit("fs_editor");
+                      } 
+                        
+                      fs_editor.setTheme(li_ed.editor.getTheme());
+                      fs_editor.session.setMode(fs_editor.session.getMode());
+                      li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
+                      fs_editor.setValue(li_ed.editor.getValue());  
+                      const json = sessionToJSON(li_ed.editor.session);
+                      fs_editor.setSession(sessionFromJSON(json));
+                      fs_editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                   } else {
+                       fs_editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
+                       const json = sessionToJSON(fs_editor.session);
+                       li_ed.editor.setValue(fs_editor.getValue());  
+                       li_ed.editor.setSession(sessionFromJSON(json));
+                       li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                   }
                    li_ed.editor.setOption("minLines", addRemove==="add"?undefined:2);
                    li_ed.editor.setOption("maxLines", addRemove==="add"?undefined:30);
                 };
@@ -445,7 +464,7 @@ ml(`
                 if (editor_id) {
                     const ed = qs("#"+editor_id);
                     const li_ed = ed.parentNode;
-                    
+                    li.classList.remove("editing");
                     li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
                     li_ed.removeChild(ed);
                     
@@ -462,6 +481,38 @@ ml(`
                 }
             }
             
+            
+            function filterHistory  (deltas){ 
+                return deltas.filter(function (d) {
+                    return d.group != "fold";
+                });
+            }
+            
+            function sessionToJSON(session) {
+                return {
+                    selection: session.selection.toJSON(),
+                    value: session.getValue(),
+                    history: {
+                        undo: session.$undoManager.$undoStack.map(filterHistory),
+                        redo: session.$undoManager.$redoStack.map(filterHistory)
+                    },
+                    scrollTop: session.getScrollTop(),
+                    scrollLeft: session.getScrollLeft(),
+                    options: session.getOptions()
+                }
+            }
+            
+            function sessionFromJSON(data) {
+                var session = ace.createEditSession(data.value);
+                session.$undoManager.$doc = session; // workaround for a bug in ace
+                session.setOptions(data.options);
+                session.$undoManager.$undoStack = data.history.undo;
+                session.$undoManager.$redoStack = data.history.redo;
+                session.selection.fromJSON(data.selection);
+                session.setScrollTop(data.scrollTop);
+                session.setScrollLeft(data.scrollLeft);
+                return session;
+            }
             
 
             function openInBuiltEditor (filename,li) {

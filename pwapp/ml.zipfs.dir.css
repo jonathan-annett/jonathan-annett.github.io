@@ -41,6 +41,17 @@ a span.normal {
 }
 
 
+#fs_editor { 
+    margin: 0;
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display:none;
+}
+
+
    
 .ace_editor {
     border: 1px solid lightgray;
@@ -81,18 +92,12 @@ html.zooming li.zooming {
    display : block;
 }
 
-html.zooming li.zoomingEditor {
-     display : block;
-     position: absolute;
-     top: 20; bottom: 0; right: 0; left: 0;
-}
-html.zooming li.zoomingEditor .ace_editor {
-    position: absolute;
-    width: unset;
-    height:unset;
-    top: 20; bottom: 0; right: 0; left: 0; height: auto;
-}
-
+ html.zooming #fs_editor {
+    display : block;
+ }
+ 
+  
+ 
 
 html.zooming li.zooming a span.fullscreen {
     position: absolute;
