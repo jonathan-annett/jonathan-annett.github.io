@@ -1,7 +1,7 @@
 /* global zip_url_base,zip_virtual_dir,zip_files,full_zip_uri,updated_prefix, alias_root_fix,alias_root, parent_link,BroadcastChannel,ace*/
 
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
+/* global ml,self,caches,BroadcastChannel, swResponseZipLib ,showdown */
 ml(`
     
     pwaWindow@Window    | ml.pwa-win.js
@@ -406,13 +406,14 @@ ml(`
                 var converter = new showdown.Converter();
 
                 pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
-                if (err) {
-                    return;
-                } else {
-                    const html  = converter.makeHtml(new TextDecoder().decode(text));
-                    let url = URL.createObjectURL(new Blob([html]))
-                    open_url(url);
-                }
+                    if (err) {
+                        return;
+                    } else {
+                        const html  = converter.makeHtml(new TextDecoder().decode(text));
+                        let url = URL.createObjectURL(new Blob([html]))
+                        open_url(url);
+                    }
+                });
             }
             
             
