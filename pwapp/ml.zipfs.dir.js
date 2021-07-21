@@ -267,12 +267,15 @@ ml(`
                    
                    if (addRemove==="add") {
                       if (!fs_editor) {
+                          
+                         qs("main").innerHTML+= '<pre id="fs_editor"></pre>'; 
+                          
                          fs_editor = ace.edit("fs_editor");
                          fs_editor.setAutoScrollEditorIntoView(true);
                       } 
                         
                       fs_editor.setTheme(li_ed.editor.getTheme());
-                      fs_editor.session.setMode(fs_editor.session.getMode());
+                      fs_editor.session.setMode(li_ed.editor.session.getMode());
                       
                       li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
                       const json = sessionToJSON(li_ed.editor.session);
@@ -288,6 +291,7 @@ ml(`
                        
                        fs_editor.destroy();
                        fs_editor = undefined;
+                       qs("#fs_editor",function(fse){fse.parent.removeChild(fse)});
                    }
                 };
                 
