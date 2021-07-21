@@ -162,6 +162,7 @@ ml([],function(){ml(2,
                        delete event.cache_response;
                        return Promise.resolve(response);
                    } else {
+                       delete event.aliased_url;
                        if (event.fixup_url.endsWith("/virtual.json")) {
                            const json = JSON.stringify(virtualDirDB,undefined,4);
                            return Promise.resolve(new Response(json, {
