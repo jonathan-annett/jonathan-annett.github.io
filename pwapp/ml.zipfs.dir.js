@@ -331,12 +331,7 @@ ml(`
 
                 } else {
                     if (e.ctrlKey) {
-                       if (filename.slice(-3)===".md") {
-                           open_markdown (filename);
-                       } else {
-                            const file_url = dir_prefix+filename.replace(alias_root_fix,'');
-                            open_url(file_url);
-                       }
+                        open_file(filename);
                     } else {
                         li.classList.add("editing");
                         toggleInBuiltEditor ( filename,li )
@@ -434,6 +429,8 @@ ml(`
                 );
             }
             
+           
+            
             function open_markdown (filename) {
                 var converter = new MarkdownConverter();
 
@@ -442,14 +439,14 @@ ml(`
                         return;
                     } else {
                         const html  = converter.makeHtml(new TextDecoder().decode(buffer));
-                        
+                        const tempFile = filename+Math.random().toString(36)+ ".html";
                         pwaApi.updateURLContents (filename+".html",new TextEncoder().encode(html),true,function(err,hash) {
                             if (err) {
                                 return ;
                             }
-                            open_url(filename+".html");
+                            open_url(tempFile);
                             setTimeout(function(){
-                                pwaApi.removeUpdatedURLContents(filename+".html",function(){
+                                pwaApi.removeUpdatedURLContents(tempFile,function(){
                                     
                                 });
                             },5000);
@@ -522,6 +519,21 @@ ml(`
                     md   : "ace/theme/dawn",
                     css  : "ace/theme/pastel_on_dark",
                 }[ext] || "ace/theme/chrome";
+            }
+            
+            function open_file (fn) {
+                const ext = fn.substr(fn.lastIndexOf('.')+1);
+                const custom_url_openers = {
+                    md   : open_markdown,
+                    svg  : open_svg
+                };
+                const not_custom = function (filename) {
+                    const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
+                    const file_url = dir_prefix+filename.replace(alias_root_fix,'');
+                    open_url (file_url) ;       
+                };
+                
+                return (custom_url_openers[ext] || not_custom) (fn);
             }
             
             
