@@ -796,7 +796,7 @@ ml(`
              }
 
              function getZipFileUpdates(url,cb) {
-                 url = url.endsWith('.zip/') ? url : url.endsWith('.zip') ? url +"/" : url;
+                 url = url.endsWith('.zip/') ? url : url.endsWith('.zip') ? url +"/" : url.replace(/\/$/,'')+'/';
                  if (url) {
                      const len = url.length;
                      
