@@ -413,7 +413,7 @@ ml(`
                     open_url(link.href);
             }
             
-            function open_url(file_url) {
+            function open_url(file_url,cb) {
                 return open_window(
                   file_url,
                   file_url.replace(/\/|\:|\.|\-/g,''),
@@ -423,31 +423,29 @@ ml(`
                   768,
                   true,
                   function onClosed(){},
-                  function onOpened(){}
+                  cb || function onOpened(){}
                 );
             }
             
            
-            
-            function open_markdown (filename,file_url) {
-                var converter = new MarkdownConverter();
-
+            function open_html (html,filename,file_url) {
+                
                 pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer,updated,hash){
                     if (err) {
                         return;
                     } else {
-                        const html  = converter.makeHtml(new TextDecoder().decode(buffer));
-                        const suffix = Math.random().toString(36)+ ".html";
-                        pwaApi.updateURLContents (filename+suffix,new TextEncoder().encode(html),true,function(err,hash) {
+                        pwaApi.updateURLContents (filename,new TextEncoder().encode(html),true,function(err,hash) {
                             if (err) {
                                 return ;
                             }
-                            open_url(file_url+suffix);
-                            setTimeout(function(){
-                                pwaApi.removeUpdatedURLContents(filename+suffix,function(){
-                                    
-                                });
-                            },5000);
+                            open_url(file_url,function(){
+                                setTimeout(function(){
+                                    pwaApi.removeUpdatedURLContents(filename,function(){
+                                        
+                                    });
+                                },50);
+                            });
+                            
                         });
                         
                        
@@ -455,9 +453,23 @@ ml(`
                 });
             }
             
+            
+            function open_markdown (filename,file_url) {
+                var converter = new MarkdownConverter();
+                pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer){
+                    if (err) {
+                        return;
+                    } else {
+                        const html  = converter.makeHtml(new TextDecoder().decode(buffer));
+                        const suffix = Math.random().toString(36)+ ".html";
+                        open_html (html,filename+suffix,file_url+suffix);
+                    }
+                });
+            }
+            
             function open_svg (filename,file_url) {
     
-                pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer,updated,hash){
+                pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer){
                     if (err) {
                         return;
                     } else {
@@ -476,21 +488,9 @@ ml(`
                              '/html>'
                             ].join('\n');
                             
-                        const suffix = Math.random().toString(36)+ ".html";   
+                        const suffix = Math.random().toString(36)+ ".html";
+                        open_html (html,filename+suffix,file_url+suffix);
 
-                        pwaApi.updateURLContents (file_url+suffix,new TextEncoder().encode(html),true,function(err,hash) {
-                            if (err) {
-                                return ;
-                            }
-                            open_url(file_url+suffix);
-                            setTimeout(function(){
-                                pwaApi.removeUpdatedURLContents(filename+suffix,function(){
-                                    
-                                });
-                            },5000);
-                        });
-                        
-                       
                     }
                 });
             }
@@ -518,7 +518,7 @@ ml(`
                 }[ext] || "ace/theme/chrome";
             }
             
-            function open_file (fn) {
+            function open_file (fn,cb) {
                 const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
                 const file_url = dir_prefix+fn.replace(alias_root_fix,'');
                 
@@ -528,7 +528,7 @@ ml(`
                     svg  : open_svg
                 };
                 const not_custom = function (filename,file_url) {
-                   open_url (file_url) ;       
+                   open_url (file_url,cb) ;       
                 };
                 
                 return (custom_url_openers[ext] || not_custom) (fn,file_url);
