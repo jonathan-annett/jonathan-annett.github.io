@@ -145,56 +145,77 @@ editInZed   | ml.zedhook.js
                     
                 }); 
                 
-                
-                
-                
                 // hot link error messages to editor
                 addMiddlewareListener (function (event) {
                     // !event.use_no_cors means url is for this domain name,
                     if (isLocalDomain(event,isIndexPageLink)) {
                         return new Promise(function(resolve){
                             
-                            const alternates = defaultMiddlewareChain;
-                            const fetch_html = function(index,cb) {
-                                if (index < alternates.length) {
-                                    alternates[index](event).then(function(res){
-                                        if (res) {
-                                           res.text().then(cb);
-                                        } else {
-                                           fetch_html(index+1,cb);
-                                        }
-                                    }).catch (function(e) {
-                                        fetch_html(index+1,cb);
-                                    });
-                                } else {
-                                    cb ();
-                                }
-                            };
                             
-                            fetch_html(0,function(html){
-                                const localURL = event.fixup_url.replace(isLocal,'');
-                                
-                                
-                                if (indexPageBodyInjectAt.test(html) && !indexPageBodyInjected.test(html)){
-                                    console.log("intercepted index html:", localURL);
-                                    html = html.replace(indexPageBodyInjectAt,indexPageBodyInjectReplace);
+                            fetchDefaultResponse (event,"text",function(html){
+                                if (html) {
+                                    const localURL = event.fixup_url.replace(isLocal,'');
+                                    
+                                    if (indexPageBodyInjectAt.test(html) && !indexPageBodyInjected.test(html)){
+                                        console.log("intercepted index html:", localURL);
+                                        html = html.replace(indexPageBodyInjectAt,indexPageBodyInjectReplace);
+                                    } else {
+                                        console.log("skipped index html:", localURL);
+                                    }
+                                    
+                                    response200 (resolve,html,{
+                                        name          : localURL,
+                                        contentType   : 'text/html',
+                                        contentLength : html.length
+                                    });
+                                    
                                 } else {
-                                    console.log("skipped index html:", localURL);
+                                    resolve();
                                 }
                                 
-                                response200 (resolve,html,{
-                                    name          : localURL,
-                                    contentType   : 'text/html',
-                                    contentLength : html.length
-                                });
                             });
                                    
                         });
                     } 
                 });
+                
+                
+                function fetchDefaultResponse(event,mode,cb) {
+                    
+                    const alternates = defaultMiddlewareChain;
+                    
+                    const fetch_response = function(index) {
+                        
+                        if (index < alternates.length) {
+                            const prom = alternates[index](event);
+                            if (prom) {
+                                prom.then(function(res){
+                                    if (res) {
+                                       res[mode]().then(cb);
+                                    } else {
+                                       fetch_response(index+1);
+                                    }
+                                }).catch (function(e) {
+                                    fetch_response(index+1);
+                                });
+                                
+                            }  else {
+                                fetch_response(index+1);
+                            }
+                        } else {
+                            cb ();
+                        }
+                    };
+                    
+                    fetch_response(0);
+                    
+                }
             }
             
-
+            
+            
+            
+            
             
         } 
     }, {
