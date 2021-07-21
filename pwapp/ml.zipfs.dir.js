@@ -460,6 +460,46 @@ ml(`
                 });
             }
             
+            function open_svg (filename) {
+    
+                pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer,updated,hash){
+                    if (err) {
+                        return;
+                    } else {
+                        
+                        const 
+                        html  = [
+                            '<html>',
+                            '<head>',
+                            '<title>',
+                            filename,
+                            '</title>',
+                            '</head>',
+                            '<body>',
+                             new TextDecoder().decode(buffer),
+                             '</body>',
+                             '/html>'
+                            ].join('\n'),
+                            
+                           
+                        tempFile = filename+Math.random().toString(36)+ ".html";
+                        
+                        pwaApi.updateURLContents (filename+".html",new TextEncoder().encode(html),true,function(err,hash) {
+                            if (err) {
+                                return ;
+                            }
+                            open_url(tempFile);
+                            setTimeout(function(){
+                                pwaApi.removeUpdatedURLContents(tempFile,function(){
+                                    
+                                });
+                            },5000);
+                        });
+                        
+                       
+                    }
+                });
+            }
             
             function aceModeForFile(fn ) {
                 const ext = fn.substr(fn.lastIndexOf('.')+1);
