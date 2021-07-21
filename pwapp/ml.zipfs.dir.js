@@ -462,7 +462,7 @@ ml(`
                     } else {
                         const html  = converter.makeHtml(new TextDecoder().decode(buffer));
                         const suffix = Math.random().toString(36)+ ".html";
-                        open_html (html,filename+suffix,file_url+suffix);
+                        open_html (html,filename+suffix, updated_prefix+ filename.replace(alias_root_fix,'')  +suffix);
                     }
                 });
             }
