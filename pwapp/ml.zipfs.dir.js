@@ -429,7 +429,7 @@ ml(`
             
            
             
-            function open_markdown (filename) {
+            function open_markdown (filename,file_url) {
                 var converter = new MarkdownConverter();
 
                 pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer,updated,hash){
@@ -437,14 +437,14 @@ ml(`
                         return;
                     } else {
                         const html  = converter.makeHtml(new TextDecoder().decode(buffer));
-                        const tempFile = filename+Math.random().toString(36)+ ".html";
-                        pwaApi.updateURLContents (tempFile,new TextEncoder().encode(html),true,function(err,hash) {
+                        const suffix = Math.random().toString(36)+ ".html";
+                        pwaApi.updateURLContents (filename+suffix,new TextEncoder().encode(html),true,function(err,hash) {
                             if (err) {
                                 return ;
                             }
-                            open_url(tempFile);
+                            open_url(file_url+suffix);
                             setTimeout(function(){
-                                pwaApi.removeUpdatedURLContents(tempFile,function(){
+                                pwaApi.removeUpdatedURLContents(filename+suffix,function(){
                                     
                                 });
                             },5000);
@@ -455,7 +455,7 @@ ml(`
                 });
             }
             
-            function open_svg (filename) {
+            function open_svg (filename,file_url) {
     
                 pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer,updated,hash){
                     if (err) {
@@ -474,18 +474,17 @@ ml(`
                              new TextDecoder().decode(buffer),
                              '</body>',
                              '/html>'
-                            ].join('\n'),
+                            ].join('\n');
                             
-                           
-                        tempFile = filename+Math.random().toString(36)+ ".html";
-                        
-                        pwaApi.updateURLContents (tempFile,new TextEncoder().encode(html),true,function(err,hash) {
+                        const suffix = Math.random().toString(36)+ ".html";   
+
+                        pwaApi.updateURLContents (file_url+suffix,new TextEncoder().encode(html),true,function(err,hash) {
                             if (err) {
                                 return ;
                             }
-                            open_url(tempFile);
+                            open_url(file_url+suffix);
                             setTimeout(function(){
-                                pwaApi.removeUpdatedURLContents(tempFile,function(){
+                                pwaApi.removeUpdatedURLContents(filename+suffix,function(){
                                     
                                 });
                             },5000);
@@ -520,18 +519,19 @@ ml(`
             }
             
             function open_file (fn) {
+                const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
+                const file_url = dir_prefix+fn.replace(alias_root_fix,'');
+                
                 const ext = fn.substr(fn.lastIndexOf('.')+1);
                 const custom_url_openers = {
                     md   : open_markdown,
                     svg  : open_svg
                 };
-                const not_custom = function (filename) {
-                    const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
-                    const file_url = dir_prefix+filename.replace(alias_root_fix,'');
-                    open_url (file_url) ;       
+                const not_custom = function (filename,file_url) {
+                   open_url (file_url) ;       
                 };
                 
-                return (custom_url_openers[ext] || not_custom) (fn);
+                return (custom_url_openers[ext] || not_custom) (fn,file_url);
             }
             
             
