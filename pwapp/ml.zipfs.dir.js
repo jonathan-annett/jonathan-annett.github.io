@@ -438,7 +438,7 @@ ml(`
                     } else {
                         const html  = converter.makeHtml(new TextDecoder().decode(buffer));
                         const tempFile = filename+Math.random().toString(36)+ ".html";
-                        pwaApi.updateURLContents (filename+".html",new TextEncoder().encode(html),true,function(err,hash) {
+                        pwaApi.updateURLContents (tempFile,new TextEncoder().encode(html),true,function(err,hash) {
                             if (err) {
                                 return ;
                             }
@@ -479,7 +479,7 @@ ml(`
                            
                         tempFile = filename+Math.random().toString(36)+ ".html";
                         
-                        pwaApi.updateURLContents (filename+".html",new TextEncoder().encode(html),true,function(err,hash) {
+                        pwaApi.updateURLContents (tempFile,new TextEncoder().encode(html),true,function(err,hash) {
                             if (err) {
                                 return ;
                             }
