@@ -631,37 +631,6 @@ ml(`
                    return w;
             }
             
-            function zipPoller(index) {
-                //main purpose is to keep service worker awake. but while we are doing that, might as well hash each file and display it
-                index = index || 0;
-                if (index < zip_files.length) {
-                    const filename = zip_files[index];
-                    const li = find_li (filename);
-                    if (li) {
-                        let editor_id = li.dataset.editor_id;
-                        if (editor_id) {
-                            // files open in the editor hash themselves
-                            setTimeout(zipPoller,1,index+1);
-                        } else {
-                            const sha_el = qs(li,".sha1");
-                            if(sha_el && sha_el.textContent==='') {
-                                pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
-                                    sha_el.textContent=hash;
-                                    setTimeout(zipPoller,1,index+1);
-                                });
-                            } else {
-                                setTimeout(zipPoller,1,index+1);
-                            }
-                        }
-                    } else {
-                        setTimeout(zipPoller,1,index+1);
-                    }
-                } else {
-                    setTimeout(zipPoller,5000,0); 
-                }
-            }
-            
-            
             function on_window_close(w, fn) {
               if (typeof fn === "function" && w && typeof w === "object") {
                 setTimeout(function() {
@@ -721,6 +690,35 @@ ml(`
                 return r;
             }
             
+              function zipPoller(index) {
+                //main purpose is to keep service worker awake. but while we are doing that, might as well hash each file and display it
+                index = index || 0;
+                if (index < zip_files.length) {
+                    const filename = zip_files[index];
+                    const li = find_li (filename);
+                    if (li) {
+                        let editor_id = li.dataset.editor_id;
+                        if (editor_id) {
+                            // files open in the editor hash themselves
+                            setTimeout(zipPoller,1,index+1);
+                        } else {
+                            const sha_el = qs(li,".sha1");
+                            if(sha_el && sha_el.textContent==='') {
+                                pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
+                                    sha_el.textContent=hash;
+                                    setTimeout(zipPoller,1,index+1);
+                                });
+                            } else {
+                                setTimeout(zipPoller,1,index+1);
+                            }
+                        }
+                    } else {
+                        setTimeout(zipPoller,1,index+1);
+                    }
+                } else {
+                    setTimeout(zipPoller,5000,0); 
+                }
+            }
             
             if (["interactive","complete"].indexOf( window.document && window.document.readyState) >=0) {
                 onDOMContentLoaded();
