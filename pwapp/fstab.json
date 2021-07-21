@@ -43,7 +43,7 @@
                 "zips" : [ "https://jonathan-annett.github.io/pwapp/ace-builds-master.zip" ]
             },
             
-            "https://jonathan-annett.github.io/pwapp/shell" :{
+            "https://jonathan-annett.github.io/pwapp/shell" : {
                 "alias_root" : "/shell.js-master",
                 "zips" : [ "https://jonathan-annett.github.io/pwapp/shell.js-master.zip" ]
             },

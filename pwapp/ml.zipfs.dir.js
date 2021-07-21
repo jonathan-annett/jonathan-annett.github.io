@@ -1,7 +1,7 @@
 /* global zip_url_base,zip_virtual_dir,zip_files,full_zip_uri,updated_prefix, alias_root_fix,alias_root, parent_link,BroadcastChannel,ace*/
 
 
-/* global ml,self,caches,BroadcastChannel  */
+/* global ml,self,caches,BroadcastChannel,Shell  */
 ml(`
     
     pwaWindow@Window    | ml.pwa-win.js
@@ -38,6 +38,16 @@ ml(`
                     },1000);
                 });
             }
+            
+            /*
+            const zip_shell = new Shell('#zip_console', {
+                style : 'ubuntu',
+                theme: 'dark',
+                user: 'guest',
+                host: 'ZIPFS',
+                path: '/etc/'
+            });*/
+            
 
             const htmlFileItemLibOpts = {
                 uri:zip_url_base.replace(/^\//,''),
