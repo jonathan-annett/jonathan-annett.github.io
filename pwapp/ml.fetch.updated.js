@@ -52,9 +52,9 @@ ml([],function(){ml(2,
             url = full_URL(location.origin,url);
             virtualDirQuery(url).then(function(entry){
                 
-                if (entry&& entry.aliased_url) {
+                if (entry && (entry.prefix || entry.aliased_url)) {
                     // this is a virtual entry. if it was updated, the "virtual" path will return contents and updated
-                    databases.updatedURLS.getItem(entry.aliased_url,function(err,args){
+                    databases.updatedURLS.getItem(entry.aliased_url||entry.fixup_url,function(err,args){
                         if(err) {
                             return cb(err);
                         }
@@ -94,9 +94,9 @@ ml([],function(){ml(2,
         function URLIsUpdated (url,cb) {
             url = full_URL(location.origin,url);
             virtualDirQuery(url).then(function(entry){
-                if (entry&& entry.aliased_url) {
+                if (entry && (entry.prefix || entry.aliased_url)) {
                     // this is a virtual entry. if it was updated, the "virtual" path will be in updatedURLS
-                    cb (databases.updatedURLS.keyExists(entry.aliased_url));
+                    cb (databases.updatedURLS.keyExists(entry.aliased_url||entry.fixup_url));
                     
                 } else {
                     // it's not a virtual entry, see if it has been updated
