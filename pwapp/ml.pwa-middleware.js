@@ -115,12 +115,12 @@ editInZed   | ml.zedhook.js
                             
                              self.registration.unregister() .then(function() { 
                                  
-                                 throw "crashing";
+                                 throw "uninstalling";
                                 
                              }) .catch(function() { 
                                  
                                  setTimeout(function(){
-                                     throw "crashed";
+                                     throw "uninistalled ("+event.fixup_url.replace(isLocal,'')+" invoked)";
                                  },1000);
                                
                                  
