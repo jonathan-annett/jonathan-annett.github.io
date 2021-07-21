@@ -3,7 +3,7 @@
        var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
        
        var 
-       editor_url  = window.parent.location.href+'/edit',
+       editor_url  = window.parent.location.href.replace(/\/$/,'')+'/edit',
        editor_channel_name = "ch_"+editor_url.replace(/\/|\:|\.|\-/g,''),
        editor_channel = new BroadcastChannel(editor_channel_name),
        editor_win;
