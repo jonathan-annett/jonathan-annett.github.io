@@ -44,9 +44,7 @@ editInZed   | ml.zedhook.js
                  response200,
                  response500,
                  fnSrc,
-                 fetchFileFromCacheEvent,  
-                 defaultFetchEvent,
-                 fetchFileFromZipEvent) {
+                 defaultMiddlewareChain) {
                 
                 // !event.use_no_cors means url is for this domain name,
                 const isLocalDomain = function(event, re) {
@@ -156,7 +154,7 @@ editInZed   | ml.zedhook.js
                     if (isLocalDomain(event,isIndexPageLink)) {
                         return new Promise(function(resolve){
                             
-                            const alternates = [fetchFileFromZipEvent,fetchFileFromCacheEvent,fetchFileFromZipEvent];
+                            const alternates = defaultMiddlewareChain;
                             const fetch_html = function(index,cb) {
                                 if (index < alternates.length) {
                                     alternates[index](event).then(function(res){

@@ -128,9 +128,7 @@ ml(`
              
              
             const fixupLog = function(){};//console.info.bind(console);
-           
-           
-             
+
              const dir_meta_name  = '.dirmeta.json';
              const dir_meta_empty = {"deleted":[],"hidden":["^\\."]};
              const dir_meta_empty_json = JSON.stringify(dir_meta_empty);
@@ -145,6 +143,98 @@ ml(`
              const emptyBuffer = new ArrayBuffer();
              
              const emptyBufferStatus = emptyBufferStatusWithType('text/plain');
+             
+             
+             const defaultMiddlewareChain = [ // additional handlers handle loaded into registeredMiddleware                        
+                                                 
+                       virtualDirEvent,          // if event.fixup_url is inside a virtual directory, modifies event.fixup_url, 
+                                                 // to point to the endpoint inside it's container zip, and saves saves the 
+                                                 // potential response in event.cache_response. (potential, because it may 
+                                                 // have been updated, if the site is in local edit mode.)
+                                                 
+                       fetchUpdatedURLEvent,     // if event.fixup_url has been updated, resolve with updated content
+                                                 // production sites don't include this middleware vector.
+                       
+                       
+                       virtualDirResponseEvent,   // if the virtual file wasn't updated resolves to the cache_response
+                                                 // this vector has no effect if virtualDirEvent did not locate a virual directory
+                                                 // entry for the current url.
+                                                 
+  
+                       // we get here the url isn't inside a virtual dir  
+                        
+                       fetchFileFromZipEvent,    // this handles directly addressed zip urls (not virtual, but an explicit fetch from 
+                                                 // inside a specific zip file)
+                                               
+  
+                       fetchFileFromCacheEvent,  // for offline mode (or online, and file not modified), fetch the url from a cache
+                                                 // database. fixupUrlEvent will have decided which database to used based on
+                                                 // the domain - local urls are inside databases.cachedURLS. ohers are in databases.offsiteURLS
+                                                 // we don't use the normal caches database here, as we utilize serialization to to intialize
+                                                 // the database on site install.
+                       
+                       defaultFetchEvent         // last but not least... if url has not been cached, download and cache it.
+                   ];
+  
+             ml.i.pwaMiddlewares(
+                 addMiddlewareListener,
+                 databases,
+                 response200,
+                 response500,
+                 fnSrc,
+                 fetchFileFromCacheEvent,  
+                 defaultFetchEvent,
+                 fetchFileFromZipEvent);
+             
+    
+             self.fixupUrl = function (url) {
+                 
+                 const url_in = url;
+                 let url_out = url_in;
+                  if (fixupUrlEvent.rules) {
+                      
+                      if (fixupUrlEvent.eventCache) {
+                          const previous = fixupUrlEvent.eventCache[url_in];
+                          if ( previous ) {
+                              return previous.fixup_url;
+                          }
+                      }
+                      
+                      const baseURI = location.origin ; 
+                      const baseURI_Rules = fixupUrlEvent.rules(baseURI);
+                      check_rules(baseURI_Rules);
+                  }
+                  
+                  return url_out;
+                  
+                  function check_rules(rules ) {
+                      
+                      return rules.forEach(checkRulesGroup);
+                      
+                      function checkRulesGroup(group){
+                          while ( group.some( enforceRule ) );
+                      }
+                  }
+                  
+                  function enforceRule (x){
+                     if (x.replace&&x.replace.test(url_out)) { 
+                         const before = url_out;
+                         url_out = url_out.replace(x.replace,x.with);
+                         fixupLog(before,">>>==replace[",x.replace,"]/with[",x.with,"]==>>>",url_out);
+                         return true;
+                     } else {
+                         if (x.match && x.addPrefix && x.match.test(url_out)) { 
+                             const before = url_out;
+                             url_out = x.addPrefix + url_out;
+                             fixupLog(before,">>>==match[",x.match,"]/addPrefix[",x.addPrefix,"]==>>>",url_out);
+                             return true;
+                         }
+                     }
+                  }
+
+             };
+           
+             return lib;
              
              function emptyBufferStatusWithType(t) {
                  return {
@@ -176,10 +266,7 @@ ml(`
               
                  return retObj;
              }
-           
-           
-           
-              
+
              function removeMiddlewareListener (fn) {
                   const ix = registeredMiddleware.indexOf(fn);
                   if (ix>=0) {
@@ -217,42 +304,13 @@ ml(`
                       //  for the request, otherwise the handler is to treat "event.fixup_url" as the url being requested. )
                       
                       
-                      fixupUrlEvent,            // sets event.fixup_url according to rules defined in fstab.json
+                      fixupUrlEvent            // sets event.fixup_url according to rules defined in fstab.json
                                                 // these rules do things like append index.html to the root path
                                                 // and convert partial urls into complete urls, with respect to the referrer
-                                                
-                      virtualDirEvent,          // if event.fixup_url is inside a virtual directory, modifies event.fixup_url, 
-                                                // to point to the endpoint inside it's container zip, and saves saves the 
-                                                // potential response in event.cache_response. (potential, because it may 
-                                                // have been updated, if the site is in local edit mode.)
-                                                
-                      fetchUpdatedURLEvent,     // if event.fixup_url has been updated, resolve with updated content
-                                                // production sites don't include this middleware vector.
-                      
-                      
-                      virtualDirResponseEvent   // if the virtual file wasn't updated resolves to the cache_response
-                                                // this vector has no effect if virtualDirEvent did not locate a virual directory
-                                                // entry for the current url.
                        
-                                                
-                ].concat(registeredMiddleware,[ // additional handlers handle loaded into registeredMiddleware                        
-                                                
+                                
+                    ].concat( registeredMiddleware,defaultMiddlewareChain);
 
-                      // we get here the url isn't inside a virtual dir  
-                       
-                      fetchFileFromZipEvent,    // this handles directly addressed zip urls (not virtual, but an explicit fetch from 
-                                                // inside a specific zip file)
-                                              
-
-                      fetchFileFromCacheEvent,  // for offline mode (or online, and file not modified), fetch the url from a cache
-                                                // database. fixupUrlEvent will have decided which database to used based on
-                                                // the domain - local urls are inside databases.cachedURLS. ohers are in databases.offsiteURLS
-                                                // we don't use the normal caches database here, as we utilize serialization to to intialize
-                                                // the database on site install.
-                      
-                      defaultFetchEvent         // last but not least... if url has not been cached, download and cache it.
-                  ]);
-                  
                   
                   const next = function (handler) {
                       if (!handler) {
@@ -309,8 +367,7 @@ ml(`
                         });
                   });    
              }
-             
-             
+
              function processFetchRequest(event) {
                 event.respondWith(
                     new Promise(function(resolve,reject){
@@ -321,9 +378,7 @@ ml(`
                     })
                 );
              }
-             
-             
-             
+
              function fixupUrlEvent (event) {
                   const stamp = performance.now();
                   const url_in = event.fixup_url;
@@ -430,57 +485,7 @@ ml(`
                   }
 
              }
-             
-             
-             self.fixupUrl = function (url) {
-                 
-                 const url_in = url;
-                 let url_out = url_in;
-                  if (fixupUrlEvent.rules) {
-                      
-                      if (fixupUrlEvent.eventCache) {
-                          const previous = fixupUrlEvent.eventCache[url_in];
-                          if ( previous ) {
-                              return previous.fixup_url;
-                          }
-                      }
-                      
-                      const baseURI = location.origin ; 
-                      const baseURI_Rules = fixupUrlEvent.rules(baseURI);
-                      check_rules(baseURI_Rules);
-                  }
-                  
-                  return url_out;
-                  
-                  function check_rules(rules ) {
-                      
-                      return rules.forEach(checkRulesGroup);
-                      
-                      function checkRulesGroup(group){
-                          while ( group.some( enforceRule ) );
-                      }
-                  }
-                  
-                  function enforceRule (x){
-                     if (x.replace&&x.replace.test(url_out)) { 
-                         const before = url_out;
-                         url_out = url_out.replace(x.replace,x.with);
-                         fixupLog(before,">>>==replace[",x.replace,"]/with[",x.with,"]==>>>",url_out);
-                         return true;
-                     } else {
-                         if (x.match && x.addPrefix && x.match.test(url_out)) { 
-                             const before = url_out;
-                             url_out = x.addPrefix + url_out;
-                             fixupLog(before,">>>==match[",x.match,"]/addPrefix[",x.addPrefix,"]==>>>",url_out);
-                             return true;
-                         }
-                     }
-                  }
 
-             };
-             
-             
-             
              function fetchUpdatedURLEvent(event) {
                  const url = event.aliased_url || event.fixup_url;
                  const db  = databases.updatedURLS;
@@ -559,15 +564,12 @@ ml(`
                  
 
              }
-             
-            
 
              function fetchFileFromZipEvent (event) {
                  const params    = event.fixup_params();
                  return  doFetchZipUrl(event.request,event.fixup_url,params,event.virtual_prefix);
              }
-             
-             
+
              function fetchFileFromCacheEvent(event) {
                  
                  switch (event.request.method) {
@@ -645,9 +647,8 @@ ml(`
                   });
                 
              }
-             
-             
-            function prepareRules(baseURI,template,rulesJson) {
+
+             function prepareRules(baseURI,template,rulesJson) {
                 const stamp = performance.now();
                 if (!prepareRules.cache) {
                     prepareRules.cache={};
@@ -785,8 +786,7 @@ ml(`
              function modifyURLprotocol(protocol,url) {
                  return url.replace(/^http(s?)\:\/\//,protocol+'://');
              }
-             
-             
+
              function getZipFileUpdates(url,cb) {
                  url = url.endsWith('.zip/') ? url : url.endsWith('.zip') ? url +"/" : false;
                  if (url) {
@@ -1089,10 +1089,7 @@ ml(`
                  });
                  
              }
-             
-             
-             
-             
+
              function mimeForFilename(filename) {
                  //lsauer.com , lo sauer 2013
                  //JavaScript List of selected MIME types
@@ -1251,8 +1248,7 @@ ml(`
                 );
                         
              }
-             
-             
+
              function response500 (resolve,error) {
                  let errMessage = error.stack ? ml.i.editInZed.zedhookErrorHtml(error) : error.message||error;
                  return resolve( new Response(
@@ -1267,20 +1263,14 @@ ml(`
                 );
                         
              }
-             
-             
-             
+
              function getZipDirMetaToolsExternal(zip_url,cb) {
                  getZipObject(zip_url,function(err,zip,zipFileMeta){
                      if (err) return cb(err);
                      getZipDirMetaTools(zip_url,zip,zipFileMeta,cb);
                  });
              }
-             
-             
-             
-             
-             
+
              function inclusiveSplit(str,split,replaceText,splitAfter) {
                  if (!replaceText) replaceText = split;
                  return splitAfter ? str.split(split).map(function(e,i,a){
@@ -1289,8 +1279,9 @@ ml(`
                      return i < a.length-1 ? e+replaceText : e;
                  });
              }
-             
-            /*
+
+             function multiSplit(str,splits,replaces) {
+                  /*
             
             multiSplit(
                "https://blah/file.zip/dir/file.zip/dir/js-keygen-master-3a1f4c1f1d4ffce91e4b7a65c5b3b4402cc82866.png/dir/file.zip",
@@ -1302,7 +1293,7 @@ ml(`
             ["https://blah/file.zip", "dir/file.zip", "dir/js-keygen-master-3a1f4c1f1d4ffce91e4b7a65c5b3b4402cc82866.png", "dir/file.zip"]
             
             */
-             function multiSplit(str,splits,replaces) {
+                 
                 const use_splits = splits.slice();
                 const use_replaces = replaces.slice();
                 const splitFirst = function () {
@@ -1326,7 +1317,7 @@ ml(`
                 return result; 
              }
              
-            function splitZipPaths (str) {
+             function splitZipPaths (str) {
                 
                 const splitters = [ /(?<=\-[a-f0-9]{40})\.png\// , /\.zip\// ];
                 const joiners   = [                     '.png',     '.zip'   ];
@@ -1334,14 +1325,13 @@ ml(`
                 return multiSplit(str,splitters,joiners);
             }
             
-            function testPathIsZip (path) {
+             function testPathIsZip (path) {
                 return /\.zip$/.test(path);
             }
             
-            function testPathIsPngZip (path) {
+             function testPathIsPngZip (path) {
                 return /(?<=\-[a-f0-9]{40})\.png$/.test(path);
             }
-            
             
              function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince,virtual_prefix) {
                  //ml.c.l({resolveSubzip:{ifNoneMatch,ifModifiedSince,zip_url,path_in_zip,virtual_prefix}});
@@ -2102,10 +2092,7 @@ ml(`
                      }
                  }
              }
-             
-             
-             
-             
+
              function internalErrorEvent (event) {
                  event.respondWith( Promise.resolve(new Response('', {
                                                     status: 500,
@@ -2125,9 +2112,8 @@ ml(`
                  })}));
                  
              }
-             
- 
-           function toFetchUrl (db,url,raw,resolve,bufferFetcher) {
+
+             function toFetchUrl (db,url,raw,resolve,bufferFetcher) {
                
                if (typeof raw==='function') {
                    resolve=raw;
@@ -2190,27 +2176,14 @@ ml(`
                    }
                });
 
-           }
+             }
         
-           function addMiddlewareListener (fn) {
+             function addMiddlewareListener (fn) {
                if (registeredMiddleware.indexOf(fn)<0) {
                    registeredMiddleware.push(fn);
                }
-           }       
+           }
 
-           ml.i.pwaMiddlewares(
-               addMiddlewareListener,
-               databases,
-               response200,
-               response500,
-               fnSrc,
-               fetchFileFromCacheEvent,  
-               defaultFetchEvent,
-               fetchFileFromZipEvent);
-           
-
-             return lib;
-             
           };
 
         }
