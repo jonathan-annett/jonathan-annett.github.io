@@ -182,9 +182,7 @@ ml(`
                  response200,
                  response500,
                  fnSrc,
-                 fetchFileFromCacheEvent,  
-                 defaultFetchEvent,
-                 fetchFileFromZipEvent);
+                 defaultMiddlewareChain);
              
     
              self.fixupUrl = function (url) {
