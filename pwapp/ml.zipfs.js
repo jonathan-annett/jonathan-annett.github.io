@@ -317,7 +317,18 @@ ml(`
                       const promise = handler(event);
                       
                       if (promise) {
+                         let timeout = setTimeout (function () {
+                             timeout = undefined;
+                             response500 (function(response){
+                                 cb(undefined,response);
+                             },"middleware "+handler.name+" did not respond within 5 seconds");
+                             
+                         },5000);
                          promise.then(function(response){
+                             if (timeout) {
+                                 clearTimeout(timeout);
+                                 timeout = undefined;
+                             }
                              if (!response) return next(chain.shift()); 
                                  
                              //console.log(handler.name,"returned a response for",event.fixup_url,"from",event.request.referrer); 
