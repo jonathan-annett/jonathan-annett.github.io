@@ -119,7 +119,8 @@ ml([],function(){ml(2,
                                                   
                                    
                                        } else {
-                                           return resolve();
+                                           const zip_root = virtualDirDB.virtualDirZipBase[prefix].root;
+                                           return resolve(undefined,prefix + zip_root + url.substr(prefix.length));
                                        }
                                        
                                    };
@@ -136,12 +137,14 @@ ml([],function(){ml(2,
                     
                    return new Promise(function(resolve){
                        
-                       virtualDirQuery (event.fixup_url).then(function(entry){
+                       virtualDirQuery (event.fixup_url).then(function(entry,aliased_url){
                            if (entry) {
                                event.fixup_url      = entry.fixup_url;
                                event.cache_response = entry.response;
                                event.virtual_prefix = entry.prefix;
                                event.aliased_url    = entry.aliased_url;
+                           } else {
+                               event.aliased_url = aliased_url;
                            }
                            resolve();
                        });
