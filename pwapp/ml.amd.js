@@ -679,23 +679,24 @@ function amd(root_js,bound_self){
                 P:(v)=>1&&{value: v,enumerable: !0,configurable: !0},
                 //c.s set key value in obj, returning value
                 s:(o,k,v)=>{Object.defineProperty(o,k,c.P(v));return v;},
-                m:(o,e,v,f,F)=>{
+                m:(o,e,v,f,F,J)=>{
                     
                   c.s(o,e,v); // do the import into o[e]
-                  if (!ml.d[e]) {
-                      ml.d[e]={h: ml.cur ? ml.cur.src : c.ri()+".js",f:f,F:F};
-                      ml.h[ ml.d[e].h ]={e:{}};
+                  J=ml.d[e];
+                  if (!J) {
+                      J=ml.d[e]={h: ml.cur ? ml.cur.src : c.ri()+".js",f:f,F:F};
+                      ml.h[ J.h ]={e:{}};
                       
-                      urlIndex[ ml.d[e].h ] = {
+                      urlIndex[ J.h ] = {
                           module  : {exports : v },
                           exports : v
                       };
                   } else {
-                      ml.d[e].f = f;
-                      ml.d[e].F = F;
+                      J.f = f;
+                      J.F = F;
                   }
                   
-                  c.s(ml.h[ ml.d[e].h ].e,e,v);
+                  c.s(ml.h[ J.h ].e,e,v);
                 },
                 
                 // ml(3)->c[1] = resolve to whatever self is (Window,ServiceWorkerGlobalScope or Object if self was not assigned)
