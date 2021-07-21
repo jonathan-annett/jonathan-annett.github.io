@@ -45,7 +45,7 @@ ml(`
                  virtualDirDB,
                  
                  virtualDirQuery, virtualDirEvent,
-                 virtualDirResponseEvent, newVirtualDirs
+                 newVirtualDirs
                  // from ...
              } = ml.i.virtualDirLib( 
                  // which needs these items...
@@ -150,22 +150,13 @@ ml(`
              
                   
              const defaultMiddlewareChain = [ // additional handlers handle loaded into registeredMiddleware                        
+                        
+                       fetchUpdatedURLEvent,     
                                                  
                        virtualDirEvent,          // if event.fixup_url is inside a virtual directory, modifies event.fixup_url, 
                                                  // to point to the endpoint inside it's container zip, and saves saves the 
                                                  // potential response in event.cache_response. (potential, because it may 
                                                  // have been updated, if the site is in local edit mode.)
-                                                 
-                       fetchUpdatedURLEvent,     // if event.fixup_url has been updated, resolve with updated content
-                                                 // production sites don't include this middleware vector.
-                       
-                       
-                       virtualDirResponseEvent,   // if the virtual file wasn't updated resolves to the cache_response
-                                                 // this vector has no effect if virtualDirEvent did not locate a virual directory
-                                                 // entry for the current url.
-                                                 
-  
-                       // we get here the url isn't inside a virtual dir  
                         
                        fetchFileFromZipEvent,    // this handles directly addressed zip urls (not virtual, but an explicit fetch from 
                                                  // inside a specific zip file)
@@ -491,7 +482,7 @@ ml(`
              }
 
              function fetchUpdatedURLEvent(event) {
-                 const url = event.aliased_url || event.fixup_url;
+                 const url = event.fixup_url;
                  const db  = databases.updatedURLS;
                  
                  switch (event.request.method) {
@@ -499,8 +490,7 @@ ml(`
                      case "PUT"    : return new Promise ( toUpdateUrl );
                      case "DELETE" : return new Promise ( toRemoveUrl );
                  }
-                 
-                 
+
                  function toUpdateUrl (resolve,reject) {
                         
                      event.request.arrayBuffer().then(function(buffer){
@@ -521,8 +511,7 @@ ml(`
                  function toRemoveUrl (resolve,reject) {
                         
                     let inzip   = event.request.headers.get('x-is-in-zip') ===  '1';
-                    
-                    
+
                     removeUpdatedURLContents (url,function(){
                         
                         
@@ -549,9 +538,7 @@ ml(`
                         }
                         
                     }); 
-                    
-                    
-                    
+
                     function okStatus() {
                           resolve(new Response('ok', {
                             status: 200,
@@ -564,8 +551,6 @@ ml(`
                     }
                  
                  }
-                 
-                 
 
              }
 

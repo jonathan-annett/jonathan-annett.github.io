@@ -18,7 +18,6 @@ ml([],function(){ml(2,
                     virtualDirQuery,
                     virtualDirEvent,
                     newVirtualDirs,
-                    virtualDirResponseEvent,
                     virtualDirDB 
                 };
                 
@@ -137,12 +136,28 @@ ml([],function(){ml(2,
                     
                    return new Promise(function(resolve){
                        
+                       if (event.fixup_url.endsWith("/virtual.json")) {
+                           const json = JSON.stringify(virtualDirDB,undefined,4);
+                           return Promise.resolve(new Response(json, {
+                             status: 200,
+                             headers: new Headers({
+                               'Content-Type'   : 'application/json',
+                               'Content-Length' : json.length
+                             })
+                           }));
+                       }
+                       
                        virtualDirQuery (event.fixup_url).then(function(entry){
-                           if (entry&& entry.prefix) {
-                               event.fixup_url      = entry.fixup_url;
-                               event.cache_response = entry.response;
-                               event.virtual_prefix = entry.prefix;
-                               event.aliased_url    = entry.aliased_url;
+                           
+                           if (entry&& entry.response) {
+                               
+                               const response = entry.response;
+                               delete entry.fixup_url;
+                               delete entry.response;
+                               delete entry.prefix;
+                               delete entry.aliased_url;
+                               return Promise.resolve(response);
+                               
                            } else {
                                if (entry&& entry.aliased_url) {
                                     event.aliased_url = entry.aliased_url;
@@ -155,31 +170,7 @@ ml([],function(){ml(2,
     
                 }
                 
-                 function virtualDirResponseEvent (event) {
-                   
-                   if (event.cache_response) {
-                       const response = event.cache_response.clone();
-                       delete event.cache_response;
-                       return Promise.resolve(response);
-                   } else {
-                       if (!event.virtual_prefix && event.aliased_url) {
-                           // remvove aliased url which was set to allow newly created files to be fetched.
-                           delete event.aliased_url;
-                       }
-                       if (event.fixup_url.endsWith("/virtual.json")) {
-                           const json = JSON.stringify(virtualDirDB,undefined,4);
-                           return Promise.resolve(new Response(json, {
-                             status: 200,
-                             headers: new Headers({
-                               'Content-Type'   : 'application/json',
-                               'Content-Length' : json.length
-                             })
-                           }));
-                       }
-                   }
-                     
-                }
-
+                 
                 return lib;
             }            
             
