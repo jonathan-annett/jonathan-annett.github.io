@@ -434,7 +434,8 @@ ml(`
                     if (err) {
                         return;
                     } else {
-                        pwaApi.updateURLContents (filename,new TextEncoder().encode(html),true,function(err,hash) {
+                        filename = updated_prefix + filename.replace(alias_root_fix,'');
+                        pwaApi.updateURLContents ( filename,new TextEncoder().encode(html),true,function(err,hash) {
                             if (err) {
                                 return ;
                             }
