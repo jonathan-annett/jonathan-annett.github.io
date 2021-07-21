@@ -69,6 +69,8 @@ ml(`
             const lib = {
                pwaApi : pwaApi
             };
+            
+            const editSessionData = {};
 
             function onDOMContentLoaded (){
             
@@ -268,7 +270,7 @@ ml(`
                    if (addRemove==="add") {
                       if (!fs_editor) {
                           
-                         qs("main").innerHTML+= '<pre id="fs_editor"></pre>'; 
+                         qs("main").innerHTML += '<pre id="fs_editor"></pre>'; 
                           
                          fs_editor = ace.edit("fs_editor");
                          fs_editor.setAutoScrollEditorIntoView(true);
@@ -288,10 +290,7 @@ ml(`
                        li_ed.editor.setSession(sessionFromJSON(json));
                        li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
                        li_ed.editor.focus();
-                       
-                       fs_editor.destroy();
-                       fs_editor = undefined;
-                       qs("#fs_editor",function(fse){fse.parent.removeChild(fse)});
+                       fs_editor.setValue("");
                    }
                 };
                 
@@ -493,8 +492,10 @@ ml(`
                     const li_ed = ed.parentNode;
                     li.classList.remove("editing");
                     li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
+                    editSessionData[ filename ] = sessionToJSON(li_ed.editor);
+        
                     li_ed.removeChild(ed);
-                    
+
                     
                     delete li_ed.inbuiltEditorOnSessionChange;
                     delete li_ed.editor;
@@ -571,7 +572,23 @@ ml(`
                         } else {
                             
                             
-                            li_ed.editor.session.setValue(new TextDecoder().decode(text));
+                            const currentText = new TextDecoder().decode(text);
+                            
+                            if (editSessionData[ filename ]) {
+                                 li_ed.editor.setSession(sessionFromJSON(editSessionData[ filename ]));
+                                 if (li_ed.editor.session.getValue() !== currentText) {
+                                     li_ed.editor.session.setValue(currentText);
+                                 }
+                                 delete editSessionData[ filename ];
+                            } else {
+                                 li_ed.editor.session.setValue(currentText);
+                            }
+                           
+                            
+                            
+                           
+                            
+                            
                             li_ed.hashDisplay = qs(li,".sha1");
                             li_ed.hashDisplay.textContent=hash;
                             li_ed.setText = function (text) {
@@ -586,7 +603,6 @@ ml(`
                                 });
                             }
                            
-                            
                             li_ed.inbuiltEditorOnSessionChange = function () {
                                     // delta.start, delta.end, delta.lines, delta.action
                                     
@@ -607,6 +623,7 @@ ml(`
 
                         
                     });
+                    
                     return li_ed;
                 } else {
                     const ed = qs("#"+editor_id);
