@@ -156,11 +156,27 @@ ml([],function(){ml(2,
                                delete entry.response;
                                delete entry.prefix;
                                delete entry.aliased_url;
+                               delete entry.url;
                                return Promise.resolve(response);
                                
                            } else {
-                               if (entry&& entry.aliased_url) {
-                                    event.aliased_url = entry.aliased_url;
+                               if (entry) {
+                                    if (event.aliased_url) {
+                                       event.aliased_url = entry.aliased_url;
+                                       delete entry.aliased_url;
+                                    }
+                                    if (event.fixup_url) {
+                                        event.fixup_url = entry.fixup_url;
+                                        delete entry.fixup_url;
+                                    }
+                                        
+                                    if (event.prefix) {
+                                        event.virtual_prefix  = entry.prefix;
+                                        
+                                        delete entry.prefix;
+                                    }
+                                    
+                                    delete entry.url;
                                }
                            }
                            resolve();
