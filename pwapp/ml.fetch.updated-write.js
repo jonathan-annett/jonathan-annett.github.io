@@ -65,7 +65,7 @@ ml(`
         // we need to update the correct overlayed url, so local reads well get the correct data.
         virtualDirQuery(url).then(function(entry){
             
-            if (entry&& entry.prefix) {
+            if (entry&& entry.aliased_url) {
                 // this is updating a virtual item - so we need to patch the correct fixup_url
                 getPayload(function(payload){
                     
