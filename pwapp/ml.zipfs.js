@@ -10,7 +10,7 @@ ml(`
     zipFSListingLib                        | ml.zipfs.dir.sw.js
     virtualDirLib@ServiceWorkerGlobalScope | ml.zipfs.virtual.js
     zipPNGLib@ServiceWorkerGlobalScope     | ml.zipfs.png.js
-    pwaMiddlewares                         | ml.pwa-middleware.js
+    pwaMiddlewares                         | ml.zipfs.middleware.js
     editInZed@ServiceWorkerGlobalScope     | ml.zedhook.js
 
     `,function(){ml(2,
@@ -124,7 +124,7 @@ ml(`
             };          
              
                               
-             const openZipFileCache = { };
+            const openZipFileCache = { };
              
              
             const fixupLog = function(){};//console.info.bind(console);
@@ -230,19 +230,20 @@ ml(`
                                                 // production sites don't include this middleware vector.
                       
                       
-                      virtualDirResponseEvent,  // if the virtual file wasn't updated resolves to the cache_response
+                      virtualDirResponseEvent   // if the virtual file wasn't updated resolves to the cache_response
                                                 // this vector has no effect if virtualDirEvent did not locate a virual directory
                                                 // entry for the current url.
                        
+                                                
+                ].concat(registeredMiddleware,[ // additional handlers handle loaded into registeredMiddleware                        
+                                                
+
                       // we get here the url isn't inside a virtual dir  
                        
                       fetchFileFromZipEvent,    // this handles directly addressed zip urls (not virtual, but an explicit fetch from 
                                                 // inside a specific zip file)
-                                                
-                                                
-                ].concat(registeredMiddleware,[  // additional handlers handle loaded into registeredMiddleware                        
-                                                
-                      
+                                              
+
                       fetchFileFromCacheEvent,  // for offline mode (or online, and file not modified), fetch the url from a cache
                                                 // database. fixupUrlEvent will have decided which database to used based on
                                                 // the domain - local urls are inside databases.cachedURLS. ohers are in databases.offsiteURLS
@@ -2204,7 +2205,8 @@ ml(`
                response500,
                fnSrc,
                fetchFileFromCacheEvent,  
-               defaultFetchEvent);
+               defaultFetchEvent,
+               fetchFileFromZipEvent);
            
 
              return lib;

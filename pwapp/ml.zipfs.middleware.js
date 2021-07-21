@@ -23,6 +23,11 @@ editInZed   | ml.zedhook.js
             
             const isIndexPageLink  = /\/index\.js$/;
             
+            const indexPageBodyInject = '<iframe width="60" height="20" src="ml.pwa.dev.helper.html" style="position:absolute;right:0;top:0;"></iframe>';
+            const indexPageBodyInjected = regexpEscape(indexPageBodyInject);
+            const indexPageBodyInjectAt = /<\/body\>/i;
+            const indexPageBodyInjectReplace = indexPageBodyInject + '</body>';
+            
             const editInZedHtml = self.editInZed.zedhookHtml;
             
             return middlewares;
@@ -40,7 +45,8 @@ editInZed   | ml.zedhook.js
                  response500,
                  fnSrc,
                  fetchFileFromCacheEvent,  
-                 defaultFetchEvent) {
+                 defaultFetchEvent,
+                 fetchFileFromZipEvent) {
                 
                 // !event.use_no_cors means url is for this domain name,
                 const isLocalDomain = function(event, re) {
@@ -141,7 +147,7 @@ editInZed   | ml.zedhook.js
                     
                 }); 
                 
-                //<iframe width="560" height="315" src="https://css-tricks.com"></iframe>
+                
                 
                 
                 // hot link error messages to editor
@@ -150,26 +156,40 @@ editInZed   | ml.zedhook.js
                     if (isLocalDomain(event,isIndexPageLink)) {
                         return new Promise(function(resolve){
                             
-                            fetchFileFromCacheEvent(event).then(function(response){
-                                
-                                response.text().then(function(html){
-                                    
-                                    const localURL = event.fixup_url.replace(isLocal,'');
-                                    
-                                    console.log("intercepted index html:", localURL);
-                                    
-                                    response200 (resolve,html,{
-                                        name          : localURL,
-                                        contentType   : 'text/html',
-                                        contentLength : html.length
+                            const alternates = [fetchFileFromZipEvent,fetchFileFromCacheEvent,fetchFileFromZipEvent];
+                            const fetch_html = function(index,cb) {
+                                if (index < alternates.length) {
+                                    alternates[index](event).then(function(res){
+                                        if (res) {
+                                           res.text().then(cb);
+                                        } else {
+                                           fetch_html(index+1,cb);
+                                        }
+                                    }).catch (function(e) {
+                                        fetch_html(index+1,cb);
                                     });
-    
-                                    
-                                });
+                                } else {
+                                    cb ();
+                                }
+                            };
+                            
+                            fetch_html(0,function(html){
+                                const localURL = event.fixup_url.replace(isLocal,'');
                                 
-                               
+                                
+                                if (indexPageBodyInjectAt.test(html) && !indexPageBodyInjected.test(html)){
+                                    console.log("intercepted index html:", localURL);
+                                    html = html.replace(indexPageBodyInjectAt,indexPageBodyInjectReplace);
+                                } else {
+                                    console.log("skipped index html:", localURL);
+                                }
+                                
+                                response200 (resolve,html,{
+                                    name          : localURL,
+                                    contentType   : 'text/html',
+                                    contentLength : html.length
+                                });
                             });
-                           
                                    
                         });
                     } 
