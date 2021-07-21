@@ -34,7 +34,7 @@ ml(`
                     preventDefaults (e);
                     editor_channel.postMessage({stop:1});
                     setTimeout(function(){
-                        location.replace();
+                        location.replace(location.href);
                     },5000);
                 });
             }

@@ -15,7 +15,7 @@
        
        editor_channel.onmessage=function(event) {
            if (event.data && event.data.refresh) {
-               window.parent.location.replace();
+               window.parent.location.replace(window.parent.location.href);
            }
            
            if (event.data && event.data.stop) {
