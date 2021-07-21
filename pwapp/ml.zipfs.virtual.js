@@ -163,6 +163,7 @@ ml([],function(){ml(2,
                        return Promise.resolve(response);
                    } else {
                        if (!event.virtual_prefix && event.aliased_url) {
+                           // remvove aliased url which was set to allow newly created files to be fetched.
                            delete event.aliased_url;
                        }
                        if (event.fixup_url.endsWith("/virtual.json")) {
