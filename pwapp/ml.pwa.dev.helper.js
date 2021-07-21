@@ -17,6 +17,10 @@
            if (event.data && event.data.refresh) {
                window.parent.location.replace();
            }
+           
+           if (event.data && event.data.stop) {
+              window.parent.location = 'stop';
+           }
        }
        
 

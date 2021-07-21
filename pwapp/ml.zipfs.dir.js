@@ -18,8 +18,26 @@ ml(`
         Window: function pwaZipDirListing(pwa,zipFSApiLib,sha1,MarkdownConverter ) {
             
             
-            var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
+            var 
+            editor_url          = location.href.replace(/\/$/,'')+'/edit',
+            editor_channel_name = window.parent ? "ch_"+editor_url.replace(/\/|\:|\.|\-/g,'') : false,
+            editor_channel      = editor_channel_name ? new BroadcastChannel(editor_channel_name) : false,
+         
+            
+            deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
             const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix) ;
+            
+            
+            if (editor_channel) {
+                
+                qs ("h1 a.restart",function click(e) {
+                    preventDefaults (e);
+                    editor_channel.postMessage({stop:1});
+                    setTimeout(function(){
+                        location.replace();
+                    },5000);
+                });
+            }
 
             const htmlFileItemLibOpts = {
                 uri:zip_url_base.replace(/^\//,''),
