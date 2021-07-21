@@ -161,16 +161,16 @@ ml([],function(){ml(2,
                                
                            } else {
                                if (entry ) {
-                                    if (event.aliased_url) {
+                                    if (entry.aliased_url) {
                                        event.aliased_url = entry.aliased_url;
                                        delete entry.aliased_url;
                                     }
-                                    if (event.fixup_url) {
+                                    if (entry.fixup_url) {
                                         event.fixup_url = entry.fixup_url;
                                         delete entry.fixup_url;
                                     }
                                         
-                                    if (event.prefix) {
+                                    if (entry.prefix) {
                                         event.virtual_prefix  = entry.prefix;
                                         
                                         delete entry.prefix;
