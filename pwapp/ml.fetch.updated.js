@@ -63,7 +63,7 @@ ml([],function(){ml(2,
                             return cb (undefined,buffer,true);
                         }
                         // ok it's a virtual entry that has NOT been updated, so get the correct version from the correct zip.
-                        doFetch(entry.fixup_url,cb);
+                        doFetch(entry.fixup_url||url,cb);
                     });
                 } else {
                     // it's not a virtual entry, so just fetch it
@@ -96,7 +96,7 @@ ml([],function(){ml(2,
             virtualDirQuery(url).then(function(entry){
                 if (entry && (entry.prefix || entry.aliased_url)) {
                     // this is a virtual entry. if it was updated, the "virtual" path will be in updatedURLS
-                    cb (databases.updatedURLS.keyExists(entry.aliased_url||entry.fixup_url));
+                    cb (databases.updatedURLS.keyExists(entry.aliased_url||entry.fixup_url||url));
                     
                 } else {
                     // it's not a virtual entry, see if it has been updated
