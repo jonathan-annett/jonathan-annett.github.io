@@ -9,14 +9,14 @@ body {
      background-size: 10px 10px;
      position:absolute;
      top: 0;
-     left: 0;
+     right: 40px;
      cursor: pointer;
  }
  
  #r {
      position:absolute;
      top: 0;
-     left: 20px;
+     right: 0px;
      width : 16px;
      height :16px;
      cursor: pointer;
