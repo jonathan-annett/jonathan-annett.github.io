@@ -21,6 +21,7 @@ editInZed   | ml.zedhook.js
             
             const isSourceCodeLink = /^(https\:\/\/)(.*)(\.html|\.css|\.js)(\:[0-9]+)?\:[0-9]+$/;
             
+            const isIndexPageLink  = /\/index\.js$/;
             
             const editInZedHtml = self.editInZed.zedhookHtml;
             
@@ -32,13 +33,24 @@ editInZed   | ml.zedhook.js
             }
             
 
-             function middlewares (addMiddlewareListener,databases,response200,response500,fnSrc,fixupURL) {
+             function middlewares (
+                 addMiddlewareListener,
+                 databases,
+                 response200,
+                 response500,
+                 fnSrc,
+                 fetchFileFromCacheEvent,  
+                 defaultFetchEvent) {
                 
+                // !event.use_no_cors means url is for this domain name,
+                const isLocalDomain = function(event, re) {
+                    return !event.use_no_cors && ( !re || re.test(event.fixup_url) );
+                };
                 
                 // /databases.zip download the databases as a zip file -
                 addMiddlewareListener (function (event) {
-                    // !event.use_no_cors means url is for this domain name,
-                    if (!event.use_no_cors &&  /\/databases\.zip$/.test(event.fixup_url)) {
+                   
+                    if ( isLocalDomain(event,/\/databases\.zip$/)) {
                         return new Promise(function(resolve){
                            databases.toZip(function(err,buffer){
                                if (err) {
@@ -64,8 +76,7 @@ editInZed   | ml.zedhook.js
                 
                 // hot link error messages to editor
                 addMiddlewareListener (function (event) {
-                    // !event.use_no_cors means url is for this domain name,
-                    if (!event.use_no_cors &&  isSourceCodeLink.test(event.fixup_url)) {
+                    if ( isLocalDomain(event,isSourceCodeLink)) {
                         return new Promise(function(resolve){
                             
                                    const html  =  editInZedHtml (event.fixup_url);
@@ -81,8 +92,7 @@ editInZed   | ml.zedhook.js
             
                 // 
                 addMiddlewareListener (function (event) {
-                    // !event.use_no_cors means url is for this domain name,
-                    if (!event.use_no_cors &&  /force\-error\.js$/.test(event.fixup_url)) {
+                    if (isLocalDomain(event,/force\-error\.js$/)) {
                         return new Promise(function(resolve){
                             return response500(resolve,new Error("Forced Error to Test Browser"));
                         });
@@ -93,7 +103,7 @@ editInZed   | ml.zedhook.js
                 // /databases.zip download the databases as a zip file -
                 addMiddlewareListener (function (event) {
                     // !event.use_no_cors means url is for this domain name,
-                    if (!event.use_no_cors &&  /\/stop$/.test(event.fixup_url)) {
+                    if (isLocalDomain(event,/\/stop$/)) {
                         return new Promise(function(resolve){
                          
                             const park_url = event.fixup_url.replace(/\/stop$/,'');
@@ -130,6 +140,40 @@ editInZed   | ml.zedhook.js
                     }
                     
                 }); 
+                
+                //<iframe width="560" height="315" src="https://css-tricks.com"></iframe>
+                
+                
+                // hot link error messages to editor
+                addMiddlewareListener (function (event) {
+                    // !event.use_no_cors means url is for this domain name,
+                    if (isLocalDomain(event,isIndexPageLink)) {
+                        return new Promise(function(resolve){
+                            
+                            fetchFileFromCacheEvent(event).then(function(response){
+                                
+                                response.text().then(function(html){
+                                    
+                                    const localURL = event.fixup_url.replace(isLocal,'');
+                                    
+                                    console.log("intercepted index html:", localURL);
+                                    
+                                    response200 (resolve,html,{
+                                        name          : localURL,
+                                        contentType   : 'text/html',
+                                        contentLength : html.length
+                                    });
+    
+                                    
+                                });
+                                
+                               
+                            });
+                           
+                                   
+                        });
+                    } 
+                });
             }
             
 

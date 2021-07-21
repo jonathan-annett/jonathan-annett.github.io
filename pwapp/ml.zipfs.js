@@ -2197,7 +2197,14 @@ ml(`
                }
            }       
 
-           ml.i.pwaMiddlewares(addMiddlewareListener,databases,response200,response500,fnSrc);
+           ml.i.pwaMiddlewares(
+               addMiddlewareListener,
+               databases,
+               response200,
+               response500,
+               fnSrc,
+               fetchFileFromCacheEvent,  
+               defaultFetchEvent);
            
 
              return lib;
