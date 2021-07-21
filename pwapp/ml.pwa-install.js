@@ -10,16 +10,21 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
             ["html","html .notbeta pre.key","#runBtn", "#updateBtn"].map(qs);
             
             
-            runhere.onclick = function() {
-                sessionStorage.running=((1000*60*2) + Date.now()).toString();
-                qs("#rungif").style.display = "inline-block";
-                progressHandler(0,1,"loadProgress","loadProgressText","installProgress");
-                pwa.start(function(){
-                    betaTesterApproval().then(function(config){
-                        location.replace(config.root);   
-                    });
-                });
+            const 
+            editor_url  = window.parent.location.href.replace(/\/$/,'')+'/edit',
+            editor_channel_name = "ch_"+editor_url.replace(/\/|\:|\.|\-/g,''),
+            editor_channel = new BroadcastChannel(editor_channel_name);
+
+           
+            
+            runhere.onclick = runClick ;
+            
+            editor_channel.onmessage=function(event) {
+                 if (event.data && event.data.run) {
+                   runClick() ;
+                }
             };
+            
 
             [
                  "registered",
@@ -70,6 +75,16 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                 } 
              ); 
              
+              function runClick() {
+                  sessionStorage.running=((1000*60*2) + Date.now()).toString();
+                  qs("#rungif").style.display = "inline-block";
+                  progressHandler(0,1,"loadProgress","loadProgressText","installProgress");
+                  pwa.start(function(){
+                      betaTesterApproval().then(function(config){
+                          location.replace(config.root);   
+                      });
+                  });
+              }
               
               
               function getConfig(cb) {

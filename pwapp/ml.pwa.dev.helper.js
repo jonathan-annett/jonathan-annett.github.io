@@ -10,7 +10,7 @@
        
        if (sessionStorage.getItem(editor_channel_name)==='1') {
            document.body.querySelector("#e").classList.add("editing");
-           //editor_win = open_url (editor_url); 
+           editor_win = open_url (editor_url); 
        }
        
        editor_channel.onmessage=function(event) {
