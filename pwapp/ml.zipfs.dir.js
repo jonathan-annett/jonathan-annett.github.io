@@ -151,12 +151,13 @@ ml(`
                         
                         if (zip_files.indexOf(filename)<0) {
                             zip_files.push(filename);
-                        } else {
+                            
                             
                         }
                         
                         pwaApi.updateURLContents (filename,buffer,true,function(err,hash) {
                             if (err) {
+                                
                                 return ;
                             }
                            // li_ed.hashDisplay.textContent=hash;
@@ -432,11 +433,11 @@ ml(`
             function open_markdown (filename) {
                 var converter = new MarkdownConverter();
 
-                pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
+                pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer,updated,hash){
                     if (err) {
                         return;
                     } else {
-                        const html  = converter.makeHtml(new TextDecoder().decode(text));
+                        const html  = converter.makeHtml(new TextDecoder().decode(buffer));
                         
                         pwaApi.updateURLContents (filename+".html",new TextEncoder().encode(html),true,function(err,hash) {
                             if (err) {

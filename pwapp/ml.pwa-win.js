@@ -100,6 +100,18 @@ ml(`
                    
                },
                
+               getUpdatedURLs : function (regexTest,db,cb) {
+                   if (typeof db==='function') {
+                       cb = db;
+                       db = "updatedURLS";
+                   }
+                   sendMessage('getUpdatedURLs',{
+                       regexTest    : regexTest.source,
+                       db           : db,
+                   },cb);
+               },
+            
+               
  
                 getPNGZipImage     : getPNGZipImage,
                 

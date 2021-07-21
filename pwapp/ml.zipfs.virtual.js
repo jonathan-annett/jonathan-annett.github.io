@@ -13,13 +13,13 @@ ml([],function(){ml(2,
                 
                     
                 };
-
-                const lib = {
+                
+                 const lib = {
                     virtualDirQuery,
                     virtualDirEvent,
                     newVirtualDirs,
                     virtualDirResponseEvent,
-                    virtualDirDB
+                    virtualDirDB 
                 };
                 
                 

@@ -44,6 +44,7 @@ editInZed   | ml.zedhook.js
                  response200,
                  response500,
                  fnSrc,
+                 urls_with_helpers,
                  defaultMiddlewareChain) {
                 
                 // !event.use_no_cors means url is for this domain name,
@@ -148,13 +149,16 @@ editInZed   | ml.zedhook.js
                 // hot link error messages to editor
                 addMiddlewareListener (function (event) {
                     // !event.use_no_cors means url is for this domain name,
-                    if (isLocalDomain(event,isIndexPageLink)) {
+                    
+                    const fixup_uri = event.fixup_url.replace(isLocal,'');
+                    
+                    if (isLocalDomain(event) && urls_with_helpers.indexOf(fixup_uri)>=0 ) {
                         return new Promise(function(resolve){
                             
                             
                             fetchDefaultResponse (event,"text",function(html){
                                 if (html) {
-                                    const localURL = event.fixup_url.replace(isLocal,'');
+                                    const localURL = fixup_uri;
                                     
                                     if (indexPageBodyInjectAt.test(html) && !indexPageBodyInjected.test(html)){
                                         console.log("intercepted index html:", localURL);

@@ -36,14 +36,15 @@ ml(`
         
         
     const sha1 = self.sha1Lib.cb;
-    const { fetchUpdatedURLContents,fixupKeys,full_URL }  = self.zipUpLib(databases,fetchInternalBuffer,virtualDirQuery);
+    const { fetchUpdatedURLContents,fixupKeys,full_URL,getUpdatedURLs }  = self.zipUpLib(databases,fetchInternalBuffer,virtualDirQuery);
     
             
     return {
         fetchUpdatedURLContents,
         fixupKeys,
         updateURLContents,
-        removeUpdatedURLContents
+        removeUpdatedURLContents,
+        getUpdatedURLs
     };
 
     function updateURLContents(url,db,responseData,responseState,cb) {

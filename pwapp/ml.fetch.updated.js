@@ -41,6 +41,7 @@ ml([],function(){ml(2,
     
         return {
             fetchUpdatedURLContents,
+            getUpdatedURLs,
             URLIsUpdated,
             fixupKeys,
             full_URL
@@ -133,6 +134,40 @@ ml([],function(){ml(2,
                 });
             }
             return db;
+        }
+        
+        function getUpdatedURLs(regexTest,db,cb) {
+            
+            if (typeof regexTest ==='function') {
+               cb = regexTest;
+               db = databases.updatedURLS;
+               regexTest = undefined;
+            }
+
+            if (typeof db ==='function') {
+               cb = db;
+               db = databases.updatedURLS;
+            }
+            
+            db = typeof db ==='string' ? databases [db] : db;
+            
+            if (typeof cb ==='function') {
+                    
+                    if (db && db.keys) {
+                        
+                        db.getKeys(function(err,keys){
+                            return regexTest ? cb (undefined,keys.filter(function(k){
+                                                        return regexTest.test(k);
+                                                    })
+                                                )
+                                            : cb (undefined,keys);
+                        });
+                        
+                    } else {
+                        cb(undefined,[]);
+                    }
+            }
+            
         }
 
     }

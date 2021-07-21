@@ -3,7 +3,6 @@
     
     "(strings in this array are ignored)",
     
-    
     "group 1 - form fully formatted url",
     [
         "replace ALL http:// urls with https://",
@@ -32,14 +31,8 @@
         "append index.html to /pwapp/", 
         {
             "replace": "\\/pwapp\\/$",
-            "with": "/pwapp/index.html"
-        }, 
-        "replace  /pwapp/update with /pwapp/index.html",
-        "   - used to force visibility of non-sw index.html when sw is running",
-        "     this allows installation as app etc when sw already started",
-        {
-            "replace": "\\/pwapp\\/update\\/$",
-            "with": "/pwapp/index.html"
+            "with": "/pwapp/index.html",
+            "helper":true
         }
     ], 
     "virtual directories",

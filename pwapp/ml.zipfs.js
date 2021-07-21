@@ -55,13 +55,14 @@ ml(`
             
              const {   // import these items...
                        updateURLContents,        fetchUpdatedURLContents,
-                       removeUpdatedURLContents, fixupKeys
+                       removeUpdatedURLContents, fixupKeys,
+                       getUpdatedURLs
                        // from...
                    } = ml.i.zipUpWriteLib (
                        // which needs  these items
                        databases, fetchInternalBuffer,
                        virtualDirQuery, mimeForFilename
-                       
+
                    );
                        
 
@@ -69,7 +70,8 @@ ml(`
                 // import these items...
                 resolveZipListing, 
                 resolveZipDownload,
-                getUpdatedZipFile  
+                getUpdatedZipFile,
+                getZipFileUpdatedFiles
                 // from
             }  =  ml.i.zipFSListingLib( 
                 // whch needs these items...
@@ -78,7 +80,8 @@ ml(`
                 getZipFileUpdates,
                 getZipDirMetaTools,
                 fileisEdited,
-                response200
+                response200,
+                getUpdatedURLs
             );
              
             const {
@@ -145,6 +148,7 @@ ml(`
              const emptyBufferStatus = emptyBufferStatusWithType('text/plain');
              
              
+                  
              const defaultMiddlewareChain = [ // additional handlers handle loaded into registeredMiddleware                        
                                                  
                        virtualDirEvent,          // if event.fixup_url is inside a virtual directory, modifies event.fixup_url, 
@@ -176,12 +180,14 @@ ml(`
                        defaultFetchEvent         // last but not least... if url has not been cached, download and cache it.
                    ];
   
+             const urls_with_helpers = [];
              ml.i.pwaMiddlewares(
                  addMiddlewareListener,
                  databases,
                  response200,
                  response500,
                  fnSrc,
+                 urls_with_helpers,
                  defaultMiddlewareChain);
              
     
@@ -696,6 +702,7 @@ ml(`
                       return true;
                   });
                   const json = JSON.stringify(source);
+                  urls_with_helpers.splice(0,urls_with_helpers.length);
                   const rules_template = parseTemplate(source);
                   fixupLog("parsed rules_template",rules_template);
                   fixupUrlEvent.rules = function (baseURI) {
@@ -717,15 +724,18 @@ ml(`
                                 x[k]= new RegExp(x[k],x.flags||'');
                             }
                          };
-                         const replacements = function (x,k) {
+                         const replacements = function (x,k,l) {
                              if (x[k]) {
                                 x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
+                                if (l && l.indexOf(x[k])<0) {
+                                    l.push(x[k])
+                                }
                              }
                          };
                          
                          regexs(source,'match');   
                          regexs(source,'replace'); 
-                         replacements(source,'with');
+                         replacements(source,'with',urls_with_helpers);
                          replacements(source,'addPrefix');
                          return source;
                      }
@@ -1702,8 +1712,10 @@ ml(`
                                  // get all files currently in the zip, regardless of weather they are "deleted" or not.
                                  cb(Object.keys(zipFileMeta.files));
                              },
+                             
                              files : function (cb) {
                                  // get all files currently in the zip, and are not flagged as deleted
+                                 
                                  cb(
                                      
                                      
@@ -1714,6 +1726,7 @@ ml(`
                                      
                                 );
                              },
+                             
                              editedFiles : function (cb) {
                                  // get files that are in the updated files list
                                  getZipFileUpdates(url,function(err,files){
@@ -1731,10 +1744,12 @@ ml(`
                                    )
                                  });
                              },
+                             
                              hiddenFiles : function (cb) {
                                  const hidden=meta.hidden?meta.hidden.slice():[];
                                  cb(hidden);
                              },
+                             
                              deletedFiles : function (cb) {
                                  const deleted=meta.deleted?meta.deleted.slice():[];
                                  cb(deleted);
@@ -1911,8 +1926,7 @@ ml(`
                                  notificationIds.splice.apply(notificationIds,[0,notificationIds.length].concat(Object.keys(notifications)));
                                  cb({notificationId:notificationId}); 
                              },
-                             
-                             
+
                              writeFileString : function (file,text,hash,cb) {
                                  if (typeof hash==='function') {
                                      cb=hash;

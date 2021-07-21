@@ -272,6 +272,17 @@ ml(`
                         });
                     },
                     
+                    
+                    getUpdatedURLs : function (msg,cb) {
+                       const regexTest = new RegExp (msg.regexTest,'');
+                       zipFS.getUpdatedURLs(regexTest,msg.data.db,function(err,urls){
+                           if (err) return cb({error:err.message||err});
+                            cb({urls:urls});
+                       });
+                   },
+                    
+                 
+                    
                     updateURLContents : function (msg,cb) {
                         const data = msg.data;
                         let contentBuffer = data.content;
