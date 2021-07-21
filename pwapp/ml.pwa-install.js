@@ -27,7 +27,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                         abort = true;
                         delete sessionStorage.reloading_service_worker;
                     },2000);
-                    navigator.navigator.ready.then(function(){
+                    navigator.serviceWorker.ready.then(function(){
                         // if the service worker is running, reload the page, which will be replaced by the one in the zip
                         if (!abort) {
                             sessionStorage.reloading_service_worker=Date.now().toString(36);
