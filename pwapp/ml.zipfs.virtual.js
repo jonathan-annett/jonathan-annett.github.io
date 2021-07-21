@@ -157,10 +157,10 @@ ml([],function(){ml(2,
                                delete entry.prefix;
                                delete entry.aliased_url;
                                delete entry.url;
-                               return Promise.resolve(response);
+                               return resolve(response);
                                
                            } else {
-                               if (entry) {
+                               if (entry ) {
                                     if (event.aliased_url) {
                                        event.aliased_url = entry.aliased_url;
                                        delete entry.aliased_url;
