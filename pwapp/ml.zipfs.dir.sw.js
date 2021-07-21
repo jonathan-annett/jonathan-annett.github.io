@@ -53,7 +53,7 @@ ml(`
                                        }
                                        
                                        
-                                       getZipFileUpdates(url,function(err,additonalFiles){
+                                       getZipFileUpdates(virtual ? virtual :  url,function(err,additonalFiles){
                                            
                                            getZipDirMetaTools(url,zip,zipFileMeta,function(tools){
                                                

@@ -39,16 +39,7 @@ ml(`
                 });
             }
             
-            /*
-            const zip_shell = new Shell('#zip_console', {
-                style : 'ubuntu',
-                theme: 'dark',
-                user: 'guest',
-                host: 'ZIPFS',
-                path: '/etc/'
-            });*/
             
-
             const htmlFileItemLibOpts = {
                 uri:zip_url_base.replace(/^\//,''),
                 alias_root,
