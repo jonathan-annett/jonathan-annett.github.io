@@ -19,7 +19,7 @@ ml(`
             
             
             var 
-            editor_url          = location.href.replace(/\/$/,'')+'/edit',
+            editor_url          = location.href.replace(/\/$/,''),
             editor_channel_name = window.parent ? "ch_"+editor_url.replace(/\/|\:|\.|\-/g,'') : false,
             editor_channel      = editor_channel_name ? new BroadcastChannel(editor_channel_name) : false,
          
