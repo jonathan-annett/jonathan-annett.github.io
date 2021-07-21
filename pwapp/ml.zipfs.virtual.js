@@ -138,7 +138,7 @@ ml([],function(){ml(2,
                    return new Promise(function(resolve){
                        
                        virtualDirQuery (event.fixup_url).then(function(entry){
-                           if (entry&& entry.response) {
+                           if (entry&& entry.prefix) {
                                event.fixup_url      = entry.fixup_url;
                                event.cache_response = entry.response;
                                event.virtual_prefix = entry.prefix;
