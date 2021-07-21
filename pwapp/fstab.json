@@ -42,6 +42,12 @@
                 "alias_root" : "/ace-builds-master/src-noconflict",
                 "zips" : [ "https://jonathan-annett.github.io/pwapp/ace-builds-master.zip" ]
             },
+            
+            "https://jonathan-annett.github.io/pwapp/shell" :{
+                "alias_root" : "/shell.js-master",
+                "zips" : [ "https://jonathan-annett.github.io/pwapp/shell.js-master.zip" ]
+            },
+            
             "https://jonathan-annett.github.io/pwapp": {
                 "alias_root" : "/js-keygen-master",
                 "zips" : [ "https://jonathan-annett.github.io/pwapp/js-keygen-master.1.zip",
