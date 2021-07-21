@@ -672,24 +672,27 @@ function amd(root_js,bound_self){
                   e = a[L] && a[L].name; //evaluate name of import
                   r = a[L].apply(this, d[L].map(c.x));
                   if(typeof e+typeof o[e]===t[2]+t[3]&&e.length) {//valdidate named import is a function
-                      c.m(o,e,r); // do the import into o[e]
+                      c.m(o,e,r,a,d); // do the import into o[e]
                   }
                 },
                 //c.P property descriptor
                 P:(v)=>1&&{value: v,enumerable: !0,configurable: !0},
                 //c.s set key value in obj, returning value
                 s:(o,k,v)=>{Object.defineProperty(o,k,c.P(v));return v;},
-                m:(o,e,v)=>{
+                m:(o,e,v,f,F)=>{
                     
                   c.s(o,e,v); // do the import into o[e]
                   if (!ml.d[e]) {
-                      ml.d[e]={h: ml.cur ? ml.cur.src : c.ri()+".js"};
+                      ml.d[e]={h: ml.cur ? ml.cur.src : c.ri()+".js",f:f,F:F};
                       ml.h[ ml.d[e].h ]={e:{}};
                       
                       urlIndex[ ml.d[e].h ] = {
                           module  : {exports : v },
                           exports : v
                       };
+                  } else {
+                      ml.d[e].f = f;
+                      ml.d[e].F = F;
                   }
                   
                   c.s(ml.h[ ml.d[e].h ].e,e,v);
