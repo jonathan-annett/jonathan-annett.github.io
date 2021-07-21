@@ -24,7 +24,7 @@ editInZed   | ml.zedhook.js
             const isIndexPageLink  = /\/index\.html$/;
             
             const indexPageBodyInject = '<iframe width="60" height="20" src="ml.pwa.dev.helper.html" style="position:absolute;right:0;top:0;"></iframe>';
-            const indexPageBodyInjected = regexpEscape(indexPageBodyInject);
+            const indexPageBodyInjected = new RegExp(regexpEscape(indexPageBodyInject),'');
             const indexPageBodyInjectAt = /<\/body\>/i;
             const indexPageBodyInjectReplace = indexPageBodyInject + '</body>';
             
