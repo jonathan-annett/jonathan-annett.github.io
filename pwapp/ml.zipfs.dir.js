@@ -641,20 +641,20 @@ ml(`
                         let editor_id = li.dataset.editor_id;
                         if (editor_id) {
                             // files open in the editor hash themselves
-                            setTimeout(zipPoller,500,index+1);
+                            setTimeout(zipPoller,1,index+1);
                         } else {
                             const sha_el = qs(li,".sha1");
                             if(sha_el && sha_el.textContent==='') {
                                 pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
                                     sha_el.textContent=hash;
-                                    setTimeout(zipPoller,50,index+1);
+                                    setTimeout(zipPoller,1,index+1);
                                 });
                             } else {
-                                setTimeout(zipPoller,50,index+1);
+                                setTimeout(zipPoller,1,index+1);
                             }
                         }
                     } else {
-                        setTimeout(zipPoller,50,index+1);
+                        setTimeout(zipPoller,1,index+1);
                     }
                 } else {
                     setTimeout(zipPoller,5000,0); 
