@@ -15,7 +15,27 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
             editor_channel_name = "ch_"+editor_url.replace(/\/|\:|\.|\-/g,''),
             editor_channel = new BroadcastChannel(editor_channel_name);
 
-           
+            const refreshLimit = 10*1000;
+            const sinceLast = sessionStorage.reloading_service_worker ? Date.now()-Number.parseInt(sessionStorage.reloading_service_worker,36) : refreshLimit;
+            delete sessionStorage.reloading_service_worker;
+            if (sinceLast >= refreshLimit) {
+                if ('serviceWorker' in navigator) {
+                    let abort = false;
+                    setTimeout(function(){
+                        // if the serice worker doesnt respond within 2 seconds, it's not running
+                        // set the abort flag, so if we start it later, this callback gets ignored
+                        abort = true;
+                        delete sessionStorage.reloading_service_worker;
+                    },2000);
+                    navigator.navigator.ready.then(function(){
+                        // if the service worker is running, reload the page, which will be replaced by the one in the zip
+                        if (!abort) {
+                            sessionStorage.reloading_service_worker=Date.now().toString(36);
+                            location.reload();
+                        }
+                    });
+                }
+            }
             
             runhere.onclick = runClick ;
             
