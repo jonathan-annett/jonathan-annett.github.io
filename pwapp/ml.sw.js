@@ -87,7 +87,7 @@ function ml(x,L, o, a, d, s){
                 J=ml.d[e];
                 if (!J) {
                     h = c.ri()+".js";
-                    ml.d[e]={h:h,f:f,F:F};
+                    J=ml.d[e]={h:h,f:f,F:F};
                 } else {
                     h = J.h;
                     J.f=f;
