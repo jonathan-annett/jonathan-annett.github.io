@@ -428,13 +428,13 @@ ml(`
             }
             
            
-            function open_html (html,filename,file_url) {
+            function open_html (html,filename) {
                 
                 pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer,updated,hash){
                     if (err) {
                         return;
                     } else {
-                        filename = updated_prefix + filename.replace(alias_root_fix,'');
+                        const file_url = updated_prefix + filename.replace(alias_root_fix,'');
                         pwaApi.updateURLContents ( filename,new TextEncoder().encode(html),true,function(err,hash) {
                             if (err) {
                                 return ;
@@ -463,7 +463,7 @@ ml(`
                     } else {
                         const html  = converter.makeHtml(new TextDecoder().decode(buffer));
                         const suffix = Math.random().toString(36)+ ".html";
-                        open_html (html,filename+suffix,file_url+suffix);
+                        open_html (html,filename+suffix);
                     }
                 });
             }
@@ -490,7 +490,7 @@ ml(`
                             ].join('\n');
                             
                         const suffix = Math.random().toString(36)+ ".html";
-                        open_html (html,filename+suffix,file_url+suffix);
+                        open_html (html,filename+suffix);
 
                     }
                 });
