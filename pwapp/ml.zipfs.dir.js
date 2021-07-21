@@ -34,13 +34,8 @@ ml(`
                     preventDefaults (e);
                     editor_channel.postMessage({stop:1});
                     setTimeout(function(){
-                        editor_channel.postMessage({run:1});
-                        
-                        setTimeout(function(){ 
-                            location.replace(location.href);
-                        },2000);
-                        
-                    },2000);
+                        window.close();
+                    },1000);
                 });
             }
 
