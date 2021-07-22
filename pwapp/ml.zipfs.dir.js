@@ -585,8 +585,8 @@ ml(`
                                          
                                           if (err || (li_ed.editor.session.getValue() !==currentText) ) { 
                                               li_ed.editor.session.setValue(currentText);
-                                              if (data.height) li_ed.editor.offsetHeight = data.height;
                                           }
+                                          if (data.height) li_ed.editor.offsetHeight = data.height;
                                           proceed();
                                      });
                                     
