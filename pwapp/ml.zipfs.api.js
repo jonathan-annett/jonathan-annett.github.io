@@ -21,31 +21,19 @@ ml([],function(){ml(2,
     function zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix,alias_root,updated_prefix) {
         
         const sendMessage = pwa.sendMessage;
-        const get_file_url= function(file) {
-            return   file.indexOf(full_zip_uri)===0 || (zip_virtual_dir && file.indexOf(zip_virtual_dir)===0) ? file
-                     : zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file;
-        }; 
         const lib = {
             
             
            filename_to_url : function  (filename) {
-               if (zip_virtual_dir) {
+                
                    if (alias_root) {
                        if (filename.indexOf(alias_root)===0) {
-                           return updated_prefix + filename.replace(alias_root_fix,'');
+                           return updated_prefix  + filename;
                        }
-                       
+                       return updated_prefix + alias_root + filename;
                    }
-                   return updated_prefix + filename;
-               }
+                   return updated_prefix +  filename;
                
-               if (alias_root) {
-                   if (filename.indexOf(alias_root)===0) {
-                       return full_zip_uri + '/' + filename.replace(alias_root_fix,'');
-                   }
-               }
-               
-               return full_zip_uri + '/' + filename;
            },
            
            url_to_filename : function  (file_url) {
@@ -171,6 +159,11 @@ ml([],function(){ml(2,
            }
         
         };
+        
+        function get_file_url   (file) {
+            return   file.indexOf(full_zip_uri)===0 || (zip_virtual_dir && file.indexOf(zip_virtual_dir)===0) ? file
+                     : lib.filename_to_url(file);
+        } 
         
         function ___registerForNotifications(cb) {
             const persistent=true;
