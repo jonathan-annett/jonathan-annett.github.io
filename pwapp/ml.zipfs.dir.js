@@ -625,6 +625,7 @@ ml(`
                                                 if (err) {
                                                     return ;
                                                 }
+                                                li.classList.add("edited");
                                                 li_ed.hashDisplay.textContent=hash;
                                             });
                                     };
