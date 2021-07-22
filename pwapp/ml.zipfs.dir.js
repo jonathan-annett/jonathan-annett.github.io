@@ -525,7 +525,7 @@ ml(`
                           li_ed.__timeout = undefined;    
                           editor.setOptions({
                              minLines : 2,
-                             maxLines : Math.floor((li_ed.clientHeight||li_ed.offsetHeight) /  editor.renderer.lineHeight) -1
+                             maxLines : Math.floor((li_ed.clientHeight||li_ed.offsetHeight) /  editor.renderer.lineHeight) 
                           });
                           
                       },500);
