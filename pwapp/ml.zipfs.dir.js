@@ -243,8 +243,11 @@ ml(`
                    
                    if (addRemove==="add") {
                       if (!fs_editor) {
-                          
-                         qs("main").innerHTML += '<pre id="fs_editor"></pre>'; 
+                         
+                         const el = document.createElement("pre");
+                         el.id = "fs_editor";
+                         
+                         qs("main").appendChild(el);
                           
                          fs_editor = ace.edit("fs_editor");
                          fs_editor.setAutoScrollEditorIntoView(true);
