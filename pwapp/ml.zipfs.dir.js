@@ -502,18 +502,15 @@ ml(`
             
             function onEditorResize (editor,element) {
                 
-                if (editor.__tmr) {
-                    clearTimeout(editor.__tmr);
-                }
-                editor.__tmr = setTimeout(function(){
-                    
-                   editor.__tmr = undefined;    
+                  element.__resizer.unobserve(element);
+                  
+                  editor.__tmr = undefined;    
                   editor.setOptions({
                      minLines : 2,
                      maxLines : (element.clientHeight||element.offsetHeight) /  editor.renderer.lineHeight 
                   });
                   
-                },100);
+                  element.__resizer.observe(element);
                  
             } 
             
@@ -547,7 +544,8 @@ ml(`
                     
                     if (typeof ResizeObserver === 'function')  {
                         const el= qs("#"+editor_id);
-                        new ResizeObserver(onEditorResize.bind(this,li_ed.editor,el )).observe(el);
+                        el.__resizer = new ResizeObserver(onEditorResize.bind(this,li_ed.editor,el ));
+                        el.__resizer.observe(el);
                     }
                     
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
