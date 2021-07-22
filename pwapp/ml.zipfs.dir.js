@@ -72,7 +72,43 @@ ml(`
                pwaApi : pwaApi
             };
             
-
+        
+          
+           function getSessionJSON(editor) {
+               const sess = editor.getSession();
+               return  JSON.stringify({
+                     annotations: sess.getAnnotations(),
+                     breakpoints: sess.getBreakpoints(),
+                     folds: sess.getAllFolds().map(function(fold) {
+                         return fold.range;
+                     }),
+                     history: {
+                         undo: sess.getUndoManager().$undoStack,
+                         redo: sess.getUndoManager().$redoStack
+                     },
+                     mode: sess.getMode().$id,
+                     scrollLeft: sess.getScrollLeft(),
+                     scrollTop: sess.getScrollTop(),
+                     selection: sess.getSelection().toJSON(),
+                     value: sess.getValue()
+                 },
+                 undefined,4);
+           }           
+           
+           function restoreSession(editor,json) {
+               const  session = JSON.parse(json);
+               const editSession = new ace.EditSession(session.value);
+               editSession.setAnnotations(session.annotations);
+               editSession.setBreakpoints(session.breakpoints);
+               editSession.setUndoManager(new ace.UndoManager());
+               editSession.$undoManager.$undoStack = JSON.parse(session.history.undo);
+               editSession.$undoManager.$redoStack = JSON.parse(session.history.redo);
+               editSession.setMode(session.mode);
+               editSession.setScrollLeft(session.scrollLeft);
+               editSession.setScrollTop(session.scrollTop);
+               editSession.selection.fromJSON(session.selection);
+               editor.setSession(editSession);
+            }
             /*
             var zip_url_base="/pwapp/js-keygen-master.zip",
             updated_prefix="https://jonathan-annett.github.io/pwapp/",
@@ -265,7 +301,7 @@ ml(`
                        li_ed.editor.setSession(fs_editor.getSession());
                        li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
                        li_ed.editor.focus();
-                       
+                        
                    }
                 };
                 
@@ -587,7 +623,21 @@ ml(`
                 let editor_id = li.dataset.editor_id;
                 if (editor_id) {
                     const ed = qs("#"+editor_id);
+                    
                     const li_ed = ed.parentNode;
+                    
+                    try {
+                        const json = getSessionJSON(li_ed.editor);
+                        const buffer = new TextEncoder().encode(json);
+                        
+                        const file_url = pwaApi.filename_to_url(filename)+".editState";
+                        pwaApi.updateURLContents (file_url,buffer,false,function(err) {
+    
+                        });
+                    catch (e) {
+                        
+                    }
+                    
                     li.classList.remove("editing");
                     li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
 
