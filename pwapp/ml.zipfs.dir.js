@@ -328,6 +328,16 @@ ml(`
                               openInbuiltEditor (filename,li).reload();
                               li.classList.remove("edited");
                            }
+                       } else {
+                           
+                           if (zip_files.indexOf(filename)<0) {
+                              // this was a new file.
+                              li.parentElement.removeChild(li);
+                              
+                           } else {
+                               // note - opening an already open editor just returns the li_ed element
+                              li.classList.remove("edited");
+                           }
                        }
                        
                        
@@ -549,9 +559,9 @@ ml(`
                   
                         li_ed.__resizer.observe(li_ed);
                      
-                        editor.setOptions({
+                        li_ed.editor.setOptions({
                           minLines : 2,
-                          maxLines : 10;
+                          maxLines : 10
                         });
                         
                         
