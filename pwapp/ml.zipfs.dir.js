@@ -529,12 +529,14 @@ ml(`
                      
                               li_ed.__max = Math.round(li_ed.offsetHeight /  editor.renderer.lineHeight);
                               
+                              li_ed.__resizer.unobserve(li_ed);
                               editor.setOptions({
                                  minLines : 2,
                                  maxLines :li_ed.__max
                               });
                               
                               li_ed.__max = Math.round(li_ed.offsetHeight /  editor.renderer.lineHeight);
+                              li_ed.__resizer.observe(li_ed);
                          }
                           
                       },500);
