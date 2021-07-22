@@ -10,7 +10,7 @@ editSourceCode_mware  |  ml.zipfs.middleware/editSourceCode.js
 forceError_mware      |  ml.zipfs.middleware/forceError.js
 injectHelper_mware    |  ml.zipfs.middleware/injectHelper.js
 stopSW_mware          |  ml.zipfs.middleware/stopSW.js
-    
+virtualDir_mware      |  ml.zipfs.middleware/virtualDir.js
 `,function(){ml(2,
 
     {
@@ -38,7 +38,8 @@ stopSW_mware          |  ml.zipfs.middleware/stopSW.js
                                    "editSourceCode",
                                    "forceError",
                                    "injectHelper",
-                                   "stopSW"
+                                   "stopSW",
+                                   "virtualDir"
                                 ];
                                 
             const mware_modnames  = mware_names.map(function(n){ return n+"_mware";});
@@ -59,6 +60,8 @@ stopSW_mware          |  ml.zipfs.middleware/stopSW.js
                  response500,
                  fnSrc,
                  urls_with_helpers,
+                 virtualDirDB,
+                 virtualDirQuery,
                  defaultMiddlewareChain) {
                      
                 const isLocal = new RegExp( '^'+regexpEscape(location.origin), '' );
@@ -77,7 +80,9 @@ stopSW_mware          |  ml.zipfs.middleware/stopSW.js
                                     urls_with_helpers,
                                     defaultMiddlewareChain,
                                     isLocalDomain,isLocal,
-                                    fetchDefaultResponse};
+                                    fetchDefaultResponse,
+                                    virtualDirDB,virtualDirQuery
+                };
                 mware_modnames.forEach(function(n){
                     const mod = ml.i[n];
                     addMiddlewareListener(function(event){

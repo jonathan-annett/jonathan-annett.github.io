@@ -44,7 +44,7 @@ ml(`
                  // import these items
                  virtualDirDB,
                  
-                 virtualDirQuery, virtualDirEvent,
+                 virtualDirQuery,
                  newVirtualDirs
                  // from ...
              } = ml.i.virtualDirLib( 
@@ -153,7 +153,7 @@ ml(`
                         
                        fetchUpdatedURLEvent,     
                                                  
-                       virtualDirEvent,          // if event.fixup_url is inside a virtual directory, modifies event.fixup_url, 
+                       //virtualDirEvent,          // if event.fixup_url is inside a virtual directory, modifies event.fixup_url, 
                                                  // to point to the endpoint inside it's container zip, and saves saves the 
                                                  // potential response in event.cache_response. (potential, because it may 
                                                  // have been updated, if the site is in local edit mode.)
@@ -179,6 +179,8 @@ ml(`
                  response500,
                  fnSrc,
                  urls_with_helpers,
+                 virtualDirDB,
+                 virtualDirQuery,
                  defaultMiddlewareChain);
              
     

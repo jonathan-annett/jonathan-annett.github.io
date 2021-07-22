@@ -160,6 +160,7 @@ ml([],function(){ml(2,
                                return resolve(response);
                                
                            } else {
+                               
                                if (entry ) {
                                    
                                     if (entry.aliased_url) {
@@ -178,7 +179,9 @@ ml([],function(){ml(2,
                                     }
                                     
                                     delete entry.url;
-                               } resolve();
+                               } 
+                               
+                               resolve();
                            }
                           
                        });
