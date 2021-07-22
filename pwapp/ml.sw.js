@@ -45,10 +45,9 @@ function ml(x,L, o, a, d, s){
             //ml(0)->c[0] = entry vector - note we ignore params passed to ()=> use outer scope to fetch o
             //     (o is the result of c[1]() which was invoked earlier in outer script scope, when it called ml(1) 
          
-            0:(L,u,a,Q)=>{
+            0:(L,u,a)=>{
                
                u = c.u(u);
-               Q=Q||u.slice();
                
                u=u.map(ml.g).filter(c.y);
               
@@ -57,12 +56,10 @@ function ml(x,L, o, a, d, s){
                    ml.H[c.f](function(U){
                       ml.h[U] && c.k(ml.h[U].e)[c.f]((m)=>{
                          if (!ml.h[U].e[m]) ml.h[U].e[m]=L[m]; 
-                         ml.h[U].i=Q;
                       }) 
                    });
                }
-               
-               return u.length?c.i(c[0], L,u,a,Q):a();
+               return u.length?c.i(c[0], L,u,a):a();
             },
     
             
