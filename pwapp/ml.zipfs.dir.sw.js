@@ -127,8 +127,17 @@ ml(`
                                                ).sort();
                                                
                                                const html_details = all_files.map(html_file_item);
+                                               
+                                               /*
+                                               function renderHtml (
+                                               htmlTemplate,tools,updated_prefix,uri,
+                                               virtual,alias_root,files, hidden_files_exist,
+                                               html_details,parent_link) {
+                                               */
                            
-                                               const html = renderHtml (htmlTemplate,tools,updated_prefix,uri,virtual,zipFileMeta.alias_root,all_files,htmlFileItemLibOpts.hidden_files_exist,html_details,parent_link);
+                                               const html = renderHtml (htmlTemplate,tools,updated_prefix,uri,
+                                               virtual,zipFileMeta.alias_root,all_files,htmlFileItemLibOpts.hidden_files_exist,
+                                               html_details,parent_link);
                            
                                                return resolve( 
                                                    
@@ -145,42 +154,7 @@ ml(`
                                                        })
                                               );
                                               
-                                              
-                                              /* 
-                                              function html_file_item (filename){
-                                                  
-                                                  
-                                                 if (filename === ".dirmeta.json") return "";
-                             
-                                                 const full_uri = "/"+uri+"/"+filename,
-                                                       basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
-                                                 const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
-                                                 const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
-                                                 const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
-                                                 const test_name    = zipFileMeta.alias_root && filename.indexOf(zipFileMeta.alias_root)===0 ? filename.substr(zipFileMeta.alias_root.length) : filename;
-                                                 const is_hidden    = tools.isHidden(test_name);//  tools.isHidden(basename) || alt_name && tools.isHidden(alt_name) ;
-                                                 const is_in_zip    = file_listing.indexOf(filename)>=0;
-                                                 const is_deleted   = is_hidden && tools.isDeleted(test_name)  ;//( tools.isDeleted(basename) || alt_name && tools.isDeleted(alt_name) );
-                                                 const is_editable  = fileIsEditable(filename);
-                                                 const is_zip       = filename.endsWith(".zip");
-                                                 const is_edited    = fileisEdited( updated_prefix+filename );
-                                                 
-                                                 const sha1span     = '<span class="sha1"></span>';
-                                                 
-                                                 const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;&nbsp;&nbsp;</span>' : '';
-                                                 const zoom_full    = '<a data-filename="' + filename + '"><span class="fullscreen">&nbsp;&nbsp;</span></a>';
-                                                 const cls = is_deleted ? ["deleted"] : [];
-                                                 if (is_edited)  cls.push("edited");
-                                                 if (is_hidden)  cls.push("hidden");
-                                                 const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
-                                                 const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>' + sha1span +edited+zoom_full ] 
-                                                                : is_zip        ? [ '<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>' + sha1span +edited+zoom_full ]   
-                                                                :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + sha1span +edited+zoom_full ] ;
-                                                 
-                                                 if (is_hidden) hidden_files_exist = true;
-                                                 return '<li'+li_class+'><a data-filename="' + filename + '" data-inzip="'+ (is_in_zip?'1':'0') + '"><span class="deletefile"></span></a><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
-                                              }
-                                              */
+                                         
                                            });
                                        });
                                        
@@ -196,7 +170,10 @@ ml(`
                        
                           
                            
-                            function renderHtml (htmlTemplate,tools,updated_prefix,uri,virtual,alias_root,files, hidden_files_exist,html_details,parent_link) {
+                            function renderHtml (
+                                htmlTemplate,tools,updated_prefix,uri,
+                                virtual,alias_root,files, hidden_files_exist,
+                                html_details,parent_link) {
                                
                                
                                const head_script = [

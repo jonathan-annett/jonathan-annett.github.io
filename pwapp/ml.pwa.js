@@ -187,47 +187,7 @@ ml(`
                          }
                      },
                      
-                             
-                    writeFileString : function (msg,cb) {
-                        const data = msg.data;
-                        if (data.zip && data.file && data.text) {
-                            zipFS.getZipDirMetaTools(data.zip,function(tools) {
-                                if (tools) {
-                                     if (data.hash) {
-                                         tools.writeFileString(data.file,data.text,data.hash,cb);
-                                     } else {
-                                         tools.writeFileString(data.file,data.text,cb);
-                                     }
-                                } else {
-                                    cb({error:"could not access zip tools"});
-                                }
-                            });
-                        } else {
-                            cb({error:"needs zip + toggle/add/remove"});
-                        }
-                    
-                    },
-                    
-                    readFileString : function (msg,cb) {
-                        const data = msg.data;
-                        if (data.zip && data.file) {
-                            zipFS.getZipDirMetaTools(data.zip,function(tools) {
-                                if (tools) {
-                                    if (data.hash) {
-                                       tools.readFileString(data.file,data.hash,cb);
-                                    } else {
-                                       tools.readFileString(data.file,cb);
-                                    }
-                                } else {
-                                    cb({error:"could not access zip tools"});
-                                }
-                            });
-                        } else {
-                            cb({error:"needs zip + toggle/add/remove"});
-                        }
-                    },
-                    
-                    getPNGZipImage : function (msg,cb) {
+                     getPNGZipImage : function (msg,cb) {
                         const data = msg.data;
                         if (data.zip_url ) {
                             

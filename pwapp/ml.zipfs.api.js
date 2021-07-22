@@ -18,11 +18,64 @@ ml([],function(){ml(2,
     );
 
 
-    function zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix) {
+    function zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix,alias_root,updated_prefix) {
         
         const sendMessage = pwa.sendMessage;
-        
+        const get_file_url= function(file) {
+            return   file.indexOf(full_zip_uri)===0 || (zip_virtual_dir && file.indexOf(zip_virtual_dir)===0) ? file
+                     : zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file;
+        }; 
         const lib = {
+            
+            
+           filename_to_url : function  (filename) {
+               if (zip_virtual_dir) {
+                   if (alias_root) {
+                       if (filename.indexOf(alias_root)===0) {
+                           return updated_prefix + filename.replace(alias_root_fix,'');
+                       }
+                       
+                   }
+                   return updated_prefix + filename;
+               }
+               
+               if (alias_root) {
+                   if (filename.indexOf(alias_root)===0) {
+                       return full_zip_uri + '/' + filename.replace(alias_root_fix,'');
+                   }
+               }
+               
+               return full_zip_uri + '/' + filename;
+           },
+           
+           url_to_filename : function  (file_url) {
+               
+               if (zip_virtual_dir) {
+                   if (file_url.indexOf(zip_virtual_dir)===0) {
+                       return file_url.substr(zip_virtual_dir.length);
+                   }
+                   if (zip_virtual_dir.indexOf(location.origin)===0) {
+                       const zip_virtual_base = zip_virtual_dir.substr(location.origin.length);
+                       if (file_url.indexOf(zip_virtual_base)===0) {
+                           return file_url.substr(zip_virtual_base.length);
+                       } 
+                   }
+               } else {
+                   if (alias_root) {
+                       if (file_url.indexOf(full_zip_uri+'/'+alias_root)===0) {
+                           return file_url.substr(full_zip_uri.length + 1 + alias_root.length);
+                       }
+                   }
+                   if (file_url.indexOf(full_zip_uri)===0) {
+                       return file_url.substr(full_zip_uri.length);
+                   } 
+                   if (file_url.indexOf(zip_url_base)===0) {
+                       return file_url.substr(zip_url_base.length);
+                   }
+               }
+               
+               throw new Error ("can't parse url");
+           },
            
            toggleDeleteFile : function (file,cb) {
                return pwa.toggleDeleteFile(full_zip_uri,file,cb);
@@ -68,9 +121,9 @@ ml([],function(){ml(2,
            },
            
            removeUpdatedURLContents  : function (file,cb) {
+
               return pwa.removeUpdatedURLContents(
-                  zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
-                  //zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,
+                  get_file_url(file),
                   function(err,msg){
                      const el = find_li(file);
                      if (el) el.classList.remove('edited');
@@ -79,10 +132,11 @@ ml([],function(){ml(2,
            },
            
            updateURLContents : function (file,content,hash,cb) {
+
                return pwa.updateURLContents(
-                   zip_virtual_dir ? zip_virtual_dir +'/'+file : full_zip_uri+'/'+file,
-                   //zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,
-                   content,hash,
+                   get_file_url(file),
+                   content,
+                   hash,
                    function(err,msg){
                        const el = find_li(file);
                        if (el) {
@@ -95,8 +149,10 @@ ml([],function(){ml(2,
            },
            
            fetchUpdatedURLContents : function (file,hash,cb) {
+               
                return pwa.fetchUpdatedURLContents(
-                   zip_virtual_dir ? zip_virtual_dir +'/'+file.replace(alias_root_fix,'') : full_zip_uri+'/'+file,hash,
+                   get_file_url(file),
+                   hash,
                    function(err,msg){
                       if (err) return cb (err);
                       const el = find_li(file);
@@ -115,7 +171,6 @@ ml([],function(){ml(2,
            }
         
         };
-        
         
         function ___registerForNotifications(cb) {
             const persistent=true;

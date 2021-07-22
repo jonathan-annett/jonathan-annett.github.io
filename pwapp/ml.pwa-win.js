@@ -38,31 +38,6 @@ ml(`
                    },cb);
                },
                
-               writeFileString : function (zip_url,file,text,hash,cb) {
-                   if (typeof hash==='function') {
-                       cb   = hash;
-                       hash = false;
-                   }
-                   sendMessage('writeFileString',{
-                       zip    : zip_url,
-                       file   : file,
-                       text   : text,
-                       hash   : hash
-                   },cb);
-               },
-               
-               readFileString : function (zip_url,file,hash,cb) {
-                   if (typeof hash==='function') {
-                       cb   = hash;
-                       hash = false;
-                   }
-                    sendMessage('readFileString',{
-                        zip    : zip_url,
-                        file   : file,
-                        hash   : hash
-                    },cb);
-               },
-               
                isHidden : function (zip_url,file,cb) {
                    sendMessage('hidden',{
                        zip    : zip_url,

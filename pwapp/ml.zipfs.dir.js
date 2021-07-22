@@ -25,7 +25,8 @@ ml(`
          
             
             deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
-            const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix) ;
+            const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix,alias_root,updated_prefix);   
+                             
             
             
             if (editor_channel) {
@@ -72,6 +73,22 @@ ml(`
             };
             
             const editSessionData = {};
+            
+            
+            
+            /*
+            var zip_url_base="/pwapp/js-keygen-master.zip",
+            updated_prefix="https://jonathan-annett.github.io/pwapp/",
+            zip_virtual_dir="https://jonathan-annett.github.io/pwapp",
+            alias_root_fix=/^js\-keygen\-master\//,
+            alias_root="js-keygen-master/",
+            zip_files=[".dirmeta.json","js-keygen-master/.editorconfig","js-keygen-master/.eslintrc.json","js-keygen-master/.gitignore","js-keygen-master/.prettierrc","js-keygen-master/1to8.html","js-keygen-master/CNAME","js-keygen-master/LICENSE.md","js-keygen-master/README.md","js-keygen-master/base64url.js","js-keygen-master/convert.html","js-keygen-master/index.html","js-keygen-master/js-keygen-master/README.md","js-keygen-master/js-keygen-ui.js","js-keygen-master/js-keygen.css","js-keygen-master/js-keygen.js","js-keygen-master/key.png","js-keygen-master/package.json","js-keygen-master/pkcs1To8.js","js-keygen-master/publicSshToPem.js","js-keygen-master/ssh-util.js","js-keygen-master/test/index.html","js-keygen-master/test/qunit/qunit.css","js-keygen-master/test/qunit/qunit.js","js-keygen-master/test/tests.js"],
+            parent_link="/pwapp/<b>js-keygen-master.zip</b>",
+            full_zip_uri           = location.origin+zip_url_base;
+            var regExps = [new RegExp("^\.","")];
+            
+            */
+            
 
             function onDOMContentLoaded (){
             
@@ -171,7 +188,6 @@ ml(`
                 
             }
             
-             
             function preventDefaults (e) {
               e.preventDefault()
               e.stopPropagation()
@@ -373,6 +389,22 @@ ml(`
                     open_url(link.href);
             }
             
+            function open_file (fn,cb) {
+                const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
+                const file_url = dir_prefix+fn.replace(alias_root_fix,'');
+                
+                const ext = fn.substr(fn.lastIndexOf('.')+1);
+                const custom_url_openers = {
+                    md   : open_markdown,
+                    svg  : open_svg
+                };
+                const not_custom = function (filename,file_url) {
+                   open_url (file_url,cb) ;       
+                };
+                
+                return (custom_url_openers[ext] || not_custom) (fn,file_url);
+            }
+            
             function open_url(file_url,cb) {
                 return open_window(
                   file_url,
@@ -387,10 +419,9 @@ ml(`
                 );
             }
             
-           
-            function open_html (html,filename) {
-                console.log("creating temp file",filename);
-                pwaApi.updateURLContents ( filename,new TextEncoder().encode(html),true,function(err,hash,file_url) {
+            function open_html (html,file_url) {
+                console.log("creating temp file",file_url);
+                pwaApi.updateURLContents (file_url ,new TextEncoder().encode(html),true,function(err,hash) {
                     if (err) {
                         return ;
                     }
@@ -398,31 +429,31 @@ ml(`
                     open_url(file_url,function(){
                         console.log("window opened for",file_url)
                         setTimeout(function(){
-                            pwaApi.removeUpdatedURLContents(filename,function(){
-                                console.log("removed temp file",filename);
+                            pwaApi.removeUpdatedURLContents(file_url,function(){
+                                console.log("removed temp file",file_url);
                             });
                         },500);
                     });
                 });
             }
             
-            
             function open_markdown (filename) {
                 var converter = new MarkdownConverter();
-                pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer){
+                const file_url = zipFSApiLib.filename_to_url(filename);
+                pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer){
                     if (err) {
                         return;
                     } else {
                         const html  = converter.makeHtml(new TextDecoder().decode(buffer));
                         const suffix = Math.random().toString(36)+ ".html";
-                        open_html (html,filename+suffix);
+                        open_html (html,file_url+suffix);
                     }
                 });
             }
             
             function open_svg (filename) {
-    
-                pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer){
+                const file_url = zipFSApiLib.filename_to_url(filename);
+                pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer){
                     if (err) {
                         return;
                     } else {
@@ -442,7 +473,7 @@ ml(`
                             ].join('\n');
                             
                         const suffix = Math.random().toString(36)+ ".html";
-                        open_html (html,filename+suffix);
+                        open_html (html,file_url+suffix);
 
                     }
                 });
@@ -471,23 +502,91 @@ ml(`
                 }[ext] || "ace/theme/chrome";
             }
             
-            function open_file (fn,cb) {
-                const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
-                const file_url = dir_prefix+fn.replace(alias_root_fix,'');
-                
-                const ext = fn.substr(fn.lastIndexOf('.')+1);
-                const custom_url_openers = {
-                    md   : open_markdown,
-                    svg  : open_svg
-                };
-                const not_custom = function (filename,file_url) {
-                   open_url (file_url,cb) ;       
-                };
-                
-                return (custom_url_openers[ext] || not_custom) (fn,file_url);
+            function openInBuiltEditor (filename,li) {
+                li=li||find_li (filename);
+                const file_url = zipFSApiLib.filename_to_url(filename);
+                let editor_id = li.dataset.editor_id;
+                if (!editor_id) {
+                    while (true) {
+                       editor_id = 'ed_'+Math.random().toString(36).substr(-8);
+                       if (!qs("#"+editor_id)) break;
+                    }
+                    li.dataset.editor_id =  editor_id;
+                    li.classList.add("editing");
+                    const li_ed = document.createElement("li");
+                    li_ed.innerHTML = '<PRE id="'+editor_id+'"></PRE>'; 
+                    
+                    li.parentNode.insertBefore(li_ed, li.nextSibling);
+                    
+                    li_ed.editor = ace.edit(editor_id, {
+                        theme:   aceThemeForFile(filename),
+                        mode:    aceModeForFile(filename),
+                        autoScrollEditorIntoView: true,
+                        maxLines: 10,
+                        minLines: 2
+                    });
+                    
+                    pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
+                        if (err) {
+                            li_ed.editor.session.setValue("error:"+err.message||err);
+                        } else {
+
+                            const currentText = new TextDecoder().decode(text);
+                            
+                            if (editSessionData[ filename ]) {
+                                 li_ed.editor.setSession(sessionFromJSON(editSessionData[ filename ]));
+                                 if (li_ed.editor.session.getValue() !== currentText) {
+                                     li_ed.editor.session.setValue(currentText);
+                                 }
+                                 delete editSessionData[ filename ];
+                            } else {
+                                 li_ed.editor.session.setValue(currentText);
+                            }
+                           
+
+                            li_ed.hashDisplay = qs(li,".sha1");
+                            li_ed.hashDisplay.textContent=hash;
+                            li_ed.setText = function (text) {
+                                li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
+                                li_ed.editor.setValue(text);
+                                li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                            };
+                            
+                            li_ed.reload = function () {
+                                pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
+                                    li_ed.setText(new TextDecoder().decode(text));
+                                });
+                            }
+                           
+                            li_ed.inbuiltEditorOnSessionChange = function () {
+                                    // delta.start, delta.end, delta.lines, delta.action
+                                    
+                                    const buffer = new TextEncoder().encode(li_ed.editor.session.getValue());
+                                    
+                                    pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
+                                        if (err) {
+                                            return ;
+                                        }
+                                        li_ed.hashDisplay.textContent=hash;
+                                    });
+                            };
+                            
+                            li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                            
+                        }
+                        
+
+                        
+                    });
+                    
+                    return li_ed;
+                } else {
+                    const ed = qs("#"+editor_id);
+                    const li_ed = ed.parentNode;
+                    return li_ed;
+                }
             }
-            
-            
+          
             function closeInbuiltEditor(filename,li) {
                 li=li||find_li (filename);
                 let editor_id = li.dataset.editor_id;
@@ -512,7 +611,6 @@ ml(`
                     delete li.dataset.editor_id;
                 }
             }
-            
             
             function filterHistory  (deltas){ 
                 return deltas.filter(function (d) {
@@ -547,94 +645,7 @@ ml(`
             }
             
 
-            function openInBuiltEditor (filename,li) {
-                li=li||find_li (filename);
-                let editor_id = li.dataset.editor_id;
-                if (!editor_id) {
-                    while (true) {
-                       editor_id = 'ed_'+Math.random().toString(36).substr(-8);
-                       if (!qs("#"+editor_id)) break;
-                    }
-                    li.dataset.editor_id =  editor_id;
-                    li.classList.add("editing");
-                    const li_ed = document.createElement("li");
-                    li_ed.innerHTML = '<PRE id="'+editor_id+'"></PRE>'; 
-                    
-                    li.parentNode.insertBefore(li_ed, li.nextSibling);
-                    
-                    li_ed.editor = ace.edit(editor_id, {
-                        theme:   aceThemeForFile(filename),
-                        mode:    aceModeForFile(filename),
-                        autoScrollEditorIntoView: true,
-                        maxLines: 10,
-                        minLines: 2
-                    });
-                    
-                    pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
-                        if (err) {
-                            li_ed.editor.session.setValue("error:"+err.message||err);
-                        } else {
-                            
-                            
-                            const currentText = new TextDecoder().decode(text);
-                            
-                            if (editSessionData[ filename ]) {
-                                 li_ed.editor.setSession(sessionFromJSON(editSessionData[ filename ]));
-                                 if (li_ed.editor.session.getValue() !== currentText) {
-                                     li_ed.editor.session.setValue(currentText);
-                                 }
-                                 delete editSessionData[ filename ];
-                            } else {
-                                 li_ed.editor.session.setValue(currentText);
-                            }
-                           
-                            
-                            
-                           
-                            
-                            
-                            li_ed.hashDisplay = qs(li,".sha1");
-                            li_ed.hashDisplay.textContent=hash;
-                            li_ed.setText = function (text) {
-                                li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
-                                li_ed.editor.setValue(text);
-                                li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
-                            };
-                            
-                            li_ed.reload = function () {
-                                pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
-                                    li_ed.setText(new TextDecoder().decode(text));
-                                });
-                            }
-                           
-                            li_ed.inbuiltEditorOnSessionChange = function () {
-                                    // delta.start, delta.end, delta.lines, delta.action
-                                    
-                                    const buffer = new TextEncoder().encode(li_ed.editor.session.getValue());
-                                    
-                                    pwaApi.updateURLContents (filename,buffer,true,function(err,hash) {
-                                        if (err) {
-                                            return ;
-                                        }
-                                        li_ed.hashDisplay.textContent=hash;
-                                    });
-                            };
-                            
-                            li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
-                            
-                        }
-                        
-
-                        
-                    });
-                    
-                    return li_ed;
-                } else {
-                    const ed = qs("#"+editor_id);
-                    const li_ed = ed.parentNode;
-                    return li_ed;
-                }
-            }
+            
            
             function toggleInBuiltEditor (filename,li) {
                 li=li||find_li (filename);
