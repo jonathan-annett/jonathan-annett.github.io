@@ -439,7 +439,7 @@ ml(`
             
             function open_markdown (filename) {
                 var converter = new MarkdownConverter();
-                const file_url = zipFSApiLib.filename_to_url(filename);
+                const file_url = pwaApi.filename_to_url(filename);
                 pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer){
                     if (err) {
                         return;
@@ -452,7 +452,7 @@ ml(`
             }
             
             function open_svg (filename) {
-                const file_url = zipFSApiLib.filename_to_url(filename);
+                const file_url = pwaApi.filename_to_url(filename);
                 pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer){
                     if (err) {
                         return;
@@ -504,7 +504,7 @@ ml(`
             
             function openInBuiltEditor (filename,li) {
                 li=li||find_li (filename);
-                const file_url = zipFSApiLib.filename_to_url(filename);
+                const file_url = pwaApi.filename_to_url(filename);
                 let editor_id = li.dataset.editor_id;
                 if (!editor_id) {
                     while (true) {
