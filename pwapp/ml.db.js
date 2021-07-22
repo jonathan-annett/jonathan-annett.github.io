@@ -162,6 +162,9 @@ ml(0,ml(1),[
                    });
                    
                    const DB = {
+                           ready      : function (){
+                               return !!keys;
+                           },
                            getItem    : function (k,cb) {
                            
                               if (keys) {
@@ -330,7 +333,6 @@ ml(0,ml(1),[
                                 
                                });
                            },
-                           
                            fromZip    : function (zip,cb) {
                                
                                
@@ -410,8 +412,6 @@ ml(0,ml(1),[
                           
                                
                            },
-                           
-                           
                            getSerializer : function (cb) {
                                
                                    db.getSerializer().then(function(lf){

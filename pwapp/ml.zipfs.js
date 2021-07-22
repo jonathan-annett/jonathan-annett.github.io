@@ -449,32 +449,52 @@ ml(`
                               return fetchBufferViaNoCors(event.request,event.fixup_url,cb);
                            };
                            event.toFetchUrl   = function(db) { 
-                               return function (resolve,reject) {
+                               return function (resolve) {
                                   // return toFetchUrl (db||databases[event.cacheDB],event.fixup_url,false,resolve,event.fetchBuffer);
                                    
                                    db = db || databases[event.cacheDB];
-                                   const url = event.fixup_url && db.keyExists (event.fixup_url,false) ? event.fixup_url : false;
-                                   if (url) {            
-                                      return toFetchUrl (db, url, false, resolve,event.fetchBuffer);
+                                   if (db.ready()) {
+                                       proceed ();
                                    } else {
-                                       resolve ();
+                                       db.getKeys(proceed);
+                                   }
+                                   
+                                   function proceed () {
+                                       const url = event.fixup_url && db.keyExists (event.fixup_url,false) ? event.fixup_url : false;
+                                       if (url) {            
+                                          return toFetchUrl (db, url, false, resolve,event.fetchBuffer);
+                                       } else {
+                                           resolve ();
+                                       }
                                    }
                                };
+                               
+                               
+                               
                            };
                       } else {
                            event.fetchBuffer = function(cb) { 
                                return fetchBuffer(event.aliased_url || event.fixup_url,cb);
                            };
                            event.toFetchUrl   = function(db) { 
-                               return function (resolve,reject) {
+                               return function (resolve) {
                                  db = db || databases[event.cacheDB];
-                                 const url = event.aliased_url && db.keyExists (event.aliased_url,false) ? event.aliased_url
-                                              : event.fixup_url && db.keyExists (event.fixup_url,false) ? event.fixup_url : false;
-                                 if (url) {            
-                                    return toFetchUrl (db, url, false, resolve,event.fetchBuffer);
+                                 if (db.ready()) {
+                                     proceed ();
                                  } else {
-                                     resolve ();
+                                     db.getKeys(proceed);
                                  }
+                                 
+                                 function proceed () {
+                                     const url = event.aliased_url && db.keyExists (event.aliased_url,false) ? event.aliased_url
+                                                  : event.fixup_url && db.keyExists (event.fixup_url,false) ? event.fixup_url : false;
+                                     if (url) {            
+                                        return toFetchUrl (db, url, false, resolve,event.fetchBuffer);
+                                     } else {
+                                         resolve ();
+                                     }
+                                 }
+                                 
                                };
                            };
                       }
