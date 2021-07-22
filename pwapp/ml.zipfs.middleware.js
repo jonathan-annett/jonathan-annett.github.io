@@ -71,7 +71,7 @@ virtualDir_mware      |  ml.zipfs.middleware/virtualDir.js
                 
                 function fetchDefaultResponse(event,mode,cb) {
                     
-                    const alternates = defaultMiddlewareChain;
+                    const alternates = middleware_tools.defaultMiddlewareChain;
                     
                     const fetch_response = function(index) {
                         
