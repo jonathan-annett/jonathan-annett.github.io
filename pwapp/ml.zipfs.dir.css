@@ -100,6 +100,11 @@ html.zooming li.zooming {
    display : block;
 }
 
+html.zooming li.zooming a[data-balloon-pos="down-left" ] {
+   pointer-events:none;
+   cursor:normal;
+}
+
  html.zooming #fs_editor {
     display : block;
     margin: 0;

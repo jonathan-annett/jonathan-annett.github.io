@@ -89,7 +89,7 @@ ml(`
                                                    boldit,
                                                    linkit,
                                                    fileIsEditable
-                                               }  = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
+                                               } = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
 
                                                const cleanup_links = function(str) {
                                                    top_uri_res.forEach(function(re){
