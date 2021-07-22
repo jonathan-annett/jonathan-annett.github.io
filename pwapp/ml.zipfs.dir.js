@@ -323,12 +323,20 @@ ml(`
                 if (e.shiftKey) {
                     
                    // shift delete removes any edits to the file
-                   pwaApi.removeUpdatedURLContents(filename);
+                   const file_url = pwaApi.filename_to_url(filename);
+                   pwaApi.removeUpdatedURLContents(file_url);
                    if (li) {
                        // if the editor is open an editor id will exist in the li element 
                        if (!!li.dataset.editor_id) {
-                           // note - opening an already open editor just returns the li_ed element
-                           openInBuiltEditor (filename,li).reload();
+                           
+                           if (zip_files.indexOf(filename)<0) {
+                              // this was a new file.
+                              closeInbuiltEditor(filename,li);
+                              li.parentElement.removeChild(li);
+                           } else {
+                               // note - opening an already open editor just returns the li_ed element
+                              openInbuiltEditor (filename,li).reload();
+                           }
                        }
                    }
                    
@@ -390,8 +398,7 @@ ml(`
             }
             
             function open_file (fn,cb) {
-                const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
-                const file_url = dir_prefix+fn.replace(alias_root_fix,'');
+                const file_url = pwaApi.filename_to_url(fn);
                 
                 const ext = fn.substr(fn.lastIndexOf('.')+1);
                 const custom_url_openers = {
@@ -437,9 +444,8 @@ ml(`
                 });
             }
             
-            function open_markdown (filename) {
+            function open_markdown (filename,file_url) {
                 var converter = new MarkdownConverter();
-                const file_url = pwaApi.filename_to_url(filename);
                 pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer){
                     if (err) {
                         return;
@@ -451,8 +457,7 @@ ml(`
                 });
             }
             
-            function open_svg (filename) {
-                const file_url = pwaApi.filename_to_url(filename);
+            function open_svg (filename,file_url) {
                 pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer){
                     if (err) {
                         return;
@@ -502,7 +507,7 @@ ml(`
                 }[ext] || "ace/theme/chrome";
             }
             
-            function openInBuiltEditor (filename,li) {
+            function openInbuiltEditor (filename,li) {
                 li=li||find_li (filename);
                 const file_url = pwaApi.filename_to_url(filename);
                 let editor_id = li.dataset.editor_id;
@@ -652,7 +657,7 @@ ml(`
                 if (!!li.dataset.editor_id) {
                    closeInbuiltEditor(filename,li);
                 } else {
-                   openInBuiltEditor (filename,li);
+                   openInbuiltEditor (filename,li);
                 }
             }
             
