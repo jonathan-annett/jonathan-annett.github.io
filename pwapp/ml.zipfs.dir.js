@@ -1,7 +1,7 @@
 /* global zip_url_base,zip_virtual_dir,zip_files,full_zip_uri,updated_prefix, alias_root_fix,alias_root, parent_link,BroadcastChannel,ace*/
 
 
-/* global ml,self,caches,BroadcastChannel,Shell  */
+/* global ml,self,caches,BroadcastChannel,Shell,ResizeObserver  */
 ml(`
     
     pwaWindow@Window    | ml.pwa-win.js
@@ -500,6 +500,19 @@ ml(`
                 }[ext] || "ace/theme/chrome";
             }
             
+            function onEditorResize (editor,element) {
+                
+                  editor.setOptions({
+                     minLines : 2,
+                     maxLines : element.innerHeight /  editor.renderer.lineHeight 
+                  });
+                 
+                 
+            } 
+            
+         
+            
+            
             function openInbuiltEditor (filename,li) {
                 li=li||find_li (filename);
                 const file_url = pwaApi.filename_to_url(filename);
@@ -516,13 +529,20 @@ ml(`
                     
                     li.parentNode.insertBefore(li_ed, li.nextSibling);
                     
+                    
                     li_ed.editor = ace.edit(editor_id, {
                         theme:   aceThemeForFile(filename),
                         mode:    aceModeForFile(filename),
                         autoScrollEditorIntoView: true,
-                       // maxLines: 10,
-                       // minLines: 2
+                        maxLines: 10,
+                        minLines: 2
                     });
+                    
+                    if (typeof ResizeObserver === 'function')  {
+                        const el= qs("#"+editor_id);
+                        new ResizeObserver(onEditorResize.bind(this,li_ed.editor,el )).observe(el);
+                    }
+                    
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
                     
                     pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
