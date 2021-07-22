@@ -257,14 +257,12 @@ ml(`
                       fs_editor.session.setMode(li_ed.editor.session.getMode());
                       
                       li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
-                      const json = sessionToJSON(li_ed.editor.session);
-                      fs_editor.setSession(sessionFromJSON(json));
+                      fs_editor.setSession(li_ed.editor.getSession());
                       fs_editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
                       fs_editor.focus();
                    } else {
                        fs_editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
-                       const json = sessionToJSON(fs_editor.session);
-                       li_ed.editor.setSession(sessionFromJSON(json));
+                       li_ed.editor.setSession(fs_editor.getSession());
                        li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
                        li_ed.editor.focus();
                        fs_editor.setValue("");
@@ -539,7 +537,7 @@ ml(`
                             const currentText = new TextDecoder().decode(text);
                             
                             if (editSessionData[ filename ]) {
-                                 li_ed.editor.setSession(sessionFromJSON(editSessionData[ filename ]));
+                                 li_ed.editor.setSession(editSessionData[ filename ]);
                                  if (li_ed.editor.session.getValue() !== currentText) {
                                      li_ed.editor.session.setValue(currentText);
                                  }
@@ -600,7 +598,7 @@ ml(`
                     const li_ed = ed.parentNode;
                     li.classList.remove("editing");
                     li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
-                    editSessionData[ filename ] = sessionToJSON(li_ed.editor);
+                    editSessionData[ filename ] = li_ed.editor.getSession();
         
                     li_ed.removeChild(ed);
 
@@ -623,34 +621,7 @@ ml(`
                 });
             }
             
-            function sessionToJSON(session) {
-                return {
-                    selection: session.selection.toJSON(),
-                    value: session.getValue(),
-                    history: {
-                        undo: session.$undoManager.$undoStack.map(filterHistory),
-                        redo: session.$undoManager.$redoStack.map(filterHistory)
-                    },
-                    scrollTop: session.getScrollTop(),
-                    scrollLeft: session.getScrollLeft(),
-                    options: session.getOptions()
-                }
-            }
-            
-            function sessionFromJSON(data) {
-                var session = ace.createEditSession(data.value);
-                session.$undoManager.$doc = session; // workaround for a bug in ace
-                session.setOptions(data.options);
-                session.$undoManager.$undoStack = data.history.undo;
-                session.$undoManager.$redoStack = data.history.redo;
-                session.selection.fromJSON(data.selection);
-                session.setScrollTop(data.scrollTop);
-                session.setScrollLeft(data.scrollLeft);
-                return session;
-            }
-            
-
-            
+           
            
             function toggleInBuiltEditor (filename,li) {
                 li=li||find_li (filename);
