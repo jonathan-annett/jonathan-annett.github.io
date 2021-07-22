@@ -22,7 +22,9 @@
       
       
 */
-ml([],function(){ml(2,
+ml(`
+sha1Lib               |  sha1.js
+`,function(){ml(2,
 
     {
 
@@ -35,7 +37,8 @@ ml([],function(){ml(2,
 
     );
 
-
+    const sha1 = ml.i.sha1Lib.cb;
+    
     function mware(event,middleware) {
        
         if ( middleware.isLocalDomain(event,/\/databases\.zip$/)) {
@@ -44,7 +47,7 @@ ml([],function(){ml(2,
                    if (err) {
                        return middleware.response500(resolve,err);
                    }
-                   middleware.sha1(buffer,function(err,hash){
+                   sha1(buffer,function(err,hash){
                        if (err) {
                            return middleware.response500(resolve,err);
                        }

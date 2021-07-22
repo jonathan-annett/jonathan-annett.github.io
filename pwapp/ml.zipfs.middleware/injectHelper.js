@@ -49,7 +49,10 @@ ml([],function(){ml(2,
            return new Promise(function(resolve){
                
                
-               middleware.fetchDefaultResponse (event,"text",function(html){
+               middleware.fetchDefaultResponse (event,"text",[
+                      middleware.fetchVia.updatedURL,
+                      middleware.fetchVia.virtualDir
+                   ],function(html){
                    if (html) {
                        const localURL = fixup_uri;
                        
