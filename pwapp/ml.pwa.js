@@ -257,10 +257,10 @@ ml(`
                              
                              if (msg.data.hash) {
                                  sha1(content,function(err,hash){
-                                     cb({hash:hash,content:content,updated:updated});
+                                     cb({hash:hash,content:content,updated:updated,url:msg.url});
                                  });
                              } else {
-                                cb({content:content,updated:updated});
+                                cb({content:content,updated:updated,url:msg.url});
                              }
                          });
                     },
@@ -268,7 +268,7 @@ ml(`
                     removeUpdatedURLContents : function (msg,cb) {
                         zipFS.removeUpdatedURLContents(msg.data.url,function(err){
                             if (err) return cb({error:err.message||err});
-                            cb({});
+                            cb({url:msg.url});
                         });
                     },
                     
@@ -302,10 +302,10 @@ ml(`
                                 if (err) return cb({error:err.message||err});
                                 if (data.hash) {
                                     sha1(contentBuffer,function(err,hash){
-                                        cb({hash:hash})
+                                        cb({hash:hash,url:msg.url})
                                     });
                                 } else {
-                                    cb({});
+                                    cb({url:msg.url});
                                 }
                             });
                         

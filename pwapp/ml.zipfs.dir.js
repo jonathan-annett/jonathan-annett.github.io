@@ -388,9 +388,9 @@ ml(`
             }
             
            
-            function open_html (html,filename,file_url) {
+            function open_html (html,filename) {
                 console.log("creating temp file",filename);
-                pwaApi.updateURLContents ( filename,new TextEncoder().encode(html),true,function(err,hash) {
+                pwaApi.updateURLContents ( filename,new TextEncoder().encode(html),true,function(err,hash,file_url) {
                     if (err) {
                         return ;
                     }
@@ -407,7 +407,7 @@ ml(`
             }
             
             
-            function open_markdown (filename,file_url) {
+            function open_markdown (filename) {
                 var converter = new MarkdownConverter();
                 pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer){
                     if (err) {
@@ -415,12 +415,12 @@ ml(`
                     } else {
                         const html  = converter.makeHtml(new TextDecoder().decode(buffer));
                         const suffix = Math.random().toString(36)+ ".html";
-                        open_html (html,filename+suffix, file_url + suffix);
+                        open_html (html,filename+suffix);
                     }
                 });
             }
             
-            function open_svg (filename,file_url) {
+            function open_svg (filename) {
     
                 pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer){
                     if (err) {
@@ -442,7 +442,7 @@ ml(`
                             ].join('\n');
                             
                         const suffix = Math.random().toString(36)+ ".html";
-                        open_html (html,filename+suffix, file_url + suffix);
+                        open_html (html,filename+suffix);
 
                     }
                 });

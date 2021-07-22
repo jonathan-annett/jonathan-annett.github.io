@@ -74,7 +74,7 @@ ml([],function(){ml(2,
                   function(err,msg){
                      const el = find_li(file);
                      if (el) el.classList.remove('edited');
-                     if(cb)cb(err,msg); 
+                     if(cb)cb(err,msg&&msg.url); 
                   });
            },
            
@@ -89,7 +89,7 @@ ml([],function(){ml(2,
                            el.classList.add('edited');
                            el.classList[!!el.dataset.editor_id ?"add":"remove"]('editing');
                        }
-                       if(cb)cb(err,msg && msg.hash);
+                       if(cb)cb(err,msg && msg.hash,msg&&msg.url);
                    }
                );
            },
@@ -104,7 +104,7 @@ ml([],function(){ml(2,
                           el.classList[msg.updated?"add":"remove"]('edited');
                           el.classList[!!el.dataset.editor_id ?"add":"remove"]('editing');
                       }
-                      cb(undefined,msg.content,msg.updated,msg.hash);
+                      cb(undefined,msg.content,msg.updated,msg.hash,msg&&msg.url);
                    }
                );
            },
