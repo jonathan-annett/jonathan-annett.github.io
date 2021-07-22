@@ -40,7 +40,7 @@ ml(`
         function html_file_item (filename,cb){
             
             
-           if (filename === ".dirmeta.json") return "";
+           if ( /\.hidden\-json$/.test(filename)) return "";
 
            const full_uri = "/"+uri+"/"+filename,
                  basename=full_uri.substr(full_uri.lastIndexOf("/")+1);

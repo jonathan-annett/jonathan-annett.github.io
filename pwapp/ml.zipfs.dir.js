@@ -109,19 +109,7 @@ ml(`
                editSession.selection.fromJSON(session.selection);
                editor.setSession(editSession);
             }
-            /*
-            var zip_url_base="/pwapp/js-keygen-master.zip",
-            updated_prefix="https://jonathan-annett.github.io/pwapp/",
-            zip_virtual_dir="https://jonathan-annett.github.io/pwapp",
-            alias_root_fix=/^js\-keygen\-master\//,
-            alias_root="js-keygen-master/",
-            zip_files=[".dirmeta.json","js-keygen-master/.editorconfig","js-keygen-master/.eslintrc.json","js-keygen-master/.gitignore","js-keygen-master/.prettierrc","js-keygen-master/1to8.html","js-keygen-master/CNAME","js-keygen-master/LICENSE.md","js-keygen-master/README.md","js-keygen-master/base64url.js","js-keygen-master/convert.html","js-keygen-master/index.html","js-keygen-master/js-keygen-master/README.md","js-keygen-master/js-keygen-ui.js","js-keygen-master/js-keygen.css","js-keygen-master/js-keygen.js","js-keygen-master/key.png","js-keygen-master/package.json","js-keygen-master/pkcs1To8.js","js-keygen-master/publicSshToPem.js","js-keygen-master/ssh-util.js","js-keygen-master/test/index.html","js-keygen-master/test/qunit/qunit.css","js-keygen-master/test/qunit/qunit.js","js-keygen-master/test/tests.js"],
-            parent_link="/pwapp/<b>js-keygen-master.zip</b>",
-            full_zip_uri           = location.origin+zip_url_base;
-            var regExps = [new RegExp("^\.","")];
-            
-            */
-            
+              
 
             function onDOMContentLoaded (){
             

@@ -132,8 +132,8 @@ ml(`
              
             const fixupLog = console.info.bind(console); //function(){};//
 
-             const dir_meta_name  = '.dirmeta.json';
-             const dir_meta_empty = {"deleted":[],"hidden":["^\\."]};
+             const dir_meta_name  = 'dirmeta.hidden-json';
+             const dir_meta_empty = {"deleted":[],"hidden":["^\\.","/\\.hidden\\-json$/"]};
              const dir_meta_empty_json = JSON.stringify(dir_meta_empty);
              const dir_meta_empty_resp = {
                  status: 200,
