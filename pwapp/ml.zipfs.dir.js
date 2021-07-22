@@ -581,10 +581,11 @@ ml(`
                                 sess_json = err ? false : new TextDecoder().decode(sess_json);
                                 if (sess_json) {
                                     
-                                     ace_session_json.deserialize(li_ed.editor,sess_json,function(err){
+                                     ace_session_json.deserialize(li_ed.editor,sess_json,function(err,data){
                                          
                                           if (err || (li_ed.editor.session.getValue() !==currentText) ) { 
                                               li_ed.editor.session.setValue(currentText);
+                                              li_ed.editor.setOptions(data);
                                           }
                                           proceed();
                                      });
@@ -653,7 +654,14 @@ ml(`
                     const li_ed = ed.parentNode;
                     
                     
-                    ace_session_json.serialize(li_ed.editor,["theme"],function(err,json){
+                    ace_session_json.serialize(
+                        li_ed.editor,
+                        ["theme"],
+                        {
+                            minLines : 2,
+                            maxLines : li_ed.editor.getOption("maxLines")
+                        },
+                    function(err,json){
                         
                         const buffer = new TextEncoder().encode(json);
                         const file_url = pwaApi.filename_to_url(filename)+".hidden-json";

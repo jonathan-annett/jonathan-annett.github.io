@@ -54,10 +54,15 @@ ml([],function(){ml(2,
            return session;
        };
        
-       function serialize (editor,omit,cb) {
+       function serialize (editor,omit,data,cb) {
+           if (typeof data==='function') {
+               cb=data;
+               data={};
+           }
            if (typeof omit==='function') {
                cb=omit;
                omit=undefined;
+               data={};
            }
            try {
                 cb(undefined,(function(session){
@@ -67,7 +72,8 @@ ml([],function(){ml(2,
                        editor : {
                            theme : editor.getTheme().split("/").pop()
                        },
-                       session : sessionToJSON(session)
+                       session : sessionToJSON(session),
+                       data : data
                    }
                    
                    if (omit) {
@@ -93,7 +99,7 @@ ml([],function(){ml(2,
                    
                    editor.setSession(sessionFromJSON(state.session));
    
-                   
+                   return state.data;
                })(editor.getSession(),JSON.parse(json)));
                
            } catch (err) {
