@@ -500,7 +500,7 @@ ml(`
                 }[ext] || "ace/theme/chrome";
             }
             
-            function onEditorResize (editor,element) {
+            function onEditorResize (editor,li_ed) {
                 
                   li_ed.__resizer.unobserve(li_ed);
                   
