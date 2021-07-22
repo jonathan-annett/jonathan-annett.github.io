@@ -507,7 +507,7 @@ ml(`
                   editor.__tmr = undefined;    
                   editor.setOptions({
                      minLines : 2,
-                     maxLines : (element.clientHeight||element.offsetHeight) /  editor.renderer.lineHeight 
+                     maxLines : Math.round((element.clientHeight||element.offsetHeight) /  editor.renderer.lineHeight) 
                   });
                   
                   element.__resizer.observe(element);
@@ -529,7 +529,7 @@ ml(`
                     li.dataset.editor_id =  editor_id;
                     li.classList.add("editing");
                     const li_ed = document.createElement("li");
-                    li_ed.innerHTML = '<PRE id="'+editor_id+'"></PRE>'; 
+                    li_ed.innerHTML = '<div><PRE id="'+editor_id+'"></PRE></div>'; 
                     
                     li.parentNode.insertBefore(li_ed, li.nextSibling);
                     
@@ -543,7 +543,7 @@ ml(`
                     });
                     
                     if (typeof ResizeObserver === 'function')  {
-                        const el= qs("#"+editor_id);
+                        const el= qs("#"+editor_id).parentElement;
                         el.__resizer = new ResizeObserver(onEditorResize.bind(this,li_ed.editor,el ));
                         el.__resizer.observe(el);
                     }
