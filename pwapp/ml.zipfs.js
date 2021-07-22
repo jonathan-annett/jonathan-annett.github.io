@@ -10,7 +10,7 @@ ml(`
     zipFSListingLib                        | ml.zipfs.dir.sw.js
     virtualDirLib@ServiceWorkerGlobalScope | ml.zipfs.virtual.js
     zipPNGLib@ServiceWorkerGlobalScope     | ml.zipfs.png.js
-    pwaMiddlewares                         | ml.zipfs.middleware.js
+    pwaMiddlewares                         | ml.zipfs.middleware/index.js
     editInZed@ServiceWorkerGlobalScope     | ml.zedhook.js
 
     `,function(){ml(2,
