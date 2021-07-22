@@ -634,7 +634,7 @@ ml(`
                         pwaApi.updateURLContents (file_url,buffer,false,function(err) {
     
                         });
-                    catch (e) {
+                    } catch (e) {
                         
                     }
                     
