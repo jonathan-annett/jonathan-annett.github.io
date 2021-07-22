@@ -520,8 +520,8 @@ ml(`
                         theme:   aceThemeForFile(filename),
                         mode:    aceModeForFile(filename),
                         autoScrollEditorIntoView: true,
-                        maxLines: 10,
-                        minLines: 2
+                       // maxLines: 10,
+                       // minLines: 2
                     });
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
                     
