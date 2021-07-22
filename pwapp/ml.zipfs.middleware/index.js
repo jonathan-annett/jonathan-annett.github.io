@@ -66,11 +66,13 @@ virtualDir_mware      |  ml.zipfs.middleware/virtualDir.js
                 
                 middleware_tools.mware_names = mware_names;
                 
-                middleware_tools.mware_handlers = mware_modnames.map(function(n){
-                    const mod = ml.i[n];
-                    return function(event){
-                        return mod(event,middleware_tools);
-                    };
+                middleware_tools.mware_handlers = mware_modnames.map(function(handler_name,ix){
+                    const mware = mware_names[ix];
+                    return new Function ([handler_name,'middleware_tools'],[
+                        'return function '+mware+'(event){',
+                        '    return '+handler_name+'(event,middleware_tools);',
+                        '};'
+                        ].join('\n'))(ml.i[handler_name],middleware_tools);
                 });
                 
                 middleware_tools.fetchVia = {};
