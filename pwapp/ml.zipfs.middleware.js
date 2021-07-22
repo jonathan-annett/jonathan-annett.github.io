@@ -20,10 +20,9 @@ stopSW_mware          |  ml.zipfs.middleware/stopSW.js
             const sha1 = self.sha1Lib.cb;
             
             
-            const isLocal = new RegExp( '^'+regexpEscape(location.origin), '' );
-            
-            
-            const isSourceCodeLink = /^(https\:\/\/)(.*)(\.html|\.css|\.js)(\:[0-9]+)?\:[0-9]+$/;
+              
+           /*
+           const isSourceCodeLink = /^(https\:\/\/)(.*)(\.html|\.css|\.js)(\:[0-9]+)?\:[0-9]+$/;
             
             const isIndexPageLink  = /\/index\.html$/;
             
@@ -32,7 +31,8 @@ stopSW_mware          |  ml.zipfs.middleware/stopSW.js
             const indexPageBodyInjectAt = /<\/body\>/i;
             const indexPageBodyInjectReplace = indexPageBodyInject + '</body>';
     
-            
+           */
+           
             const mware_names = [
                                    "databasesZip",
                                    "editSourceCode",
@@ -60,7 +60,10 @@ stopSW_mware          |  ml.zipfs.middleware/stopSW.js
                  fnSrc,
                  urls_with_helpers,
                  defaultMiddlewareChain) {
-                
+                     
+                const isLocal = new RegExp( '^'+regexpEscape(location.origin), '' );
+            
+
                 // !event.use_no_cors means url is for this domain name,
                 const isLocalDomain = function(event, re) {
                     return !event.use_no_cors && ( !re || re.test(event.fixup_url) );
@@ -73,7 +76,7 @@ stopSW_mware          |  ml.zipfs.middleware/stopSW.js
                                     fnSrc,
                                     urls_with_helpers,
                                     defaultMiddlewareChain,
-                                    isLocalDomain,
+                                    isLocalDomain,isLocal,
                                     fetchDefaultResponse};
                 mware_modnames.forEach(function(n){
                     const mod = ml.i[n];
