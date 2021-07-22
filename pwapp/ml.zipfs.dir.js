@@ -429,27 +429,20 @@ ml(`
             
            
             function open_html (html,filename,file_url) {
-                
-                pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer,updated,hash){
+                console.log("creating temp file",filename);
+                pwaApi.updateURLContents ( filename,new TextEncoder().encode(html),true,function(err,hash) {
                     if (err) {
-                        return;
-                    } else {
-                        pwaApi.updateURLContents ( filename,new TextEncoder().encode(html),true,function(err,hash) {
-                            if (err) {
-                                return ;
-                            }
-                            open_url(file_url,function(){
-                                setTimeout(function(){
-                                    pwaApi.removeUpdatedURLContents(filename,function(){
-                                        
-                                    });
-                                },50);
-                            });
-                            
-                        });
-                        
-                       
+                        return ;
                     }
+                    console.log("opening temp url",file_url);
+                    open_url(file_url,function(){
+                        console.log("window opened for",file_url)
+                        setTimeout(function(){
+                            pwaApi.removeUpdatedURLContents(filename,function(){
+                                console.log("removed temp file",filename);
+                            });
+                        },500);
+                    });
                 });
             }
             
@@ -462,7 +455,7 @@ ml(`
                     } else {
                         const html  = converter.makeHtml(new TextDecoder().decode(buffer));
                         const suffix = Math.random().toString(36)+ ".html";
-                        open_html (html,filename+suffix, updated_prefix+ filename.replace(alias_root_fix,'')  +suffix);
+                        open_html (html,filename+suffix, file_url + suffix);
                     }
                 });
             }
@@ -489,7 +482,7 @@ ml(`
                             ].join('\n');
                             
                         const suffix = Math.random().toString(36)+ ".html";
-                        open_html (html,filename+suffix,file_url+suffix);
+                        open_html (html,filename+suffix, file_url + suffix);
 
                     }
                 });
