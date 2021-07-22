@@ -502,15 +502,15 @@ ml(`
             
             function onEditorResize (editor,element) {
                 
-                  element.__resizer.unobserve(element);
+                  li_ed.__resizer.unobserve(li_ed);
                   
                   editor.__tmr = undefined;    
                   editor.setOptions({
                      minLines : 2,
-                     maxLines : Math.floor((element.clientHeight||element.offsetHeight) /  editor.renderer.lineHeight) -1
+                     maxLines : Math.floor((li_ed.clientHeight||li_ed.offsetHeight) /  editor.renderer.lineHeight) -1
                   });
                   
-                  element.__resizer.observe(element);
+                  li_ed.__resizer.observe(li_ed);
                  
             } 
             
@@ -529,7 +529,7 @@ ml(`
                     li.dataset.editor_id =  editor_id;
                     li.classList.add("editing");
                     const li_ed = document.createElement("li");
-                    li_ed.innerHTML = '<div><PRE id="'+editor_id+'"></PRE></div>'; 
+                    li_ed.innerHTML = '<PRE id="'+editor_id+'"></PRE>'; 
                     
                     li.parentNode.insertBefore(li_ed, li.nextSibling);
                     
@@ -543,9 +543,9 @@ ml(`
                     });
                     
                     if (typeof ResizeObserver === 'function')  {
-                        const el= qs("#"+editor_id).parentElement;
-                        el.__resizer = new ResizeObserver(onEditorResize.bind(this,li_ed.editor,el ));
-                        el.__resizer.observe(el);
+                        
+                        li_ed.__resizer = new ResizeObserver(onEditorResize.bind(this,li_ed.editor,li_ed ));
+                        li_ed.__resizer.observe(li_ed);
                     }
                     
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
