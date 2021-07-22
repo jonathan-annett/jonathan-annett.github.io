@@ -545,7 +545,11 @@ ml(`
                     if (typeof ResizeObserver === 'function')  {
                         
                         li_ed.__resizer = new ResizeObserver(onEditorResize.bind(this,li_ed.editor,li_ed ));
-                        li_ed.__resizer.observe(li_ed);
+                        
+                        setTimeout(function(){
+                           li_ed.__resizer.observe(li_ed);
+                        },10);
+                        
                     }
                     
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
