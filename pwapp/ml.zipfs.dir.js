@@ -585,7 +585,7 @@ ml(`
                                          
                                           if (err || (li_ed.editor.session.getValue() !==currentText) ) { 
                                               li_ed.editor.session.setValue(currentText);
-                                              li_ed.editor.setOptions(data);
+                                              if (data.height) li_ed.offsetHeight = data.height;
                                           }
                                           proceed();
                                      });
@@ -658,8 +658,7 @@ ml(`
                         li_ed.editor,
                         ["theme"],
                         {
-                            minLines : 2,
-                            maxLines : li_ed.editor.getOption("maxLines")
+                            height : li_ed.offsetHeight
                         },
                     function(err,json){
                         
