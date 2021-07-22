@@ -72,10 +72,7 @@ ml(`
                pwaApi : pwaApi
             };
             
-            const editSessionData = {};
-            
-            
-            
+
             /*
             var zip_url_base="/pwapp/js-keygen-master.zip",
             updated_prefix="https://jonathan-annett.github.io/pwapp/",
@@ -536,15 +533,7 @@ ml(`
 
                             const currentText = new TextDecoder().decode(text);
                             
-                            if (editSessionData[ filename ]) {
-                                 li_ed.editor.setSession(editSessionData[ filename ]);
-                                 if (li_ed.editor.session.getValue() !== currentText) {
-                                     li_ed.editor.session.setValue(currentText);
-                                 }
-                                 delete editSessionData[ filename ];
-                            } else {
-                                 li_ed.editor.session.setValue(currentText);
-                            }
+                            li_ed.editor.session.setValue(currentText);
                            
 
                             li_ed.hashDisplay = qs(li,".sha1");
@@ -598,8 +587,7 @@ ml(`
                     const li_ed = ed.parentNode;
                     li.classList.remove("editing");
                     li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
-                    editSessionData[ filename ] = li_ed.editor.getSession();
-        
+
                     li_ed.removeChild(ed);
 
                     
