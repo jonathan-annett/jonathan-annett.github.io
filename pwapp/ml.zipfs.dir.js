@@ -585,7 +585,7 @@ ml(`
                                          
                                           if (err || (li_ed.editor.session.getValue() !==currentText) ) { 
                                               li_ed.editor.session.setValue(currentText);
-                                              if (data.height) li_ed.offsetHeight = data.height;
+                                              if (data.height) li_ed.editor.offsetHeight = data.height;
                                           }
                                           proceed();
                                      });
@@ -658,7 +658,7 @@ ml(`
                         li_ed.editor,
                         ["theme"],
                         {
-                            height : li_ed.offsetHeight
+                            height : li_ed.editor.offsetHeight
                         },
                     function(err,json){
                         
