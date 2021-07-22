@@ -122,7 +122,9 @@ ml(`
                                               
                                                const all_files = file_listing.concat(
                                                    
-                                                   additonalFiles.filter(function(fn){return file_listing.indexOf(fn)<0;})
+                                                   additonalFiles.map(function(fn){
+                                                       return   zipFileMeta.alias_root ? zipFileMeta.alias_root + fn : fn;
+                                                   }).filter(function(fn){return file_listing.indexOf(fn)<0;})
                                                    
                                                ).sort();
                                                
