@@ -315,8 +315,6 @@ ml(`
                    
                     modified_files[filename]=1;
                     
-                  
-                    
                     self.editInZed(
                        
                        dir_prefix+filename.replace(alias_root_fix,''),    
@@ -355,11 +353,15 @@ ml(`
                               // this was a new file.
                               closeInbuiltEditor(filename,li);
                               li.parentElement.removeChild(li);
+                              
                            } else {
                                // note - opening an already open editor just returns the li_ed element
                               openInbuiltEditor (filename,li).reload();
+                              li.classList.remove("edited");
                            }
                        }
+                       
+                       
                    }
                    
                   
