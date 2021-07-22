@@ -312,7 +312,7 @@ ml(`
                           return ;
                       }
                       
-                      //console.log("trying",handler.name,"for",event.fixup_url,"from",event.request.referrer);
+                      fixupLog("trying",handler.name,"for",event.fixup_url,"from",event.request.referrer);
                       const promise = handler(event);
                       
                       if (promise) {
@@ -330,7 +330,7 @@ ml(`
                              }
                              if (!response) return next(chain.shift()); 
                                  
-                             //console.log(handler.name,"returned a response for",event.fixup_url,"from",event.request.referrer); 
+                             fixupLog(handler.name,"returned a response for",event.fixup_url,"from",event.request.referrer); 
                              chain.splice(0,chain.length);
                              cb(undefined,response);
  
