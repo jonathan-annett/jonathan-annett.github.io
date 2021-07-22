@@ -4,8 +4,12 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(`
 
-sha1Lib     | sha1.js
-editInZed   | ml.zedhook.js
+sha1Lib               |  sha1.js
+databasesZip_mware    |  ml.zipfs.middleware/databasesZip.js
+editSourceCode_mware  |  ml.zipfs.middleware/editSourceCode.js
+forceError_mware      |  ml.zipfs.middleware/forceError.js
+injectHelper_mware    |  ml.zipfs.middleware/injectHelper.js
+stopSW_mware          |  ml.zipfs.middleware/stopSW.js
     
 `,function(){ml(2,
 
@@ -27,8 +31,18 @@ editInZed   | ml.zedhook.js
             const indexPageBodyInjected = new RegExp(regexpEscape(indexPageBodyInject),'');
             const indexPageBodyInjectAt = /<\/body\>/i;
             const indexPageBodyInjectReplace = indexPageBodyInject + '</body>';
+    
             
-            const editInZedHtml = self.editInZed.zedhookHtml;
+            const mware_names = [
+                                   "databasesZip",
+                                   "editSourceCode",
+                                   "forceError",
+                                   "injectHelper",
+                                   "stopSW"
+                                ];
+                                
+            const mware_modnames  = mware_names.map(function(n){ return n+"_mware";});
+           
             
             return middlewares;
             
@@ -52,6 +66,22 @@ editInZed   | ml.zedhook.js
                     return !event.use_no_cors && ( !re || re.test(event.fixup_url) );
                 };
                 
+                const middleware_tools = {addMiddlewareListener,
+                                    databases,
+                                    response200,
+                                    response500,
+                                    fnSrc,
+                                    urls_with_helpers,
+                                    defaultMiddlewareChain,
+                                    isLocalDomain,
+                                    fetchDefaultResponse};
+                mware_modnames.forEach(function(n){
+                    const mod = ml.i[n];
+                    addMiddlewareListener(function(event){
+                        return mod(event,middleware_tools);
+                    });
+                });
+                /*
                 // /databases.zip download the databases as a zip file -
                 addMiddlewareListener (function (event) {
                    
@@ -183,7 +213,7 @@ editInZed   | ml.zedhook.js
                     } 
                 });
                 
-                
+                */
                 function fetchDefaultResponse(event,mode,cb) {
                     
                     const alternates = defaultMiddlewareChain;
