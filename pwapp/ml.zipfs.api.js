@@ -28,8 +28,9 @@ ml([],function(){ml(2,
                 
                    if (alias_root) {
                        if (filename.indexOf(alias_root)===0) {
-                           return updated_prefix  + filename.substr(alias_root.length);
+                           return updated_prefix  + filename;
                        }
+                       return updated_prefix + alias_root + filename;
                    }
                    return updated_prefix +  filename;
                
