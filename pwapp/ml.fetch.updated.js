@@ -55,23 +55,34 @@ ml([],function(){ml(2,
                 if (entry && (entry.prefix || entry.aliased_url)) {
                     // this is a virtual entry. if it was updated, the "virtual" path will return contents and updated
                     const db = databases.updatedURLS;
-                    db.getItem(
-                        
-                        (entry.aliased_url && db.keyExists(entry.aliased_url) && entry.aliased_url ) ||
-                        (entry.fixup_url   && db.keyExists(entry.fixup_url)   && entry.fixup_url ) ||
-                        (db.keyExists(url) && url),
-                        
-                        function(err,args){
-                        if(err) {
-                            return cb(err);
-                        }
-                        if (args) {
-                            const buffer = args[0];
-                            return cb (undefined,buffer,true);
-                        }
-                        // ok it's a virtual entry that has NOT been updated, so get the correct version from the correct zip.
-                        doFetch(entry.fixup_url||url,cb);
-                    });
+                    const use_url = (entry.aliased_url && db.keyExists(entry.aliased_url) && entry.aliased_url ) ||
+                                (entry.fixup_url   && db.keyExists(entry.fixup_url)   && entry.fixup_url ) ||
+                                (db.keyExists(url) && url);
+                    if (use_url) {
+                        db.getItem(
+                            
+                            use_url,
+                            
+                            function(err,args){
+                            if(err) {
+                                return cb(err);
+                            }
+                            if (args) {
+                                const buffer = args[0];
+                                return cb (undefined,buffer,true);
+                            }
+                            if (entry && entry.response) {
+                                cb (undefined,entry.response);
+                                delete entry.response;
+                            } else {
+                               // ok it's a virtual entry that has NOT been updated, so get the correct version from the correct zip.
+                               const use_url = entry.aliased_url || entry.fixup_url || url;
+                               doFetch(use_url,cb);
+                            }
+                        });
+                    } else {
+                        doFetch(url,cb);
+                    }
                 } else {
                     // it's not a virtual entry, so just fetch it
                     doFetch(url,cb);
@@ -99,22 +110,10 @@ ml([],function(){ml(2,
         
         function URLIsUpdated (url,cb) {
             url = full_URL(location.origin,url);
-            virtualDirQuery(url).then(function(entry){
-                if (entry && (entry.prefix || entry.aliased_url)) {
-                    // this is a virtual entry. if it was updated, the "virtual" path will be in updatedURLS
-                    cb (
-                        (entry.aliased_url && databases.updatedURLS.keyExists(entry.aliased_url)) ||
-                        (entry.fixup_url   && databases.updatedURLS.keyExists(entry.fixup_url)) ||
-                        (databases.updatedURLS.keyExists(url)) 
-                        
-                        );
-                    
-                } else {
-                    // it's not a virtual entry, see if it has been updated
-                    cb (databases.updatedURLS.keyExists(url));
-                }
-                
+            fetchUpdatedURLContents(url,function(err,response){
+                return cb (!!response);
             });
+
         }
         
         function full_URL(base,url) {
