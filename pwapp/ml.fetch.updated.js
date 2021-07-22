@@ -54,7 +54,14 @@ ml([],function(){ml(2,
                 
                 if (entry && (entry.prefix || entry.aliased_url)) {
                     // this is a virtual entry. if it was updated, the "virtual" path will return contents and updated
-                    databases.updatedURLS.getItem(entry.aliased_url||entry.fixup_url,function(err,args){
+                    const db = databases.updatedURLS;
+                    db.getItem(
+                        
+                        (entry.aliased_url && db.keyExists(entry.aliased_url) && entry.aliased_url ) ||
+                        (entry.fixup_url   && db.keyExists(entry.fixup_url)   && entry.fixup_url ) ||
+                        (db.keyExists(url) && url),
+                        
+                        function(err,args){
                         if(err) {
                             return cb(err);
                         }
@@ -69,7 +76,6 @@ ml([],function(){ml(2,
                     // it's not a virtual entry, so just fetch it
                     doFetch(url,cb);
                 }
-                
             });
             
             
@@ -96,7 +102,12 @@ ml([],function(){ml(2,
             virtualDirQuery(url).then(function(entry){
                 if (entry && (entry.prefix || entry.aliased_url)) {
                     // this is a virtual entry. if it was updated, the "virtual" path will be in updatedURLS
-                    cb (databases.updatedURLS.keyExists(entry.aliased_url||entry.fixup_url||url));
+                    cb (
+                        (entry.aliased_url && databases.updatedURLS.keyExists(entry.aliased_url)) ||
+                        (entry.fixup_url   && databases.updatedURLS.keyExists(entry.fixup_url)) ||
+                        (databases.updatedURLS.keyExists(url)) 
+                        
+                        );
                     
                 } else {
                     // it's not a virtual entry, see if it has been updated
