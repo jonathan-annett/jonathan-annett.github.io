@@ -74,16 +74,6 @@ ml(`
                                                    return new RegExp( regexpEscape(uri+"/"),'g');
                                                });
                                                
-                                               const htmlFileItemLibOpts = {
-                                                   uri,
-                                                   alias_root:zipFileMeta.alias_root,
-                                                   tools,
-                                                   file_listing,
-                                                   fileisEdited,
-                                                   updated_prefix,
-                                                   parent_link,
-                                                   hidden_files_exist : false // this gets updated by html_file_item()
-                                               };
                                                
                                                const {
                                                    html_file_item,
@@ -119,6 +109,16 @@ ml(`
                                                parent_link = cleanup_links(parent_link);
                                               
                                                        
+                                             const htmlFileItemLibOpts = {
+                                                 uri,
+                                                 alias_root:zipFileMeta.alias_root,
+                                                 tools,
+                                                 file_listing,
+                                                 fileisEdited,
+                                                 updated_prefix,
+                                                 parent_link,
+                                                 hidden_files_exist : false // this gets updated by html_file_item()
+                                             };
                                              
                                               
                                                const all_files = file_listing.concat(

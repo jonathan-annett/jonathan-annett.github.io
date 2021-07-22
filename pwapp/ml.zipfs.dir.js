@@ -212,46 +212,6 @@ ml(`
                 }
             }
             
-            /*function html_file_item (id,filename){
-                
-                
-                const linkit=function(uri,disp,a_wrap){ 
-                    a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
-                    const split=(disp||uri).split("/");
-                    if (split.length===1) return a_wrap.join(disp||uri);
-                    const last = split.pop();
-                    if (split.length===1) return split[0]+'/'+ a_wrap.join(last);
-                    return split.join("/")+'/'+ a_wrap.join(last);
-                };
-            
-               const full_uri = zip_url_base+"/"+filename,
-                     basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
-               const edited_attr  = ' data-balloon-pos="right" aria-label="'                + basename + ' has been edited locally"';
-               const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
-               const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
-               const is_hidden    = false;
-               const is_deleted   = false;
-               const is_editable  = true;
-               const is_zip       = false;
-               const is_edited    = true;// new files are by definition,edited
-               
-               
-               const sha1span     = '<span class="sha1"></span>';
-               
-               const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;&nbsp;&nbsp;</span>' : '';
-               const cls = is_deleted ? ["deleted"] : [];
-               if (is_edited)  cls.push("edited");
-               if (is_hidden)  cls.push("hidden");
-               const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
-               
-               const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>'                + sha1span + edited ] 
-                              : is_zip        ? [ '<a'+zip_attr+  ' href="'+zip_url_base+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>'        + sha1span + edited ]   
-                              :                 [ '<a data-filename="'               + filename + '" data-inzip="0"><span class="normal">&nbsp;</span>',     '</a>' + sha1span + edited ] ;
-               
-               
-               return '<li'+li_class+'><a data-filename="' + filename + '"><span class="deletefile"></span></a><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
-            } */
-            
             function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
            
             function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
