@@ -511,18 +511,22 @@ ml(`
             }
             
             function onEditorResize (editor,li_ed) {
-                  if (li_ed.__resizer.first) {
+                 
                      
-                     li_ed.__resizer.unobserve(li_ed);
+                    
                      
                      if (li_ed.__timeout) {
                          clearTimeout(li_ed.__timeout);
-                         li_ed.__timeout=undefined;
+                        
+                     } else {
+                         li_ed.__resizer.unobserve(li_ed);
                      }
                      
                       li_ed.__timeout = setTimeout(function(){
-                          clearTimeout(li_ed.__timeout);
                           li_ed.__timeout = undefined;    
+                          clearTimeout(li_ed.__timeout);
+                          li_ed.__resizer.observe(li_ed);
+                        
                           editor.setOptions({
                              minLines : 2,
                              maxLines : Math.floor((li_ed.clientHeight||li_ed.offsetHeight) /  editor.renderer.lineHeight) 
@@ -530,10 +534,8 @@ ml(`
                           
                       },500);
                       
-                     li_ed.__resizer.observe(li_ed);
-                  } else {
-                     li_ed.__resizer.first=true; 
-                  }
+                    
+                   
             } 
             
          
