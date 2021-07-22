@@ -265,7 +265,7 @@ ml(`
                        li_ed.editor.setSession(fs_editor.getSession());
                        li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
                        li_ed.editor.focus();
-                       fs_editor.setValue("");
+                       
                    }
                 };
                 
