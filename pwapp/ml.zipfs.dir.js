@@ -10,6 +10,7 @@ ml(`
     htmlFileItemLib     | ml.zipfs.dir.file.js
     zipFSApiLib         | ml.zipfs.api.js
     showdown            | https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.js
+    aceSessionLib       | ml.ace-session.js
     
     `,function(){ml(2,
 
@@ -19,6 +20,12 @@ ml(`
             
             
             var 
+            
+            ace_session_json = ml.i.aceSessionLib,
+            
+            
+           
+            
             editor_url          = location.href.replace(/\/$/,''),
             editor_channel_name = window.parent ? "ch_"+editor_url.replace(/\/|\:|\.|\-/g,'') : false,
             editor_channel      = editor_channel_name ? new BroadcastChannel(editor_channel_name) : false,
@@ -72,44 +79,6 @@ ml(`
                pwaApi : pwaApi
             };
             
-        
-          
-           function getSessionJSON(editor) {
-               const sess = editor.getSession();
-               return  JSON.stringify({
-                     annotations: sess.getAnnotations(),
-                     breakpoints: sess.getBreakpoints(),
-                     folds: sess.getAllFolds().map(function(fold) {
-                         return fold.range;
-                     }),
-                     history: {
-                         undo: sess.getUndoManager().$undoStack,
-                         redo: sess.getUndoManager().$redoStack
-                     },
-                     mode: sess.getMode().$id,
-                     scrollLeft: sess.getScrollLeft(),
-                     scrollTop: sess.getScrollTop(),
-                     selection: sess.getSelection().toJSON(),
-                     value: sess.getValue()
-                 },
-                 undefined,4);
-           }           
-           
-           function restoreSession(editor,json) {
-               const  session = JSON.parse(json);
-               const editSession = new ace.EditSession(session.value);
-               editSession.setAnnotations(session.annotations);
-               editSession.setBreakpoints(session.breakpoints);
-               editSession.setUndoManager(new ace.UndoManager());
-               editSession.$undoManager.$undoStack = JSON.parse(session.history.undo);
-               editSession.$undoManager.$redoStack = JSON.parse(session.history.redo);
-               editSession.setMode(session.mode);
-               editSession.setScrollLeft(session.scrollLeft);
-               editSession.setScrollTop(session.scrollTop);
-               editSession.selection.fromJSON(session.selection);
-               editor.setSession(editSession);
-            }
-              
 
             function onDOMContentLoaded (){
             
@@ -554,47 +523,69 @@ ml(`
                         maxLines: 10,
                         minLines: 2
                     });
+                    const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
                     
                     pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
+                        const currentText = new TextDecoder().decode(text);
+                        
                         if (err) {
                             li_ed.editor.session.setValue("error:"+err.message||err);
                         } else {
-
-                            const currentText = new TextDecoder().decode(text);
-                            
-                            li_ed.editor.session.setValue(currentText);
-                           
-
-                            li_ed.hashDisplay = qs(li,".sha1");
-                            li_ed.hashDisplay.textContent=hash;
-                            li_ed.setText = function (text) {
-                                li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
-                                li_ed.editor.setValue(text);
-                                li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
-                            };
-                            
-                            li_ed.reload = function () {
-                                pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
-                                    li_ed.setText(new TextDecoder().decode(text));
-                                });
-                            }
-                           
-                            li_ed.inbuiltEditorOnSessionChange = function () {
-                                    // delta.start, delta.end, delta.lines, delta.action
+                            pwaApi.fetchUpdatedURLContents(file_session_url,false,function(err,sess_json){
                                     
-                                    const buffer = new TextEncoder().encode(li_ed.editor.session.getValue());
+                                sess_json = err ? false : new TextDecoder().decode(sess_json);
+                                if (sess_json) {
                                     
-                                    pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
-                                        if (err) {
-                                            return ;
-                                        }
-                                        li_ed.hashDisplay.textContent=hash;
-                                    });
-                            };
-                            
-                            li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
-                            
+                                     ace_session_json.deserialize(li_ed.editor,sess_json,function(err){
+                                         
+                                          if (err || (li_ed.editor.session.getValue() !==currentText) ) { 
+                                              li_ed.editor.session.setValue(currentText);
+                                          }
+                                          proceed();
+                                     });
+                                    
+
+                                } else {
+                                    li_ed.editor.session.setValue(currentText);
+                                    proceed();
+                                }
+                               
+                               
+                                function proceed () {
+                                    li_ed.hashDisplay = qs(li,".sha1");
+                                    li_ed.hashDisplay.textContent=hash;
+                                    li_ed.setText = function (text) {
+                                        li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
+                                        li_ed.editor.setValue(text);
+                                        li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                                    };
+                                    
+                                    li_ed.reload = function () {
+                                        pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
+                                            li_ed.setText(new TextDecoder().decode(text));
+                                        });
+                                    }
+                                   
+                                    li_ed.inbuiltEditorOnSessionChange = function () {
+                                            // delta.start, delta.end, delta.lines, delta.action
+                                            
+                                            const buffer = new TextEncoder().encode(li_ed.editor.session.getValue());
+                                            
+                                            pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
+                                                if (err) {
+                                                    return ;
+                                                }
+                                                li_ed.hashDisplay.textContent=hash;
+                                            });
+                                    };
+                                    
+                                    li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                                    
+                                }     
+                                    
+                            }); 
                         }
+                        
                         
 
                         
@@ -616,33 +607,33 @@ ml(`
                     
                     const li_ed = ed.parentNode;
                     
-                    try {
-                        const json = getSessionJSON(li_ed.editor);
+                    
+                    ace_session_json.serialize(li_ed.editor,["theme"],function(err,json){
+                        
                         const buffer = new TextEncoder().encode(json);
-                        
-                        const file_url = pwaApi.filename_to_url(filename)+".editState";
+                        const file_url = pwaApi.filename_to_url(filename)+".hidden-json";
                         pwaApi.updateURLContents (file_url,buffer,false,function(err) {
-    
+                            li.classList.remove("editing");
+                            li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
+        
+                            li_ed.removeChild(ed);
+        
+                            
+                            delete li_ed.inbuiltEditorOnSessionChange;
+                            delete li_ed.editor;
+                            delete li_ed.hashDisplay;
+                            delete li_ed.setText;
+                            delete li_ed.reload;
+                            
+                            li_ed.parentNode.removeChild(li_ed);
+                            
+                            delete li.dataset.editor_id;
                         });
-                    } catch (e) {
-                        
-                    }
+                    });
                     
-                    li.classList.remove("editing");
-                    li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
-
-                    li_ed.removeChild(ed);
-
                     
-                    delete li_ed.inbuiltEditorOnSessionChange;
-                    delete li_ed.editor;
-                    delete li_ed.hashDisplay;
-                    delete li_ed.setText;
-                    delete li_ed.reload;
                     
-                    li_ed.parentNode.removeChild(li_ed);
-                    
-                    delete li.dataset.editor_id;
+                   
                 }
             }
             
