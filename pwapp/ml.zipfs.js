@@ -172,18 +172,22 @@ ml(`
                    ];
   
              const urls_with_helpers = [];
-             ml.i.pwaMiddlewares(
-                 addMiddlewareListener,
-                 databases,
-                 response200,
-                 response500,
-                 fnSrc,
-                 urls_with_helpers,
-                 virtualDirDB,
-                 virtualDirQuery,
-                 defaultMiddlewareChain);
              
-    
+             const pwaMiddlewareOpts = { databases,
+                                         response200,
+                                         response500,
+                                         fnSrc,
+                                         urls_with_helpers,
+                                         virtualDirDB,
+                                         virtualDirQuery,
+                                         getZipObject,
+                                         getZipDirMetaTools,
+                                         removeUpdatedURLContents,
+                                         updateURLContents,
+                                         defaultMiddlewareChain };
+             
+             ml.i.pwaMiddlewares(addMiddlewareListener,pwaMiddlewareOpts);
+
              self.fixupUrl = function (url) {
                  
                  const url_in = url;

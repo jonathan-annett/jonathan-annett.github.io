@@ -1,4 +1,4 @@
-/* global ml  */
+/* global ml,Response, Headers  */
 /*
 
    middleware must either:
@@ -50,7 +50,7 @@ ml([],function(){ml(2,
        function toUpdateUrl (resolve,reject) {
               
            event.request.arrayBuffer().then(function(buffer){
-              updateURLContents (url,databases.updatedURLS,buffer,function(){
+              middleware.updateURLContents (url,db,buffer,function(){
                   resolve(new Response('ok', {
                       status: 200,
                       statusText: 'Ok',
@@ -68,7 +68,7 @@ ml([],function(){ml(2,
               
           let inzip   = event.request.headers.get('x-is-in-zip') ===  '1';
 
-          removeUpdatedURLContents (url,function(){
+          middleware.removeUpdatedURLContents (url,function(){
               
               
               if (inzip) {
@@ -77,11 +77,11 @@ ml([],function(){ml(2,
                   const zip_url     = url.substr(0,zip_url_split);
                   const file_in_zip = url.substr(zip_url_split+1);
                   
-                  getZipObject(zip_url,function(err,zip,zipFileMeta){
+                  middleware.getZipObject(zip_url,function(err,zip,zipFileMeta){
                       
                       if (err)  throw err;
                        
-                      getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
+                      middleware.getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
                           
                           tools.deleteFile(file_in_zip,okStatus);
                           tools.notify({deleteFile:file_in_zip});

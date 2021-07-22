@@ -55,36 +55,16 @@ virtualDir_mware      |  ml.zipfs.middleware/virtualDir.js
             }
             
 
-             function middlewares (
-                 addMiddlewareListener,
-                 databases,
-                 response200,
-                 response500,
-                 fnSrc,
-                 urls_with_helpers,
-                 virtualDirDB,
-                 virtualDirQuery,
-                 defaultMiddlewareChain) {
+             function middlewares (addMiddlewareListener,middleware_tools) {
                      
-                const isLocal = new RegExp( '^'+regexpEscape(location.origin), '' );
-            
+                middleware_tools.isLocal = new RegExp( '^'+regexpEscape(location.origin), '' );
+                middleware_tools.regexpEscape = regexpEscape;
 
                 // !event.use_no_cors means url is for this domain name,
-                const isLocalDomain = function(event, re) {
+                middleware_tools.isLocalDomain = function(event, re) {
                     return !event.use_no_cors && ( !re || re.test(event.fixup_url) );
                 };
                 
-                const middleware_tools = {addMiddlewareListener,
-                                    databases,
-                                    response200,
-                                    response500,
-                                    fnSrc,
-                                    urls_with_helpers,
-                                    defaultMiddlewareChain,
-                                    isLocalDomain,isLocal,
-                                    fetchDefaultResponse,
-                                    virtualDirDB,virtualDirQuery
-                };
                 mware_modnames.forEach(function(n){
                     const mod = ml.i[n];
                     addMiddlewareListener(function(event){
