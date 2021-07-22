@@ -304,7 +304,7 @@ ml(`
                                                 // and convert partial urls into complete urls, with respect to the referrer
                        
                                 
-                    ].concat( registeredMiddleware,defaultMiddlewareChain);
+                    ].concat( registeredMiddleware, defaultMiddlewareChain );
 
                   
                   const next = function (handler) {

@@ -138,7 +138,7 @@ ml([],function(){ml(2,
                        
                        if (event.fixup_url.endsWith("/virtual.json")) {
                            const json = JSON.stringify(virtualDirDB,undefined,4);
-                           return Promise.resolve(new Response(json, {
+                           return resolve(new Response(json, {
                              status: 200,
                              headers: new Headers({
                                'Content-Type'   : 'application/json',
@@ -151,7 +151,7 @@ ml([],function(){ml(2,
                            
                            if (entry&& entry.response) {
                                
-                               const response = entry.response.clone();
+                               const response = entry.response;
                                delete entry.fixup_url;
                                delete entry.response;
                                delete entry.prefix;
@@ -161,25 +161,26 @@ ml([],function(){ml(2,
                                
                            } else {
                                if (entry ) {
+                                   
                                     if (entry.aliased_url) {
                                        event.aliased_url = entry.aliased_url;
                                        delete entry.aliased_url;
                                     }
+                                    
                                     if (entry.fixup_url) {
                                         event.fixup_url = entry.fixup_url;
                                         delete entry.fixup_url;
                                     }
                                         
                                     if (entry.prefix) {
-                                        event.virtual_prefix  = entry.prefix;
-                                        
+                                        event.virtual_prefix = entry.prefix;
                                         delete entry.prefix;
                                     }
                                     
                                     delete entry.url;
-                               }
+                               } resolve();
                            }
-                           resolve();
+                          
                        });
                        
                    });
