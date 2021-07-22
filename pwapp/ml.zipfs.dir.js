@@ -658,7 +658,7 @@ ml(`
                         li_ed.editor,
                         ["theme"],
                         {
-                            maxLines : li_ed.editor.getOption("maxLines");
+                            maxLines : li_ed.editor.getOption("maxLines")
                         },
                     function(err,json){
                         
