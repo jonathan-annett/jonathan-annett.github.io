@@ -151,7 +151,7 @@ ml(`
                   
              const defaultMiddlewareChain = [ // additional handlers handle loaded into registeredMiddleware                        
                         
-                       fetchUpdatedURLEvent,     
+                       //fetchUpdatedURLEvent,     
                                                  
                        //virtualDirEvent,          // if event.fixup_url is inside a virtual directory, modifies event.fixup_url, 
                                                  // to point to the endpoint inside it's container zip, and saves saves the 
