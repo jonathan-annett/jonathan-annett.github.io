@@ -504,7 +504,7 @@ ml(`
                 
                   editor.setOptions({
                      minLines : 2,
-                     maxLines : element.innerHeight /  editor.renderer.lineHeight 
+                     maxLines : (element.clientHeight||element.offsetHeight) /  editor.renderer.lineHeight 
                   });
                  
                  
