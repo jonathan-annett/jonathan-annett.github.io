@@ -546,9 +546,14 @@ ml(`
                         
                         li_ed.__resizer = new ResizeObserver(onEditorResize.bind(this,li_ed.editor,li_ed ));
                         
-                        setTimeout(function(){
-                           li_ed.__resizer.observe(li_ed);
-                        },10);
+                  
+                        li_ed.__resizer.observe(li_ed);
+                     
+                        editor.setOptions({
+                          minLines : 2,
+                          maxLines : 10;
+                        });
+                        
                         
                     }
                     
