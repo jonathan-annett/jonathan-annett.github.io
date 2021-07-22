@@ -27,7 +27,7 @@ ml(`
 
     function htmlFileItemLib (options) {
         
-        const {uri,alias_root,tools,file_listing,fileisEdited,updated_prefix,parent_link} = options;
+        const {uri,alias_root,tools,file_listing,fileisEdited,updated_prefix} = options;
         
         return {
             html_file_item,
@@ -68,7 +68,7 @@ ml(`
                           :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + sha1span +edited+zoom_full ] ;
            
            if (is_hidden) options.hidden_files_exist = true;
-           return '<li'+li_class+'><a data-filename="' + filename + '" data-inzip="'+ (is_in_zip?'1':'0') + '"><span class="deletefile"></span></a><span class="full_path">' + parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
+           return '<li'+li_class+'><a data-filename="' + filename + '" data-inzip="'+ (is_in_zip?'1':'0') + '"><span class="deletefile"></span></a><span class="full_path">' + options.parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
         }
         
            
