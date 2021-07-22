@@ -43,7 +43,7 @@ ml(`
                     editor_channel.postMessage({stop:1});
                     setTimeout(function(){
                         window.close();
-                    },1000);
+                    },10);
                 });
             }
             
