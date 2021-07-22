@@ -507,7 +507,7 @@ ml(`
                   editor.__tmr = undefined;    
                   editor.setOptions({
                      minLines : 2,
-                     maxLines : Math.round((element.clientHeight||element.offsetHeight) /  editor.renderer.lineHeight) 
+                     maxLines : Math.floor((element.clientHeight||element.offsetHeight) /  editor.renderer.lineHeight) -1
                   });
                   
                   element.__resizer.observe(element);
