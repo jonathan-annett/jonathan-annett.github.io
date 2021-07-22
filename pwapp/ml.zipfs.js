@@ -480,7 +480,7 @@ ml(`
                            };
                       } else {
                            event.fetchBuffer = function(cb) { 
-                               return fetchBuffer(event.aliased_url || event.fixup_url,cb);
+                               return fetchBuffer(event.fixup_url,cb);
                            };
                            event.toFetchUrl   = function(db) { 
                                return function (resolve) {
