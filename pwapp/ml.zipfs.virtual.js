@@ -157,7 +157,7 @@ ml([],function(){ml(2,
                                delete entry.prefix;
                                delete entry.aliased_url;
                                delete entry.url;
-                               return resolve(response);
+                               return resolve(response.clone());
                                
                            } else {
                                if (entry ) {
