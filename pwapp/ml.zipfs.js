@@ -130,7 +130,7 @@ ml(`
             const openZipFileCache = { };
              
              
-            const fixupLog = function(){};//console.info.bind(console);
+            const fixupLog = console.info.bind(console); //function(){};//
 
              const dir_meta_name  = '.dirmeta.json';
              const dir_meta_empty = {"deleted":[],"hidden":["^\\."]};
