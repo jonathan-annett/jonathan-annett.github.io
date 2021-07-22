@@ -520,13 +520,13 @@ ml(`
                          li_ed.__timeout = undefined;   
                      }
                      
-                     if (li_ed.__max !== Math.floor((li_ed.clientHeight||li_ed.offsetHeight) /  editor.renderer.lineHeight) ) {
+                     if (li_ed.__max !== Math.round(li_ed.offsetHeight /  editor.renderer.lineHeight) ) {
                          
                           li_ed.__timeout = setTimeout(function(){
                               li_ed.__timeout = undefined;    
                               clearTimeout(li_ed.__timeout);
                              
-                              li_ed.__max = Math.floor((li_ed.clientHeight||li_ed.offsetHeight) /  editor.renderer.lineHeight) 
+                              li_ed.__max = Math.round(li_ed.offsetHeight /  editor.renderer.lineHeight) ;
                               
                               editor.setOptions({
                                  minLines : 2,
