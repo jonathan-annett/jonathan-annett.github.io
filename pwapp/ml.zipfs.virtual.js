@@ -151,13 +151,13 @@ ml([],function(){ml(2,
                            
                            if (entry&& entry.response) {
                                
-                               const response = entry.response;
+                               const response = entry.response.clone();
                                delete entry.fixup_url;
                                delete entry.response;
                                delete entry.prefix;
                                delete entry.aliased_url;
                                delete entry.url;
-                               return resolve(response.clone());
+                               return resolve(response);
                                
                            } else {
                                if (entry ) {
