@@ -502,11 +502,18 @@ ml(`
             
             function onEditorResize (editor,element) {
                 
+                if (editor.__tmr) {
+                    clearTimeout(editor.__tmr);
+                }
+                editor.__tmr = setTimeout(function(){
+                    
+                   editor.__tmr = undefined;    
                   editor.setOptions({
                      minLines : 2,
                      maxLines : (element.clientHeight||element.offsetHeight) /  editor.renderer.lineHeight 
                   });
-                 
+                  
+                },100);
                  
             } 
             
