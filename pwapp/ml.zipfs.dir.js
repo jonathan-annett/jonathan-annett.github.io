@@ -527,12 +527,14 @@ ml(`
                          
                          if (li_ed.__max !== Math.round(li_ed.offsetHeight /  editor.renderer.lineHeight) ) {
                      
-                              li_ed.__max = Math.round(li_ed.offsetHeight /  editor.renderer.lineHeight) ;
+                              li_ed.__max = Math.round(li_ed.offsetHeight /  editor.renderer.lineHeight);
                               
                               editor.setOptions({
                                  minLines : 2,
-                                 maxLines : li_ed.__max
+                                 maxLines :li_ed.__max
                               });
+                              
+                              li_ed.__max = Math.round(li_ed.offsetHeight /  editor.renderer.lineHeight);
                          }
                           
                       },500);
