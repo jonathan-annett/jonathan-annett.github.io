@@ -50,60 +50,17 @@ ml([],function(){ml(2,
         
         function fetchUpdatedURLContents(url,cb) {
             url = full_URL(location.origin,url);
-            virtualDirQuery(url).then(function(entry){
+            databases.updatedURLS.getItem(url,function(err,args){
                 
-                if (entry && (entry.prefix || entry.aliased_url)) {
-                    // this is a virtual entry. if it was updated, the "virtual" path will return contents and updated
-                    const db = databases.updatedURLS;
-                    const use_url = (entry.aliased_url && db.keyExists(entry.aliased_url) && entry.aliased_url ) ||
-                                (entry.fixup_url   && db.keyExists(entry.fixup_url)   && entry.fixup_url ) ||
-                                (db.keyExists(url) && url);
-                    if (use_url) {
-                        db.getItem(
-                            
-                            use_url,
-                            
-                            function(err,args){
-                            if(err) {
-                                return cb(err);
-                            }
-                            if (args) {
-                                const buffer = args[0];
-                                return cb (undefined,buffer,true);
-                            }
-                            if (entry && entry.response) {
-                                cb (undefined,entry.response);
-                                delete entry.response;
-                            } else {
-                               // ok it's a virtual entry that has NOT been updated, so get the correct version from the correct zip.
-                               const use_url = entry.aliased_url || entry.fixup_url || url;
-                               doFetch(use_url,cb);
-                            }
-                        });
-                    } else {
-                        doFetch(url,cb);
-                    }
-                } else {
-                    // it's not a virtual entry, so just fetch it
-                    doFetch(url,cb);
+                if(err) {
+                    return cb(err);
                 }
+                if (args) {
+                    const buffer = args[0];
+                    return cb (undefined,buffer,true);
+                }
+                fetchInternalBuffer(url,cb);
             });
-            
-            
-            function doFetch(use_url,cb) {
-                databases.updatedURLS.getItem(use_url,function(err,args){
-                    
-                    if(err) {
-                        return cb(err);
-                    }
-                    if (args) {
-                        const buffer = args[0];
-                        return cb (undefined,buffer,true);
-                    }
-                    fetchInternalBuffer(use_url,cb);
-                    
-                });
-            }
         }
         
         
