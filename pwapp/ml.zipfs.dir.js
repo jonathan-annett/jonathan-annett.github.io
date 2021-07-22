@@ -512,11 +512,16 @@ ml(`
             
             function onEditorResize (editor,li_ed) {
                   if (li_ed.__resizer.first) {
-                     // li_ed.__resizer.unobserve(li_ed);
                      
-                     if (li_ed.__timeout) clearTimeout(li_ed.__timeout);
+                     li_ed.__resizer.unobserve(li_ed);
+                     
+                     if (li_ed.__timeout) {
+                         clearTimeout(li_ed.__timeout);
+                         li_ed.__timeout=undefined;
+                     }
                      
                       li_ed.__timeout = setTimeout(function(){
+                          clearTimeout(li_ed.__timeout);
                           li_ed.__timeout = undefined;    
                           editor.setOptions({
                              minLines : 2,
@@ -524,7 +529,8 @@ ml(`
                           });
                           
                       },500);
-                     // li_ed.__resizer.observe(li_ed);
+                      
+                     li_ed.__resizer.observe(li_ed);
                   } else {
                      li_ed.__resizer.first=true; 
                   }
