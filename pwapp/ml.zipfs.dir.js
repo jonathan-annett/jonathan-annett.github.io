@@ -628,7 +628,7 @@ ml(`
             } 
             
             function openStylesheet(editor_channel,url,withCSS,cb) {  
-                const replyId = Date.now().toString(36).subtr(-6)+"_"+Math.random().toString(36).substr(-8);
+                const replyId = Date.now().toString(36).substr(-6)+"_"+Math.random().toString(36).substr(-8);
                 editor_channel.postMessage({
                     open_stylesheet:{
                         url:url,   
