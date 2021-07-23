@@ -10,7 +10,7 @@ html.beta div.beta {
 
 
 #loadProgress {
-  width: 120px;
+  width: 180px;
   background-color: #ddd;
 }
 
@@ -28,4 +28,9 @@ html.beta div.beta {
   width: 16px;
   height: 16px;
   
+}
+
+#runBtn {
+    
+    width:  180px;
 }

@@ -96,12 +96,17 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
              ); 
              
               function runClick() {
+                  
+                  // we want the animation /progress bar on the screen for a least 5 seconds
+                  const minTime = Date.now()+ 5000;
+                  
                   sessionStorage.running=((1000*60*2) + Date.now()).toString();
                   qs("#rungif").style.display = "inline-block";
                   progressHandler(0,1,"loadProgress","loadProgressText","installProgress");
                   pwa.start(function(){
                       betaTesterApproval().then(function(config){
-                          setTimeout(location.replace.bind(location),100,config.root);   
+                           const delay = Math.max(minTime-Date.now());
+                           setTimeout(location.replace.bind(location),delay,config.root);   
                       });
                   });
               }
