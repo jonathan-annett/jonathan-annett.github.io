@@ -147,14 +147,16 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                }
                
                let shell = new Shell('#install-shell', {
-                   user: 'foobar',
-                   host: 'MacMini',
+                   user: 'webdev',
+                   host: 'fake-pc-in-browser',
                    path: '/etc/',
-                   style: 'osx',
+                   style: 'ubuntu',
                    theme: 'dark',
                    responsive: false,
-                   commands: ['First command', 'Second command', '...']
+                   commands: ['install pwapp']
                });
+               
+               window.shell = shell;
                
                if (channelName) {
                    const channel = new BroadcastChannel(channelName);
