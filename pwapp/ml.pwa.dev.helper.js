@@ -27,7 +27,7 @@
                sessionStorage.removeItem('running');
                window.parent.location = 'stop';
            }
-       }
+       };
        
 
         document.body.querySelector("#r").onclick = function(){

@@ -194,7 +194,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                  
                  inner.style.width = Math.floor(Math.min((complete/Math.max(total,expect_total)),1)*maxWidth)+"px";
                  if (status) {
-                   status.textContent = complete+"/"+total;
+                   status.textContent = complete+"/"+Math.max(total,expect_total);
                  }
                }
             } 
