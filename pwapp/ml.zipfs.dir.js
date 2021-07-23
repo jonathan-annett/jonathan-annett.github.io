@@ -35,7 +35,7 @@ ml(`
             const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix,alias_root,updated_prefix);   
                              
             const resizers = ResizeWatcher();
-            
+           const available_css = [];
             if (editor_channel) {
                 
                 qs ("h1 a.restart",function click(e) {
@@ -45,7 +45,11 @@ ml(`
                         window.close();
                     },10);
                 });
+                
+                
             }
+            
+           
             
             
             const htmlFileItemLibOpts = {
@@ -516,6 +520,28 @@ ml(`
                     css  : openStylesheet,
                 }[ext] || function(){ cb();})(editor_channel,url,withContent,cb);
             }
+            
+            
+            function getStylesheets(editor_channel,urlprefix,cb) {
+                const replyId = Date.now().toString(36).substr(-6)+"_"+Math.random().toString(36).substr(-8);
+                
+                editor_channel.addEventListener("message",msgCB);
+                
+                editor_channel.postMessage({
+                    get_stylesheets:{
+                        urlprefix:urlprefix,   
+                        replyId:replyId
+                    }
+                });
+                
+                function msgCB( event ) {
+                   if (event.data && event.data.replyId===replyId) {
+                        cb(event.data.result);
+                        editor_channel.removeEventListener("message",msgCB);
+                   } 
+                }
+            }
+            
 
             function ResizeWatcher () {
                 
@@ -658,7 +684,7 @@ ml(`
                                 replyId:replyId
                             }
                         });
-                        
+                        editor_channel.removeEventListener("message",onMsg);
                     },
                     onchange : function () {
                         
@@ -666,7 +692,12 @@ ml(`
                     
                 };
                 
-                editor_channel.addEventListener("message",function(event){
+                editor_channel.addEventListener("message",onMsg);
+                
+                return obj;
+                
+                
+                function onMsg(event){
                     if (event.data && event.data.replyId===replyId && typeof event.data.result!=='undefined') {
                         cb (obj);
                     }
@@ -677,11 +708,9 @@ ml(`
                                    && event.data.css_changed.css
                                    &&  typeof obj.onchange=== 'function') {
                                        
-                            obj.onchange(event.data.css_changed.url,event.data.css_changed.css);
+                        obj.onchange(event.data.css_changed.url,event.data.css_changed.css);
                     }
-                });
-                
-                return obj
+                }
             }
             
             

@@ -32,6 +32,20 @@
                window.parent.location = 'stop';
            }
            
+           
+           if (event.data && event.data.get_stylesheets 
+                          && event.data.get_stylesheets.urlprefix
+                          && event.data.get_stylesheets.replyId ) {
+               
+               editor_channel.postMessage({
+                   replyId: event.data.open_stylesheet.replyId,
+                   result: get_stylesheets( event.data.get_stylesheets.urlprefix) 
+               });
+               
+           } 
+           
+           
+           
            if (event.data && event.data.open_stylesheet 
                           && event.data.open_stylesheet.url
                           && event.data.open_stylesheet.withCSS
@@ -89,7 +103,14 @@
         };
         
         
- 
+ function get_stylesheets (urlprefix) {
+      
+     return [].slice.call(window.top.document.head.querySelectorAll('link[rel="stylesheet"]')).filter(function(el){
+        return (el.href.indexOf(urlprefix)>=0);
+     }).map(function(el){
+         return el.href;
+     });
+ }
  
  function open_stylesheet(url,withCSS,replyId) {
     
@@ -98,7 +119,7 @@
         if (el.href.indexOf(url)!==0) return false;
           const sheet = el;
           const sheet_parent = el.parentElement;
-          const fakeSheet = document.create("style");
+          const fakeSheet = document.createElement("style");
           const cssTextNode = document.createTextNode(withCSS);
           sheet_parent.insertBefore(sheet,fakeSheet);
           sheet_parent.removeChild(sheet);
