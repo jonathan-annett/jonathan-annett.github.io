@@ -4,13 +4,14 @@
 /* global ml,self,caches,BroadcastChannel,Shell,ResizeObserver  */
 ml(`
     
-    pwaWindow@Window    | ml.pwa-win.js
-    editInZed           | ml.zedhook.js
-    sha1Lib             | sha1.js
-    htmlFileItemLib     | ml.zipfs.dir.file.js
-    zipFSApiLib         | ml.zipfs.api.js
-    showdown            | https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.js
-    aceSessionLib       | ml.ace-session.js
+    pwaWindow@Window     | ml.pwa-win.js
+    editInZed            | ml.zedhook.js
+    sha1Lib              | sha1.js
+    htmlFileItemLib      | ml.zipfs.dir.file.js
+    zipFSApiLib          | ml.zipfs.api.js
+    showdown             | https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.js
+    aceSessionLib        | ml.ace-session.js
+    FontAwesomeKitConfig | https://kit.fontawesome.com/f16568395d.js
     
     `,function(){ml(2,
 

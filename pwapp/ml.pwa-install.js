@@ -1,5 +1,9 @@
 /* global ml,Headers,BroadcastChannel,Shell  */
-ml(`pwa | ml.pwa.js`,function(){ml(2,
+ml(`
+pwa         | ml.pwa.js
+FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
+
+`,function(){ml(2,
 
     {
         Window: function pwaInstallLib( pwa ) {
