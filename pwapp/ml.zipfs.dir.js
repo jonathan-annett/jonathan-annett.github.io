@@ -683,7 +683,7 @@ ml(`
                                           if (err || (li_ed.editor.session.getValue() !==currentText) ) { 
                                               li_ed.editor.session.setValue(currentText);
                                           }
-                                          if (data) li_ed.editor.setOptions(data);
+                                          //if (data) li_ed.editor.setOptions(data);
                                           proceed();
                                      });
                                     
