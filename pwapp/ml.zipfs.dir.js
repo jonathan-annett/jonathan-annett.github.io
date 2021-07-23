@@ -34,7 +34,7 @@ ml(`
             deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
             const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix,alias_root,updated_prefix);   
                              
-            
+            const resizers = ResizeWatcher();
             
             if (editor_channel) {
                 
@@ -510,42 +510,105 @@ ml(`
                 }[ext] || "ace/theme/chrome";
             }
             
-            function onEditorResize (editor,li_ed) {
-                 
-                     
+           
+         
+            function ResizeWatcher () {
+                
+                if (typeof ResizeObserver !== 'function')  return;
+                if (this instanceof ResizeWatcher) {
+                    //we throw away a new constructor. 
+                    return ResizeWatcher ();
+                }
                     
-                     
-                     if (li_ed.__timeout) {
-                         clearTimeout(li_ed.__timeout);
-                         li_ed.__timeout = undefined;   
+               const godMode = new ResizeObserver(onResized);
+               const watched = [],watchers = [], ignores = [];
+               const callbackForEl = function(el,force) {
+                   const ix = watched.indexOf(el);
+                   if (ix <0) {
+                       if (force) {
+                           const newcbs = [];
+                           watched.push(el);
+                           watchers.push(newcbs);
+                           ignores.push(true);
+                           godMode.observe(el);
+                           return newcbs;
+                       }
+                       return false;
+                   }
+                   return watchers[ ix ];
+               };
+               
+               return {
+                   on   : function (el,fn) {
+                     el = typeof el === 'string' ? qs(el) : el;  
+                     const cbs = callbackForEl(el,true);
+                     if (cbs.indexOf(fn)<0) {
+                        cbs.push(fn);
                      }
-                     
-                         
-                      li_ed.__timeout = setTimeout(function(){
-                          li_ed.__timeout = undefined;    
-                          clearTimeout(li_ed.__timeout);
-                         
-                         if (li_ed.__max !== Math.round(li_ed.offsetHeight /  editor.renderer.lineHeight) ) {
-                     
-                              li_ed.__max = Math.round(li_ed.offsetHeight /  editor.renderer.lineHeight);
-                              
-                              li_ed.__resizer.unobserve(li_ed);
-                              editor.setOptions({
-                                 minLines : 2,
-                                 maxLines :li_ed.__max
-                              });
-                              
-                              li_ed.__max = Math.round(li_ed.offsetHeight /  editor.renderer.lineHeight);
-                              li_ed.__resizer.observe(li_ed);
+                   },
+                   off : function (el,fn) {
+                     el = typeof el === 'string' ? qs(el) : el;
+                     const cbs = callbackForEl(el,false);
+                     if (cbs) {
+                         const ix= cbs.indexOf(fn);
+                         if (ix>=0){
+                            cbs.splice(ix,1);
+                            if (cbs.length===0) {
+                                const ix = watched.indexOf(el);
+                                godMode.unobserve(el);
+                                watched.splice(ix,1);
+                                watchers.splice(ix,1);
+                                ignores.splice(ix,1);
+                            }
                          }
-                          
-                      },500);
-                          
-                      
+                     }
+                   }
+               };
+                
+            
+                
+                
+                
+                function onResized(entries,obs) {
+                    
+                    entries.forEach(function(x){
+                        const el = x.target;
+                        const ix = watched.indexOf(el);
+                        if (ix >=0) {
+                            if (ignores[ix]) {
+                                ignores[ix]=false;
+                                return;
+                            }
+                            obs.unwatch(el);// whatever the callbacks do won't be monitored
+                            watchers.forEach(function(fn){
+                               fn(el); 
+                            });
+                            ignores[ix]=true;// set a one time trigger exclusion mutex.
+                            obs.watch(el);// this will trigger an initial event, which we promptly ignore.
+                        }
+                    });
+                    
+                } 
+                
             } 
             
-         
-            
+            function editorResized(li_ed){
+                const msec_trigger_delay = 500;
+                
+                if (li_ed.resize_hyst) {
+                    clearTimeout (li_ed.resize_hyst);
+                }
+                
+                li_ed.resize_hyst = setTimeout(function(){
+                    delete li_ed.resize_hyst;
+                    
+                    li_ed.editor.setOptions({
+                       minLines : 2,
+                       maxLines : Math.round(li_ed.offsetHeight /  li_ed.editor.renderer.lineHeight)
+                    });
+                    
+                },msec_trigger_delay);
+            }
             
             function openInbuiltEditor (filename,li) {
                 li=li||find_li (filename);
@@ -572,19 +635,8 @@ ml(`
                         minLines: 2
                     });
                     
-                    if (typeof ResizeObserver === 'function')  {
-                        
-                        li_ed.__resizer = new ResizeObserver(onEditorResize.bind(this,li_ed.editor,li_ed ));
-                        
-                        li_ed.editor.setOptions({
-                          minLines : 2,
-                          maxLines : 10
-                        });
-                        
-                        li_ed.__resizer.observe(li_ed);
-                     
-                        
-                    }
+                    resizers.on(li_ed,editorResized);
+                    
                     
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
                     
@@ -684,6 +736,8 @@ ml(`
                         const buffer = new TextEncoder().encode(json);
                         const file_url = pwaApi.filename_to_url(filename)+".hidden-json";
                         pwaApi.updateURLContents (file_url,buffer,false,function(err) {
+                            
+                            resizers.off(li_ed,editorResized);
                             li.classList.remove("editing");
                             li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
         
