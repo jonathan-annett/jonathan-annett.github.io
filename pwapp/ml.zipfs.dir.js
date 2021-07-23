@@ -669,7 +669,7 @@ ml(`
                         minLines: 2
                     });
                     
-                    resizers.on(li_ed,500,editorResized);
+                    //resizers.on(li_ed,500,editorResized);
                     
                     
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
@@ -771,7 +771,7 @@ ml(`
                         const file_url = pwaApi.filename_to_url(filename)+".hidden-json";
                         pwaApi.updateURLContents (file_url,buffer,false,function(err) {
                             
-                            resizers.off(li_ed,editorResized);
+                            //resizers.off(li_ed,editorResized);
                             li.classList.remove("editing");
                             li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
         
