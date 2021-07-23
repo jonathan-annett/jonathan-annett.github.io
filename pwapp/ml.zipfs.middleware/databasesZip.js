@@ -47,7 +47,7 @@ sha1Lib               |  sha1.js
         if ( middleware.isLocalDomain(event)) {
             
             if ( responses [ event.request.url ] ) {
-                return responses [ event.request.url ] 
+                return responses [ event.request.url ] (event,middleware);
             }
             
         }
