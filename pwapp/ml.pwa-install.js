@@ -1,4 +1,4 @@
-/* global ml,Headers,BroadcastChannel  */
+/* global ml,Headers,BroadcastChannel,Shell  */
 ml(`pwa | ml.pwa.js`,function(){ml(2,
 
     {
@@ -145,6 +145,16 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                if (status) {
                   status.style= "position:relative;left:"+(maxWidth+2)+"px;top:-"+barHeight+"px;"; 
                }
+               
+               let shell = new Shell('#install-shell', {
+                   user: 'foobar',
+                   host: 'MacMini',
+                   path: '/etc/',
+                   style: 'osx',
+                   theme: 'dark',
+                   responsive: false,
+                   commands: ['First command', 'Second command', '...']
+               });
                
                if (channelName) {
                    const channel = new BroadcastChannel(channelName);
