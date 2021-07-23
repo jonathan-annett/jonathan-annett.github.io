@@ -579,12 +579,12 @@ ml(`
                                 ignores[ix]=false;
                                 return;
                             }
-                            obs.unwatch(el);// whatever the callbacks do won't be monitored
+                            obs.unobserve(el);// whatever the callbacks do won't be monitored
                             watchers.forEach(function(fn){
                                fn(el); 
                             });
                             ignores[ix]=true;// set a one time trigger exclusion mutex.
-                            obs.watch(el);// this will trigger an initial event, which we promptly ignore.
+                            obs.observe(el);// this will trigger an initial event, which we promptly ignore.
                         }
                     });
                     
