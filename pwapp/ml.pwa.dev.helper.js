@@ -168,10 +168,10 @@
                     
                       link.href = url; 
 
-                      sheet_parent.insertBefore(fakeSheet,link);
+                      sheet_parent.insertBefore(link,fakeSheet);
                       sheet_parent.removeChild(fakeSheet);
                   } else {
-                      sheet_parent.insertBefore(fakeSheet,sheet);
+                      sheet_parent.insertBefore(sheet,fakeSheet);
                       sheet_parent.removeChild(fakeSheet);
                       
                   }
