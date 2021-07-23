@@ -55,7 +55,7 @@ sha1Lib               |  sha1.js
        
         if ( middleware.isLocalDomain(event,/\/databases\.zip$/)) {
             
-            const url = event.request.url+Math.random().toString(36);
+            const url = event.request.url+Math.random().toString(36)+".zip";
             
             return new Promise(function(resolve){
                 
@@ -67,7 +67,7 @@ sha1Lib               |  sha1.js
                <body>
                 standby...
                 <div id="ready" style="display:none">
-                   You can download the zip <a href="${url}.zip">here</a> 
+                   You can download the zip <a id = "downloadLink"></a> 
                 </div>
                 <script>
                 
@@ -76,29 +76,63 @@ sha1Lib               |  sha1.js
                     middleware.fnSrc(
                     function() {
                 
-                       function checkReady(cb) {
+                       function checkReady() {
                            
-                           fetch(url,{method:"HEAD"}).then(function(response){
+                           fetch(url).then(function(response){
+                           
+                                response.blob().then(function(blob){
+             
+                                    createBlobDownloadLink (
+                                        url,
+                                        document.body.querySelector("#downloadLink"),
+                                        "here",
+                                        blob
+                                    );
+                                    
+                                    document.querySelector("#ready").style.display="block";
+                                    
+                                });
+                           
             
-                                    if (response.ok) {
-                                        cb();
-                                    } else {
-                                        setTimeout (checkReady,5000,cb);
-                                    }
+                                 
             
                             }).catch(function(){
-                                 setTimeout (checkReady,5000,cb);
+                                 setTimeout (checkReady,5000);
                              });
                            
                        }
                        
                        
                        
-                       checkReady(function(){
+                       checkReady();
                        
-                           document.querySelector("#ready").style.display="block";
                        
-                       });
+                       
+                       function createBlobDownloadLink(url,linkEl,linkText,blob ) {
+                           
+                           const data_link = URL.createObjectURL(blob);
+                                   
+                           if (linkEl){    
+                               const link = document.createElement("a");
+                               link.download = url.split('/').pop();
+                               link.href = data_link;
+                               link.appendChild(new Text(linkText||"Download data"));
+                               link.addEventListener("click", function() {
+                                   this.parentNode.removeChild(this);
+                                   // remember to free the object url, but wait until the download is handled
+                                   setTimeout(revoke, 500)
+                               });
+                               linkEl.appendChild(link);
+                               
+                               return revoke;
+                           }
+                           
+                           
+                           function revoke(){URL.revokeObjectURL(data_link);}
+                           
+                     
+                       }
+              
                          
                 
                 
