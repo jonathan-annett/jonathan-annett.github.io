@@ -529,7 +529,6 @@ ml(`
                            const newcbs = [];
                            watched.push(el);
                            watchers.push(newcbs);
-                           ignores.push(true);
                            delays.push([]);
                            timers.push([]);
                            godMode.observe(el);
@@ -568,7 +567,6 @@ ml(`
                                 godMode.unobserve(el);
                                 watched.splice(ix,1);
                                 watchers.splice(ix,1);
-                                ignores.splice(ix,1);
                                 delays.splice(ix,1);
                                 timers.splice(ix,1);
                             }
@@ -587,21 +585,26 @@ ml(`
                         const el = x.target;
                         const ix = watched.indexOf(el);
                         if (ix >=0) {
-                            if (ignores[ix]) {
-                                ignores[ix]=false;
-                                return;
-                            }
                             obs.unobserve(el);// whatever the callbacks do won't be monitored
                             const index = watched.indexOf(el);
                             watchers[index].forEach(function(fn,ix){
-                                if (timers[index][ix]) clearTimeout(timers[index][ix]);
+                                if (timers[index][ix]) {
+                                    clearTimeout(timers[index][ix]);
+                                }
                                 timers[index][ix] = setTimeout(function(){
                                     timers[index][ix]=null;
+                                    if (ignores.some(function(x,ix){
+                                        if (x[0]===el && x[1]===fn) {
+                                            ignores.splice(ix,1);
+                                            return true;
+                                        }
+                                    }))  return;
+                                    
+                                    ignores.push([el,fn]);
                                     fn(el);
                                 },delays[index][ix],el);
                             });
-                            ignores[ix]=true;// set a one time trigger exclusion mutex.
-                            obs.observe(el);// this will trigger an initial event, which we promptly ignore.
+                            obs.observe(el);
                         }
                     });
                     
