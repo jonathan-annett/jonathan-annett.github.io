@@ -40,6 +40,6 @@ html.beta div.beta {
 }
 
 html.show_shell #install-shell{
-    display:block;
+    display:flex;
 }
 
