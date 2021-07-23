@@ -46,7 +46,7 @@ ml(`
                             window.close();
                         },10);
                  } else {
-                     window.location = window.location.href.replace(/\?.*/,'') +'?stop-service-worker=1';
+                     window.location = window.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+ zip_virtual_dir.replace(location.origin,'');
                  }
             });
             
