@@ -127,7 +127,7 @@ html.zooming li.zooming a[data-balloon-pos="down-left" ] {
     bottom: 20px;
     left: 0;
     right: 0;
-    height: 100%;
+    height: calc(100% - 20px) ;
     width: 100%;
  }
  
