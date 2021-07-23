@@ -80,6 +80,15 @@ sha1Lib               |  sha1.js
                            
                            fetch(url).then(function(response){
                            
+                                if (!response.ok) {
+                                    return setTimeout (checkReady,5000);
+                                }
+                                
+                                if (response.headers.get('content-length') == 1)  {
+                                    
+                                    return setTimeout (checkReady,5000);
+                                }
+                           
                                 response.blob().then(function(blob){
              
                                     createBlobDownloadLink (
@@ -153,6 +162,27 @@ sha1Lib               |  sha1.js
                    contentLength : html.length,
                });
                
+               
+               
+               
+               responses [url] = function (event,middleware) {
+                   
+                   const json = '0'
+                   
+                   return new Promise(function(resolve){
+                       
+                     middleware.response200 (resolve,json,{
+                         name          : event.fixup_url.replace(middleware.isLocal,''),
+                         contentType   : 'application/json',
+                         contentLength : json.length,
+                     });
+                     
+                   
+                   });
+                   
+               }
+                
+               
                 
                 
                middleware.databases.toZip(function(err,buffer){
@@ -164,7 +194,7 @@ sha1Lib               |  sha1.js
                            return middleware.response500(resolve,err);
                        }
                        
-                       responses [url+".zip"] = function (event,middleware) {
+                       responses [url] = function (event,middleware) {
                            
                            return new Promise(function(resolve){
                                
@@ -177,36 +207,13 @@ sha1Lib               |  sha1.js
                                
                                
                                setTimeout(function(){
-                                  delete responses [url+".zip"] 
+                                  delete responses [url] 
                                },60*1000);
                            
                            });
                            
                        }
-                       
-                       responses [url] = function (event,middleware) {
-                           const json = "true";
-                           
-                           return new Promise(function(resolve){
-                               middleware.response200 (resolve,json,{
-                                   name          : event.fixup_url.replace(middleware.isLocal,''),
-                                   contentType   : 'application/json',
-                                   contentLength : json.length
-                                   
-                               });
-                               
-                               setTimeout(function(){
-                                  delete responses [url];
-                               },60*1000);
-                               
-                               // kill the link in 2 hours 
-                               setTimeout(function(){
-                                  delete responses [url+".zip"] 
-                               },2 * 60 * 60*1000);
-                               
-                           });
-                           
-                       }
+                        
                    });
                });
                 
