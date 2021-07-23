@@ -47,8 +47,15 @@ ml([],function(){ml(2,
                    const park_url = trigger_url.replace(/\?.*/,'');
                 
                    const html =  [
-                      "<html><head></head><body><script>",
-                      "location.replace("+JSON.stringify(park_url)+");",
+                       
+                       
+                      "<html>",
+                      "<head>",
+                        '<meta http-equiv="Refresh" content="0; URL='+park_url+'">',
+                      "</head>",
+                      
+                      "<body><script>",
+                      "location = "+JSON.stringify(park_url)+";",
                       "</script></body></html>"                                
                        
                        
