@@ -159,7 +159,14 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                });
                
                function logFilenameInConsole(filename) {
-                   shell.options.commands[0].output.push(filename);
+                   const list = shell.options.commands[0].output;
+                   const last = list.pop();
+                   if (last.length < 100) {
+                       list.push ((last+" "+filename).trim());
+                   } else {
+                       list.push(last);
+                       list.push(filename);
+                   }
                    shell.init();
                }
                
