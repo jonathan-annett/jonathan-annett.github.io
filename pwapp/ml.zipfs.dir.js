@@ -624,7 +624,8 @@ ml(`
             
             function editorResized(li_ed){
                 
-                li_ed.editor.resize();
+                return li_ed.editor.resize();
+                
                 var resizeEvent = window.document.createEvent('UIEvents'); 
                 resizeEvent.initUIEvent('resize', true, false, window, 0); 
                 window.dispatchEvent(resizeEvent);
@@ -655,7 +656,7 @@ ml(`
                         //minLines: 2
                     });
                     
-                    resizers.on(li_ed,500,editorResized);
+                    resizers.on(li_ed,10,editorResized);
                     
                     
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
