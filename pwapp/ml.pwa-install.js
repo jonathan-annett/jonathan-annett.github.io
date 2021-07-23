@@ -174,7 +174,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
               
                function setTotal(n) {
                    expect_total=n;
-                   total=n;
+                   
                }
               
                function setComplete(n) {
