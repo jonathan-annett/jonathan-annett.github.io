@@ -685,7 +685,7 @@ ml(`
                     update : function (updatedCSS) {
                         
                         editor_channel.postMessage({
-                            open_stylesheet:{
+                            update_stylesheet:{
                                 url:url,   
                                 updatedCSS:updatedCSS,
                                 replyId:replyId
@@ -696,7 +696,7 @@ ml(`
                     close : function (reload) {
                         
                         editor_channel.postMessage({
-                            open_stylesheet:{
+                            close_stylesheet:{
                                 url:url,   
                                 reload:reload,
                                 replyId:replyId
