@@ -23,6 +23,7 @@
                    editor_win.close();
                    editor_win=undefined;
                }
+               sessionStorage.removeItem(editor_channel_name);
               window.parent.location = 'stop';
            }
        }
@@ -32,13 +33,16 @@
             if (editor_win) {
                 editor_win.close();
                 editor_win=undefined;
+                
             }
+            sessionStorage.removeItem(editor_channel_name);
             window.parent.location = 'stop';
         };
         document.body.querySelector("#e").onclick = function(){
             if (editor_win) {
                 editor_win.close();
                 editor_win=undefined;
+                sessionStorage.removeItem(editor_channel_name);
             } else {
                 editor_win = open_url (editor_url); 
                 
