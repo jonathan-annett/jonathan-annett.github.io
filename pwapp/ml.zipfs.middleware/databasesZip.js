@@ -82,19 +82,7 @@ sha1Lib               |  sha1.js
                                 
                                 document.querySelector("#ready").style.display="block";
                                 
-                                link.onclick = function () {
                                 
-                                    link.onclick = undefined;
-                                    link.disabled = true;
-                                    setTimeout (function ( ) {
-                                    
-                                         document.querySelector("#ready").innerHTML = "downloaded";
-                                         setTimeout (  revoke,  10000);
-
-                                    },1000);
-                                    
-                                };
-                              
                                 channel.close();
                               
                         };
@@ -158,7 +146,7 @@ sha1Lib               |  sha1.js
                        }
                        
                        const channel = new BroadcastChannel(channelName );
-                       const blob = new Blob([buffer], {type: "image/png"});
+                       const blob = new Blob([buffer], {type: "application/zip"});
                                    
                        channel.postMessage({blob:blob});
                        

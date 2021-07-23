@@ -278,7 +278,7 @@ ml(0,ml(1),[
                                                           nextKey(i+1);
                                                       } else {
                                                        
-                                                          sha1CB(str,function(_,datahash){
+                                                          sha1CB(new TextEncoder().encode(str),function(_,datahash){
                                                                if (!header.values[datahash]) {
                                                                     header.values[datahash]=1;
                                                                     zip.file(datahash,str,{date : new Date(),createFolders: false });
@@ -296,7 +296,7 @@ ml(0,ml(1),[
                                         
                                         function finalize() {
                                             delete header.values;
-                                            sha1CB(header.hash,function(_,hash){
+                                            sha1CB(new TextEncoder().encode( header.hash),function(_,hash){
                                                 header.hash = hash;
                                                 zip.file('keys.json',JSON.stringify(header),{date : new Date(),createFolders: false });
                                                 
