@@ -130,7 +130,7 @@ ml(`
             const openZipFileCache = { };
              
              
-            const fixupLog = console.info.bind(console); //function(){};//
+            const fixupLog =function(){};// console.info.bind(console); 
 
              const dir_meta_name  = 'dirmeta.hidden-json';
              const dir_meta_empty = {"deleted":[],"hidden":["^\\.","/\\.hidden\\-json$/"]};
