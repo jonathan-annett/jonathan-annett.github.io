@@ -38,7 +38,7 @@
                           && event.data.get_stylesheets.replyId ) {
                
                editor_channel.postMessage({
-                   replyId: event.data.open_stylesheet.replyId,
+                   replyId: event.data.get_stylesheets.replyId,
                    result: get_stylesheets( event.data.get_stylesheets.urlprefix) 
                });
                
