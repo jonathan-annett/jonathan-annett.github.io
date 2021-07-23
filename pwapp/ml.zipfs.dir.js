@@ -521,7 +521,7 @@ ml(`
                 }
                     
                const godMode = new ResizeObserver(onResized);
-               const watched = [],watchers = [], ignores = [];
+               const watched = [],watchers = [], ignores = [],delays = [],timers =[];
                const callbacksForEl = function(el,force) {
                    const ix = watched.indexOf(el);
                    if (ix <0) {
@@ -530,6 +530,8 @@ ml(`
                            watched.push(el);
                            watchers.push(newcbs);
                            ignores.push(true);
+                           delays.push([]);
+                           timers.push([]);
                            godMode.observe(el);
                            return newcbs;
                        }
@@ -538,12 +540,20 @@ ml(`
                    return watchers[ ix ];
                };
                
+               
                return {
-                   on   : function (el,fn) {
-                     el = typeof el === 'string' ? qs(el) : el;  
+                   on   : function (el,delay,fn) {
+                     el = typeof el === 'string' ? qs(el) : el;
+                     if (typeof delay==='function') {
+                         fn=delay;
+                         delay=1;
+                     }
                      const cbs = callbacksForEl(el,true);
+                     const ix = watched.indexOf(el);
                      if (cbs.indexOf(fn)<0) {
                         cbs.push(fn);
+                        delays[ix].push(delay);
+                        timers[ix].push(null);
                      }
                    },
                    off : function (el,fn) {
@@ -559,6 +569,8 @@ ml(`
                                 watched.splice(ix,1);
                                 watchers.splice(ix,1);
                                 ignores.splice(ix,1);
+                                delays.splice(ix,1);
+                                timers.splice(ix,1);
                             }
                          }
                      }
@@ -580,8 +592,13 @@ ml(`
                                 return;
                             }
                             obs.unobserve(el);// whatever the callbacks do won't be monitored
-                            callbacksForEl(el).forEach(function(fn){
-                               fn(el); 
+                            const index = watched.indexOf(el);
+                            watchers[index].forEach(function(fn,ix){
+                                if (timers[index][ix]) clearTimeout(timers[index][ix]);
+                                timers[index][ix] = setTimeout(function(){
+                                    timers[index][ix]=null;
+                                    fn(el);
+                                },delays[index][ix],el);
                             });
                             ignores[ix]=true;// set a one time trigger exclusion mutex.
                             obs.observe(el);// this will trigger an initial event, which we promptly ignore.
@@ -593,21 +610,10 @@ ml(`
             } 
             
             function editorResized(li_ed){
-                const msec_trigger_delay = 500;
-                
-                if (li_ed.resize_hyst) {
-                    clearTimeout (li_ed.resize_hyst);
-                }
-                
-                li_ed.resize_hyst = setTimeout(function(){
-                    delete li_ed.resize_hyst;
-                    
-                    li_ed.editor.setOptions({
-                       minLines : 2,
-                       maxLines : Math.round(li_ed.offsetHeight /  li_ed.editor.renderer.lineHeight)
-                    });
-                    
-                },msec_trigger_delay);
+                li_ed.editor.setOptions({
+                   minLines : 2,
+                   maxLines : Math.round(li_ed.offsetHeight /  li_ed.editor.renderer.lineHeight)
+                });
             }
             
             function openInbuiltEditor (filename,li) {
@@ -635,7 +641,7 @@ ml(`
                         minLines: 2
                     });
                     
-                    resizers.on(li_ed,editorResized);
+                    resizers.on(li_ed,500,editorResized);
                     
                     
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
