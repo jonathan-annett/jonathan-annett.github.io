@@ -29,7 +29,7 @@
                }
                sessionStorage.removeItem(editor_channel_name);
                sessionStorage.removeItem('running');
-               window.parent.location = location.href.replace(/\?.*/,'') +'?stop-service-worker=1';
+               window.parent.location = window.parent.location.href.replace(/\?.*/,'') +'?stop-service-worker=1';
            }
            
            
@@ -90,7 +90,7 @@
             }
             sessionStorage.removeItem(editor_channel_name);
             sessionStorage.removeItem('running');
-            window.parent.location = 'stop';
+            window.parent.location = window.parent.location.href.replace(/\?.*/,'') +'?stop-service-worker=1';
         };
        document.body.querySelector("#e").onclick = function(){
             if (editor_win) {
