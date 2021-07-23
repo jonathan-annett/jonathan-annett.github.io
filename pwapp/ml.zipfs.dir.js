@@ -349,6 +349,9 @@ ml(`
                                // note - opening an already open editor just returns the li_ed element
                               openInbuiltEditor (filename,li).reload();
                               li.classList.remove("edited");
+                              refreshStylesheeet(filename,function() {
+                                  
+                              });
                            }
                        } else {
                            
@@ -558,6 +561,22 @@ ml(`
                         editor_channel.removeEventListener("message",msgCB);
                    } 
                 }
+            }
+            
+            
+            function refreshStylesheeet(filename,cb) {
+                if(available_css.indexOf(filename)<0||!editor_channel) {
+                    return cb ();
+                }
+                
+                const file_url = pwaApi.filename_to_url(filename);
+                pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
+                    const withCSS = new TextDecoder().decode(text);
+                    openStylesheet(editor_channel,file_url,withCSS,function(obj) {  
+                        obj.close(true);
+                        cb();
+                    });
+                });
             }
             
 
