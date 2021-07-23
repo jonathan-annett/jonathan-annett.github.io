@@ -71,17 +71,32 @@ sha1Lib               |  sha1.js
                        const channel = new BroadcastChannel(channelName );
                        
                        channel.onmessage = function (event) {
+                   
+                                const link =  document.body.querySelector("#downloadLink");
 
-                                      createBlobDownloadLink (
-                                        "path/databases.zip",
-                                        document.body.querySelector("#downloadLink"),
-                                        "here",
-                                        event.data.blob  );
+                                const revoke = createBlobDownloadLink (
+                                    "path/databases.zip",
+                                     link,
+                                    "here",
+                                    event.data.blob  );
+                                
+                                document.querySelector("#ready").style.display="block";
+                                
+                                link.onclick = function () {
+                                
+                                    link.onclick = undefined;
+                                    link.disabled = true;
+                                    setTimeout (function ( ) {
                                     
-                                    document.querySelector("#ready").style.display="block";
-                                  
-                                  channel.close();
-                                  
+                                         document.querySelector("#ready").innerHTML = "downloaded";
+                                         setTimeout (  revoke,  10000);
+
+                                    },1000);
+                                    
+                                };
+                              
+                                channel.close();
+                              
                         };
 
                       
