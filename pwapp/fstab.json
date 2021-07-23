@@ -50,8 +50,7 @@
             
             "https://jonathan-annett.github.io/pwapp": {
                 "alias_root" : "/js-keygen-master",
-                "zips" : [ "https://jonathan-annett.github.io/pwapp/js-keygen-master.1.zip",
-                           "https://jonathan-annett.github.io/pwapp/js-keygen-master.zip" ]
+                "zips" : [ "https://jonathan-annett.github.io/pwapp/js-keygen-master.zip" ]
             } 
            
         }
