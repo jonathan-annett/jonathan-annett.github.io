@@ -6,12 +6,16 @@
        editor_url  = window.parent.location.href.replace(/\/$/,'')+'/edit',
        editor_channel_name = "ch_"+editor_url.replace(/\/|\:|\.|\-/g,''),
        editor_channel = new BroadcastChannel(editor_channel_name),
-       editor_win;
+       editor_win,
+       open_stylesheets={};
        
        if (sessionStorage.getItem(editor_channel_name)==='1') {
            document.body.querySelector("#e").classList.add("editing");
            editor_win = open_url (editor_url); 
        }
+       
+
+       
        
        editor_channel.onmessage=function(event) {
            if (event.data && event.data.refresh) {
@@ -27,10 +31,44 @@
                sessionStorage.removeItem('running');
                window.parent.location = 'stop';
            }
+           
+           if (event.data && event.data.open_stylesheet 
+                          && event.data.open_stylesheet.url
+                          && event.data.open_stylesheet.withCSS
+                          && event.data.open_stylesheet.replyId ) {
+               
+               editor_channel.postMessage({
+                   replyId: event.data.open_stylesheet.replyId,
+                   result: open_stylesheet( event.data.open_stylesheet.url,
+                                            event.data.open_stylesheet.withCSS,
+                                            event.data.open_stylesheet.replyId ) 
+               });
+               
+           } 
+           
+           if (event.data && event.data.update_stylesheet
+                          && event.data.update_stylesheet.url
+                          && event.data.update_stylesheet.updatedCSS
+                          && event.data.update_stylesheet.replyId ) {
+               const url = event.data.update_stylesheet.url;
+               const sheet = open_stylesheets[url];
+               if (sheet){
+                   sheet.update(event.data.update_stylesheet.updatedCSS);
+               }
+           }
+           
+           
+           if (event.data && event.data.close_stylesheet
+                          && event.data.close_stylesheet.url ) {
+               const url = event.data.close_stylesheet.url;
+               const sheet = open_stylesheets[url];
+               if (sheet){
+                   sheet.close(event.data.close_stylesheet.reload);
+               }
+           }
        };
        
-
-        document.body.querySelector("#r").onclick = function(){
+       document.body.querySelector("#r").onclick = function(){
             if (editor_win) {
                 editor_win.close();
                 editor_win=undefined;
@@ -40,19 +78,112 @@
             sessionStorage.removeItem('running');
             window.parent.location = 'stop';
         };
-        document.body.querySelector("#e").onclick = function(){
+       document.body.querySelector("#e").onclick = function(){
             if (editor_win) {
                 editor_win.close();
                 editor_win=undefined;
             } else {
                 editor_win = open_url (editor_url); 
-                
             }
             
         };
         
         
  
+ 
+ function open_stylesheet(url,withCSS,replyId) {
+    
+    return document.head.querySelectorAll('link[rel="stylesheet"]').some(function(el){
+        
+        if (el.href.indexOf(url)!==0) return false;
+          const sheet = el;
+          const sheet_parent = el.parentElement;
+          const fakeSheet = document.create("style");
+          const cssTextNode = document.createTextNode(withCSS);
+          sheet_parent.insertBefore(sheet,fakeSheet);
+          sheet_parent.removeChild(sheet);
+          
+          fakeSheet.type = 'text/css';
+          if (fakeSheet.styleSheet){
+             // This is required for IE8 and below.
+             fakeSheet.styleSheet.cssText = withCSS;
+          } else {
+             fakeSheet.appendChild(cssTextNode);
+          }    
+          open_stylesheets[url] = {
+              poller : setTimeout(poll,1000),
+              fakeSheet:fakeSheet,
+              sheet : sheet,
+              sheet_parent : sheet_parent,
+              update : function (updatedCSS) {
+                  
+                  if (open_stylesheets[url].poller) {
+                      clearTimeout(open_stylesheets[url].poller);
+                      open_stylesheets[url].poller=undefined;
+                  }
+                  
+                  if (fakeSheet.styleSheet){
+                     // This is required for IE8 and below.
+                     fakeSheet.styleSheet.cssText = updatedCSS;
+                  } else {
+                     cssTextNode.textContent = updatedCSS;
+                  }
+                  
+                  open_stylesheets[url] = setTimeout(poll,1000);
+              },
+              close : function (reload){
+                  if (open_stylesheets[url].poller) {
+                      clearTimeout(open_stylesheets[url].poller);
+                      open_stylesheets[url].poller=undefined;
+                  }
+                  
+                  if (reload) {
+                      var link = document.createElement('link'); 
+                
+                      // set the attributes for link element
+                      link.rel = 'stylesheet'; 
+                    
+                      link.type = 'text/css';
+                    
+                      link.href = url; 
+
+                      sheet_parent.insertBefore(fakeSheet,link);
+                      sheet_parent.removeChild(fakeSheet);
+                  } else {
+                      sheet_parent.insertBefore(fakeSheet,sheet);
+                      sheet_parent.removeChild(fakeSheet);
+                      
+                  }
+                  delete open_stylesheets[url].fakeSheet;
+                  delete open_stylesheets[url].sheet_parent;
+                  delete open_stylesheets[url].sheet;
+                  delete open_stylesheets[url];
+              },
+          };
+        
+        return true;
+        
+        function poll() {
+            
+           open_stylesheets[url].poller = setTimeout(poll,1000);
+           
+           if (fakeSheet.styleSheet){
+              // This is required for IE8 and below.
+              if (fakeSheet.styleSheet.cssText !== withCSS) {
+                 withCSS = fakeSheet.styleSheet.cssText; 
+                 editor_channel.postMessage({css_changed:{css:withCSS,url:url},replyId:replyId});
+              }
+           } else {
+              if (cssTextNode.textContent !== withCSS) {
+                withCSS = cssTextNode.textContent; 
+                editor_channel.postMessage({css_changed:{css:withCSS,url:url},replyId:replyId});
+              }
+           }
+          
+        }
+        
+    });
+ }
  
  function open_url(file_url,win_name) {
      return open_window(

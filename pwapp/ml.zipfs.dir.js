@@ -510,8 +510,13 @@ ml(`
                 }[ext] || "ace/theme/chrome";
             }
             
-           
-         
+            function startEditHelper(url,withContent,cb) {
+                const ext = url.substr(url.lastIndexOf('.')+1);
+                ({
+                    css  : openStylesheet,
+                }[ext] || function(){ cb();})(editor_channel,url,withContent,cb);
+            }
+
             function ResizeWatcher () {
                 
                const observer = new ResizeObserver(onResized);
@@ -622,6 +627,64 @@ ml(`
                 
             } 
             
+            function openStylesheet(editor_channel,url,withCSS,cb) {  
+                const replyId = Date.now().toString(36).subtr(-6)+"_"+Math.random().toString(36).substr(-8);
+                editor_channel.postMessage({
+                    open_stylesheet:{
+                        url:url,   
+                        withCSS:withCSS,
+                        replyId:replyId
+                    }
+                });
+                
+                const obj = {
+                    update : function (updatedCSS) {
+                        
+                        editor_channel.postMessage({
+                            open_stylesheet:{
+                                url:url,   
+                                updatedCSS:updatedCSS,
+                                replyId:replyId
+                            }
+                        });
+                        
+                    },
+                    close : function (reload) {
+                        
+                        editor_channel.postMessage({
+                            open_stylesheet:{
+                                url:url,   
+                                reload:reload,
+                                replyId:replyId
+                            }
+                        });
+                        
+                    },
+                    onchange : function () {
+                        
+                    }
+                    
+                };
+                
+                editor_channel.addEventListener("message",function(event){
+                    if (event.data && event.data.replyId===replyId && typeof event.data.result!=='undefined') {
+                        cb (obj);
+                    }
+                    
+                    if (event.data && event.data.replyId===replyId 
+                                   && event.data.css_changed 
+                                   && event.data.css_changed.url 
+                                   && event.data.css_changed.css
+                                   &&  typeof obj.onchange=== 'function') {
+                                       
+                            obj.onchange(event.data.css_changed.url,event.data.css_changed.css);
+                    }
+                });
+                
+                return obj
+            }
+            
+            
             function editorResized(li_ed){
                 
                 return li_ed.editor.resize();
@@ -703,21 +766,31 @@ ml(`
                                         });
                                     }
                                    
-                                    li_ed.inbuiltEditorOnSessionChange = function () {
-                                            // delta.start, delta.end, delta.lines, delta.action
-                                            
-                                            const buffer = new TextEncoder().encode(li_ed.editor.session.getValue());
-                                            
-                                            pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
-                                                if (err) {
-                                                    return ;
-                                                }
-                                                li.classList.add("edited");
-                                                li_ed.hashDisplay.textContent=hash;
-                                            });
-                                    };
                                     
-                                    li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                                    
+                                   
+                                    startEditHelper(file_url,currentText,function(helper){
+                                        
+                                            li_ed.inbuiltEditorOnSessionChange = function () {
+                                                // delta.start, delta.end, delta.lines, delta.action
+                                                const textContent = li_ed.editor.session.getValue();
+                                                const buffer = new TextEncoder().encode(textContent);
+                                                if (helper) {
+                                                    helper.update(textContent);
+                                                }
+                                                pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
+                                                    if (err) {
+                                                        return ;
+                                                    }
+                                                    li.classList.add("edited");
+                                                    li_ed.hashDisplay.textContent=hash;
+                                                   
+                                                });
+                                           };
+                                           li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                                           
+                                    });
+                                   
                                     
                                 }     
                                     
