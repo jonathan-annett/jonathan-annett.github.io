@@ -36,19 +36,22 @@ ml(`
                              
             const resizers = ResizeWatcher();
             const available_css = [];
-            if (editor_channel) {
-                
-                qs ("h1 a.restart",function click(e) {
-                    preventDefaults (e);
-                    editor_channel.postMessage({stop:1});
-                    setTimeout(function(){
-                        window.close();
-                    },10);
-                });
-                
-                
-            }
+           
             
+            qs ("h1 a.restart",function click(e) {
+                 if (editor_channel) {
+                        preventDefaults (e);
+                        editor_channel.postMessage({stop:1});
+                        setTimeout(function(){
+                            window.close();
+                        },10);
+                 } else {
+                     window.location = window.location.href.replace(/\?.*/,'') +'?stop-service-worker=1';
+                 }
+            });
+            
+        
+           
            
             
             
