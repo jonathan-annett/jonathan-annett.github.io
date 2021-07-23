@@ -188,7 +188,7 @@ ml(`
                             available_css.splice(0,available_css.length);
                             
                             available_css.push.apply(available_css,urls.map(function(u){
-                                return u.substr(zip_virtual_dir.length);
+                                return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
                             }));
                             
                             console.log(available_css);
