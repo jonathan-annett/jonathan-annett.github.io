@@ -150,7 +150,7 @@
                      cssTextNode.textContent = updatedCSS;
                   }
                   withCSS=updatedCSS;
-                  open_stylesheets[url] = setTimeout(poll,1000);
+                  open_stylesheets[url].poller = setTimeout(poll,1000);
               },
               close : function (reload){
                   if (open_stylesheets[url].poller) {
@@ -175,6 +175,7 @@
                       sheet_parent.removeChild(fakeSheet);
                       
                   }
+                  delete open_stylesheets[url].poller;
                   delete open_stylesheets[url].fakeSheet;
                   delete open_stylesheets[url].sheet_parent;
                   delete open_stylesheets[url].sheet;
