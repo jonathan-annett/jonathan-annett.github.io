@@ -514,13 +514,7 @@ ml(`
          
             function ResizeWatcher () {
                 
-                if (typeof ResizeObserver !== 'function')  return;
-                if (this instanceof ResizeWatcher) {
-                    //we throw away a new constructor. 
-                    return ResizeWatcher ();
-                }
-                    
-               const godMode = new ResizeObserver(onResized);
+               const observer = new ResizeObserver(onResized);
                const watched = [];
                const dataForEl = function(el,force) {
                    const ix = watched.findIndex(function(data){
@@ -533,12 +527,14 @@ ml(`
                                watchers  : []
                            };
                            watched.push(newData);
+                           observer.observe(el);
                            return newData;
                        }
                        return false;
                    } else {
                        if (force===false) {
                            watched.splice(ix,1);
+                           observer.unobserve(el);
                            return;
                        }
                    }
@@ -659,7 +655,7 @@ ml(`
                         //minLines: 2
                     });
                     
-                    resizers.on(qs("#"+editor_id).parentElement,500,editorResized);
+                    resizers.on(qs("#"+editor_id),500,editorResized);
                     
                     
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
@@ -761,7 +757,7 @@ ml(`
                         const file_url = pwaApi.filename_to_url(filename)+".hidden-json";
                         pwaApi.updateURLContents (file_url,buffer,false,function(err) {
                             
-                            resizers.off(ed.parentElement,editorResized);
+                            resizers.off(ed,editorResized);
                             li.classList.remove("editing");
                             li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
         
