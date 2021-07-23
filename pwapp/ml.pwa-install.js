@@ -101,7 +101,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                   progressHandler(0,1,"loadProgress","loadProgressText","installProgress");
                   pwa.start(function(){
                       betaTesterApproval().then(function(config){
-                          location.replace(config.root);   
+                          //location.replace(config.root);   
                       });
                   });
               }
