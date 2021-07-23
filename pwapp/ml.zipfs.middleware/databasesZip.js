@@ -67,11 +67,11 @@ sha1Lib               |  sha1.js
                <body>
                 standby...
                 <div id="ready" style="display:none">
-                   You can download the zip <a href="${uri}.zip">here</a> 
+                   You can download the zip <a href="${url}.zip">here</a> 
                 </div>
                 <script>
                 
-                var uri = "${uri}";
+                var url = "${url}";
                 ${
                     middleware.fnSrc(
                     function() {
