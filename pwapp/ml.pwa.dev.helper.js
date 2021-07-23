@@ -93,7 +93,7 @@
  
  function open_stylesheet(url,withCSS,replyId) {
     
-    return document.head.querySelectorAll('link[rel="stylesheet"]').some(function(el){
+    return [].slice.call(document.head.querySelectorAll('link[rel="stylesheet"]')).some(function(el){
         
         if (el.href.indexOf(url)!==0) return false;
           const sheet = el;
