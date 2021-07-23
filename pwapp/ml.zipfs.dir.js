@@ -752,17 +752,24 @@ ml(`
                                
                                
                                 function proceed () {
+                                    
                                     li_ed.hashDisplay = qs(li,".sha1");
                                     li_ed.hashDisplay.textContent=hash;
                                     li_ed.setText = function (text) {
                                         li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
                                         li_ed.editor.setValue(text);
                                         li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                                        if (li_ed.edit_helper) {
+                                            li_ed.edit_helper.update(text);
+                                        }
                                     };
                                     
                                     li_ed.reload = function () {
                                         pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
                                             li_ed.setText(new TextDecoder().decode(text));
+                                            if (li_ed.edit_helper) {
+                                                li_ed.edit_helper.update(text);
+                                            }
                                         });
                                     }
                                    
@@ -770,13 +777,13 @@ ml(`
                                     
                                    
                                     startEditHelper(file_url,currentText,function(helper){
-                                        
+                                            li_ed.edit_helper = helper;
                                             li_ed.inbuiltEditorOnSessionChange = function () {
                                                 // delta.start, delta.end, delta.lines, delta.action
                                                 const textContent = li_ed.editor.session.getValue();
                                                 const buffer = new TextEncoder().encode(textContent);
-                                                if (helper) {
-                                                    helper.update(textContent);
+                                                if (li_ed.edit_helper) {
+                                                    li_ed.edit_helper.update(textContent);
                                                 }
                                                 pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
                                                     if (err) {
@@ -836,6 +843,12 @@ ml(`
                             li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
         
                             li_ed.removeChild(ed);
+                            
+                            
+                            if (li_ed.edit_helper) {
+                                li_ed.edit_helper.close(true);
+                                delete li_ed.edit_helper;
+                            }
         
                             
                             delete li_ed.inbuiltEditorOnSessionChange;
