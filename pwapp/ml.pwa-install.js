@@ -111,7 +111,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                   
                   sessionStorage.running=((1000*60*2) + Date.now()).toString();
                   qs("#rungif").style.display = "inline-block";
-                  progressHandler(0,1,"loadProgress","not-loadProgressText","installProgress");
+                  progressHandler(0,1,"loadProgress","loadProgressText","installProgress");
                   pwa.start(function(){
                       betaTesterApproval().then(function(config){
                            const delay = qs("#show_shell").checked ? Math.max(minTime-Date.now()) : 10;
