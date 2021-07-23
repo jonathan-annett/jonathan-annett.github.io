@@ -629,12 +629,9 @@ ml(`
             function editorResized(li_ed){
                 
                 li_ed.editor.resize();
-                /*
-                li_ed.editor.setOptions({
-                   minLines : 2,
-                   maxLines : Math.round(li_ed.offsetHeight /  li_ed.editor.renderer.lineHeight)
-                });
-               */
+                var resizeEvent = window.document.createEvent('UIEvents'); 
+                resizeEvent.initUIEvent('resize', true, false, window, 0); 
+                window.dispatchEvent(resizeEvent);
             }
             
             function openInbuiltEditor (filename,li) {
