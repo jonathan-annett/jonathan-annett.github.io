@@ -147,12 +147,12 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                }
                
                let shell = new Shell('#install-shell', {
-                   user: 'webdev',
-                   host: 'fake-pc-in-browser',
-                   path: '/etc/',
+                   user: 'browser',
+                   host: 'local',
+                   path: '/home/',
                    style: 'ubuntu',
                    theme: 'dark',
-                   responsive: false,
+                   responsive: true,
                    commands:[
                               {"input": "install pwapp", "output": [""]},
                             ]
