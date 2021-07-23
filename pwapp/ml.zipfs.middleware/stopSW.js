@@ -38,40 +38,43 @@ ml([],function(){ml(2,
 
     function mware(event,middleware) {
        
-       if (middleware.isLocalDomain(event,/\/stop$/)) {
-           return new Promise(function(resolve){
-            
-               const park_url = event.fixup_url.replace(/\/stop$/,'');
-            
-               const html =  [
-                  "<html><head></head><body><script>",
-                  "location.replace("+JSON.stringify(park_url)+");",
-                  "</script></body></html>"                                
-                   
-                   
-               ].join("\n");
+       if (middleware.isLocalDomain(event)) {
+           
+           if (event.fixup_params()["stop-service-worker"]) {
+               return new Promise(function(resolve){
                 
-               middleware.response200 (resolve,html,{
-                   name          : event.fixup_url.replace(middleware.isLocal,''),
-                   contentType   : 'text/html',
-                   contentLength : html.length
+                   const park_url = event.fixup_url.replace(/\?.*/,'');
+                
+                   const html =  [
+                      "<html><head></head><body><script>",
+                      "location.replace("+JSON.stringify(park_url)+");",
+                      "</script></body></html>"                                
+                       
+                       
+                   ].join("\n");
+                    
+                   middleware.response200 (resolve,html,{
+                       name          : event.fixup_url.replace(middleware.isLocal,''),
+                       contentType   : 'text/html',
+                       contentLength : html.length
+                   });
+                   
+                   
+                    self.registration.unregister() .then(function() { 
+                        
+                        throw "uninstalling";
+                       
+                    }) .catch(function() { 
+                        
+                        setTimeout(function(){
+                            throw "uninistalled ("+event.fixup_url.replace(middleware.isLocal,'')+" invoked)";
+                        },1000);
+                      
+                        
+                    }); 
+                    
                });
-               
-               
-                self.registration.unregister() .then(function() { 
-                    
-                    throw "uninstalling";
-                   
-                }) .catch(function() { 
-                    
-                    setTimeout(function(){
-                        throw "uninistalled ("+event.fixup_url.replace(middleware.isLocal,'')+" invoked)";
-                    },1000);
-                  
-                    
-                }); 
-                
-           });
+           }
        }
         
     }

@@ -29,7 +29,7 @@
                }
                sessionStorage.removeItem(editor_channel_name);
                sessionStorage.removeItem('running');
-               window.parent.location = 'stop';
+               window.parent.location = location.href.replace(/\?.*/,'') +'?stop-service-worker=1';
            }
            
            
