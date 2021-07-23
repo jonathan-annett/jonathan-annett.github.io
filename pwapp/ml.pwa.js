@@ -13,6 +13,8 @@ ml(`
 
         Window: function pwa(findWorker,sendMessage) {
             
+            const lib_file_count = 27;
+            const lib_load_name = './ml.pwa.js';
             
             const lib = {
                 newFixupRulesArray : newFixupRulesArray,
@@ -35,7 +37,7 @@ ml(`
                 lib.start=noop;
                 
                 
-                ml(9,'./ml.pwa.js',function(result){
+                ml(9,lib_load_name,lib_file_count,function(result){
                     
                     window.dispatchEvent(
                         new CustomEvent( 'ml.pwa.registered',{ detail: result })
