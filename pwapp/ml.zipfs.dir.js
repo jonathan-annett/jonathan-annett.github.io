@@ -336,37 +336,38 @@ ml(`
                    // shift delete removes any edits to the file
                    const file_url = pwaApi.filename_to_url(filename);
                    pwaApi.removeUpdatedURLContents(file_url);
-                   if (li) {
-                       // if the editor is open an editor id will exist in the li element 
-                       if (!!li.dataset.editor_id) {
-                           
-                           if (zip_files.indexOf(filename)<0) {
-                              // this was a new file.
-                              closeInbuiltEditor(filename,li);
-                              li.parentElement.removeChild(li);
-                              
-                           } else {
-                               // note - opening an already open editor just returns the li_ed element
-                              openInbuiltEditor (filename,li).reload();
-                              li.classList.remove("edited");
-                              refreshStylesheeet(filename,function() {
+                   refreshStylesheeet(filename,function() {
+                       if (li) {
+                           // if the editor is open an editor id will exist in the li element 
+                           if (!!li.dataset.editor_id) {
+                               
+                               if (zip_files.indexOf(filename)<0) {
+                                  // this was a new file.
+                                  closeInbuiltEditor(filename,li);
+                                  li.parentElement.removeChild(li);
                                   
-                              });
-                           }
-                       } else {
-                           
-                           if (zip_files.indexOf(filename)<0) {
-                              // this was a new file.
-                              li.parentElement.removeChild(li);
-                              
+                               } else {
+                                   // note - opening an already open editor just returns the li_ed element
+                                  openInbuiltEditor (filename,li).reload();
+                                  li.classList.remove("edited");
+                                 
+                               }
                            } else {
-                               // note - opening an already open editor just returns the li_ed element
-                              li.classList.remove("edited");
+                               
+                               if (zip_files.indexOf(filename)<0) {
+                                  // this was a new file.
+                                  li.parentElement.removeChild(li);
+                                  
+                               } else {
+                                   // note - opening an already open editor just returns the li_ed element
+                                  li.classList.remove("edited");
+                               }
                            }
+                           
+                           
+                               
                        }
-                       
-                       
-                   }
+                   });
                    
                   
                    
