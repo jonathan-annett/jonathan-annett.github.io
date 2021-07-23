@@ -258,7 +258,7 @@ function ml(x,L, o, a, d, s){
                          ml.d[N]={h:U};
                          ml.H.push(U);
                          try {
-                            c.p && c.p.addToTotal(1,N+" @ "+U);
+                            c.p && c.p.addToTotal(1,N);
                             importScripts(U);
                             c.n(N,(e)=>{
                                 ml.h[U] = ml.h[U]   || {e:{}};
