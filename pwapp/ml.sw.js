@@ -171,7 +171,10 @@ function ml(x,L, o, a, d, s){
             
             p:(complete,total,channelName) => {
               const channel = new BroadcastChannel(channelName);
-              
+              const expect  = Number.parseInt(new URL(location).searchParams.get('count'));
+              if (!isNaN(expect) && expect > 0) {
+                  setTotal(expect);
+              }
               return {
                    setTotal:setTotal,
                    setComplete:setComplete,
