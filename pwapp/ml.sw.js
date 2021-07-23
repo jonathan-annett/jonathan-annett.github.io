@@ -194,8 +194,8 @@ function ml(x,L, o, a, d, s){
                    channel.postMessage({logComplete:n});
                }
               
-               function addToTotal (n) {
-                   channel.postMessage({addToTotal:n});
+               function addToTotal (n,f) {
+                   channel.postMessage({addToTotal:n,filename:f});
                }
               
                
@@ -258,7 +258,7 @@ function ml(x,L, o, a, d, s){
                          ml.d[N]={h:U};
                          ml.H.push(U);
                          try {
-                            c.p && c.p.addToTotal(1);
+                            c.p && c.p.addToTotal(1,N+" @ "+U);
                             importScripts(U);
                             c.n(N,(e)=>{
                                 ml.h[U] = ml.h[U]   || {e:{}};

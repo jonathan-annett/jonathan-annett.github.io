@@ -153,10 +153,15 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                    style: 'ubuntu',
                    theme: 'dark',
                    responsive: false,
-                   commands: ['install pwapp']
+                   commands:[
+                              {"input": "install pwapp", "output": ["..."]},
+                            ]
                });
                
-               window.shell = shell;
+               function logFilenameInConsole(filename) {
+                   shell.options.commands[0].output.push(filename);
+                   shell.init();
+               }
                
                if (channelName) {
                    const channel = new BroadcastChannel(channelName);
@@ -170,6 +175,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                        }
                        else if (msg && msg.addToTotal) {
                           addToTotal(msg.addToTotal);
+                          logFilenameInConsole(msg.filename||"(unknown file)");
                        }
                        else if (msg && msg.logComplete) {
                           logComplete(msg.logComplete);
