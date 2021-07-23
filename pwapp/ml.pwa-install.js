@@ -101,7 +101,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                   progressHandler(0,1,"loadProgress","loadProgressText","installProgress");
                   pwa.start(function(){
                       betaTesterApproval().then(function(config){
-                          //location.replace(config.root);   
+                          setTimeout(location.replace.bind(location),3000,config.root);   
                       });
                   });
               }
@@ -154,19 +154,14 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                    theme: 'dark',
                    responsive: false,
                    commands:[
-                              {"input": "install pwapp", "output": ["..."]},
+                              {"input": "install pwapp", "output": [""]},
                             ]
                });
                
                function logFilenameInConsole(filename) {
                    const list = shell.options.commands[0].output;
                    const last = list.pop();
-                   if (last.length < 100) {
-                       list.push ((last+" "+filename).trim());
-                   } else {
-                       list.push(last);
-                       list.push(filename);
-                   }
+                   list.push (last+(last===""?"":", ")+filename);
                    shell.init();
                }
                
