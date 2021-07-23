@@ -35,7 +35,7 @@ ml(`
             const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix,alias_root,updated_prefix);   
                              
             const resizers = ResizeWatcher();
-           const available_css = [];
+            const available_css = [];
             if (editor_channel) {
                 
                 qs ("h1 a.restart",function click(e) {
@@ -178,6 +178,24 @@ ml(`
                         });
 
                     });
+                }
+                
+                
+                if (editor_channel) {
+                
+                        getStylesheets(editor_channel,zip_virtual_dir,function(urls){
+                            
+                            available_css.splice(0,available_css.length);
+                            
+                            available_css.push.apply(available_css,urls.map(function(u){
+                                return u.substr(zip_virtual_dir.length);
+                            }));
+                            
+                            console.log(available_css);
+                            
+
+                        });
+                
                 }
                 
             }
