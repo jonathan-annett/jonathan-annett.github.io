@@ -585,7 +585,7 @@ ml(`
                      }
                      const w = watcherFor(el,fn,true);
                      w.delay=delay;
-                     w.timer=false;
+                     w.timeout=false;
                    },
                    off : function (el,fn) {
                      el = typeof el === 'string' ? qs(el) : el;
@@ -659,7 +659,7 @@ ml(`
                         //minLines: 2
                     });
                     
-                    resizers.on(li_ed,500,editorResized);
+                    resizers.on(qs("#"+editor_id),500,editorResized);
                     
                     
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
@@ -761,7 +761,7 @@ ml(`
                         const file_url = pwaApi.filename_to_url(filename)+".hidden-json";
                         pwaApi.updateURLContents (file_url,buffer,false,function(err) {
                             
-                            resizers.off(li_ed,editorResized);
+                            resizers.off(ed,editorResized);
                             li.classList.remove("editing");
                             li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
         
