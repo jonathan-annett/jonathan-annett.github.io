@@ -39,11 +39,12 @@ ml([],function(){ml(2,
     function mware(event,middleware) {
        
        if (middleware.isLocalDomain(event)) {
+           const trigger_url = event.request.referrer.indexOf("?stop-service-worker")>=0 ? event.request.referrer : event.request.url;
            
-           if (event.fixup_params()["stop-service-worker"]) {
+           if (trigger_url.indexOf("?stop-service-worker")>=0  ) {
                return new Promise(function(resolve){
                 
-                   const park_url = event.fixup_url.replace(/\?.*/,'');
+                   const park_url = trigger_url.replace(/\?.*/,'');
                 
                    const html =  [
                       "<html><head></head><body><script>",
