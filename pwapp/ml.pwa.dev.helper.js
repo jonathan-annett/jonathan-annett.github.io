@@ -118,7 +118,7 @@
         
         if (el.href.indexOf(url)!==0) return false;
           const sheet = el;
-          const sheet_parent = el.parentElement;
+          const sheet_parent = el.parentNode;
           const fakeSheet = window.top.document.createElement("style");
           const cssTextNode = window.top.document.createTextNode(withCSS);
           sheet_parent.insertBefore(sheet,fakeSheet);
