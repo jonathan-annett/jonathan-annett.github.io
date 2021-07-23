@@ -521,7 +521,7 @@ ml(`
                 }
                     
                const godMode = new ResizeObserver(onResized);
-               const watched = [],ignores=[];
+               const watched = [];
                const dataForEl = function(el,force) {
                    const ix = watched.findIndex(function(data){
                       return data.el===el; 
@@ -608,24 +608,13 @@ ml(`
                                if (w.timeout) clearTimeout(w.timeout);
                                if (w.delay===0) {
                                    w.timeout=false;
-                                   const wix = ignores.indexOf(w);
-                                   if (wix<0) {
-                                       ignores.push(w);
-                                       w.fn(el);
-                                   } else {
-                                       ignores.splice(wix,1);
-                                   }    
+                                   w.fn(el);
+                                     
                                } else {
                                    
                                     w.timeout = setTimeout(function(){
                                         w.timeout=false;
-                                        const wix = ignores.indexOf(w);
-                                        if (wix<0) {
-                                            ignores.push(w);
-                                            w.fn(el);
-                                        } else {
-                                            ignores.splice(wix,1);
-                                        }    
+                                        w.fn(el);
                                     },w.delay);    
                                }
                                
@@ -638,10 +627,14 @@ ml(`
             } 
             
             function editorResized(li_ed){
+                
+                li_ed.editor.resize();
+                /*
                 li_ed.editor.setOptions({
                    minLines : 2,
                    maxLines : Math.round(li_ed.offsetHeight /  li_ed.editor.renderer.lineHeight)
                 });
+               */
             }
             
             function openInbuiltEditor (filename,li) {
@@ -664,9 +657,9 @@ ml(`
                     li_ed.editor = ace.edit(editor_id, {
                         theme:   aceThemeForFile(filename),
                         mode:    aceModeForFile(filename),
-                        autoScrollEditorIntoView: true,
-                        maxLines: 10,
-                        minLines: 2
+                        //autoScrollEditorIntoView: true,
+                        //maxLines: 10,
+                        //minLines: 2
                     });
                     
                     //resizers.on(li_ed,500,editorResized);
@@ -771,7 +764,7 @@ ml(`
                         const file_url = pwaApi.filename_to_url(filename)+".hidden-json";
                         pwaApi.updateURLContents (file_url,buffer,false,function(err) {
                             
-                            //resizers.off(li_ed,editorResized);
+                            resizers.off(li_ed,editorResized);
                             li.classList.remove("editing");
                             li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
         
