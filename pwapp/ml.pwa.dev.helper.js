@@ -149,7 +149,7 @@
                   } else {
                      cssTextNode.textContent = updatedCSS;
                   }
-                  
+                  withCSS=updatedCSS;
                   open_stylesheets[url] = setTimeout(poll,1000);
               },
               close : function (reload){
