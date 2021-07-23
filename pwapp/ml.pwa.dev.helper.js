@@ -122,7 +122,7 @@
           const fakeSheet = window.top.document.createElement("style");
           const cssTextNode = window.top.document.createTextNode(withCSS);
           sheet_parent.appendChild(fakeSheet);
-          sheet_parent.insertBefore(sheet,fakeSheet);
+          sheet_parent.insertBefore(fakeSheet,sheet);
           sheet_parent.removeChild(sheet);
           
           fakeSheet.type = 'text/css';
