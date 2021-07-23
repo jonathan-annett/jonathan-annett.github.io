@@ -23,8 +23,8 @@
       
 */
 ml(`
-sha1Lib               |  sha1.js
-progressHandler       |  ml.progressHandler.js
+sha1Lib               |  /pwapp/sha1.js
+progressHandler       |  /pwapp/ml.progressHandler.js
 `,function(){ml(2,
 
     {
