@@ -34,3 +34,12 @@ html.beta div.beta {
     
     width:  180px;
 }
+
+#install-shell{
+    display:none;
+}
+
+html.show_shell #install-shell{
+    display:block;
+}
+
