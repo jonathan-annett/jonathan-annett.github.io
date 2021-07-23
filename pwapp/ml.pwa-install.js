@@ -168,7 +168,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                    path: '/home/',
                    style: 'ubuntu',
                    theme: 'dark',
-                   responsive: true,
+                   responsive: false,
                    commands:[
                               {"input": "install pwapp", "output": [""]},
                             ]
