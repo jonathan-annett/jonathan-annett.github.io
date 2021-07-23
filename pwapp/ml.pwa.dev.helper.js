@@ -19,12 +19,20 @@
            }
            
            if (event.data && event.data.stop) {
+               if (editor_win) {
+                   editor_win.close();
+                   editor_win=undefined;
+               }
               window.parent.location = 'stop';
            }
        }
        
 
         document.body.querySelector("#r").onclick = function(){
+            if (editor_win) {
+                editor_win.close();
+                editor_win=undefined;
+            }
             window.parent.location = 'stop';
         };
         document.body.querySelector("#e").onclick = function(){
