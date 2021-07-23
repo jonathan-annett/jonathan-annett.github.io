@@ -119,8 +119,8 @@
         if (el.href.indexOf(url)!==0) return false;
           const sheet = el;
           const sheet_parent = el.parentElement;
-          const fakeSheet = document.createElement("style");
-          const cssTextNode = document.createTextNode(withCSS);
+          const fakeSheet = window.top.document.createElement("style");
+          const cssTextNode = window.top.document.createTextNode(withCSS);
           sheet_parent.insertBefore(sheet,fakeSheet);
           sheet_parent.removeChild(sheet);
           
@@ -159,7 +159,7 @@
                   }
                   
                   if (reload) {
-                      var link = document.createElement('link'); 
+                      var link = window.top.document.createElement('link'); 
                 
                       // set the attributes for link element
                       link.rel = 'stylesheet'; 
