@@ -77,7 +77,7 @@ ml([],function(){ml(2,
                         
                         setTimeout(function(){
                             throw "uninistalled ("+event.fixup_url.replace(middleware.isLocal,'')+" invoked)";
-                        },1000);
+                        },2000);
                       
                         
                     }); 
