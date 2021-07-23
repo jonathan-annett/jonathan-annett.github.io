@@ -41,6 +41,8 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                qs("html").classList[ e.target.checked ?"add":"remove"]("show_shell");
             });
             
+            qs("html").classList[ qs("#show_shell").checked ?"add":"remove"]("show_shell");
+            
             runhere.onclick = runClick ;
             
             editor_channel.onmessage=function(event) {
