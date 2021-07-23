@@ -521,24 +521,60 @@ ml(`
                 }
                     
                const godMode = new ResizeObserver(onResized);
-               const watched = [],watchers = [], ignores = [],delays = [],timers =[];
-               const callbacksForEl = function(el,force) {
-                   const ix = watched.indexOf(el);
+               const watched = [],ignores=[];
+               const dataForEl = function(el,force) {
+                   const ix = watched.findIndex(function(data){
+                      return data.el===el; 
+                   });
                    if (ix <0) {
-                       if (force) {
-                           const newcbs = [];
-                           watched.push(el);
-                           watchers.push(newcbs);
-                           delays.push([]);
-                           timers.push([]);
-                           godMode.observe(el);
-                           return newcbs;
+                       if (force===true) {
+                           const newData = {
+                               el : el,
+                               watchers  : []
+                           };
+                           watched.push(newData);
+                           return newData;
                        }
                        return false;
+                   } else {
+                       if (force===false) {
+                           watched.splice(ix,1);
+                           return;
+                       }
                    }
-                   return watchers[ ix ];
+                   return watched[ ix ];
                };
                
+               const watcherFor = function(el,fn,force) {
+                   const data = dataForEl(el,force);
+                   if (data) {
+                      const ix = data.watchers.findIndex(function(x){
+                          return x.fn===fn;
+                      });
+                      if (ix<0) {
+                          if (force===true) {
+                              const newWatcher = {
+                                  fn      : fn,
+                                  delay  : 1,
+                                  timeout : false
+                              };
+                              data.watchers.push(newWatcher);
+                              return newWatcher; 
+                          }
+                          return false;
+                      } else {
+                          if (force===false) {
+                              if (data.watchers[ix].timeout) {
+                                  clearTimeout(data.watchers[ix].timeout);
+                              }
+                              data.watchers.splice(ix,1);
+                              return;
+                          }
+                      }
+                      return data.watchers[ix];
+                   }
+                   return false;
+               }
                
                return {
                    on   : function (el,delay,fn) {
@@ -547,31 +583,13 @@ ml(`
                          fn=delay;
                          delay=1;
                      }
-                     const cbs = callbacksForEl(el,true);
-                     const ix = watched.indexOf(el);
-                     if (cbs.indexOf(fn)<0) {
-                        cbs.push(fn);
-                        delays[ix].push(delay);
-                        timers[ix].push(null);
-                     }
+                     const w = watcherFor(el,fn,true);
+                     w.delay=delay;
+                     w.timer=false;
                    },
                    off : function (el,fn) {
                      el = typeof el === 'string' ? qs(el) : el;
-                     const cbs = callbacksForEl(el,false);
-                     if (cbs) {
-                         const ix= cbs.indexOf(fn);
-                         if (ix>=0){
-                            cbs.splice(ix,1);
-                            if (cbs.length===0) {
-                                const ix = watched.indexOf(el);
-                                godMode.unobserve(el);
-                                watched.splice(ix,1);
-                                watchers.splice(ix,1);
-                                delays.splice(ix,1);
-                                timers.splice(ix,1);
-                            }
-                         }
-                     }
+                     watcherFor(el,fn,false);
                    }
                };
                 
@@ -583,28 +601,35 @@ ml(`
                     
                     entries.forEach(function(x){
                         const el = x.target;
-                        const ix = watched.indexOf(el);
-                        if (ix >=0) {
-                            obs.unobserve(el);// whatever the callbacks do won't be monitored
-                            const index = watched.indexOf(el);
-                            watchers[index].forEach(function(fn,ix){
-                                if (timers[index][ix]) {
-                                    clearTimeout(timers[index][ix]);
-                                }
-                                timers[index][ix] = setTimeout(function(){
-                                    timers[index][ix]=null;
-                                    if (ignores.some(function(x,ix){
-                                        if (x[0]===el && x[1]===fn) {
-                                            ignores.splice(ix,1);
-                                            return true;
-                                        }
-                                    }))  return;
-                                    
-                                    ignores.push([el,fn]);
-                                    fn(el);
-                                },delays[index][ix],el);
-                            });
-                            obs.observe(el);
+                        const data = dataForEl(el);
+                        if (data) {
+                           data.watchers.forEach(function(w){
+                               
+                               if (w.timeout) clearTimeout(w.timeout);
+                               if (w.delay===0) {
+                                   w.timeout=false;
+                                   const wix = ignores.indexOf(w);
+                                   if (wix<0) {
+                                       ignores.push(w);
+                                       w.fn(el);
+                                   } else {
+                                       ignores.splice(wix,1);
+                                   }    
+                               } else {
+                                   
+                                    w.timeout = setTimeout(function(){
+                                        w.timeout=false;
+                                        const wix = ignores.indexOf(w);
+                                        if (wix<0) {
+                                            ignores.push(w);
+                                            w.fn(el);
+                                        } else {
+                                            ignores.splice(wix,1);
+                                        }    
+                                    },w.delay);    
+                               }
+                               
+                           });
                         }
                     });
                     
