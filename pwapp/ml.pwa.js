@@ -79,6 +79,7 @@ ml(`
                 
                 const zipFS = swRespZip(dbKeyPrefix);
                 const sha1 = self.sha1Lib.cb; 
+                ml.c.p.setTotal(27);
                 ml.register("activate",function(event){
                     
                     if (dispatchCustomEvent) {
@@ -360,9 +361,7 @@ ml(`
                     }
 
                 });
-                   
-              
-                
+                  
                 ml.register("fetch",zipFS.processFetchRequest);
                 
 

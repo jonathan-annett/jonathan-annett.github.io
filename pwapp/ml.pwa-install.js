@@ -139,6 +139,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
              
             
             function progressHandler(complete,total,id,idtxt,channelName) {
+               let expect_total = total;
                let outer = qs("#"+id),inner = qs(outer,"div"),status = qs("#"+idtxt),maxWidth = outer.offsetWidth, barHeight=outer.offsetHeight;
                updateBar();
                if (status) {
@@ -172,6 +173,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                };
               
                function setTotal(n) {
+                   expect_total=n;
                    total=n;
                }
               
@@ -180,7 +182,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
                }
               
                function logComplete(n) {
-                 complete += n;
+                  complete += n;
                   updateBar();
                }
               
@@ -191,7 +193,7 @@ ml(`pwa | ml.pwa.js`,function(){ml(2,
               
                function updateBar (){
                  
-                 inner.style.width = Math.floor(Math.min((complete/total),1)*maxWidth)+"px";
+                 inner.style.width = Math.floor(Math.min((complete/Math.max(total,expect_total)),1)*maxWidth)+"px";
                  if (status) {
                    status.textContent = complete+"/"+total;
                  }
