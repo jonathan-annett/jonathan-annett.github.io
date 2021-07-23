@@ -629,7 +629,7 @@ ml(`
             function editorResized(li_ed){
                 
                 li_ed.editor.resize();
-                var resizeEvent = window.document.createEvent('UIEvents'); 
+                var resizeEvent = window.document.createEvent('UIEvent'); 
                 resizeEvent.initUIEvent('resize', true, false, window, 0); 
                 window.dispatchEvent(resizeEvent);
             }
