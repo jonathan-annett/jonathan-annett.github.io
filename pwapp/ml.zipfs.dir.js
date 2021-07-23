@@ -662,7 +662,7 @@ ml(`
                         //minLines: 2
                     });
                     
-                    //resizers.on(li_ed,500,editorResized);
+                    resizers.on(li_ed,500,editorResized);
                     
                     
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
