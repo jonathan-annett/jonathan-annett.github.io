@@ -44,7 +44,13 @@ ml(0,ml(1),[
         
         Object.defineProperties( databases,{
         
-            toZip   : { value : function (names,cb) {
+            toZip   : { value : function (names,progress,cb) {
+                
+            if (typeof progress==='function' && typeof cb==='undefined') {
+                cb=progress;
+                progress=undefined;
+            }
+                
                 
             if (typeof names === 'function') {
                 cb=names;
@@ -54,13 +60,32 @@ ml(0,ml(1),[
             names = names || Object.keys(databases).filter(dbNameFilter);
             
             const zip = new JSZip();
+            let totalKeyCount = 0, accumKeyCount = 0 ;
             
-            nextDB(0);
+            if (progress) {
+               countKeys(0,0,function (count){
+                   totalKeyCount = count;
+                   nextDB(0); 
+               });
+            } else {
+               nextDB(0);
+            }
+            
+            function progressWrap (n,ofTotal) {
+                if (progress) {
+                    if (n===ofTotal) {
+                        accumKeyCount += ofTotal;
+                    } else {
+                        progress( accumKeyCount+n, totalKeyCount);
+                    }
+                }
+            }
             
             function nextDB(i){
                 if (i< names.length) {
+                    
                     const dbname = names [ i ];
-                    databases[ dbname  ].toZip(function (err,dbzip){
+                    databases[ dbname  ].toZip(progressWrap,function (err,dbzip){
                         if (err) return cb(err);
                         
                         zip.file(dbname+'.zip',dbzip,{date : new Date(),createFolders: false });
@@ -87,6 +112,19 @@ ml(0,ml(1),[
                     
                 }
              }
+             
+             
+            function countKeys (n,i,cb) {
+                if (i< names.length) {
+                    const dbname = names [ i ];
+                    databases[ dbname  ].getKeys(function (err,keys){
+                        countKeys (n+keys.length,i+1,cb);
+                    });
+                } else {
+                   cb(n);   
+                }
+            } 
+            
         },enumberable:false,configurable:true,writable:true},
         
             fromZip : { value : function (zip,cb) {
@@ -244,13 +282,17 @@ ml(0,ml(1),[
                            allKeys    : function (k,d) {
                                return keys||[];
                            },
-                           toZip      : function (cb) {
+                           toZip      : function (progress,cb) {
+                               
+                               if (typeof progress==='function' && typeof cb==='undefined') {
+                                   cb=progress;
+                                   progress=undefined;
+                               }
                                
                                const zip = new JSZip();
                                
                                DB.getKeys(function(_,keys){
                                   if (keys) {
-                                      
                                       keys.sort(); 
                                       const threshold = (sha1Sync('x').length * 2) +4;
                                       const header = {
@@ -268,7 +310,10 @@ ml(0,ml(1),[
                                         nextKey(0); 
                                         
                                         function nextKey(i) {
+                                           
+                                                          
                                             if (i<keys.length) {
+                                                if (progress) progress (i,keys.length);
                                                 const key = keys[i];
                                                 DB.getItem(key,function(_,value){
                                                    toString(value,function(str){
@@ -314,6 +359,7 @@ ml(0,ml(1),[
                                                           console.log("current file = " + metadata.currentFile);
                                                       }
                                                   }*/).then(function (buffer) {
+                                                     if (progress) progress (keys.length,keys.length); 
                                                      cb(undefined,buffer)
                                                 }).catch(cb);
                                             });
