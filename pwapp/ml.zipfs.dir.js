@@ -522,7 +522,7 @@ ml(`
                     
                const godMode = new ResizeObserver(onResized);
                const watched = [],watchers = [], ignores = [];
-               const callbackForEl = function(el,force) {
+               const callbacksForEl = function(el,force) {
                    const ix = watched.indexOf(el);
                    if (ix <0) {
                        if (force) {
@@ -541,14 +541,14 @@ ml(`
                return {
                    on   : function (el,fn) {
                      el = typeof el === 'string' ? qs(el) : el;  
-                     const cbs = callbackForEl(el,true);
+                     const cbs = callbacksForEl(el,true);
                      if (cbs.indexOf(fn)<0) {
                         cbs.push(fn);
                      }
                    },
                    off : function (el,fn) {
                      el = typeof el === 'string' ? qs(el) : el;
-                     const cbs = callbackForEl(el,false);
+                     const cbs = callbacksForEl(el,false);
                      if (cbs) {
                          const ix= cbs.indexOf(fn);
                          if (ix>=0){
@@ -580,7 +580,7 @@ ml(`
                                 return;
                             }
                             obs.unobserve(el);// whatever the callbacks do won't be monitored
-                            watchers.forEach(function(fn){
+                            callbacksForEl(el).forEach(function(fn){
                                fn(el); 
                             });
                             ignores[ix]=true;// set a one time trigger exclusion mutex.
