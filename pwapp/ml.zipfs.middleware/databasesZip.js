@@ -1,4 +1,4 @@
-/* global ml  */
+/* global ml,BroadcastChannel  */
 /*
 
    middleware must either:
@@ -38,24 +38,14 @@ sha1Lib               |  sha1.js
     );
 
     const sha1 = ml.i.sha1Lib.cb;
-    
-    const responses = {};
-    
-    function mware(event,middleware) {
+     
+     
+  function mware(event,middleware) {
         
         
-        if ( middleware.isLocalDomain(event)) {
+         if ( middleware.isLocalDomain(event,/\/databases\.zip$/)) {
             
-            if ( responses [ event.request.url ] ) {
-                return responses [ event.request.url ] (event,middleware);
-            }
-            
-        }
-        
-       
-        if ( middleware.isLocalDomain(event,/\/databases\.zip$/)) {
-            
-            const url = event.request.url+Math.random().toString(36)+".zip";
+            const channelName = "channel_"+Math.random().toString(36)+".zip";
             
             return new Promise(function(resolve){
                 
@@ -71,51 +61,30 @@ sha1Lib               |  sha1.js
                 </div>
                 <script>
                 
-                var url = "${url}";
+                var channelName = "${channelName}";
+                
                 ${
                     middleware.fnSrc(
                     function() {
                 
-                       function checkReady() {
-                           
-                           fetch(url).then(function(response){
-                           
-                                if (!response.ok) {
-                                    return setTimeout (checkReady,5000);
-                                }
-                                
-                                if (response.headers.get('content-length') == 1)  {
-                                    
-                                    return setTimeout (checkReady,5000);
-                                }
-                           
-                                response.blob().then(function(blob){
-             
-                                    createBlobDownloadLink (
-                                        url,
+                       
+                       const channel = new BroadcastChannel(channelName );
+                       
+                       channel.onmessage = function (event) {
+
+                                      createBlobDownloadLink (
+                                        "path/databases.zip",
                                         document.body.querySelector("#downloadLink"),
                                         "here",
-                                        blob
-                                    );
+                                        event.data.blob  );
                                     
                                     document.querySelector("#ready").style.display="block";
-                                    
-                                });
-                           
-            
-                                 
-            
-                            }).catch(function(){
-                                 setTimeout (checkReady,5000);
-                             });
-                           
-                       }
-                       
-                       
-                       
-                       checkReady();
-                       
-                       
+                                  
+                                  channel.close();
+                                  
+                        };
+
+                      
                        
                        function createBlobDownloadLink(url,linkEl,linkText,blob ) {
                            
@@ -162,28 +131,7 @@ sha1Lib               |  sha1.js
                    contentLength : html.length,
                });
                
-               
-               
-               
-               responses [url] = function (event,middleware) {
-                   
-                   const json = '0'
-                   
-                   return new Promise(function(resolve){
-                       
-                     middleware.response200 (resolve,json,{
-                         name          : event.fixup_url.replace(middleware.isLocal,''),
-                         contentType   : 'application/json',
-                         contentLength : json.length,
-                     });
-                     
-                   
-                   });
-                   
-               }
-                
-               
-                
+
                 
                middleware.databases.toZip(function(err,buffer){
                    if (err) {
@@ -194,26 +142,15 @@ sha1Lib               |  sha1.js
                            return middleware.response500(resolve,err);
                        }
                        
-                       responses [url] = function (event,middleware) {
-                           
-                           return new Promise(function(resolve){
-                               
-                               middleware.response200 (resolve,buffer,{
-                                   name          : event.fixup_url.replace(middleware.isLocal,''),
-                                   contentType   : 'application/zip',
-                                   contentLength : buffer.byteLength,
-                                   etag          : hash,
-                               });
-                               
-                               
-                               setTimeout(function(){
-                                  delete responses [url] 
-                               },60*1000);
-                           
-                           });
-                           
-                       }
-                        
+                       const channel = new BroadcastChannel(channelName );
+                       const blob = new Blob([buffer], {type: "image/png"});
+                                   
+                       channel.postMessage({blob:blob});
+                       
+                         
+                       channel.close();
+                       
+
                    });
                });
                 
