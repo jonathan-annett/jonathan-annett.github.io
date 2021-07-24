@@ -173,7 +173,7 @@ FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
                    user: 'browser',
                    host: 'local',
                    path: '/home/',
-                   style: 'ubuntu',
+                   style: 'default',
                    theme: 'dark',
                    responsive: false,
                    commands:[
