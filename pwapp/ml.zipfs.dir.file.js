@@ -63,7 +63,7 @@ ml(`
            if (is_edited)  cls.push("edited");
            if (is_hidden)  cls.push("hidden");
            const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
-           const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed">&nbsp;</span>',  '</a>' + sha1span +edited+zoom_full ] 
+           const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed"><i class="fas fa-code"></i></span>',  '</a>' + sha1span +edited+zoom_full ] 
                           : is_zip        ? [ '<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>' + sha1span +edited+zoom_full ]   
                           :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + sha1span +edited+zoom_full ] ;
            
