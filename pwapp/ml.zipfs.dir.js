@@ -923,7 +923,7 @@ ml(`
                                     li_ed.reload = function () {
                                         pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer,updated,hash){
                                             const text = new TextDecoder().decode(buffer);
-                                            li_ed.setText(buffer);
+                                            li_ed.setText(text);
                                             if (li_ed.edit_helper) {
                                                 li_ed.edit_helper.update(text);
                                             }
