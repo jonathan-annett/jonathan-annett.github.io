@@ -24,7 +24,7 @@ ml([],function(){ml(2,
     function openWindowLib () {
         
         const lib = {
-            
+            open_html        : open_html,
             open_url         : open_url,
             open_window      : open_window,
             on_window_close  : on_window_close,
@@ -48,6 +48,12 @@ ml([],function(){ml(2,
               function onOpened(w){ if (cb) cb ("opened",w);}
             );
         }
+        
+        
+        
+        
+        
+      
         
         
         function open_window(
