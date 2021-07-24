@@ -283,7 +283,7 @@ function ml(x,L, o, a, d, s){
                 ml.l.pop();
             }
             
-            return N;
+            return !!c.S[N] ? !1 : N;
         },
         // custom module import - json
         ml.g.json = (x,R,U,N,W)=>{
@@ -317,7 +317,6 @@ function ml(x,L, o, a, d, s){
                      c.p1 && c.p1.logComplete(1);
                     
                      ml.l.pop();
-                     return N;
         };
         // custom module synchrouns import - html - wraps async fetch call
         ml.g.html = (x,R,U,N,W,w)=>{
@@ -354,7 +353,7 @@ function ml(x,L, o, a, d, s){
                                  c.p1 && c.p1.logComplete(1);
                                 
                                  ml.l.pop();
-                                 return N;
+                                 
                     };
                
         ml.i=new Proxy({},{
