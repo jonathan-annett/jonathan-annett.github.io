@@ -1,9 +1,10 @@
-/* global ml,Headers,BroadcastChannel  */
+/* global ml,qs,Headers,BroadcastChannel  */
 ml(`
 pwa                   | ml.pwa.js
 Shell                 | shell/shell.js
 FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
 progressHandler       | ml.progressHandler.js
+openWindowLib         | ml.openWindow.js
 
 `,function(){ml(2,
 
@@ -12,11 +13,14 @@ progressHandler       | ml.progressHandler.js
             const lib = {}  ;
             
             const  
-            [ html,keyPRE,                   runhere,  update  ]   = 
-            ["html","html .notbeta pre.key","#runBtn", "#updateBtn"].map(qs);
+            [ html,keyPRE,                   runhere,  openBtn,    update  ]   = 
+            ["html","html .notbeta pre.key","#runBtn", "#openBtn", "#updateBtn"].map(qs);
             
             
             const 
+            
+            { open_url  } = ml.i.openWindowLib,
+          
             editor_url  = window.parent.location.href.replace(/\/$/,'')+'/edit',
             editor_channel_name = "ch_"+editor_url.replace(/\/|\:|\.|\-/g,''),
             editor_channel = new BroadcastChannel(editor_channel_name);
@@ -72,11 +76,15 @@ progressHandler       | ml.progressHandler.js
             
             
             runhere.onclick = runClick ;
+            openBtn.onclick = openClick ;
             
             editor_channel.onmessage=function(event) {
                  if (event.data && event.data.run) {
                    runClick() ;
-                }
+                 }
+                 if (event.data && event.data.open) {
+                   openClick() ;
+                 }
             };
             
 
@@ -136,7 +144,7 @@ progressHandler       | ml.progressHandler.js
                  shell.init();
              }
              
-              function runClick() {
+              function runOrOpenClick(cb) {
                   
                   // we want the animation /progress bar on the screen for a least 5 seconds
                   const minTime = Date.now() + 5000  ;
@@ -156,10 +164,27 @@ progressHandler       | ml.progressHandler.js
                       betaTesterApproval().then(function(config){
                            const delay = qs("#show_shell").checked ? Math.max(minTime-Date.now()) : 10;
                            qs("html").classList.add("remove");
-                           setTimeout(location.replace.bind(location),  delay,config.root);   
+                           cb(delay,config);
                       });
                   });
               }
+              
+              function runClick() {
+                  runOrOpenClick(function(delay,config){
+                     setTimeout(location.replace.bind(location),  delay,config.root);    
+                  });
+              }
+              
+              function openClick() {
+                  runOrOpenClick(function(delay,config){
+                     setTimeout(function(){
+                         
+                         location.replace.bind(location);
+                         
+                     },  delay,config.root);   
+                  });
+              }
+              
               
               
               function getConfig(cb) {
