@@ -342,8 +342,8 @@ function ml(x,L, o, a, d, s){
                                               r.text().then((t,o,u)=>{
                                                  ml.h[U].E[N]=t;
                                                  // swizzle out the fetcher for a simple cache return
-                                                 W=(C,u)=>{C(u,w(ml.h[U].E[N],w));};
-                                                 C(u,w(t,w));
+                                                 W=(C,u)=>{C(u,ml.h[U].E[N],w);};
+                                                 C(u,t,w);
                                               });
                                           }).catch((e)=>{
                                               C(e);
