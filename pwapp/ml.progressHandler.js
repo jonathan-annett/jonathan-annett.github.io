@@ -52,9 +52,12 @@ ml([],function(){ml(2,
                           expect_total=n;
                       }
                      
-                      function setComplete(n) {
+                      function setComplete(n,filename) {
                           complete=n;
                           updateBar();
+                          if (filename && api.onfilename) {
+                              api.onfilename(filename);
+                          }
                       }
                      
                       function logComplete(n) {

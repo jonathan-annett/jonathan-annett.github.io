@@ -195,8 +195,8 @@ function ml(x,L, o, a, d, s){
                    channel.postMessage({setTotal:n});
                }
               
-               function setComplete(n) {
-                   channel.postMessage({setComplete:n});
+               function setComplete(n,f) {
+                   channel.postMessage({setComplete:n,filename:f});
                }
               
                function logComplete(n) {

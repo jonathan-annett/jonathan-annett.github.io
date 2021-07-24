@@ -44,7 +44,7 @@ databasesZipHtml@ServiceWorkerGlobalScope  |  /pwapp/ml.zipfs.middleware/databas
                 
             const channel = new BroadcastChannel( channelName );
             
-            ml.i.progressHandler(0,1,"loadProgress","loadProgressText","zipProgress");
+            ml.i.progressHandler(0,1,"zipProgress","zipProgressText",channelName+"_progress");
       
             channel.onmessage = function (event) {
         
@@ -128,6 +128,7 @@ databasesZipHtml@ServiceWorkerGlobalScope  |  /pwapp/ml.zipfs.middleware/databas
                    
                    const channelName = "channel_"+Math.random().toString(36)+".zip";
                    
+                   
                    html = renderer({channelName},html);
                     
                    middleware.response200 (resolve,html,{
@@ -137,39 +138,46 @@ databasesZipHtml@ServiceWorkerGlobalScope  |  /pwapp/ml.zipfs.middleware/databas
                    });
                    
                    
-                   var prog;
-                    
-                   middleware.databases.toZip(
-                       undefined,
-                       function (n, of_n,file){
-                           
-                          if (n===0) {
-                              prog = progressHandler (0,of_n,"zipProgress") ;
-                          } else {
-                              prog && prog.setComplete(n,file);
-                          }
-                           
-                       },
-                       function(err,buffer){
-                       if (err) {
-                           return middleware.response500(resolve,err);
-                       }
-                       sha1(buffer,function(err,hash){
+                   const channel = new BroadcastChannel(channelName );
+                   
+                   channel.onmessage = function() {
+                       
+                       var prog;
+                        
+                       middleware.databases.toZip(
+                           undefined,
+                           function (n, of_n,file){
+                               
+                              if (n===0) {
+                                  prog = progressHandler (0,of_n,channelName+"_progress") ;
+                              } else {
+                                  prog && prog.setComplete(n,file);
+                              }
+                               
+                           },
+                           function(err,buffer){
                            if (err) {
                                return middleware.response500(resolve,err);
                            }
-                           
-                           const channel = new BroadcastChannel(channelName );
-                           const blob = new Blob([buffer], {type: "application/zip"});
-                                       
-                           channel.postMessage({blob:blob});
-                           
-                           channel.close();
-                           
-    
+                           sha1(buffer,function(err,hash){
+                               if (err) {
+                                   return middleware.response500(resolve,err);
+                               }
+                               
+                              
+                               const blob = new Blob([buffer], {type: "application/zip"});
+                                           
+                               channel.postMessage({blob:blob});
+                               
+                               channel.close();
+                               
+        
+                           });
                        });
-                   });
+                       
+                   };
                    
+
                    
                    
 

@@ -1,12 +1,12 @@
 <html>
     <head>
         <style>
-            #loadProgress {
+              #zipProgress {
                  width: 180px;
                  background-color: #ddd;
                }
                
-               #loadBar {
+               #zipProgress div {
                  width: 2px;
                  height: 10px;
                  background-color: #4CAF50;
@@ -15,8 +15,8 @@
     </head>
     <body>
         <p>standby...</p>
-        <div id="loadProgress">
-            <div id="loadBar"></div>
+        <div id="zipProgress">
+            <div></div>
         </div>
         <div id="ready" style="display:none">You can download the zip
             <a id="downloadLink"></a>
