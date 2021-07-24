@@ -469,11 +469,11 @@ ml(`
                     console.log("opening temp url",file_url);
                     open_url(file_url,function(){
                         console.log("window opened for",file_url)
-                        /*setTimeout(function(){
+                        setTimeout(function(){
                             pwaApi.removeUpdatedURLContents(file_url,function(){
                                 console.log("removed temp file",file_url);
                             });
-                        },500);*/
+                        },500);
                     });
                 });
             }

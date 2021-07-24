@@ -94,7 +94,9 @@ databasesZipHtml@ServiceWorkerGlobalScope  |  ml.zipfs.middleware/databasesZip.h
             
         },
         ServiceWorkerGlobalScope: function databasesZip_mware(  ) {
+          
           return mware;
+          
         } 
     }, {
         Window : [],
@@ -112,143 +114,68 @@ databasesZipHtml@ServiceWorkerGlobalScope  |  ml.zipfs.middleware/databasesZip.h
          
          if ( middleware.isLocalDomain(event,/\/databases\.zip$/)) {
             
-            const channelName = "channel_"+Math.random().toString(36)+".zip";
+            
             
             return new Promise(function(resolve){
                 
-              
-               const html = `
-               
-               <html>
-               <head>
-               
-               <style>
-               
-               #loadProgress {
-                 width: 180px;
-                 background-color: #ddd;
-               }
-               
-               #loadBar {
-                 width: 2px;
-                 height: 10px;
-                 background-color: #4CAF50;
-               }
-               
-               
-               </style>
-               </head>
-               <body>
-               <p>
-                standby...
-                </p>
-                
-                <div id="loadProgress">
-                  <div id="loadBar"></div>
-                </div>
-                
-                <div id="ready" style="display:none">
-                   You can download the zip <a id = "downloadLink"></a> 
-                </div>
-                
-               
-                <script>
-                
-                var channelName = "${channelName}";
-                
-                ${
-                    middleware.fnSrc(
-                    function() {
-                
-                       
-                     
-                
-                    }
-                    )
-
-                }
-                
-                </script>
-               </body>
-
-               </html>  `;
-               
-               
-               middleware.response200 (resolve,html,{
-                   name          : event.fixup_url.replace(middleware.isLocal,''),
-                   contentType   : 'text/html',
-                   contentLength : html.length,
-               });
-               
-                
-               var prog;
-                
-               middleware.databases.toZip(
-                   undefined,
-                   function (n, of_n){
-                       
-                      if (n===0) {
-                         prog = progressHandler (0,of_n,"zipProgress") ;
-                      } else {
-                          prog.setComplete(n);
-                      }
-                       
-                   },
-                   function(err,buffer){
-                   if (err) {
-                       return middleware.response500(resolve,err);
-                   }
-                   sha1(buffer,function(err,hash){
+               ml.i.databasesZipHtml(function(html,renderer){
+                   
+                   const channelName = "channel_"+Math.random().toString(36)+".zip";
+                   
+                   html = renderer({channelName},html);
+                    
+                   middleware.response200 (resolve,html,{
+                       name          : event.fixup_url.replace(middleware.isLocal,''),
+                       contentType   : 'text/html',
+                       contentLength : html.length,
+                   });
+                   
+                   
+                   var prog;
+                    
+                   middleware.databases.toZip(
+                       undefined,
+                       function (n, of_n,file){
+                           
+                          if (n===0) {
+                              prog = progressHandler (0,of_n,"zipProgress") ;
+                          } else {
+                              prog && prog.setComplete(n,file);
+                          }
+                           
+                       },
+                       function(err,buffer){
                        if (err) {
                            return middleware.response500(resolve,err);
                        }
-                       
-                       const channel = new BroadcastChannel(channelName );
-                       const blob = new Blob([buffer], {type: "application/zip"});
-                                   
-                       channel.postMessage({blob:blob});
-                       
-                         
-                       channel.close();
-                       
-
+                       sha1(buffer,function(err,hash){
+                           if (err) {
+                               return middleware.response500(resolve,err);
+                           }
+                           
+                           const channel = new BroadcastChannel(channelName );
+                           const blob = new Blob([buffer], {type: "application/zip"});
+                                       
+                           channel.postMessage({blob:blob});
+                           
+                           channel.close();
+                           
+    
+                       });
                    });
-               });
-               
-               
-               function progressHandler (complete,total,channelName) {
-                 const channel = new BroadcastChannel(channelName);
-                 const expect  = Number.parseInt(new URL(location).searchParams.get('count'));
-                 if (!isNaN(expect) && expect > 0) {
-                     setTotal(expect);
-                 }
-                 return {
-                      setTotal:setTotal,
-                      setComplete:setComplete,
-                      addToTotal:addToTotal,
-                      logComplete: logComplete
-                  };
-                 
-                  function setTotal(n) {
-                      channel.postMessage({setTotal:n});
-                  }
-                 
-                  function setComplete(n) {
-                      channel.postMessage({setComplete:n});
-                  }
-                 
-                  function logComplete(n) {
-                      channel.postMessage({logComplete:n});
-                  }
-                 
-                  function addToTotal (n,f) {
-                      channel.postMessage({addToTotal:n,filename:f});
-                  }
-                 
-                  
-               }
+                   
+                   
+                   
+
+               });    
+             
+              
+              
+            
                 
             });
+            
+            
         }
         
     }
