@@ -158,7 +158,7 @@
             function (iframe) {return iframe.contentWindow;}
         ) ;
         
-     iframewins.foreach(function(win) {
+     iframewins.forEach(function(win) {
         result.push(win.document);
         const childDocs = get_docs(urlprefix,win);
         [].push.apply(result,childDocs.splice(0,childDocs.length));
