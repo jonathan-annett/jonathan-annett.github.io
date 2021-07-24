@@ -533,7 +533,7 @@ ml(`
                     }
                     
                     function onedit(cmd,file_url,text) {
-                        if (win && cmd === "edited") {
+                        if (win) {
                             win.update(converter.makeHtml(text));
                         }
                     }
