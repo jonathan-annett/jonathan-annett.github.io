@@ -3,6 +3,7 @@ ml(`
 pwa                   | ml.pwa.js
 Shell                 | shell/shell.js
 FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
+progressHandler       | ml.progressHandler.js
 
 `,function(){ml(2,
 
@@ -118,7 +119,7 @@ FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
                   sessionStorage.running=((1000*60*2) + Date.now()).toString();
                   qs("#rungif").style.display = "inline-block";
                   qs("html").classList.add("busy");
-                  progressHandler(0,1,"loadProgress","loadProgressText","installProgress");
+                  ml.i.progressHandler(0,1,"loadProgress","loadProgressText","installProgress");
                   pwa.start(function(){
                       betaTesterApproval().then(function(config){
                            const delay = qs("#show_shell").checked ? Math.max(minTime-Date.now()) : 10;
@@ -159,7 +160,7 @@ FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
                  return runInBrowser;
              }
              
-            
+            /*
             function progressHandler(complete,total,id,idtxt,channelName) {
                let expect_total = total;
                let outer = qs("#"+id),inner = qs(outer,"div"),status = qs("#"+idtxt),maxWidth = outer.offsetWidth, barHeight=outer.offsetHeight;
@@ -243,6 +244,7 @@ FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
                }
             } 
                         
+           */
            
              function betaTesterApproval() {
                  
