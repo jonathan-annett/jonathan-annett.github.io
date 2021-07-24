@@ -344,10 +344,15 @@ ml(`
                 }
             }
             
+            function findFilename(el ) {
+                return el && el.dataset &&  el.dataset.filename ? el.dataset.filename.replace(/(^\/)/,'') : el ? findFilename(el.parentElement )  : false;
+            }
+            
             function deleteClick(e) {
                 e.stopPropagation();
-                const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                const filename = btn.dataset.filename.replace(/(^\/)/,'');
+                //const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+                //const filename = btn.dataset.filename.replace(/(^\/)/,'');
+                const filename = findFilename(e.target);
                 const li = find_li(filename);
                 if (e.shiftKey) {
                     
@@ -429,8 +434,9 @@ ml(`
 
             function viewBtnClick(e){
                 e.stopPropagation();
-                const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                const filename = btn.dataset.filename.replace(/(^\/)/,'');
+                //const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+                //const filename = btn.dataset.filename.replace(/(^\/)/,'');
+                const filename = findFilename(e.target);
                 open_file (filename);
             }
             
