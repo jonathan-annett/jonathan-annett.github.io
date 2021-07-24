@@ -128,7 +128,7 @@
  function get_stylesheets (urlprefix) {
      const 
       url_filter = function(x){ return x.indexOf(urlprefix)===0;},
-      result = [].map.call(window.top.document.body.querySelectorAll('link[rel="stylesheet"]'),function(x){
+      result = [].map.call(window.top.document.head.querySelectorAll('link[rel="stylesheet"]'),function(x){
           return x.href;}).filter(url_filter);
           
   
