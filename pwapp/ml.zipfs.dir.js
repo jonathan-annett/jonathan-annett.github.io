@@ -471,9 +471,7 @@ ml(`
                           if (win) {
                               win.document.body.innerHTML = content; 
                           }
-                          if (cb) {
-                              cb("opened");
-                          }
+                          
                       },
                       close : function () {
                           if (cb) {
@@ -501,12 +499,15 @@ ml(`
                                             win = theWin;
                                         });
                                     },500);
+                                    if (cb) {
+                                        cb("opened");
+                                    }
                                 }
                                 break;
                             case "closed" : {
                                 win = undefined;
                                 if (cb) {
-                                    cb();
+                                    cb("closed");
                                 }
                                 break;
                             }
@@ -547,7 +548,6 @@ ml(`
             }
             
             function view_html (filename,file_url) {
-                var converter = new MarkdownConverter();
                 pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer){
                     let win;
                     if (err) {
