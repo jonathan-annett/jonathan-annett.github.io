@@ -738,8 +738,10 @@ function amd(root_js,bound_self){
                 A:A,// save initial args into ml.c.A,
                 
                 //c.H(u) === url not loaded
-                H:(u) => ml.H.indexOf(u)<0,
+                H:(u) => ml.H[c.LI](u)<0,
                 
+                IO:"indexOf",
+                LI:"lastIndexOf",
                 
                 //c.y = filter to remove elements that are truthy. (c.m returns false when a module is loaded, so truthy = name of still to be loaded module)
                 y:(x)=>!!x,
