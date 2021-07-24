@@ -111,7 +111,7 @@ ml(0,ml(1),[
              
             function countKeys (cb,n,i) {
                 if (n===undefined) {
-                    return countKeys(0,0,cb);
+                    return countKeys(cb,0,0);
                 }
                 if (i< names.length) {
                     const dbname = names [ i ];
