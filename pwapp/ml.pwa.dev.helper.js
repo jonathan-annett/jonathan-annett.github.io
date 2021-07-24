@@ -29,7 +29,8 @@
                }
                sessionStorage.removeItem(editor_channel_name);
                sessionStorage.removeItem('running');
-               window.parent.location = window.parent.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+window.parent.location.pathname;
+               const p = (window.parent.opener||window.parent);
+               p.location = p.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+p.location.pathname;
            }
            
            
@@ -90,7 +91,9 @@
             }
             sessionStorage.removeItem(editor_channel_name);
             sessionStorage.removeItem('running');
-            window.parent.location = window.parent.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+window.parent.location.pathname;
+            const p = (window.parent.opener||window.parent);
+               
+            p.location = p.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+p.location.pathname;
         };
        document.body.querySelector("#e").onclick = function(){
             if (editor_win) {
