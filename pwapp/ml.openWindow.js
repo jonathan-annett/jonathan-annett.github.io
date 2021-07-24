@@ -25,6 +25,7 @@ ml([],function(){ml(2,
         
         const lib = {
             open_url         : open_url,
+            close_all_urls   : close_all_urls,
             open_window      : open_window,
             on_window_close  : on_window_close,
             on_window_open   : on_window_open
@@ -33,6 +34,7 @@ ml([],function(){ml(2,
         
         var deltaTop=0,deltaLeft=0,deltaWidth=0,deltaHeight=0;
         
+        var open_urls = [];
         
         function open_url(file_url,cb) {
             return open_window(
@@ -43,14 +45,32 @@ ml([],function(){ml(2,
               1024,
               768,
               true,
-              function onClosed(w){ if (cb) cb ("closed",w);},
-              function onOpened(w){ if (cb) cb ("opened",w);}
+              function onClosed(w){ 
+                  const ix = open_urls.indexOf(w);
+                  if (ix>=0) open_urls.splice(ix,1);
+                  if (cb) cb ("closed",w);
+              },
+              function onOpened(w){ 
+                  open_urls.push(w); 
+                  if (cb) cb ("opened",w);
+              }
             );
         }
         
         
         
-        
+        function close_all_urls  ( delay ) {
+            
+            if (delay) return  setTimeout(close_all_urls,delay);
+            
+            open_urls.slice().forEach(function(w){
+                try {
+                  w.close();
+                } catch (e) {
+                }
+            });
+            
+        }
         
       
         

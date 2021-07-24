@@ -30,7 +30,13 @@
                sessionStorage.removeItem(editor_channel_name);
                sessionStorage.removeItem('running');
                const p = (window.parent.opener||window.parent);
-               p.location = p.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+p.location.pathname;
+               
+               if (window.opener) {
+                   p.setTimeout ( p.ml.i.openWindowLib.close_all_urls,10);
+               }
+               p.setTimeout (p.location.replace,50,p.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+p.location.pathname);
+               
+               
            }
            
            
