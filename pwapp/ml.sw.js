@@ -295,7 +295,7 @@ function ml(x,L, o, a, d, s){
                      c.p1 && c.p1.addToTotal(1,N);
                      ml.h[U] = {e:{},E:{}};
                      // create swizzle wrapper to fetch and then cache json object 
-                     W=(c)=>{
+                     W=(C)=>{
                           fetch(U).then(
                               (r)=>{
                                   r.text().then((t,o,u)=>{
@@ -303,13 +303,13 @@ function ml(x,L, o, a, d, s){
                                          o=ml.h[U].E[N]=JSON.parse(t);
                                          // swizzle out the fetcher for a simple cache return
                                          W=(C,u)=>{C(u,ml.h[U].E[N]);};
-                                         c(u,o);
+                                         C(u,o);
                                       } catch (e) {
-                                         c(e);
+                                         C(e);
                                       }
                                   });
                               }).catch((e)=>{
-                                  c(e);
+                                  C(e);
                               });
                      };
                      // create permanent export func that calls swizzle wrapper
@@ -336,17 +336,17 @@ function ml(x,L, o, a, d, s){
                                      });
                                      return t;
                                  };
-                                 W=(c)=>{
+                                 W=(C)=>{
                                       fetch(U).then(
                                           (r)=>{
                                               r.text().then((t,o,u)=>{
                                                  ml.h[U].E[N]=t;
                                                  // swizzle out the fetcher for a simple cache return
                                                  W=(C,u)=>{C(u,w(ml.h[U].E[N],w));};
-                                                 c(u,w(t,w));
+                                                 C(u,w(t,w));
                                               });
                                           }).catch((e)=>{
-                                              c(e);
+                                              C(e);
                                           });
                                  };
                                  // create permanent export func that calls swizzle wrapper
