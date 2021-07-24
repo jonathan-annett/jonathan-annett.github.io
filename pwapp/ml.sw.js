@@ -169,6 +169,7 @@ function ml(x,L, o, a, d, s){
             //c.G wrap event E to call X, whhich is stored as c[E]
             G:(E,X)=>{ml[E]=X;return (e)=>ml[E](e);},
             
+            //c.p = create progress handler callback (available as ml.cl.p for general use)
             p:(complete,total,channelName) => {
               const channel = new BroadcastChannel(channelName);
               const expect  = Number.parseInt(new URL(location).searchParams.get('count'));
@@ -213,8 +214,8 @@ function ml(x,L, o, a, d, s){
             9:(S)=>{
                      ml.p=[];
                      
-                     c.p = c.p("loadProgress","loadProgressText","installProgress");
-                     c.In(S,'install',(e)=>{c.p.logComplete(1);self.skipWaiting();});
+                     c.p1 = c.p("loadProgress","loadProgressText","installProgress");
+                     c.In(S,'install',(e)=>{c.p1.logComplete(1);self.skipWaiting();});
                      c.In(S,'activate');
                      c.In(S,'fetch',(e)=>fetch(e.request));
                      c.In(S,c.M,(e,r,m,d,M,Z)=>{
@@ -232,6 +233,7 @@ function ml(x,L, o, a, d, s){
                          }
                      });
                      importScripts( new URL(location).searchParams.get('ml') );
+                     delete c.p1;
             }
               
            
@@ -258,7 +260,7 @@ function ml(x,L, o, a, d, s){
                          ml.d[N]={h:U};
                          ml.H.push(U);
                          try {
-                            c.p && c.p.addToTotal(1,N);
+                            c.p1 && c.p1.addToTotal(1,N);
                             importScripts(U);
                             c.n(N,(e)=>{
                                 ml.h[U] = ml.h[U]   || {e:{}};
@@ -267,7 +269,7 @@ function ml(x,L, o, a, d, s){
                          } catch (e){
                             c.e(e.message,'while loading',U,'in',ml.l);  
                          } finally {
-                             c.p && c.p.logComplete(1);
+                             c.p1 && c.p1.logComplete(1);
                          }
                          ml.l.pop();
                      }

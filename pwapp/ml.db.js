@@ -46,15 +46,15 @@ ml(0,ml(1),[
         
             toZip   : { value : function (names,progress,cb) {
                 
-            if (typeof progress==='function' && typeof cb==='undefined') {
-                cb=progress;
-                progress=undefined;
-            }
-                
-                
             if (typeof names === 'function') {
-                cb=names;
-                names = undefined;
+                cb       = progress;
+                progress = names;
+                names    = undefined;
+            }
+
+            if (typeof progress==='function' && typeof cb==='undefined') {
+                cb       = progress;
+                progress = undefined;
             }
             
             names = names || Object.keys(databases).filter(dbNameFilter);
@@ -62,22 +62,14 @@ ml(0,ml(1),[
             const zip = new JSZip();
             let totalKeyCount = 0, accumKeyCount = 0 ;
             
-            if (progress) {
-               countKeys(0,0,function (count){
-                   totalKeyCount = count;
-                   nextDB(0); 
-               });
-            } else {
-               nextDB(0);
-            }
-            
-            function progressWrap (n,ofTotal) {
-                if (progress) {
-                    if (n===ofTotal) {
-                        accumKeyCount += ofTotal;
-                    } else {
-                        progress( accumKeyCount+n, totalKeyCount);
-                    }
+            countKeys(function (count){
+               totalKeyCount = count;
+               nextDB(0); 
+            });
+             
+            function progressWrap (n,ofTotal,keyText) {
+                if (progress && n < ofTotal) {
+                    progress( accumKeyCount+n, totalKeyCount,keyText);
                 }
             }
             
@@ -85,9 +77,9 @@ ml(0,ml(1),[
                 if (i< names.length) {
                     
                     const dbname = names [ i ];
-                    databases[ dbname  ].toZip(progressWrap,function (err,dbzip){
+                    databases[ dbname  ].toZip(progressWrap,function (err,dbzip,keys){
                         if (err) return cb(err);
-                        
+                        accumKeyCount+=keys.length;
                         zip.file(dbname+'.zip',dbzip,{date : new Date(),createFolders: false });
                         nextDB(i+1);                               
                     });
@@ -106,6 +98,9 @@ ml(0,ml(1),[
                               console.log("current file = " + metadata.currentFile);
                           }
                       }*/).then(function (buffer) {
+                          if (progress) {
+                              progress( totalKeyCount, totalKeyCount);
+                          }
                          cb(undefined,buffer);
                     }).catch(cb);
                     
@@ -114,18 +109,21 @@ ml(0,ml(1),[
              }
              
              
-            function countKeys (n,i,cb) {
+            function countKeys (cb,n,i) {
+                if (n===undefined) {
+                    return countKeys(0,0,cb);
+                }
                 if (i< names.length) {
                     const dbname = names [ i ];
                     databases[ dbname  ].getKeys(function (err,keys){
-                        countKeys (n+keys.length,i+1,cb);
+                        countKeys (cb,n+keys.length,i+1);
                     });
                 } else {
                    cb(n);   
                 }
             } 
             
-        },enumberable:false,configurable:true,writable:true},
+        },enumerable:false,configurable:true,writable:true},
         
             fromZip : { value : function (zip,cb) {
             
@@ -313,7 +311,7 @@ ml(0,ml(1),[
                                            
                                                           
                                             if (i<keys.length) {
-                                                if (progress) progress (i,keys.length);
+                                                if (progress) progress (i,keys.length,keys[i]);
                                                 const key = keys[i];
                                                 DB.getItem(key,function(_,value){
                                                    toString(value,function(str){
@@ -360,7 +358,7 @@ ml(0,ml(1),[
                                                       }
                                                   }*/).then(function (buffer) {
                                                      if (progress) progress (keys.length,keys.length); 
-                                                     cb(undefined,buffer)
+                                                     cb(undefined,buffer,keys)
                                                 }).catch(cb);
                                             });
 
