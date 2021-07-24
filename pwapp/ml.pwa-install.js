@@ -176,7 +176,7 @@ openWindowLib         | ml.openWindow.js
               }
               
               function openClick() {
-                  const win = open_url ('about:blank');
+                  const win = open_url ('ml.loading.html');
                          
                   runOrOpenClick(function(delay,config){
                      setTimeout(function(){
