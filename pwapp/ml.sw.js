@@ -160,8 +160,11 @@ function ml(x,L, o, a, d, s){
             },
             A:A,// save initial args into ml.c.A,
             //c.H(u) === url not loaded
-            H:(u) => ml.H.indexOf(u)<0,
-                    
+            H:(u) => ml.H[c.IO](u)<0,
+            
+            IO:"indexOf",
+            LI:"lastIndexOf",
+            
             //c.y = filter to remove elements that truthy. (c.m returns false when a module is loaded, so truthy = name of still to be loaded module)
             y:(x)=>!!x,
             
@@ -256,7 +259,7 @@ function ml(x,L, o, a, d, s){
             N=R[1];
             U=c.B(R[3]);
             if (c.H(U)) {
-                Z=ml.g[U.substr(U.lastIndexOf("."))];
+                Z=ml.g[U.substr(U[c.LI](".")+1)];
                 if (Z) return Z(x,R,U,N);
                 ml.l.push(N+'='+U);
                 ml.d[N]={h:U};
