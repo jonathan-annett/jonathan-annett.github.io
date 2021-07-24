@@ -200,19 +200,21 @@ ml(`
                             
                             console.log({available_css});
                             
-
+                            getScripts(editor_channel,zip_virtual_dir,function(urls){
+                                
+                                available_scripts.splice(0,available_scripts.length);
+                                
+                                available_scripts.push.apply(available_scripts,urls.map(function(u){
+                                    return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
+                                }));
+                                
+                                console.log({available_scripts});
+                            
+                            });
+                            
                         });
-                         getScripts(editor_channel,zip_virtual_dir,function(urls){
-                            
-                            available_scripts.splice(0,available_scripts.length);
-                            
-                            available_scripts.push.apply(available_scripts,urls.map(function(u){
-                                return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
-                            }));
-                            
-                            console.log({available_scripts});
-
-                        });
+                        
+                        
                 }
                 
             }

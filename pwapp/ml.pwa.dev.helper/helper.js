@@ -167,7 +167,7 @@
      return result;
  }
  
- function get_scripts (urlprefix) {
+     function get_scripts (urlprefix) {
      
      const 
      url_filter = function(x){ return x.indexOf(urlprefix)===0;},
