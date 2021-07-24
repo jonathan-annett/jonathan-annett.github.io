@@ -508,11 +508,12 @@ ml(`
                                         pwaApi.removeUpdatedURLContents(file_url,function(){
                                             console.log("removed temp file",file_url);
                                             win = theWin;
+                                            if (cb) {
+                                                cb("opened");
+                                            }
                                         });
                                     },500);
-                                    if (cb) {
-                                        cb("opened");
-                                    }
+                                    
                                 }
                                 break;
                             case "closed" : {
