@@ -23,7 +23,7 @@ ml(`
                        const sha1Sync    = sha1Lib.sync;
                        const bufferToHex = sha1Lib.bufferToHex;
                        
-                       
+                       const zipFSDirHtml = ml.i.zipFSDirHtml;
                    
                        return  {
                            
@@ -44,7 +44,7 @@ ml(`
                                        
                                        return resolve ();
                                    }
-                                   getDirTemplateHtml (function (err,htmlTemplate){ 
+                                   zipFSDirHtml (function (err,__,renderer){ 
                                        
                                        if (err) {
                                            return resolve(new Response('', {
@@ -138,7 +138,7 @@ ml(`
                                                html_details,parent_link) {
                                                */
                            
-                                               const html = renderHtml (htmlTemplate,tools,updated_prefix,uri,
+                                               const html = renderHtml (renderer,tools,updated_prefix,uri,
                                                virtual,zipFileMeta.alias_root,all_files,htmlFileItemLibOpts.hidden_files_exist,
                                                html_details,parent_link);
                            
@@ -174,7 +174,7 @@ ml(`
                           
                            
                             function renderHtml (
-                                htmlTemplate,tools,updated_prefix,uri,
+                                renderer,tools,updated_prefix,uri,
                                 virtual,alias_root,files, hidden_files_exist,
                                 html_details,parent_link) {
                                
@@ -196,12 +196,18 @@ ml(`
                                                        '</script>'
                                                    ];
                                                    
-                               
+                               return renderer({
+                                   uri:uri,
+                                   head_script:head_script.join("\n"),
+                                   html_details:html_details.join("\n"),
+                                   hidden_files_class:hidden_files_exist?' hidden_files_exist':''
+                               });
+                               /*
                                return htmlTemplate .replace(/<\!--head_script--\>/,head_script.join("\n") )
                                                    .replace(/\$\{uri\}/g,uri)
                                                    .replace(/\$\{html_details\}/, html_details.join("\n") )
                                                    .replace(/\$\{hidden_files_class\}/,hidden_files_exist?' hidden_files_exist':'');
-                                   
+                                */   
                            }
                            
                            
@@ -350,8 +356,12 @@ ml(`
                            
                        }
                        
-                       
+                       /*
                        function getDirTemplateHtml (cb) {
+                           
+                         
+                           
+                           
                            if (getDirTemplateHtml.cache) {
                                return cb (undefined,getDirTemplateHtml.cache);
                            }
@@ -366,7 +376,7 @@ ml(`
                            
                        }
                        
-                       
+                       */
                        
                    };    
        

@@ -328,28 +328,29 @@ function ml(x,L, o, a, d, s){
                                  c.p1 && c.p1.addToTotal(1,N);
                                  ml.h[U] = {e:{},E:{}};
                                  // create swizzle wrapper to fetch and then cache html text 
-                                 w=(t,X)=>{
+                                 w=(X,t)=>{
                                      // if obect with keys is supplied, merge in the templated values
-                                     X && c.k(X)[c.f]((k)=>{
+                                     t=t||ml.h[U].E[N];
+                                     c.k(X)[c.f]((k)=>{
                                          t=t[c.R](new RegExp(c.re('${'+k+'}'),'g'),X[k]);
                                      });
                                      return t;
                                  };
-                                 W=(X,c)=>{
+                                 W=(c)=>{
                                       fetch(U).then(
                                           (r)=>{
                                               r.text().then((t,o,u)=>{
                                                  ml.h[U].E[N]=t;
                                                  // swizzle out the fetcher for a simple cache return
-                                                 W=(XX,C,u)=>{C(u,w(ml.h[U].E[N],XX));};
-                                                 c(u,w(t,X));
+                                                 W=(C,u)=>{C(u,w(ml.h[U].E[N],w));};
+                                                 c(u,w(t,w));
                                               });
                                           }).catch((e)=>{
                                               c(e);
                                           });
                                  };
                                  // create permanent export func that calls swizzle wrapper
-                                 ml.h[U].e[N]=(X,C)=>{ W (X,C);};
+                                 ml.h[U].e[N]=(X,C)=>{W(X,C);};
                                  c.p1 && c.p1.logComplete(1);
                                 
                                  ml.l.pop();
