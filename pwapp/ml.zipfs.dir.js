@@ -458,8 +458,8 @@ ml(`
                   1024,
                   768,
                   true,
-                  function onClosed(){ if (cb) cb ("closed");},
-                  function onOpened(){ if (cb) cb ("opened");}
+                  function onClosed(w){ if (cb) cb ("closed",w);},
+                  function onOpened(w){ if (cb) cb ("opened",w);}
                 );
             }
             
@@ -501,7 +501,8 @@ ml(`
                         return ;
                     }
                     console.log("opening temp url",file_url);
-                    api.win = open_url(file_url,function(ev){
+                    api.win = open_url(file_url,function(ev,w){
+                        api.win=w;
                         switch (ev) {
                             case "opened" : {
                                     console.log("window opened for",file_url)
