@@ -271,7 +271,7 @@ function ml(x,L,o,a,d,s){
            }
            return r;
        };
-       ml.qs = ml.i=((k,g)=>{
+       ml.qs = ((k,g)=>{
            g=(p)=>c.S.qs("#"+p)
            k=()=>[].map.call(document.querySelectorAll('*[id]'),(x)=>x.id);
            return new Proxy({},{
