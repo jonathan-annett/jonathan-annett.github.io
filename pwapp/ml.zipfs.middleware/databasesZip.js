@@ -118,7 +118,11 @@ databasesZipHtml@ServiceWorkerGlobalScope  |  ml.zipfs.middleware/databasesZip.h
             
             return new Promise(function(resolve){
                 
-               ml.i.databasesZipHtml(function(html,renderer){
+               ml.i.databasesZipHtml(function(err,html,renderer){
+                   
+                  if (err) {
+                      return middleware.response500(resolve,err);
+                  }
                    
                    const channelName = "channel_"+Math.random().toString(36)+".zip";
                    
