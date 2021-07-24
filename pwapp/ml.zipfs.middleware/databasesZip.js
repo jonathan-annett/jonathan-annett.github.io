@@ -24,9 +24,9 @@
 */
 ml(`
 
-sha1Lib               |  sha1.js
-progressHandler       |  ml.progressHandler.js
-databasesZipHtml      |  ml.zipfs.middleware/databasesZip.html
+sha1Lib                                    |  sha1.js
+progressHandler                            |  ml.progressHandler.js
+databasesZipHtml@ServiceWorkerGlobalScope  |  ml.zipfs.middleware/databasesZip.html
 
 `,function(){ml(2,
 
