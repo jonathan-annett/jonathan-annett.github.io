@@ -6,6 +6,7 @@
    ${head_script}
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/balloon-css/1.2.0/balloon.min.css" integrity="sha512-6jHrqOB5TcbWsW52kWP9TTx06FHzpj7eTOnuxQrKaqSvpcML2HTDR2/wWWPOh/YvcQQBGdomHL/x+V1Hn+AWCA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
    <link rel="stylesheet" href="ml.zipfs.dir.css"/>
+   <link rel="stylesheet" href="fontawesome/css/all.css"/>
    <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
 
 </head>
@@ -16,7 +17,7 @@
 <section>
   <header>
       
-     <h1> files in ${uri}
+     <h1> <i class="far fa-folder-open"></i> files in ${uri}
      <span>show full path</span><input class="fullpath_chk" type="checkbox" autocomplete="off">
      <span id="show_hidden">show hidden files</span><input class="hidden_chk" type="checkbox" autocomplete="off">
      <a class="downloadfull" href="/${uri}?download=files" data-balloon-pos="down-left" aria-label="Download full (including edits)">&nbsp;&nbsp;&nbsp;</a>

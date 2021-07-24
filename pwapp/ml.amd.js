@@ -865,6 +865,49 @@ function amd(root_js,bound_self){
                         
            };
            
+           /*
+           ml.g.css = (x,R,U,N,W,w)=>{
+                       
+                        ml.l.push(N+'='+U);
+                        ml.d[N]={h:U};
+                        ml.H.push(U);
+                        
+                        c.p1 && c.p1.addToTotal(1,N);
+                        ml.h[U] = {e:{},E:{}};
+                        // create swizzle wrapper to fetch and then cache html text 
+                        w=(D,t,C)=>{
+                            // apply css to document
+                            t=t||ml.h[U].E[N];
+                            D=D||document;
+                            C=D.createElement('style');
+                            C.appendChild(D.createTextNode(t));
+                            D.head.appendChild(C);
+                            return C;
+                        };
+                        W=(C)=>{
+                             fetch(U).then(
+                                 (r)=>{
+                                     r.text().then((t,o,u)=>{
+                                        ml.h[U].E[N]=t;
+                                        // swizzle out the fetcher for a simple cache return
+                                        W=(C,u)=>{C(u,ml.h[U].E[N],w);};
+                                        C(u,t,w);
+                                     });
+                                 }).catch((e)=>{
+                                     C(e);
+                                 });
+                        };
+                        // create permanent export func that calls swizzle wrapper
+                        ml.h[U].e[N]=(X,C)=>{W(X,C);};
+                        c.p1 && c.p1.logComplete(1);
+                       
+                        ml.l.pop();
+                        
+           };
+           
+           */
+           
+           
            
            
               

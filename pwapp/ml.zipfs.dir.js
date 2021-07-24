@@ -11,7 +11,6 @@ ml(`
     zipFSApiLib          | ml.zipfs.api.js
     showdown             | https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.js
     aceSessionLib        | ml.ace-session.js
-    FontAwesomeKitConfig | https://kit.fontawesome.com/f16568395d.js
     openWindowLib        | ml.openWindow.js
     
     
