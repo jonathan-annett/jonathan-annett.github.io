@@ -479,7 +479,18 @@ ml(`
                           }
                           cb = undefined;
                           if (win) win.close() ;
-                      }
+                      },
+                      reload: function () {
+                          if (win) {
+                              win.location.reload();
+                          }
+                      },
+                      goto : function (url) {
+                          if (win) {
+                              win.location.replace(url);
+                          }
+                      } 
+                      
                       
                 };
                  
@@ -560,7 +571,7 @@ ml(`
                             switch (state) {
                                 // add edit hook to update text due to editing.
                                 case "opened" : 
-                                    win.location= file_url;
+                                    win.goto(file_url);
                                     return addEditHook(file_url,onedit);
                                 case "closed" : 
                                     
@@ -571,7 +582,7 @@ ml(`
                     
                     function onedit(cmd,file_url,text) {
                         if (win) {
-                            win.location.reload();
+                            win.reload();
                         }
                     }
                 });
