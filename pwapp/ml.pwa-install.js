@@ -178,8 +178,8 @@ openWindowLib         | ml.openWindow.js
               function openClick() {
                   runOrOpenClick(function(delay,config){
                      setTimeout(function(){
-                         
-                         location.replace.bind(location);
+
+                         open_url (config.root);
                          
                      },  delay,config.root);   
                   });
