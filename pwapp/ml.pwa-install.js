@@ -176,11 +176,13 @@ openWindowLib         | ml.openWindow.js
               }
               
               function openClick() {
+                  const win = open_url ('about:blank');
+                         
                   runOrOpenClick(function(delay,config){
                      setTimeout(function(){
 
 
-                         open_url ('about:blank');
+                         open_url (config.root);
                          
                      },  delay,config.root);   
                   });
