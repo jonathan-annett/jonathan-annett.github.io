@@ -42,11 +42,18 @@ ml([],function(){ml(2,
        const db  = middleware.databases.updatedURLS;
        
        switch (event.request.method) {
-           case "GET"    : return  db.keyExists(url,true) ? new Promise ( event.toFetchUrl(db) ) : undefined;
+           case "GET"    : return  db.keyExists(url,true) ? new Promise ( toFetchURL ) : undefined;
            case "PUT"    : return new Promise ( toUpdateUrl );
            case "DELETE" : return new Promise ( toRemoveUrl );
        }
        
+       
+       function toFetchURL(resolve) {
+           db.getItem(url,function(err,args){
+               if (err||!args) return resolve();
+               resolve(args[0]);
+           });
+       }
     
        function toUpdateUrl (resolve,reject) {
               
