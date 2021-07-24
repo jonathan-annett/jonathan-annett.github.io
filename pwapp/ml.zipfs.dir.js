@@ -471,10 +471,13 @@ ml(`
                           if (win) {
                               win.document.body.innerHTML = content; 
                           }
+                          if (cb) {
+                              cb("opened");
+                          }
                       },
                       close : function () {
                           if (cb) {
-                              cb();
+                              cb("closed");
                           }
                           cb = undefined;
                           if (win) win.close() ;
@@ -525,12 +528,14 @@ ml(`
                     } else {
                         const html  = converter.makeHtml(new TextDecoder().decode(buffer));
                         const suffix = Math.random().toString(36)+ ".html";
-                        win = open_html (html,file_url+suffix,function(){
+                        win = open_html (html,file_url+suffix,function(state){
                             // window closed so remive edit hook
-                            removeEditHook(file_url,onedit);
+                            switch (state) {
+                                // add edit hook to update text due to editing.
+                                case "opened" : return addEditHook(file_url,onedit);
+                                case "closed" : return removeEditHook(file_url,onedit);
+                            }
                         });
-                        // add edit hook to update text due to editing.
-                        addEditHook(file_url,onedit);
                     }
                     
                     function onedit(cmd,file_url,text) {
@@ -550,17 +555,23 @@ ml(`
                     } else {
                         const html  = new TextDecoder().decode(buffer);
                         const suffix = Math.random().toString(36)+ ".html";
-                        win = open_html (html,file_url+suffix,function(){
+                        win = open_html (html,file_url+suffix,function(state){
                             // window closed so remive edit hook
-                            removeEditHook(file_url,onedit);
+                            switch (state) {
+                                // add edit hook to update text due to editing.
+                                case "opened" : 
+                                    win.location= file_url;
+                                    return addEditHook(file_url,onedit);
+                                case "closed" : 
+                                    
+                                    return removeEditHook(file_url,onedit);
+                            }
                         });
-                        // add edit hook to update text due to editing.
-                        addEditHook(file_url,onedit);
                     }
                     
                     function onedit(cmd,file_url,text) {
                         if (win) {
-                            win.update(text);
+                            win.location.reload();
                         }
                     }
                 });
