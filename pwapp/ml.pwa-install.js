@@ -7,7 +7,7 @@ FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
 `,function(){ml(2,
 
     {
-        Window: function pwaInstallLib( pwa ) {
+        Window: function pwaInstallLib( pwa,Shell ) {
             const lib = {}  ;
             
             const  
