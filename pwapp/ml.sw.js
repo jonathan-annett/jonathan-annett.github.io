@@ -219,7 +219,7 @@ function ml(x,L, o, a, d, s){
                      ml.p=[];
                      
                      c.p1 = c.p("loadProgress","loadProgressText","installProgress");
-                     c.In(S,'install',(e)=>{c.p1.logComplete(1);self.skipWaiting();});
+                     c.In(S,'install',(e)=>{c.p1 && c.p1.logComplete(1);self.skipWaiting();});
                      c.In(S,'activate');
                      c.In(S,'fetch',(e)=>fetch(e.request));
                      c.In(S,c.M,(e,r,m,d,M,Z)=>{
