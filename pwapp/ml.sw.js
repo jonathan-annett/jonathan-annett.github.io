@@ -21,6 +21,10 @@ function ml(x,L, o, a, d, s){
             //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
             //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
             r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
+            
+            //c.re = regexpEscape
+            re:(s)=>s[c.R](/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&'),
+
             //c.b=document base
             b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
             //c.ri() = a random id generator
@@ -328,7 +332,7 @@ function ml(x,L, o, a, d, s){
                                  w=(t,X)=>{
                                      // if obect with keys is supplied, merge in the templated values
                                      X && c.k(X)[c.f]((k)=>{
-                                         t=t[c.R]('${'+k+'}',X[k]);
+                                         t=t[c.R](new RegExp(c.re('${'+k+'}'),'g'),X[k]);
                                      });
                                      return t;
                                  };
