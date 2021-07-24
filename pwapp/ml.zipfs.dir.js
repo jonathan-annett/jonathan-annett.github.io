@@ -1,7 +1,7 @@
 /* global zip_url_base,zip_virtual_dir,zip_files,full_zip_uri,updated_prefix, alias_root_fix,alias_root, parent_link,BroadcastChannel,ace*/
 
 
-/* global ml,self,caches,BroadcastChannel,Shell,ResizeObserver  */
+/* global ml,qs, self,caches,BroadcastChannel,Shell,ResizeObserver  */
 ml(`
     
     pwaWindow@Window     | ml.pwa-win.js
@@ -38,6 +38,7 @@ ml(`
                              
             const resizers = ResizeWatcher();
             const available_css = [];
+            const edit_hooks = {};
            
             
             qs ("h1 a.restart",function click(e) {
@@ -432,6 +433,7 @@ ml(`
             }
             
             function open_file (fn,cb) {
+                
                 const file_url = pwaApi.filename_to_url(fn);
                 
                 const ext = fn.substr(fn.lastIndexOf('.')+1);
@@ -440,7 +442,7 @@ ml(`
                     svg  : open_svg
                 };
                 const not_custom = function (filename,file_url) {
-                   open_url (file_url,cb) ;       
+                   return open_url (file_url,cb) ;       
                 };
                 
                 return (custom_url_openers[ext] || not_custom) (fn,file_url);
@@ -455,40 +457,116 @@ ml(`
                   1024,
                   768,
                   true,
-                  function onClosed(){},
-                  cb || function onOpened(){}
+                  function onClosed(){ if (cb) cb ("closed");},
+                  function onOpened(){ if (cb) cb ("opened");}
                 );
             }
             
-            function open_html (html,file_url) {
+            function open_html (html,file_url,cb) {
                 console.log("creating temp file",file_url);
+                
+                var win,api = {
+                      update : function(content){
+                          if (win) {
+                              win.document.body.innerHTML = content; 
+                          }
+                      },
+                      close : function () {
+                          if (cb) {
+                              cb();
+                          }
+                          cb = undefined;
+                          if (win) win.close() ;
+                      }
+                      
+                };
+                 
                 pwaApi.updateURLContents (file_url ,new TextEncoder().encode(html),true,function(err,hash) {
+                    
                     if (err) {
                         return ;
                     }
                     console.log("opening temp url",file_url);
-                    open_url(file_url,function(){
-                        console.log("window opened for",file_url)
-                        setTimeout(function(){
-                            pwaApi.removeUpdatedURLContents(file_url,function(){
-                                console.log("removed temp file",file_url);
-                            });
-                        },500);
+                    const theWin = open_url(file_url,function(ev){
+                        switch (ev) {
+                            case "opened" : {
+                                    console.log("window opened for",file_url)
+                                    setTimeout(function(){
+                                        pwaApi.removeUpdatedURLContents(file_url,function(){
+                                            console.log("removed temp file",file_url);
+                                            win = theWin;
+                                        });
+                                    },500);
+                                }
+                                break;
+                            case "closed" : {
+                                win = undefined;
+                                if (cb) {
+                                    cb();
+                                }
+                                break;
+                            }
+                            
+                        }
                     });
+                    
                 });
+                
+                return api;
             }
             
             function open_markdown (filename,file_url) {
                 var converter = new MarkdownConverter();
                 pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer){
+                    let win;
                     if (err) {
                         return;
                     } else {
                         const html  = converter.makeHtml(new TextDecoder().decode(buffer));
                         const suffix = Math.random().toString(36)+ ".html";
-                        open_html (html,file_url+suffix);
+                        win = open_html (html,file_url+suffix,function(){
+                            // window closed so remive edit hook
+                            removeEditHook(file_url,onedit);
+                        });
+                        // add edit hook to update text due to editing.
+                        addEditHook(file_url,onedit);
+                    }
+                    
+                    function onedit(cmd,file_url,text) {
+                        if (win && cmd === "edited") {
+                            win.update(converter.makeHtml(text));
+                        }
                     }
                 });
+            }
+            
+            function addEditHook (file_url,fn) {
+                if (typeof fn=='function') {
+                    const list = edit_hooks[file_url];
+                    if (list) {
+                       if (list.indexOf(fn)<0) {
+                           list.push(fn);
+                       }
+                    } else {
+                       edit_hooks[file_url] = [fn];
+                    }
+                }
+            }
+            function removeEditHook (file_url,fn) {
+                if (typeof fn=='function') {
+                    
+                    const list = edit_hooks[file_url];
+                    if (list) {
+                        let ix = list.indexOf(fn);
+                        while (ix>=0) {
+                            list.splice(ix,1);
+                            ix = list.indexOf(fn);
+                        }
+                        if (list.length===0) {
+                            delete edit_hooks[file_url];
+                        }
+                    }
+                }
             }
             
             function open_svg (filename,file_url) {
@@ -512,7 +590,7 @@ ml(`
                             ].join('\n');
                             
                         const suffix = Math.random().toString(36)+ ".html";
-                        open_html (html,file_url+suffix);
+                        return open_html (html,file_url+suffix);
 
                     }
                 });
@@ -834,13 +912,25 @@ ml(`
                                         if (li_ed.edit_helper) {
                                             li_ed.edit_helper.update(text);
                                         }
+                                        if (edit_hooks[file_url]) {
+                                            const buffer = new TextEncoder().encode(text);
+                                            edit_hooks[file_url].forEach(function(fn){
+                                                fn("setText",file_url,text,buffer);
+                                            });
+                                        }
                                     };
                                     
                                     li_ed.reload = function () {
-                                        pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
-                                            li_ed.setText(new TextDecoder().decode(text));
+                                        pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer,updated,hash){
+                                            const text = new TextDecoder().decode(buffer);
+                                            li_ed.setText(buffer);
                                             if (li_ed.edit_helper) {
                                                 li_ed.edit_helper.update(text);
+                                            }
+                                            if (edit_hooks[file_url]) {
+                                                edit_hooks[file_url].forEach(function(fn){
+                                                    fn("reload",file_url,text,buffer);
+                                                });
                                             }
                                         });
                                     }
@@ -863,7 +953,11 @@ ml(`
                                                     }
                                                     li.classList.add("edited");
                                                     li_ed.hashDisplay.textContent=hash;
-                                                   
+                                                    if (edit_hooks[file_url]) {
+                                                        edit_hooks[file_url].forEach(function(fn){
+                                                            fn("edited",file_url,textContent,buffer);
+                                                        });
+                                                    }
                                                 });
                                            };
                                            li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
