@@ -186,12 +186,7 @@ ml(0,ml(1),[
             // 3. keys are updated whenever a set or remove takes place
             // (note - if the keys aren't ready on the first read)
             Object.defineProperty(databases,name,{
-               name : {
-                   value : name,
-                   enumerable:true,
-                   configurable:true,
-                   writable:false
-               },
+              
                get : function () {
                    const 
                    
@@ -204,6 +199,9 @@ ml(0,ml(1),[
                    });
                    
                    const DB = {
+                       
+                           name : name,
+
                            ready      : function (){
                                return !!keys;
                            },
