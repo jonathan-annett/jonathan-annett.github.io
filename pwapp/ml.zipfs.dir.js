@@ -483,11 +483,13 @@ ml(`
                       },
                       reload: function () {
                           if (api.win) {
+                              api.ignore_close  = true;
                               api.win.location.reload();
                           }
                       },
                       goto : function (url) {
                           if (api.win) {
+                              //api.ignore_close  = true;
                               api.win.location.replace(url);
                           }
                       } 
@@ -518,9 +520,13 @@ ml(`
                                 }
                                 break;
                             case "closed" : {
-                                delete api.win;
-                                if (cb) {
-                                    cb("closed");
+                                if (api.ignore_close) {
+                                    delete api.ignore_close;
+                                } else {
+                                    delete api.win;
+                                    if (cb) {
+                                        cb("closed");
+                                    }
                                 }
                                 break;
                             }
