@@ -20,19 +20,7 @@ virtualDir_mware      |  ml.zipfs.middleware/virtualDir.js
             
            
             
-            
-              
-           /*
-           const isSourceCodeLink = /^(https\:\/\/)(.*)(\.html|\.css|\.js)(\:[0-9]+)?\:[0-9]+$/;
-            
-            const isIndexPageLink  = /\/index\.html$/;
-            
-            const indexPageBodyInject = '<iframe frameBorder="0" width="180" height="60" src="ml.pwa.dev.helper.html" style="position:absolute;right:0;top:0;"></iframe>';
-            const indexPageBodyInjected = new RegExp(regexpEscape(indexPageBodyInject),'');
-            const indexPageBodyInjectAt = /<\/body\>/i;
-            const indexPageBodyInjectReplace = indexPageBodyInject + '</body>';
     
-           */
            
             const mware_names = [
                                    "databasesZip",

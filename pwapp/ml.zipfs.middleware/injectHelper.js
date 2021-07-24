@@ -40,7 +40,7 @@ ml([],function(){ml(2,
        
        const fixup_uri = event.fixup_url.replace(middleware.isLocal,'');
 
-       const indexPageBodyInject = '<iframe frameBorder="0" width="180" height="60" src="ml.pwa.dev.helper.html" style="position:absolute;right:0;top:0;"></iframe>';
+       const indexPageBodyInject = '<iframe title="development helper" frameBorder="0" width="180" height="60" src="ml.pwa.dev.helper/helper.html" style="position:absolute;right:0;top:0;"></iframe>';
        const indexPageBodyInjected = new RegExp(regexpEscape(indexPageBodyInject),'');
        const indexPageBodyInjectAt = /<\/body\>/i;
        const indexPageBodyInjectReplace = indexPageBodyInject + '</body>';

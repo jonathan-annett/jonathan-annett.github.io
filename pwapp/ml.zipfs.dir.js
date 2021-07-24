@@ -38,6 +38,7 @@ ml(`
                              
             const resizers = ResizeWatcher();
             const available_css = [];
+            const available_scripts = [];
             const edit_hooks = {};
            
             
@@ -197,11 +198,21 @@ ml(`
                                 return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
                             }));
                             
-                            console.log(available_css);
+                            console.log({available_css});
                             
 
                         });
-                
+                         getScripts(editor_channel,zip_virtual_dir,function(urls){
+                            
+                            available_scripts.splice(0,available_scripts.length);
+                            
+                            available_scripts.push.apply(available_scripts,urls.map(function(u){
+                                return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
+                            }));
+                            
+                            console.log({available_scripts});
+
+                        });
                 }
                 
             }
@@ -683,6 +694,7 @@ ml(`
                     }
                 });
                 
+               
                 function msgCB( event ) {
                    if (event.data && event.data.replyId===replyId) {
                         cb(event.data.result);
@@ -690,6 +702,31 @@ ml(`
                    } 
                 }
             }
+            
+            
+            function getScripts(editor_channel,urlprefix,cb) {
+                const replyId = Date.now().toString(36).substr(-6)+"_"+Math.random().toString(36).substr(-8);
+                
+                editor_channel.addEventListener("message",msgCB);
+                
+               editor_channel.postMessage({
+                   get_scripts:{
+                       urlprefix:urlprefix,   
+                       replyId:replyId
+                   }
+               });
+               
+               
+                function msgCB( event ) {
+                   if (event.data && event.data.replyId===replyId) {
+                        cb(event.data.result);
+                        editor_channel.removeEventListener("message",msgCB);
+                   } 
+                }
+            }
+            
+            
+            
             
             
             function refreshStylesheeet(filename,cb) {

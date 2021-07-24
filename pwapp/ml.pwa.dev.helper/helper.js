@@ -51,6 +51,19 @@
                
            } 
            
+           if (event.data && event.data.get_scripts 
+                          && event.data.get_scripts.urlprefix
+                          && event.data.get_scripts.replyId ) {
+               
+               editor_channel.postMessage({
+                   replyId: event.data.get_scripts.replyId,
+                   result: get_scripts( event.data.get_scripts.urlprefix) 
+               });
+               
+           } 
+           
+           
+           
            
            
            if (event.data && event.data.open_stylesheet 
@@ -113,12 +126,81 @@
         
         
  function get_stylesheets (urlprefix) {
-      
-     return [].slice.call(window.top.document.head.querySelectorAll('link[rel="stylesheet"]')).filter(function(el){
-        return (el.href.indexOf(urlprefix)>=0);
-     }).map(function(el){
-         return el.href;
+     const 
+      url_filter = function(x){ return x.indexOf(urlprefix)===0;},
+      result = [].map.call(window.top.document.body.querySelectorAll('link[rel="stylesheet"]'),function(x){
+          return x.href;}).filter(url_filter);
+          
+  
+      get_docs(urlprefix,window.top).forEach(function(doc){
+          [].push.apply(
+              result,
+              [].map.call( doc.body.querySelectorAll('link[rel="stylesheet"]'), function(x){ return x.href; }).filter(url_filter)
+          );
      });
+     
+     return result.filter(function(x,i){
+         return result.indexOf(x)===i;
+     });
+     
+
+ }
+ 
+ function get_docs (urlprefix,win,result) {
+     
+     if (!result) return get_docs (urlprefix,win,[]);
+     
+     const iframewins = [].map.call(win.document.body.querySelectorAll('iframe'))
+        
+        .filter( 
+            function(iframe){ return iframe.src.indexOf(urlprefix)===0}
+        ).map (
+            function (iframe) {return iframe.contentWindow;}
+        ) ;
+        
+     iframewins.foreach(function(win) {
+        result.push(win.document);
+        const childDocs = get_docs(urlprefix,win);
+        [].push.apply(result,childDocs.splice(0,childDocs.length));
+     });
+     
+     return result;
+ }
+ 
+ function get_scripts (urlprefix) {
+     
+     const 
+     url_filter = function(x){ return x.indexOf(urlprefix)===0;},
+     result = [].map.call(window.top.document.body.querySelectorAll('script'),function(x){
+         return x.src;}).filter(url_filter);
+         
+     [].push.apply(
+         result,
+         [].map.call(
+             window.top.document.head.querySelectorAll('script'),
+             function(x){ return x.src;
+          }).filter(url_filter)
+     );
+    
+      
+     if (window.top.ml) {
+        [].push.apply(
+             result,
+             window.top.ml.H.filter(url_filter)
+         );
+     }
+     
+     get_docs(urlprefix,window.top).forEach(function(doc){
+         [].push.apply(
+             result,
+             [].map.call( doc.body.querySelectorAll('script'), function(x){ return x.src; }).filter(url_filter)
+         );
+    });
+    
+    return result.filter(function(x,i){
+        return result.indexOf(x)===i;
+    });
+    
  }
  
  function open_stylesheet(url,withCSS,replyId) {
