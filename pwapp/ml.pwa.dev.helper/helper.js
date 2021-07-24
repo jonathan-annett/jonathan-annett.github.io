@@ -150,7 +150,7 @@
      
      if (!result) return get_docs (urlprefix,win,[]);
      
-     const iframewins = [].map.call(win.document.body.querySelectorAll('iframe'))
+     const iframewins = [].slice.call(win.document.body.querySelectorAll('iframe'))
         
         .filter( 
             function(iframe){ return iframe.src.indexOf(urlprefix)===0}
