@@ -45,7 +45,7 @@ progressHandler       | ml.progressHandler.js
             
             qs("#show_shell",function (el) {
                 
-                el.checked = localStorage.show_install_shell === '1';
+                el.checked = localStorage.show_install_shell !== '0';
                 el.onchange =  function change(e) {
                    qs("html").classList[ el.checked ?"add":"remove"]("show_shell");
                    localStorage.show_install_shell = el.checked ? '1' : '0';
