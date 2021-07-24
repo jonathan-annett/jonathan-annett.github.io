@@ -466,10 +466,11 @@ ml(`
             function open_html (html,file_url,cb) {
                 console.log("creating temp file",file_url);
                 
-                var win,api = {
+                var api = {
+                    
                       update : function(content){
-                          if (win) {
-                              win.document.body.innerHTML = content; 
+                          if (api.win) {
+                              api.win.document.body.innerHTML = content; 
                           }
                           
                       },
@@ -478,16 +479,16 @@ ml(`
                               cb("closed");
                           }
                           cb = undefined;
-                          if (win) win.close() ;
+                          if (api.win) api.win.close() ;
                       },
                       reload: function () {
-                          if (win) {
-                              win.location.reload();
+                          if (api.win) {
+                              api.win.location.reload();
                           }
                       },
                       goto : function (url) {
-                          if (win) {
-                              win.location.replace(url);
+                          if (api.win) {
+                              api.win.location.replace(url);
                           }
                       } 
                       
@@ -500,14 +501,13 @@ ml(`
                         return ;
                     }
                     console.log("opening temp url",file_url);
-                    const theWin = open_url(file_url,function(ev){
+                    api.win = open_url(file_url,function(ev){
                         switch (ev) {
                             case "opened" : {
                                     console.log("window opened for",file_url)
                                     setTimeout(function(){
                                         pwaApi.removeUpdatedURLContents(file_url,function(){
                                             console.log("removed temp file",file_url);
-                                            win = theWin;
                                             if (cb) {
                                                 cb("opened");
                                             }
@@ -517,7 +517,7 @@ ml(`
                                 }
                                 break;
                             case "closed" : {
-                                win = undefined;
+                                delete api.win;
                                 if (cb) {
                                     cb("closed");
                                 }
