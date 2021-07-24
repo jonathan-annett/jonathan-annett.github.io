@@ -61,9 +61,9 @@ progressHandler       | ml.progressHandler.js
             
            
             const shell = new Shell('#install-shell', {
-                      user: 'browser',
-                      host: 'local',
-                      path: '/home/',
+                      user: 'serviceworker',
+                      host: 'browser',
+                      path: '/pwapp/',
                       style: 'default',
                       theme: 'dark',
                       responsive: false,
