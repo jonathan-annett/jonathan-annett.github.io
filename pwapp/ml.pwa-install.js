@@ -49,6 +49,18 @@ progressHandler       | ml.progressHandler.js
             
             qs("html").classList[ qs("#show_shell").checked ?"add":"remove"]("show_shell");
             
+            const shell = new Shell('#install-shell', {
+                      user: 'browser',
+                      host: 'local',
+                      path: '/home/',
+                      style: 'default',
+                      theme: 'dark',
+                      responsive: false,
+                      commands:[
+                                 {"input": "install pwapp", "output": [""]},
+                               ]
+            });
+            
             
             runhere.onclick = runClick ;
             
@@ -108,18 +120,23 @@ progressHandler       | ml.progressHandler.js
                 } 
              ); 
              
+             function logFilenameInConsole(filename) {
+                 const list = shell.options.commands[0].output;
+                 const last = list.pop();
+                 list.push (last+(last===""?"":", ")+filename);
+                 shell.init();
+             }
+             
               function runClick() {
                   
                   // we want the animation /progress bar on the screen for a least 5 seconds
                   const minTime = Date.now() + 5000  ;
                   
-                  
-                 
-                  
                   sessionStorage.running=((1000*60*2) + Date.now()).toString();
                   qs("#rungif").style.display = "inline-block";
                   qs("html").classList.add("busy");
-                  ml.i.progressHandler(0,1,"loadProgress","loadProgressText","installProgress");
+                  ml.i.progressHandler(0,1,"loadProgress","loadProgressText","installProgress").onfilename=logFilenameInConsole;
+                  
                   pwa.start(function(){
                       betaTesterApproval().then(function(config){
                            const delay = qs("#show_shell").checked ? Math.max(minTime-Date.now()) : 10;
@@ -160,92 +177,7 @@ progressHandler       | ml.progressHandler.js
                  return runInBrowser;
              }
              
-            /*
-            function progressHandler(complete,total,id,idtxt,channelName) {
-               let expect_total = total;
-               let outer = qs("#"+id),inner = qs(outer,"div"),status = qs("#"+idtxt),maxWidth = outer.offsetWidth, barHeight=outer.offsetHeight;
-               updateBar();
-               if (status) {
-                  status.style= "position:relative;left:"+(maxWidth+2)+"px;top:-"+barHeight+"px;"; 
-               }
-               
-             
-               
-               let shell = new Shell('#install-shell', {
-                   user: 'browser',
-                   host: 'local',
-                   path: '/home/',
-                   style: 'default',
-                   theme: 'dark',
-                   responsive: false,
-                   commands:[
-                              {"input": "install pwapp", "output": [""]},
-                            ]
-               });
-               
-               function logFilenameInConsole(filename) {
-                   const list = shell.options.commands[0].output;
-                   const last = list.pop();
-                   list.push (last+(last===""?"":", ")+filename);
-                   shell.init();
-               }
-               
-               if (channelName) {
-                   const channel = new BroadcastChannel(channelName);
-                   channel.onmessage =function(e){
-                       const msg = e.data;
-                       if (msg && msg.setTotal) {
-                           setTotal(msg.setTotal);
-                       } 
-                       else if (msg && msg.setComplete) {
-                          setComplete(msg.setComplete);
-                       }
-                       else if (msg && msg.addToTotal) {
-                          addToTotal(msg.addToTotal);
-                          logFilenameInConsole(msg.filename||"(unknown file)");
-                       }
-                       else if (msg && msg.logComplete) {
-                          logComplete(msg.logComplete);
-                       }
-                   };
-               }
-               return {
-                   setTotal:setTotal,
-                   setComplete:setComplete,
-                   addToTotal:addToTotal,
-                   updateBar : updateBar,
-                   logComplete: logComplete
-               };
-              
-               function setTotal(n) {
-                   expect_total=n;
-               }
-              
-               function setComplete(n) {
-                   complete=n;
-               }
-              
-               function logComplete(n) {
-                  complete += n;
-                  updateBar();
-               }
-              
-               function addToTotal (n) {
-                   total+=n;
-                   updateBar();
-               }
-              
-               function updateBar (){
-                 
-                 inner.style.width = Math.floor(Math.min((complete/Math.max(total,expect_total)),1)*maxWidth)+"px";
-                 if (status) {
-                   status.textContent = complete+"/"+Math.max(total,expect_total);
-                 }
-               }
-            } 
-                        
-           */
-           
+
              function betaTesterApproval() {
                  
                  if (!window.crypto) {

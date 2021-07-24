@@ -34,13 +34,19 @@ ml([],function(){ml(2,
                               }
                           };
                       }
-                      return {
+                     const api = {
                           setTotal:setTotal,
                           setComplete:setComplete,
                           addToTotal:addToTotal,
                           updateBar : updateBar,
-                          logComplete: logComplete
+                          logComplete: logComplete,
+                          onfilename:function(filename){
+                              
+                          }
+                           
                       };
+                      
+                      return api;
                      
                       function setTotal(n) {
                           expect_total=n;
@@ -56,9 +62,12 @@ ml([],function(){ml(2,
                          updateBar();
                       }
                      
-                      function addToTotal (n) {
+                      function addToTotal (n,filename) {
                           total+=n;
                           updateBar();
+                          if (filename&&typeof api.onfilename==='function') {
+                              api.onfilename(filename);
+                          }
                       }
                      
                       function updateBar (){
