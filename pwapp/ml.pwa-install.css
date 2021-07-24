@@ -30,7 +30,8 @@ html.beta div.beta {
   
 }
 
-#runBtn {
+#runBtn,
+#openBtn {
     
     width:  180px;
 }
