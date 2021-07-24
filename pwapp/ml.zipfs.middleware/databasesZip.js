@@ -105,10 +105,12 @@ databasesZipHtml@ServiceWorkerGlobalScope  |  /pwapp/ml.zipfs.middleware/databas
 
     );
 
-    const sha1 = ml.i.sha1Lib.cb;
+ 
     
      
   function mware(event,middleware) {
+      
+         const sha1 = ml.i.sha1Lib.cb;
         
          const progressHandler = ml.i.progressHandler; 
          
