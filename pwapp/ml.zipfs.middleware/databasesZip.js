@@ -62,6 +62,8 @@ databasesZipHtml@ServiceWorkerGlobalScope  |  /pwapp/ml.zipfs.middleware/databas
                      channel.close();
                    
              };
+             
+             channel.postMessage("start");
 
             }
             
