@@ -439,7 +439,8 @@ ml(`
                 const ext = fn.substr(fn.lastIndexOf('.')+1);
                 const custom_url_openers = {
                     md   : open_markdown,
-                    svg  : open_svg
+                    svg  : open_svg,
+                    html : view_html
                 };
                 const not_custom = function (filename,file_url) {
                    return open_url (file_url,cb) ;       
@@ -539,6 +540,32 @@ ml(`
                     }
                 });
             }
+            
+            function view_html (filename,file_url) {
+                var converter = new MarkdownConverter();
+                pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer){
+                    let win;
+                    if (err) {
+                        return;
+                    } else {
+                        const html  = new TextDecoder().decode(buffer);
+                        const suffix = Math.random().toString(36)+ ".html";
+                        win = open_html (html,file_url+suffix,function(){
+                            // window closed so remive edit hook
+                            removeEditHook(file_url,onedit);
+                        });
+                        // add edit hook to update text due to editing.
+                        addEditHook(file_url,onedit);
+                    }
+                    
+                    function onedit(cmd,file_url,text) {
+                        if (win) {
+                            win.update(text);
+                        }
+                    }
+                });
+            }
+            
             
             function addEditHook (file_url,fn) {
                 if (typeof fn=='function') {
