@@ -398,6 +398,5 @@ setImmediateLib | ml.setImmediate.js
         });
     }
 });
-
-ml(9,self);
 ml.register=ml.bind(self,8);
+ml(9,self);
