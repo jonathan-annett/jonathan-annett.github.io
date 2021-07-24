@@ -430,8 +430,9 @@ ml(`
                   }
                   
                   return new Promise (function (resolve,reject){
-                      fixupLog("downloading fstab.json");
-                      fetchLocalJson("fstab.json",function(err,arr){
+                         fixupLog("downloading fstab.json");
+                         ml.i.fsTable(function(err,arr) {
+                             
                            if (err) return reject(err);
                            newFixupRulesArray(arr);
                            
@@ -439,7 +440,8 @@ ml(`
                       
                            fixupUrlEvent(event);
                            resolve();
-                      });
+                           
+                         });
                       
                   });
                   

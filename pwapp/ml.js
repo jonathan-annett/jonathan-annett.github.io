@@ -194,7 +194,7 @@ function ml(x,L,o,a,d,s){
     
         };
         //ml.g = map iterator for c[0]
-        ml.g = (x,R,U,N)=>{
+        ml.g = (x,R,U,N,Z)=>{
           R=c.r(x);// regex x--> [x,module,(context),url]
           if (!R) {
              if (c.S[x]) {
@@ -207,17 +207,50 @@ function ml(x,L,o,a,d,s){
           }
           N=R[1];                        // get moduleName from regex results
           U=c.B(R[3]);                   // get URL from regex results
-          if (N==0){
-              N=U;
-          }
+          
+          
+
           if (c.H(U) && !ml.d[N]) {      // we only want 1 copy of each script
+              Z=ml.g[U.substr(U[c.LI](".")+1)];
+              if (Z) return Z(x,R,U,N);
+          
               ml.H.push(U);
               if(c.c(U))ml.d[N]={h:U,p:ml.H[ml.H.length-2]};    //
               c.T(window,"script",(s)=>{  
                  c.p(U,s.setAttribute.bind(s,"src"),s); 
               });
           }
-          return N;                   //
+          return !!c.S[N] ? !1 : N;                //
+       };
+       
+       // custom module import - json
+       ml.g.json = (x,R,U,N,W)=>{
+                   
+                    ml.d[N]={h:U};
+                    ml.H.push(U);
+                    
+                    ml.h[U] = {e:{},E:{}};
+                    // create swizzle wrapper to fetch and then cache json object 
+                    W=(C)=>{
+                         fetch(U).then(
+                             (r)=>{
+                                 r.text().then((t,o,u)=>{
+                                     try {
+                                        o=ml.h[U].E[N]=JSON.parse(t);
+                                        // swizzle out the fetcher for a simple cache return
+                                        W=(C,u)=>{C(u,ml.h[U].E[N]);};
+                                        C(u,o);
+                                     } catch (e) {
+                                        C(e);
+                                     }
+                                 });
+                             }).catch((e)=>{
+                                 C(e);
+                             });
+                    };
+                    // create permanent export func that calls swizzle wrapper
+                    ml.h[U].e[N]=(C)=>{ W (C); };
+                    
        };
        
         // ml.i (proxy importer) eg ml.i.modname    or ml.i["/some/path.js"]
