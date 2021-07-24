@@ -5,6 +5,7 @@ ml(`
     sha1Lib         | sha1.js
     JSZip           | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js
     htmlFileItemLib | ml.zipfs.dir.file.js
+    zipFSDirHtml    | ml.zipfs.dir.html
     
 
     `,function(){ml(2,

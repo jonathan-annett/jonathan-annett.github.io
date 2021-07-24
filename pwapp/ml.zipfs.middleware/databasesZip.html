@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <style>
+            #loadProgress {
+                 width: 180px;
+                 background-color: #ddd;
+               }
+               
+               #loadBar {
+                 width: 2px;
+                 height: 10px;
+                 background-color: #4CAF50;
+               }
+        </style>
+    </head>
+    <body>
+        <p>standby...</p>
+        <div id="loadProgress">
+            <div id="loadBar"></div>
+        </div>
+        <div id="ready" style="display:none">You can download the zip
+            <a id="downloadLink"></a>
+        </div>
+        <script>
+            var channelName = "${channelName}";
+        </script>
+        <script src="ml.zipfs.middleware/databasesZip.js" defer></script>
+        <script src="ml.amd.js"></script>
+    </body>
+</html>

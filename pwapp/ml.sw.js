@@ -144,14 +144,15 @@ function ml(x,L, o, a, d, s){
             //quasi setImmediate (can be swapped out by replacing ml.c.i)
             i:(f,a,b,c)=>setTimeout(f,0,a,b,c),
             K:{},
-            n:(N,f,K)=>{
+            // c.n = process named import into self 
+            n:(N,f)=>{
               if(c.K[N]){c.K[N].push(f);}else{c.K[N]=[f];}
               c.j();
             },
             j:()=>{
-                c.k(c.K).forEach((k)=>{
+                c.k(c.K)[c.f]((k)=>{
                    if (c.S[k]) {
-                       c.K[k].forEach((f)=>f(c.S[k]));
+                       c.K[k][c.f]((f)=>f(c.S[k]));
                        delete c.K[k];
                    }
                 });
@@ -242,40 +243,112 @@ function ml(x,L, o, a, d, s){
        
        
         //ml.g = map iterator for c[0]
-        ml.g = (x,R,U,N)=>{
+        ml.g = (x,R,U,N,Z)=> {
+            R=c.r(x);
+            if (!R) {
+                if (L[x]) return !1;
+                return x;
+            } else {
+                // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
+               if ((N=R[2])&&N!==(d||c.C)) return !1; 
+            }
+            
+            N=R[1];
+            U=c.B(R[3]);
+            if (c.H(U)) {
+                Z=ml.g[U.substr(U.lastIndexOf("."))];
+                if (Z) return Z(x,R,U,N);
+                ml.l.push(N+'='+U);
+                ml.d[N]={h:U};
+                ml.H.push(U);
+                try {
+                   c.p1 && c.p1.addToTotal(1,N);
+                   importScripts(U);
+                   c.n(N,(e)=>{
+                       ml.h[U] = ml.h[U]   || {e:{}};
+                       ml.h[U].e[N]=c.S[N] || false;
+                   });
+                } catch (e){
+                   c.e(e.message,'while loading',U,'in',ml.l);  
+                } finally {
+                    c.p1 && c.p1.logComplete(1);
+                }
+                ml.l.pop();
+            }
+            
+            return N;
+        },
+        // custom module import - json
+        ml.g.json = (x,R,U,N,W)=>{
                     
-                     R=c.r(x);
-                     if (!R) {
-                         if (L[x]) return !1;
-                         return x;
-                     } else {
-                         // for module@Window|filename.js format - return if wrong name:  c[3]() is "Window","ServiceWorkerGlobalScope"
-                        if ((N=R[2])&&N!==(d||c.C)) return !1; 
-                     }
+                     ml.l.push(N+'='+U);
+                     ml.d[N]={h:U};
+                     ml.H.push(U);
                      
-                     N=R[1];
-                     U=c.B(R[3]);
-                     if (c.H(U)) {
-                         ml.l.push(N+'='+U);
-                         ml.d[N]={h:U};
-                         ml.H.push(U);
-                         try {
-                            c.p1 && c.p1.addToTotal(1,N);
-                            importScripts(U);
-                            c.n(N,(e)=>{
-                                ml.h[U] = ml.h[U]   || {e:{}};
-                                ml.h[U].e[N]=c.S[N] || false;
-                            });
-                         } catch (e){
-                            c.e(e.message,'while loading',U,'in',ml.l);  
-                         } finally {
-                             c.p1 && c.p1.logComplete(1);
-                         }
-                         ml.l.pop();
-                     }
-                     
+                     c.p1 && c.p1.addToTotal(1,N);
+                     ml.h[U] = {e:{},E:{}};
+                     // create swizzle wrapper to fetch and then cache json object 
+                     W=(c)=>{
+                          fetch(U).then(
+                              (r)=>{
+                                  r.text().then((t,o,u)=>{
+                                      try {
+                                         o=ml.h[U].E[N]=JSON.parse(t);
+                                         // swizzle out the fetcher for a simple cache return
+                                         W=(C,u)=>{C(u,ml.h[U].E[N]);};
+                                         c(u,o);
+                                      } catch (e) {
+                                         c(e);
+                                      }
+                                  });
+                              }).catch((e)=>{
+                                  c(e);
+                              });
+                     };
+                     // create permanent export func that calls swizzle wrapper
+                     ml.h[U].e[N]=(C)=>{ W (C); };
+                     c.p1 && c.p1.logComplete(1);
+                    
+                     ml.l.pop();
                      return N;
-               };
+        };
+        // custom module synchrouns import - html - wraps async fetch call
+        ml.g.html = (x,R,U,N,W,w)=>{
+                                
+                                 ml.l.push(N+'='+U);
+                                 ml.d[N]={h:U};
+                                 ml.H.push(U);
+                                 
+                                 c.p1 && c.p1.addToTotal(1,N);
+                                 ml.h[U] = {e:{},E:{}};
+                                 // create swizzle wrapper to fetch and then cache html text 
+                                 w=(t,X)=>{
+                                     // if obect with keys is supplied, merge in the templated values
+                                     X && c.k(X)[c.f]((k)=>{
+                                         t=t[c.R]('${'+k+'}',X[k]);
+                                     });
+                                     return t;
+                                 };
+                                 W=(X,c)=>{
+                                      fetch(U).then(
+                                          (r)=>{
+                                              r.text().then((t,o,u)=>{
+                                                 ml.h[U].E[N]=t;
+                                                 // swizzle out the fetcher for a simple cache return
+                                                 W=(XX,C,u)=>{C(u,w(ml.h[U].E[N]),XX);};
+                                                 c(u,w(t,X));
+                                              });
+                                          }).catch((e)=>{
+                                              c(e);
+                                          });
+                                 };
+                                 // create permanent export func that calls swizzle wrapper
+                                 ml.h[U].e[N]=(X,C)=>{ W (X,C);};
+                                 c.p1 && c.p1.logComplete(1);
+                                
+                                 ml.l.pop();
+                                 return N;
+                    };
                
         ml.i=new Proxy({},{
             get:(t,p)=>c.I(x=p),

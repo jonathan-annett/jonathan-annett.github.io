@@ -1,4 +1,4 @@
-/* global ml,BroadcastChannel  */
+/* global ml,BroadcastChannel,channelName  */
 /*
 
    middleware must either:
@@ -30,22 +30,85 @@ progressHandler       |  /pwapp/ml.progressHandler.js
 `,function(){ml(2,
 
     {
+        Window : function databasesZip_mware(  ) {
+            
+            
+            if (["interactive","complete"].indexOf( window.document && window.document.readyState) >=0) {
+                onDOMContentLoaded();
+            } else {
+               window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
+            }
+            
+            function onDOMContentLoaded (){
+                
+            const channel = new BroadcastChannel( channelName );
+            
+            ml.i.progressHandler(0,1,"loadProgress","loadProgressText","zipProgress");
+      
+            channel.onmessage = function (event) {
+        
+                     const link =  document.body.querySelector("#downloadLink");
 
+                     const revoke = createBlobDownloadLink (
+                         "path/databases.zip",
+                          link,
+                         "here",
+                         event.data.blob  );
+                     
+                     document.querySelector("#ready").style.display="block";
+                     
+                     
+                     channel.close();
+                   
+             };
+
+            }
+            
+            function createBlobDownloadLink(url,linkEl,linkText,blob ) {
+                
+                const data_link = URL.createObjectURL(blob);
+                        
+                if (linkEl){    
+                    const link = document.createElement("a");
+                    link.download = url.split('/').pop();
+                    link.href = data_link;
+                    link.appendChild(new Text(linkText||"Download data"));
+                    link.addEventListener("click", function() {
+                        this.parentNode.removeChild(this);
+                        // remember to free the object url, but wait until the download is handled
+                        setTimeout(revoke, 500)
+                    });
+                    linkEl.appendChild(link);
+                    
+                    return revoke;
+                }
+                
+                
+                function revoke(){URL.revokeObjectURL(data_link);}
+                
+          
+            }
+   
+         
+            
+        },
         ServiceWorkerGlobalScope: function databasesZip_mware(  ) {
           return mware;
         } 
     }, {
+        Window : [],
         ServiceWorkerGlobalScope: [ ] 
     }
 
     );
 
     const sha1 = ml.i.sha1Lib.cb;
-     
+    
      
   function mware(event,middleware) {
         
-        
+         const progressHandler = ml.i.progressHandler; 
+         
          if ( middleware.isLocalDomain(event,/\/databases\.zip$/)) {
             
             const channelName = "channel_"+Math.random().toString(36)+".zip";
@@ -97,55 +160,7 @@ progressHandler       |  /pwapp/ml.progressHandler.js
                     function() {
                 
                        
-                       const channel = new BroadcastChannel(channelName );
-                       
-                       progressHandler(0,1,"loadProgress","loadProgressText","zipProgress");
-                 
-                       channel.onmessage = function (event) {
-                   
-                                const link =  document.body.querySelector("#downloadLink");
-
-                                const revoke = createBlobDownloadLink (
-                                    "path/databases.zip",
-                                     link,
-                                    "here",
-                                    event.data.blob  );
-                                
-                                document.querySelector("#ready").style.display="block";
-                                
-                                
-                                channel.close();
-                              
-                        };
-
-                      
-                       
-                       function createBlobDownloadLink(url,linkEl,linkText,blob ) {
-                           
-                           const data_link = URL.createObjectURL(blob);
-                                   
-                           if (linkEl){    
-                               const link = document.createElement("a");
-                               link.download = url.split('/').pop();
-                               link.href = data_link;
-                               link.appendChild(new Text(linkText||"Download data"));
-                               link.addEventListener("click", function() {
-                                   this.parentNode.removeChild(this);
-                                   // remember to free the object url, but wait until the download is handled
-                                   setTimeout(revoke, 500)
-                               });
-                               linkEl.appendChild(link);
-                               
-                               return revoke;
-                           }
-                           
-                           
-                           function revoke(){URL.revokeObjectURL(data_link);}
-                           
                      
-                       }
-              
-                    
                 
                     }
                     )
