@@ -56,7 +56,7 @@ progressHandler       | ml.progressHandler.js
                       style: 'default',
                       theme: 'dark',
                       responsive: false,
-                      commands:[]
+                      commands:[{"input": "", "output": [""]}]
             });
             
             
@@ -137,7 +137,7 @@ progressHandler       | ml.progressHandler.js
                   shell.options.commands = [
                     {"input": "install pwapp", "output": [""]},
                   ];
-                  shell.options.init();
+                  shell.init();
                   
                   ml.i.progressHandler(0,1,"loadProgress","loadProgressText","installProgress").onfilename=logFilenameInConsole;
                   
