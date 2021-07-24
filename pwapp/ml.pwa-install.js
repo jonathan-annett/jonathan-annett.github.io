@@ -47,6 +47,7 @@ FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
             
             qs("html").classList[ qs("#show_shell").checked ?"add":"remove"]("show_shell");
             
+            
             runhere.onclick = runClick ;
             
             editor_channel.onmessage=function(event) {
@@ -115,10 +116,12 @@ FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
                   
                   sessionStorage.running=((1000*60*2) + Date.now()).toString();
                   qs("#rungif").style.display = "inline-block";
+                  qs("html").classList.add("busy");
                   progressHandler(0,1,"loadProgress","loadProgressText","installProgress");
                   pwa.start(function(){
                       betaTesterApproval().then(function(config){
                            const delay = qs("#show_shell").checked ? Math.max(minTime-Date.now()) : 10;
+                           qs("html").classList.add("remove");
                            setTimeout(location.replace.bind(location),  delay,config.root);   
                       });
                   });
@@ -323,6 +326,7 @@ FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
                  }
                  return r;
              }
+             
              
              function toJSON(response) { return response.json(); }
              

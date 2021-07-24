@@ -43,7 +43,7 @@ html.show_shell #install-shell{
     display:flex;
 }
 
-html.show_shell #install-shell > div.shell__content > div:nth-child(3) {
+html.show_shell.busy #install-shell > div.shell__content > div:nth-child(3) {
     display :none;
 }
 
