@@ -256,6 +256,33 @@ function ml(x,L,o,a,d,s){
                     
        };
        
+       c.S.qs=function qs(d,q,f) {
+           let r,O=typeof {},S=typeof O,FN=typeof qs,D=typeof d,Q=typeof q,F=typeof f;
+           if (D+Q+F===S+'number'+O){q=r;}//handle map iterator
+           if (D===S) {f=q;q=d;d=document;D=O;Q=S;F=typeof f}//handle implied d=document
+           if (D+Q===O+S){
+              r = d.querySelector(q);
+              if (r&&typeof r+typeof f===O+FN) {
+                   if (f.name.length>0) 
+                      r.addEventListener(f.name,f);
+                   else 
+                      f(r);
+               }
+           }
+           return r;
+       };
+       ml.qs = ml.i=((k,g)=>{
+           g=(p)=>c.S.qs("#"+p)
+           k=()=>[].map.call(document.querySelectorAll('*[id]'),(x)=>x.id);
+           return new Proxy({},{
+               get:(t,p)=>g(p),
+               ownKeys:()=>k(),
+               getOwnPropertyDescriptor:(t,p,z)=>!!(z=g(p))&&c.P(z),
+               has:(t,p)=>!!g(p)
+           });
+       })(),
+       
+
         // ml.i (proxy importer) eg ml.i.modname    or ml.i["/some/path.js"]
         
         ml.i=new Proxy({},{
