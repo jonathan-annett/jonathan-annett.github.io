@@ -45,7 +45,8 @@ ml(`
            const full_uri = "/"+uri+"/"+filename,
                  basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
            const edited_attr  = ' data-balloon-pos="right" aria-label="'            + basename + ' has been edited locally"';
-           const edit_attr    = ' data-balloon-pos="down-left" aria-label="Open '       + basename + ' in zed"'; 
+           const not_edited_attr = ' data-balloon-pos="right" aria-label="'            + basename + ' hasn\'t been edited"';
+           const edit_attr    = ' data-balloon-pos="down-left" aria-label="Edit '       + basename + '"'; 
            const zip_attr     = ' data-balloon-pos="down-left" aria-label="...explore ' + basename + ' contents" "' ;
            const test_name    = alias_root && filename.indexOf(alias_root)===0 ? filename.substr(alias_root.length) : filename;
            const is_hidden    = tools.isHidden(test_name);//  tools.isHidden(basename) || alt_name && tools.isHidden(alt_name) ;
@@ -57,18 +58,18 @@ ml(`
            
            const sha1span     = '<span class="sha1"></span>';
            
-           const edited       = is_edited ? '<span class="edited"'+edited_attr+'>&nbsp;&nbsp;&nbsp;</span>' : '';
+           const edited       = is_edited ? '<span class="edited"'+edited_attr+'><i class="fas fa-not-equal"></i></span>' :  '<span class="not-edited"'+not_edited_attr+'><i class="fas fa-equals"></i></span>' ;
            const zoom_full    = '<a data-filename="' + filename + '"><span class="fullscreen">&nbsp;&nbsp;</span></a>';
            const cls = is_deleted ? ["deleted"] : [];
            if (is_edited)  cls.push("edited");
            if (is_hidden)  cls.push("hidden");
            const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
            const zedBtn =   is_editable   ? [ '<a'+edit_attr+ ' data-filename="' + filename + '"><span class="editinzed"><i class="fas fa-code"></i></span>',  '</a>' + sha1span +edited+zoom_full ] 
-                          : is_zip        ? [ '<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile">&nbsp;</span>',    '</a>' + sha1span +edited+zoom_full ]   
+                          : is_zip        ? [ '<a'+zip_attr+  ' href="/'+uri+'/' + filename + '"><span class="zipfile"><i class="fas fa-file-archive"></i></span>',    '</a>' + sha1span +edited+zoom_full ]   
                           :                 [ '<a data-filename="'               + filename + '"><span class="normal">&nbsp;</span>',     '</a>' + sha1span +edited+zoom_full ] ;
            
            if (is_hidden) options.hidden_files_exist = true;
-           return '<li'+li_class+'><a data-filename="' + filename + '" data-inzip="'+ (is_in_zip?'1':'0') + '"><span class="deletefile"></span></a><span class="full_path">' + options.parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
+           return '<li'+li_class+'><a data-filename="' + filename + '" data-inzip="'+ (is_in_zip?'1':'0') + '"><span class="deletefile"><i class="fas fa-trash' +(is_deleted? '-restore':'')+ ' "></i></span></a><span class="full_path">' + options.parent_link +'/</span>' +linkit(full_uri,filename,zedBtn) + '</li>';
         }
         
            
