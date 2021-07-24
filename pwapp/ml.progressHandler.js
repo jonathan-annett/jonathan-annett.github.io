@@ -27,7 +27,7 @@ ml([],function(){ml(2,
                                  setComplete(msg.setComplete);
                               }
                               else if (msg && msg.addToTotal) {
-                                 addToTotal(msg.addToTotal);
+                                 addToTotal(msg.addToTotal,msg.filename);
                               }
                               else if (msg && msg.logComplete) {
                                  logComplete(msg.logComplete);
@@ -37,7 +37,7 @@ ml([],function(){ml(2,
                      const api = {
                           setTotal:setTotal,
                           setComplete:setComplete,
-                          addToTotal:addToTotal,
+                          addToTotal: addToTotal,
                           updateBar : updateBar,
                           logComplete: logComplete,
                           onfilename:function(filename){
@@ -65,7 +65,7 @@ ml([],function(){ml(2,
                       function addToTotal (n,filename) {
                           total+=n;
                           updateBar();
-                          if (filename&&typeof api.onfilename==='function') {
+                          if (filename && api.onfilename) {
                               api.onfilename(filename);
                           }
                       }
