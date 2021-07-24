@@ -43,12 +43,23 @@ progressHandler       | ml.progressHandler.js
                 }
             }
             
-            qs("#show_shell",function change(e) {
-               qs("html").classList[ e.target.checked ?"add":"remove"]("show_shell");
+            qs("#show_shell",function (el) {
+                
+                el.checked = localStorage.show_install_shell === '1';
+                el.onchange =  function change(e) {
+                   qs("html").classList[ el.checked ?"add":"remove"]("show_shell");
+                   localStorage.show_install_shell = el.checked ? '1' : '0';
+                };
+                
+                qs("html").classList[ el.checked ?"add":"remove"]("show_shell");
+            
             });
             
-            qs("html").classList[ qs("#show_shell").checked ?"add":"remove"]("show_shell");
             
+            
+           
+            
+           
             const shell = new Shell('#install-shell', {
                       user: 'browser',
                       host: 'local',
