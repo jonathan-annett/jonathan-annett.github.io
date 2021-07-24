@@ -12,6 +12,7 @@ ml(`
     zipPNGLib@ServiceWorkerGlobalScope     | ml.zipfs.png.js
     pwaMiddlewares                         | ml.zipfs.middleware/index.js
     editInZed@ServiceWorkerGlobalScope     | ml.zedhook.js
+    fsTable                                | fstab.json
 
     `,function(){ml(2,
 

@@ -20,7 +20,10 @@ function ml(x,L,o,a,d,s){
             //c.r = regex:splits "mod | /url" --> [ "mod | url" ,"mod","", /url"] or null
             //c.r = regex:splits "mod@Window | /url" --> [ "mod | url" ,"mod","Window", /url"] or null
             r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
-            //c.b=document base
+            //c.re = regexpEscape
+            re:(s)=>s[c.R](/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&'),
+
+//c.b=document base
             b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
             //c.ri() = a random id generator
             ri:()=>Math.random().toString(36).substr(-8),

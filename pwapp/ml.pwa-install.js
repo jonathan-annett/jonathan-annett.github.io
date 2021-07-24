@@ -1,6 +1,7 @@
-/* global ml,Headers,BroadcastChannel,Shell  */
+/* global ml,Headers,BroadcastChannel  */
 ml(`
-pwa         | ml.pwa.js
+pwa                   | ml.pwa.js
+Shell                 | shell/shell.js
 FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
 
 `,function(){ml(2,
@@ -383,7 +384,8 @@ FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
         }
     }, {
         Window: [
-            ()=> ml.i.pwa
+            ()=> ml.i.pwa,
+            ()=> ml.i.Shell
         ]
 
     }
