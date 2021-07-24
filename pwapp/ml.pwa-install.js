@@ -56,7 +56,7 @@ progressHandler       | ml.progressHandler.js
                       style: 'default',
                       theme: 'dark',
                       responsive: false,
-                      commands:["",""]
+                      commands:[""]
             });
             
             
