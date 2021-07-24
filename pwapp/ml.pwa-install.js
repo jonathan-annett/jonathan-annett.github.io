@@ -179,6 +179,7 @@ openWindowLib         | ml.openWindow.js
                   runOrOpenClick(function(delay,config){
                      setTimeout(function(){
 
+
                          open_url ('about:blank');
                          
                      },  delay,config.root);   
