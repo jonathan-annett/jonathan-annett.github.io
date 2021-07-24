@@ -31,7 +31,7 @@
                sessionStorage.removeItem('running');
                const p = (window.parent.opener||window.parent);
                
-               if (window.opener) {
+               if (window.parent.opener) {
                    p.setTimeout ( p.ml.i.openWindowLib.close_all_urls,10);
                }
                p.setTimeout (p.location.replace,50,p.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+p.location.pathname);
