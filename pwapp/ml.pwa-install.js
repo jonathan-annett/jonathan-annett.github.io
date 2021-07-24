@@ -182,7 +182,7 @@ openWindowLib         | ml.openWindow.js
                      setTimeout(function(){
 
 
-                         open_url (config.root);
+                         win.location.replace(config.root);
                          
                      },  delay,config.root);   
                   });
