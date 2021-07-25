@@ -165,7 +165,7 @@ ml(`
                 const is_editable  = fileIsEditable(filename);
                 const is_image     = fileIsImage(filename);
                 const is_zip       = filename.endsWith(".zip");
-                const is_edited    = fileisEdited( updated_prefix+filename );
+                const is_edited    = fileisEdited( updated_prefix+test_name );
                 
                 //const sha1span     = '<span class="sha1"></span>';
                 
