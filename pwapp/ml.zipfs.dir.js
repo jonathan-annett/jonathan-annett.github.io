@@ -265,7 +265,7 @@ ml(`
             
             function addCloseEditorClick (el) {
                 if (el) {
-                  el.addEventListener("click",edBtnClick);
+                  qs(el,"a i").addEventListener("click",edBtnClick);
                 }
             }
             
@@ -278,7 +278,7 @@ ml(`
             
             function addZoomClick (el) {
                 if (el) {
-                  el.addEventListener("click",zoomBtnClick);
+                  qs(el,"a i").addEventListener("click",zoomBtnClick);
                 }
             }
             
