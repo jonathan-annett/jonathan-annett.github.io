@@ -488,8 +488,9 @@ ml(`
             }
             
             function find_li (file) {
-                  const anchor = qs('a[data-filename="'+file.replace(/^\//,'')+'"]');
-                  return anchor && anchor.parentElement;
+                  const anchor = qs('li[data-filename="'+file.replace(/^\//,'')+'"]');
+                  return anchor &&
+                  anchor;
             }
 
             function viewBtnClick(e){
