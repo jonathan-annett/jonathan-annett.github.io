@@ -31,10 +31,118 @@ ml(`
         
         return {
             html_file_item,
+            get_html_file_item,
             boldit,
             linkit,
             fileIsEditable
         };
+        
+        
+        function extractWrapperRegExp(tag) {
+           
+           if (!extractWrapperRegExp.cache) {
+               extractWrapperRegExp.cache={}; 
+           }
+           
+           if (!extractWrapperRegExp.cache[tag]) {
+                extractWrapperRegExp.cache[tag] = new RegExp('(?:<\\!\\-\\-'+tag+'\\>\\-\\-\\>)(.*)(?:<\\!\\-\\-<'+tag+'\-\-\>)','');
+           }
+           
+           return extractWrapperRegExp.cache[tag];
+        }
+        
+        function extractWrapperText(text,tag) {
+           const  match = extractWrapperRegExp(tag).exec(text);
+           return match ? match [1] : false;
+        }
+        
+        function replaceWrapperText(text,tag,withText) {
+           if (options.keep_comments) withText = '<!--'+tag+'>-->'+withText+'<!--<'+tag+'-->';
+           return text.replace(extractWrapperRegExp(tag),withText);
+        }
+        
+        function html_file_template(dir_html) {
+            
+            const html_details_html = extractWrapperText(dir_html,'html_details');
+            if (!html_details_html) return false;
+            
+            const link_it_html    = extractWrapperText(html_details_html,'link_it');
+            
+            return file_template;
+            
+            function file_template(vars) {
+                
+                let html = replaceWrapperText(html_details_html,"link_it",linkit(vars.uri,vars.disp));
+
+                Object.keys(vars).forEach(function(k){
+                    const v = vars[k];
+                    html = replaceWrapperText(html,k,v);
+                });
+                
+                return html;
+            }
+            
+            function link_it_wrapper(path,filename) {
+               return  replaceWrapperText(
+                         replaceWrapperText(link_it_html,"link_it_filename",filename),
+                         "link_it_path",
+                         path
+                       );  
+            }
+            
+           
+            function linkit(uri,disp){ 
+                //a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
+                const split=(disp||uri).split("/");
+                if (split.length===1) return link_it_wrapper ('', disp||uri);         //   a_wrap.join(disp||uri);
+                const last = split.pop();
+                if (split.length===1) return link_it_wrapper(split[0]+'/' ,last );    //split[0]+'/'+ a_wrap.join(last);
+                return link_it_wrapper( split.join("/")+'/', last );                  //split.join("/")+'/'+ a_wrap.join(last);
+            }
+
+        }
+        
+        
+        function get_html_file_item (dir_html){
+            
+           const template = html_file_template(dir_html);   
+           
+           return template ? render : false;
+           
+           function render(filename) {
+               
+               if ( /\.hidden\-json$/.test(filename)) return "";   
+             
+                const full_uri = "/"+uri+"/"+filename,
+                basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
+                
+                const test_name    = alias_root && filename.indexOf(alias_root)===0 ? filename.substr(alias_root.length) : filename;
+                const is_hidden    = tools.isHidden(test_name);//  tools.isHidden(basename) || alt_name && tools.isHidden(alt_name) ;
+                const is_in_zip    = file_listing.indexOf(filename)>=0;
+                const is_deleted   = is_hidden && tools.isDeleted(test_name)  ;//( tools.isDeleted(basename) || alt_name && tools.isDeleted(alt_name) );
+                const is_editable  = fileIsEditable(filename);
+                const is_zip       = filename.endsWith(".zip");
+                const is_edited    = fileisEdited( updated_prefix+filename );
+                
+                const sha1span     = '<span class="sha1"></span>';
+                
+                const cls = is_deleted ? ["deleted"] : [];
+                if (is_edited)  cls.push("edited");
+                if (is_hidden)  cls.push("hidden");
+                const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
+               
+               return template({
+                   filename:filename,
+                   li_class:li_class,
+                   basename:basename,
+                   parent_link:options.parent_link,
+                   link_it_path:full_uri,
+                   link_it_filename:filename,
+               });
+               
+            }
+            
+        }
         
         
         function html_file_item (filename,cb){
@@ -73,7 +181,7 @@ ml(`
         }
         
            
-         function fileIsEditable (filename) {
+        function fileIsEditable (filename) {
              const p = filename.lastIndexOf('.');
              return p < 1 ? false:["js","json","css","md","html","htm"].indexOf(filename.substr(p+1))>=0;
          }

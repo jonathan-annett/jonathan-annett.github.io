@@ -329,10 +329,18 @@ function ml(x,L, o, a, d, s){
                                  ml.h[U] = {e:{},E:{}};
                                  // create swizzle wrapper to fetch and then cache html text 
                                  w=(X,t)=>{
-                                     // if obect with keys is supplied, merge in the templated values
+                                     // if object with keys is supplied, merge in the templated values
                                      t=t||ml.h[U].E[N];
                                      c.k(X)[c.f]((k)=>{
                                          t=t[c.R](new RegExp(c.re('${'+k+'}'),'g'),X[k]);
+                                         t=t[c.R](new RegExp(c.re('<!--'+k+'-->'),'g'),X[k]);
+                                         t=t[c.R](new RegExp([ 
+                                             '(?:',
+                                             c.re('<!--'+k+'>-->'),
+                                             ')(.*)(?:',
+                                             c.re('<!--<'+k+'-->'),
+                                             ')'
+                                             ].join(''),'g'),'<!--'+k+'>-->'+X[k]+'<!--<'+k+'-->');
                                      });
                                      return t;
                                  };

@@ -78,6 +78,7 @@ ml(`
             
             const {
                 html_file_item,
+                get_html_file_item,
                 boldit,
                 linkit,
                 fileIsEditable

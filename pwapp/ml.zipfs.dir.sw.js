@@ -44,7 +44,7 @@ ml(`
                                        
                                        return resolve ();
                                    }
-                                   zipFSDirHtml (function (err,__,renderer){ 
+                                   zipFSDirHtml (function (err,dir_html,renderer){ 
                                        
                                        if (err) {
                                            return resolve(new Response('', {
@@ -54,17 +54,15 @@ ml(`
                                        }
                                        
                                        
+                                       
                                        getZipFileUpdates(virtual ? virtual :  url,function(err,additonalFiles){
                                            
                                            getZipDirMetaTools(url,zip,zipFileMeta,function(tools){
                                                
-                                              const file_listing = Object.keys(zipFileMeta.files); 
-                                               
-                                               
-                                              const updated_prefix = (virtual ? virtual :  url).replace(/\/$/,'')+ "/" ;
-                                                
-                                              
-                                               
+                                               const file_listing = Object.keys(zipFileMeta.files); 
+
+                                               const updated_prefix = (virtual ? virtual :  url).replace(/\/$/,'')+ "/" ;
+
                                                const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                                                const uri= urify.exec(url)[2];
                                                const uri_split = uri.split('.zip/').map(function (x,i,a){
@@ -87,10 +85,13 @@ ml(`
                                                
                                                const {
                                                    html_file_item,
+                                                   get_html_file_item,
                                                    boldit,
                                                    linkit,
                                                    fileIsEditable
                                                } = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
+                                               
+                                               const html_file_func = get_html_file_item(dir_html) || html_file_item;
 
                                                const cleanup_links = function(str) {
                                                    top_uri_res.forEach(function(re){
@@ -129,7 +130,11 @@ ml(`
                                                    
                                                ).sort();
                                                
-                                               const html_details = all_files.map(html_file_item);
+                                               //const html_details = all_files.map(html_file_item);
+                                               const html_details = all_files.map(html_file_func);
+                                               
+                                               
+                                               
                                                
                                                /*
                                                function renderHtml (
@@ -213,6 +218,9 @@ ml(`
                            
                        
                        }
+                       
+                       
+                      
                        
                        function resolveZipDownload( url, mode, alias) {
                            
