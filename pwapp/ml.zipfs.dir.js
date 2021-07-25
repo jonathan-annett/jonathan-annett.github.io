@@ -432,9 +432,9 @@ ml(`
             
             function editInZedClick (e) {
                 e.stopPropagation();
-                const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                const li = btn.parentElement;
-                const filename = btn.dataset.filename.replace(/(^\/)/,'');
+                e.stopPropagation();
+                const filename = findFilename(e.target);
+                const li = find_li(filename);
                 const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
                    li.classList.add("editing");
                    
@@ -454,7 +454,24 @@ ml(`
             
             
             function viewImageBtnClick(e) {
-                
+                e.stopPropagation();
+                const filename = findFilename(e.target);
+                const li = find_li(filename);
+                const nextSib = li.nextSibling;
+                if (li.classList.contains("editing") && (!nextSib || (nextSib &&  nextSib.classList.contains("image_viewer"))) ) {
+                    li.parentElement.removeChild(li.nextSibling);
+                    li.classList.remove("editing");
+                } else {
+                    const img = document.createElement("img");
+                    const file_url = pwaApi.filename_to_url(filename);
+                    const newLi = document.createElement("li");
+                    newLi.class="image_viewer";
+                    newLi.appendChild(img);
+                    newLi.parentElement.insertBefore(newLi,nextSib);
+                    img.src = file_url;
+                    li.classList.add("editing");
+                    
+                }
             }
             
             function findFilename(el ) {
