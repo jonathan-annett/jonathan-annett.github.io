@@ -8,6 +8,7 @@ ml(`
     editInZed            | ml.zedhook.js
     sha1Lib              | sha1.js
     htmlFileItemLib      | ml.zipfs.dir.file.js
+    htmlFileMetaLib      | ml.zipfs.dir.file.meta.js
     zipFSApiLib          | ml.zipfs.api.js
     showdown             | https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.js
     aceSessionLib        | ml.ace-session.js
@@ -23,6 +24,7 @@ ml(`
             
             ace_session_json = ml.i.aceSessionLib,
             
+            { fileIsEditable,fileIsImage,aceModeForFile,aceThemeForFile } =  ml.i.htmlFileMetaLib,
             
             { open_url   } = ml.i.openWindowLib,
             
