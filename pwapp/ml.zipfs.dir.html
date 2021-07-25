@@ -6,287 +6,14 @@
    <!--head_script-->
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/balloon-css/1.2.0/balloon.min.css" integrity="sha512-6jHrqOB5TcbWsW52kWP9TTx06FHzpj7eTOnuxQrKaqSvpcML2HTDR2/wWWPOh/YvcQQBGdomHL/x+V1Hn+AWCA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
    <link rel="stylesheet" href="ml.zipfs.dir.css"/>
-   <!--link rel="stylesheet" href="fontawesome/css/all.css"/-->
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+   <link rel="stylesheet" href="fontawesome/css/all.css"/>
    <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
-   <style>
-       h1 {
-       font-size: 1em;
-       margin-block-end: 0;
-       margin-block-start: 0;
-       margin-bottom: -16px;
-       }
-       h1 span{
-       font-size: 0.5em;
-       }
-       a,a:visited,a:link {
-       color:navy;
-       cursor:pointer;
-       }
-       a span {
-       display:inline-block;
-       cursor:pointer;
-       width:16px;
-       height: 16px;
-       position:relative;
-       top: 4px;
-       left: 6px;
-       margin-left: -6px;
-       }
-       
-       body {
-           overflow-y:hidden;
-           overflow-x:hidden;
-       }
-       
-       a span i {
-           font-size: 6pt;
-           top: -5px;
-           position: relative;
-       }
-       
-
-       #fs_editor { 
-           display:none;
-       }
-       
-       
-          
-       .ace_editor {
-           border: 1px solid lightgray;
-           margin: auto;
-           height: 200px;
-           right: 10px;
-           left:0px;
-           resize : vertical;
-       }
-       .scrollmargin {
-           height: 80px;
-           text-align: center;
-       }
-       
-       
-       li span.deletefile,
-       li span.undeletefile {
-           float:right;
-       }
-       
-       li a span.code,
-       li a span.zipfile,
-       li a span.image,
-
-       li span.undeletefile,
-       li.editing span.deletefile,
-       li.editing span.undeletefile,
-       li.deleted span.deletefile,
-       li span.not-edited,
-       li.edited span.edited {
-           display:none;
-       }
-       
-       li.code    a span.code,
-       li.zipfile a span.zipfile,
-       li.image   a span.image,
-       li.deleted span.undeletefile,
-       li.edited  span.edited {
-           display:inline-block;
-       }
-
-       
-
-       a span.fullscreen,
-       html.zooming li,
-       html.zooming #drop-area,
-       html.zooming h1,
-       html.zooming footer {
-           display : none;
-       }
-       
-       li.editing a span.fullscreen  {
-           display : inline-block;
-           float: right;
-       }
-       
-       html.zooming main {
-           top : 0px;
-       }
-       
-       html.zooming  main{
-         overflow-y:hidden;
-       }
-       
-       html.zooming body {
-         margin :0;
-       }
-       
-       html.zooming main {
-           margin-left:0;
-       }
-       
-       html.zooming li.zooming {
-          position:absolute;
-          left:0;
-          right:0;
-          top:0;
-          display : block;
-       }
-       
-       html.zooming li.zooming a[data-balloon-pos="down-left" ] {
-          pointer-events:none;
-          cursor:normal;
-       }
-       
-        html.zooming #fs_editor {
-           display : block;
-           margin: 0;
-           position: absolute;
-           top: 20px;
-           bottom: 20px;
-           left: 0;
-           right: 0;
-           height: calc(100% - 20px) ;
-           width: 100%;
-        }
-        
-        
-       
-       
-       h1 a.downloadfull,
-       h1 a.download {
-           
-           background: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE4LjEuMSwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJDYXBhXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIwIDAgNjEyIDYxMiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNjEyIDYxMjsiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPGc+DQoJPGc+DQoJCTxnPg0KCQkJPHBhdGggZD0iTTk1LjY2OSwzMTQuOTMxbDE5OC44ODksMTU4LjQ5MWMzLjM0NywyLjY2OCw3LjM5Miw0LDExLjQ0MSw0YzQuMDQ2LDAsOC4wOTQtMS4zMzQsMTEuNDQxLTRsMTk4Ljg4Ni0xNTguNDkxDQoJCQkJYzYuMTAxLTQuODYzLDguNDYxLTEzLjA1Miw1Ljg4Ni0yMC40MTZjLTIuNTc2LTcuMzY0LTkuNTI2LTEyLjI5OC0xNy4zMjYtMTIuMjk4aC04NC4xOTZWNDUuNzQ2DQoJCQkJYzAtMTAuMTM5LTguMjE5LTE4LjM1Ny0xOC4zNTctMTguMzU3SDIwOS42NjNjLTEwLjE0MSwwLTE4LjM1Nyw4LjIxOC0xOC4zNTcsMTguMzU3djIzNi40N0gxMDcuMTENCgkJCQljLTcuODA1LDAtMTQuNzU0LDQuOTMyLTE3LjMyOSwxMi4yOThDODcuMjA1LDMwMS44NzksODkuNTY1LDMxMC4wNjgsOTUuNjY5LDMxNC45MzF6IE0yMDkuNjYzLDMxOC45MzENCgkJCQljMTAuMTM4LDAsMTguMzU3LTguMjE4LDE4LjM1Ny0xOC4zNTdWNjQuMTAzaDE1NS45NTd2MjM2LjQ3YzAsMTAuMTM5LDguMjE5LDE4LjM1NywxOC4zNTcsMTguMzU3aDUwLjA2MUwzMDUuOTk5LDQzNS41OTMNCgkJCQlMMTU5LjYwMSwzMTguOTMxTDIwOS42NjMsMzE4LjkzMUwyMDkuNjYzLDMxOC45MzF6Ii8+DQoJCQk8cGF0aCBkPSJNNTkzLjY0MywzOTkuNTI5Yy0xMC4xMzgsMC0xOC4zNTcsOC4yMTktMTguMzU3LDE4LjM1N3YxMzAuMDExSDM2LjcxNFY0MTcuODg2YzAtMTAuMTM4LTguMjE5LTE4LjM1Ny0xOC4zNTctMTguMzU3DQoJCQkJUzAsNDA3Ljc0OCwwLDQxNy44ODZ2MTQ4LjM2OGMwLDEwLjEzOSw4LjIxOSwxOC4zNTcsMTguMzU3LDE4LjM1N2g1NzUuMjg2YzEwLjEzOCwwLDE4LjM1Ny04LjIxOCwxOC4zNTctMTguMzU3VjQxNy44ODYNCgkJCQlDNjEyLDQwNy43NDgsNjAzLjc3OSwzOTkuNTI5LDU5My42NDMsMzk5LjUyOXoiLz4NCgkJPC9nPg0KCTwvZz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjwvc3ZnPg0K")
-                             left center;
-           background-repeat: no-repeat;
-           background-size: 10px 10px;
-           
-       }
-       h1 a.restart {
-          float :right;
-       }
-       h1 a.restart img {
-          filter: invert(1);
-          width: 16px;
-          height: 16px;
-       }
-       
-       
-       
-       
-       h1 a.downloadfull {
-           
-             filter: brightness(0.5) sepia(1) hue-rotate(140deg) saturate(6);
-       
-       }
-       
-     
-       ul {
-           list-style-type: none;
-       }
-       
-       li.editing  {
-         background-color: #a9d8eb;
-       }
-       
-       li.edited  {
-         background-color: #ccb0b8;
-       }
-       
-       li.editing.edited  {
-         background-color: #dd6c6c;
-       }
-       
-       
-       
-       li span.sha1 {
-           font-size: 0.5em;
-           text-align: right;
-           margin-left: 10px;
-           margin-right: 10px;
-           color: #101010;
-       }
-       
-       ul li.hidden { background-color : yellow; }
-       ul li.hidden.edited { background-color : lime; }
-       ul li.hidden.deleted { background-color : red; }
-       
-       
-       ul.hide_hidden li.hidden, 
-       ul.hide_full_path span.full_path { display : none; }
-       .disable-select {
-         -webkit-user-select: none;
-         -moz-user-select: none;
-         -ms-user-select: none;
-         user-select: none;
-       }
-       
-       
-       
-       #drop-area {
-         border: 2px dashed #ccc;
-         border-radius: 10px;
-         width: 80%;
-         font-family: sans-serif;
-         margin: 40px auto;
-         padding: 4px;
-       }
-       #drop-area.highlight {
-         border-color: purple;
-       }
-       p {
-         margin-top: 0;
-       }
-       #drop-area .drop-file-form {
-         margin-bottom: 10px;
-       }
-       #gallery {
-         margin-top: 10px;
-       }
-       #gallery img {
-         width: 150px;
-         margin-bottom: 10px;
-         margin-right: 10px;
-         vertical-align: middle;
-       }
-       #drop-area .button {
-         display: inline-block;
-         padding: 10px;
-         background: #ccc;
-         cursor: pointer;
-         border-radius: 5px;
-         border: 1px solid #ccc;
-       }
-       #drop-area .button:hover {
-         background: #ddd;
-       }
-       #drop-file-elem {
-         display: none;
-       }
-       
-       
-       section {
-         display: flex;
-         flex-flow: column;
-         height: 100vh;
-       }
-       header {
-       }
-       main {
-         flex: 2;
-         overflow-y: auto;
-         overflow-x: hidden;
-         top: 20px;
-         position: relative;
-         margin-left:-32px;
-         /* height: 10px; */
-       }
-       footer {
-         min-height: 20px; 
-       }
-       
-       
-       
-       
-   </style>
+   
+   <!--designer>-->
+   <link rel="stylesheet" href="https://jonathan-annett.github.io/pwapp/ml.zipfs.dir.css"/>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+   <!--<designer-->
+   
 </head>
 <body class="disable-select">
 <script src="ml.zedhook.js" defer></script>
@@ -312,21 +39,21 @@
      <!--html_details>-->
     <li data-filename="${filename}" class="${li_class}">
     <a data-inzip="1"> 
-        <span class="deletefile">
+        <span class="deletefile" data-balloon-pos="down-left" aria-label="click to delete ${basename}">
             <i class="fas fa-trash"></i></i>
         </span>
     </a>
     <a data-filename="${filename}" data-inzip="1"> 
-        <span class="undeletefile">
+        <span class="undeletefile" data-balloon-pos="down-left" aria-label="${basename} has been deleted. click to resstore">
             <i class="fas fa-trash-restore"></i></i>
         </span>
     </a>
     
-    <span class="edited"     data-balloon-pos="down-right" aria-label="${basename} has been edited">
+    <span class="edited"     data-balloon-pos="down-left" aria-label="${basename} has been edited. click to undo edits">
         <i class="fas fa-not-equal"></i>
     </span>
     
-    <span class="not-edited" data-balloon-pos="down-right" aria-label="${basename} hasn't been edited">
+    <span class="not-edited" data-balloon-pos="down-left" aria-label="${basename} matches the copy on the server">
         <i class="fas fa-equals"></i>
     </span>
     
@@ -334,13 +61,15 @@
     <!--link_it>--><!--link_it_path>-->js-keygen-master/<!--<link_it_path-->
     
     <a>
-        <span class="code"><i class="fas fa-code"></i></span>
-        <span class="image"><i class="fas fa-image"></i></span>
-        <span class="zipfile"><i class="fas fa-file-archive"></i></span>
+        <span class="code" data-balloon-pos="down-left" aria-label="click to edit ${basename}"><i class="fas fa-code"></i></span>
+        <span class="image" data-balloon-pos="down-left" aria-label="click to view ${basename}"><i class="fas fa-image"></i></span>
+        <span class="zipfile" data-balloon-pos="down-left" aria-label="click to open ${basename}"><i class="fas fa-file-archive"></i></span>
         <!--link_it_filename>-->CNAME<!--<link_it_filename-->
     </a>
     <!--<link_it-->
-    <span class="sha1"       data-balloon-pos="down-left" aria-label="SHA1 hash">11410d0b9dab5949578e5a026edc616a645c5df6</span>
+    <span class="sha1"       data-balloon-pos="down-left" aria-label="SHA1 hash">
+        <!--sha1>-->11410d0b9dab5949578e5a026edc616a645c5df6<!--<sha1-->
+    </span>
     
     <a>
         <span class="fullscreen">

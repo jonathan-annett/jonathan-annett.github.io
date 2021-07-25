@@ -172,6 +172,8 @@ ml(`
                    parent_link:options.parent_link,
                    link_it_path:full_uri,
                    link_it_filename:filename,
+                   sha1:'',
+                   designer:''
                });
                
             }
