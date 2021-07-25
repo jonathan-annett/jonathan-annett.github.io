@@ -87,9 +87,6 @@ ml(`
                                                    boldit,
                                                    linkit,
                                                    fileIsEditable,
-                                                   extractWrapperText,
-                                                   replaceWrapperText,
-                                                   replaceVarText,
                                                    replaceTextVars
                                                } = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
                                                
@@ -147,7 +144,7 @@ ml(`
                            
                                                const html = renderHtml (
                                                    dir_html,
-                                                   replaceWrapperText,
+                                                   replaceTextVars,
                                                    tools,updated_prefix,uri,
                                                    virtual,zipFileMeta.alias_root,
                                                    all_files,
@@ -189,7 +186,7 @@ ml(`
                            
                             function renderHtml (
                             
-                                dir_html,replaceVarText,
+                                dir_html,replaceTextVars,
                                 tools,updated_prefix,uri,
                                 virtual,alias_root,files, 
                                 hidden_files_exist,
@@ -214,9 +211,11 @@ ml(`
                                                        '</script>'
                                                    ];
                                                    
-                               return replaceVarText( 
+                               return replaceTextVars( 
                                    
-                                            dir_html, {
+                                            dir_html, 
+                                            
+                                            {
                                                uri:uri,
                                                head_script:head_script.join("\n"),
                                                hidden_files_class:hidden_files_exist?' hidden_files_exist':'',
