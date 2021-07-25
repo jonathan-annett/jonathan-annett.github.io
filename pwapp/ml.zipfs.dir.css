@@ -82,7 +82,7 @@ li.other   a.other,
 li.zipfile a.zipfile,
 li.image   a.image,
 li.deleted a.undeletefile,
-li.edited  a.edited {
+li.edited  a.undo-edits {
     display:inline-block;
 }
 
@@ -375,7 +375,7 @@ li.other   a.other,
 li.zipfile a.zipfile,
 li.image   a.image,
 li.deleted a.undeletefile,
-li.edited  a.edited {
+li.edited  a.undo-edits {
     display:inline-block;
 }
 

@@ -123,7 +123,7 @@ ml(`
                 [].forEach.call(document.querySelectorAll("li > a.zipfile"),addOpenZipViewClick);
                 [].forEach.call(document.querySelectorAll("li > a.deletefile"),addDeleteClick);
                 [].forEach.call(document.querySelectorAll("li > a.undeletefile"),addUndeleteClick);
-                [].forEach.call(document.querySelectorAll("li > a.not-equal"),addUndoEditsClick);
+                [].forEach.call(document.querySelectorAll("li > a.undo-edits"),addUndoEditsClick);
                 
                 setupDragAndDrop();
                 
