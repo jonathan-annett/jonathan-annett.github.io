@@ -98,14 +98,15 @@ html.zooming footer {
     display : none;
 }
 
+
+li.editing a.fullscreen, 
 html.zooming li.editing a.exit-fullscreen, 
-html.zooming li.editing a.close-editor,
-li.editing a.fullscreen  {
+li.editing a.close-editor{
     display : inline-block;
     float: right;
 }
 
-html.zooming.editing a.fullscreen {
+html.zooming li.editing a.fullscreen {
     display : none;
 }
 

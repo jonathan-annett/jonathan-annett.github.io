@@ -116,15 +116,15 @@ ml(`
 
                 [].forEach.call(document.querySelectorAll("li a.code"),addEditClick);
                 
+                [].forEach.call(document.querySelectorAll("li a.close-editor"),addEditClick);
+                
                 [].forEach.call(document.querySelectorAll("li a.image"),addViewImageClick);
                 
                 [].forEach.call(document.querySelectorAll("li a.fullscreen"),addZoomClick);
                 
                 [].forEach.call(document.querySelectorAll("li a.exit-fullscreen"),addZoomClick);
                 
-                [].forEach.call(document.querySelectorAll("li a.close-editor"),addCloseEditorClick);
-                
-                
+
                 [].forEach.call(document.querySelectorAll("li a.other"),addViewClick);
                 
                 [].forEach.call(document.querySelectorAll("li a.zipfile"),addOpenZipViewClick);
@@ -283,14 +283,12 @@ ml(`
             function addViewImageClick (el) {
                 if (el) {
                   el.addEventListener("click",viewImageBtnClick);
-                  //el.parentElement.addEventListener("click",viewImageBtnClick);
                 }
             }
             
             function addZoomClick (el) {
                 if (el) {
                   el.addEventListener("click",zoomBtnClick);
-                  //el.parentElement.addEventListener("click",zoomBtnClick);
                 }
             }
             
