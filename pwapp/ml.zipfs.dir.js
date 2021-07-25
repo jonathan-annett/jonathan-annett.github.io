@@ -316,12 +316,9 @@ ml(`
                       fs_li_ed=ed_pre.parentNode;
                       fs_li_ed.classList.add("zoomingEditor");
                       qs("main").appendChild(ed_pre);
-                      fs_li_ed.editor.resize();
-                      editorResized(fs_li_ed);
                    } else {
                       fs_li_ed.classList.remove("zoomingEditor");
                       fs_li_ed.appendChild(ed_pre);
-                      editorResized(fs_li_ed);
                       fs_li_ed=undefined;
                    }
                    
@@ -334,8 +331,22 @@ ml(`
                     zoomClass("remove");
                     zoomEl=undefined;
                 } else {
-                    zoomEl = find_li(filename);
-                    zoomClass("add");
+                    const li = find_li(filename);
+                    let editor_id = li.dataset.editor_id;
+                    const ed = qs("#"+editor_id);
+                    const li_ed = ed.parentNode;
+                    if (li_ed.editor_resized) {
+                        return closeInbuiltEditor ( filename,li, function(){
+                             openInbuiltEditor ( filename,li, function(){
+                                 zoomEl = li;
+                                 zoomClass("add");
+                             });
+                        });
+                       
+                    } else {
+                        zoomEl = li;
+                        zoomClass("add");
+                    }
                 }
                 
             }
@@ -961,14 +972,11 @@ ml(`
             function editorResized(li_ed){
                 
                 li_ed.editor.resize();
-                
-                var resizeEvent = window.document.createEvent('UIEvents'); 
-                resizeEvent.initUIEvent('resize', true, false, window, 0); 
-                window.dispatchEvent(resizeEvent);
+                li_ed.editor_resized=true;
             }
             
             
-            function openInbuiltEditor (filename,li) {
+            function openInbuiltEditor (filename,li,cb) {
                 li=li||find_li (filename);
                 const file_url = pwaApi.filename_to_url(filename);
                 let editor_id = li.dataset.editor_id;
@@ -1084,8 +1092,11 @@ ml(`
                                                     }
                                                 });
                                            };
-                                           li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
                                            
+                                           
+                                            li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                                            delete li_ed.editor_resized;
+                                            if (cb) cb();
                                     });
                                    
                                     
@@ -1107,7 +1118,7 @@ ml(`
                 }
             }
           
-            function closeInbuiltEditor(filename,li) {
+            function closeInbuiltEditor(filename,li,cb) {
                 li=li||find_li (filename);
                 let editor_id = li.dataset.editor_id;
                 if (editor_id) {
@@ -1160,6 +1171,7 @@ ml(`
                             li_ed.parentNode.removeChild(li_ed);
                             
                             delete li.dataset.editor_id;
+                            if (cb) cb();
                             
                         });
                     });
