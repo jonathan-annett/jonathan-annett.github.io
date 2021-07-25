@@ -105,7 +105,7 @@ ml(`
                     Object.keys(vars).forEach(function(key){
                         const value = vars[key];
                         html = replaceWrapperText(html,key,value);
-                        html = replaceVarText(text,key,value)
+                        html = replaceVarText(html,key,value)
                     });
                     
                     return html;
