@@ -166,7 +166,7 @@ ml(`
                 if (is_image)    cls.push("image");
                 if (!is_image && !is_editable && !is_zip) cls.push("other");
                 
-                const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
+                const li_class     = cls.length===0 ? '' : cls.join(' ');
                
                return template({
                    filename:filename,

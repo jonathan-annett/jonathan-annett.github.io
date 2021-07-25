@@ -352,7 +352,7 @@ ml(`
             
             function edBtnClick(e){
                 e.stopPropagation();
-                const filename = findFilename(e.target);
+                    const filename = findFilename(e.target);
                 const li = find_li(filename);
                 if (e.shiftKey) {
                     open_file(filename);
