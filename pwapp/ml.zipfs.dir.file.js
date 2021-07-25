@@ -119,7 +119,7 @@ ml(`
             
             function file_template(vars) {
                 
-                let html = replaceWrapperText(html_details_html,"link_it",linkit(vars.uri,vars.disp));
+                let html = replaceWrapperText(html_details_html,"link_it",linkit(vars.link_it_path,vars.link_it_filename));
 
                 Object.keys(vars).forEach(function(k){
                     const v = vars[k];
