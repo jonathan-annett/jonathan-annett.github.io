@@ -90,6 +90,7 @@ li.edited  a.edited {
 a.close-editor,
 a.exit-fullscreen,
 a.fullscreen,
+html.zooming li.editing a.close-editor,
 html.zooming li,
 html.zooming #drop-area,
 html.zooming h1,
@@ -97,8 +98,7 @@ html.zooming footer {
     display : none;
 }
 
-html.zooming.editing a.exit-fullscreen, 
-li.editing a.close-editor,
+html.zooming li.editing a.exit-fullscreen, 
 html.zooming li.editing a.close-editor,
 li.editing a.fullscreen  {
     display : inline-block;
