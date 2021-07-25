@@ -13,7 +13,6 @@ ml(`
     aceSessionLib        | ml.ace-session.js
     openWindowLib        | ml.openWindow.js
     
-    
     `,function(){ml(2,
 
     {
@@ -80,8 +79,7 @@ ml(`
                 html_file_item,
                 get_html_file_item,
                 boldit,
-                linkit,
-                fileIsEditable
+                linkit
             }  = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
 
             
@@ -717,30 +715,7 @@ ml(`
                     }
                 });
             }
-            
-            function aceModeForFile(fn ) {
-                const ext = fn.substr(fn.lastIndexOf('.')+1);
-                return {
-                    html : "ace/mode/html",
-                    js   : "ace/mode/javascript",
-                    json : "ace/mode/json",
-                    md   : "ace/mode/markdown",
-                    css  : "ace/mode/css"
-                    
-                }[ext]||"ace/mode/text";
-            }
-            
-            function aceThemeForFile(fn ) {
-                const ext = fn.substr(fn.lastIndexOf('.')+1);
-                return {
-                    html : "ace/theme/cobalt",
-                    js   : "ace/theme/chaos",
-                    json : "ace/theme/monokai",
-                    md   : "ace/theme/dawn",
-                    css  : "ace/theme/pastel_on_dark",
-                }[ext] || "ace/theme/chrome";
-            }
-            
+
             function startEditHelper(url,withContent,cb) {
                 const ext = url.substr(url.lastIndexOf('.')+1);
                 ({

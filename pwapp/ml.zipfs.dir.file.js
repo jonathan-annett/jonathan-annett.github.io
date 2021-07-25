@@ -1,7 +1,8 @@
 /* global ml */
 
 ml(`
-
+  htmlFileMetaLib      | ml.zipfs.dir.file.meta.js
+  
 `,function(){ml(2,
 
     {
@@ -23,7 +24,8 @@ ml(`
     }
 
     );
-
+    
+    const  { fileIsEditable,fileIsImage,aceModeForFile,aceThemeForFile } =  ml.i.htmlFileMetaLib; 
 
     function htmlFileItemLib (options) {
         
@@ -34,7 +36,6 @@ ml(`
             get_html_file_item,
             boldit,
             linkit,
-            fileIsEditable,
             extractWrapperText,
             replaceWrapperText
         };
@@ -150,20 +151,28 @@ ml(`
                 const is_in_zip    = file_listing.indexOf(filename)>=0;
                 const is_deleted   = is_hidden && tools.isDeleted(test_name)  ;//( tools.isDeleted(basename) || alt_name && tools.isDeleted(alt_name) );
                 const is_editable  = fileIsEditable(filename);
+                const is_image     = fileIsImage(filename);
                 const is_zip       = filename.endsWith(".zip");
                 const is_edited    = fileisEdited( updated_prefix+filename );
                 
-                const sha1span     = '<span class="sha1"></span>';
+                //const sha1span     = '<span class="sha1"></span>';
                 
                 const cls = is_deleted ? ["deleted"] : [];
-                if (is_edited)  cls.push("edited");
-                if (is_hidden)  cls.push("hidden");
+                if (is_edited)   cls.push("edited");
+                if (is_hidden)   cls.push("hidden");
+                
+                if (is_zip)      cls.push("zipfile");
+                if (is_editable) cls.push("code");
+                if (is_image)    cls.push("image");
+                if (!is_image && !is_editable && !is_zip) cls.push("other");
+                
                 const li_class     = cls.length===0 ? '' : ' class="'+cls.join(' ')+'"';
                
                return template({
                    filename:filename,
                    li_class:li_class,
                    basename:basename,
+                   is_in_zip: is_in_zip?'1':'0',
                    parent_link:options.parent_link,
                    link_it_path:full_uri,
                    link_it_filename:filename,
@@ -212,11 +221,6 @@ ml(`
         }
         
            
-        function fileIsEditable (filename) {
-             const p = filename.lastIndexOf('.');
-             return p < 1 ? false:["js","json","css","md","html","htm"].indexOf(filename.substr(p+1))>=0;
-         }
-         
          
         function boldit(uri,disp){
             const split=(disp||uri).split("/");
