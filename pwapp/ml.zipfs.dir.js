@@ -467,7 +467,7 @@ ml(`
                     const newLi = document.createElement("li");
                     newLi.class="image_viewer";
                     newLi.appendChild(img);
-                    newLi.parentElement.insertBefore(newLi,nextSib);
+                    li.parentElement.insertBefore(newLi,nextSib);
                     img.src = file_url;
                     li.classList.add("editing");
                     
