@@ -51,7 +51,7 @@ a span i {
 
 li span i,
 li a span i {
-      font-size: 0.5em;
+      font-size: 0.6em;
 }
 
 li a.deletefile,
@@ -69,7 +69,7 @@ li.editing a.deletefile,
 li.editing a.undeletefile,
 li.deleted a.deletefile,
 li.edited span.not-edited,
-li a.undo-edits {
+li a.edited {
     display:none;
 }
 
@@ -78,7 +78,7 @@ li.other   a.other,
 li.zipfile a.zipfile,
 li.image   a.image,
 li.deleted a.undeletefile,
-li.edited  a.undo-edits {
+li.edited  a.edited {
     display:inline-block;
 }
 
@@ -136,7 +136,7 @@ html.zooming li.zooming a[data-balloon-pos="down-left" ] {
    cursor:normal;
 }
 
- html.zooming pre.fs_editor {
+pre.fs_editor {
     display : block;
     margin: 0;
     position: absolute;
@@ -282,3 +282,4 @@ main {
 footer {
   min-height: 20px; 
 }
+

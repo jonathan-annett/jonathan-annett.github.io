@@ -316,9 +316,11 @@ ml(`
                       fs_li_ed=ed_pre.parentNode;
                       fs_li_ed.classList.add("zoomingEditor");
                       qs("main").appendChild(ed_pre);
+                      fs_li_ed.editor.resize();
                    } else {
                       fs_li_ed.classList.remove("zoomingEditor");
                       fs_li_ed.appendChild(ed_pre);
+                      fs_li_ed.editor.resize();
                       fs_li_ed=undefined;
                    }
                    
