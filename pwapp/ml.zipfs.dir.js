@@ -305,62 +305,32 @@ ml(`
             function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
             
             
-            var zoomEl,fs_editor,fs_editor_pre;            
+            var zoomEl,fs_li_ed;            
             function  zoomBtnClick( e ) {
                 e.stopPropagation();
                 const filename = findFilename(e.target);
-                const li = find_li(filename);
-                
                 const zoomClass=function(addRemove) {
-                   const li_ed=qs("#"+zoomEl.dataset.editor_id).parentNode;
-                   li_ed.classList[addRemove]("zoomingEditor");
+                    
+                   const ed_pre = qs("#"+zoomEl.dataset.editor_id);
+                   if (addRemove==="add") {
+                      fs_li_ed=ed_pre.parentNode;
+                      fs_li_ed.classList.add("zoomingEditor");
+                      qs("main").addChild(ed_pre);
+                   } else {
+                      fs_li_ed.classList.remove("zoomingEditor");
+                      fs_li_ed.addChild(ed_pre);
+                      fs_li_ed=undefined;
+                   }
+                   
                    zoomEl.classList[addRemove]("zooming");
                    qs('html').classList[addRemove]("zooming"); 
-                   
-                   if (addRemove==="add") {
-                      if (!fs_editor) {
-                         
-                         fs_editor_pre = document.createElement("pre");
-                         fs_editor_pre.id = "fs_editor";
-                         
-                         qs("main").appendChild(fs_editor_pre);
-                          
-                         fs_editor = ace.edit("fs_editor");
-                         fs_editor.setAutoScrollEditorIntoView(true);
-                      } 
-                        
-                      fs_editor.setTheme(li_ed.editor.getTheme());
-                      fs_editor.session.setMode(li_ed.editor.session.getMode());
-                      
-                      li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
-                      fs_editor.setSession(li_ed.editor.getSession());
-                      fs_editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
-                      fs_editor.focus();
-                   } else {
-                       fs_editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
-                       li_ed.editor.setSession(fs_editor.getSession());
-                       li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
-                       li_ed.editor.focus();
-                       
-                       fs_editor.destroy();
-                       fs_editor=undefined;
-                       
-                       while (fs_editor_pre.firstChild) {
-                           fs_editor_pre.removeChild(fs_editor_pre.firstChild);
-                       }
-                   
-                       qs("main").removeChild(fs_editor_pre);
-                       fs_editor_pre=undefined;
-                       
-                        
-                   }
                 };
                 
                 if (zoomEl) {
                     zoomClass("remove");
                     zoomEl=undefined;
                 } else {
-                    zoomEl = li;
+                    zoomEl = find_li(filename);
                     zoomClass("add");
                 }
                 
@@ -993,6 +963,7 @@ ml(`
                 window.dispatchEvent(resizeEvent);
             }
             
+            
             function openInbuiltEditor (filename,li) {
                 li=li||find_li (filename);
                 const file_url = pwaApi.filename_to_url(filename);
@@ -1185,6 +1156,7 @@ ml(`
                             li_ed.parentNode.removeChild(li_ed);
                             
                             delete li.dataset.editor_id;
+                            
                         });
                     });
                     
