@@ -499,11 +499,13 @@ ml(`
                     
                 }
             }
-            const ext = fn.substr(fn.lastIndexOf('.')+1);
-            return aceModeForFile.cache[ext]||(function(){
+            const base  = fn.split('/').pop();
+            const ix    = base.lastIndexOf(".");
+            const ext   = ix < 0 ? false : base.substr(ix+1);
+            return ext ? aceModeForFile.cache[ext]||(function(){
                 aceModeForFile.modelist = aceModeForFile.modelist||ace.require("ace/ext/modelist");
                 return (aceModeForFile.cache[ext]=aceModeForFile.modelist.getModeForPath(fn).mode);
-            })();
+            })() : "ace/mode/text";
         }
         
         function aceThemeForFile(fn ) {
@@ -520,8 +522,10 @@ ml(`
             if (!aceThemeForFile.cache) {
                 aceThemeForFile.cache = {};
             }
-            const ext   = fn.substr(fn.lastIndexOf('.')+1);
-            const theme = aceThemeForFile.cache[fn] || (aceThemeForFile.cache[fn]=aceThemeForFile.defs[ext] ||"ace/theme/chrome");
+            const base  = fn.split('/').pop();
+            const ix    = base.lastIndexOf(".");
+            const ext   = ix < 0 ? false : base.substr(ix+1);
+            const theme = aceThemeForFile.cache[fn] || (aceThemeForFile.cache[fn]=((ext && aceThemeForFile.defs[ext]) ||"ace/theme/chrome"));
             return theme;
         }
         
