@@ -315,10 +315,10 @@ ml(`
                    if (addRemove==="add") {
                       fs_li_ed=ed_pre.parentNode;
                       fs_li_ed.classList.add("zoomingEditor");
-                      qs("main").addChild(ed_pre);
+                      qs("main").appendChild(ed_pre);
                    } else {
                       fs_li_ed.classList.remove("zoomingEditor");
-                      fs_li_ed.addChild(ed_pre);
+                      fs_li_ed.appendChild(ed_pre);
                       fs_li_ed=undefined;
                    }
                    
