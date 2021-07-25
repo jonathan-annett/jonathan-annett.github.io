@@ -317,10 +317,11 @@ ml(`
                       fs_li_ed.classList.add("zoomingEditor");
                       qs("main").appendChild(ed_pre);
                       fs_li_ed.editor.resize();
+                      editorResized(fs_li_ed);
                    } else {
                       fs_li_ed.classList.remove("zoomingEditor");
                       fs_li_ed.appendChild(ed_pre);
-                      fs_li_ed.editor.resize();
+                      editorResized(fs_li_ed);
                       fs_li_ed=undefined;
                    }
                    
@@ -959,7 +960,7 @@ ml(`
             
             function editorResized(li_ed){
                 
-                return li_ed.editor.resize();
+                li_ed.editor.resize();
                 
                 var resizeEvent = window.document.createEvent('UIEvents'); 
                 resizeEvent.initUIEvent('resize', true, false, window, 0); 
