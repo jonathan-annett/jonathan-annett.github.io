@@ -37,46 +37,57 @@
     <ul class="hide_hidden hide_full_path ${hidden_files_class}">
 
      <!--html_details>-->
-    <li data-filename="${filename}" class="${li_class}">
-    <a data-inzip="1"> 
-        <span class="deletefile" data-balloon-pos="down-left" aria-label="click to delete ${basename}">
-            <i class="fas fa-trash"></i></i>
+    <li data-filename="${filename}" class="${li_class}" data-inzip="1">
+        <a> 
+            <span class="deletefile" data-balloon-pos="down-right" aria-label="click to delete ${basename}">
+                <i class="fas fa-trash"></i></i>
+            </span>
+        </a>
+        <a> 
+            <span class="undeletefile" data-balloon-pos="down-right" aria-label="${basename} has been deleted. click to resstore">
+                <i class="fas fa-trash-restore"></i></i>
+            </span>
+        </a>
+        
+        <a>
+            <span class="edited"     data-balloon-pos="down-left" aria-label="${basename} has been edited. click to undo edits">
+                <i class="fas fa-not-equal"></i>
+            </span>
+        </a>
+        
+        <span class="not-edited" data-balloon-pos="down-left" aria-label="${basename} matches the copy on the server">
+            <i class="fas fa-equals"></i>
         </span>
-    </a>
-    <a data-filename="${filename}" data-inzip="1"> 
-        <span class="undeletefile" data-balloon-pos="down-left" aria-label="${basename} has been deleted. click to resstore">
-            <i class="fas fa-trash-restore"></i></i>
+        
+        <span class="full_path"><!--parent_link>-->/pwapp/<b>js-keygen-master.zip</b><!--<parent_link-->/</span>
+        <!--link_it>--><!--link_it_path>-->js-keygen-master/<!--<link_it_path-->
+        <a>
+            <span class="code"    data-balloon-pos="down-left" aria-label="click to edit ${basename}"><i class="fas fa-code"></i></span>
+            <!--link_it_filename>-->CNAME<!--<link_it_filename-->
+        </a>
+        <a>
+            <span class="image"   data-balloon-pos="down-left" aria-label="click to view ${basename}"><i class="fas fa-image"></i></span>
+            <!--link_it_filename>-->CNAME<!--<link_it_filename-->
+        </a>
+        <a>
+            <span class="other"   data-balloon-pos="down-left" aria-label="click to open ${basename}"><i class="far fa-file-alt"></i></span>
+            <!--link_it_filename>-->CNAME<!--<link_it_filename-->
+        </a>
+        <a>
+            <span class="zipfile" data-balloon-pos="down-left" aria-label="click to open ${basename}"><i class="fas fa-file-archive"></i></span>
+            <!--link_it_filename>-->CNAME<!--<link_it_filename-->
+        </a>
+        <!--<link_it-->
+        <span class="sha1"       data-balloon-pos="down-left" aria-label="SHA1 hash">
+            <!--sha1>-->11410d0b9dab5949578e5a026edc616a645c5df6<!--<sha1-->
         </span>
-    </a>
-    
-    <span class="edited"     data-balloon-pos="down-left" aria-label="${basename} has been edited. click to undo edits">
-        <i class="fas fa-not-equal"></i>
-    </span>
-    
-    <span class="not-edited" data-balloon-pos="down-left" aria-label="${basename} matches the copy on the server">
-        <i class="fas fa-equals"></i>
-    </span>
-    
-    <span class="full_path"><!--parent_link>-->/pwapp/<b>js-keygen-master.zip</b><!--<parent_link-->/</span>
-    <!--link_it>--><!--link_it_path>-->js-keygen-master/<!--<link_it_path-->
-    
-    <a>
-        <span class="code" data-balloon-pos="down-left" aria-label="click to edit ${basename}"><i class="fas fa-code"></i></span>
-        <span class="image" data-balloon-pos="down-left" aria-label="click to view ${basename}"><i class="fas fa-image"></i></span>
-        <span class="zipfile" data-balloon-pos="down-left" aria-label="click to open ${basename}"><i class="fas fa-file-archive"></i></span>
-        <!--link_it_filename>-->CNAME<!--<link_it_filename-->
-    </a>
-    <!--<link_it-->
-    <span class="sha1"       data-balloon-pos="down-left" aria-label="SHA1 hash">
-        <!--sha1>-->11410d0b9dab5949578e5a026edc616a645c5df6<!--<sha1-->
-    </span>
-    
-    <a>
-        <span class="fullscreen">
-            <i class="fas fa-expand-alt"></i>
-        </span>
-    </a>
-    
+        
+        <a>
+            <span class="fullscreen">
+                <i class="fas fa-expand-alt"></i>
+            </span>
+        </a>
+        
     </li>
     <!--<html_details-->
     </ul> 

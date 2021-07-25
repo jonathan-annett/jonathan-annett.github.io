@@ -114,15 +114,24 @@ ml(`
                 });
                 
 
-                [].forEach.call(document.querySelectorAll("li a span.editinzed"),addEditClick);
+                [].forEach.call(document.querySelectorAll("li a span.code"),addEditClick);
+                
+                [].forEach.call(document.querySelectorAll("li a span.image"),addViewImageClick);
                 
                 [].forEach.call(document.querySelectorAll("li a span.fullscreen"),addZoomClick);
                 
-                [].forEach.call(document.querySelectorAll("li a span.normal"),addViewClick);
+                [].forEach.call(document.querySelectorAll("li a span.other"),addViewClick);
                 
                 [].forEach.call(document.querySelectorAll("li a span.zipfile"),addOpenZipViewClick);
 
                 [].forEach.call(document.querySelectorAll("li a span.deletefile"),addDeleteClick);
+                
+                [].forEach.call(document.querySelectorAll("li a span.undeletefile"),addUndeleteClick);
+                
+                [].forEach.call(document.querySelectorAll("li a span.not-equal"),addUndoEditsClick);
+                
+                
+                
                 
                 
                 let dropArea = document.getElementById('drop-area');
@@ -231,10 +240,37 @@ ml(`
                 }
             }
             
+            function addUndeleteClick (el) {
+                if (el) {
+                  el.addEventListener("click",undeleteClick);
+                  el.parentElement.addEventListener("click",undeleteClick);
+                }
+            }
+            
+            
+            
+            function addUndoEditsClick (el) {
+                if (el) {
+                  el.addEventListener("click",undoEditsClick);
+                  el.parentElement.addEventListener("click",undoEditsClick);
+                }
+            }
+            
+            
+            
+            
             function addEditClick (el) {
                 if (el) {
                   el.addEventListener("click",edBtnClick);
                   el.parentElement.addEventListener("click",edBtnClick);
+                }
+            }
+            
+            
+            function addViewImageClick (el) {
+                if (el) {
+                  el.addEventListener("click",viewImageBtnClick);
+                  el.parentElement.addEventListener("click",viewImageBtnClick);
                 }
             }
             
@@ -321,6 +357,66 @@ ml(`
                 const filename = btn.dataset.filename.replace(/(^\/)/,'');
                 const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
                 if (e.shiftKey) {
+                    open_file(filename);
+                } else {
+                    li.classList.add("editing");
+                    toggleInBuiltEditor ( filename,li )
+                }
+            }
+            
+            function undoEditsClick( e) {
+                e.stopPropagation();
+                //const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+                //const filename = btn.dataset.filename.replace(/(^\/)/,'');
+                const filename = findFilename(e.target);
+                const li = find_li(filename);
+                
+                
+               const file_url = pwaApi.filename_to_url(filename);
+               pwaApi.removeUpdatedURLContents(file_url);
+               refreshStylesheeet(filename,function() {
+                   if (li) {
+                       // if the editor is open an editor id will exist in the li element 
+                       if (!!li.dataset.editor_id) {
+                           
+                           if (zip_files.indexOf(filename)<0) {
+                              // this was a new file.
+                              closeInbuiltEditor(filename,li);
+                              li.parentElement.removeChild(li);
+                              
+                           } else {
+                               // note - opening an already open editor just returns the li_ed element
+                              openInbuiltEditor (filename,li).reload();
+                              li.classList.remove("edited");
+                             
+                           }
+                       } else {
+                           
+                           if (zip_files.indexOf(filename)<0) {
+                              // this was a new file.
+                              li.parentElement.removeChild(li);
+                              
+                           } else {
+                               // note - opening an already open editor just returns the li_ed element
+                              li.classList.remove("edited");
+                           }
+                       }
+                       
+                       
+                           
+                   }
+               });
+               
+                  
+                
+            }
+            
+            function editInZedClick (e) {
+                e.stopPropagation();
+                const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
+                const li = btn.parentElement;
+                const filename = btn.dataset.filename.replace(/(^\/)/,'');
+                const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
                    li.classList.add("editing");
                    
                     modified_files[filename]=1;
@@ -334,15 +430,12 @@ ml(`
                        function(){
                        
                     });
+            }
 
-                } else {
-                    if (e.ctrlKey) {
-                        open_file(filename);
-                    } else {
-                        li.classList.add("editing");
-                        toggleInBuiltEditor ( filename,li )
-                    }
-                }
+            
+            
+            function viewImageBtnClick(e) {
+                
             }
             
             function findFilename(el ) {
@@ -351,73 +444,39 @@ ml(`
             
             function deleteClick(e) {
                 e.stopPropagation();
-                //const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                //const filename = btn.dataset.filename.replace(/(^\/)/,'');
                 const filename = findFilename(e.target);
                 const li = find_li(filename);
-                if (e.shiftKey) {
-                    
-                   // shift delete removes any edits to the file
-                   const file_url = pwaApi.filename_to_url(filename);
-                   pwaApi.removeUpdatedURLContents(file_url);
-                   refreshStylesheeet(filename,function() {
-                       if (li) {
-                           // if the editor is open an editor id will exist in the li element 
-                           if (!!li.dataset.editor_id) {
-                               
-                               if (zip_files.indexOf(filename)<0) {
-                                  // this was a new file.
-                                  closeInbuiltEditor(filename,li);
-                                  li.parentElement.removeChild(li);
-                                  
-                               } else {
-                                   // note - opening an already open editor just returns the li_ed element
-                                  openInbuiltEditor (filename,li).reload();
-                                  li.classList.remove("edited");
-                                 
-                               }
-                           } else {
-                               
-                               if (zip_files.indexOf(filename)<0) {
-                                  // this was a new file.
-                                  li.parentElement.removeChild(li);
-                                  
-                               } else {
-                                   // note - opening an already open editor just returns the li_ed element
-                                  li.classList.remove("edited");
-                               }
-                           }
-                           
-                           
-                               
-                       }
-                   });
+                
                    
-                  
-                   
-                } else {
-                    
-                   // delete click just toggles a delete flag, as well as the hidden flag 
-                   // if "show hidden files" is checked, the delete button changes the highlighting colour,
-                   // so the user can just undelete a deleted file by showing hidden files and  reclicking delete.
-                   // note that deleting a file does not delete any edits, it just prevents the browser from accessing the file
-                   // ( the only exception to this is if the file is inside a virtual zip file that onscures a physical file at the same
-                   //   path. for example, index.html usually replaces the installer index.html. so deleting the index.html inside the zip 
-                   //   allows testing of the installer while the app is techincally still loaded )
-                   
-                   closeInbuiltEditor(filename,li);
+               if (li && !li.classList.contains("deleted")) {
+                   closeInbuiltEditor(filename,li);    
                    pwaApi.toggleDeleteFile(filename,function(err,msg){
                        if (err) return;
-                       
-                       if (li) {
+                       li.classList[msg.deleted?"add":"remove"]('deleted');
+                       li.classList[msg.deleted?"add":"remove"]('hidden');
+                       li.classList.remove("editing");
+                   });
+               }
+            }
+            
+            function undeleteClick(e) {
+                e.stopPropagation();
+                const filename = findFilename(e.target);
+                const li = find_li(filename);
+                
+                   
+                   if (li && li.classList.contains("deleted")) {
+                       closeInbuiltEditor(filename,li);    
+                       pwaApi.toggleDeleteFile(filename,function(err,msg){
+                           if (err) return;
                            li.classList[msg.deleted?"add":"remove"]('deleted');
                            li.classList[msg.deleted?"add":"remove"]('hidden');
                            li.classList.remove("editing");
-                       }
-                   });
-                }
+                       });
+                   }
             }
-
+            
+           
             function onEditorClose () {
                 Object.keys(modified_files).forEach(function(file){
                     const li = find_li(file);

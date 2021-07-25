@@ -61,6 +61,7 @@ li span.undeletefile {
 
 li a span.code,
 li a span.zipfile,
+li a span.other,
 li a span.image,
 
 li span.undeletefile,
@@ -73,6 +74,7 @@ li.edited span.edited {
 }
 
 li.code    a span.code,
+li.other    a span.other,
 li.zipfile a span.zipfile,
 li.image   a span.image,
 li.deleted span.undeletefile,
