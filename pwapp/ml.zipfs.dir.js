@@ -345,7 +345,7 @@ ml(`
                     let editor_id = li.dataset.editor_id;
                     const ed = qs("#"+editor_id);
                     const li_ed = ed.parentNode;
-                    pre_zoom_height = li_ed.offsetHeight;
+                    pre_zoom_height = ed.offsetHeight;
                     return closeInbuiltEditor ( filename,li, function(){
                          openInbuiltEditor ( filename,li, function(){
                              zoomEl = li;
@@ -1036,11 +1036,11 @@ ml(`
                                           
                                           if (height) {
                                               if (height!=="skip") {
-                                                 li_ed.offsetHeight=height;
+                                                 qs("#"+editor_id).offsetHeight=height;
                                               }
                                           } else {
                                               if (data && data.height) {
-                                                  li_ed.offsetHeight=data.height;
+                                                  qs("#"+editor_id).offsetHeight=data.height;
                                               }
                                           }
                                           proceed();
@@ -1155,7 +1155,7 @@ ml(`
                         li_ed.editor,
                         ["theme"],
                         {
-                            height : li_ed.offsetHeight
+                            height : ed.offsetHeight
                         },
                     function(err,json){
                         
