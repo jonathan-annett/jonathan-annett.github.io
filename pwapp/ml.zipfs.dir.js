@@ -120,6 +120,11 @@ ml(`
                 
                 [].forEach.call(document.querySelectorAll("li a.fullscreen"),addZoomClick);
                 
+                [].forEach.call(document.querySelectorAll("li a.exit-fullscreen"),addZoomClick);
+                
+                [].forEach.call(document.querySelectorAll("li a.close-editor"),addCloseEditorClick);
+                
+                
                 [].forEach.call(document.querySelectorAll("li a.other"),addViewClick);
                 
                 [].forEach.call(document.querySelectorAll("li a.zipfile"),addOpenZipViewClick);
@@ -265,7 +270,12 @@ ml(`
             function addEditClick (el) {
                 if (el) {
                   el.addEventListener("click",edBtnClick);
-                  //el.parentElement.addEventListener("click",edBtnClick);
+                }
+            }
+            
+            function addCloseEditorClick (el) {
+                if (el) {
+                  el.addEventListener("click",edBtnClick);
                 }
             }
             
@@ -283,6 +293,10 @@ ml(`
                   //el.parentElement.addEventListener("click",zoomBtnClick);
                 }
             }
+            
+            
+            
+            
             
             function addViewClick (el) {
                 if (el) {
@@ -364,6 +378,8 @@ ml(`
                     toggleInBuiltEditor ( filename,li )
                 }
             }
+            
+            
             
             function undoEditsClick( e) {
                 e.stopPropagation();
