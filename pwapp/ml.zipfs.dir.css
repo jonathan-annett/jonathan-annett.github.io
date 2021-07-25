@@ -73,7 +73,7 @@ li.editing a.deletefile,
 li.editing a.undeletefile,
 li.deleted a.deletefile,
 li.edited span.not-edited,
-li a.edited {
+li a.undo-edits {
     display:none;
 }
 
