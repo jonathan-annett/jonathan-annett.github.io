@@ -69,7 +69,7 @@ li.editing a.deletefile,
 li.editing a.undeletefile,
 li.deleted a.deletefile,
 li.edited span.not-edited,
-li a.edited {
+li a.undo-edits {
     display:none;
 }
 
@@ -78,7 +78,7 @@ li.other   a.other,
 li.zipfile a.zipfile,
 li.image   a.image,
 li.deleted a.undeletefile,
-li.edited  a.edited {
+li.edited  a.undo-edits {
     display:inline-block;
 }
 
