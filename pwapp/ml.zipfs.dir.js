@@ -306,7 +306,8 @@ ml(`
             var zoomEl,fs_editor;            
             function  zoomBtnClick( e ) {
                 e.stopPropagation();
-                
+                const filename = findFilename(e.target);
+                const li = find_li(filename);
                 
                 const zoomClass=function(addRemove) {
                    const li_ed=qs("#"+zoomEl.dataset.editor_id).parentNode;
@@ -346,8 +347,7 @@ ml(`
                     zoomClass("remove");
                     zoomEl=undefined;
                 } else {
-                    const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                    zoomEl = btn.parentElement;
+                    zoomEl = li;
                     zoomClass("add");
                 }
                 
@@ -355,7 +355,7 @@ ml(`
             
             function edBtnClick(e){
                 e.stopPropagation();
-                    const filename = findFilename(e.target);
+                const filename = findFilename(e.target);
                 const li = find_li(filename);
                 if (e.shiftKey) {
                     open_file(filename);
