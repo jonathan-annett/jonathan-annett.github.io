@@ -316,37 +316,46 @@ ml(`
                       fs_li_ed=ed_pre.parentNode;
                       fs_li_ed.classList.add("zoomingEditor");
                       qs("main").appendChild(ed_pre);
+                      fs_li_ed.editor.focus();
                    } else {
                       fs_li_ed.classList.remove("zoomingEditor");
                       fs_li_ed.appendChild(ed_pre);
+                      fs_li_ed.editor.focus();
                       fs_li_ed=undefined;
                    }
                    
                    ed_pre.classList[addRemove]("fs_editor");
                    zoomEl.classList[addRemove]("zooming");
-                   qs('html').classList[addRemove]("zooming"); 
+                   qs('html').classList[addRemove]("zooming");
+                   
                 };
                 
                 if (zoomEl) {
                     zoomClass("remove");
                     zoomEl=undefined;
+                    const li = find_li(filename);
+                    let editor_id = li.dataset.editor_id;
+                    const ed = qs("#"+editor_id);
+                    const li_ed = ed.parentNode;
+                    li_ed.mini_height = li_ed.offsetHeight;
+                    return closeInbuiltEditor ( filename,li, function(){
+                         openInbuiltEditor ( filename,li, function(){
+                         },"skip");
+                    });
+                    
                 } else {
                     const li = find_li(filename);
                     let editor_id = li.dataset.editor_id;
                     const ed = qs("#"+editor_id);
                     const li_ed = ed.parentNode;
-                    if (li_ed.editor_resized) {
-                        return closeInbuiltEditor ( filename,li, function(){
-                             openInbuiltEditor ( filename,li, function(){
-                                 zoomEl = li;
-                                 zoomClass("add");
-                             });
-                        });
-                       
-                    } else {
-                        zoomEl = li;
-                        zoomClass("add");
-                    }
+                    li_ed.mini_height = li_ed.offsetHeight;
+                    return closeInbuiltEditor ( filename,li, function(){
+                         openInbuiltEditor ( filename,li, function(){
+                             zoomEl = li;
+                             zoomClass("add");
+                         },"skip");
+                    });
+                     
                 }
                 
             }
@@ -976,7 +985,7 @@ ml(`
             }
             
             
-            function openInbuiltEditor (filename,li,cb) {
+            function openInbuiltEditor (filename,li,cb,height) {
                 li=li||find_li (filename);
                 const file_url = pwaApi.filename_to_url(filename);
                 let editor_id = li.dataset.editor_id;
@@ -1022,7 +1031,16 @@ ml(`
                                           if (err || (li_ed.editor.session.getValue() !==currentText) ) { 
                                               li_ed.editor.session.setValue(currentText);
                                           }
-                                          //if (data) li_ed.editor.setOptions(data);
+                                          
+                                          if (height) {
+                                              if (height!=="skip") {
+                                                 li_ed.offsetHeight=height;
+                                              }
+                                          } else {
+                                              if (data && data.height) {
+                                                  li_ed.offsetHeight=data.height;
+                                              }
+                                          }
                                           proceed();
                                      });
                                     
@@ -1096,6 +1114,7 @@ ml(`
                                            
                                             li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
                                             delete li_ed.editor_resized;
+                                            li_ed.editor.focus();
                                             if (cb) cb();
                                     });
                                    
@@ -1133,7 +1152,7 @@ ml(`
                         li_ed.editor,
                         ["theme"],
                         {
-                            maxLines : li_ed.editor.getOption("maxLines")
+                            height : li_ed.offsetHeight
                         },
                     function(err,json){
                         
