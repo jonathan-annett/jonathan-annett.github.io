@@ -88,6 +88,7 @@ li.edited  a.edited {
 
 
 
+a.exit-fullscreen,
 a.fullscreen,
 html.zooming li,
 html.zooming #drop-area,
@@ -96,10 +97,16 @@ html.zooming footer {
     display : none;
 }
 
+html.zooming.editing a.exit-fullscreen 
 li.editing a.fullscreen  {
     display : inline-block;
     float: right;
 }
+
+html.zooming.editing a.fullscreen {
+    display : none;
+}
+
 
 html.zooming main {
     top : 0px;
