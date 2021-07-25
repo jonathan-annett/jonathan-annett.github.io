@@ -87,7 +87,7 @@ li.edited  a.edited {
 }
 
 
-
+a.close-editor,
 a.exit-fullscreen,
 a.fullscreen,
 html.zooming li,
@@ -97,7 +97,9 @@ html.zooming footer {
     display : none;
 }
 
-html.zooming.editing a.exit-fullscreen 
+html.zooming.editing a.exit-fullscreen, 
+li.editing a.exit-editor,
+html.zooming li.editing a.exit-editor,
 li.editing a.fullscreen  {
     display : inline-block;
     float: right;
