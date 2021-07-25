@@ -98,8 +98,8 @@ html.zooming footer {
 }
 
 html.zooming.editing a.exit-fullscreen, 
-li.editing a.exit-editor,
-html.zooming li.editing a.exit-editor,
+li.editing a.close-editor,
+html.zooming li.editing a.close-editor,
 li.editing a.fullscreen  {
     display : inline-block;
     float: right;
