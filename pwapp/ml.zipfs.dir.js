@@ -304,7 +304,7 @@ ml(`
             function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
             
             
-            var zoomEl,fs_li_ed;            
+            var zoomEl,fs_li_ed,pre_zoom_height;            
             function  zoomBtnClick( e ) {
                 e.stopPropagation();
                 const filename = findFilename(e.target);
@@ -334,9 +334,10 @@ ml(`
                     // save session state and restore height
                     return closeInbuiltEditor ( filename,zoomEl, function(){
                          openInbuiltEditor ( filename,zoomEl, function(){
-                         },fs_li_ed.mini_height);
+                         },pre_zoom_height);
                          fs_li_ed= undefined;
                          zoomEl=undefined;
+                         pre_zoom_height=undefined;
                     });
                     
                 } else {
@@ -344,7 +345,7 @@ ml(`
                     let editor_id = li.dataset.editor_id;
                     const ed = qs("#"+editor_id);
                     const li_ed = ed.parentNode;
-                    li_ed.mini_height = li_ed.offsetHeight;
+                    pre_zoom_height = li_ed.offsetHeight;
                     return closeInbuiltEditor ( filename,li, function(){
                          openInbuiltEditor ( filename,li, function(){
                              zoomEl = li;
