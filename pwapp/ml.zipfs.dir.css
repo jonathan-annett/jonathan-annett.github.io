@@ -68,8 +68,8 @@ li span.undeletefile,
 li.editing a.deletefile,
 li.editing a.undeletefile,
 li.deleted a.deletefile,
-li span.not-edited,
-li.edited a.edited {
+li.edited span.not-edited,
+li a.edited {
     display:none;
 }
 
