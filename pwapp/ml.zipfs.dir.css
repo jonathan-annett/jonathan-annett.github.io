@@ -54,8 +54,8 @@ a span i {
 }
 
 
-li span.deletefile,
-li span.undeletefile {
+li a.deletefile,
+li a.undeletefile {
     float:right;
 }
 
@@ -65,11 +65,11 @@ li a.other,
 li a.image,
 
 li span.undeletefile,
-li.editing span.deletefile,
-li.editing span.undeletefile,
-li.deleted span.deletefile,
+li.editing a.deletefile,
+li.editing a.undeletefile,
+li.deleted a.deletefile,
 li span.not-edited,
-li.edited span.edited {
+li.edited a.edited {
     display:none;
 }
 
@@ -77,14 +77,14 @@ li.code    a.code,
 li.other   a.other,
 li.zipfile a.zipfile,
 li.image   a.image,
-li.deleted span.undeletefile,
-li.edited  span.edited {
+li.deleted a.undeletefile,
+li.edited  a.edited {
     display:inline-block;
 }
 
 
 
-a span.fullscreen,
+a.fullscreen,
 html.zooming li,
 html.zooming #drop-area,
 html.zooming h1,
@@ -92,7 +92,7 @@ html.zooming footer {
     display : none;
 }
 
-li.editing a span.fullscreen  {
+li.editing a.fullscreen  {
     display : inline-block;
     float: right;
 }

@@ -114,21 +114,21 @@ ml(`
                 });
                 
 
-                [].forEach.call(document.querySelectorAll("li a span.code"),addEditClick);
+                [].forEach.call(document.querySelectorAll("li a.code"),addEditClick);
                 
-                [].forEach.call(document.querySelectorAll("li a span.image"),addViewImageClick);
+                [].forEach.call(document.querySelectorAll("li a.image"),addViewImageClick);
                 
-                [].forEach.call(document.querySelectorAll("li a span.fullscreen"),addZoomClick);
+                [].forEach.call(document.querySelectorAll("li a.fullscreen"),addZoomClick);
                 
-                [].forEach.call(document.querySelectorAll("li a span.other"),addViewClick);
+                [].forEach.call(document.querySelectorAll("li a.other"),addViewClick);
                 
-                [].forEach.call(document.querySelectorAll("li a span.zipfile"),addOpenZipViewClick);
+                [].forEach.call(document.querySelectorAll("li a.zipfile"),addOpenZipViewClick);
 
-                [].forEach.call(document.querySelectorAll("li a span.deletefile"),addDeleteClick);
+                [].forEach.call(document.querySelectorAll("li a.deletefile"),addDeleteClick);
                 
-                [].forEach.call(document.querySelectorAll("li a span.undeletefile"),addUndeleteClick);
+                [].forEach.call(document.querySelectorAll("li a.undeletefile"),addUndeleteClick);
                 
-                [].forEach.call(document.querySelectorAll("li a span.not-equal"),addUndoEditsClick);
+                [].forEach.call(document.querySelectorAll("li a.not-equal"),addUndoEditsClick);
                 
                 
                 
