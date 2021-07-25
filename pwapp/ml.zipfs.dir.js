@@ -1042,7 +1042,7 @@ ml(`
                                           } else {
                                               if (data && data.height) {
                                                   qs("#"+editor_id).offsetHeight=data.height;
-                                                  li_ed.editor.
+                                                  li_ed.editor.resize();
                                               }
                                           }
                                           proceed();
