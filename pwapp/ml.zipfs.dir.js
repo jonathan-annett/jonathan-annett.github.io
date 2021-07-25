@@ -352,10 +352,8 @@ ml(`
             
             function edBtnClick(e){
                 e.stopPropagation();
-                const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                const li = btn.parentElement;
-                const filename = btn.dataset.filename.replace(/(^\/)/,'');
-                const dir_prefix = (zip_virtual_dir ? zip_virtual_dir  : full_zip_uri) + '/';
+                const filename = findFilename(e.target);
+                const li = find_li(filename);
                 if (e.shiftKey) {
                     open_file(filename);
                 } else {
@@ -366,8 +364,6 @@ ml(`
             
             function undoEditsClick( e) {
                 e.stopPropagation();
-                //const btn = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                //const filename = btn.dataset.filename.replace(/(^\/)/,'');
                 const filename = findFilename(e.target);
                 const li = find_li(filename);
                 
@@ -489,8 +485,7 @@ ml(`
             
             function find_li (file) {
                   const anchor = qs('li[data-filename="'+file.replace(/^\//,'')+'"]');
-                  return anchor &&
-                  anchor;
+                  return anchor && anchor;
             }
 
             function viewBtnClick(e){
