@@ -304,10 +304,10 @@ ml(`
             function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
             
             
-            var zoomEl,fs_li_ed,pre_zoom_height;            
+            var zoomEl,fs_li_ed,pre_zoom_height,zoom_filename;            
             function  zoomBtnClick( e ) {
                 e.stopPropagation();
-                const filename = findFilename(e.target);
+                
                 const zoomClass=function(addRemove) {
                     
                    const ed_pre = qs("#"+zoomEl.dataset.editor_id);
@@ -332,8 +332,8 @@ ml(`
                     //move editor to non zoomed ssate 
                     zoomClass("remove");
                     // save session state and restore height
-                    return closeInbuiltEditor ( filename,zoomEl, function(){
-                         openInbuiltEditor ( filename,zoomEl, function(){
+                    return closeInbuiltEditor ( zoom_filename,zoomEl, function(){
+                         openInbuiltEditor ( zoom_filename,zoomEl, function(){
                          },pre_zoom_height);
                          fs_li_ed= undefined;
                          zoomEl=undefined;
@@ -341,13 +341,14 @@ ml(`
                     });
                     
                 } else {
-                    const li = find_li(filename);
+                    zoom_filename = findFilename(e.target);
+                    const li = find_li(zoom_filename);
                     let editor_id = li.dataset.editor_id;
                     const ed = qs("#"+editor_id);
                     const li_ed = ed.parentNode;
                     pre_zoom_height = ed.offsetHeight;
-                    return closeInbuiltEditor ( filename,li, function(){
-                         openInbuiltEditor ( filename,li, function(){
+                    return closeInbuiltEditor ( zoom_filename,li, function(){
+                         openInbuiltEditor ( zoom_filename,li, function(){
                              zoomEl = li;
                              zoomClass("add");
                          },"skip");
