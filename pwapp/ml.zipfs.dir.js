@@ -1120,7 +1120,9 @@ ml(`
                                             li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
                                             li_ed.editor.focus();
                                             resizers.on(li_ed,10,editorResized);
-                                            if (cb) cb();
+                                            if (cb) {
+                                                cb(li_ed);
+                                            }
                                     });
                                    
                                     
@@ -1138,6 +1140,11 @@ ml(`
                 } else {
                     const ed = qs("#"+editor_id);
                     const li_ed = ed.parentNode;
+                   
+                    if (cb) {
+                        cb(li_ed);
+                    }
+              
                     return li_ed;
                 }
             }
@@ -1204,6 +1211,10 @@ ml(`
                     
                     
                    
+                } else {
+                    if (cb) {
+                        cb();
+                    }
                 }
             }
             
