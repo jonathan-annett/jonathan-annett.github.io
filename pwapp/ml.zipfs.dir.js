@@ -239,14 +239,14 @@ ml(`
             function addDeleteClick (el) {
                 if (el) {
                   el.addEventListener("click",deleteClick);
-                  el.parentElement.addEventListener("click",deleteClick);
+                  //el.parentElement.addEventListener("click",deleteClick);
                 }
             }
             
             function addUndeleteClick (el) {
                 if (el) {
                   el.addEventListener("click",undeleteClick);
-                  el.parentElement.addEventListener("click",undeleteClick);
+                  //el.parentElement.addEventListener("click",undeleteClick);
                 }
             }
             
@@ -255,7 +255,7 @@ ml(`
             function addUndoEditsClick (el) {
                 if (el) {
                   el.addEventListener("click",undoEditsClick);
-                  el.parentElement.addEventListener("click",undoEditsClick);
+                 // el.parentElement.addEventListener("click",undoEditsClick);
                 }
             }
             
@@ -265,7 +265,7 @@ ml(`
             function addEditClick (el) {
                 if (el) {
                   el.addEventListener("click",edBtnClick);
-                  el.parentElement.addEventListener("click",edBtnClick);
+                  //el.parentElement.addEventListener("click",edBtnClick);
                 }
             }
             
@@ -273,28 +273,28 @@ ml(`
             function addViewImageClick (el) {
                 if (el) {
                   el.addEventListener("click",viewImageBtnClick);
-                  el.parentElement.addEventListener("click",viewImageBtnClick);
+                  //el.parentElement.addEventListener("click",viewImageBtnClick);
                 }
             }
             
             function addZoomClick (el) {
                 if (el) {
                   el.addEventListener("click",zoomBtnClick);
-                  el.parentElement.addEventListener("click",zoomBtnClick);
+                  //el.parentElement.addEventListener("click",zoomBtnClick);
                 }
             }
             
             function addViewClick (el) {
                 if (el) {
                     el.addEventListener("click",viewBtnClick);
-                    el.parentElement.addEventListener("click",viewBtnClick);
+                   // el.parentElement.addEventListener("click",viewBtnClick);
                 }
             }
             
             function addOpenZipViewClick (el) {
                 if (el) {
                     el.addEventListener("click",openZipBtnClick);
-                    el.parentElement.addEventListener("click",openZipBtnClick);
+                   // el.parentElement.addEventListener("click",openZipBtnClick);
                 }
             }
             
