@@ -51,7 +51,7 @@ a span i {
 
 li span i,
 li a span i {
-      font-size: 0.6em;
+      font-size: 0.7em;
 }
 
 li a.deletefile,
@@ -100,6 +100,7 @@ html.zooming li.editing a.exit-fullscreen,
 li.editing a.close-editor{
     display : inline-block;
     float: right;
+    margin-right:6px;
 }
 
 html.zooming li.editing a.fullscreen {
