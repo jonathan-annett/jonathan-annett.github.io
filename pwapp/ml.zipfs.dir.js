@@ -234,7 +234,6 @@ ml(`
             function addDeleteClick (el) {
                 if (el) {
                   el.addEventListener("click",deleteClick);
-                  //el.parentElement.addEventListener("click",deleteClick);
                 }
             }
             
@@ -321,7 +320,6 @@ ml(`
                       fs_li_ed.classList.remove("zoomingEditor");
                       fs_li_ed.appendChild(ed_pre);
                       fs_li_ed.editor.focus();
-                      fs_li_ed=undefined;
                    }
                    
                    ed_pre.classList[addRemove]("fs_editor");
@@ -331,16 +329,14 @@ ml(`
                 };
                 
                 if (zoomEl) {
+                    //move editor to non zoomed ssate 
                     zoomClass("remove");
-                    zoomEl=undefined;
-                    const li = find_li(filename);
-                    let editor_id = li.dataset.editor_id;
-                    const ed = qs("#"+editor_id);
-                    const li_ed = ed.parentNode;
-                    li_ed.mini_height = li_ed.offsetHeight;
-                    return closeInbuiltEditor ( filename,li, function(){
-                         openInbuiltEditor ( filename,li, function(){
-                         },"skip");
+                    // save session state and restore height
+                    return closeInbuiltEditor ( filename,zoomEl, function(){
+                         openInbuiltEditor ( filename,zoomEl, function(){
+                         },fs_li_ed.mini_height);
+                         fs_li_ed= undefined;
+                         zoomEl=undefined;
                     });
                     
                 } else {
@@ -400,8 +396,10 @@ ml(`
                            
                            if (zip_files.indexOf(filename)<0) {
                               // this was a new file.
-                              closeInbuiltEditor(filename,li);
-                              li.parentElement.removeChild(li);
+                              closeInbuiltEditor(filename,li,function(){
+                                   li.parentElement.removeChild(li);
+                              });
+                             
                               
                            } else {
                                // note - opening an already open editor just returns the li_ed element
@@ -467,13 +465,15 @@ ml(`
                 const li = find_li(filename);
 
                if (li && !li.classList.contains("deleted")) {
-                   closeInbuiltEditor(filename,li);    
-                   pwaApi.toggleDeleteFile(filename,function(err,msg){
-                       if (err) return;
-                       li.classList[msg.deleted?"add":"remove"]('deleted');
-                       li.classList[msg.deleted?"add":"remove"]('hidden');
-                       li.classList.remove("editing");
-                   });
+                   closeInbuiltEditor(filename,li,function(){
+                       pwaApi.toggleDeleteFile(filename,function(err,msg){
+                           if (err) return;
+                           li.classList[msg.deleted?"add":"remove"]('deleted');
+                           li.classList[msg.deleted?"add":"remove"]('hidden');
+                           li.classList.remove("editing");
+                       });
+                   });    
+                   
                }
             }
             
@@ -484,13 +484,15 @@ ml(`
                 
                    
                    if (li && li.classList.contains("deleted")) {
-                       closeInbuiltEditor(filename,li);    
-                       pwaApi.toggleDeleteFile(filename,function(err,msg){
-                           if (err) return;
-                           li.classList[msg.deleted?"add":"remove"]('deleted');
-                           li.classList[msg.deleted?"add":"remove"]('hidden');
-                           li.classList.remove("editing");
-                       });
+                       closeInbuiltEditor(filename,li,function(){
+                           pwaApi.toggleDeleteFile(filename,function(err,msg){
+                               if (err) return;
+                               li.classList[msg.deleted?"add":"remove"]('deleted');
+                               li.classList[msg.deleted?"add":"remove"]('hidden');
+                               li.classList.remove("editing");
+                           });
+                       });    
+                       
                    }
             }
             
