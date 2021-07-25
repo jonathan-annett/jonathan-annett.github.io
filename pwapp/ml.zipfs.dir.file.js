@@ -38,6 +38,15 @@ ml(`
         };
         
         
+        function regexpEscape(str) {
+            return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
+        }
+        
+        
+        function extractWrapperTags(tag) {
+            return [ '<!--'+tag+'>-->', '<!--<'+tag+'-->'];
+        }
+        
         function extractWrapperRegExp(tag) {
            
            if (!extractWrapperRegExp.cache) {
@@ -45,7 +54,8 @@ ml(`
            }
            
            if (!extractWrapperRegExp.cache[tag]) {
-                extractWrapperRegExp.cache[tag] = new RegExp('(?:<\\!\\-\\-'+tag+'\\>\\-\\-\\>)(.*)(?:<\\!\\-\\-<'+tag+'\-\-\>)','');
+               const [prefix,suffix] = extractWrapperTags(tag).map(regexpEscape);
+               extractWrapperRegExp.cache[tag] = new RegExp( '(?:'+prefix+')(.*)(?:'+suffix+')','');
            }
            
            return extractWrapperRegExp.cache[tag];
@@ -57,7 +67,7 @@ ml(`
         }
         
         function replaceWrapperText(text,tag,withText) {
-           if (options.keep_comments) withText = '<!--'+tag+'>-->'+withText+'<!--<'+tag+'-->';
+           if (options.keep_comments) withText = extractWrapperTags(tag).join(withText);
            return text.replace(extractWrapperRegExp(tag),withText);
         }
         
