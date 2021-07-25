@@ -216,7 +216,8 @@ ml(`
                                            renderer({
                                                uri:uri,
                                                head_script:head_script.join("\n"),
-                                               hidden_files_class:hidden_files_exist?' hidden_files_exist':''
+                                               hidden_files_class:hidden_files_exist?' hidden_files_exist':'',
+                                               designer:'',
                                            }),
                                            
                                            'html_details',
