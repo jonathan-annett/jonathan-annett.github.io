@@ -1036,12 +1036,12 @@ ml(`
                                           
                                           if (height) {
                                               if (height!=="skip") {
-                                                 qs("#"+editor_id).offsetHeight=height;
+                                                 qs("#"+editor_id).style.height=""+height+"px";
                                                  li_ed.editor.resize();
                                               }
                                           } else {
                                               if (data && data.height) {
-                                                  qs("#"+editor_id).offsetHeight=data.height;
+                                                  qs("#"+editor_id).style.height=""+data.height+"px";
                                                   li_ed.editor.resize();
                                               }
                                           }
