@@ -68,7 +68,7 @@ li a.zipfile,
 li a.other,
 li a.image,
 
-li span.undeletefile,
+li a.undeletefile,
 li.editing a.deletefile,
 li.editing a.undeletefile,
 li.deleted a.deletefile,

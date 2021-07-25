@@ -38,18 +38,7 @@
 
      <!--html_details>-->
     <li data-filename="${filename}" class="${li_class}" data-inzip="${is_in_zip}">
-        <a class="deletefile"> 
-            <span data-balloon-pos="down-right" aria-label="click to delete ${basename}">
-                <i class="fas fa-trash"></i></i>
-            </span>
-        </a>
-        <a class="undeletefile"> 
-            <span data-balloon-pos="down-right" aria-label="${basename} has been deleted. click to resstore">
-                <i class="fas fa-trash-restore"></i></i>
-            </span>
-        </a>
-        
-        <a class="edited">
+         <a class="edited">
             <span     data-balloon-pos="down-left" aria-label="${basename} has been edited. click to undo edits">
                 <i class="fas fa-not-equal"></i>
             </span>
@@ -83,10 +72,23 @@
         </span>
         
         <a class="fullscreen">
-            <span>
+            <span data-balloon-pos="down-right" aria-label="click to expand editor to fill browser window">
                 <i class="fas fa-expand-alt"></i>
             </span>
         </a>
+        
+        <a class="deletefile"> 
+            <span data-balloon-pos="down-right" aria-label="click to delete ${basename}">
+                <i class="fas fa-trash"></i></i>
+            </span>
+        </a>
+        <a class="undeletefile"> 
+            <span data-balloon-pos="down-right" aria-label="${basename} has been deleted. click to resstore">
+                <i class="fas fa-trash-restore"></i></i>
+            </span>
+        </a>
+        
+    
         
     </li>
     <!--<html_details-->
