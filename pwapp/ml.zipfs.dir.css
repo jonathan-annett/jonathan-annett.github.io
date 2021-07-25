@@ -53,6 +53,10 @@ a span i {
     text-align: center;
 }
 
+li span i,
+li a span i {
+      font-size: 0.5em;
+}
 
 li a.deletefile,
 li a.undeletefile {
@@ -70,7 +74,6 @@ li.editing a.undeletefile,
 li.deleted a.deletefile,
 li.edited span.not-edited,
 li a.edited {
-    line-height : 12 px;
     display:none;
 }
 
