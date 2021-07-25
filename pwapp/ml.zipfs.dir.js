@@ -114,8 +114,8 @@ ml(`
                 });
                 
 
-                [].forEach.call(document.querySelectorAll("li > a.code"),addEditClick);
-                [].forEach.call(document.querySelectorAll("li > a.close-editor"),addEditClick);
+                [].forEach.call(document.querySelectorAll("li > a.code"),addOpenEditorClick);
+                [].forEach.call(document.querySelectorAll("li > a.close-editor"),addCloseEditorClick);
                 [].forEach.call(document.querySelectorAll("li > a.image"),addViewImageClick);
                 [].forEach.call(document.querySelectorAll("li > a.fullscreen"),addZoomClick);
                 [].forEach.call(document.querySelectorAll("li > a.exit-fullscreen"),addZoomClick);
@@ -257,15 +257,15 @@ ml(`
             
             
             
-            function addEditClick (el) {
+            function addOpenEditorClick (el) {
                 if (el) {
-                  el.addEventListener("click",edBtnClick);
+                  el.addEventListener("click",openEditorClick);
                 }
             }
             
             function addCloseEditorClick (el) {
                 if (el) {
-                  qs(el,"a i").addEventListener("click",edBtnClick);
+                  qs(el,"a i").addEventListener("click",closeEditorBtnClick);
                 }
             }
             
@@ -366,16 +366,27 @@ ml(`
                 
             }
             
-            function edBtnClick(e){
+            function openEditorClick(e){
                 e.stopPropagation();
                 const filename = findFilename(e.target);
                 const li = find_li(filename);
                 if (e.shiftKey) {
                     open_file(filename);
                 } else {
-                    li.classList.add("editing");
-                    toggleInBuiltEditor ( filename,li )
+                    openInbuiltEditor ( filename,li )
                 }
+            }
+            
+            function closeEditorBtnClick(e) {
+                e.stopPropagation();
+                const filename = findFilename(e.target);
+                const li = find_li(filename);
+                if (e.shiftKey) {
+                    open_file(filename);
+                } else {
+                    closeInbuiltEditor ( filename,li )
+                }
+                
             }
             
             
@@ -1125,6 +1136,8 @@ ml(`
                 li=li||find_li (filename);
                 let editor_id = li.dataset.editor_id;
                 if (editor_id) {
+                    li.classList.remove("editing");
+                    
                     const ed = qs("#"+editor_id);
                     
                     const li_ed = ed.parentNode;
