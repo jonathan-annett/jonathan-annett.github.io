@@ -40,29 +40,23 @@ ml(`
         };
         
         
-        function regexpEscape(str) {
-            return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
-        }
-        
-        
+       
         function extractWrapperTags(tag) {
             return [ '<!--'+tag+'>-->', '<!--<'+tag+'-->'];
         }
-        
-        function extractWrapperRegExp(tag) {
-           
-           if (!extractWrapperRegExp.cache) {
-               extractWrapperRegExp.cache={}; 
-           }
-           
-           if (!extractWrapperRegExp.cache[tag]) {
-               const [prefix,suffix] = extractWrapperTags(tag).map(regexpEscape);
-               extractWrapperRegExp.cache[tag] = new RegExp( '(?:'+prefix+')(.*)(?:'+suffix+')','');
-           }
-           
-           return extractWrapperRegExp.cache[tag];
+
+        function replaceVarWrapperTags(tag) {
+           return [ '${'+tag+'}', '<!--'+tag+'-->'];
         }
         
+        function replaceVarText(text,key,value) {
+            replaceVarWrapperTags(key).forEach(function(search){
+                text = text.split(search).join(value);
+            });
+            return text;
+        }
+
+
         function extractWrapperText(text,tag) {
            const [prefix,suffix] = extractWrapperTags(tag);
            const start = text.indexOf(prefix);
@@ -74,7 +68,7 @@ ml(`
         }
         
          
-        function replaceWrapperText(text,tag,withText) {
+          function replaceWrapperText(text,tag,withText) {
             
             const [prefix,suffix] = extractWrapperTags(tag);
             const prefix_len = prefix.length, suffix_len = suffix.length;
@@ -95,44 +89,45 @@ ml(`
             }
         }
         
-          function html_file_template(dir_html) {
-            
-            const html_details_html = extractWrapperText(dir_html,'html_details');
-            if (!html_details_html) return false;
-            
-            const link_it_html    = extractWrapperText(html_details_html,'link_it');
-            
-            return file_template;
-            
-            function file_template(vars) {
+         function html_file_template(dir_html) {
                 
-                let html = replaceWrapperText(html_details_html,"link_it",linkit(vars.link_it_path,vars.link_it_filename));
-
-                Object.keys(vars).forEach(function(k){
-                    const v = vars[k];
-                    html = replaceWrapperText(html,k,v);
-                });
+                const html_details_html = extractWrapperText(dir_html,'html_details');
+                if (!html_details_html) return false;
                 
-                return html;
-            }
-            
-            function link_it_wrapper(path,filename) {
-               return  replaceWrapperText(
-                         replaceWrapperText(link_it_html,"link_it_filename",filename),
-                         "link_it_path",
-                         path
-                       );  
-            }
-            
-           
-            function linkit(uri,disp){ 
-                //a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
-                const split=(disp||uri).split("/");
-                if (split.length===1) return link_it_wrapper ('', disp||uri);         //   a_wrap.join(disp||uri);
-                const last = split.pop();
-                if (split.length===1) return link_it_wrapper(split[0]+'/' ,last );    //split[0]+'/'+ a_wrap.join(last);
-                return link_it_wrapper( split.join("/")+'/', last );                  //split.join("/")+'/'+ a_wrap.join(last);
-            }
+                const link_it_html    = extractWrapperText(html_details_html,'link_it');
+                
+                return file_template;
+                
+                function file_template(vars) {
+                    
+                    let html = replaceWrapperText(html_details_html,"link_it",linkit(vars.link_it_path,vars.link_it_filename));
+    
+                    Object.keys(vars).forEach(function(key){
+                        const value = vars[key];
+                        html = replaceWrapperText(html,key,value);
+                        html = replaceVarText(text,key,value)
+                    });
+                    
+                    return html;
+                }
+                
+                function link_it_wrapper(path,filename) {
+                   return  replaceWrapperText(
+                             replaceWrapperText(link_it_html,"link_it_filename",filename),
+                             "link_it_path",
+                             path
+                           );  
+                }
+                
+               
+                function linkit(uri,disp){ 
+                    //a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
+                    const split=(disp||uri).split("/");
+                    if (split.length===1) return link_it_wrapper ('', disp||uri);         //   a_wrap.join(disp||uri);
+                    const last = split.pop();
+                    if (split.length===1) return link_it_wrapper(split[0]+'/' ,last );    //split[0]+'/'+ a_wrap.join(last);
+                    return link_it_wrapper( split.join("/")+'/', last );                  //split.join("/")+'/'+ a_wrap.join(last);
+                }
 
         }
         
