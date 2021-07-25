@@ -322,6 +322,7 @@ ml(`
                       fs_li_ed=undefined;
                    }
                    
+                   ed_pre.classList[addRemove]("fs_editor");
                    zoomEl.classList[addRemove]("zooming");
                    qs('html').classList[addRemove]("zooming"); 
                 };
