@@ -34,7 +34,9 @@ ml(`
             get_html_file_item,
             boldit,
             linkit,
-            fileIsEditable
+            fileIsEditable,
+            extractWrapperText,
+            replaceWrapperText
         };
         
         
@@ -61,7 +63,7 @@ ml(`
            return extractWrapperRegExp.cache[tag];
         }
         
-        function extractWrapperText2(text,tag) {
+        function extractWrapperText(text,tag) {
            const [prefix,suffix] = extractWrapperTags(tag);
            const start = text.indexOf(prefix);
            if (start<0) return false;
@@ -71,12 +73,8 @@ ml(`
            return text.substr(0,end);
         }
         
-        function extractWrapperText(text,tag) {
-           const  match = extractWrapperRegExp(tag).exec(text);
-           return match ? match [1] : extractWrapperText2(text,tag);
-        }
-        
-        function replaceWrapperText2(text,tag,withText) {
+         
+        function replaceWrapperText(text,tag,withText) {
             
             const [prefix,suffix] = extractWrapperTags(tag);
             const prefix_len = prefix.length, suffix_len = suffix.length;
@@ -97,18 +95,7 @@ ml(`
             }
         }
         
-        function replaceWrapperText(text,tag,withText) {
-           const output = options.keep_comments ? extractWrapperTags(tag).join(withText) : withText ;
-           const re = extractWrapperRegExp(tag);
-           if (re.test(text)) {
-              return text.replace(re,output);
-           }
-           // regex failed for some reason, so try indexOf search method.
-           return replaceWrapperText2(text,tag,withText);
-           
-        }
-        
-        function html_file_template(dir_html) {
+          function html_file_template(dir_html) {
             
             const html_details_html = extractWrapperText(dir_html,'html_details');
             if (!html_details_html) return false;

@@ -88,7 +88,8 @@ ml(`
                                                    get_html_file_item,
                                                    boldit,
                                                    linkit,
-                                                   fileIsEditable
+                                                   fileIsEditable,
+                                                   replaceWrapperText
                                                } = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
                                                
                                                const html_file_func = get_html_file_item(dir_html) || html_file_item;
@@ -143,9 +144,16 @@ ml(`
                                                html_details,parent_link) {
                                                */
                            
-                                               const html = renderHtml (renderer,tools,updated_prefix,uri,
-                                               virtual,zipFileMeta.alias_root,all_files,htmlFileItemLibOpts.hidden_files_exist,
-                                               html_details,parent_link);
+                                               const html = renderHtml (
+                                                   renderer,
+                                                   replaceWrapperText,
+                                                   tools,updated_prefix,uri,
+                                                   virtual,zipFileMeta.alias_root,
+                                                   all_files,
+                                                   htmlFileItemLibOpts.hidden_files_exist,
+                                                   html_details,
+                                                   parent_link
+                                               );
                            
                                                return resolve( 
                                                    
@@ -179,9 +187,13 @@ ml(`
                           
                            
                             function renderHtml (
-                                renderer,tools,updated_prefix,uri,
-                                virtual,alias_root,files, hidden_files_exist,
-                                html_details,parent_link) {
+                            
+                                renderer,replaceWrapperText,
+                                tools,updated_prefix,uri,
+                                virtual,alias_root,files, 
+                                hidden_files_exist,
+                                html_details,
+                                parent_link) {
                                
                                
                                const head_script = [
@@ -201,12 +213,20 @@ ml(`
                                                        '</script>'
                                                    ];
                                                    
-                               return renderer({
-                                   uri:uri,
-                                   head_script:head_script.join("\n"),
-                                   html_details:html_details.join("\n"),
-                                   hidden_files_class:hidden_files_exist?' hidden_files_exist':''
-                               });
+                               return replaceWrapperText ( 
+                                   
+                                           renderer({
+                                               uri:uri,
+                                               head_script:head_script.join("\n"),
+                                               hidden_files_class:hidden_files_exist?' hidden_files_exist':''
+                                           }),
+                                           
+                                           'html_details',
+                                           
+                                           html_details.join("\n")
+                                      );
+                               
+                               
                                /*
                                return htmlTemplate .replace(/<\!--head_script--\>/,head_script.join("\n") )
                                                    .replace(/\$\{uri\}/g,uri)
