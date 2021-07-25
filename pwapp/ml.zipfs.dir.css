@@ -59,10 +59,10 @@ li span.undeletefile {
     float:right;
 }
 
-li a span.code,
-li a span.zipfile,
-li a span.other,
-li a span.image,
+li a.code,
+li a.zipfile,
+li a.other,
+li a.image,
 
 li span.undeletefile,
 li.editing span.deletefile,
@@ -73,10 +73,10 @@ li.edited span.edited {
     display:none;
 }
 
-li.code    a span.code,
-li.other   a span.other,
-li.zipfile a span.zipfile,
-li.image   a span.image,
+li.code    a.code,
+li.other   a.other,
+li.zipfile a.zipfile,
+li.image   a.image,
 li.deleted span.undeletefile,
 li.edited  span.edited {
     display:inline-block;
