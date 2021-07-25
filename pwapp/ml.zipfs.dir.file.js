@@ -37,7 +37,9 @@ ml(`
             boldit,
             linkit,
             extractWrapperText,
-            replaceWrapperText
+            replaceWrapperText,
+            replaceVarText,
+            replaceTextVars,
         };
         
         
@@ -69,7 +71,7 @@ ml(`
         }
         
          
-          function replaceWrapperText(text,tag,withText) {
+        function replaceWrapperText(text,tag,withText) {
             
             const [prefix,suffix] = extractWrapperTags(tag);
             const prefix_len = prefix.length, suffix_len = suffix.length;
@@ -90,7 +92,20 @@ ml(`
             }
         }
         
-         function html_file_template(dir_html) {
+        
+        function replaceTextVars(text,vars) {
+            
+            Object.keys(vars).forEach(function(key){
+                const value = vars[key];
+                text = replaceWrapperText(text,key,value);
+                text = replaceVarText(text,key,value)
+            });
+            
+            return text;
+        }
+        
+        
+        function html_file_template(dir_html) {
                 
                 const html_details_html = extractWrapperText(dir_html,'html_details');
                 if (!html_details_html) return false;
@@ -101,15 +116,19 @@ ml(`
                 
                 function file_template(vars) {
                     
-                    let html = replaceWrapperText(html_details_html,"link_it",linkit(vars.link_it_path,vars.link_it_filename));
-    
-                    Object.keys(vars).forEach(function(key){
-                        const value = vars[key];
-                        html = replaceWrapperText(html,key,value);
-                        html = replaceVarText(html,key,value)
-                    });
-                    
-                    return html;
+                    return replaceTextVars(
+                        replaceWrapperText(html_details_html,"link_it",linkit(vars.link_it_path,vars.link_it_filename)),
+                        vars
+                    ); 
+                }
+                
+                function linkit(uri,disp){ 
+                    //a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
+                    const split=(disp||uri).split("/");
+                    if (split.length===1) return link_it_wrapper ('', disp||uri);         //   a_wrap.join(disp||uri);
+                    const last = split.pop();
+                    if (split.length===1) return link_it_wrapper(split[0]+'/' ,last );    //split[0]+'/'+ a_wrap.join(last);
+                    return link_it_wrapper( split.join("/")+'/', last );                  //split.join("/")+'/'+ a_wrap.join(last);
                 }
                 
                 function link_it_wrapper(path,filename) {
@@ -121,14 +140,7 @@ ml(`
                 }
                 
                
-                function linkit(uri,disp){ 
-                    //a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
-                    const split=(disp||uri).split("/");
-                    if (split.length===1) return link_it_wrapper ('', disp||uri);         //   a_wrap.join(disp||uri);
-                    const last = split.pop();
-                    if (split.length===1) return link_it_wrapper(split[0]+'/' ,last );    //split[0]+'/'+ a_wrap.join(last);
-                    return link_it_wrapper( split.join("/")+'/', last );                  //split.join("/")+'/'+ a_wrap.join(last);
-                }
+               
 
         }
         

@@ -42,7 +42,7 @@ ml(`
                                        
                                        return resolve ();
                                    }
-                                   zipFSDirHtml (function (err,dir_html,renderer){ 
+                                   zipFSDirHtml (function (err,dir_html){ 
                                        
                                        if (err) {
                                            return resolve(new Response('', {
@@ -87,7 +87,10 @@ ml(`
                                                    boldit,
                                                    linkit,
                                                    fileIsEditable,
-                                                   replaceWrapperText
+                                                   extractWrapperText,
+                                                   replaceWrapperText,
+                                                   replaceVarText,
+                                                   replaceTextVars
                                                } = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
                                                
                                                const html_file_func = get_html_file_item(dir_html) || html_file_item;
@@ -143,7 +146,7 @@ ml(`
                                                */
                            
                                                const html = renderHtml (
-                                                   renderer,
+                                                   dir_html,
                                                    replaceWrapperText,
                                                    tools,updated_prefix,uri,
                                                    virtual,zipFileMeta.alias_root,
@@ -186,7 +189,7 @@ ml(`
                            
                             function renderHtml (
                             
-                                renderer,replaceWrapperText,
+                                dir_html,replaceVarText,
                                 tools,updated_prefix,uri,
                                 virtual,alias_root,files, 
                                 hidden_files_exist,
@@ -211,19 +214,17 @@ ml(`
                                                        '</script>'
                                                    ];
                                                    
-                               return replaceWrapperText ( 
+                               return replaceVarText( 
                                    
-                                           renderer({
+                                            dir_html, {
                                                uri:uri,
                                                head_script:head_script.join("\n"),
                                                hidden_files_class:hidden_files_exist?' hidden_files_exist':'',
                                                designer:'',
-                                           }),
-                                           
-                                           'html_details',
-                                           
-                                           html_details.join("\n")
-                                      );
+                                               html_details : html_details.join("\n")
+                                           }
+
+                                );
                                
                                
                                /*
