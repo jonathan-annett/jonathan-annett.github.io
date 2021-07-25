@@ -114,26 +114,16 @@ ml(`
                 });
                 
 
-                [].forEach.call(document.querySelectorAll("li a.code"),addEditClick);
-                
-                [].forEach.call(document.querySelectorAll("li a.close-editor"),addEditClick);
-                
-                [].forEach.call(document.querySelectorAll("li a.image"),addViewImageClick);
-                
-                [].forEach.call(document.querySelectorAll("li a.fullscreen"),addZoomClick);
-                
-                [].forEach.call(document.querySelectorAll("li a.exit-fullscreen"),addZoomClick);
-                
-
-                [].forEach.call(document.querySelectorAll("li a.other"),addViewClick);
-                
-                [].forEach.call(document.querySelectorAll("li a.zipfile"),addOpenZipViewClick);
-
-                [].forEach.call(document.querySelectorAll("li a.deletefile"),addDeleteClick);
-                
-                [].forEach.call(document.querySelectorAll("li a.undeletefile"),addUndeleteClick);
-                
-                [].forEach.call(document.querySelectorAll("li a.not-equal"),addUndoEditsClick);
+                [].forEach.call(document.querySelectorAll("li > a.code"),addEditClick);
+                [].forEach.call(document.querySelectorAll("li > a.close-editor"),addEditClick);
+                [].forEach.call(document.querySelectorAll("li > a.image"),addViewImageClick);
+                [].forEach.call(document.querySelectorAll("li > a.fullscreen"),addZoomClick);
+                [].forEach.call(document.querySelectorAll("li > a.exit-fullscreen"),addZoomClick);
+                [].forEach.call(document.querySelectorAll("li > a.other"),addViewClick);
+                [].forEach.call(document.querySelectorAll("li > a.zipfile"),addOpenZipViewClick);
+                [].forEach.call(document.querySelectorAll("li > a.deletefile"),addDeleteClick);
+                [].forEach.call(document.querySelectorAll("li > a.undeletefile"),addUndeleteClick);
+                [].forEach.call(document.querySelectorAll("li > a.not-equal"),addUndoEditsClick);
                 
                 setupDragAndDrop();
                 
