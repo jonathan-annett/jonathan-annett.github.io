@@ -89,7 +89,7 @@ ml(`
                 const end     = text2.indexOf(suffix);
                 if (end<0) return text;
                 const text3   = text2.substr(end+suffix_len);
-                const newText = text2 + output + rep(text3);
+                const newText = text.substr(0,start) + output + rep(text3);
                 
                 return newText;
             }
