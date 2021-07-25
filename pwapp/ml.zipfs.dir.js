@@ -305,7 +305,7 @@ ml(`
             function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
             
             
-            var zoomEl,fs_editor;            
+            var zoomEl,fs_editor,fs_editor_pre;            
             function  zoomBtnClick( e ) {
                 e.stopPropagation();
                 const filename = findFilename(e.target);
@@ -320,10 +320,10 @@ ml(`
                    if (addRemove==="add") {
                       if (!fs_editor) {
                          
-                         const el = document.createElement("pre");
-                         el.id = "fs_editor";
+                         fs_editor_pre = document.createElement("pre");
+                         fs_editor_pre.id = "fs_editor";
                          
-                         qs("main").appendChild(el);
+                         qs("main").appendChild(fs_editor_pre);
                           
                          fs_editor = ace.edit("fs_editor");
                          fs_editor.setAutoScrollEditorIntoView(true);
@@ -341,6 +341,17 @@ ml(`
                        li_ed.editor.setSession(fs_editor.getSession());
                        li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
                        li_ed.editor.focus();
+                       
+                       fs_editor.destroy();
+                       fs_editor=undefined;
+                       
+                       while (fs_editor_pre.firstChild) {
+                           fs_editor_pre.removeChild(fs_editor_pre.firstChild);
+                       }
+                   
+                       qs("main").removeChild(fs_editor_pre);
+                       fs_editor_pre=undefined;
+                       
                         
                    }
                 };
@@ -1135,6 +1146,8 @@ ml(`
                             li.classList.remove("editing");
                             li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
         
+                            li_ed.editor.destroy();
+                            
                             li_ed.removeChild(ed);
                             
                             
@@ -1149,6 +1162,12 @@ ml(`
                             delete li_ed.hashDisplay;
                             delete li_ed.setText;
                             delete li_ed.reload;
+                            
+                            
+                            while (li_ed.firstChild) {
+                                li_ed.removeChild(li_ed.firstChild);
+                            }
+                        
                             
                             li_ed.parentNode.removeChild(li_ed);
                             
