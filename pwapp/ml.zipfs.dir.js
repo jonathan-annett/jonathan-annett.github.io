@@ -465,7 +465,7 @@ ml(`
                     const img = document.createElement("img");
                     const file_url = pwaApi.filename_to_url(filename);
                     const newLi = document.createElement("li");
-                    newLi.class="image_viewer";
+                    newLi.classList.add("image_viewer");
                     newLi.appendChild(img);
                     li.parentElement.insertBefore(newLi,nextSib);
                     img.src = file_url;
