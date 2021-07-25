@@ -70,6 +70,7 @@ li.editing a.undeletefile,
 li.deleted a.deletefile,
 li.edited span.not-edited,
 li a.edited {
+    line-height : 12 px;
     display:none;
 }
 
