@@ -130,10 +130,43 @@ ml(`
                 
                 [].forEach.call(document.querySelectorAll("li a.not-equal"),addUndoEditsClick);
                 
+                setupDragAndDrop();
                 
+             
+                if (editor_channel) {
                 
+                        getStylesheets(editor_channel,zip_virtual_dir,function(urls){
+                            
+                            available_css.splice(0,available_css.length);
+                            
+                            available_css.push.apply(available_css,urls.map(function(u){
+                                return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
+                            }));
+                            
+                            console.log({available_css});
+                            
+                            getScripts(editor_channel,zip_virtual_dir,function(urls){
+                                
+                                available_scripts.splice(0,available_scripts.length);
+                                
+                                available_scripts.push.apply(available_scripts,urls.map(function(u){
+                                    return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
+                                }));
+                                
+                                console.log({available_scripts});
+                            
+                            });
+                            
+                        });
+                        
+                        
+                }
                 
-                
+            }
+            
+            
+            function setupDragAndDrop() {
+            
                 let dropArea = document.getElementById('drop-area');
                 
                 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -194,36 +227,6 @@ ml(`
                         });
 
                     });
-                }
-                
-                
-                if (editor_channel) {
-                
-                        getStylesheets(editor_channel,zip_virtual_dir,function(urls){
-                            
-                            available_css.splice(0,available_css.length);
-                            
-                            available_css.push.apply(available_css,urls.map(function(u){
-                                return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
-                            }));
-                            
-                            console.log({available_css});
-                            
-                            getScripts(editor_channel,zip_virtual_dir,function(urls){
-                                
-                                available_scripts.splice(0,available_scripts.length);
-                                
-                                available_scripts.push.apply(available_scripts,urls.map(function(u){
-                                    return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
-                                }));
-                                
-                                console.log({available_scripts});
-                            
-                            });
-                            
-                        });
-                        
-                        
                 }
                 
             }
@@ -442,8 +445,7 @@ ml(`
                 e.stopPropagation();
                 const filename = findFilename(e.target);
                 const li = find_li(filename);
-                
-                   
+
                if (li && !li.classList.contains("deleted")) {
                    closeInbuiltEditor(filename,li);    
                    pwaApi.toggleDeleteFile(filename,function(err,msg){
@@ -490,13 +492,12 @@ ml(`
 
             function viewBtnClick(e){
                 e.stopPropagation();
-                //const btn      = e.target.dataset && e.target.dataset.filename ? e.target : e.target.parentElement ;
-                //const filename = btn.dataset.filename.replace(/(^\/)/,'');
                 const filename = findFilename(e.target);
                 open_file (filename);
             }
             
             function openZipBtnClick(e){
+                
                    if (!e.shiftKey) {
                        return;
                    }
@@ -670,6 +671,7 @@ ml(`
                     }
                 }
             }
+            
             function removeEditHook (file_url,fn) {
                 if (typeof fn=='function') {
                     
