@@ -61,14 +61,51 @@ ml(`
            return extractWrapperRegExp.cache[tag];
         }
         
+        function extractWrapperText2(text,tag) {
+           const [prefix,suffix] = extractWrapperTags(tag);
+           const start = text.indexOf(prefix);
+           if (start<0) return false;
+           text = text.substr(start+prefix.length);
+           const end = text.indexOf(suffix);
+           if (end<0) return false;
+           return text.substr(0,end);
+        }
+        
         function extractWrapperText(text,tag) {
            const  match = extractWrapperRegExp(tag).exec(text);
-           return match ? match [1] : false;
+           return match ? match [1] : extractWrapperText2(text,tag);
+        }
+        
+        function replaceWrapperText2(text,tag,withText) {
+            
+            const [prefix,suffix] = extractWrapperTags(tag);
+            const prefix_len = prefix.length, suffix_len = suffix.length;
+            const output  = options.keep_comments ? prefix+withText+suffix : withText ;
+            return rep(text);
+            
+            function rep (text) {
+                const start   = text.indexOf(prefix);
+                if (start<0) return text;
+                
+                const text2   = text.substr(start+prefix_len);
+                const end     = text2.indexOf(suffix);
+                if (end<0) return text;
+                const text3   = text2.substr(end+suffix_len);
+                const newText = text2 + output + rep(text3);
+                
+                return newText;
+            }
         }
         
         function replaceWrapperText(text,tag,withText) {
-           if (options.keep_comments) withText = extractWrapperTags(tag).join(withText);
-           return text.replace(extractWrapperRegExp(tag),withText);
+           const output = options.keep_comments ? extractWrapperTags(tag).join(withText) : withText ;
+           const re = extractWrapperRegExp(tag);
+           if (re.test(text)) {
+              return text.replace(re,output);
+           }
+           // regex failed for some reason, so try indexOf search method.
+           return replaceWrapperText2(text,tag,withText);
+           
         }
         
         function html_file_template(dir_html) {
