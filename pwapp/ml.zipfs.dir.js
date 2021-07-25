@@ -983,7 +983,6 @@ ml(`
             function editorResized(li_ed){
                 
                 li_ed.editor.resize();
-                li_ed.editor_resized=true;
             }
             
             
@@ -1012,7 +1011,7 @@ ml(`
                         //minLines: 2
                     });
                     
-                    resizers.on(li_ed,10,editorResized);
+                   
                     
                     
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
@@ -1115,8 +1114,8 @@ ml(`
                                            
                                            
                                             li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
-                                            delete li_ed.editor_resized;
                                             li_ed.editor.focus();
+                                            resizers.on(li_ed,10,editorResized);
                                             if (cb) cb();
                                     });
                                    
@@ -1149,6 +1148,7 @@ ml(`
                     
                     const li_ed = ed.parentNode;
                     
+                    resizers.off(li_ed,editorResized);
                     
                     ace_session_json.serialize(
                         li_ed.editor,
@@ -1162,7 +1162,7 @@ ml(`
                         const file_url = pwaApi.filename_to_url(filename)+".hidden-json";
                         pwaApi.updateURLContents (file_url,buffer,false,function(err) {
                             
-                            resizers.off(li_ed,editorResized);
+                           
                             li.classList.remove("editing");
                             li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
         
