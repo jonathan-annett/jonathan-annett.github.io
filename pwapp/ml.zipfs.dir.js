@@ -1532,7 +1532,7 @@ ml(`
                             setTimeout(zipPoller,1,index+1);
                         } else {
                             const sha_el = qs(li,".sha1");
-                            if(sha_el && sha_el.textContent==='') {
+                            if(sha_el && sha_el.textContent.trim()==='') {
                                 pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
                                     sha_el.textContent=hash;
                                     setTimeout(zipPoller,1,index+1);
