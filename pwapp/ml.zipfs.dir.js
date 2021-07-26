@@ -1473,8 +1473,6 @@ ml(`
                             }
         
                             
-                            li_ed.observer.stop();
-                            delete li_ed.observer;
                             delete li_ed.inbuiltEditorOnSessionChange;
                             delete li_ed.editor;
                             delete li_ed.hashDisplay;
