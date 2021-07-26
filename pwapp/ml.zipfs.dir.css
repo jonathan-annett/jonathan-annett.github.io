@@ -189,7 +189,10 @@ h1 a.download {
 }
 h1 a.restart {
    float :right;
+   width: 16px;
+   height: 16px;
 }
+
 
 
 
