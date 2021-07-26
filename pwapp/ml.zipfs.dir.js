@@ -175,25 +175,20 @@ ml(`
                                     
                                     html_urls.forEach(function(u,ix){
                                         if (u.slice(-5)!==".html") {
-                                            pwa.virtualDirQuery(u,function(err,entry){
+                                            pwa.fixupUrl(u,function(err,entry){
                                                 if (err) return;
                                                 if (entry) {
-                                                    if (entry.aliased_url && !!entry.buffer) {
+                                                    if (entry.fixup_url ) {
                                                        
-                                                        if (entry.aliased_url.indexOf(zip_virtual_dir)===0) {
-                                                            const uri = (alias_root ? alias_root :'' ) +  entry.aliased_url.substr(zip_virtual_dir.length+1);
+                                                        if (entry.fixup_url.indexOf(zip_virtual_dir)===0) {
+                                                            const uri = (alias_root ? alias_root :'' ) +  entry.fixup_url.substr(zip_virtual_dir.length+1);
                                                             const li = find_li(uri);
                                                             if (li) {
                                                                 available_html[ix] = uri;
                                                                 li.classList.add( 'live-edit' );
                                                             }
-                                                         }
+                                                        }
                                                     }
-                                                    delete entry.buffer;
-                                                    delete entry.fixup_url;
-                                                    delete entry.prefix;
-                                                    delete entry.aliased_url;
-                                                    delete entry.url;
                                                 }
                                             });
                                         }

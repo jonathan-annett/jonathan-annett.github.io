@@ -245,6 +245,21 @@ ml(`
                    },
                     
                     
+                    fixupUrl : function (msg,cb) {
+                                   
+                           const url = msg.data.url;
+                           if (url) {
+                               zipFS.fixupUrl (url,function(request){
+                                    if (request) {
+                                        cb(request);
+                                    } else {
+                                        cb({error:"not found"});
+                                    }
+                               });
+                            }
+                        
+                    },
+            
                     virtualDirQuery : function (msg,cb) {
                         
                         const url = msg.data.url;

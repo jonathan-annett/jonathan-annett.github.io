@@ -86,6 +86,13 @@ ml(`
                    },cb);
                },
                
+               
+               fixupUrl : function (url,cb) {
+                     sendMessage('fixupUrl',{
+                        url    :    url
+                    },cb);
+              },
+               
                virtualDirQuery : function (url,cb) {
                     sendMessage('virtualDirQuery',{
                        url    :    url

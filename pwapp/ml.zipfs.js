@@ -129,7 +129,9 @@ ml(`
                 
                 removeMiddlewareListener : removeMiddlewareListener,
                 
-                virtualDirQuery          : virtualDirQuery
+                virtualDirQuery          : virtualDirQuery,
+                
+                fixupUrl                 : fixupUrlEventInternal
      
 
             };          
@@ -534,6 +536,22 @@ ml(`
                      }
                   }
 
+             }
+             
+             
+             function fixupUrlEventInternal(url,cb) {
+                 const fakeEvent = {
+                     request : {
+                         url      : url,
+                         referrer : '',
+                         headers  : {
+                             get : function () {}
+                         }
+                     },
+                 };
+                 const promise = fixupUrlEvent(fakeEvent);
+                 if (promise) return promise.then(cb);
+                 cb();
              }
 
              function fetchFileFromZipEvent (event) {
