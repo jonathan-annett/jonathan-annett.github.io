@@ -1212,8 +1212,13 @@ ml(`
             function transientEditorMetaResave(li_ed,delay) {
                 if (li_ed.transient_timeout) clearTimeout(li_ed.transient_timeout);
                 
-                const errors = !!li_ed.querySelector("div.ace_error");
+                const errors   = !!li_ed.querySelector("div.ace_error");
+                const warnings = !!li_ed.querySelector("div.ace_warning");
+                
                 find_li(li_ed.filename).classList[errors?"add":"remove"]("errors");
+                find_li(li_ed.filename).classList[warnings?"add":"remove"]("warnings");
+                
+                
                 li_ed.transient_timeout = setTimeout(function(li_ed){
                     delete li_ed.transient_timeout;
                     saveEditorMeta(li_ed.filename,function(){
