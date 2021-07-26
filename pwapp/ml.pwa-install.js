@@ -167,7 +167,7 @@ openWindowLib         | ml.openWindow.js
              
              function logAreaHeight () {
                 
-                 return qs("#install-shell").offsetHeight - qs("#install-shell > div.shell__status-bar");
+                 return qs("#install-shell").offsetHeight - qs("#install-shell > div.shell__status-bar").offsetHeight;
              }
              
              
