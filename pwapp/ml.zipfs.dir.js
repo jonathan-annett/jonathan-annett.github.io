@@ -1517,6 +1517,45 @@ ml(`
                 }
             }
             
+            
+            function linter (src,mode,cb) {
+                const pre = document.createElement("pre");
+                pre.id = "lint_"+Math.random().toString(36).substr(-8);
+                const div = document.createElement("div");
+                div.style.display="none";
+                div.appendChild(pre);
+                document.body.appendChild(div);
+                const editor = ace.edit(pre.id, {
+                    mode:   mode,
+                    value : src,
+                });
+                
+                editor.getSession().on("changeAnnotation", function(){
+                
+                    var annot = editor.getSession().getAnnotations();
+
+                    let errors ;
+                    let warnings;
+                    
+                    if (annot) {
+                        for (var key in annot){
+                            if (annot.hasOwnProperty(key)) {
+                                if  (annot[key].type === "warning") warnings = true;
+                                if  (annot[key].type === "error") errors = true;
+                                if (warnings && errors) break;
+                            }
+                        }
+                        
+                    }
+                    editor.destroy();
+                    div.removeChild(pre);
+                    document.body.removeChild(div);
+                    cb (!!errors,!!warnings);
+                
+                
+                });
+                
+            }
 
             
               function zipPoller(index) {
@@ -1533,9 +1572,15 @@ ml(`
                         } else {
                             const sha_el = qs(li,".sha1");
                             if(sha_el && sha_el.textContent.trim()==='') {
-                                pwaApi.fetchUpdatedURLContents(filename,true,function(err,text,updated,hash){
+                                pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer,updated,hash){
                                     sha_el.textContent=hash;
-                                    setTimeout(zipPoller,1,index+1);
+                                    const text = new TextDecoder().decode(buffer);
+                                    linter(text,aceModeForFile(filename),function(errors,warnings){
+                                        li.classList[errors?"add":"remove"]("errors");
+                                        li.classList[warnings?"add":"remove"]("warnings");
+                                        setTimeout(zipPoller,1,index+1);
+                                    });
+
                                 });
                             } else {
                                 setTimeout(zipPoller,1,index+1);
