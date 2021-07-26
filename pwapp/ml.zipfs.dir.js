@@ -1218,8 +1218,8 @@ ml(`
                 if (annot) {
                     for (var key in annot){
                         if (annot.hasOwnProperty(key)) {
-                            if  (annot[key][0].type === "warning") warnings = true;
-                            if  (annot[key][0].type === "error") errors = true;
+                            if  (annot[key].type === "warning") warnings = true;
+                            if  (annot[key].type === "error") errors = true;
                             if (warnings && errors) break;
                         }
                     }
