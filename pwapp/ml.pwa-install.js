@@ -149,16 +149,20 @@ openWindowLib         | ml.openWindow.js
           document.addEventListener("mousedown", function(e) {
               if (e.target!==dragTarget) return;
             inDrag = true;
-            objInitLeft = dragTarget.offsetLeft; objInitTop = dragTarget.offsetTop;
-            dragStartX = e.clientX; dragStartY = e.clientY;
+            let compStyles = window.getComputedStyle(dragTarget);
+            objInitLeft = Number.parseInt(compStyles.getPropertyValue('left') ); objInitTop = Number.parseInt(compStyles.getPropertyValue('top') );
+            dragStartX = e.pageX; dragStartY = e.pageY;
           });
           document.addEventListener("mousemove", function(e) {
             if (!inDrag) {return;}
-            dragTarget.style.left = (objInitLeft + e.clientX-dragStartX) + "px";
-            dragTarget.style.top = (objInitTop + e.clientY-dragStartY) + "px";
-            dragStartX = e.clientX; dragStartY = e.clientY;
+            dragTarget.style.left = (objInitLeft + e.pageX-dragStartX) + "px";
+            dragTarget.style.top = (objInitTop + e.pageY-dragStartY) + "px";
+            
           });
-          document.addEventListener("mouseup", function(e) {inDrag = false;});
+          document.addEventListener("mouseup", function(e) {
+              inDrag = false;
+              
+          });
         } 
              
              function fixupLogHeight() {
