@@ -114,7 +114,7 @@ ml(`
                 });
                 
 
-                [].forEach.call(document.querySelectorAll("li > a.code"),addOpenEditorClick);
+                [].forEach.call(document.querySelectorAll("li > a.code"),addToggleEditorClick);
                 [].forEach.call(document.querySelectorAll("li > a.close-editor"),addCloseEditorClick);
                 [].forEach.call(document.querySelectorAll("li > a.image"),addViewImageClick);
                 [].forEach.call(document.querySelectorAll("li > a.fullscreen"),addZoomClick);
@@ -306,6 +306,12 @@ ml(`
                 }
             }
             
+            function addToggleEditorClick (el) {
+                if (el) {
+                  el.addEventListener("click",toggleEditorClick);
+                }
+            }
+            
             function addCloseEditorClick (el) {
                 if (el) {
                   qs(el,"a i").addEventListener("click",closeEditorBtnClick);
@@ -406,11 +412,7 @@ ml(`
                 e.stopPropagation();
                 const filename = findFilename(e.target);
                 const li = find_li(filename);
-                if (e.shiftKey) {
-                    open_file(filename);
-                } else {
-                    openInbuiltEditor ( filename,li )
-                }
+                openInbuiltEditor ( filename,li )
             }
             
             function closeEditorBtnClick(e) {
@@ -423,6 +425,17 @@ ml(`
                     closeInbuiltEditor ( filename,li )
                 }
                 
+            }
+            
+            function toggleEditorClick(e){
+                e.stopPropagation();
+                const filename = findFilename(e.target);
+                const li = find_li(filename);
+                if (e.shiftKey) {
+                    open_file(filename);
+                } else {
+                    toggleInbuiltEditor ( filename,li )
+                }
             }
             
             
@@ -1382,7 +1395,7 @@ ml(`
             
            
            
-            function toggleInBuiltEditor (filename,li) {
+            function toggleInbuiltEditor (filename,li) {
                 li=li||find_li (filename);
                 if (!!li.dataset.editor_id) {
                    closeInbuiltEditor(filename,li);
