@@ -1452,13 +1452,12 @@ ml(`
                             
                             li_ed.observer.stop();
                             delete li_ed.observer;
-                            
                             delete li_ed.inbuiltEditorOnSessionChange;
                             delete li_ed.editor;
                             delete li_ed.hashDisplay;
                             delete li_ed.setText;
                             delete li_ed.reload;
-                            
+                            delete li.dataset.editor_id;
                             
                             while (li_ed.firstChild) {
                                 li_ed.removeChild(li_ed.firstChild);
@@ -1467,7 +1466,7 @@ ml(`
                             
                             li_ed.parentNode.removeChild(li_ed);
                             
-                            delete li.dataset.editor_id;
+                            
                             if (cb) cb();
                             
                         
