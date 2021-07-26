@@ -548,13 +548,15 @@ ml(`
                              get : function () {}
                          }
                      },
-                 },
-                 CB=function(){
+                 },CB=function(){
                     delete fakeEvent.request.url;
                     delete fakeEvent.request.referrer;
                     delete fakeEvent.request.headers.get;
                     delete fakeEvent.request.headers;
                     delete fakeEvent.request;
+                    delete fakeEvent.fetchBuffer;
+                    delete fakeEvent.toFetchUrl;
+                    
                     cb(fakeEvent); 
                  };
                  
