@@ -13,7 +13,7 @@ ml(`
 
         Window: function pwa(findWorker,sendMessage) {
             
-            const lib_file_count = 27;
+            const lib_file_count = 63;
             const lib_load_name = './ml.pwa.js';
             
             const lib = {
