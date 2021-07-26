@@ -96,8 +96,11 @@ ml([],function(){ml(2,
                    if (state.editor.theme) {
                        editor.setTheme("ace/theme/"+state.editor.theme);
                    }
-                   
+                   const oldSession = editor.getSession();
                    editor.setSession(sessionFromJSON(state.session));
+                   if (oldSession) {
+                      oldSession.destroy();
+                   }
    
                    return state.data;
                })(editor.getSession(),JSON.parse(json)));

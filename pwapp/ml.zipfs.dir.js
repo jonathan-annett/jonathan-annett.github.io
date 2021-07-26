@@ -1069,8 +1069,7 @@ ml(`
                     }
                 }
             }
-            
-            
+
             function openHtmlHelper(editor_channel,url,withHTML,cb) {  
                 
                 return cb(); /*
@@ -1134,20 +1133,17 @@ ml(`
                 }
                  cb(); */
             }
-            
-            
+
             function openJSHelper(editor_channel,url,withJS,cb) {  
             
                 cb();
             }
-            
-            
+
             function editorResized(li_ed){
                 
                 li_ed.editor.resize();
             }
-            
-            
+
             function openInbuiltEditor (filename,li,cb,height) {
                 li=li||find_li (filename);
                 const file_url = pwaApi.filename_to_url(filename);
