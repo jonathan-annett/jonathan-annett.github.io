@@ -145,27 +145,31 @@ openWindowLib         | ml.openWindow.js
              function fixupLogHeight() {
                  if (fixupLogHeight.done) return;
                  
+                 const backup = shell.options.commands;
                  shell.options.commands = [
-                   {"input": "-", "output": [""]},
+                   {"input": "-", "output": ["-"]},
                  ];
                  shell.init();
                  
-                 fixupLogHeight.done=true;
-                 const fakeSheet   = document.head.appendChild(document.createElement("style"));
-                 const cssTextNode = document.createTextNode(`#install-shell {
-                                                                        resize: both;
-                                                                        height: calc(100% - ${
-                                                                            qs("#install-shell").offsetTop
-                                                                        }px);}`);
-       
-                 fakeSheet.type = 'text/css';
-                 fakeSheet.appendChild(cssTextNode);
-                 
-                 shell.options.commands = [""];
+                 const top = qs("#install-shell").offsetTop;
+                 if (top!==0) {
+                    
+                     
+                     const fakeSheet   = document.head.appendChild(document.createElement("style"));
+                     const cssTextNode = document.createTextNode(`#install-shell {
+                                                                            resize: both;
+                                                                            height: calc(100% - ${top}px);}`);
+           
+                     fakeSheet.type = 'text/css';
+                     fakeSheet.appendChild(cssTextNode);
+                     fixupLogHeight.done=true;
+                 }
+                 shell.options.commands = backup;
                  shell.init();
              }
              
              function logAreaHeightUsed () {
+                
                  return [].reduce.call(
                      document.body.querySelectorAll("#install-shell > div.shell__content div.line"),
                      function (n,el) {
@@ -177,7 +181,7 @@ openWindowLib         | ml.openWindow.js
              }
              
              function logAreaHeight () {
-                
+                 fixupLogHeight();
                  return qs("#install-shell").offsetHeight - qs("#install-shell > div.shell__status-bar").offsetHeight;
              }
              
