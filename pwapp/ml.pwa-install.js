@@ -19,7 +19,7 @@ openWindowLib         | ml.openWindow.js
             
             const 
             
-            { open_url  } = ml.i.openWindowLib,
+            { open_url,on_window_close  } = ml.i.openWindowLib,
           
             editor_url  = window.parent.location.href.replace(/\/$/,'')+'/edit',
             editor_channel_name = "ch_"+editor_url.replace(/\/|\:|\.|\-/g,''),
@@ -210,19 +210,26 @@ openWindowLib         | ml.openWindow.js
             
             
                                      win.location.replace(config.root);
+                                     qs("#opengif").style.display = "inline-block";
+                                     runBtn.disabled=true;
+                                     openBtn.disabled=true;
+                                     
+                                     on_window_close(win,afterClosed);
                                      
                                  },  delay,config.root);   
                               });
                           }
                           case "closed": {
-                              qs("#opengif").style.display = "none";
-                              runBtn.disabled=false;
-                              openBtn.disabled=false;
+                              afterClosed();
                           }
                       }
                   });
                          
-                  
+                  function afterClosed() {
+                      qs("#opengif").style.display = "none";
+                              runBtn.disabled=false;
+                              openBtn.disabled=false;
+                  }
               }
               
               

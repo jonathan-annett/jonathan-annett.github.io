@@ -108,18 +108,23 @@ ml([],function(){ml(2,
         function on_window_close(w, fn) {
           if (typeof fn === "function" && w && typeof w === "object") {
             setTimeout(function() {
-              if (w.closed) return fn();
+              if (w.closed) return fn(w);
         
               try {
-                w.addEventListener("beforeunload", fn);
+                w.addEventListener("beforeunload",unloading);
               } catch (err) {
                 // console.log(err);
                 var fallback = function() {
-                  if (w.closed) return fn();
-                  setTimeout(fallback, 500, w, fn);
+                  if (w.closed) return fn(w);
+                  setTimeout(fallback, 500);
                 };
                 setTimeout(fallback, 500);
               }
+              function unloading(){
+                  w.removeEventListener("beforeunload",unloading);
+                  fn(w);
+              }
+              
             }, 1000);
           }
         }
