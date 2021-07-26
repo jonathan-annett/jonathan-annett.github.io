@@ -47,12 +47,7 @@ openWindowLib         | ml.openWindow.js
                 }
             }
             
-            if (["interactive","complete"].indexOf( window.document && window.document.readyState) >=0) {
-                onDOMContentLoaded();
-            } else {
-               window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
-            }
-            
+           
             qs("#show_shell",function (el) {
                 
                 el.checked = localStorage.show_install_shell !== '0';
@@ -81,8 +76,7 @@ openWindowLib         | ml.openWindow.js
             });
             
            
-                
-           
+            setTimeout(fixupLogHeight,500);
             
             runBtn.onclick = runClick ;
             openBtn.onclick = openClick ;
@@ -144,13 +138,7 @@ openWindowLib         | ml.openWindow.js
                   console.log("site not available",err);
               } 
            ); 
-             
-             
-             function onDOMContentLoaded() {
-                  
-                 fixupLogHeight();
-
-             }
+        
              
              function fixupLogHeight() {
                  if (fixupLogHeight.done) return;
