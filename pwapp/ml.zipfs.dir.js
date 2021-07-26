@@ -1527,7 +1527,14 @@ ml(`
                 const editor = ace.edit(pre.id, {
                     mode:   mode,
                 });
-                let notifed,timeout = setTimeout(onChange,500);
+                let notifed,timeout = setTimeout(function(){
+                    
+                    timeout = setTimeout(onChange,3000);
+                    
+                    editor.setValue(src+" ");
+                    
+                    
+                },1000);
                 editor.getSession().on("changeAnnotation",onChange);
                 
                 editor.setValue(src);
