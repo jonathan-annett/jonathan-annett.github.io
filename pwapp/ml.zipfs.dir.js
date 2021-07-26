@@ -91,7 +91,6 @@ ml(`
                pwaApi : pwaApi
             };
             
-
             function onDOMContentLoaded (){
             
                 const showHidden=document.querySelector("h1 input.hidden_chk");
@@ -168,7 +167,7 @@ ml(`
                                             .forEach(function(livefile){
                                                 const li = find_li(livefile);
                                                 if (li) {
-                                                    li.classList.add( 'live-edit' );
+                                                    li.classList.add( livefile.slice(-4)==='.css' ? 'live-edit' : 'live-refresh' );
                                                 }
                                     });
                                     
@@ -185,7 +184,7 @@ ml(`
                                                             const li = find_li(uri);
                                                             if (li) {
                                                                 available_html[ix] = uri;
-                                                                li.classList.add( 'live-edit' );
+                                                                li.classList.add( 'live-refresh' );
                                                             }
                                                         }
                                                     }
@@ -204,7 +203,6 @@ ml(`
                 }
                 
             }
-            
             
             function setupDragAndDrop() {
             
@@ -805,7 +803,7 @@ ml(`
 
             function startEditHelper(li,url,withContent,cb) {
                 
-                const is_live= li.classList.contains('live-edit');
+                const is_live= li.classList.contains('live-edit') || li.classList.contains('live-refresh');
                 if (is_live) {
                     const ext = url.substr(url.lastIndexOf('.')+1);
                     ({
@@ -1073,7 +1071,66 @@ ml(`
             }
             
             
-            function openHtmlHelper(editor_channel,url,withHtml,cb) {  
+            function openHtmlHelper(editor_channel,url,withHTML,cb) {  
+                
+                
+                const replyId = Date.now().toString(36).substr(-6)+"_"+Math.random().toString(36).substr(-8);
+                editor_channel.postMessage({
+                    open_html:{
+                        url:url,   
+                        withHTML:withHTML,
+                        replyId:replyId
+                    }
+                });
+                
+                const obj = {
+                    update : function (updatedHTML) {
+                        
+                        editor_channel.postMessage({
+                            update_html:{
+                                url:url,   
+                                updatedHTML:updatedHTML,
+                                replyId:replyId
+                            }
+                        });
+                        
+                    },
+                    close : function (reload) {
+                        
+                        editor_channel.postMessage({
+                            close_html:{
+                                url:url,   
+                                reload:reload,
+                                replyId:replyId
+                            }
+                        });
+                        editor_channel.removeEventListener("message",onMsg);
+                    },
+                    onchange : function () {
+                        
+                    }
+                    
+                };
+                
+                editor_channel.addEventListener("message",onMsg);
+                
+                return obj;
+                
+                
+                function onMsg(event){
+                    if (event.data && event.data.replyId===replyId && typeof event.data.result!=='undefined') {
+                        cb (obj);
+                    }
+                    
+                    if (event.data && event.data.replyId===replyId 
+                                   && event.data.html_changed 
+                                   && event.data.html_changed.url 
+                                   && event.data.html_changed.html
+                                   &&  typeof obj.onchange=== 'function') {
+                                       
+                        obj.onchange(event.data.html_changed.url,event.data.html_changed.html);
+                    }
+                }
                  cb();
             }
             

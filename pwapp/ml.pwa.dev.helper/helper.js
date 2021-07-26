@@ -7,7 +7,8 @@
        editor_channel_name = "ch_"+editor_url.replace(/\/|\:|\.|\-/g,''),
        editor_channel = new BroadcastChannel(editor_channel_name),
        editor_win,
-       open_stylesheets={};
+       open_stylesheets={},
+       open_iframes={};
        
        if (sessionStorage.getItem(editor_channel_name)==='1') {
            document.body.querySelector("#e").classList.add("editing");
@@ -108,6 +109,37 @@
                if (sheet){
                    sheet.close(event.data.close_stylesheet.reload);
                }
+           }
+           
+           
+           
+           if (event.data && event.data.open_html 
+                          && event.data.open_html.url
+                          && event.data.open_html.withHTML
+                          && event.data.open_html.replyId ) {
+               
+               editor_channel.postMessage({
+                   replyId: event.data.open_html.replyId,
+                   result: open_html( event.data.open_html.url,
+                                            event.data.open_html.withHTML,
+                                            event.data.open_html.replyId ) 
+               });
+               
+           } 
+           
+           if (event.data && event.data.update_html
+                          && event.data.update_html.url
+                          && event.data.update_html.updatedHTML
+                          && event.data.update_html.replyId ) {
+               const url = event.data.update_html.url;
+               
+           }
+           
+           
+           if (event.data && event.data.close_html
+                          && event.data.close_html.url ) {
+               const url = event.data.close_html.url;
+               
            }
        };
        
@@ -229,12 +261,95 @@ function get_htmls (urlprefix) {
    
 }
 
+
+ 
+function open_html(url,withHTML,replyId) {
+   
+   if (url==="self" || url===window.top.location.href) {
+       
+       open_iframes[url] = {
+           original : withHTML,
+           html   : withHTML,
+           update : function (updatedHTML) {
+               
+               if (open_iframes[url].timeout) {
+                   clearTimeout(open_iframes[url].timeout);
+               }
+               
+               document.querySelector("html").classList.add("restarting");
+               open_iframes[url].html    = updatedHTML;
+               open_iframes[url].timeout = setTimeout(function () {
+                  window.top.location.reload();
+               },5000);
+               
+           },
+           close  : function (reload){
+               if (open_iframes[url].timeout) {
+                   clearTimeout(open_iframes[url].timeout);
+                   delete open_iframes[url].timeout;
+               }
+               if (!reload) {
+                   
+                   if (open_iframes[url].original!==open_iframes[url].html) {
+                       window.top.location.reload();
+                   } else {
+                       delete open_iframes[url].original; 
+                       delete open_iframes[url].html; 
+                       document.querySelector("html").classList.remove("restarting");
+                   }
+               } else {
+                   
+                   window.top.location.reload();
+               }
+           },
+       };
+       
+
+   } else {
+   
+       get_docs(window.top.location.origin,window.top).some(function(doc){
+           if (doc.location.href===url) {
+               open_iframes[url] = {
+                   doc    : doc,
+                   original : withHTML,
+                   html   : withHTML,
+                   update : function (updatedHTML) {
+                       
+                       if (open_iframes[url].timeout) {
+                           clearTimeout(open_iframes[url].timeout);
+                       }
+                       open_iframes[url].html    = updatedHTML;
+                       open_iframes[url].timeout = setTimeout(function () {
+                          open_iframes[url].doc.innerHTML = open_iframes[url].html;
+                       },5000);
+                       
+                   },
+                   close  : function (reload){
+                       if (open_iframes[url].timeout) {
+                           clearTimeout(open_iframes[url].timeout);
+                           delete open_iframes[url].timeout;
+                       }
+                       if (reload) {
+                          open_iframes[url].doc.innerHTML = open_iframes[url].original;  
+                       }
+                   },
+               };
+               return true;
+           }
+       });
+
+   }   
+   
+}
+
+
  
  function open_stylesheet(url,withCSS,replyId) {
     
     return [].slice.call(window.top.document.head.querySelectorAll('link[rel="stylesheet"]')).some(function(el){
         
-        if (el.href.indexOf(url)!==0) return false;
+          if (el.href.indexOf(url)!==0) return false;
+          
           const sheet = el;
           const sheet_parent = sheet.parentNode;
           const fakeSheet   = sheet_parent.insertBefore(window.top.document.createElement("style"),sheet);
@@ -250,9 +365,9 @@ function get_htmls (urlprefix) {
              fakeSheet.appendChild(cssTextNode);
           }    
           open_stylesheets[url] = {
-              poller : setTimeout(poll,1000),
-              fakeSheet:fakeSheet,
-              sheet : sheet,
+              poller       : setTimeout(poll,1000),
+              fakeSheet    : fakeSheet,
+              sheet        : sheet,
               sheet_parent : sheet_parent,
               update : function (updatedCSS) {
                   
@@ -270,7 +385,7 @@ function get_htmls (urlprefix) {
                   withCSS=updatedCSS;
                   open_stylesheets[url].poller = setTimeout(poll,1000);
               },
-              close : function (reload){
+              close  : function (reload){
                   if (open_stylesheets[url].poller) {
                       clearTimeout(open_stylesheets[url].poller);
                       open_stylesheets[url].poller=undefined;
@@ -301,7 +416,7 @@ function get_htmls (urlprefix) {
               },
           };
         
-        return true;
+          return true;
         
         function poll() {
             
