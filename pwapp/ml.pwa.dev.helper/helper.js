@@ -14,10 +14,7 @@
            document.body.querySelector("#e").classList.add("editing");
            editor_win = open_url (editor_url); 
        }
-       
 
-       
-       
        editor_channel.onmessage=function(event) {
            if (event.data && event.data.refresh) {
                window.parent.location.replace(window.parent.location.href);
@@ -154,7 +151,13 @@
             const p = (window.parent.opener||window.parent);
                
             p.location = p.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+p.location.pathname;
+            
+            if (window.parent.opener) {
+                setTimeout (window.parent.close,500);
+            }
+            
         };
+        
        document.body.querySelector("#e").onclick = function(){
             if (editor_win) {
                 editor_win.close();
