@@ -548,10 +548,19 @@ ml(`
                              get : function () {}
                          }
                      },
+                 },
+                 CB=function(){
+                    delete fakeEvent.request.url;
+                    delete fakeEvent.request.referrer;
+                    delete fakeEvent.request.headers.get;
+                    delete fakeEvent.request.headers;
+                    delete fakeEvent.request;
+                    cb(fakeEvent); 
                  };
+                 
                  const promise = fixupUrlEvent(fakeEvent);
-                 if (promise) return promise.then(cb);
-                 cb();
+                 if (promise) return promise.then(CB);
+                 CB();
              }
 
              function fetchFileFromZipEvent (event) {
