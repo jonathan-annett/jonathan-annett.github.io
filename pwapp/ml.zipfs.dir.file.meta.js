@@ -504,7 +504,11 @@ ml(`
             const ext   = ix < 0 ? false : base.substr(ix+1);
             return ext ? aceModeForFile.cache[ext]||(function(){
                 aceModeForFile.modelist = aceModeForFile.modelist||ace.require("ace/ext/modelist");
-                return (aceModeForFile.cache[ext]=aceModeForFile.modelist.getModeForPath(fn).mode);
+                const mode = aceModeForFile.modelist ? aceModeForFile.modelist.getModeForPath(fn).mode : false;
+                if (mode) {
+                    aceModeForFile.cache[ext]= mode;
+                }
+                return mode;
             })() : "ace/mode/text";
         }
         
