@@ -1172,9 +1172,21 @@ ml(`
                 
                 li_ed.editor.resize();
                 
-                saveEditorMeta(li_ed.filename,function(){
-
-                });
+                transientEditorMetaResave(li_ed,250);
+                
+            }
+            
+            
+            function transientEditorMetaResave(li_ed,delay) {
+                if (li_ed.transient_timeout) clearTimeout(li_ed.transient_timeout);
+                const errors = !!li_ed.querySelector("div.ace_error");
+                li_ed.transient_timeout = setTimeout(function(li_ed){
+                    delete li_ed.transient_timeout;
+                    saveEditorMeta(li_ed.filename,function(){
+                         
+                    });
+                },delay||(errors?15000:2000),li_ed);
+                return !errors;
             }
 
             function openInbuiltEditor (filename,li,cb,height) {
@@ -1289,18 +1301,25 @@ ml(`
                                                 if (li_ed.edit_helper) {
                                                     li_ed.edit_helper.update(textContent);
                                                 }
-                                                pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
-                                                    if (err) {
-                                                        return ;
-                                                    }
-                                                    li.classList.add("edited");
-                                                    li_ed.hashDisplay.textContent=hash;
-                                                    if (edit_hooks[file_url]) {
-                                                        edit_hooks[file_url].forEach(function(fn){
-                                                            fn("edited",file_url,textContent,buffer);
-                                                        });
-                                                    }
-                                                });
+                                                if (transientEditorMetaResave(li_ed)) {
+                                                    li.classList.remove("errors");
+                                                    pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
+                                                        if (err) {
+                                                            return ;
+                                                        }
+                                                        li.classList.add("edited");
+                                                        li_ed.hashDisplay.textContent=hash;
+                                                        if (edit_hooks[file_url]) {
+                                                            edit_hooks[file_url].forEach(function(fn){
+                                                                fn("edited",file_url,textContent,buffer);
+                                                            });
+                                                        }
+                                                        
+                                                        
+                                                    });
+                                                } else {
+                                                    li.classList.add("errors");
+                                                }
                                            };
                                            
                                            

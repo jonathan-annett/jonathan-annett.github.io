@@ -66,6 +66,7 @@ li a.zipfile,
 li a.other,
 li a.image,
 li a.undeletefile,
+li span.errors,
 li.editing a.deletefile,
 li.editing a.undeletefile,
 li.deleted a.deletefile,
@@ -79,6 +80,7 @@ li.code    a.code,
 li.other   a.other,
 li.zipfile a.zipfile,
 li.image   a.image,
+li.errors  span.errors,
 li.deleted a.undeletefile,
 li.edited  a.undo-edits {
     display:inline-block;
@@ -174,7 +176,7 @@ pre.fs_editor {
     bottom: 20px;
     left: 0;
     right: 0;
-    height: calc(100% - 20px) ;
+    height: calc(100% - 20px);
     width: 100%;
  }
  
