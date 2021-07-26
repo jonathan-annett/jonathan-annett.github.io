@@ -983,7 +983,7 @@ ml(`
                    } else {
                        if (force===false) {
                            watched.splice(ix,1);
-                           observer.unobserve(el);
+                           observer.disconnect();
                            return;
                        }
                    }
