@@ -164,7 +164,7 @@ ml(`
                                     available_css.concat(available_html,available_scripts).forEach(function(livefile){
                                         const li = find_li(livefile);
                                         if (li) {
-                                            li.classList.add( livefile.slice(-4) ==='css' ? 'live-edit' : 'live-refresh' );
+                                            li.classList.add( 'live-edit' );
                                         }
                                     });
                                     
