@@ -57,7 +57,39 @@ ml(`
             
         
            
-           
+            var observeDOM = (function(){
+              var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+            
+              return function( obj, callback, off ){
+                if( !obj || obj.nodeType !== 1 ) return; 
+            
+                if( MutationObserver ){
+                  // define a new observer
+                  var mutationObserver = new MutationObserver(callback)
+            
+                  // have the observer observe foo for changes in children
+                  mutationObserver.observe( obj, { childList:true, subtree:true })
+                  return {
+                      stop : function () {
+                          mutationObserver.unobserve(obj);
+                      }
+                  };
+                }
+                
+                // browser support fallback
+                else if( window.addEventListener ){
+                
+                  obj.addEventListener('DOMNodeInserted', callback, false);
+                  obj.addEventListener('DOMNodeRemoved', callback, false);
+                  return {
+                      stop : function () {
+                          obj.removeEventListener('DOMNodeInserted', callback);
+                          obj.removeEventListener('DOMNodeRemoved', callback);
+                      }
+                  };
+                }
+              }
+            })()
             
             
             const htmlFileItemLibOpts = {
@@ -1293,6 +1325,11 @@ ml(`
                                             }
                                         });
                                     }
+                                    
+                                    
+                                    li_ed.observer = observeDOM( li_ed, function(m){ 
+                                        transientEditorMetaResave(li_ed,5000);
+                                    });
 
                                     startEditHelper(li,file_url,currentText,function(helper){
                                             li_ed.edit_helper = helper;
@@ -1412,6 +1449,9 @@ ml(`
                                 delete li_ed.edit_helper;
                             }
         
+                            
+                            li_ed.observer.stop();
+                            delete li_ed.observer;
                             
                             delete li_ed.inbuiltEditorOnSessionChange;
                             delete li_ed.editor;
