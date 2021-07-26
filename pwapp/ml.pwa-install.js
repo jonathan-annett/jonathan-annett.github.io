@@ -47,7 +47,11 @@ openWindowLib         | ml.openWindow.js
                 }
             }
             
-            window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
+            if (["interactive","complete"].indexOf( window.document && window.document.readyState) >=0) {
+                onDOMContentLoaded();
+            } else {
+               window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
+            }
             
             qs("#show_shell",function (el) {
                 
@@ -124,6 +128,9 @@ openWindowLib         | ml.openWindow.js
              
              
              function onDOMContentLoaded() {
+                 if (onDOMContentLoaded.done) return;
+                 onDOMContentLoaded.done=true;
+                 
                  fixupLogHeight();
                  
                  betaTesterApproval().then(function(config){
@@ -151,6 +158,7 @@ openWindowLib         | ml.openWindow.js
              
              function fixupLogHeight() {
                  if (fixupLogHeight.done) return;
+                 fixupLogHeight.done=true;
                  
                  const list = shell.options.commands[0].output;
                  list.push ("-");
