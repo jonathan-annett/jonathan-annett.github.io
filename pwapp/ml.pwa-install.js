@@ -145,23 +145,17 @@ openWindowLib         | ml.openWindow.js
         
         
         
-        function drag(el,qhotzones) {
+        function drag(el,Hotzones) {
           var dragStartX, dragStartY; var objInitLeft, objInitTop;
           var inDrag = false;
           var dragTarget = qs(el);
-          var hotZones =  qhotzones.map(qs);
-          hotZones.forEach(function(hs){
-              hs.addEventListener("mousedown", mdown);
-          });
-          
-          
-          function mdown(e) {
+          document.addEventListener("mousedown", function(e) {
+              if (Hotzones.map(qs).indexOf(e.target)<0) return;
             inDrag = true;
             let compStyles = window.getComputedStyle(dragTarget);
             objInitLeft = Number.parseInt(compStyles.getPropertyValue('left') ); objInitTop = Number.parseInt(compStyles.getPropertyValue('top') );
             dragStartX = e.pageX; dragStartY = e.pageY;
-          }
-          
+          });
           document.addEventListener("mousemove", function(e) {
             if (!inDrag) {return;}
             dragTarget.style.left = (objInitLeft + e.pageX-dragStartX) + "px";
