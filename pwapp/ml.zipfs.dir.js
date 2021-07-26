@@ -779,11 +779,20 @@ ml(`
                 });
             }
 
-            function startEditHelper(url,withContent,cb) {
-                const ext = url.substr(url.lastIndexOf('.')+1);
-                ({
-                    css  : openStylesheet,
-                }[ext] || function(){ cb();})(editor_channel,url,withContent,cb);
+            function startEditHelper(li,url,withContent,cb) {
+                
+                const is_live= li.classList.contains('live-edit');
+                if (is_live) {
+                    const ext = url.substr(url.lastIndexOf('.')+1);
+                    ({
+                        css  : openStylesheetHelper,
+                        html : openHtmlHelper,
+                        js   : openJSHelper
+                        
+                    }[ext] || function(){ cb();})(editor_channel,url,withContent,cb);
+                } else {
+                    cb();
+                }
             }
             
             
@@ -861,7 +870,7 @@ ml(`
                 const file_url = pwaApi.filename_to_url(filename);
                 pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
                     const withCSS = new TextDecoder().decode(text);
-                    openStylesheet(editor_channel,file_url,withCSS,function(obj) {  
+                    openStylesheetHelper(editor_channel,file_url,withCSS,function(obj) {  
                         obj.close(true);
                         cb();
                     });
@@ -979,7 +988,7 @@ ml(`
                 
             } 
             
-            function openStylesheet(editor_channel,url,withCSS,cb) {  
+            function openStylesheetHelper(editor_channel,url,withCSS,cb) {  
                 const replyId = Date.now().toString(36).substr(-6)+"_"+Math.random().toString(36).substr(-8);
                 editor_channel.postMessage({
                     open_stylesheet:{
@@ -1037,6 +1046,17 @@ ml(`
                         obj.onchange(event.data.css_changed.url,event.data.css_changed.css);
                     }
                 }
+            }
+            
+            
+            function openHtmlHelper(editor_channel,url,withHtml,cb) {  
+                 cb();
+            }
+            
+            
+            function openJSHelper(editor_channel,url,withJS,cb) {  
+            
+                cb();
             }
             
             
@@ -1151,7 +1171,7 @@ ml(`
                                     
                                     
                                    
-                                    startEditHelper(file_url,currentText,function(helper){
+                                    startEditHelper(li,file_url,currentText,function(helper){
                                             li_ed.edit_helper = helper;
                                             li_ed.inbuiltEditorOnSessionChange = function () {
                                                 // delta.start, delta.end, delta.lines, delta.action
