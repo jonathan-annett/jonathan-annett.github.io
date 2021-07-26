@@ -74,7 +74,8 @@ openWindowLib         | ml.openWindow.js
                       commands:[""]
             });
             
-            
+            fixupLogHeight();
+                
             
             
             runBtn.onclick = runClick ;
@@ -142,15 +143,15 @@ openWindowLib         | ml.openWindow.js
              function fixupLogHeight() {
                  if (fixupLogHeight.done) return;
                  
-                 const fakeSheet   = document.head.appendChild(window.top.document.createElement("style"));
-                 const cssTextNode = window.top.document.createTextNode(`.shell--responsive {
+                 const fakeSheet   = document.head.appendChild(document.createElement("style"));
+                 const cssTextNode = document.createTextNode(`#install-shell {
+                                                                        resize: both;
                                                                         height: calc(100% -${
                                                                             qs("#install-shell").offsetTop
                                                                         }px);}`);
        
                  fakeSheet.type = 'text/css';
                  fakeSheet.appendChild(cssTextNode);
-
                  
              }
              
@@ -171,7 +172,6 @@ openWindowLib         | ml.openWindow.js
              
              
              function logFilenameInConsole(filename) {
-                 fixupLogHeight();
                  const list = shell.options.commands[0].output;
                  list.push (filename);
                  shell.init();
