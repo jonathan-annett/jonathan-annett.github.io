@@ -155,6 +155,7 @@ openWindowLib         | ml.openWindow.js
             if (!inDrag) {return;}
             dragTarget.style.left = (objInitLeft + e.clientX-dragStartX) + "px";
             dragTarget.style.top = (objInitTop + e.clientY-dragStartY) + "px";
+            dragStartX = e.clientX; dragStartY = e.clientY;
           });
           document.addEventListener("mouseup", function(e) {inDrag = false;});
         } 
