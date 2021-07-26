@@ -72,7 +72,7 @@ openWindowLib         | ml.openWindow.js
             });
             
             
-            drag('install-shell',"install-shell > div.shell__status-bar");
+            drag('#install-shell',"#install-shell > div.shell__status-bar");
             fixupLogHeight();
             
            
@@ -141,11 +141,11 @@ openWindowLib         | ml.openWindow.js
         
         
         
-        function drag(elId,hotzoneId) {
+        function drag(el,hotzone) {
           var dragStartX, dragStartY; var objInitLeft, objInitTop;
           var inDrag = false;
-          var dragTarget = qs("#"+elId);
-          var hotZone =  qs("#"+hotzoneId); 
+          var dragTarget = qs(el);
+          var hotZone =  qs(hotzone); 
           document.addEventListener("mousedown", function(e) {
               if (e.target!==hotZone) return;
             inDrag = true;
