@@ -171,7 +171,7 @@ openWindowLib         | ml.openWindow.js
              
               function runOrOpenClick(mode,cb) {
                   runBtn.disabled=true;
-                  openBtm.disabled=true;
+                  openBtn.disabled=true;
                   // we want the animation /progress bar on the screen for a least 5 seconds
                   const minTime = Date.now() + 5000  ;
                   
@@ -217,7 +217,7 @@ openWindowLib         | ml.openWindow.js
                           case "closed": {
                               qs("#opengif").style.display = "none";
                               runBtn.disabled=false;
-                              openBtm.disabled=false;
+                              openBtn.disabled=false;
                           }
                       }
                   });
