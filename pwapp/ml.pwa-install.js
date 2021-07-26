@@ -74,7 +74,7 @@ openWindowLib         | ml.openWindow.js
                       commands:[""]
             });
             
-            fixupLogHeight();
+           
                 
             
             
@@ -146,7 +146,7 @@ openWindowLib         | ml.openWindow.js
                  const fakeSheet   = document.head.appendChild(document.createElement("style"));
                  const cssTextNode = document.createTextNode(`#install-shell {
                                                                         resize: both;
-                                                                        height: calc(100% -${
+                                                                        height: calc(100% - ${
                                                                             qs("#install-shell").offsetTop
                                                                         }px);}`);
        
@@ -167,6 +167,7 @@ openWindowLib         | ml.openWindow.js
              }
              
              function logAreaHeight () {
+                 fixupLogHeight();
                  return qs("#install-shell").offsetHeight - qs("#install-shell > div.shell__status-bar");
              }
              
