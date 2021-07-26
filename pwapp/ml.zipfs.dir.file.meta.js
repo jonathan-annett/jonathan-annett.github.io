@@ -513,7 +513,7 @@ ml(`
         }
         
         function aceThemeForFile(fn ) {
-            if (!aceModeForFile.defs) {
+            if (!aceThemeForFile.defs) {
                 aceThemeForFile.defs = {
                     html : "ace/theme/cobalt",
                     js   : "ace/theme/chaos",

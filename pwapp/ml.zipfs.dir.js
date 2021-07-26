@@ -1527,10 +1527,11 @@ ml(`
                 document.body.appendChild(div);
                 const editor = ace.edit(pre.id, {
                     mode:   mode,
-                    value : src,
                 });
                 
                 editor.getSession().on("changeAnnotation",onChange);
+                
+                editor.setValue(src);
                 
                 function onChange(){
                     editor.getSession().off("changeAnnotation",onChange);
