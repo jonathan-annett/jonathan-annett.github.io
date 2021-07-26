@@ -13,7 +13,7 @@ openWindowLib         | ml.openWindow.js
             const lib = {}  ;
             
             const  
-            [ html,keyPRE,                   runhere,  openBtn,    update  ]   = 
+            [ html,keyPRE,                   runBtn,  openBtn,    update  ]   = 
             ["html","html .notbeta pre.key","#runBtn", "#openBtn", "#updateBtn"].map(qs);
             
             
@@ -70,14 +70,14 @@ openWindowLib         | ml.openWindow.js
                       path: '/pwapp/',
                       style: 'default',
                       theme: 'dark',
-                      responsive: false,
+                      responsive: true,
                       commands:[""]
             });
             
             
             
             
-            runhere.onclick = runClick ;
+            runBtn.onclick = runClick ;
             openBtn.onclick = openClick ;
             
             editor_channel.onmessage=function(event) {
@@ -151,7 +151,7 @@ openWindowLib         | ml.openWindow.js
              }
              
              function logAreaHeight () {
-                 return qs("#install-shell > div.shell__content").offsetHeight;
+                 return qs("#install-shell").offsetHeight - qs("#install-shell > div.shell__status-bar");
              }
              
              
@@ -169,13 +169,14 @@ openWindowLib         | ml.openWindow.js
                  }
              }
              
-              function runOrOpenClick(cb) {
-                  
+              function runOrOpenClick(mode,cb) {
+                  runBtn.disabled=true;
+                  openBtm.disabled=true;
                   // we want the animation /progress bar on the screen for a least 5 seconds
                   const minTime = Date.now() + 5000  ;
                   
                   sessionStorage.running=((1000*60*2) + Date.now()).toString();
-                  qs("#rungif").style.display = "inline-block";
+                  qs("#"+mode+"gif").style.display = "inline-block";
                   qs("html").classList.add("busy");
                   
                   shell.options.commands = [
@@ -195,22 +196,33 @@ openWindowLib         | ml.openWindow.js
               }
               
               function runClick() {
-                  runOrOpenClick(function(delay,config){
+                  runOrOpenClick("run",function(delay,config){
                      setTimeout(location.replace.bind(location),  delay,config.root);    
                   });
               }
               
               function openClick() {
-                  const win = open_url ('ml.loading.html');
-                         
-                  runOrOpenClick(function(delay,config){
-                     setTimeout(function(){
-
-
-                         win.location.replace(config.root);
-                         
-                     },  delay,config.root);   
+                  const win = open_url ('ml.loading.html',function(state){
+                      switch(state) {
+                          case "opened": {
+                              return runOrOpenClick("open",function(delay,config){
+                                 setTimeout(function(){
+            
+            
+                                     win.location.replace(config.root);
+                                     
+                                 },  delay,config.root);   
+                              });
+                          }
+                          case "closed": {
+                              qs("#opengif").style.display = "none";
+                              runBtn.disabled=false;
+                              openBtm.disabled=false;
+                          }
+                      }
                   });
+                         
+                  
               }
               
               
