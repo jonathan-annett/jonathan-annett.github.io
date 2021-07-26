@@ -151,24 +151,24 @@ openWindowLib         | ml.openWindow.js
                  ];
                  shell.init();
                  
-                 setTimeout(function(){
-                     // wait for browser to update top 
-                     const top = qs("#install-shell").offsetTop;
-                     if (top!==0) {
-                        
-                         
-                         const fakeSheet   = document.head.appendChild(document.createElement("style"));
-                         const cssTextNode = document.createTextNode(`#install-shell {
-                                                                                resize: both;
-                                                                                height: calc(100% - ${top}px);}`);
-               
-                         fakeSheet.type = 'text/css';
-                         fakeSheet.appendChild(cssTextNode);
-                         fixupLogHeight.done=true;
-                     }
-                     shell.options.commands = backup;
-                     shell.init();
-                 },1);
+      
+                 // wait for browser to update top 
+                 const top = qs("#install-shell").offsetTop;
+                 if (top!==0) {
+                    
+                     
+                     const fakeSheet   = document.head.appendChild(document.createElement("style"));
+                     const cssTextNode = document.createTextNode(`#install-shell {
+                                                                            resize: both;
+                                                                            height: calc(100% - ${top}px);}`);
+           
+                     fakeSheet.type = 'text/css';
+                     fakeSheet.appendChild(cssTextNode);
+                     fixupLogHeight.done=true;
+                 }
+                 shell.options.commands = backup;
+                 shell.init();
+                 if (!fixupLogHeight.done) setTimeout(fixupLogHeight,100);
              }
              
              function logAreaHeightUsed () {
