@@ -1529,9 +1529,10 @@ ml(`
                     mode:   mode,
                 });
                 
-                editor.getSession().on("changeAnnotation",onChange);
+                //editor.getSession().on("changeAnnotation",onChange);
                 
                 editor.setValue(src);
+                onChange();
                 
                 function onChange(){
                     editor.getSession().off("changeAnnotation",onChange);
