@@ -147,6 +147,7 @@ openWindowLib         | ml.openWindow.js
           var inDrag = false;
           var dragTarget = document.querySelector(elementSelector);
           document.addEventListener("mousedown", function(e) {
+              if (e.target!==dragTarget) return;
             inDrag = true;
             objInitLeft = dragTarget.offsetLeft; objInitTop = dragTarget.offsetTop;
             dragStartX = e.clientX; dragStartY = e.clientY;
