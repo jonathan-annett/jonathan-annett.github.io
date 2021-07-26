@@ -1209,16 +1209,31 @@ ml(`
             }
             
             
-            function transientEditorMetaResave(li_ed,delay) {
+            function transientEditorMetaResave(li_ed,delay,annot) {
                 if (li_ed.transient_timeout) clearTimeout(li_ed.transient_timeout);
                 
-                const errors   = !!li_ed.querySelector("div.ace_error");
-                const warnings = !!li_ed.querySelector("div.ace_warning");
+                let errors ;
+                let warnings;
                 
-                find_li(li_ed.filename).classList[errors?"add":"remove"]("errors");
-                find_li(li_ed.filename).classList[warnings?"add":"remove"]("warnings");
+                if (annot) {
+                    for (var key in annot){
+                        if (annot.hasOwnProperty(key)) {
+                            if  (annot[key][0].type === "warning") warnings = true;
+                            if  (annot[key][0].type === "error") errors = true;
+                            if (warnings && errors) break;
+                        }
+                    }
+                    
+                    find_li(li_ed.filename).classList[errors?"add":"remove"]("errors");
+                    find_li(li_ed.filename).classList[warnings?"add":"remove"]("warnings");
+                }
                 
                 
+                
+                
+                
+                
+            
                 li_ed.transient_timeout = setTimeout(function(li_ed){
                     delete li_ed.transient_timeout;
                     saveEditorMeta(li_ed.filename,function(){
@@ -1332,9 +1347,12 @@ ml(`
                                     }
                                     
                                     
-                                    li_ed.observer = observeDOM( li_ed, function(m){ 
-                                        transientEditorMetaResave(li_ed,5000);
+                                    
+                                    li_ed.editor.getSession().on("changeAnnotation", function(){
+                                        transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations());
                                     });
+                                    
+                                     
 
                                     startEditHelper(li,file_url,currentText,function(helper){
                                             li_ed.edit_helper = helper;
