@@ -1179,7 +1179,9 @@ ml(`
             
             function transientEditorMetaResave(li_ed,delay) {
                 if (li_ed.transient_timeout) clearTimeout(li_ed.transient_timeout);
+                
                 const errors = !!li_ed.querySelector("div.ace_error");
+                find_li(li_ed.filename).classList[errors?"add":"remove"]("errors");
                 li_ed.transient_timeout = setTimeout(function(li_ed){
                     delete li_ed.transient_timeout;
                     saveEditorMeta(li_ed.filename,function(){
@@ -1302,7 +1304,7 @@ ml(`
                                                     li_ed.edit_helper.update(textContent);
                                                 }
                                                 if (transientEditorMetaResave(li_ed)) {
-                                                    li.classList.remove("errors");
+                                                   
                                                     pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
                                                         if (err) {
                                                             return ;
@@ -1317,8 +1319,6 @@ ml(`
                                                         
                                                         
                                                     });
-                                                } else {
-                                                    li.classList.add("errors");
                                                 }
                                            };
                                            
