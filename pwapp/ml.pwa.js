@@ -267,6 +267,13 @@ ml(`
                                       cb({error:url+" not found"});
                                   }
                                 }
+                                
+                            }).catch(function(err){
+                                if (err) {
+                                   cb({error:err.message||err});
+                                } else {
+                                    cb({error:"undefined error"});
+                                }
                             });
                      }
                      

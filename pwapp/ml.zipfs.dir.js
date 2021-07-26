@@ -150,25 +150,54 @@ ml(`
                                 }));
                                 
                                 
-                                getHtmls(editor_channel,zip_virtual_dir,function(urls){
+                                getHtmls(editor_channel,zip_virtual_dir,function(html_urls){
                                     
                                     available_html.splice(0,available_html.length);
                                     
-                                    available_html.push.apply(available_html,urls.map(function(u){
+                                    available_html.push.apply(available_html,html_urls.map(function(u){
                                         return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
                                     }));
                                     
                                     
                                     //console.log({available_html});
                                     
-                                    available_css.concat(available_html,available_scripts).forEach(function(livefile){
-                                        const li = find_li(livefile);
-                                        if (li) {
-                                            li.classList.add( 'live-edit' );
-                                        }
+                                    available_css
+                                       .concat(
+                                          available_html.filter(function(h){return h.slice(-5)===".html"}),
+                                          available_scripts)
+                                            .forEach(function(livefile){
+                                                const li = find_li(livefile);
+                                                if (li) {
+                                                    li.classList.add( 'live-edit' );
+                                                }
                                     });
                                     
                                     
+                                    html_urls.forEach(function(u,ix){
+                                        if (u.slice(-5)!==".html") {
+                                            pwa.virtualDirQuery(u,function(err,entry){
+                                                if (err) return;
+                                                if (entry) {
+                                                    if (entry.aliased_url && !!entry.buffer) {
+                                                       
+                                                        if (entry.aliased_url.indexOf(zip_virtual_dir)===0) {
+                                                            const uri = (alias_root ? alias_root :'' ) +  entry.aliased_url.substr(zip_virtual_dir.length+1);
+                                                            const li = find_li(uri);
+                                                            if (li) {
+                                                                available_html[ix] = uri;
+                                                                li.classList.add( 'live-edit' );
+                                                            }
+                                                         }
+                                                    }
+                                                    delete entry.buffer;
+                                                    delete entry.fixup_url;
+                                                    delete entry.prefix;
+                                                    delete entry.aliased_url;
+                                                    delete entry.url;
+                                                }
+                                            });
+                                        }
+                                    });
                                 
                                 });
                             
