@@ -1530,8 +1530,10 @@ ml(`
                     value : src,
                 });
                 
-                editor.getSession().on("changeAnnotation", function(){
+                editor.getSession().on("changeAnnotation",onChange);
                 
+                function onChange(){
+                    editor.getSession().off("changeAnnotation",onChange);
                     var annot = editor.getSession().getAnnotations();
 
                     let errors ;
@@ -1547,13 +1549,14 @@ ml(`
                         }
                         
                     }
-                    editor.destroy();
-                    div.removeChild(pre);
-                    document.body.removeChild(div);
-                    cb (!!errors,!!warnings);
+                    setTimeout(function(){
+                        editor.destroy();
+                        div.removeChild(pre);
+                        document.body.removeChild(div);
+                        cb (!!errors,!!warnings);
+                    },1);
                 
-                
-                });
+                }
                 
             }
 
