@@ -146,15 +146,15 @@ openWindowLib         | ml.openWindow.js
           var dragStartX, dragStartY; var objInitLeft, objInitTop;
           var inDrag = false;
           var dragTarget = document.querySelector(elementSelector);
-          document.addEventListener("mousedown", function(e) {
+          dragTarget.addEventListener("mousedown", function(e) {
             inDrag = true;
             objInitLeft = dragTarget.offsetLeft; objInitTop = dragTarget.offsetTop;
-            dragStartX = e.pageX; dragStartY = e.pageY;
+            dragStartX = e.clientX; dragStartY = e.clientY;
           });
           document.addEventListener("mousemove", function(e) {
             if (!inDrag) {return;}
-            dragTarget.style.left = (objInitLeft + e.pageX-dragStartX) + "px";
-            dragTarget.style.top = (objInitTop + e.pageY-dragStartY) + "px";
+            dragTarget.style.left = (objInitLeft + e.clientX-dragStartX) + "px";
+            dragTarget.style.top = (objInitTop + e.clientY-dragStartY) + "px";
           });
           document.addEventListener("mouseup", function(e) {inDrag = false;});
         } 
