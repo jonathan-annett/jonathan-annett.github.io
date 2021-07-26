@@ -38,3 +38,13 @@ html.restarting #e  {
      height :16px;
     
  }
+ 
+ 
+ .disable-select {
+   -webkit-user-select: none;
+   -moz-user-select: none;
+   -ms-user-select: none;
+   user-select: none;
+ }
+ 
+ 
