@@ -153,7 +153,7 @@
             p.location = p.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+p.location.pathname;
             
             if (window.parent.opener) {
-                setTimeout (window.parent.close,500);
+                window.parent.close();
             }
             
         };
