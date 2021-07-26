@@ -144,7 +144,8 @@ openWindowLib         | ml.openWindow.js
                      document.body.querySelectorAll("#install-shell > div.shell__content div.line"),
                      function (n,el) {
                          return n+el.offsetHeight;
-                     }
+                     },
+                     0
                 );
              }
              
@@ -158,9 +159,11 @@ openWindowLib         | ml.openWindow.js
                  list.push (filename);
                  shell.init();
                  const avail = logAreaHeight ();
-                 while (logAreaHeightUsed ()>avail) {
+                 let used = logAreaHeightUsed ();
+                 while (used>avail) {
                      list.splice(0,1);
                      shell.init();
+                     used = logAreaHeightUsed ();
                  }
              }
              
