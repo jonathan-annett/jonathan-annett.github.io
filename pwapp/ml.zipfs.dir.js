@@ -1073,6 +1073,7 @@ ml(`
             
             function openHtmlHelper(editor_channel,url,withHTML,cb) {  
                 
+                return cb(); /*
                 
                 const replyId = Date.now().toString(36).substr(-6)+"_"+Math.random().toString(36).substr(-8);
                 editor_channel.postMessage({
@@ -1131,7 +1132,7 @@ ml(`
                         obj.onchange(event.data.html_changed.url,event.data.html_changed.html);
                     }
                 }
-                 cb();
+                 cb(); */
             }
             
             
