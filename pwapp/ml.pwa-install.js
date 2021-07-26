@@ -75,6 +75,8 @@ openWindowLib         | ml.openWindow.js
                       commands:[""]
             });
             
+            fixupLogHeight();
+            
            
            
             
@@ -142,6 +144,12 @@ openWindowLib         | ml.openWindow.js
              
              function fixupLogHeight() {
                  if (fixupLogHeight.done) return;
+                 
+                 shell.options.commands = [
+                   {"input": "-", "output": [""]},
+                 ];
+                 shell.init();
+                 
                  fixupLogHeight.done=true;
                  const fakeSheet   = document.head.appendChild(document.createElement("style"));
                  const cssTextNode = document.createTextNode(`#install-shell {
@@ -152,6 +160,9 @@ openWindowLib         | ml.openWindow.js
        
                  fakeSheet.type = 'text/css';
                  fakeSheet.appendChild(cssTextNode);
+                 
+                 shell.options.commands = [""];
+                 shell.init();
              }
              
              function logAreaHeightUsed () {
@@ -199,7 +210,7 @@ openWindowLib         | ml.openWindow.js
                     {"input": "install pwapp", "output": [""]},
                   ];
                   shell.init();
-                  fixupLogHeight();
+                
                   
                   ml.i.progressHandler(0,1,"loadProgress","loadProgressText","installProgress").onfilename=logFilenameInConsole;
                   
