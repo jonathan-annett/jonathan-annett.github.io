@@ -288,8 +288,7 @@ ml(`
                 }
             }
             
-            
-            
+
             function addUndoEditsClick (el) {
                 if (el) {
                   el.addEventListener("click",undoEditsClick);
@@ -354,7 +353,8 @@ ml(`
             function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
             
             
-            var zoomEl,fs_li_ed,pre_zoom_height,zoom_filename;            
+            var zoomEl,fs_li_ed,pre_zoom_height,zoom_filename;    
+            
             function  zoomBtnClick( e ) {
                 e.stopPropagation();
                 
@@ -460,8 +460,7 @@ ml(`
                 }
             }
             
-            
-            
+        
             function undoEditsClick( e) {
                 e.stopPropagation();
                 const filename = findFilename(e.target);
@@ -593,7 +592,6 @@ ml(`
                        
                    }
             }
-            
            
             function onEditorClose () {
                 Object.keys(modified_files).forEach(function(file){
@@ -643,7 +641,6 @@ ml(`
                 
                 return (custom_url_openers[ext] || not_custom) (fn,file_url);
             }
-            
            
             function open_html (html,file_url,cb) {
                 console.log("creating temp file",file_url);
@@ -778,7 +775,6 @@ ml(`
                 });
             }
             
-            
             function addEditHook (file_url,fn) {
                 if (typeof fn=='function') {
                     const list = edit_hooks[file_url];
@@ -852,7 +848,6 @@ ml(`
                 }
             }
             
-            
             function getStylesheets(editor_channel,urlprefix,cb) {
                 const replyId = Date.now().toString(36).substr(-6)+"_"+Math.random().toString(36).substr(-8);
                 
@@ -873,7 +868,6 @@ ml(`
                    } 
                 }
             }
-            
             
             function getScripts(editor_channel,urlprefix,cb) {
                 const replyId = Date.now().toString(36).substr(-6)+"_"+Math.random().toString(36).substr(-8);
@@ -1177,6 +1171,10 @@ ml(`
             function editorResized(li_ed){
                 
                 li_ed.editor.resize();
+                
+                saveEditorMeta(li_ed.filename,function(){
+
+                });
             }
 
             function openInbuiltEditor (filename,li,cb,height) {
@@ -1192,6 +1190,7 @@ ml(`
                     li.classList.add("editing");
                     const li_ed = document.createElement("li");
                     li_ed.innerHTML = '<PRE id="'+editor_id+'"></PRE>'; 
+                    li_ed.filename= filename;
                     
                     li.parentNode.insertBefore(li_ed, li.nextSibling);
                     
@@ -1280,10 +1279,7 @@ ml(`
                                             }
                                         });
                                     }
-                                   
-                                    
-                                    
-                                   
+
                                     startEditHelper(li,file_url,currentText,function(helper){
                                             li_ed.edit_helper = helper;
                                             li_ed.inbuiltEditorOnSessionChange = function () {
@@ -1340,6 +1336,35 @@ ml(`
                     return li_ed;
                 }
             }
+            
+            
+            function saveEditorMeta(filename,li,editor_id,ed,li_ed,cb) {
+                if (typeof li==='function') {
+                    cb=li;
+                    li=editor_id=ed=li_ed=undefined;
+                }
+                li=li||find_li (filename);
+                editor_id = editor_id || li.dataset.editor_id;
+                if (editor_id) {
+                    ed = ed || qs("#"+editor_id);
+                    
+                    li_ed = li_ed||ed.parentNode;
+                    
+                    ace_session_json.serialize(
+                        li_ed.editor,
+                        ["theme"],{
+                            height : ed.offsetHeight
+                        },
+                    function(err,json){
+                        const buffer = new TextEncoder().encode(json);
+                        const file_url = pwaApi.filename_to_url(filename)+".hidden-json";
+                        pwaApi.updateURLContents (file_url,buffer,false,function(err) {
+                            cb();
+                        });
+                    });
+                    
+                }
+            }
           
             function closeInbuiltEditor(filename,li,cb) {
                 li=li||find_li (filename);
@@ -1351,21 +1376,10 @@ ml(`
                     
                     const li_ed = ed.parentNode;
                     
-                    resizers.off(li_ed,editorResized);
+                    saveEditorMeta(filename,li,editor_id,ed,li_ed,function(){
                     
-                    ace_session_json.serialize(
-                        li_ed.editor,
-                        ["theme"],
-                        {
-                            height : ed.offsetHeight
-                        },
-                    function(err,json){
-                        
-                        const buffer = new TextEncoder().encode(json);
-                        const file_url = pwaApi.filename_to_url(filename)+".hidden-json";
-                        pwaApi.updateURLContents (file_url,buffer,false,function(err) {
-                            
-                           
+                            resizers.off(li_ed,editorResized);
+
                             li.classList.remove("editing");
                             li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
         
@@ -1397,12 +1411,9 @@ ml(`
                             delete li.dataset.editor_id;
                             if (cb) cb();
                             
-                        });
+                        
                     });
-                    
-                    
-                    
-                   
+
                 } else {
                     if (cb) {
                         cb();
