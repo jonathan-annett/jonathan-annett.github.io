@@ -96,14 +96,14 @@ li span.live-edit::before {
    display:none;
 }
 
-li.live-edit span.live-refresh img,
+li.live-refresh span.live-refresh img,
 li.live-edit span.live-edit img {
     filter:invert(1);
     opacity:0.5;
 }
 
-li.live-edit span.live-refresh::after,
-li.live-edit span.live-refresh::after,
+li.live-refresh span.live-refresh::after,
+li.live-refresh span.live-refresh::after,
 li.live-edit span.live-edit::after, 
 li.live-edit span.live-edit::before {
    display:inline-block;
