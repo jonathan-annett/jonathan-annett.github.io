@@ -223,7 +223,7 @@ openWindowLib         | ml.openWindow.js
                   
                   pwa.start(function(){
                       betaTesterApproval().then(function(config){
-                           const delay = qs("#show_shell").checked ? Math.max(minTime-Date.now()) : 10;
+                           const delay = sessionStorage.running? 1: qs("#show_shell").checked ? Math.max(minTime-Date.now()) : 1;
                            qs("html").classList.add("remove");
                            cb(delay,config);
                       });
