@@ -63,7 +63,6 @@ li a.code,
 li a.zipfile,
 li a.other,
 li a.image,
-li span.live-edit,
 li a.undeletefile,
 li.editing a.deletefile,
 li.editing a.undeletefile,
@@ -73,7 +72,6 @@ li a.undo-edits {
     display:none;
 }
 
-li.live-edit  span.live-edit,
 li.code    a.code,
 li.other   a.other,
 li.zipfile a.zipfile,
@@ -83,6 +81,33 @@ li.edited  a.undo-edits {
     display:inline-block;
 }
 
+li span.live-refresh img,
+li span.live-edit img {
+    display:inline-block;
+    width : 10px;
+    height : auto;
+    opacity:0;
+}
+
+li span.live-refresh::after,
+li span.live-refresh::after,
+li span.live-edit::after, 
+li span.live-edit::before {
+   display:none;
+}
+
+li.live-edit span.live-refresh img,
+li.live-edit span.live-edit img {
+    filter:invert(1);
+    opacity:0.5;
+}
+
+li.live-edit span.live-refresh::after,
+li.live-edit span.live-refresh::after,
+li.live-edit span.live-edit::after, 
+li.live-edit span.live-edit::before {
+   display:inline-block;
+}
 
 a.close-editor,
 a.exit-fullscreen,

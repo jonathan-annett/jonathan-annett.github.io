@@ -39,7 +39,10 @@
      <!--html_details>-->
     <li data-filename="${filename}" class="${li_class}" data-inzip="${is_in_zip}">
         
-        <span class="live-edit" data-balloon-pos="down-left" aria-label="${basename} can be edited live">
+        <span class="live-edit" data-balloon-pos="right" aria-label="${basename} is open in browser, edits happen in real time">
+            <img src="refresh.gif">
+        </span>
+        <span class="live-refresh" data-balloon-pos="right" aria-label="${basename} is open in browser, editing refreshes the browser after a few seconds">
             <img src="refresh.gif">
         </span>
         
