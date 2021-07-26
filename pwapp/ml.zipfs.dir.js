@@ -1574,12 +1574,21 @@ ml(`
                             if(sha_el && sha_el.textContent.trim()==='') {
                                 pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer,updated,hash){
                                     sha_el.textContent=hash;
-                                    const text = new TextDecoder().decode(buffer);
-                                    linter(text,aceModeForFile(filename),function(errors,warnings){
-                                        li.classList[errors?"add":"remove"]("errors");
-                                        li.classList[warnings?"add":"remove"]("warnings");
+                                    if (fileIsEditable(filename)){
+                                        const mode = aceModeForFile(filename);
+                                        if (mode) {
+                                            const text = new TextDecoder().decode(buffer);
+                                            linter(text,mode,function(errors,warnings){
+                                                li.classList[errors?"add":"remove"]("errors");
+                                                li.classList[warnings?"add":"remove"]("warnings");
+                                                setTimeout(zipPoller,1,index+1);
+                                            });
+                                        } else {
+                                            setTimeout(zipPoller,1,index+1);
+                                        }
+                                    } else {
                                         setTimeout(zipPoller,1,index+1);
-                                    });
+                                    }
 
                                 });
                             } else {
