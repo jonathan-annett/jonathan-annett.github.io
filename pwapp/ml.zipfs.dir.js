@@ -1527,12 +1527,16 @@ ml(`
                 const editor = ace.edit(pre.id, {
                     mode:   mode,
                 });
-                
+                let notifed,timeout = setTimeout(onChange,500);
                 editor.getSession().on("changeAnnotation",onChange);
                 
                 editor.setValue(src);
                 
                 function onChange(){
+                    if (timeout) {
+                        clearTimeout(timeout);
+                        timeout=undefined;
+                    }
                     editor.getSession().off("changeAnnotation",onChange);
                     var annot = editor.getSession().getAnnotations();
 
@@ -1553,7 +1557,10 @@ ml(`
                         editor.destroy();
                         div.removeChild(pre);
                         document.body.removeChild(div);
-                        cb (!!errors,!!warnings);
+                        if (!timeout) {
+                            timeout=true;
+                            cb (!!errors,!!warnings);
+                        }
                     },1);
                 
                 }
