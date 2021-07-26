@@ -28,7 +28,7 @@ ml([],function(){ml(2,
                               }
                               else if (msg && msg.addToTotal) {
                                  addToTotal(msg.addToTotal,msg.filename);
-                                 console.log(msg);
+                                
                               }
                               else if (msg && msg.logComplete) {
                                  logComplete(msg.logComplete);
@@ -51,6 +51,8 @@ ml([],function(){ml(2,
                      
                       function setTotal(n) {
                           expect_total=n;
+                          console.log("expect_total",expect_total);
+                          
                       }
                      
                       function setComplete(n,filename) {
@@ -69,6 +71,7 @@ ml([],function(){ml(2,
                       function addToTotal (n,filename) {
                           total+=n;
                           updateBar();
+                          console.log("total",total);
                           if (filename && api.onfilename) {
                               api.onfilename(filename);
                           }
