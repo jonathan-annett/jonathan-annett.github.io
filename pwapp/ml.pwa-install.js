@@ -47,6 +47,8 @@ openWindowLib         | ml.openWindow.js
                 }
             }
             
+            window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
+            
             qs("#show_shell",function (el) {
                 
                 el.checked = localStorage.show_install_shell !== '0';
@@ -118,28 +120,34 @@ openWindowLib         | ml.openWindow.js
              });
              
             
-             betaTesterApproval().then(function(config){
+           
+             
+             
+             function onDOMContentLoaded() {
+                 fixupLogHeight();
                  
-                 if (canRunInBrowser() || canRunAsApp()  ) {  
-                      pwa.start(function(){
-                        location.replace(config.root);   
-                      }); 
-                 } else {
+                 betaTesterApproval().then(function(config){
                      
-                      if (config.root!==location.pathname) {
-                          return pwa.unregister(config.root,function(){
-                              console.log("unregistered service worker, restarting...");
-                          });
-                      }
-                    
-                    fixupLogHeight();
-                     
-                 }
-             }).catch(
-                function(err){
-                    console.log("site not available",err);
-                } 
-             ); 
+                     if (canRunInBrowser() || canRunAsApp()  ) {  
+                          pwa.start(function(){
+                            location.replace(config.root);   
+                          }); 
+                     } else {
+                         
+                          if (config.root!==location.pathname) {
+                              return pwa.unregister(config.root,function(){
+                                  console.log("unregistered service worker, restarting...");
+                              });
+                          }
+                        
+                     }
+                 }).catch(
+                    function(err){
+                        console.log("site not available",err);
+                    } 
+                 ); 
+                 
+             }
              
              function fixupLogHeight() {
                  if (fixupLogHeight.done) return;
