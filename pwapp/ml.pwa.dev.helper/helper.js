@@ -217,13 +217,13 @@ function get_htmls (urlprefix) {
     
     const 
     url_filter = function(x){ return x.indexOf(urlprefix)===0;},
-    result = [url_filter(window.top.document.location.href)];
+    result = [window.top.document.location.href];
         
     get_docs(urlprefix,window.top).forEach(function(doc){
-        result.push(url_filter(doc.location.href));
+        result.push(doc.location.href);
     });
    
-    return result.filter(function(x,i){
+    return result.filter(url_filter).filter(function(x,i){
        return result.indexOf(x)===i;
     });
    
