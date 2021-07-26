@@ -71,7 +71,7 @@ ml(`
                   mutationObserver.observe( obj, { childList:true, subtree:true })
                   return {
                       stop : function () {
-                          mutationObserver.unobserve(obj);
+                          mutationObserver.disconnect();
                       }
                   };
                 }
