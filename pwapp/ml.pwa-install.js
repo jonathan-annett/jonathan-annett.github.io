@@ -71,9 +71,8 @@ openWindowLib         | ml.openWindow.js
                       commands:[""]
             });
             
-            qs("#install-shell > div.shell__status-bar").classList.add("disable-select");
             
-            drag('#install-shell');
+            drag('#install-shell',"#install-shell > div.shell__status-bar");
             fixupLogHeight();
             
            
@@ -142,12 +141,13 @@ openWindowLib         | ml.openWindow.js
         
         
         
-        function drag(elementSelector) {
+        function drag(elId,hotzoneId) {
           var dragStartX, dragStartY; var objInitLeft, objInitTop;
           var inDrag = false;
-          var dragTarget = document.querySelector(elementSelector);
+          var dragTarget = qs("#"+elId);
+          var hotZone =  qs("#"+hotzoneId); 
           document.addEventListener("mousedown", function(e) {
-              if (e.target!==dragTarget) return;
+              if (e.target!==hotZone) return;
             inDrag = true;
             let compStyles = window.getComputedStyle(dragTarget);
             objInitLeft = Number.parseInt(compStyles.getPropertyValue('left') ); objInitTop = Number.parseInt(compStyles.getPropertyValue('top') );
