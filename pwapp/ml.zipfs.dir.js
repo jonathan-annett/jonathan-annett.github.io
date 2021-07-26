@@ -446,7 +446,11 @@ ml(`
             }
             
             function toggleEditorClick(e){
-                e.stopPropagation();
+                if (!e.shiftKey && zoomEl) {
+                    zoomBtnClick( e ) ;
+                } else {
+                   e.stopPropagation();
+                }
                 const filename = findFilename(e.target);
                 const li = find_li(filename);
                 if (e.shiftKey) {
