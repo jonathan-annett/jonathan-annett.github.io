@@ -127,7 +127,9 @@ ml(`
                 
                 addMiddlewareListener    : addMiddlewareListener,
                 
-                removeMiddlewareListener : removeMiddlewareListener 
+                removeMiddlewareListener : removeMiddlewareListener,
+                
+                virtualDirQuery          : virtualDirQuery
      
 
             };          

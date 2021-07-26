@@ -85,6 +85,12 @@ ml(`
                        db           : db,
                    },cb);
                },
+               
+               virtualDirQuery : function (url,cb) {
+                    sendMessage('virtualDirQuery',{
+                       url    :    url
+                   },cb);
+               },
             
                 createBlobDownloadLink : createBlobDownloadLink,
  

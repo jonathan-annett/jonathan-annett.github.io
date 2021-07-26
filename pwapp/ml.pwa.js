@@ -244,7 +244,33 @@ ml(`
                        });
                    },
                     
-                 
+                    
+                    virtualDirQuery : function (msg,cb) {
+                        
+                        const url = msg.data.url;
+                        if (url) {
+                        
+                            swRespZip.virtualDirQuery (url).then(function(entry){
+                            
+                                if (entry&& entry.response) {
+                                    
+                                    entry.response.arrayBuffer().then(function(buffer){
+                                        entry.buffer = buffer;
+                                        delete entry.response;
+                                        cb({entry:entry,url:url});
+                                    });
+                                    
+                                } else {
+                                  if (entry) {
+                                      cb({entry:entry,url:url});
+                                  } else {
+                                      cb({error:url+" not found"});
+                                  }
+                                }
+                            });
+                     }
+                     
+                    },
                     
                     updateURLContents : function (msg,cb) {
                         const data = msg.data;
