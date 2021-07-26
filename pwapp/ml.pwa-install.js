@@ -75,6 +75,8 @@ openWindowLib         | ml.openWindow.js
             });
             
             
+            
+            
             runhere.onclick = runClick ;
             openBtn.onclick = openClick ;
             
@@ -137,11 +139,29 @@ openWindowLib         | ml.openWindow.js
                 } 
              ); 
              
+             function logAreaHeightUsed () {
+                 return [].reduce.bind(
+                     document.body.querySelectorAll("#install-shell > div.shell__content div.line"),
+                     function (n,el) {
+                         return n+el.offsetHeight;
+                     }
+                );
+             }
+             
+             function logAreaHeight () {
+                 return qs("#install-shell > div.shell__content").offsetHeight;
+             }
+             
+             
              function logFilenameInConsole(filename) {
                  const list = shell.options.commands[0].output;
-                 const last = list.pop();
-                 list.push (last+(last===""?"":", ")+filename);
+                 list.push (filename);
                  shell.init();
+                 const avail = logAreaHeight ();
+                 while (logAreaHeightUsed ()>avail) {
+                     list.splice(0,1);
+                     shell.init();
+                 }
              }
              
               function runOrOpenClick(cb) {
