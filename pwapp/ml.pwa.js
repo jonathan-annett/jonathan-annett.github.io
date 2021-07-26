@@ -250,7 +250,7 @@ ml(`
                         const url = msg.data.url;
                         if (url) {
                         
-                            swRespZip.virtualDirQuery (url).then(function(entry){
+                            zipFS.virtualDirQuery (url).then(function(entry){
                             
                                 if (entry&& entry.response) {
                                     
