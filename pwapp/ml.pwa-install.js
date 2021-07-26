@@ -140,7 +140,7 @@ openWindowLib         | ml.openWindow.js
              ); 
              
              function logAreaHeightUsed () {
-                 return [].reduce.bind(
+                 return [].reduce.call(
                      document.body.querySelectorAll("#install-shell > div.shell__content div.line"),
                      function (n,el) {
                          return n+el.offsetHeight;
