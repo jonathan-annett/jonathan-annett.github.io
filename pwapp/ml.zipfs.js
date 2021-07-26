@@ -361,6 +361,7 @@ ml(`
 
              function fetchInternal(url,cb) {
                  const fakeEvent = {
+                     fixup_url: url,
                      request : {
                          url      : url,
                          referrer : '',
@@ -541,6 +542,7 @@ ml(`
              
              function fixupUrlEventInternal(url,cb) {
                  const fakeEvent = {
+                     fixup_url: url,
                      request : {
                          url      : url,
                          referrer : '',
