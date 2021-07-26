@@ -143,6 +143,7 @@ openWindowLib         | ml.openWindow.js
                  return [].reduce.call(
                      document.body.querySelectorAll("#install-shell > div.shell__content div.line"),
                      function (n,el) {
+                         logAreaHeightUsed.last = el.offsetHeight;
                          return n+el.offsetHeight;
                      },
                      0
@@ -160,8 +161,9 @@ openWindowLib         | ml.openWindow.js
                  shell.init();
                  const avail = logAreaHeight ();
                  let used = logAreaHeightUsed ();
-                 while (used>avail) {
+                 while (used+logAreaHeightUsed.last>avail) {
                      list.splice(0,1);
+                     qs("html").classList.add("scrolled");
                      shell.init();
                      used = logAreaHeightUsed ();
                  }

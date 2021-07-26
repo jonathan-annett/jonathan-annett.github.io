@@ -44,6 +44,7 @@ html.show_shell #install-shell{
     display:flex;
 }
 
+html.show_shell.scrolled #install-shell > div.shell__content > div:first-child,
 html.show_shell.busy #install-shell > div.shell__content > div:last-child {
     display :none;
 }
