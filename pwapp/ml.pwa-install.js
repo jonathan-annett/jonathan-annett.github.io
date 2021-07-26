@@ -72,7 +72,11 @@ openWindowLib         | ml.openWindow.js
             });
             
             
-            drag('#install-shell',["#install-shell > div.shell__status-bar"   ,"#install-shell > div.shell__status-bar > status-bar__title" ]);
+            drag('#install-shell',[
+                "#install-shell > div.shell__status-bar"   ,
+                "#install-shell > div.shell__status-bar > div.status-bar__title" 
+                //"#install-shell > div.shell__status-bar > div.status-bar__buttons"
+                ]);
             fixupLogHeight();
             
            
