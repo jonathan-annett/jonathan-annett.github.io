@@ -366,12 +366,28 @@ ml(`
                       fs_li_ed.classList.add("zoomingEditor");
                       qs("main").appendChild(ed_pre);
                       fs_li_ed.editor.focus();
-                      setTimeout(fs_li_ed.editor.resize,1);
+                      let c=5,tmr = setInterval(function(n){
+                          if (c<0) {
+                              clearTimeout(tmr);
+                          } else {
+                              c--;
+                              fs_li_ed.editor.resize();
+                          }
+                          
+                      },50);
                    } else {
                       fs_li_ed.classList.remove("zoomingEditor");
                       fs_li_ed.appendChild(ed_pre);
                       fs_li_ed.editor.focus(); 
-                      setTimeout(fs_li_ed.editor.resize,1);
+                      let c=5,tmr = setInterval(function(n){
+                          if (c<0) {
+                              clearTimeout(tmr);
+                          } else {
+                              c--;
+                              fs_li_ed.editor.resize();
+                          }
+                          
+                      },50);
                    }
                    
                    ed_pre.classList[addRemove]("fs_editor");
