@@ -1289,6 +1289,7 @@ ml(`
                                             li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
                                             li_ed.editor.focus();
                                             resizers.on(li_ed,10,editorResized);
+                                            li_ed.editor.resize();
                                             if (cb) {
                                                 cb(li_ed);
                                             }
