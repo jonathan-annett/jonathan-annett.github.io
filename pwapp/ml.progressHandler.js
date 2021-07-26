@@ -28,6 +28,7 @@ ml([],function(){ml(2,
                               }
                               else if (msg && msg.addToTotal) {
                                  addToTotal(msg.addToTotal,msg.filename);
+                                 console.log(msg);
                               }
                               else if (msg && msg.logComplete) {
                                  logComplete(msg.logComplete);
