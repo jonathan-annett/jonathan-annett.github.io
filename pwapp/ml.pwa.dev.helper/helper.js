@@ -63,7 +63,16 @@
            } 
            
            
-           
+           if (event.data && event.data.get_htmls 
+                          && event.data.get_htmls.urlprefix
+                          && event.data.get_htmls.replyId ) {
+               
+               editor_channel.postMessage({
+                   replyId: event.data.get_htmls.replyId,
+                   result: get_htmls( event.data.get_htmls.urlprefix) 
+               });
+               
+           } 
            
            
            if (event.data && event.data.open_stylesheet 
@@ -167,41 +176,59 @@
      return result;
  }
  
-     function get_scripts (urlprefix) {
+ function get_scripts (urlprefix) {
+ 
+ const 
+ url_filter = function(x){ return x.indexOf(urlprefix)===0;},
+ result = [].map.call(window.top.document.body.querySelectorAll('script'),function(x){
+     return x.src;}).filter(url_filter);
      
-     const 
-     url_filter = function(x){ return x.indexOf(urlprefix)===0;},
-     result = [].map.call(window.top.document.body.querySelectorAll('script'),function(x){
-         return x.src;}).filter(url_filter);
-         
+ [].push.apply(
+     result,
+     [].map.call(
+         window.top.document.head.querySelectorAll('script'),
+         function(x){ return x.src;
+      }).filter(url_filter)
+ );
+
+  
+ if (window.top.ml) {
+    [].push.apply(
+         result,
+         window.top.ml.H.filter(url_filter)
+     );
+ }
+ 
+ get_docs(urlprefix,window.top).forEach(function(doc){
      [].push.apply(
          result,
-         [].map.call(
-             window.top.document.head.querySelectorAll('script'),
-             function(x){ return x.src;
-          }).filter(url_filter)
+         [].map.call( doc.body.querySelectorAll('script'), function(x){ return x.src; }).filter(url_filter)
      );
+});
+
+return result.filter(function(x,i){
+    return result.indexOf(x)===i;
+});
+
+}
+
+
+function get_htmls (urlprefix) {
     
-      
-     if (window.top.ml) {
-        [].push.apply(
-             result,
-             window.top.ml.H.filter(url_filter)
-         );
-     }
-     
-     get_docs(urlprefix,window.top).forEach(function(doc){
-         [].push.apply(
-             result,
-             [].map.call( doc.body.querySelectorAll('script'), function(x){ return x.src; }).filter(url_filter)
-         );
+    const 
+    url_filter = function(x){ return x.indexOf(urlprefix)===0;},
+    result = [url_filter(window.top.document.location.href)];
+        
+    get_docs(urlprefix,window.top).forEach(function(doc){
+        result.push(url_filter(doc.location.href));
     });
-    
+   
     return result.filter(function(x,i){
-        return result.indexOf(x)===i;
+       return result.indexOf(x)===i;
     });
-    
- }
+   
+}
+
  
  function open_stylesheet(url,withCSS,replyId) {
     

@@ -37,6 +37,7 @@ ml(`
             const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix,alias_root,updated_prefix);   
                              
             const resizers = ResizeWatcher();
+            const available_html = [];
             const available_css = [];
             const available_scripts = [];
             const edit_hooks = {};
@@ -148,7 +149,19 @@ ml(`
                                     return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
                                 }));
                                 
-                                console.log({available_scripts});
+                                
+                                getHtmls(editor_channel,zip_virtual_dir,function(urls){
+                                    
+                                    available_html.splice(0,available_html.length);
+                                    
+                                    available_html.push.apply(available_html,urls.map(function(u){
+                                        return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
+                                    }));
+                                    
+                                    
+                                    console.log({available_html});
+                                
+                                });
                             
                             });
                             
@@ -809,7 +822,26 @@ ml(`
             }
             
             
-            
+            function getHtmls(editor_channel,urlprefix,cb) {
+                const replyId = Date.now().toString(36).substr(-6)+"_"+Math.random().toString(36).substr(-8);
+                
+                editor_channel.addEventListener("message",msgCB);
+                
+               editor_channel.postMessage({
+                   get_htmls:{
+                       urlprefix:urlprefix,   
+                       replyId:replyId
+                   }
+               });
+               
+               
+                function msgCB( event ) {
+                   if (event.data && event.data.replyId===replyId) {
+                        cb(event.data.result);
+                        editor_channel.removeEventListener("message",msgCB);
+                   } 
+                }
+            }
             
             
             function refreshStylesheeet(filename,cb) {
