@@ -51,7 +51,7 @@ ml([],function(){ml(2,
        function toFetchURL(resolve) {
            db.getItem(url,function(err,args){
                if (err||!args) return resolve();
-               resolve(args[0]);
+               resolve(new Response(args[0],{status:200,headers:new Headers(args[1])}));
            });
        }
     
