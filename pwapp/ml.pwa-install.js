@@ -76,7 +76,7 @@ openWindowLib         | ml.openWindow.js
             
            
                 
-            fixupLogHeight();
+           
             
             runBtn.onclick = runClick ;
             openBtn.onclick = openClick ;
@@ -131,7 +131,8 @@ openWindowLib         | ml.openWindow.js
                               console.log("unregistered service worker, restarting...");
                           });
                       }
-                      
+                    
+                    fixupLogHeight();
                      
                  }
              }).catch(
