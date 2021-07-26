@@ -1522,17 +1522,15 @@ ml(`
                 const pre = document.createElement("pre");
                 pre.id = "lint_"+Math.random().toString(36).substr(-8);
                 const div = document.createElement("div");
-                div.style.display="none";
                 div.appendChild(pre);
                 document.body.appendChild(div);
                 const editor = ace.edit(pre.id, {
                     mode:   mode,
                 });
                 
-                //editor.getSession().on("changeAnnotation",onChange);
+                editor.getSession().on("changeAnnotation",onChange);
                 
                 editor.setValue(src);
-                onChange();
                 
                 function onChange(){
                     editor.getSession().off("changeAnnotation",onChange);
