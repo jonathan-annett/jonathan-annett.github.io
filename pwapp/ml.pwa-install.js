@@ -139,6 +139,21 @@ openWindowLib         | ml.openWindow.js
                 } 
              ); 
              
+             function fixupLogHeight() {
+                 if (fixupLogHeight.done) return;
+                 
+                 const fakeSheet   = document.head.appendChild(window.top.document.createElement("style"));
+                 const cssTextNode = window.top.document.createTextNode(`.shell--responsive {
+                                                                        height: calc(100% -${
+                                                                            qs("#install-shell").offsetTop
+                                                                        }px);}`);
+       
+                 fakeSheet.type = 'text/css';
+                 fakeSheet.appendChild(cssTextNode);
+
+                 
+             }
+             
              function logAreaHeightUsed () {
                  return [].reduce.call(
                      document.body.querySelectorAll("#install-shell > div.shell__content div.line"),
@@ -156,6 +171,7 @@ openWindowLib         | ml.openWindow.js
              
              
              function logFilenameInConsole(filename) {
+                 fixupLogHeight();
                  const list = shell.options.commands[0].output;
                  list.push (filename);
                  shell.init();
