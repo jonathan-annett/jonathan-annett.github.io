@@ -139,7 +139,7 @@ ml(`
                                 return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
                             }));
                             
-                            console.log({available_css});
+                            //console.log({available_css});
                             
                             getScripts(editor_channel,zip_virtual_dir,function(urls){
                                 
@@ -159,7 +159,16 @@ ml(`
                                     }));
                                     
                                     
-                                    console.log({available_html});
+                                    //console.log({available_html});
+                                    
+                                    available_css.concat(available_html,available_scripts).forEach(function(livefile){
+                                        const li = find_li(livefile);
+                                        if (li) {
+                                            li.classList.add('live-edit');
+                                        }
+                                    });
+                                    
+                                    
                                 
                                 });
                             
