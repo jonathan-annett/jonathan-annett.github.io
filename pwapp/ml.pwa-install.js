@@ -124,36 +124,32 @@ openWindowLib         | ml.openWindow.js
              });
              
             
-           
+           betaTesterApproval().then(function(config){
+               
+               if (canRunInBrowser() || canRunAsApp()  ) {  
+                    pwa.start(function(){
+                      location.replace(config.root);   
+                    }); 
+               } else {
+                   
+                    if (config.root!==location.pathname) {
+                        return pwa.unregister(config.root,function(){
+                            console.log("unregistered service worker, restarting...");
+                        });
+                    }
+                  
+               }
+           }).catch(
+              function(err){
+                  console.log("site not available",err);
+              } 
+           ); 
              
              
              function onDOMContentLoaded() {
-                 if (onDOMContentLoaded.done) return;
-                 onDOMContentLoaded.done=true;
-                 
+                  
                  fixupLogHeight();
-                 
-                 betaTesterApproval().then(function(config){
-                     
-                     if (canRunInBrowser() || canRunAsApp()  ) {  
-                          pwa.start(function(){
-                            location.replace(config.root);   
-                          }); 
-                     } else {
-                         
-                          if (config.root!==location.pathname) {
-                              return pwa.unregister(config.root,function(){
-                                  console.log("unregistered service worker, restarting...");
-                              });
-                          }
-                        
-                     }
-                 }).catch(
-                    function(err){
-                        console.log("site not available",err);
-                    } 
-                 ); 
-                 
+
              }
              
              function fixupLogHeight() {
