@@ -315,3 +315,8 @@ footer {
   min-height: 20px; 
 }
 
+li.grab_bar {
+    background-color:silver;
+    height:8px;
+}
+
