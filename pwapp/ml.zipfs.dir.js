@@ -1372,7 +1372,7 @@ ml(`
                                     
                                     
                                     
-                                    li_ed.changeAnnotationFunc = function (li,li_ed,file_url){
+                                    li_ed.changeAnnotationFunc = function (){
                                             
                                         // to ignore callback after destruction, the li_ed.changeAnnotationFunc
                                         // is deleted before calling editor.destroy();
@@ -1532,9 +1532,13 @@ ml(`
                             resizers.off(li_ed,editorResized);
 
                             li.classList.remove("editing");
+                            
                             li_ed.editor.session.off('change',li_ed.inbuiltEditorOnSessionChange);
                             li_ed.editor.session.off("changeAnnotation", li_ed.changeAnnotationFunc );
         
+                            delete li_ed.inbuiltEditorOnSessionChange;
+                            delete li_ed.changeAnnotationFunc ;
+                            
                             li_ed.editor.destroy();
                             
                             li_ed.removeChild(ed);
@@ -1546,8 +1550,7 @@ ml(`
                             }
         
                             
-                            delete li_ed.inbuiltEditorOnSessionChange;
-                            delete li_ed.changeAnnotationFunc ;
+                            
                             delete li_ed.editor;
                             li_ed.hashDisplay.textContent='';
                             delete li_ed.hashDisplay;
