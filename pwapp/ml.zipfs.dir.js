@@ -1261,8 +1261,7 @@ ml(`
                     li_ed.innerHTML = ['<pre id="','"></pre><div class="grab_bar" id="','_grab_bar"></div>'].join(editor_id); 
                     li_ed.filename= filename;
                     
-                    li_ed.sizebar = dragSize("#"+editor_id,["#"+editor_id+"_grab_bar"]);
-                    
+                     
                     li.parentNode.insertBefore(li_ed, li.nextSibling);
                     
                     
@@ -1275,7 +1274,8 @@ ml(`
                     });
                     
                    
-                    
+                    li_ed.sizebar = dragSize("#"+editor_id,["#"+editor_id+"_grab_bar"]);
+                   
                     
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
                     
