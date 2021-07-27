@@ -29,6 +29,13 @@
      <a class="download" href="/${uri}?download=editedFiles" data-balloon-pos="down-left" aria-label="Download edited files">&nbsp;&nbsp;&nbsp;</a>
      <a class="download" id="img_dl_link" data-balloon-pos="down-left" aria-label="Download zip png image">&nbsp;&nbsp;&nbsp;</a>
      <a class="restart" href="/pwapp/stopping?stop-service-worker=/pwapp" data-balloon-pos="down-right" aria-label="Shutdown service worker"><i class="fas fa-eject"></i></a>
+     <a class="fullscreen" data-balloon-pos="left" aria-label="enter fullscreen mode">
+             <i class="fas fa-expand-arrows-alt"></i>
+     </a>
+     <a class="exit-fullscreen" data-balloon-pos="left" aria-label="exit fullscreen mode">
+            <i class="fas fa-compress-arrows-alt"></i>
+     </a>
+     
      <span id="img_dl_link2"></span>                        
      </h1>
      
@@ -91,19 +98,19 @@
         
         
         <a class="fullscreen">
-            <span>
+            <span data-balloon-pos="left" aria-label="zoom editor to fill this window">
                 <i class="fas fa-expand-arrows-alt"></i>
             </span>
         </a>
         
         <a class="exit-fullscreen">
-            <span>
+            <span data-balloon-pos="left" aria-label="return to inline editor (exit zoom)">
                 <i class="fas fa-compress-arrows-alt"></i>
             </span>
         </a>
         
         <a class="close-editor">
-            <span >
+            <span data-balloon-pos="left" aria-label="collapse inline editor">
                 <i class="fas fa-window-close"></i>
             </span>
         </a>
