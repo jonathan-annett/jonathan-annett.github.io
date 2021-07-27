@@ -146,7 +146,7 @@ ml(`
                 }
                 
                 
-                const fs_api = ml.i.devClassLib.fs_api();
+                const fs_api = ml.i.devClassLib().fs_api;
                 
                 const enterFS = qs ("h1 a.fullscreen",function click(){
                     if (!fs_api.isFullscreen()) {
