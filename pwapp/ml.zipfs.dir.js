@@ -1475,6 +1475,7 @@ ml(`
                             
                             delete li_ed.inbuiltEditorOnSessionChange;
                             delete li_ed.editor;
+                            li_ed.hashDisplay.textContent='';
                             delete li_ed.hashDisplay;
                             delete li_ed.setText;
                             delete li_ed.reload;
@@ -1602,8 +1603,7 @@ ml(`
                                       if (warnings && errors) break;
                                   }
                               }
-                              
-                              
+
                               history[hash]=[errors,warnings];
                               x.cb.apply(undefined,history[hash]);
 
@@ -1618,8 +1618,7 @@ ml(`
                     } else {
                         throw new Error("getAnnotations() returns "+typeof annot);
                     }
-                    
-                
+
                 }
                 
             }
