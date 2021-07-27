@@ -422,9 +422,24 @@ openWindowLib         | ml.openWindow.js
                                               if ( config.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
                                                   console.log("your beta tester approval code:",hashedKeyHex);
                                                   html.classList.remove("beta");
-                                                  html.classList.add("notbeta");
-                                                  keyPRE.innerHTML=hashedKeyHex;
-                                                  reject();
+                                                  if (localStorage.nobetapending==='1') {
+                                                     
+                                                     html.classList.add("notbetapending");
+                                                     html.classList.remove("notbeta");
+                                                      reject();
+                                                      
+                                                  } else {
+                                                      html.classList.remove("notbetapending");
+                                                      html.classList.add("notbeta");
+                                                      register (config,hashedKeyHex,function(err){
+                                                          if (!err) {
+                                                              html.classList.add("notbetapending");
+                                                              html.classList.remove("notbeta");
+                                                          }
+                                                          reject();
+                                                      });
+                                                  }
+                                                  
                                               } else {
                                                   html.classList.add("beta");
                                                   html.classList.remove("notbeta");
@@ -443,7 +458,7 @@ openWindowLib         | ml.openWindow.js
                                      const unhashedKeyHex = bufferToHex(unhashedKey);
                                      return window.crypto.subtle.digest(hashAlgo,unhashedKey).then(function(hashedKey) {
                                           localStorage[localStorageKey] = unhashedKeyHex;
-                                          html.classList.remove("beta");
+                                                  delete localStorage.notbetapending;
                                           html.classList.add("notbeta");
                                           keyPRE.innerHTML=bufferToHex(hashedKey);
                                           reject();
@@ -458,10 +473,19 @@ openWindowLib         | ml.openWindow.js
                      
                  });
                  
+                 
+                 
+                    
+                 function register (config,hashedKeyHex,cb) {
+                     
+                 }
+                
+                 
              }
              
              // generic tools 
-            
+             
+          
              
              function toJSON(response) { return response.json(); }
              
