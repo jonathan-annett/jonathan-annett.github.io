@@ -1232,7 +1232,7 @@ ml(`
             
             
 
-            function openInbuiltEditor (filename,li,cb,height) {
+            function openInbuiltEditor (filename,li,cb,height,textContent) {
                 li=li||find_li (filename);
                 const file_url = pwaApi.filename_to_url(filename);
                 let editor_id = li.dataset.editor_id;
@@ -1263,7 +1263,7 @@ ml(`
                     const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
                     
                     pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
-                        const currentText = new TextDecoder().decode(text);
+                        const currentText = textContent || new TextDecoder().decode(text);
                         
                         if (err) {
                             li_ed.editor.session.setValue("error:"+err.message||err);
@@ -1580,11 +1580,12 @@ ml(`
                     const ed = qs("#"+editor_id);
                     const li_ed = ed.parentNode;
                     pre_zoom_height = ed.offsetHeight;
+                    const textContent = li_ed.editor.getValue();
                     return closeInbuiltEditor ( zoom_filename,li, function(){
                          openInbuiltEditor ( zoom_filename,li, function(){
                              zoomEl = li;
                              zoomClass("add");
-                         },"skip");
+                         },"skip",textContent);
                     });
                      
                 }
