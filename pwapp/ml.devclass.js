@@ -46,7 +46,7 @@ timerManagerLib | ml.timerman.js
                  
              } = ml.i.classToolsLib; 
     
-        const TimerManager = ml.i.timerManagerLib;
+        const TimerManager = ml.i.timerManagerLib.TimerManager;
         
         
         var mouseover_autoclick = false,
