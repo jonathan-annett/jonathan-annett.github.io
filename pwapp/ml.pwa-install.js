@@ -13,8 +13,8 @@ dragSizeWindowLib     | ml.dragSizeWindow.js
             const lib = {}  ;
             
             const  
-            [ html,keyPRE,                   runBtn,  openBtn,    update  ]   = 
-            ["html","html .notbeta pre.key","#runBtn", "#openBtn", "#updateBtn"].map(qs);
+            [ html, runBtn,  openBtn,    update  ]   = 
+            ["html","#runBtn", "#openBtn", "#updateBtn"].map(qs);
             
             
             const 
@@ -446,7 +446,6 @@ dragSizeWindowLib     | ml.dragSizeWindow.js
                                           html.classList.remove("notbetapending");
                                           html.classList.remove("beta");
                                           delete localStorage.notbetapending;
-                                          keyPRE.innerHTML=bufferToHex(hashedKey);
                                           reject();
                                      });        
                                  });
