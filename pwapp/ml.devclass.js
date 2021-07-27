@@ -2,7 +2,12 @@
 
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml([],function(){ml(2,
+ml(`
+
+classToolsLib   | ml.classtools.js
+timerManagerLib | ml.timerman.js 
+
+`,function(){ml(2,
 
     {
         Window: function devClassLib( lib ) {
@@ -26,20 +31,23 @@ ml([],function(){ml(2,
         
         // device_classes.js v2
         
-        // imports from classname_tools.js
-        /* global set_class_name_group_quick,
-                  set_class_name_group_class_quick,
-                  has_class_name,
-                  remove_class_name,
-                  add_class_name_quick,
-                  add_class_names,
-                  remove_class_names,
-                  add_class_name
-        */
+        // imports from ml.classtools.js
+       
+       const {
+                 
+                 set_class_name_group_quick,
+                 set_class_name_group_class_quick,
+                 has_class_name,
+                 remove_class_name,
+                 add_class_name_quick,
+                 add_class_names,
+                 remove_class_names,
+                 add_class_name
+                 
+             } = ml.i.classToolsLib; 
+    
+        const TimerManager = ml.i.timerManagerLib;
         
-        /* global TimerManager
-        
-        */
         
         var mouseover_autoclick = false,
           pointerover_autoclick = false;
