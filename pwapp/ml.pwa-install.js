@@ -421,11 +421,11 @@ openWindowLib         | ml.openWindow.js
                                        
                                               if ( config.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
                                                   console.log("your beta tester approval code:",hashedKeyHex);
-                                                  html.classList.remove("beta");
+                                                 
                                                   if (localStorage.notbetapending==='1') {
                                                      
-                                                     html.classList.add("notbetapending");
-                                                     html.classList.remove("notbeta");
+                                                      html.classList.add("notbetapending");
+                                                      html.classList.remove("notbeta");
                                                       reject();
                                                       
                                                   } else {
@@ -443,8 +443,10 @@ openWindowLib         | ml.openWindow.js
                                                   
                                               } else {
                                                   html.classList.add("beta");
+                                                  html.classList.remove("notbetapending");
                                                   html.classList.remove("notbeta");
                                                   config.testerKey = keyAsHex;
+                                                  delete localStorage.notbetapending;
                                                   resolve(config);
                                               }
                                               
@@ -461,6 +463,9 @@ openWindowLib         | ml.openWindow.js
                                           localStorage[localStorageKey] = unhashedKeyHex;
                                                   delete localStorage.notbetapending;
                                           html.classList.add("notbeta");
+                                          html.classList.remove("notbetapending");
+                                          html.classList.remove("beta");
+                                          delete localStorage.notbetapending;
                                           keyPRE.innerHTML=bufferToHex(hashedKey);
                                           reject();
                                      });        
