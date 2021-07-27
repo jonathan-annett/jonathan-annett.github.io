@@ -133,6 +133,7 @@ li.live-edit span.live-edit::before {
    display:inline-block;
 }
 
+li.editing span.sha1,
 a.close-editor,
 a.exit-fullscreen,
 li a.fullscreen,
@@ -197,7 +198,8 @@ html.zooming li.zooming {
    display : block;
 }
 
-html.zooming li.zooming a[data-balloon-pos="down-left" ] {
+li.editing.errors a[data-balloon-pos="down-left"],
+html.zooming li.zooming a[data-balloon-pos="down-left"] {
    pointer-events:none;
    cursor:normal;
 }
