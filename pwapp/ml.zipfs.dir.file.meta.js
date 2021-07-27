@@ -30,7 +30,11 @@ ml(`
     function htmlFileMetaLib (options) {
         
          return {
-            fileIsEditable,fileIsImage,aceModeForFile,aceThemeForFile
+            fileIsEditable,
+            fileIsImage,
+            aceModeForFile,
+            aceThemeForFile,
+            aceModeHasWorker
         };
 
         function fileIsEditable (filename) {
