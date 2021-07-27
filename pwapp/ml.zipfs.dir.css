@@ -150,8 +150,7 @@ h1 a.fullscreen,
 li.editing a.fullscreen, 
 html.zooming li.editing a.exit-fullscreen, 
 li span.warnings,
-li span.errors,
-li.editing a.close-editor {
+li span.errors {
     float: right;
     margin-right:6px;
 }
