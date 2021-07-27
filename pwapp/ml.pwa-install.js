@@ -482,9 +482,10 @@ openWindowLib         | ml.openWindow.js
                  function validateEmail(inputText)
                  {
                      var mailformat = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-                     if(inputText.match(mailformat))
+                     const email = inputText.value.trim(); 
+                     if(email.match(mailformat))
                      {
-                        return true;
+                        return email !== inputText.placeholder;
                      }
                      else
                      {
@@ -551,7 +552,7 @@ openWindowLib         | ml.openWindow.js
                      sendButton.disabled=true;
                      
                      function email_change() {
-                         sendButton.disabled=!validateEmail(register_email.value.trim());
+                         sendButton.disabled=!validateEmail(register_email);
                      }
                      
                  
