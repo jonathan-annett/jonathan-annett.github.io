@@ -84,8 +84,8 @@ ml([],function(){ml(2,
               }
               
               function mousedown(e) {
-                const isVert  = vertHotzones && vertHotzones.map(qs).indexOf(e.target);
-                const isHorz  = horzHotZones && horzHotZones.map(qs).indexOf(e.target);
+                const isVert  = vertHotzones && vertHotzones.map(qs).indexOf(e.target)>=0;
+                const isHorz  = horzHotZones && horzHotZones.map(qs).indexOf(e.target)>=0;
                 if (!isHorz && !isVert) return;
                 
                 inSize = true;
