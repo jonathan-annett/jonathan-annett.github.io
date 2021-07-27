@@ -16,7 +16,7 @@ ml([],function(){ml(2,
             function drag(el,Hotzones) {
               var dragStartX, dragStartY; var objInitLeft, objInitTop;
               var inDrag = false;
-              var dragTarget = qs(el);
+              var dragTarget = typeof el==='string'?qs(el):el;
               document.addEventListener("mousedown",mousedown );
               document.addEventListener("mousemove",mousemove );
               document.addEventListener("mouseup", mouseup);
@@ -61,7 +61,7 @@ ml([],function(){ml(2,
             function size(el,vertHotzones,horzHotZones) {
               var dragStartX, dragStartY; var objInitWidth, objInitHeight;
               var inSize = false,sizeMode;
-              var dragTarget = qs(el);
+              var dragTarget = typeof el==='string'?qs(el):el;
               
               document.addEventListener("mousedown", mousedown);
               document.addEventListener("mousemove", mousemove);
