@@ -1565,9 +1565,10 @@ ml(`
                     //move editor to non zoomed ssate 
                     zoomClass("remove");
                     // save session state and restore height
+                    const textContent = fs_li_ed.editor.getValue();
                     return closeInbuiltEditor ( zoom_filename,zoomEl, function(){
                          openInbuiltEditor ( zoom_filename,zoomEl, function(){
-                         },pre_zoom_height);
+                         },pre_zoom_height,textContent);
                          fs_li_ed= undefined;
                          zoomEl=undefined;
                          pre_zoom_height=undefined;
