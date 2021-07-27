@@ -27,7 +27,7 @@ ml(`
             
             ace_session_json = ml.i.aceSessionLib,
             
-            { fileIsEditable,fileIsImage,aceModeForFile,aceThemeForFile } =  ml.i.htmlFileMetaLib,
+            { fileIsEditable,fileIsImage,aceModeForFile,aceThemeForFile,aceModeHasWorker } =  ml.i.htmlFileMetaLib,
             
             { open_url   } = ml.i.openWindowLib,
             
@@ -1554,12 +1554,22 @@ ml(`
                 document.body.appendChild(div); 
                 div.appendChild(pre);
                 div.style.display="none";
-                
+                let timeout,hasWorker;
                 let editor = ace.edit(pre.id, {
                     mode: mode
                 });
                 
-                editor.getSession().on("changeAnnotation",onAnnotationChange);
+                 aceModeHasWorker(mode,function(answer){
+                    hasWorker = answer;
+                    if (hasWorker) {
+                        editor.getSession().on("changeAnnotation",onAnnotationChange);
+                    } else {
+                       
+                        editor.getSession().on("change",onChange);
+                    }
+                });
+                
+               
                 
                 const srcs = {};
                 const history = {};
@@ -1589,6 +1599,14 @@ ml(`
                     }
                     srcs[hash]={src,cb};
                     next();
+                }
+                
+                function onChange (){
+                   if (timeout) clearTimeout(timeout);
+                   timeout = setTimeout(function(){
+                       timeout = undefined;
+                       onAnnotationChange();
+                    },1000);
                 }
                 
                 function onAnnotationChange(){
@@ -1632,6 +1650,8 @@ ml(`
                     }
 
                 }
+                 
+               
                 
             }
 

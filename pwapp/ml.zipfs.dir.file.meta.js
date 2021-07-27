@@ -3,7 +3,8 @@
 ml(`
 
   aceModeList@Window | ace/ext-modelist.js
-
+  pwaWindow@Window      | ml.pwa-win.js
+    
 `,function(){ml(2,
 
     {
@@ -508,10 +509,17 @@ ml(`
                 aceModeForFile.modelist = ml.i.aceModeList;
                 const mode = aceModeForFile.modelist ? aceModeForFile.modelist.getModeForPath(fn).mode : false;
                 if (mode) {
-                    aceModeForFile.cache[ext]= mode;
+                    aceModeForFile.cache[ext] = mode;
                 }
                 return mode;
             })() : "ace/mode/text";
+        }
+        
+        function aceModeHasWorker(mode,cb) {
+            const url = 'ace/worker-'+mode.replace(/^ace\/mode\//,'')+'.js';
+            ml.i.pwaWindow.virtualDirQuery(url,function(err,event){
+                return cb (!err&&event&&!!event.buffer);                
+            });
         }
         
         function aceThemeForFile(fn ) {
