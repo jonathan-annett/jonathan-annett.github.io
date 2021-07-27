@@ -1562,7 +1562,7 @@ ml(`
                         const x = srcs[hash];
                         if (x && x.src) {
                             editor.getSession().setValue(x.src);
-                            sha1(editor.getSession().getValue(),function(er,hash2){
+                            sha1(new TextEncoder().encode(editor.getSession().getValue()),function(er,hash2){
                                if (hash2!==hash) {
                                    throw new Error ("internal error - hash of getValue() does not match hash to setValue()");
                                } 
@@ -1587,7 +1587,7 @@ ml(`
                         
                         var src   = editor.getSession().getValue();
                         
-                        sha1(src,function(er,hash){
+                        sha1(new TextEncoder().encode(src),function(er,hash){
                            
                           const x = srcs[hash];
                           if (x && x.src && x.cb) {
