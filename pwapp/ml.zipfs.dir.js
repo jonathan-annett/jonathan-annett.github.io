@@ -1569,7 +1569,6 @@ ml(`
                         }
                         setTimeout(function(){
                             editor.destroy();
-                            div.removeChild(pre);
                             document.body.removeChild(div);
                             cb (!!errors,!!warnings);
                         },1);
