@@ -1268,9 +1268,6 @@ ml(`
                     li_ed.editor = ace.edit(editor_id, {
                         theme:   aceThemeForFile(filename),
                         mode:    aceModeForFile(filename),
-                        //autoScrollEditorIntoView: true,
-                        //maxLines: 10,
-                        //minLines: 2
                     });
                     
                    
@@ -1653,21 +1650,25 @@ ml(`
                         } else {
                             const sha_el = qs(li,".sha1");
                             if(sha_el && sha_el.textContent.trim()==='') {
+                                sha_el.textContent='--hashing---';
                                 pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer,updated,hash){
-                                    sha_el.textContent=hash;
                                     if (fileIsEditable(filename)){
+                                        sha_el.textContent='--syntax scanning---';
                                         const mode = aceModeForFile(filename);
                                         if (mode) {
                                             const text = new TextDecoder().decode(buffer);
                                             lintSource(hash,text,mode,function(errors,warnings){
                                                 li.classList[errors?"add":"remove"]("errors");
                                                 li.classList[warnings?"add":"remove"]("warnings");
+                                                sha_el.textContent = hash;
                                             }); 
                                             setTimeout(zipPoller,1,index+1);
                                         } else {
+                                            sha_el.textContent=hash;
                                             setTimeout(zipPoller,1,index+1);
                                         }
                                     } else {
+                                        sha_el.textContent=hash;
                                         setTimeout(zipPoller,1,index+1);
                                     }
 
@@ -1680,7 +1681,7 @@ ml(`
                         setTimeout(zipPoller,1,index+1);
                     }
                 } else {
-                    setTimeout(zipPoller,5000,0); 
+                    setTimeout(zipPoller,500,0); 
                 }
             }
             
