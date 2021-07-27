@@ -1567,14 +1567,14 @@ ml(`
                                 if (warnings && errors) break;
                             }
                         }
-                        
+                        setTimeout(function(){
+                            editor.destroy();
+                            div.removeChild(pre);
+                            document.body.removeChild(div);
+                            cb (!!errors,!!warnings);
+                        },1);
                     }
-                    setTimeout(function(){
-                        editor.destroy();
-                        div.removeChild(pre);
-                        document.body.removeChild(div);
-                        cb (!!errors,!!warnings);
-                    },1);
+                    
                 
                 }
                 
