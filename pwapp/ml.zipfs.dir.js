@@ -97,6 +97,8 @@ ml(`
               }
             })()
             
+            var zoomEl,fs_li_ed,pre_zoom_height,zoom_filename;    
+           
             
             const htmlFileItemLibOpts = {
                 uri:zip_url_base.replace(/^\//,''),
@@ -408,78 +410,14 @@ ml(`
             function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
             
             
-            var zoomEl,fs_li_ed,pre_zoom_height,zoom_filename;    
             
             function  zoomBtnClick( e ) {
                 e.stopPropagation();
                 
-                const zoomClass=function(addRemove) {
-                    
-                   const ed_pre = qs("#"+zoomEl.dataset.editor_id);
-                   if (addRemove==="add") {
-                      fs_li_ed=ed_pre.parentNode;
-                      fs_li_ed.classList.add("zoomingEditor");
-                      qs("main").appendChild(ed_pre);
-                      fs_li_ed.editor.focus();
-                      let c=5,tmr = setInterval(function(n){
-                          if (c<0) {
-                              clearTimeout(tmr);
-                          } else {
-                              c--;
-                              fs_li_ed.editor.resize();
-                          }
-                          
-                      },50);
-                   } else {
-                      fs_li_ed.classList.remove("zoomingEditor");
-                      fs_li_ed.appendChild(ed_pre);
-                      fs_li_ed.editor.focus(); 
-                      let c=5,tmr = setInterval(function(n){
-                          if (c<0) {
-                              clearTimeout(tmr);
-                          } else {
-                              c--;
-                              fs_li_ed.editor.resize();
-                          }
-                          
-                      },50);
-                   }
-                   
-                   ed_pre.classList[addRemove]("fs_editor");
-                   zoomEl.classList[addRemove]("zooming");
-                   qs('html').classList[addRemove]("zooming");
-                   
-                };
-                
-                if (zoomEl) {
-                    //move editor to non zoomed ssate 
-                    zoomClass("remove");
-                    // save session state and restore height
-                    return closeInbuiltEditor ( zoom_filename,zoomEl, function(){
-                         openInbuiltEditor ( zoom_filename,zoomEl, function(){
-                         },pre_zoom_height);
-                         fs_li_ed= undefined;
-                         zoomEl=undefined;
-                         pre_zoom_height=undefined;
-                    });
-                    
-                } else {
-                    zoom_filename = findFilename(e.target);
-                    const li = find_li(zoom_filename);
-                    let editor_id = li.dataset.editor_id;
-                    const ed = qs("#"+editor_id);
-                    const li_ed = ed.parentNode;
-                    pre_zoom_height = ed.offsetHeight;
-                    return closeInbuiltEditor ( zoom_filename,li, function(){
-                         openInbuiltEditor ( zoom_filename,li, function(){
-                             zoomEl = li;
-                             zoomClass("add");
-                         },"skip");
-                    });
-                     
-                }
+                toggleEditorZoom( findFilename(e.target) );
                 
             }
+             
             
             function openEditorClick(e){
                 e.stopPropagation();
@@ -1231,7 +1169,35 @@ ml(`
                 
             }
             
-            
+             
+            function saveEditorMeta(filename,li,editor_id,ed,li_ed,cb) {
+                if (typeof li==='function') {
+                    cb=li;
+                    li=editor_id=ed=li_ed=undefined;
+                }
+                li=li||find_li (filename);
+                editor_id = editor_id || li.dataset.editor_id;
+                if (editor_id) {
+                    ed = ed || qs("#"+editor_id);
+                    
+                    li_ed = li_ed||ed.parentNode;
+                    
+                    ace_session_json.serialize(
+                        li_ed.editor,
+                        ["theme"],{
+                            height : ed.offsetHeight
+                        },
+                    function(err,json){
+                        const buffer = new TextEncoder().encode(json);
+                        const file_url = pwaApi.filename_to_url(filename)+".hidden-json";
+                        pwaApi.updateURLContents (file_url,buffer,false,function(err) {
+                            cb();
+                        });
+                    });
+                    
+                }
+            }
+          
             function transientEditorMetaResave(li_ed,delay,annot) {
                 if (li_ed.transient_timeout) clearTimeout(li_ed.transient_timeout);
                 
@@ -1488,35 +1454,7 @@ ml(`
                 }
             }
             
-            
-            function saveEditorMeta(filename,li,editor_id,ed,li_ed,cb) {
-                if (typeof li==='function') {
-                    cb=li;
-                    li=editor_id=ed=li_ed=undefined;
-                }
-                li=li||find_li (filename);
-                editor_id = editor_id || li.dataset.editor_id;
-                if (editor_id) {
-                    ed = ed || qs("#"+editor_id);
-                    
-                    li_ed = li_ed||ed.parentNode;
-                    
-                    ace_session_json.serialize(
-                        li_ed.editor,
-                        ["theme"],{
-                            height : ed.offsetHeight
-                        },
-                    function(err,json){
-                        const buffer = new TextEncoder().encode(json);
-                        const file_url = pwaApi.filename_to_url(filename)+".hidden-json";
-                        pwaApi.updateURLContents (file_url,buffer,false,function(err) {
-                            cb();
-                        });
-                    });
-                    
-                }
-            }
-          
+           
             function closeInbuiltEditor(filename,li,cb) {
                 li=li||find_li (filename);
                 let editor_id = li.dataset.editor_id;
@@ -1582,13 +1520,78 @@ ml(`
                 }
             }
             
-            function filterHistory  (deltas){ 
-                return deltas.filter(function (d) {
-                    return d.group != "fold";
-                });
+            
+            function toggleEditorZoom( filename ) {
+                
+                const zoomClass=function(addRemove) {
+                    
+                   const ed_pre = qs("#"+zoomEl.dataset.editor_id);
+                   if (addRemove==="add") {
+                      fs_li_ed=ed_pre.parentNode;
+                      fs_li_ed.classList.add("zoomingEditor");
+                      qs("main").appendChild(ed_pre);
+                      fs_li_ed.editor.focus();
+                      let c=5,tmr = setInterval(function(n){
+                          if (c<0) {
+                              clearTimeout(tmr);
+                          } else {
+                              c--;
+                              fs_li_ed.editor.resize();
+                          }
+                          
+                      },50);
+                   } else {
+                      fs_li_ed.classList.remove("zoomingEditor");
+                      fs_li_ed.appendChild(ed_pre);
+                      fs_li_ed.editor.focus(); 
+                      let c=5,tmr = setInterval(function(n){
+                          if (c<0) {
+                              clearTimeout(tmr);
+                          } else {
+                              c--;
+                              fs_li_ed.editor.resize();
+                          }
+                          
+                      },50);
+                   }
+                   
+                   ed_pre.classList[addRemove]("fs_editor");
+                   zoomEl.classList[addRemove]("zooming");
+                   qs('html').classList[addRemove]("zooming");
+                   
+                };
+                
+                if (zoomEl) {
+                    //move editor to non zoomed ssate 
+                    zoomClass("remove");
+                    // save session state and restore height
+                    return closeInbuiltEditor ( zoom_filename,zoomEl, function(){
+                         openInbuiltEditor ( zoom_filename,zoomEl, function(){
+                         },pre_zoom_height);
+                         fs_li_ed= undefined;
+                         zoomEl=undefined;
+                         pre_zoom_height=undefined;
+                    });
+                    
+                } else {
+                    zoom_filename = filename;
+                    const li = find_li(zoom_filename);
+                    let editor_id = li.dataset.editor_id;
+                    const ed = qs("#"+editor_id);
+                    const li_ed = ed.parentNode;
+                    pre_zoom_height = ed.offsetHeight;
+                    return closeInbuiltEditor ( zoom_filename,li, function(){
+                         openInbuiltEditor ( zoom_filename,li, function(){
+                             zoomEl = li;
+                             zoomClass("add");
+                         },"skip");
+                    });
+                     
+                }
+                
+                
             }
             
-           
            
             function toggleInbuiltEditor (filename,li) {
                 li=li||find_li (filename);
@@ -1725,7 +1728,7 @@ ml(`
             }
 
             
-              function zipPoller(index) {
+            function zipPoller(index) {
                 //main purpose is to keep service worker awake. but while we are doing that, might as well hash each file and display it
                 index = index || 0;
                 if (index < zip_files.length) {
