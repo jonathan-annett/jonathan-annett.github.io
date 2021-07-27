@@ -479,7 +479,22 @@ openWindowLib         | ml.openWindow.js
                      
                  });
                  
-                 
+                 function validateEmail(inputText)
+                 {
+                     var mailformat = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+                     if(inputText.value.match(mailformat))
+                     {
+                     alert("Valid email address!");
+                     document.form1.text1.focus();
+                     return true;
+                     }
+                     else
+                     {
+                     alert("You have entered an invalid email address!");
+                     document.form1.text1.focus();
+                     return false;
+                     }
+                 }
                  
                     
                  function register (config,hashedKeyHex,cb) {
@@ -502,7 +517,7 @@ openWindowLib         | ml.openWindow.js
                      }
                  
                      var sendButton = document.getElementById("js_send");
-                 
+                     var register_email = document.querySelector("#" + form_id_js + " [name='register_email']");
                      function js_send() {
                          sendButton.value='Sending...';
                          sendButton.disabled=true;
@@ -516,13 +531,12 @@ openWindowLib         | ml.openWindow.js
                              }
                          };
                  
-                         var register_email = document.querySelector("#" + form_id_js + " [name='register_email']").value;
                          data_js['subject'] = "Beta Tester Application "+location.href;
                          data_js['text'] = [
                              "Beta Tester Application",
                              "Site URL:"+location.href,
                              "Browser Hex Id:"+hashedKeyHex,
-                             "Email Address Entered:"+register_email,
+                             "Email Address Entered:"+register_email.value.trim(),
                              "Browser Info:"+browserMeta ()
                          ].join("\n");
                           
@@ -537,6 +551,13 @@ openWindowLib         | ml.openWindow.js
                      }
                  
                      sendButton.onclick = js_send;
+                     register_email.onchange = email_change;
+                     sendButton.disabled=true;
+                     
+                     function email_change() {
+                         sendButton.disabled=!validateEmail(register_email.value.trim());
+                     }
+                     
                  
                      function toParams(data_js) {
                          var form_data = [];
