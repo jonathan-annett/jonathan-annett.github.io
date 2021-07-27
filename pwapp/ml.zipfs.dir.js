@@ -1518,9 +1518,21 @@ ml(`
             }
             
             
-            function linter (src,mode,cb) {
+            const linters = {
                 
-                if (src.trim()==='') return cb(false,false);
+            };
+            
+            function lintSource (src,mode,cb) {
+                const lintr = linters[mode];
+                if (lintr) {
+                    return lintr.push(src,cb);
+                }
+                linters[mode]=linter (mode);
+                linters[mode].push(src,cb);
+            }
+            
+            
+            function linter (mode) {
                 
                 let pre = document.createElement("pre");
                 pre.id = "lint_"+Math.random().toString(36).substr(-8);
@@ -1534,66 +1546,58 @@ ml(`
                     mode: mode
                 });
                 
-                let aborting = false;
+                editor.getSession().on("changeAnnotation",onAnnotationChange);
                 
-                setTimeout(waitForAnnotations,500);
+                const srcs = [], cbs = [];
                 
-                function waitForAnnotations() {
-                    editor.getSession().on("changeAnnotation",onAnnotationChange);
+                return {
+                    push : push
+                };
+                
+                function push (src,cb) {
+                    srcs.push(src);
+                    cbs.push(cb);
+                    editor.getSession().setValue(srcs[0]);
+                }
+                
+                function onAnnotationChange(){
                     
-                    editor.getSession().on("change",onChange);
+                    var annot = editor.getSession().getAnnotations();
                     
-                    // start off with an empty documeent
-                    editor.setValue("     ");
-                    
-                    
-                    function onChange() {
-                        if (editor.getValue().trim()==="") {
-                            editor.setValue(src);
-                        }
-                    } 
-                    
-                    function onAnnotationChange(){
+                    if (annot) {
                         
-                        if (aborting || editor.getValue().trim()==="") {
-                            return;
-                        }
-                        
-                        
-                        var annot = editor.getSession().getAnnotations();
+                        var src   = editor.getSession().getValue();
+                        const ix = srcs.indexOf(src);
+                        if (ix < 0) return;
+                       
     
                         let errors ;
                         let warnings;
-                        
-                        if (annot) {
                             
-                            for (let key in annot){
-                                if (annot.hasOwnProperty(key)) {
-                                    if  (annot[key].type === "warning") warnings = true;
-                                    if  (annot[key].type === "error") errors = true;
-                                    if (warnings && errors) break;
-                                }
+                        for (let key in annot){
+                            if (annot.hasOwnProperty(key)) {
+                                if  (annot[key].type === "warning") warnings = true;
+                                if  (annot[key].type === "error") errors = true;
+                                if (warnings && errors) break;
                             }
-                            
-                            aborting = true;
-                            editor.getSession().off("changeAnnotation",onAnnotationChange);
-                            editor.getSession().off("change",onChange);
-                           
-                            editor.destroy();
-                            
-                            div.removeChild(pre);
-                            document.body.removeChild(div);
-                            
-                            cb (!!errors,!!warnings);
-                            
-                        } else {
-                            
-                           return setTimeout(onAnnotationChange,100);
                         }
                         
-                    
+                        const cb = cbs[ix];
+                        srcs.splice(ix,1);
+                        cbs.splice(ix,1);
+                        cb (errors,warnings);
+                        
+                        if (srcs.length>0) {
+                            editor.getSession().setValue(srcs[0]);
+                        }
+                    } else {
+                        console.log("getAnnotations() returns",annot);
+                        return;
                     }
-                }    
+                    
+                
+                }
+                
             }
 
             
@@ -1617,11 +1621,11 @@ ml(`
                                         const mode = aceModeForFile(filename);
                                         if (mode) {
                                             const text = new TextDecoder().decode(buffer);
-                                            linter(text,mode,function(errors,warnings){
+                                            lintSource(text,mode,function(errors,warnings){
                                                 li.classList[errors?"add":"remove"]("errors");
                                                 li.classList[warnings?"add":"remove"]("warnings");
-                                                setTimeout(zipPoller,1,index+1);
-                                            });
+                                            }); 
+                                            setTimeout(zipPoller,1,index+1);
                                         } else {
                                             setTimeout(zipPoller,1,index+1);
                                         }
