@@ -1541,7 +1541,7 @@ ml(`
                
                 document.body.appendChild(div); 
                 div.appendChild(pre);
-                //div.style.display="none";
+                div.style.display="none";
                 
                 let editor = ace.edit(pre.id, {
                     mode: mode
