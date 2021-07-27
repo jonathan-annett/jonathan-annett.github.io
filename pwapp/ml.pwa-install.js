@@ -528,6 +528,8 @@ dragSizeWindowLib     | ml.dragSizeWindow.js
                  
                      sendButton.onclick = js_send;
                      register_email.onchange = email_change;
+                     register_email.onkeyup = email_change;
+                     
                      sendButton.disabled=true;
                      
                      function email_change() {
