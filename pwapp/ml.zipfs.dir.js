@@ -1255,7 +1255,7 @@ ml(`
                     li.dataset.editor_id =  editor_id;
                     li.classList.add("editing");
                     const li_ed = document.createElement("li");
-                    li_ed.innerHTML = '<PRE id="'+editor_id+'"></PRE>'; 
+                    li_ed.innerHTML = '<pre id="'+editor_id+'"></pre><div class="grab_bar"></div>'; 
                     li_ed.filename= filename;
                     
                     li.parentNode.insertBefore(li_ed, li.nextSibling);

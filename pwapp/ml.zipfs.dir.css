@@ -214,6 +214,14 @@ ul {
     list-style-type: none;
 }
 
+li div.grab_bar {
+    background-color:silver;
+    height: 4px;
+    width: 100%;
+}
+
+ 
+
 li.editing  {
   background-color: #a9d8eb;
 }
