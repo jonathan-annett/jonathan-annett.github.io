@@ -234,6 +234,7 @@ li span.sha1 {
     margin-left: 10px;
     margin-right: 10px;
     color: #101010;
+    float:right;
 }
 
 ul li.hidden { background-color : yellow; }
