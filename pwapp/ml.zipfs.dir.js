@@ -46,7 +46,7 @@ ml(`
             const available_scripts = [];
             const edit_hooks = {};
             
-          
+            const editorErrors = [];
            
             
             qs ("h1 a.restart",function click(e) {
@@ -131,6 +131,7 @@ ml(`
                pwaApi : pwaApi
             };
             
+
             function onDOMContentLoaded (){
             
                 const showHidden=document.querySelector("h1 input.hidden_chk");
@@ -161,10 +162,6 @@ ml(`
                        }                                      
                 });
                 
-                
-                
-                
-
                 
                 qs("#img_dl_link",function click(){
                     pwa.getPNGZipImage(full_zip_uri,"files",zip_virtual_dir,qs("#show_dl_img"),qs("#img_dl_link2"),"download");
@@ -258,6 +255,14 @@ ml(`
                         
                         
                 }
+                
+                
+                window.addEventListener('beforeunload', (event) => {
+                  if (editorErrors.length>0) {
+                    event.returnValue = 'There are uncorrected errors in open editors. Sure you want to leave?';
+                  }
+                });
+                
                 
             }
             
@@ -353,9 +358,6 @@ ml(`
                 }
             }
             
-            
-            
-            
             function addOpenEditorClick (el) {
                 if (el) {
                   el.addEventListener("click",openEditorClick);
@@ -387,10 +389,6 @@ ml(`
                 }
             }
             
-            
-            
-            
-            
             function addViewClick (el) {
                 if (el) {
                     el.addEventListener("click",viewBtnClick);
@@ -409,16 +407,13 @@ ml(`
            
             function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
             
-            
-            
             function  zoomBtnClick( e ) {
                 e.stopPropagation();
                 
                 toggleEditorZoom( findFilename(e.target) );
                 
             }
-             
-            
+
             function openEditorClick(e){
                 e.stopPropagation();
                 const filename = findFilename(e.target);
@@ -452,7 +447,6 @@ ml(`
                     toggleInbuiltEditor ( filename,li )
                 }
             }
-            
         
             function undoEditsClick( e) {
                 e.stopPropagation();
@@ -522,8 +516,6 @@ ml(`
                     });
             }
 
-            
-            
             function viewImageBtnClick(e) {
                 e.stopPropagation();
                 const filename = findFilename(e.target);
@@ -883,7 +875,6 @@ ml(`
                 }
             }
             
-            
             function getHtmls(editor_channel,urlprefix,cb) {
                 const replyId = Date.now().toString(36).substr(-6)+"_"+Math.random().toString(36).substr(-8);
                 
@@ -1213,8 +1204,22 @@ ml(`
                         }
                     }
                     
-                    find_li(li_ed.filename).classList[errors?"add":"remove"]("errors");
-                    find_li(li_ed.filename).classList[warnings?"add":"remove"]("warnings");
+                    const li=find_li(li_ed.filename);
+                    li.classList[errors?"add":"remove"]("errors");
+                    li.classList[warnings?"add":"remove"]("warnings");
+                    const ix = editorErrors.indexOf(li_ed.filename);
+                    if (errors) {
+                        if (ix<0) {
+                            editorErrors.push(li_ed.filename);
+                        }
+                    } else {
+                        if (ix>=0) {
+                            editorErrors.splice(ix,1);
+                        }
+                    }
+                    
+                    qs("html").classList[editorErrors.length===0?"remove":"add"]("errors");
+                    
                 } else {
                     errors = null;
                 }
@@ -1351,7 +1356,9 @@ ml(`
                                                 const textContent = li_ed.editor.session.getValue();
                                                 const buffer = new TextEncoder().encode(textContent);
                                                 
-                                                pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
+                                                if (li_ed.text_changed) {
+                                                    li_ed.text_changed=false;
+                                                   pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
                                                     if (err) {
                                                         return ;
                                                     }
@@ -1365,7 +1372,9 @@ ml(`
                                                     
                                                     
                                                 });
+                                                }
                                             }
+                                            
                                             
                                         }
                                         
@@ -1398,6 +1407,8 @@ ml(`
                                                             if (err) {
                                                                 return ;
                                                             }
+                                                            // since we are saving the text, we can clear the li_ed.text_changed flag
+                                                            li_ed.text_changed=false;
                                                             li.classList.add("edited");
                                                             li_ed.hashDisplay.textContent=hash;
                                                             if (edit_hooks[file_url]) {
@@ -1408,6 +1419,10 @@ ml(`
                                                             
                                                             
                                                         });
+                                                    } else {
+                                                        // since the text has changed, bit has errors, we need to flag it
+                                                        // so evnentually it gets saved once errors are corrected
+                                                        li_ed.text_changed=true;
                                                     }
                                                     
                                                 
@@ -1564,8 +1579,9 @@ ml(`
                 if (zoomEl) {
                     //move editor to non zoomed ssate 
                     zoomClass("remove");
-                    // save session state and restore height
+                    // transfer text content full screen editor
                     const textContent = fs_li_ed.editor.getValue();
+                    // save session state and restore height
                     return closeInbuiltEditor ( zoom_filename,zoomEl, function(){
                          openInbuiltEditor ( zoom_filename,zoomEl, function(){
                          },pre_zoom_height,textContent);
