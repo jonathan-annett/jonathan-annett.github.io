@@ -578,17 +578,16 @@ openWindowLib         | ml.openWindow.js
                      var isBlink = (isChrome || isOpera) && !!window.CSS;
                      
                      
-                     var output = 'Detecting browsers by ducktyping:<hr>';
-                     output += 'isFirefox: ' + isFirefox + '<br>';
-                     output += 'isChrome: ' + isChrome + '<br>';
-                     output += 'isSafari: ' + isSafari + '<br>';
-                     output += 'isOpera: ' + isOpera + '<br>';
-                     output += 'isIE: ' + isIE + '<br>';
-                     output += 'isEdge: ' + isEdge + '<br>';
-                     output += 'isEdgeChromium: ' + isEdgeChromium + '<br>';
-                     output += 'isBlink: ' + isBlink + '<br>';
-                     
-                     return output;
+                      return JSON.stringify({
+                         isFirefox  :       isFirefox,
+                         isChrome  :        isChrome,
+                         isSafari  :        isSafari,
+                         isOpera  :         isOpera,
+                         isIE  :            isIE,
+                         isEdge  :          isEdge,
+                         isEdgeChromium  :  isEdgeChromium,
+                         isBlink  :         isBlink
+                     });
                  }
                 
                  
