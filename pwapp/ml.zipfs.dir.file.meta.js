@@ -2,6 +2,8 @@
 
 ml(`
 
+  aceModeList@Window | ace/ext-modelist.js
+
 `,function(){ml(2,
 
     {
@@ -503,7 +505,7 @@ ml(`
             const ix    = base.lastIndexOf(".");
             const ext   = ix < 0 ? false : base.substr(ix+1);
             return ext ? aceModeForFile.cache[ext]||(function(){
-                aceModeForFile.modelist = aceModeForFile.modelist||ace.require("ace/ext/modelist");
+                aceModeForFile.modelist = ml.i.aceModeList;
                 const mode = aceModeForFile.modelist ? aceModeForFile.modelist.getModeForPath(fn).mode : false;
                 if (mode) {
                     aceModeForFile.cache[ext]= mode;
