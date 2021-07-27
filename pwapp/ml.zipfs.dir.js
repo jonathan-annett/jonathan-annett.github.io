@@ -1532,7 +1532,7 @@ ml(`
                 });
                 
                 
-                editor.getSession().on("changeAnnotation",onAnnotationChange);
+                editor.getSession().on("changeAnnotation",onAnnotationChange.bind(undefined,div,pre,editor));
                 
                 editor.getSession().on("change",onChange);
                 
@@ -1546,12 +1546,14 @@ ml(`
                     }
                 } 
                 
-                function onAnnotationChange(){
-                    
-                    
+                function onAnnotationChange(div,pre,editor,attempt){
                     if (editor.getValue().trim()==="") {
                         return;
                     }
+                    
+                   
+                    
+                   
     
                     editor.getSession().off("changeAnnotation",onChange);
                     var annot = editor.getSession().getAnnotations();
@@ -1567,11 +1569,19 @@ ml(`
                                 if (warnings && errors) break;
                             }
                         }
-                        setTimeout(function(){
-                            editor.destroy();
-                            document.body.removeChild(div);
-                            cb (!!errors,!!warnings);
-                        },1);
+                        editor.destroy();
+                        
+                        div.removeChild(pre);
+                        document.body.removeChild(div);
+                        cb (!!errors,!!warnings);
+                    } else {
+                        
+                        if (attempt===0) {
+                            return cb (false,false);
+                        }
+                        
+                        attempt = attempt || 3;
+                        return setTimeout(onAnnotationChange,100,div,pre,editor,attempt-1);
                     }
                     
                 
