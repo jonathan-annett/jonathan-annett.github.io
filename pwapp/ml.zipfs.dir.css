@@ -124,7 +124,9 @@ li.live-edit span.live-edit::before {
 
 a.close-editor,
 a.exit-fullscreen,
-a.fullscreen,
+
+html.fullscreen h1 a.fullscreen,
+li a.fullscreen,
 html.zooming li.editing a.close-editor,
 html.zooming li,
 html.zooming #drop-area,

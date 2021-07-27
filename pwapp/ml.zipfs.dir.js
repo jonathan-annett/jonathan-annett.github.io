@@ -14,6 +14,7 @@ ml(`
     aceSessionLib         | ml.ace-session.js
     openWindowLib         | ml.openWindow.js
     dragSizeWindowLib     | ml.dragSizeWindow.js
+    devClassLib           | ml.devclass.js
     
     `,function(){ml(2,
 
