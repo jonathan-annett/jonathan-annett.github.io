@@ -2,7 +2,6 @@
 ml(`
 pwa                   | ml.pwa.js
 Shell                 | shell/shell.js
-FontAwesomeKitConfig  | https://kit.fontawesome.com/f16568395d.js
 progressHandler       | ml.progressHandler.js
 openWindowLib         | ml.openWindow.js
 
