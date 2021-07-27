@@ -6,7 +6,7 @@ div.notbetapending {
 
 html.notbeta div.notbeta,
 html.beta div.beta,
-html.notbetapending div notbetapending {
+html.notbetapending div.notbetapending {
    display : block;
 }
 

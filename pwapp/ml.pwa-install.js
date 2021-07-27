@@ -422,7 +422,7 @@ openWindowLib         | ml.openWindow.js
                                               if ( config.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
                                                   console.log("your beta tester approval code:",hashedKeyHex);
                                                   html.classList.remove("beta");
-                                                  if (localStorage.nobetapending==='1') {
+                                                  if (localStorage.notbetapending==='1') {
                                                      
                                                      html.classList.add("notbetapending");
                                                      html.classList.remove("notbeta");
@@ -435,6 +435,7 @@ openWindowLib         | ml.openWindow.js
                                                           if (!err) {
                                                               html.classList.add("notbetapending");
                                                               html.classList.remove("notbeta");
+                                                              localStorage.notbetapending='1'
                                                           }
                                                           reject();
                                                       });
@@ -517,7 +518,7 @@ openWindowLib         | ml.openWindow.js
                              "Site URL:"+location.href,
                              "Browser Hex Id:"+hashedKeyHex,
                              "Email Address Entered:"+register_email
-                         ];
+                         ].join("\n");
                           
                          var params = toParams(data_js);
                  
