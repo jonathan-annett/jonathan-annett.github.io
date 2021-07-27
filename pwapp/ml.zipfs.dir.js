@@ -1522,10 +1522,10 @@ ml(`
                 
             };
             
-            function lintSource (src,mode,cb) {
+            function lintSource (hash,src,mode,cb) {
                 const lintr = linters[mode];
                 if (lintr) {
-                    return lintr.push(src,cb);
+                    return lintr.push(hash,src,cb);
                 }
                 linters[mode]=linter (mode);
                 linters[mode].push(src,cb);
@@ -1548,16 +1548,34 @@ ml(`
                 
                 editor.getSession().on("changeAnnotation",onAnnotationChange);
                 
-                const srcs = [], cbs = [];
+                const srcs = {};
+                const history = {};
                 
                 return {
                     push : push
                 };
                 
-                function push (src,cb) {
-                    srcs.push(src);
-                    cbs.push(cb);
-                    editor.getSession().setValue(srcs[0]);
+                function next() {
+                    const hash = Object.keys(srcs)[0];
+                    if (hash) {
+                        const x = srcs[hash];
+                        if (x && x.src) {
+                            editor.getSession().setValue(x.src);
+                            sha1(editor.getSession().getValue(),function(er,hash2){
+                               if (hash2!==hash) {
+                                   throw new Error ("internal error - hash of getValue() does not match hash to setValue()");
+                               } 
+                            });
+                        }
+                    }
+                }
+                
+                function push (hash,src,cb) {
+                    if (history[hash]) {
+                        return cb.apply(undefined,history[hash]);
+                    }
+                    srcs[hash]={src,cb};
+                    next();
                 }
                 
                 function onAnnotationChange(){
@@ -1567,32 +1585,38 @@ ml(`
                     if (annot) {
                         
                         var src   = editor.getSession().getValue();
-                        const ix = srcs.indexOf(src);
-                        if (ix < 0) return;
-                       
-    
-                        let errors ;
-                        let warnings;
-                            
-                        for (let key in annot){
-                            if (annot.hasOwnProperty(key)) {
-                                if  (annot[key].type === "warning") warnings = true;
-                                if  (annot[key].type === "error") errors = true;
-                                if (warnings && errors) break;
-                            }
-                        }
                         
-                        const cb = cbs[ix];
-                        srcs.splice(ix,1);
-                        cbs.splice(ix,1);
-                        cb (errors,warnings);
-                        
-                        if (srcs.length>0) {
-                            editor.getSession().setValue(srcs[0]);
-                        }
+                        sha1(src,function(er,hash){
+                           
+                          const x = srcs[hash];
+                          if (x && x.src && x.cb) {
+                                
+                           
+                              let errors ;
+                              let warnings;
+                                  
+                              for (let key in annot){
+                                  if (annot.hasOwnProperty(key)) {
+                                      if  (annot[key].type === "warning") warnings = true;
+                                      if  (annot[key].type === "error") errors = true;
+                                      if (warnings && errors) break;
+                                  }
+                              }
+                              
+                              
+                              history[hash]=[errors,warnings];
+                              x.cb.apply(undefined,history[hash]);
+
+                              delete x.cb;
+                              delete x.src;
+                              delete srcs[hash];
+                              
+                              next();
+                          }
+                        });
+                      
                     } else {
-                        console.log("getAnnotations() returns",annot);
-                        return;
+                        throw new Error("getAnnotations() returns "+typeof annot);
                     }
                     
                 
@@ -1621,7 +1645,7 @@ ml(`
                                         const mode = aceModeForFile(filename);
                                         if (mode) {
                                             const text = new TextDecoder().decode(buffer);
-                                            lintSource(text,mode,function(errors,warnings){
+                                            lintSource(hash,text,mode,function(errors,warnings){
                                                 li.classList[errors?"add":"remove"]("errors");
                                                 li.classList[warnings?"add":"remove"]("warnings");
                                             }); 
