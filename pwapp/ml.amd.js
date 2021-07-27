@@ -4,6 +4,8 @@
 
 /*jshint -W054 */
 
+(function(){
+window.ml = function () { amd(document.currentScript.src,this);};
 function amd(root_js,bound_self){
     
     const
@@ -1231,6 +1233,4 @@ function amd(root_js,bound_self){
 
 }
 
-window.ml = function () {
-    amd(document.currentScript.src,this);
-};
+})();
