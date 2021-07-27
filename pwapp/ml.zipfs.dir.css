@@ -125,7 +125,6 @@ li.live-edit span.live-edit::before {
 a.close-editor,
 a.exit-fullscreen,
 
-html.fullscreen h1 a.fullscreen,
 li a.fullscreen,
 html.zooming li.editing a.close-editor,
 html.zooming li,
@@ -136,6 +135,8 @@ html.zooming footer {
 }
 
 
+html.fullscreen h1 a.exit-fullscreen,
+html.fullscreen h1 a.fullscreen,
 li.editing a.fullscreen, 
 html.zooming li.editing a.exit-fullscreen, 
 li.editing a.close-editor{
@@ -147,6 +148,7 @@ li.editing a.close-editor{
 
 
 
+html.fullscreen h1 a.fullscreen,
 html.zooming li.editing a.fullscreen {
     display : none;
 }
