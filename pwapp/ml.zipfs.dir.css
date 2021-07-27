@@ -215,7 +215,8 @@ ul {
 }
 
 li div.grab_bar {
-    background-color:silver;
+    background-color:lime;
+    cursor: ns-resize;
     height: 4px;
     width: 100%;
 }

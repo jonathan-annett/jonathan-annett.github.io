@@ -4,6 +4,7 @@ pwa                   | ml.pwa.js
 Shell                 | shell/shell.js
 progressHandler       | ml.progressHandler.js
 openWindowLib         | ml.openWindow.js
+dragSizeWindowLib     | ml.dragSizeWindow.js
 
 `,function(){ml(2,
 
@@ -71,7 +72,7 @@ openWindowLib         | ml.openWindow.js
             });
             
             
-            drag('#install-shell',[
+            ml.i.dragSizeWindowLib.drag('#install-shell',[
                 "#install-shell > div.shell__status-bar"   ,
                 "#install-shell > div.shell__status-bar > div.status-bar__title" 
                 //"#install-shell > div.shell__status-bar > div.status-bar__buttons"
@@ -144,28 +145,7 @@ openWindowLib         | ml.openWindow.js
         
         
         
-        function drag(el,Hotzones) {
-          var dragStartX, dragStartY; var objInitLeft, objInitTop;
-          var inDrag = false;
-          var dragTarget = qs(el);
-          document.addEventListener("mousedown", function(e) {
-              if (Hotzones.map(qs).indexOf(e.target)<0) return;
-            inDrag = true;
-            let compStyles = window.getComputedStyle(dragTarget);
-            objInitLeft = Number.parseInt(compStyles.getPropertyValue('left') ); objInitTop = Number.parseInt(compStyles.getPropertyValue('top') );
-            dragStartX = e.pageX; dragStartY = e.pageY;
-          });
-          document.addEventListener("mousemove", function(e) {
-            if (!inDrag) {return;}
-            dragTarget.style.left = (objInitLeft + e.pageX-dragStartX) + "px";
-            dragTarget.style.top = (objInitTop + e.pageY-dragStartY) + "px";
-            
-          });
-          document.addEventListener("mouseup", function(e) {
-              inDrag = false;
-              
-          });
-        } 
+      
              
              function fixupLogHeight() {
                  if (fixupLogHeight.done) return;

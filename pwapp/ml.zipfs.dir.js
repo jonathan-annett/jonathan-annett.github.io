@@ -4,15 +4,16 @@
 /* global ml,qs, self,caches,BroadcastChannel,Shell,ResizeObserver  */
 ml(`
     
-    pwaWindow@Window     | ml.pwa-win.js
-    editInZed            | ml.zedhook.js
-    sha1Lib              | sha1.js
-    htmlFileItemLib      | ml.zipfs.dir.file.js
-    htmlFileMetaLib      | ml.zipfs.dir.file.meta.js
-    zipFSApiLib          | ml.zipfs.api.js
-    showdown             | https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.js
-    aceSessionLib        | ml.ace-session.js
-    openWindowLib        | ml.openWindow.js
+    pwaWindow@Window      | ml.pwa-win.js
+    editInZed             | ml.zedhook.js
+    sha1Lib               | sha1.js
+    htmlFileItemLib       | ml.zipfs.dir.file.js
+    htmlFileMetaLib       | ml.zipfs.dir.file.meta.js
+    zipFSApiLib           | ml.zipfs.api.js
+    showdown              | https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.js
+    aceSessionLib         | ml.ace-session.js
+    openWindowLib         | ml.openWindow.js
+    dragSizeWindowLib     | ml.dragSizeWindow.js
     
     `,function(){ml(2,
 
@@ -21,6 +22,8 @@ ml(`
             
             
             var 
+            
+            dragSize = ml.i.dragSizeWindowLib.size,
             
             ace_session_json = ml.i.aceSessionLib,
             
@@ -1258,6 +1261,8 @@ ml(`
                     li_ed.innerHTML = '<pre id="'+editor_id+'"></pre><div class="grab_bar"></div>'; 
                     li_ed.filename= filename;
                     
+                    li_ed.sizebar = dragSize(li_ed,["#"+editor_id+" div.grab_bar"]);
+                    
                     li.parentNode.insertBefore(li_ed, li.nextSibling);
                     
                     
@@ -1386,6 +1391,9 @@ ml(`
                                             li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
                                             li_ed.editor.focus();
                                             resizers.on(li_ed,10,editorResized);
+                                            
+                                            
+                                            
                                             li_ed.editor.resize();
                                             if (cb) {
                                                 cb(li_ed);
@@ -1394,6 +1402,9 @@ ml(`
                                    
                                     
                                 }     
+                                
+                                
+                                
                                     
                             }); 
                         }
@@ -1477,6 +1488,10 @@ ml(`
                             delete li_ed.editor;
                             li_ed.hashDisplay.textContent='';
                             delete li_ed.hashDisplay;
+                            
+                            li_ed.sizebar.destroy();
+                            delete li_ed.sizebar;
+                            
                             delete li_ed.setText;
                             delete li_ed.reload;
                             delete li.dataset.editor_id;
