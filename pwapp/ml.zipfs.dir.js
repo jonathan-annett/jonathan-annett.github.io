@@ -1235,8 +1235,8 @@ ml(`
             function transientEditorMetaResave(li_ed,delay,annot) {
                 if (li_ed.transient_timeout) clearTimeout(li_ed.transient_timeout);
                 
-                let errors ;
-                let warnings;
+                let errors = false;
+                let warnings = false;
                 
                 if (annot) {
                     for (var key in annot){
@@ -1249,21 +1249,19 @@ ml(`
                     
                     find_li(li_ed.filename).classList[errors?"add":"remove"]("errors");
                     find_li(li_ed.filename).classList[warnings?"add":"remove"]("warnings");
+                } else {
+                    errors = null;
                 }
                 
                 
-                
-                
-                
-                
-            
+
                 li_ed.transient_timeout = setTimeout(function(li_ed){
                     delete li_ed.transient_timeout;
                     saveEditorMeta(li_ed.filename,function(){
                          
                     });
                 },delay||(errors?15000:2000),li_ed);
-                return !errors;
+                return errors===false;
             }
 
             function openInbuiltEditor (filename,li,cb,height) {
@@ -1371,7 +1369,29 @@ ml(`
                                     
                                     
                                     li_ed.editor.getSession().on("changeAnnotation", function(){
-                                        transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations());
+
+                                        
+                                        if (transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations())) {
+                                           
+                                            const textContent = li_ed.editor.session.getValue();
+                                            const buffer = new TextEncoder().encode(textContent);
+                                            
+                                            pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
+                                                if (err) {
+                                                    return ;
+                                                }
+                                                li.classList.add("edited");
+                                                li_ed.hashDisplay.textContent=hash;
+                                                if (edit_hooks[file_url]) {
+                                                    edit_hooks[file_url].forEach(function(fn){
+                                                        fn("edited",file_url,textContent,buffer);
+                                                    });
+                                                }
+                                                
+                                                
+                                            });
+                                        }
+                                        
                                     });
                                     
                                      
