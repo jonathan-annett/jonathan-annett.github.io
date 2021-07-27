@@ -13,7 +13,7 @@ ml([],function(){ml(2,
         }
     }, {
         Window: [
-            ()=> devClassLib ()
+            ()=> devClassLib
         ]
 
     }

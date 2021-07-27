@@ -46,7 +46,7 @@ ml(`
             const available_scripts = [];
             const edit_hooks = {};
             
-            const fs_api = ml.i.devClassLib.fs_api(document.body);
+          
            
             
             qs ("h1 a.restart",function click(e) {
@@ -144,6 +144,9 @@ ml(`
                        qs("ul").classList[showPaths.checked?"remove":"add"]("hide_full_path");
                     };
                 }
+                
+                
+                const fs_api = ml.i.devClassLib.fs_api();
                 
                 const enterFS = qs ("h1 a.fullscreen",function click(){
                     if (!fs_api.isFullscreen()) {
