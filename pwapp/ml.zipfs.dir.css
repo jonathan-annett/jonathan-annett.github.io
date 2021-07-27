@@ -203,6 +203,10 @@ html.zooming li.zooming a[data-balloon-pos="down-left" ] {
    cursor:normal;
 }
 
+html.zooming li.zooming a.undo-edits {
+    pointer-events:auto;
+    cursor:pointer;
+}
 pre.fs_editor {
     display : block;
     margin: 0;
