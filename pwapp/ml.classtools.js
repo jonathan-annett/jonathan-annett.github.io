@@ -22,18 +22,7 @@ ml([],function(){ml(2,
 
 
     function classToolsLib () {
-        const lib = {
-            
-            set_class_name_group_quick,
-            set_class_name_group_class_quick,
-            has_class_name,
-            remove_class_name,
-            add_class_name_quick,
-            add_class_names,
-            remove_class_names,
-            add_class_name
-            
-        } ;
+        
         
         // classname tools v3 (no delayed options)
         
@@ -409,6 +398,19 @@ ml([],function(){ml(2,
             }
           },
           set_class_name_group_class_quick = set_class_name_group_class;
+          
+          const lib = {
+              
+              set_class_name_group_quick,
+              set_class_name_group_class_quick,
+              has_class_name,
+              remove_class_name,
+              add_class_name_quick,
+              add_class_names,
+              remove_class_names,
+              add_class_name
+              
+          } ;
         return lib;
     }
 
