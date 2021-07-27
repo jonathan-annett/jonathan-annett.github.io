@@ -59,6 +59,12 @@ li a.undeletefile {
     float:right;
 }
 
+li.image.editing a.fullscreen,
+li.image.editing a.close-editor  {
+   display:none;
+}
+
+
 li.live-refresh span.live-edit,
 li span.live-refresh,
 li a.code,
@@ -135,6 +141,9 @@ li.editing a.close-editor{
     float: right;
     margin-right:6px;
 }
+
+
+
 
 html.zooming li.editing a.fullscreen {
     display : none;
