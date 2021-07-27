@@ -1536,61 +1536,64 @@ ml(`
                 
                 let aborting = false;
                 
-                editor.getSession().on("changeAnnotation",onAnnotationChange);
+                setTimeout(waitForAnnotations,500);
                 
-                editor.getSession().on("change",onChange);
-                
-                // start off with an empty documeent
-                editor.setValue("     ");
-                
-                
-                function onChange() {
-                    if (editor.getValue().trim()==="") {
-                        editor.setValue(src);
-                    }
-                } 
-                
-                function onAnnotationChange(){
+                function waitForAnnotations() {
+                    editor.getSession().on("changeAnnotation",onAnnotationChange);
                     
-                    if (aborting || editor.getValue().trim()==="") {
-                        return;
-                    }
+                    editor.getSession().on("change",onChange);
+                    
+                    // start off with an empty documeent
+                    editor.setValue("     ");
                     
                     
-                    var annot = editor.getSession().getAnnotations();
-
-                    let errors ;
-                    let warnings;
+                    function onChange() {
+                        if (editor.getValue().trim()==="") {
+                            editor.setValue(src);
+                        }
+                    } 
                     
-                    if (annot) {
+                    function onAnnotationChange(){
                         
-                        for (let key in annot){
-                            if (annot.hasOwnProperty(key)) {
-                                if  (annot[key].type === "warning") warnings = true;
-                                if  (annot[key].type === "error") errors = true;
-                                if (warnings && errors) break;
-                            }
+                        if (aborting || editor.getValue().trim()==="") {
+                            return;
                         }
                         
-                        aborting = true;
-                        editor.getSession().off("changeAnnotation",onAnnotationChange);
-                        editor.getSession().off("change",onChange);
-                       
-                        editor.destroy();
                         
-                        div.removeChild(pre);
-                        document.body.removeChild(div);
+                        var annot = editor.getSession().getAnnotations();
+    
+                        let errors ;
+                        let warnings;
                         
-                        cb (!!errors,!!warnings);
+                        if (annot) {
+                            
+                            for (let key in annot){
+                                if (annot.hasOwnProperty(key)) {
+                                    if  (annot[key].type === "warning") warnings = true;
+                                    if  (annot[key].type === "error") errors = true;
+                                    if (warnings && errors) break;
+                                }
+                            }
+                            
+                            aborting = true;
+                            editor.getSession().off("changeAnnotation",onAnnotationChange);
+                            editor.getSession().off("change",onChange);
+                           
+                            editor.destroy();
+                            
+                            div.removeChild(pre);
+                            document.body.removeChild(div);
+                            
+                            cb (!!errors,!!warnings);
+                            
+                        } else {
+                            
+                           return setTimeout(onAnnotationChange,100);
+                        }
                         
-                    } else {
-                        
-                       return setTimeout(onAnnotationChange,100);
-                    }
                     
-                
-                }
-                
+                    }
+                }    
             }
 
             
