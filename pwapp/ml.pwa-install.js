@@ -400,8 +400,7 @@ dragSizeWindowLib     | ml.dragSizeWindow.js
                                             const hashedKeyHex = bufferToHex(hashedKeyasBuffer);
                                        
                                               if ( config.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
-                                                  console.log("your beta tester approval code:",hashedKeyHex);
-                                                 
+                                                  
                                                   if (localStorage.notbetapending==='1') {
                                                      
                                                       html.classList.add("notbetapending");
