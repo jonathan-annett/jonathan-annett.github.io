@@ -1529,7 +1529,7 @@ ml(`
                     return lintr.push(hash,src,cb);
                 }
                 linters[mode]=linter (mode);
-                linters[mode].push(src,cb);
+                linters[mode].push(hash,src,cb);
             }
             
             
