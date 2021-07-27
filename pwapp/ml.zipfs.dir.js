@@ -1522,17 +1522,21 @@ ml(`
                 
                 if (src.trim()==='') return cb(false,false);
                 
-                const pre = document.createElement("pre");
+                let pre = document.createElement("pre");
                 pre.id = "lint_"+Math.random().toString(36).substr(-8);
-                const div = document.createElement("div");
+                let div = document.createElement("div");
+               
+                document.body.appendChild(div); 
                 div.appendChild(pre);
-                document.body.appendChild(div);
-                const editor = ace.edit(pre.id, {
+                //div.style.display="none";
+                
+                let editor = ace.edit(pre.id, {
                     mode: mode
                 });
                 
+                let aborting = false;
                 
-                editor.getSession().on("changeAnnotation",onAnnotationChange.bind(undefined,div,pre,editor));
+                editor.getSession().on("changeAnnotation",onAnnotationChange);
                 
                 editor.getSession().on("change",onChange);
                 
@@ -1546,42 +1550,42 @@ ml(`
                     }
                 } 
                 
-                function onAnnotationChange(div,pre,editor,attempt){
-                    if (editor.getValue().trim()==="") {
+                function onAnnotationChange(){
+                    
+                    if (aborting || editor.getValue().trim()==="") {
                         return;
                     }
                     
-                   
                     
-                   
-    
-                    editor.getSession().off("changeAnnotation",onChange);
                     var annot = editor.getSession().getAnnotations();
 
                     let errors ;
                     let warnings;
                     
                     if (annot) {
-                        for (var key in annot){
+                        
+                        for (let key in annot){
                             if (annot.hasOwnProperty(key)) {
                                 if  (annot[key].type === "warning") warnings = true;
                                 if  (annot[key].type === "error") errors = true;
                                 if (warnings && errors) break;
                             }
                         }
+                        
+                        aborting = true;
+                        editor.getSession().off("changeAnnotation",onAnnotationChange);
+                        editor.getSession().off("change",onChange);
+                       
                         editor.destroy();
                         
                         div.removeChild(pre);
                         document.body.removeChild(div);
+                        
                         cb (!!errors,!!warnings);
+                        
                     } else {
                         
-                        if (attempt===0) {
-                            return cb (false,false);
-                        }
-                        
-                        attempt = attempt || 3;
-                        return setTimeout(onAnnotationChange,100,div,pre,editor,attempt-1);
+                       return setTimeout(onAnnotationChange,100);
                     }
                     
                 
