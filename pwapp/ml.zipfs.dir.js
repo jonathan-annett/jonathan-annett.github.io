@@ -1258,10 +1258,10 @@ ml(`
                     li.dataset.editor_id =  editor_id;
                     li.classList.add("editing");
                     const li_ed = document.createElement("li");
-                    li_ed.innerHTML = '<pre id="'+editor_id+'"></pre><div class="grab_bar"></div>'; 
+                    li_ed.innerHTML = ['<pre id="','"></pre><div class="grab_bar" id="','_grab_bar"></div>'].join(editor_id); 
                     li_ed.filename= filename;
                     
-                    li_ed.sizebar = dragSize(li_ed,["#"+editor_id+" div.grab_bar"]);
+                    li_ed.sizebar = dragSize("#"+editor_id,["#"+editor_id+"_grab_bar"]);
                     
                     li.parentNode.insertBefore(li_ed, li.nextSibling);
                     
