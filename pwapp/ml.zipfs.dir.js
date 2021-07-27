@@ -1263,6 +1263,8 @@ ml(`
                 },delay||(errors?15000:2000),li_ed);
                 return errors===false;
             }
+            
+            
 
             function openInbuiltEditor (filename,li,cb,height) {
                 li=li||find_li (filename);
@@ -1368,59 +1370,81 @@ ml(`
                                     
                                     
                                     
-                                    li_ed.editor.getSession().on("changeAnnotation", function(){
-
-                                        
-                                        if (transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations())) {
-                                           
-                                            const textContent = li_ed.editor.session.getValue();
-                                            const buffer = new TextEncoder().encode(textContent);
+                                    
+                                    
+                                    li_ed.changeAnnotationFunc = function (li,li_ed,file_url){
                                             
-                                            pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
-                                                if (err) {
-                                                    return ;
-                                                }
-                                                li.classList.add("edited");
-                                                li_ed.hashDisplay.textContent=hash;
-                                                if (edit_hooks[file_url]) {
-                                                    edit_hooks[file_url].forEach(function(fn){
-                                                        fn("edited",file_url,textContent,buffer);
-                                                    });
-                                                }
+                                        // to ignore callback after destruction, the li_ed.changeAnnotationFunc
+                                        // is deleted before calling editor.destroy();
+                                        // so we test li_ed.changeAnnotationFunc is definedl before continuing
+                                        if (li_ed.changeAnnotationFunc) {
+                                            
+                                        
+                                            if (transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations())) {
+                                               
+                                                const textContent = li_ed.editor.session.getValue();
+                                                const buffer = new TextEncoder().encode(textContent);
                                                 
-                                                
-                                            });
+                                                pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
+                                                    if (err) {
+                                                        return ;
+                                                    }
+                                                    li.classList.add("edited");
+                                                    li_ed.hashDisplay.textContent=hash;
+                                                    if (edit_hooks[file_url]) {
+                                                        edit_hooks[file_url].forEach(function(fn){
+                                                            fn("edited",file_url,textContent,buffer);
+                                                        });
+                                                    }
+                                                    
+                                                    
+                                                });
+                                            }
+                                            
                                         }
                                         
-                                    });
+                                    }
+                                    li_ed.editor.getSession().on("changeAnnotation", li_ed.changeAnnotationFunc );
+                                    
+                                   
                                     
                                      
 
                                     startEditHelper(li,file_url,currentText,function(helper){
                                             li_ed.edit_helper = helper;
                                             li_ed.inbuiltEditorOnSessionChange = function () {
-                                                // delta.start, delta.end, delta.lines, delta.action
-                                                const textContent = li_ed.editor.session.getValue();
-                                                const buffer = new TextEncoder().encode(textContent);
-                                                if (li_ed.edit_helper) {
-                                                    li_ed.edit_helper.update(textContent);
-                                                }
-                                                if (transientEditorMetaResave(li_ed)) {
-                                                   
-                                                    pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
-                                                        if (err) {
-                                                            return ;
-                                                        }
-                                                        li.classList.add("edited");
-                                                        li_ed.hashDisplay.textContent=hash;
-                                                        if (edit_hooks[file_url]) {
-                                                            edit_hooks[file_url].forEach(function(fn){
-                                                                fn("edited",file_url,textContent,buffer);
-                                                            });
-                                                        }
-                                                        
-                                                        
-                                                    });
+                                                
+                                                // to ignore callback after destruction, the li_ed.inbuiltEditorOnSessionChange
+                                                // is deleted before calling editor.destroy();
+                                                // so we test li_ed.inbuiltEditorOnSessionChange is defined before continuing
+                                                
+                                                if (li_ed.inbuiltEditorOnSessionChange ) {
+                                                
+                                                    // delta.start, delta.end, delta.lines, delta.action
+                                                    const textContent = li_ed.editor.session.getValue();
+                                                    const buffer = new TextEncoder().encode(textContent);
+                                                    if (li_ed.edit_helper) {
+                                                        li_ed.edit_helper.update(textContent);
+                                                    }
+                                                    if (transientEditorMetaResave(li_ed)) {
+                                                       
+                                                        pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
+                                                            if (err) {
+                                                                return ;
+                                                            }
+                                                            li.classList.add("edited");
+                                                            li_ed.hashDisplay.textContent=hash;
+                                                            if (edit_hooks[file_url]) {
+                                                                edit_hooks[file_url].forEach(function(fn){
+                                                                    fn("edited",file_url,textContent,buffer);
+                                                                });
+                                                            }
+                                                            
+                                                            
+                                                        });
+                                                    }
+                                                    
+                                                
                                                 }
                                            };
                                            
@@ -1508,7 +1532,8 @@ ml(`
                             resizers.off(li_ed,editorResized);
 
                             li.classList.remove("editing");
-                            li_ed.editor.off('change',li_ed.inbuiltEditorOnSessionChange);
+                            li_ed.editor.session.off('change',li_ed.inbuiltEditorOnSessionChange);
+                            li_ed.editor.session.off("changeAnnotation", li_ed.changeAnnotationFunc );
         
                             li_ed.editor.destroy();
                             
@@ -1522,6 +1547,7 @@ ml(`
         
                             
                             delete li_ed.inbuiltEditorOnSessionChange;
+                            delete li_ed.changeAnnotationFunc ;
                             delete li_ed.editor;
                             li_ed.hashDisplay.textContent='';
                             delete li_ed.hashDisplay;
