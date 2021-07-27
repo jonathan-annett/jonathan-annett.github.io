@@ -1519,31 +1519,40 @@ ml(`
             
             
             function linter (src,mode,cb) {
+                
+                if (src.trim()==='') return cb(false,false);
+                
                 const pre = document.createElement("pre");
                 pre.id = "lint_"+Math.random().toString(36).substr(-8);
                 const div = document.createElement("div");
                 div.appendChild(pre);
                 document.body.appendChild(div);
                 const editor = ace.edit(pre.id, {
-                    mode:   mode,
+                    mode: mode
                 });
-                let notifed,timeout = setTimeout(function(){
-                    
-                    timeout = setTimeout(onChange,3000);
-                    
-                    editor.setValue(src+" ");
-                    
-                    
-                },1000);
-                editor.getSession().on("changeAnnotation",onChange);
                 
-                editor.setValue(src);
                 
-                function onChange(){
-                    if (timeout) {
-                        clearTimeout(timeout);
-                        timeout=undefined;
+                editor.getSession().on("changeAnnotation",onAnnotationChange);
+                
+                editor.getSession().on("change",onChange);
+                
+                // start off with an empty documeent
+                editor.setValue("     ");
+                
+                
+                function onChange() {
+                    if (editor.getValue().trim()==="") {
+                        editor.setValue(src);
                     }
+                } 
+                
+                function onAnnotationChange(){
+                    
+                    
+                    if (editor.getValue().trim()==="") {
+                        return;
+                    }
+    
                     editor.getSession().off("changeAnnotation",onChange);
                     var annot = editor.getSession().getAnnotations();
 
@@ -1564,10 +1573,7 @@ ml(`
                         editor.destroy();
                         div.removeChild(pre);
                         document.body.removeChild(div);
-                        if (!timeout) {
-                            timeout=true;
-                            cb (!!errors,!!warnings);
-                        }
+                        cb (!!errors,!!warnings);
                     },1);
                 
                 }
