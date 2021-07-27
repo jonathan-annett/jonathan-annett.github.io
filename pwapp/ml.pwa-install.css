@@ -1,10 +1,12 @@
 div.beta,
-div.notbeta {
+div.notbeta,
+div.notbetapending {
     display : none;
 }
 
 html.notbeta div.notbeta,
-html.beta div.beta {
+html.beta div.beta,
+html.notbetapending div notbetapending {
    display : block;
 }
 
