@@ -610,7 +610,7 @@ function amd(root_js,bound_self){
         let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,Or=/([a-zA-Z0-9\.\-]*\/)*/,__filename,__dirname=Or.exec(l.pathname)[0],A=[].slice.call(arguments),W=A.map(T),iA=Array.isArray;
         if (iA(x)&&x.length===1&&iA(x[0])&&x[0].length===2) {
             A.push(A.shift());
-            return ml.call(this,A);
+            return ml.apply(this,A);
         } else {
             s=A[A.length-1];
             if (iA(s)&&s.length===1&&iA(s[0])&&s[0].length===2) {
