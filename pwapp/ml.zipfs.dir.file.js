@@ -26,6 +26,8 @@ ml(`
     );
     
     const  { fileIsEditable,fileIsImage,aceModeForFile,aceThemeForFile } =  ml.i.htmlFileMetaLib; 
+    
+    const hidden_js_regex = /\.hidden\-js(on)?$/;
 
     function htmlFileItemLib (options) {
         
@@ -40,6 +42,7 @@ ml(`
             replaceWrapperText,
             replaceVarText,
             replaceTextVars,
+            hidden_js_regex
         };
         
         
@@ -153,7 +156,7 @@ ml(`
            
            function render(filename) {
                
-               if ( /\.hidden\-json$/.test(filename)) return "";   
+               if ( hidden_js_regex.test(filename)) return "";   
              
                 const full_uri = "/"+uri+"/"+filename,
                 basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
@@ -200,7 +203,7 @@ ml(`
         function html_file_item (filename,cb){
             
             
-           if ( /\.hidden\-json$/.test(filename)) return "";
+           if ( hidden_js_regex.test(filename)) return "";
 
            const full_uri = "/"+uri+"/"+filename,
                  basename=full_uri.substr(full_uri.lastIndexOf("/")+1);

@@ -75,6 +75,9 @@ ml(`
             const {
                 // import these items...
                 resolveZipListing, 
+                resolveZipListing_HTML,
+                resolveZipListing_Script,
+                
                 resolveZipDownload,
                 getUpdatedZipFile,
                 getZipFileUpdatedFiles
@@ -1335,6 +1338,10 @@ ml(`
                 return /\.zip$/.test(path);
             }
             
+            function testPathIsZipMeta (path) {
+                return /\.zip\.meta\.js$/.test(path);
+            }
+            
              function testPathIsPngZip (path) {
                 return /(?<=\-[a-f0-9]{40})\.png$/.test(path);
             }
@@ -1451,6 +1458,13 @@ ml(`
                                 if (  testPathIsZip(path_in_zip)  ) {
                                     return resolveZipListing (zip_url+"/"+path_in_zip,buffer,virtual_prefix).then(resolve).catch(reject);
                                 }
+                                
+                                
+                                if (  testPathIsZipMeta(path_in_zip)  ) {
+                                    return resolveZipListing_Script (zip_url+"/"+path_in_zip,buffer,virtual_prefix).then(resolve).catch(reject);
+                                }
+                                
+                                
                                
                                 
                                 if (subzip) {
@@ -1583,6 +1597,11 @@ ml(`
                                          return resolveZipListing (zip_url+"/"+file_path,buffer,virtual_prefix).then(resolve).catch(reject);
                                      }
                                      
+                                     if ( testPathIsZipMeta(file_path) ) {
+                                         return resolveZipListing_Script (zip_url+"/"+file_path,buffer,virtual_prefix).then(resolve).catch(reject);
+                                     }
+                                     
+
                                      return response200 (resolve,buffer,fileEntry);
                                      
                                   });
@@ -2011,7 +2030,29 @@ ml(`
                          
                      } else {
                          
-                          return cb ();
+                          if (showListing &&  testPathIsZipMeta(url) ) {
+                              
+                              // this is a url pointing to a possibly existing zip file
+                              // we don't let you download the zip. we do however give you the file list when you ask for a zip
+                              // which provides links to each file inside
+                              return resolveZipListing_Script ( url,undefined,virtual_prefix )
+                              
+                                       .then(function(response){
+                                              if (response && response.status===200) {
+                                                  return cb(undefined,response);
+                                              }  else {
+                                                  return cb ();
+                                              }
+                                          })
+                                          
+                                       .catch(cb); 
+                              
+                          } else {
+                              
+                               return cb ();
+                               
+                               
+                          }
                           
                           
                      }
@@ -2043,8 +2084,13 @@ ml(`
                              return resolveZipDownload( url, params.download, virtual_prefix  );
                          }
                          return resolveZipListing ( url,undefined,virtual_prefix  ) ; 
-                         
-                        
+                     }
+                     
+                     if ( testPathIsZipMeta(url) ) {
+                         // this is a url pointing to a possibly existing zip file
+                         // we don't let you download the zip. we do however give you the file list when you ask for a zip
+                         // which provides links to each file inside
+                         return resolveZipListing_Script ( url,undefined,virtual_prefix  ) ; 
                      }
                      
                      
