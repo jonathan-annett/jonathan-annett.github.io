@@ -41,6 +41,7 @@ function amd(root_js,bound_self,compile, loadScriptText){
     };
     ml(1);// make sure ml.cl is exploded 
     ml.c.l=()=>{};// turn of console.log
+    bound_self.ml = ml;
     
     return new Promise(function (resolve,reject) {
    
