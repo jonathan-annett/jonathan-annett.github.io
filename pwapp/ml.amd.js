@@ -4,8 +4,11 @@
 
 /*jshint -W054 */
 
-(function(main_script){
-console.log({main_script});
+(function(main_script,normalize){
+console.log({main_script,normalized:main_script?normalize(location.href,main_script):undefined});
+
+
+
 window.ml = function () { amd(document.currentScript.src,this);};
 function amd(root_js,bound_self){
     
@@ -1234,4 +1237,18 @@ function amd(root_js,bound_self){
 
 }
 
-})(typeof document==='object'&&document.currentScript&&document.currentScript.dataset&&document.currentScript.dataset.main);
+})(
+    typeof document==='object'&&document.currentScript&&document.currentScript.dataset&&document.currentScript.dataset.main,
+    function (parentId, moduleName) {
+        // normalize relative requires
+        if (moduleName.charAt(0) == ".") {
+            var base = parentId.split("/").slice(0, -1).join("/");
+            moduleName = (base ? base + "/" : "") + moduleName;
+            
+            while (moduleName.indexOf(".") !== -1 && previous != moduleName) {
+                var previous = moduleName;
+                moduleName = moduleName.replace(/^\.\//, "").replace(/\/\.\//, "/").replace(/[^\/]+\/\.\.\//, "");
+            }
+        }
+        return moduleName;
+    });
