@@ -4,7 +4,7 @@
 
 /*jshint -W054 */
 
-(function(main_script,normalize){
+(function(main_script){
 
 window.ml = function () { amd(document.currentScript.src,this);};
 function amd(root_js,bound_self){
@@ -44,6 +44,10 @@ function amd(root_js,bound_self){
     };
     ml(1);// make sure ml.cl is exploded 
     ml.c.l=()=>{};// turn of console.log
+    if (main_script) {
+        main_script= ml.c.B2(main_script);
+        console.log({main_script});
+    }
     
         
     // attempt to preload the prescribed root javascrpt file
