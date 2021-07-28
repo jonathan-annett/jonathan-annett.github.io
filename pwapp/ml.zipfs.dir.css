@@ -284,7 +284,17 @@ li.editing.edited  {
   background-color: #dd6c6c;
 }
 
+html.before_unload li.errors {
+    background-color : red;
+    animation: blinker 1s linear infinite;
+}
 
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
 
 li span.sha1 {
     font-size: 0.5em;

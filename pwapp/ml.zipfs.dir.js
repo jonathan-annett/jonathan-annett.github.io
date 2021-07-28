@@ -270,6 +270,7 @@ ml(`
                     
                     window.addEventListener('beforeunload', (event) => {
                       if (editorErrors.length>0) {
+                        qs('html').classList.add("before_unload"); 
                         event.returnValue = 'There are uncorrected errors in open editors. Sure you want to leave?';
                       }
                     });
