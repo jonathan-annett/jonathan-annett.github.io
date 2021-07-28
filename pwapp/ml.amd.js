@@ -4,8 +4,9 @@
 
 /*jshint -W054 */
 
-(function(opt,root_script){
+(function(opt){
 
+  
   const resolve_fn    = function (fn) {
       return       /^http(s):\/\//.test(fn)? fn :
                   /^\//.test(fn) ? location.origin+fn :
@@ -20,12 +21,8 @@
                       fetch  : loadScriptText_fetch}[opt && opt.load || "fetch"] || loadScriptText_fetch :
                       loadScriptText_xhr;
   
-  if (opt&&opt.main&&opt.main_script) {
-        root_script     = resolve_fn(opt.main_script);
-  }  else {
-        root_script     = root_script && resolve_fn(root_script);
-  }
-  
+  const root_script = opt&&opt.main&&opt.main_script && resolve_fn(opt.main_script);
+
   const ml_stack = [];
   window.ml=function() {
      ml_stack.push([].slice.call(arguments));
