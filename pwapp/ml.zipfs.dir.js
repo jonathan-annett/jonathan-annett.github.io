@@ -34,6 +34,9 @@ ml(`
                 parent_link){
                 var 
                 
+                // some edit modes don't generate annotations, 
+                annotationsWorkerDetectDelay = 2000,
+                
                 dragSize = ml.i.dragSizeWindowLib.size,
                 
                 ace_session_json = ml.i.aceSessionLib,
@@ -1357,7 +1360,13 @@ ml(`
                                             // so we test li_ed.changeAnnotationFunc is definedl before continuing
                                             if (li_ed.changeAnnotationFunc) {
                                                 
-                                                li_ed.changeAnnotationFuncCalled = true;
+                                                if (typeof li_ed.annotationsWorkerDetect === 'number') {
+                                                    // if it's a number, it's because the annotation change beat the time out
+                                                    // so kill the timeout, which will otherwise end up setting annotationsWorkerDetect to false
+                                                    clearTimeout(li_ed.annotationsWorkerDetect);
+                                                    delete li_ed.annotationsWorkerDetect;
+                                                }
+
                                                 if (transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations())) {
                                                    
                                                     const textContent = li_ed.editor.session.getValue();
@@ -1403,22 +1412,17 @@ ml(`
                                                     if (li_ed.inbuiltEditorOnSessionChange ) {
                                                        
                                                     
-                                                        if (li_ed.changeAnnotationDetect===undefined) {
-                                                            if (li_ed.changeAnnotationFuncCalled) {
-                                                                li_ed.changeAnnotationDetect=true;
-                                                            } else {
-                                                                li_ed.changeAnnotationDetect = setTimeout(
+                                                        if (li_ed.annotationsWorkerDetect===undefined) {
+                                                                // this is either the first change, or a change
+                                                                // after an annotations worker callback
+                                                                li_ed.annotationsWorkerDetect = setTimeout(
                                                                   function(){
-                                                                      if (li_ed.changeAnnotationFuncCalled) {
-                                                                          li_ed.changeAnnotationDetect=true;
-                                                                      } else {
-                                                                          li_ed.changeAnnotationDetect=false;
-                                                                          setTimeout (li_ed.inbuiltEditorOnSessionChange,10);
-                                                                      }
+                                                                      li_ed.annotationsWorkerDetect=false;
+                                                                      setTimeout (li_ed.inbuiltEditorOnSessionChange,10);
                                                                   },
-                                                                  5000
+                                                                  annotationsWorkerDetectDelay
                                                                 );
-                                                            }
+                                                           
                                                         }
                                                     
                                                         // delta.start, delta.end, delta.lines, delta.action
