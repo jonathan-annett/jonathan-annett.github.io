@@ -1327,6 +1327,7 @@ ml(`
                                                     fn("setText",file_url,text,buffer);
                                                 });
                                             }
+                                            li.classList.remove("pending");
                                         };
                                         
                                         li_ed.reload = function () {
@@ -1341,6 +1342,7 @@ ml(`
                                                         fn("reload",file_url,text,buffer);
                                                     });
                                                 }
+                                                li.classList.remove("pending");
                                             });
                                         }
                                         
@@ -1375,7 +1377,7 @@ ml(`
                                                             });
                                                         }
                                                         
-                                                        
+                                                        li.classList.remove("pending");
                                                     });
                                                     }
                                                 }
@@ -1397,9 +1399,10 @@ ml(`
                                                     // to ignore callback after destruction, the li_ed.inbuiltEditorOnSessionChange
                                                     // is deleted before calling editor.destroy();
                                                     // so we test li_ed.inbuiltEditorOnSessionChange is defined before continuing
-                                                    
+                                                    li.classList.add("pending");
                                                     if (li_ed.inbuiltEditorOnSessionChange ) {
-                                                        
+                                                       
+                                                    
                                                         if (li_ed.changeAnnotationDetect===undefined) {
                                                             if (li_ed.changeAnnotationFuncCalled) {
                                                                 li_ed.changeAnnotationDetect=true;
@@ -1440,7 +1443,7 @@ ml(`
                                                                     });
                                                                 }
                                                                 
-                                                                
+                                                                li.classList.remove("pending");
                                                             });
                                                         } else {
                                                             // since the text has changed, bit has errors, we need to flag it
@@ -1463,6 +1466,7 @@ ml(`
                                                 
                                                 
                                                 li_ed.editor.resize();
+                                                li.classList.remove("pending");
                                                 if (cb) {
                                                     cb(li_ed);
                                                 }
