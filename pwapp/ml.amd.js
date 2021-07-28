@@ -607,7 +607,7 @@ function amd(root_js,bound_self){
     }
     
     function ml(x,L,o,a,d,s){
-        let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
+        let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,Or=/([a-zA-Z0-9\.\-]*\/)*/,A=[].slice.call(arguments),W=A.map(T);
         if (!ml.h){
             //create history db if none exists
             ml.h={};ml.H=[];ml.d={};ml.f={};ml.S=[];
@@ -626,7 +626,7 @@ function amd(root_js,bound_self){
                 //c.re = regexpEscape
                 re:(s)=>s[c.R](/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&'),
                 //c.b=document base
-                b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
+                b:O+Or.exec(l.pathname)[0],
                 //c.ri() = a random id generator
                 ri:()=>Math.random().toString(36).substr(-8),
                 //c.c returns true if url is under current domain.
@@ -644,7 +644,7 @@ function amd(root_js,bound_self){
                 BN:(p,m/*-vars->*/,b,P)=>{
                     // normalize relative requires
                     P=m[0]=== ".";
-                    p = p.substr(O.length);
+                    p = Or.exec(p)[0].substr(O.length);
                     b = p.split("/").slice(0, -1).join("/");
                     m = (b ? b + "/" : "") + m;
                     if (P) {
