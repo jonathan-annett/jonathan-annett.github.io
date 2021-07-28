@@ -271,6 +271,11 @@ ml(`
                     window.addEventListener('beforeunload', (event) => {
                       if (editorErrors.length>0) {
                         qs('html').classList.add("before_unload"); 
+                        setTimeout(funcntion(){
+                            setTimeout(function(){
+                                qs('html').classList.remove("before_unload"); 
+                            },5000);
+                        },10);
                         event.returnValue = 'There are uncorrected errors in open editors. Sure you want to leave?';
                       }
                     });
