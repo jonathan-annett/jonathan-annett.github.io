@@ -8,10 +8,10 @@
 
   const compile    = { script   : compile_viascript,
                        debug    : compile_viascript_base64,
-                       newfunc  : compile_newfunc}[opt.compile] || compile_newfunc;
+                       newfunc  : compile_newfunc}[opt && opt.compile || "newfunc"] || compile_newfunc;
   const loadScriptText = typeof fetch ==='function' ? {
                       xhr    : loadScriptText_xhr,
-                      fetch  : loadScriptText_fetch}[opt.load] || loadScriptText_fetch :
+                      fetch  : loadScriptText_fetch}[opt && opt.load || "fetch"] || loadScriptText_fetch :
                       loadScriptText_xhr;
   
   if (opt&&opt.main&&opt.main_script) {
