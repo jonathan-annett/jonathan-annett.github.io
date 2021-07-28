@@ -6,13 +6,13 @@
 
 (function(opt){
 
-if (opt&&opt.main_mod&&opt.main_script) {
+if (opt&&opt.main&&opt.main_script) {
     opt.main_script= /^http(s):\/\//.test(opt.main_script)? opt.main_script :
                      /^\//.test(opt.main_script) ? location.origin+opt.main_script :
                      location.pathname.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'+opt.main_script.replace(/\.\//,''));
     window.ml = function () { amd(opt.main_script,this);};
     
-    window.ml(opt.main_mod+'|'+opt.main_script,function main(){window.ml(2,
+    window.ml(opt.main+'|'+opt.main_script,function main(){window.ml(2,
     
         {
             Window: function sampleLib( lib ) {
@@ -20,7 +20,7 @@ if (opt&&opt.main_mod&&opt.main_script) {
             }
         }, {
             Window: [
-                ()=> window.ml.i[opt.main_mod]
+                ()=> window.ml.i[opt.main]
             ]
     
         }
