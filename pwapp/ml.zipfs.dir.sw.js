@@ -176,7 +176,7 @@ ml(`
                                const head_script = [
                                    
                                    
-                                  ' ml("swResponseZipLib|ml.zipfs.dir.js",function(){ml(2,',
+                                  ' ml("pwaZipDirListing|ml.zipfs.dir.js",function(){ml(2,',
                                   ' ',
                                   '     {',
                                   '         Window: function pageMain( lib ) {',
