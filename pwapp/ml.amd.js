@@ -5,9 +5,6 @@
 /*jshint -W054 */
 
 (function(main_script,normalize){
-console.log({main_script,normalized:main_script?normalize(location.href,main_script):undefined});
-
-
 
 window.ml = function () { amd(document.currentScript.src,this);};
 function amd(root_js,bound_self){
@@ -628,7 +625,7 @@ function amd(root_js,bound_self){
                 r:(u)=>/([A-z0-9\_\$]*)(?:\@)?([\w\$]*)(?:\s*\|)(?:\s*)([A-z0-9\:\/\-\_\.\@\~\#\!]+)/.exec(u),
                 //c.re = regexpEscape
                 re:(s)=>s[c.R](/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&'),
-    //c.b=document base
+                //c.b=document base
                 b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
                 //c.ri() = a random id generator
                 ri:()=>Math.random().toString(36).substr(-8),
@@ -641,7 +638,23 @@ function amd(root_js,bound_self){
                 n:'navigator',
                 d:"document",
                 //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
-                B:(u,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
+                B:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
+                B2:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.BN(c.b,u)/*  c.b+u[c.R](/^(\.\/)/,'')*/,
+
+                BN:(p,m/*-vars->*/,b,P)=>{
+                    // normalize relative requires
+                    if (m[0]=== ".") {
+                        b = p.split("/").slice(0, -1).join("/");
+                        m = (b ? b + "/" : "") + m;
+                        
+                        while (m[c.IO](".") !== -1 && P != m) {
+                            P = m;
+                            m = m[c.R](/^\.\//, "")[c.R](/\/\.\//, "/")[c.R](/[^\/]+\/\.\.\//, "");
+                        }
+                        return m;
+                    }
+                    return p+m;
+                },
         
                 //c.u: convert string to array, remove comments, and whitespace
                 u:(u)=>u=T(u)===t[2]?u[c.R](/(^(?:[\t ]*(?:\r?\n|\r))+)|(\ |\t)/gm,'')
@@ -1237,18 +1250,4 @@ function amd(root_js,bound_self){
 
 }
 
-})(
-    typeof document==='object'&&document.currentScript&&document.currentScript.dataset&&document.currentScript.dataset.main,
-    function (parentId, moduleName) {
-        // normalize relative requires
-        if (moduleName.charAt(0) == ".") {
-            var base = parentId.split("/").slice(0, -1).join("/");
-            moduleName = (base ? base + "/" : "") + moduleName;
-            
-            while (moduleName.indexOf(".") !== -1 && previous != moduleName) {
-                var previous = moduleName;
-                moduleName = moduleName.replace(/^\.\//, "").replace(/\/\.\//, "/").replace(/[^\/]+\/\.\.\//, "");
-            }
-        }
-        return moduleName;
-    });
+})(typeof document==='object'&&document.currentScript&&document.currentScript.dataset&&document.currentScript.dataset.main);
