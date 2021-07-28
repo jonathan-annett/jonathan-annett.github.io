@@ -174,7 +174,6 @@ ml(`
                                
                                
                                const head_script = [
-                                                       '<script>',
                                                        'var zip_url_base='+JSON.stringify('/'+uri)+',',
                                                        'updated_prefix='+ JSON.stringify(updated_prefix)+',',
                                                        'zip_virtual_dir'+(virtual?'='+JSON.stringify(virtual):'')+',',
@@ -184,10 +183,7 @@ ml(`
                                                        'parent_link='+JSON.stringify(parent_link)+',',
                                                        'full_zip_uri           = location.origin+zip_url_base;',
                                                        
-                                                       tools.metaSrc(),
-                                                       
-                                                       
-                                                       '</script>'
+                                                       tools.metaSrc() 
                                                    ];
                                                    
                                return head_script.join("\n");
