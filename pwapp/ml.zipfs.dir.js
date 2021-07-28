@@ -1366,7 +1366,7 @@ ml(`
                                                     clearTimeout(li_ed.annotationsWorkerDetect);
                                                     li_ed.annotationsWorkerDetect=true;
                                                 }
-
+                                                li.classList.remove("worker");
                                                 if (transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations())) {
                                                    
                                                     const textContent = li_ed.editor.session.getValue();
@@ -1387,6 +1387,8 @@ ml(`
                                                         }
                                                         
                                                         li.classList.remove("pending");
+                                                       
+                                                    
                                                     });
                                                     }
                                                 }
@@ -1409,6 +1411,10 @@ ml(`
                                                     // is deleted before calling editor.destroy();
                                                     // so we test li_ed.inbuiltEditorOnSessionChange is defined before continuing
                                                     li.classList.add("pending");
+                                                    
+                                                    li.classList[li_ed.annotationsWorkerDetect===false?"remove":"add"]("worker");
+                                                    
+                                                    
                                                     if (li_ed.inbuiltEditorOnSessionChange ) {
                                                        
                                                     
