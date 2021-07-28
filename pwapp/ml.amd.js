@@ -32,7 +32,7 @@
           
           compile(   [ 'bound_this','root_script','compile','loadScriptText','ml_stack' ], 
             [
-              'return amd(root_script,bound_this,compile,loadScriptText);',
+              'return amd(root_script,bound_this,compile,loadScriptText,ml_stack);',
               text
             ].join('\n'),
           [this,root_script,compile,loadScriptText,ml_stack],
