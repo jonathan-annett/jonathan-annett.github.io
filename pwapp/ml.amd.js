@@ -6,6 +6,12 @@
 
 (function(opt,root_script){
 
+  const resolve_fn    = function (fn) {
+      return       /^http(s):\/\//.test(fn)? fn :
+                  /^\//.test(fn) ? location.origin+fn :
+                  location.pathname.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'+fn.replace(/\.\//,''));
+
+  };
   const compile    = { script   : compile_viascript,
                        debug    : compile_viascript_base64,
                        newfunc  : compile_newfunc}[opt && opt.compile || "newfunc"] || compile_newfunc;
@@ -15,12 +21,10 @@
                       loadScriptText_xhr;
   
   if (opt&&opt.main&&opt.main_script) {
-        
-        root_script     = /^http(s):\/\//.test(opt.main_script)? opt.main_script :
-                         /^\//.test(opt.main_script) ? location.origin+opt.main_script :
-                         location.pathname.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'+opt.main_script.replace(/\.\//,''));
-                          
-  }  
+        root_script     = resolve_fn(opt.main_script);
+  }  else {
+        root_script     = resolve_fn(root_script);
+  }
   
   const ml_stack = [];
   window.ml=function() {
@@ -30,12 +34,12 @@
   loadScriptText("ml.amd.implementation.js",function(err,text){
       if (text) {
           
-          compile(   [ 'bound_this','root_script','compile','loadScriptText','ml_stack' ], 
+          compile(   [ 'bound_this','root_script','compile','loadScriptText','ml_stack','resolve_fn' ], 
             [
-              'return amd(root_script,bound_this,compile,loadScriptText,ml_stack);',
+              'return amd(root_script,bound_this,compile,loadScriptText,ml_stack,resolve_fn);',
               text
             ].join('\n'),
-          [this,root_script,compile,loadScriptText,ml_stack],
+          [this,root_script,compile,loadScriptText,ml_stack,resolve_fn],
           function(err,prom){
               if (prom) {
                   prom.then(function(ml){
