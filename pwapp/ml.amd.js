@@ -639,7 +639,7 @@ function amd(root_js,bound_self){
                 d:"document",
                 //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
                 B:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
-                B2:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.BN(O,u)/*  c.b+u[c.R](/^(\.\/)/,'')*/,
+                B2:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.BN(c.b,u)/*  c.b+u[c.R](/^(\.\/)/,'')*/,
 
                 BN:(p,m/*-vars->*/,o,b,P)=>{
                     // normalize relative requires
