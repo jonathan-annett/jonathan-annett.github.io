@@ -21,15 +21,21 @@
                          location.pathname.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'+opt.main_script.replace(/\.\//,''));
                           
   }  
+  
+  const ml_stack = [];
+  window.ml=function() {
+     ml_stack.push([].slice.call(arguments));
+  };
+
   loadScriptText("ml.amd.implementation.js",function(err,text){
       if (text) {
           
-          compile(   [ 'bound_this','root_script','compile','loadScriptText' ], 
+          compile(   [ 'bound_this','root_script','compile','loadScriptText','ml_stack' ], 
             [
               'return amd(root_script,bound_this,compile,loadScriptText);',
               text
             ].join('\n'),
-          [this,root_script,compile,loadScriptText],
+          [this,root_script,compile,loadScriptText,ml_stack],
           function(err,prom){
               if (prom) {
                   prom.then(function(ml){

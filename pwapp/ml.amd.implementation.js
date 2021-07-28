@@ -2,7 +2,7 @@
 
 /*jshint -W054 */
 
-function amd(root_js,bound_self,compile, loadScriptText){
+function amd(root_js,bound_self,compile, loadScriptText, ml_stack){
     
     
     
@@ -42,6 +42,13 @@ function amd(root_js,bound_self,compile, loadScriptText){
     ml(1);// make sure ml.cl is exploded 
     ml.c.l=()=>{};// turn of console.log
     bound_self.ml = ml;
+    
+    if (ml_stack) {
+        while (ml_stack.length > 0 ) {
+            ml.apply(bound_self, ml_stack.shift());
+        }
+        ml_stack= undefined;
+    }
     
     return new Promise(function (resolve,reject) {
    
