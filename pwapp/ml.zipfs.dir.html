@@ -18,7 +18,7 @@
 </head>
 <body class="disable-select">
 <div class="pointer_track media_query_detect"></div>
-<script src="ml.zipfs.dir.js" defer></script>
+<!--script src="ml.zipfs.dir.js" defer></script-->
 <script src="ml.amd.js" data-main="ml.zipfs.dir.js"></script>
 <section>
   <header>
@@ -30,19 +30,20 @@
      <a class="download" href="/${uri}?download=editedFiles" data-balloon-pos="down-left" aria-label="Download edited files">&nbsp;&nbsp;&nbsp;</a>
      <a class="download" id="img_dl_link" data-balloon-pos="down-left" aria-label="Download zip png image">&nbsp;&nbsp;&nbsp;</a>
      <span id="img_dl_link2"></span> 
-     <a class="fullscreen" data-balloon-pos="left" aria-label="enter fullscreen mode">
-             <i class="fas fa-expand-arrows-alt"></i>
-     </a>
-     <a class="exit-fullscreen" data-balloon-pos="left" aria-label="exit fullscreen mode">
-            <i class="fas fa-compress-arrows-alt"></i>
-     </a>
-     <span class="errors"       data-balloon-pos="left" aria-label="errors exist in editor. auto save paused">
-         <i class="fas fa-bug"></i>
-     </span>
-     
      <a class="restart" href="/pwapp/stopping?stop-service-worker=/pwapp" data-balloon-pos="down-right" aria-label="Shutdown service worker"><i class="far fa-stop-circle"></i></a>
     
-                           
+    <a class="fullscreen" data-balloon-pos="left" aria-label="enter fullscreen mode">
+            <i class="fas fa-expand-arrows-alt"></i>
+    </a>
+    <a class="exit-fullscreen" data-balloon-pos="left" aria-label="exit fullscreen mode">
+           <i class="fas fa-compress-arrows-alt"></i>
+    </a>
+    
+    <span class="errors"       data-balloon-pos="left" aria-label="errors exist in editor. auto save paused">
+        <i class="fas fa-bug"></i>
+    </span>
+    
+                          
      </h1>
      
   </header>
