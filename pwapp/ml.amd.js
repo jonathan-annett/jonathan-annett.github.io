@@ -1285,4 +1285,4 @@ function amd(root_js,bound_self){
 
 }
 
-})(typeof document==='object'&&document.currentScript&&document.currentScript.dataset&&document.currentScript.dataset.main);
+})(typeof document==='object'&&document.currentScript&&document.currentScript.dataset&&location.origin+document.currentScript.dataset.main);
