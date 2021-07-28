@@ -626,7 +626,8 @@ function amd(root_js,bound_self){
                 //c.re = regexpEscape
                 re:(s)=>s[c.R](/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&'),
                 //c.b=document base
-                b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
+                b1:1&&/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
+                b:O+c.b1,
                 //c.ri() = a random id generator
                 ri:()=>Math.random().toString(36).substr(-8),
                 //c.c returns true if url is under current domain.
@@ -639,9 +640,9 @@ function amd(root_js,bound_self){
                 d:"document",
                 //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
                 B:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
-                B2:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.BN(c.b,u)/*  c.b+u[c.R](/^(\.\/)/,'')*/,
+                B2:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.BN(O,c.b1,u)/*  c.b+u[c.R](/^(\.\/)/,'')*/,
 
-                BN:(p,m/*-vars->*/,b,P)=>{
+                BN:(o,p,m/*-vars->*/,b,P)=>{
                     // normalize relative requires
                     if (m[0]=== ".") {
                         b = p.split("/").slice(0, -1).join("/");
@@ -651,9 +652,9 @@ function amd(root_js,bound_self){
                             P = m;
                             m = m[c.R](/^\.\//, "")[c.R](/\/\.\//, "/")[c.R](/[^\/]+\/\.\.\//, "");
                         }
-                        return m;
+                        return o+m;
                     }
-                    return p+m;
+                    return o+p+m;
                 },
         
                 //c.u: convert string to array, remove comments, and whitespace
