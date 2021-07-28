@@ -612,7 +612,8 @@ function amd(root_js,bound_self){
             A.push(A.shift()[0]);
             return ml.apply(this,A);
         } else {
-            if (iA(x)&&x.length===1&&iA(x[0])&&x[0].length===1) {
+            s=A[A.length-1];
+            if (iA(s)&&s.length===1&&iA(s[0])&&s[0].length===1) {
                 __dirname=A.pop();
             }
         }
