@@ -30,22 +30,24 @@
               text
             ].join('\n'),
           [this,root_script,compile,loadScriptText],
-          function(err,ml){
-              if (ml)
-              window.ml = ml; 
-              if (opt&&opt.main&&opt.main_script) {
-                  ml(opt.main+'|'+opt.main_script,function main(){ml(2,
-                      {
-                          Window: function pageBoot( lib ) {
-                              return lib;
-                          }
-                      }, {
-                          Window: [
-                              ()=> window.ml.i[opt.main]
-                          ]
+          function(err,prom){
+              if (prom) {
+                  prom.then(function(ml){
+                      if (opt&&opt.main&&opt.main_script) {
+                          ml(opt.main+'|'+opt.main_script,function main(){ml(2,
+                              {
+                                  Window: function pageBoot( lib ) {
+                                      return lib;
+                                  }
+                              }, {
+                                  Window: [
+                                      ()=> window.ml.i[opt.main]
+                                  ]
+                              }
+                          
+                              );
+                          });
                       }
-                  
-                      );
                   });
               }
           });

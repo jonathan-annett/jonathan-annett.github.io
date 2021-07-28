@@ -41,158 +41,164 @@ function amd(root_js,bound_self,compile, loadScriptText){
     };
     ml(1);// make sure ml.cl is exploded 
     ml.c.l=()=>{};// turn of console.log
+    
+    return new Promise(function (resolve,reject) {
    
-        
-    // attempt to preload the prescribed root javascrpt file
-    // preloading does not execute the script, but instead "compiles" it into a function that can be called later
-    // the wrapper function is intended to add context to the
-    preloadScriptModuleFunction (root_js,function(err,module_fn) {
-        
-        if (err) {
-            // most likely the file does not exist, or a network error
-            throw err;
-        }
-
-        // install the top level module
-        installScriptModuleFn(root_js,function(err,mod){
+            
+        // attempt to preload the prescribed root javascrpt file
+        // preloading does not execute the script, but instead "compiles" it into a function that can be called later
+        // the wrapper function is intended to add context to the
+        preloadScriptModuleFunction (root_js,function(err,module_fn) {
             
             if (err) {
-                throw err;
+                // most likely the file does not exist, or a network error
+                return reject( err );
             }
+    
+            // install the top level module
+            installScriptModuleFn(root_js,function(err,mod){
+                
+                if (err) {
+                    return reject( err );
+                }
+                
+                return resolve (ml);
+                
+            });
             
             
-        });
-        
-        
-        // returns the array of named arguments (with a few optional extraIds)
-        function fn_args  (fn,sourceNoComments,ids,reqr,modl,index,extraIds) {
-            // to avoid double processing, caller can pass in source without comments
-            // in which case fn ( the function itself, a string of the function source) is ignored.
-            if (!sourceNoComments) {
-               const source = typeof fn==='string'?fn:fn.toString();
-               sourceNoComments = source.replace(stripCommentsRegExp,'');
+            // returns the array of named arguments (with a few optional extraIds)
+            function fn_args  (fn,sourceNoComments,ids,reqr,modl,index,extraIds) {
+                // to avoid double processing, caller can pass in source without comments
+                // in which case fn ( the function itself, a string of the function source) is ignored.
+                if (!sourceNoComments) {
+                   const source = typeof fn==='string'?fn:fn.toString();
+                   sourceNoComments = source.replace(stripCommentsRegExp,'');
+                }
+                
+                //locate and clean up each argument name (ie remove whitespace)
+                const args = sourceNoComments.split('(')[1].split(')')[0].split(',').map(function(a){ return a.trim();});
+               
+                
+                // ids is the array that proceeded the function in a call to define. eg define([...],function(...){...}) 
+                // validate the ids array and it's length vs args length before attempting to it further.
+                if (Array.isArray(ids) && ids.length===args.length) {
+                    
+                    
+                    // when extra info is returned, it's in an object.
+                    const dict = {
+                        args     : args,               // the names of each argument, to pass into new Function()
+                        ids      : ids,                // the ids for each argument, to locate the dependancy
+                        //deps : tdb                   // the loaded dependancy (populated below if reqr is supplied by caller)
+                        commonJS : args[0]==='require' // a boolean indicating the function is a commonJS module
+                    };
+                    
+                    // by providing reqr (the require implementation relevant to the function), caller indicates they want 
+                    // an array of preloaded dependancies to be generated for each argument
+                    if (typeof reqr ==='function') {
+                        
+                        // validate the passed in index argument
+                        const valid_index = typeof index ==='object' && typeof index.i +typeof index.a ==='objectobject' ;
+                        
+                        // wrap reqr with an array iterator, which optionally saves the module into an external object
+                        const req = valid_index ? function(id,ix){
+                           // pull in the module by it's id
+                           const mod = reqr(id); 
+                           // save it into the index by id
+                           index.i[ id ] = mod;
+                           // save it into the index by argument name
+                           index.a[ args[ix] ] = mod;
+                           
+                           return mod;
+                        } : function(id) { return reqr(id); };
+                        
+                        // map dependancy to it's loaded module 
+                        dict.deps = ids.map(req);
+                        if ( Array.isArray( extraIds ) ) {
+                            dict.extraIds  = extraIds;
+                            dict.extraDeps = extraIds.map(req);
+                        }
+                    }
+                    
+                    // and we need to take things further for functions that call require.
+                    if (dict.commonJS) {
+                        // rework the arguments array to conform to require,module,exports,others, even if exports and module were not included
+                        dict.commonJSArgs = commonJSArgs.concat(
+                            
+                            args.filter(
+                                function(x){
+                                    return !commonJSRegExp.test(x); 
+                                }
+                            )
+                            
+                        );
+                        dict.commonJSIds = [ '','','' ].concat(
+                            // we need to map before filtering, because the arrays are index linked.
+                            args.map(function(a,ix){
+                               // convert the argument to it's id (or null if one of require,module,exports )
+                               return commonJSRegExp.test(a) ? null : ids[ix];
+                            }).filter( function(a) { return a !==null; } )
+                        );
+                            
+                        // pre populate a commonJSDeps array ready to instantiate the module
+                        if (typeof reqr+typeof modl ==='functionobject' && typeof modl.exports==='object') {
+                            dict.commonJSDeps = [ reqr, modl, modl.exports ].concat(
+                                
+                               // we need to map before filtering, because the arrays are index linked.
+                               args.map(function(a,ix){
+                                  // convert the argument to it's id (or null if one of require,module,exports )
+                                  return commonJSRegExp.test(a) ? null : dict.deps[ix];
+                               }).filter( function(a) { return a !==null; } )
+                               
+                            );
+                            
+                        }
+                        
+                        
+    
+                    }
+                    // when extra info is returned, it's in an object.
+                    return dict;
+                }
+                
+                return args;
             }
-            
-            //locate and clean up each argument name (ie remove whitespace)
-            const args = sourceNoComments.split('(')[1].split(')')[0].split(',').map(function(a){ return a.trim();});
+                
+            // returns the code segment (with heeader and arguments removed, and first and last curly brace)
+            // embeded comments are preserved
+            function fn_src (x,sourceNoComments) {
+              const stripCommentsRegExp = /\/\/(?![\S]{2,}\.[\w]).*|\/\*(.|\n)+?\*\//g;
+              const source = typeof x==='string'?x:x.toString();
+              let offset = 0,located;
+              
+              // white out any comments before the first brace
+              let src     = source;
+              let braceAt = src.indexOf('{');
+              let match   = stripCommentsRegExp.exec(src);
+              while (match) {
+                   if (braceAt<match.index) {
+                       // first/next comment is after the first brace, so we can use braceAt as a valid index
+                       return source.substr(braceAt+1,source.lastIndexOf('}'));
+                   }
+                   // white out the commment
+                   const matchlen = match[0].length;
+                   src     = src.substr(0,match.index) + new Array ( matchlen+1).join(' ') + src.substr(match.index+matchlen);
+                   
+                   // have another go around
+                   braceAt = src.indexOf('{');
+                   match   = stripCommentsRegExp.exec(src);
+              }
+              
+              braceAt = source.indexOf('{');
+              return source.substr(braceAt+1,source.lastIndexOf('}'));
+            }
            
             
-            // ids is the array that proceeded the function in a call to define. eg define([...],function(...){...}) 
-            // validate the ids array and it's length vs args length before attempting to it further.
-            if (Array.isArray(ids) && ids.length===args.length) {
-                
-                
-                // when extra info is returned, it's in an object.
-                const dict = {
-                    args     : args,               // the names of each argument, to pass into new Function()
-                    ids      : ids,                // the ids for each argument, to locate the dependancy
-                    //deps : tdb                   // the loaded dependancy (populated below if reqr is supplied by caller)
-                    commonJS : args[0]==='require' // a boolean indicating the function is a commonJS module
-                };
-                
-                // by providing reqr (the require implementation relevant to the function), caller indicates they want 
-                // an array of preloaded dependancies to be generated for each argument
-                if (typeof reqr ==='function') {
-                    
-                    // validate the passed in index argument
-                    const valid_index = typeof index ==='object' && typeof index.i +typeof index.a ==='objectobject' ;
-                    
-                    // wrap reqr with an array iterator, which optionally saves the module into an external object
-                    const req = valid_index ? function(id,ix){
-                       // pull in the module by it's id
-                       const mod = reqr(id); 
-                       // save it into the index by id
-                       index.i[ id ] = mod;
-                       // save it into the index by argument name
-                       index.a[ args[ix] ] = mod;
-                       
-                       return mod;
-                    } : function(id) { return reqr(id); };
-                    
-                    // map dependancy to it's loaded module 
-                    dict.deps = ids.map(req);
-                    if ( Array.isArray( extraIds ) ) {
-                        dict.extraIds  = extraIds;
-                        dict.extraDeps = extraIds.map(req);
-                    }
-                }
-                
-                // and we need to take things further for functions that call require.
-                if (dict.commonJS) {
-                    // rework the arguments array to conform to require,module,exports,others, even if exports and module were not included
-                    dict.commonJSArgs = commonJSArgs.concat(
-                        
-                        args.filter(
-                            function(x){
-                                return !commonJSRegExp.test(x); 
-                            }
-                        )
-                        
-                    );
-                    dict.commonJSIds = [ '','','' ].concat(
-                        // we need to map before filtering, because the arrays are index linked.
-                        args.map(function(a,ix){
-                           // convert the argument to it's id (or null if one of require,module,exports )
-                           return commonJSRegExp.test(a) ? null : ids[ix];
-                        }).filter( function(a) { return a !==null; } )
-                    );
-                        
-                    // pre populate a commonJSDeps array ready to instantiate the module
-                    if (typeof reqr+typeof modl ==='functionobject' && typeof modl.exports==='object') {
-                        dict.commonJSDeps = [ reqr, modl, modl.exports ].concat(
-                            
-                           // we need to map before filtering, because the arrays are index linked.
-                           args.map(function(a,ix){
-                              // convert the argument to it's id (or null if one of require,module,exports )
-                              return commonJSRegExp.test(a) ? null : dict.deps[ix];
-                           }).filter( function(a) { return a !==null; } )
-                           
-                        );
-                        
-                    }
-                    
-                    
-
-                }
-                // when extra info is returned, it's in an object.
-                return dict;
-            }
-            
-            return args;
-        }
-            
-        // returns the code segment (with heeader and arguments removed, and first and last curly brace)
-        // embeded comments are preserved
-        function fn_src (x,sourceNoComments) {
-          const stripCommentsRegExp = /\/\/(?![\S]{2,}\.[\w]).*|\/\*(.|\n)+?\*\//g;
-          const source = typeof x==='string'?x:x.toString();
-          let offset = 0,located;
-          
-          // white out any comments before the first brace
-          let src     = source;
-          let braceAt = src.indexOf('{');
-          let match   = stripCommentsRegExp.exec(src);
-          while (match) {
-               if (braceAt<match.index) {
-                   // first/next comment is after the first brace, so we can use braceAt as a valid index
-                   return source.substr(braceAt+1,source.lastIndexOf('}'));
-               }
-               // white out the commment
-               const matchlen = match[0].length;
-               src     = src.substr(0,match.index) + new Array ( matchlen+1).join(' ') + src.substr(match.index+matchlen);
-               
-               // have another go around
-               braceAt = src.indexOf('{');
-               match   = stripCommentsRegExp.exec(src);
-          }
-          
-          braceAt = source.indexOf('{');
-          return source.substr(braceAt+1,source.lastIndexOf('}'));
-        }
-       
-        
+        });
+    
     });
     
+
     function globalRequireId(id,base) {
         const url   = idToUrl (id,base||scriptBase);
         const entry = urlIndex [url];
