@@ -615,6 +615,8 @@ function amd(root_js,bound_self){
             s=A[A.length-1];
             if (iA(s)&&s.length===1&&iA(s[0])&&s[0].length===1) {
                 __dirname=A.pop();
+            } else{
+                s=A[5];
             }
         }
         
