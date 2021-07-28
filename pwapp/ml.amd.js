@@ -614,12 +614,14 @@ function amd(root_js,bound_self){
         } else {
             s=A[A.length-1];
             if (iA(s)&&s.length===1&&iA(s[0])&&s[0].length===2) {
-                [__dirname,__filename]=A.pop();
+                __filename=A.pop()[1];
+                __dirname =s[0];
                 console.log("picked up __dirname:",__dirname,"for",__filename);
             } else{
-                s=A[5];
+                
                 console.log("using default __dirname:",__dirname);
             }
+            s=A[5];
         }
         
         if (!ml.h){
