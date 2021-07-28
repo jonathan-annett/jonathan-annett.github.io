@@ -607,7 +607,7 @@ function amd(root_js,bound_self){
     }
     
     function ml(x,L,o,a,d,s){
-        let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,O2=/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],A=[].slice.call(arguments),W=A.map(T);
+        let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
         if (!ml.h){
             //create history db if none exists
             ml.h={};ml.H=[];ml.d={};ml.f={};ml.S=[];
@@ -626,7 +626,7 @@ function amd(root_js,bound_self){
                 //c.re = regexpEscape
                 re:(s)=>s[c.R](/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&'),
                 //c.b=document base
-                b:O+O2,
+                b:O+/([a-zA-Z0-9\.\-]*\/)*/.exec(l.pathname)[0],
                 //c.ri() = a random id generator
                 ri:()=>Math.random().toString(36).substr(-8),
                 //c.c returns true if url is under current domain.
@@ -639,10 +639,12 @@ function amd(root_js,bound_self){
                 d:"document",
                 //c.B=rebase  paths that start with ./subpath/file.js or subpath/file.js
                 B:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
-                B2:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.BN(O,O2,u)/*  c.b+u[c.R](/^(\.\/)/,'')*/,
+                B2:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.BN(O,u)/*  c.b+u[c.R](/^(\.\/)/,'')*/,
 
-                BN:(o,p,m/*-vars->*/,b,P)=>{
+                BN:(p,m/*-vars->*/,o,b,P)=>{
                     // normalize relative requires
+                    o=O.substr(0,p.length);
+                    p=p.substr(p.length);
                     if (m[0]=== ".") {
                         b = p.split("/").slice(0, -1).join("/");
                         m = (b ? b + "/" : "") + m;
@@ -651,7 +653,7 @@ function amd(root_js,bound_self){
                             P = m;
                             m = m[c.R](/^\.\//, "")[c.R](/\/\.\//, "/")[c.R](/[^\/]+\/\.\.\//, "");
                         }
-                        return o+m;
+                        return m;
                     }
                     return o+p+m;
                 },
