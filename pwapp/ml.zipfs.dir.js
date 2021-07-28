@@ -45,9 +45,7 @@ ml(`
                 editor_url          = location.href.replace(/\/$/,''),
                 editor_channel_name = window.parent ? "ch_"+editor_url.replace(/\/|\:|\.|\-/g,'') : false,
                 editor_channel      = editor_channel_name ? new BroadcastChannel(editor_channel_name) : false;
-             
-                
-               
+
                 const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix,alias_root,updated_prefix);   
                                  
                 const resizers = ResizeWatcher();
@@ -57,10 +55,7 @@ ml(`
                 const edit_hooks = {};
                 
                 const editorErrors = [];
-               
-               
-               
-                
+
                 qs ("h1 a.restart",function click(e) {
                      if (editor_channel) {
                             preventDefaults (e);
@@ -72,9 +67,7 @@ ml(`
                          window.location = window.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+ zip_virtual_dir.replace(location.origin,'');
                      }
                 });
-                
-            
-               
+
                 var observeDOM = (function(){
                   var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
                 
@@ -1362,7 +1355,7 @@ ml(`
                                             // so we test li_ed.changeAnnotationFunc is definedl before continuing
                                             if (li_ed.changeAnnotationFunc) {
                                                 
-                                            
+                                                li_ed.changeAnnotationFuncCalled = true;
                                                 if (transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations())) {
                                                    
                                                     const textContent = li_ed.editor.session.getValue();
@@ -1406,6 +1399,24 @@ ml(`
                                                     // so we test li_ed.inbuiltEditorOnSessionChange is defined before continuing
                                                     
                                                     if (li_ed.inbuiltEditorOnSessionChange ) {
+                                                        
+                                                        if (li_ed.changeAnnotationDetect===undefined) {
+                                                            if (li_ed.changeAnnotationFuncCalled) {
+                                                                li_ed.changeAnnotationDetect=true;
+                                                            } else {
+                                                                li_ed.changeAnnotationDetect = setTimeout(
+                                                                  function(){
+                                                                      if (li_ed.changeAnnotationFuncCalled) {
+                                                                          li_ed.changeAnnotationDetect=true;
+                                                                      } else {
+                                                                          li_ed.changeAnnotationDetect=false;
+                                                                          setTimeout (li_ed.inbuiltEditorOnSessionChange,10);
+                                                                      }
+                                                                  },
+                                                                  5000
+                                                                );
+                                                            }
+                                                        }
                                                     
                                                         // delta.start, delta.end, delta.lines, delta.action
                                                         const textContent = li_ed.editor.session.getValue();
@@ -1413,7 +1424,7 @@ ml(`
                                                         if (li_ed.edit_helper) {
                                                             li_ed.edit_helper.update(textContent);
                                                         }
-                                                        if (transientEditorMetaResave(li_ed)) {
+                                                        if (transientEditorMetaResave(li_ed)||li_ed.changeAnnotationDetect===false) {
                                                            
                                                             pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
                                                                 if (err) {
@@ -1436,6 +1447,9 @@ ml(`
                                                             // so evnentually it gets saved once errors are corrected
                                                             li_ed.text_changed=true;
                                                         }
+                                                        
+                                                        
+                                                        
                                                         
                                                     
                                                     }
