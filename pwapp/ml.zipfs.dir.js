@@ -268,10 +268,10 @@ ml(`
                     }
                     
                     
-                    window.addEventListener('beforeunload', (event) => {
+                    window.addEventListener('beforeunload', function (event)  {
                       if (editorErrors.length>0) {
                         qs('html').classList.add("before_unload"); 
-                        setTimeout(funcntion(){
+                        setTimeout(function(){
                             setTimeout(function(){
                                 qs('html').classList.remove("before_unload"); 
                             },5000);
