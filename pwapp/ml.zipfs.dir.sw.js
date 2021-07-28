@@ -203,7 +203,7 @@ ml(`
                                   '         zip_virtual_dir'+(virtual?'='+JSON.stringify(virtual):'')+',',
                                   '         alias_root_fix='+(alias_root?"/^"+regexpEscape(alias_root)+"/":'/^\\s/')+',',
                                   '         alias_root='+JSON.stringify(alias_root)+',',
-                                  '         zip_files='+JSON.stringify(files)+',',
+                                  '         zip_files='+JSON.stringify(files,undefined,4)+',',
                                   '         parent_link='+JSON.stringify(parent_link)+',',
                                   '         full_zip_uri           = location.origin+zip_url_base;',
                                   
