@@ -643,11 +643,11 @@ function amd(root_js,bound_self){
 
                 BN:(p,m/*-vars->*/,b,P)=>{
                     // normalize relative requires
-                    p=p.substr(O.length);
-                    if (m[0]=== ".") {
-                        b = p.split("/").slice(0, -1).join("/");
-                        m = (b ? b + "/" : "") + m;
-                        
+                    P=m[0]=== ".";
+                    p = p.substr(O.length);
+                    b = p.split("/").slice(0, -1).join("/");
+                    m = (b ? b + "/" : "") + m;
+                    if (P) {
                         while (m[c.IO](".") !== -1 && P != m) {
                             P = m;
                             m = m[c.R](/^\.\//, "")[c.R](/\/\.\//, "/")[c.R](/[^\/]+\/\.\.\//, "");
