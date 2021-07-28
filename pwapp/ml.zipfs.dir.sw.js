@@ -36,8 +36,8 @@ ml(`
                        };
                        
                        
-                       function resolveZipListing_Script (url,buffer,virtual) {
-                           
+                       function resolveZipListing_Script (zip_meta_js_url,buffer,virtual) {
+                           const url = zip_meta_js_url.replace(/\.zip\.meta\.zip$/,'.zip');
                            return new Promise(function (resolve){
                                
                                getZipObject(url,buffer,function(err,zip,zipFileMeta) {
