@@ -187,6 +187,9 @@ ml(`
                     [].forEach.call(document.querySelectorAll("li > a.undeletefile"),addUndeleteClick);
                     [].forEach.call(document.querySelectorAll("li > a.undo-edits"),addUndoEditsClick);
                     
+                    [].forEach.call(document.querySelectorAll("li > a.save-edits"),addSaveEditsClick);
+
+                    
                     setupDragAndDrop();
                     
                  
@@ -354,7 +357,6 @@ ml(`
                 function addUndeleteClick (el) {
                     if (el) {
                       el.addEventListener("click",undeleteClick);
-                      //el.parentElement.addEventListener("click",undeleteClick);
                     }
                 }
                 
@@ -362,9 +364,11 @@ ml(`
                 function addUndoEditsClick (el) {
                     if (el) {
                       el.addEventListener("click",undoEditsClick);
-                     // el.parentElement.addEventListener("click",undoEditsClick);
                     }
                 }
+                
+               
+                
                 
                 function addOpenEditorClick (el) {
                     if (el) {
@@ -383,6 +387,13 @@ ml(`
                       qs(el,"a i").addEventListener("click",closeEditorBtnClick);
                     }
                 }
+                
+                function addSaveEditsClick (el) {
+                    if (el) {
+                      el.addEventListener("click",saveEditsClick);
+                    }
+                }
+                
                 
                 
                 function addViewImageClick (el) {
@@ -440,6 +451,17 @@ ml(`
                     }
                     
                 }
+                
+                function saveEditsClick(e) {
+                    e.stopPropagation();
+                    const filename = findFilename(e.target);
+                    const li = find_li(filename);
+                    if (e.shiftKey) {
+                        saveInbuiltEditorChanges ( filename,li )
+                    }
+                    
+                }
+                
                 
                 function toggleEditorClick(e){
                     if (!e.shiftKey && zoomEl) {
@@ -1575,6 +1597,18 @@ ml(`
                     }
                 }
                 
+                function saveInbuiltEditorChanges(filename,li,cb) {
+                     li=li||find_li (filename);
+                     let editor_id = li.dataset.editor_id;
+                     if (editor_id) {
+                         li.classList.remove("editing");
+                         
+                         const ed = qs("#"+editor_id);
+                         
+                         const li_ed = ed.parentNode;
+                         li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc();
+                     }
+                }
                 
                 function toggleEditorZoom( filename ) {
                     
