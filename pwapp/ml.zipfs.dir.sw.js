@@ -28,7 +28,7 @@ ml(`
                           resolveZipListing_Script : resolveZipListing_Script,
                           resolveZipListing_HTML   : resolveZipListing_HTML,
                           
-                          resolveZipListing      : resolveZipListing,
+                          resolveZipListing      : resolveZipListing_HTML,
                           resolveZipDownload     : resolveZipDownload,
                           getUpdatedZipFile      : getUpdatedZipFile,
                           getZipFileUpdatedFiles : getZipFileUpdatedFiles
