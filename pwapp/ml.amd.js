@@ -609,7 +609,7 @@ function amd(root_js,bound_self){
     function ml(x,L,o,a,d,s){
         let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,Or=/([a-zA-Z0-9\.\-]*\/)*/,__dirname=Or.exec(l.pathname)[0],A=[].slice.call(arguments),W=A.map(T),iA=Array.isArray;
         if (iA(x)&&x.length===1&&iA(x[0])&&x[0].length===1) {
-            A.push(A.shift()[0]);
+            A.push(A.shift());
             return ml.apply(this,A);
         } else {
             s=A[A.length-1];
