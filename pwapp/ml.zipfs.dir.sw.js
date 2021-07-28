@@ -174,18 +174,58 @@ ml(`
                                
                                
                                const head_script = [
-                                                       'var zip_url_base='+JSON.stringify('/'+uri)+',',
-                                                       'updated_prefix='+ JSON.stringify(updated_prefix)+',',
-                                                       'zip_virtual_dir'+(virtual?'='+JSON.stringify(virtual):'')+',',
-                                                       'alias_root_fix='+(alias_root?"/^"+regexpEscape(alias_root)+"/":'/^\\s/')+',',
-                                                       'alias_root='+JSON.stringify(alias_root)+',',
-                                                       'zip_files='+JSON.stringify(files)+',',
-                                                       'parent_link='+JSON.stringify(parent_link)+',',
-                                                       'full_zip_uri           = location.origin+zip_url_base;',
-                                                       
-                                                       tools.metaSrc() 
-                                                   ];
-                                                   
+                                   
+                                   
+                                  ' ml("swResponseZipLib|ml.zipfs.dir.js",function(){ml(2,',
+                                  ' ',
+                                  '     {',
+                                  '         Window: function directoryInfo( lib ) {',
+                                  '             lib = lib ||{};',
+                                  '             // add / override window specific methods here',
+                                  '             ',
+                                  '             return lib;',
+                                  '         }',
+                                  '     }, {',
+                                  '         Window: [',
+                                  '             ()=> directoryInfo ()',
+                                  '         ]',
+                                  ' ',
+                                  '     }',
+                                  ' ',
+                                  '     );',
+                                  ' ',
+                                  ' ',
+                                  '     function directoryInfo () {',
+                                  '         const lib = {}  ;',
+                                  
+                                  '         var zip_url_base='+JSON.stringify('/'+uri)+',',
+                                  '         updated_prefix='+ JSON.stringify(updated_prefix)+',',
+                                  '         zip_virtual_dir'+(virtual?'='+JSON.stringify(virtual):'')+',',
+                                  '         alias_root_fix='+(alias_root?"/^"+regexpEscape(alias_root)+"/":'/^\\s/')+',',
+                                  '         alias_root='+JSON.stringify(alias_root)+',',
+                                  '         zip_files='+JSON.stringify(files)+',',
+                                  '         parent_link='+JSON.stringify(parent_link)+',',
+                                  '         full_zip_uri           = location.origin+zip_url_base;',
+                                  
+                                  tools.metaSrc(),
+                                  
+                                  '         ml.i.pwaZipDirListing(zip_url_base,zip_virtual_dir,zip_files,full_zip_uri,updated_prefix,alias_root_fix,alias_root,parent_link);',
+
+
+                                  
+                                  '         ',
+                                  '         return lib;',
+                                  '     }',
+                                  ' ',
+                                  '  ',
+                                  ' ',
+                                  ' });'
+
+                                   ];
+                                  
+
+                                   
+
                                return head_script.join("\n");
                            }
 
@@ -348,15 +388,14 @@ ml(`
                                 html_details) {
                                
                                
-                               const head_script = '<script src="/'+uri+'.meta.js"></script>';
-
-                               return replaceTextVars( 
+                                return replaceTextVars( 
                                    
                                             dir_html, 
                                             
                                             {
                                                uri:uri,
-                                               head_script:head_script,
+                                               script_uri:'/'+uri+'.meta.js',
+                                               head_script:'',
                                                hidden_files_class:hidden_files_exist?' hidden_files_exist':'',
                                                designer:'',
                                                html_details : html_details.join("\n")
