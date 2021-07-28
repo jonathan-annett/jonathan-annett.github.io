@@ -1364,7 +1364,7 @@ ml(`
                                                     // if it's a number, it's because the annotation change beat the time out
                                                     // so kill the timeout, which will otherwise end up setting annotationsWorkerDetect to false
                                                     clearTimeout(li_ed.annotationsWorkerDetect);
-                                                    delete li_ed.annotationsWorkerDetect;
+                                                    li_ed.annotationsWorkerDetect=true;
                                                 }
 
                                                 if (transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations())) {
