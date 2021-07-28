@@ -1431,7 +1431,7 @@ ml(`
                                                         if (li_ed.edit_helper) {
                                                             li_ed.edit_helper.update(textContent);
                                                         }
-                                                        if (transientEditorMetaResave(li_ed)||li_ed.changeAnnotationDetect===false) {
+                                                        if (transientEditorMetaResave(li_ed)||li_ed.annotationsWorkerDetect===false) {
                                                            
                                                             pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
                                                                 if (err) {
