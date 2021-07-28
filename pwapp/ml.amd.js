@@ -644,7 +644,7 @@ function amd(root_js,bound_self){
                 BN:(p,m/*-vars->*/,b,P)=>{
                     // normalize relative requires
                     P=m[0]=== ".";
-                    p = Or.exec(p)[0].substr(O.length);
+                    p = Or.exec(p)[0].substr(c.b.length);
                     b = p.split("/").slice(0, -1).join("/");
                     m = (b ? b + "/" : "") + m;
                     if (P) {
@@ -652,9 +652,9 @@ function amd(root_js,bound_self){
                             P = m;
                             m = m[c.R](/^\.\//, "")[c.R](/\/\.\//, "/")[c.R](/[^\/]+\/\.\.\//, "");
                         }
-                        return O+m;
+                        return c.b+m;
                     }
-                    return O+p+m;
+                    return c.b+p+m;
                 },
         
                 //c.u: convert string to array, remove comments, and whitespace
