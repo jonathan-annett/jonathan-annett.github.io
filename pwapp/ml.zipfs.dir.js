@@ -47,7 +47,7 @@ ml(`
             const edit_hooks = {};
             
             const editorErrors = [];
-           
+          
             
             qs ("h1 a.restart",function click(e) {
                  if (editor_channel) {

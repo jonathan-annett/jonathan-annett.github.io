@@ -440,7 +440,6 @@ dragSizeWindowLib     | ml.dragSizeWindow.js
                                      const unhashedKeyHex = bufferToHex(unhashedKey);
                                      return window.crypto.subtle.digest(hashAlgo,unhashedKey).then(function(hashedKey) {
                                           localStorage[localStorageKey] = unhashedKeyHex;
-                                                  delete localStorage.notbetapending;
                                           html.classList.add("notbeta");
                                           html.classList.remove("notbetapending");
                                           html.classList.remove("beta");
