@@ -4,20 +4,29 @@
 
 /*jshint -W054 */
 
-(function(main_script){
+(function(main_mod,main_script){
 
-if (main_script) {
+if (!!main_mod&&!!main_script) {
     
     window.ml = function () { amd(main_script,this);};
     
-    window.ml( 'pageMain | '+main_script,window,function (lib,url,mod,id){ 
-        console.log({lib,url,mod,id});
-        switch(mod) {
-            case "pageMain":lib(function(i){
-                console.log('loaded',main_script,i);
-            });
+    window.ml(main_mod+'|'+main_script,function main(){window.ml(2,
+    
+        {
+            Window: function sampleLib( lib ) {
+                return lib;
+            }
+        }, {
+            Window: [
+                ()=> window.ml.i[main_mod]
+            ]
+    
         }
+    
+        );
+
     });
+    
     
 } else {
    window.ml = function () { amd(document.currentScript.src,this);};
