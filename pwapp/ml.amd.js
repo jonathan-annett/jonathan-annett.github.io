@@ -6,7 +6,22 @@
 
 (function(main_script){
 
-window.ml = function () { amd(document.currentScript.src,this);};
+if (main_script) {
+    
+    window.ml = function () { amd(main_script,this);};
+    
+    window.ml( 'pageMain | '+main_script,window,function (lib,url,mod,id){ 
+        console.log({lib,url,mod,id});
+        switch(mod) {
+            case "pageMain":lib(function(i){
+                console.log('loaded',main_script,i);
+            });
+        }
+    });
+    
+} else {
+   window.ml = function () { amd(document.currentScript.src,this);};
+}
 function amd(root_js,bound_self){
     
     const
@@ -44,21 +59,7 @@ function amd(root_js,bound_self){
     };
     ml(1);// make sure ml.cl is exploded 
     ml.c.l=()=>{};// turn of console.log
-    if (main_script) {
-        main_script= ml.c.B2(main_script);
-        console.log({main_script});
-        
-        ml( 'pageMain | '+main_script,window,function (lib,url,mod,id){ 
-            console.log({lib,url,mod,id});
-            switch(mod) {
-                case "pageMain":lib(function(i){
-                    console.log('loaded',main_script,i);
-                });
-            }
-        });
-        
-    }
-    
+   
         
     // attempt to preload the prescribed root javascrpt file
     // preloading does not execute the script, but instead "compiles" it into a function that can be called later
