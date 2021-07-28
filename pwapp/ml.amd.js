@@ -23,7 +23,7 @@
   if (opt&&opt.main&&opt.main_script) {
         root_script     = resolve_fn(opt.main_script);
   }  else {
-        root_script     = resolve_fn(root_script);
+        root_script     = root_script && resolve_fn(root_script);
   }
   
   const ml_stack = [];
@@ -31,7 +31,7 @@
      ml_stack.push([].slice.call(arguments));
   };
 
-  loadScriptText("ml.amd.implementation.js",function(err,text){
+  loadScriptText(resolve_fn("ml.amd.implementation.js"),function(err,text){
       if (text) {
           
           compile(   [ 'bound_this','root_script','compile','loadScriptText','ml_stack','resolve_fn' ], 
