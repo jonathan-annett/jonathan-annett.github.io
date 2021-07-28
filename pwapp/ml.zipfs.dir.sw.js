@@ -348,7 +348,7 @@ ml(`
                                 html_details) {
                                
                                
-                               const head_script = '<script src="'+uri+'.meta.js"></script>';
+                               const head_script = '<script src="/'+uri+'.meta.js"></script>';
 
                                return replaceTextVars( 
                                    
