@@ -607,7 +607,16 @@ function amd(root_js,bound_self){
     }
     
     function ml(x,L,o,a,d,s){
-        let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,Or=/([a-zA-Z0-9\.\-]*\/)*/,A=[].slice.call(arguments),W=A.map(T);
+        let c,t,X,T=(G)=>typeof G,l=location,O=l.origin,Or=/([a-zA-Z0-9\.\-]*\/)*/,__dirname=Or.exec(l.pathname)[0],A=[].slice.call(arguments),W=A.map(T),iA=Array.isArray;
+        if (iA(x)&&x.length===1&&iA(x[0])&&x[0].length===1) {
+            A.push(A.shift()[0]);
+            return ml.apply(this,A);
+        } else {
+            if (iA(x)&&x.length===1&&iA(x[0])&&x[0].length===1) {
+                __dirname=A.pop();
+            }
+        }
+        
         if (!ml.h){
             //create history db if none exists
             ml.h={};ml.H=[];ml.d={};ml.f={};ml.S=[];
@@ -626,7 +635,7 @@ function amd(root_js,bound_self){
                 //c.re = regexpEscape
                 re:(s)=>s[c.R](/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&'),
                 //c.b=document base
-                b:O+Or.exec(l.pathname)[0],
+                b:O+__dirname,
                 //c.ri() = a random id generator
                 ri:()=>Math.random().toString(36).substr(-8),
                 //c.c returns true if url is under current domain.
@@ -947,7 +956,7 @@ function amd(root_js,bound_self){
                return r;
            };
            ml.qs = ((k,g)=>{
-               g=(p)=>c.S.qs("#"+p)
+               g=(p)=>c.S.qs("#"+p);
                k=()=>[].map.call(document.querySelectorAll('*[id]'),(x)=>x.id);
                return new Proxy({},{
                    get:(t,p)=>g(p),
@@ -1132,11 +1141,14 @@ function amd(root_js,bound_self){
                const filename = getUrlPath(url);
                const dirname  = getPathDir(filename);
                const compile_mode = comile_debug_regex.test(text) ? compile_viascript_base64 : compile;
+               const regex = /(\s|\;|\/|\n)+(ml\s*\()/;
+               // replace the first invocation of ml(...) with ml ([[dirname]],...)
+               const source = regex.test(text) ? text.replace(regex, regex.exec(text)[0]+'[["'+dirname+'"]],') : text;
                
                compile_mode(   [  'self', '__filename', '__dirname'], 
                           [
                             'return function (ml,define,require,module,exports){',
-                            text,    
+                            source,    
                             '};' 
                           ].join('\n'),
                         [bound_self,filename,dirname],
