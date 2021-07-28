@@ -179,7 +179,7 @@ ml(`
                                   ' ml("swResponseZipLib|ml.zipfs.dir.js",function(){ml(2,',
                                   ' ',
                                   '     {',
-                                  '         Window: function directoryInfo( lib ) {',
+                                  '         Window: function pageMain( lib ) {',
                                   '             lib = lib ||{};',
                                   '             // add / override window specific methods here',
                                   '             ',

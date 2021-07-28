@@ -48,10 +48,10 @@ function amd(root_js,bound_self){
         main_script= ml.c.B2(main_script);
         console.log({main_script});
         
-        ml( 'main | '+main_script,window,function (lib,url,mod,id){ 
+        ml( 'pageMain | '+main_script,window,function (lib,url,mod,id){ 
             console.log({lib,url,mod,id});
             switch(mod) {
-                case "main":lib(function(i){
+                case "pageMain":lib(function(i){
                     console.log('loaded',main_script,i);
                 });
             }
