@@ -641,10 +641,9 @@ function amd(root_js,bound_self){
                 B:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.b+u[c.R](/^(\.\/)/,''),
                 B2:(u/*-vars->*/,r)=>(r=/^\//)&&/^(http(s?)\:\/\/)/.test(u)?u:r.test(u)?u[c.R](r,O+'/'):c.BN(c.b,u)/*  c.b+u[c.R](/^(\.\/)/,'')*/,
 
-                BN:(p,m/*-vars->*/,o,b,P)=>{
+                BN:(p,m/*-vars->*/,b,P)=>{
                     // normalize relative requires
-                    o=O.substr(0,p.length);
-                    p=p.substr(p.length);
+                    p=p.substr(O.length);
                     if (m[0]=== ".") {
                         b = p.split("/").slice(0, -1).join("/");
                         m = (b ? b + "/" : "") + m;
@@ -653,9 +652,9 @@ function amd(root_js,bound_self){
                             P = m;
                             m = m[c.R](/^\.\//, "")[c.R](/\/\.\//, "/")[c.R](/[^\/]+\/\.\.\//, "");
                         }
-                        return m;
+                        return O+m;
                     }
-                    return o+p+m;
+                    return O+p+m;
                 },
         
                 //c.u: convert string to array, remove comments, and whitespace
