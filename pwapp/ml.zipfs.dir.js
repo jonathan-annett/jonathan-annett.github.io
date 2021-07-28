@@ -274,7 +274,7 @@ ml(`
                         setTimeout(function(){
                             setTimeout(function(){
                                 qs('html').classList.remove("before_unload"); 
-                            },5000);
+                            },30000);
                         },10);
                         event.returnValue = 'There are uncorrected errors in open editors. Sure you want to leave?';
                       }
@@ -1439,6 +1439,7 @@ ml(`
                                                     // is deleted before calling editor.destroy();
                                                     // so we test li_ed.inbuiltEditorOnSessionChange is defined before continuing
                                                     li.classList.add("pending");
+                                                    qs('html').classList.remove("before_unload"); 
                                                     
                                                     li.classList[li_ed.annotationsWorkerDetect===false?"remove":"add"]("worker");
                                                     

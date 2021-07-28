@@ -289,7 +289,7 @@ html.before_unload li.errors {
     animation: blinker 1s linear infinite;
 }
 
-html.before_unload li.errors .ace_error {
+html.before_unload  div.ace_error {
     animation: blinker 0.5s linear infinite;
 }
 
