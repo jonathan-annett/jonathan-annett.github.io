@@ -4,7 +4,8 @@
 
 /*jshint -W054 */
 
-(function(){
+(function(main_script){
+console.log({main_script});
 window.ml = function () { amd(document.currentScript.src,this);};
 function amd(root_js,bound_self){
     
@@ -1233,4 +1234,4 @@ function amd(root_js,bound_self){
 
 }
 
-})();
+})(typeof document==='object'&&document.currentScript&&document.currentScript.dataset&&document.currentScript.dataset.main);
