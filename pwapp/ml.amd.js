@@ -652,7 +652,7 @@ function amd(root_js,bound_self){
                             P = m;
                             m = m[c.R](/^\.\//, "")[c.R](/\/\.\//, "/")[c.R](/[^\/]+\/\.\.\//, "");
                         }
-                        return c.b+m;
+                        return c.b+m[c.R](/^\.\.\//,'');
                     }
                     return c.b+p+m;
                 },
