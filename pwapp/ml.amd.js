@@ -616,10 +616,10 @@ function amd(root_js,bound_self){
             if (iA(s)&&s.length===1&&iA(s[0])&&s[0].length===2) {
                 __filename=A.pop()[0][1];
                 __dirname =s[0][0];
-                console.log("picked up __dirname:",__dirname,"for",__filename);
+                //console.log("picked up __dirname:",__dirname,"for",__filename);
             } else{
                 
-                console.log("using default __dirname:",__dirname);
+                //console.log("using default __dirname:",__dirname);
             }
             s=A[5];
         }
