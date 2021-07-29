@@ -2,7 +2,7 @@
 
 /*jshint -W054 */
 
-function amd(root_js,bound_self,compile, loadScriptText, ml_stack){
+function amd(root_js,bound_self,compile, loadScriptText, ml_stack,ml_sw_js){
     
     
     
@@ -11,6 +11,7 @@ function amd(root_js,bound_self,compile, loadScriptText, ml_stack){
     compile        = compile || compile_newfunc;
     
     const
+    
     comile_debug_regex =/^\/\*ml\.debug\*\//,
     
     splitURLRegExp = /((http(?:s?)|ftp):\/\/)?((([^:\n\r]+):([^@\n\r]+))@)?((www\.)?([^\/\n\r]+))\/?([^?\n\r]+)?\??([^#\n\r]*)?#?([^\n\r]*)/,
@@ -836,7 +837,7 @@ function amd(root_js,bound_self,compile, loadScriptText, ml_stack){
                 8:(m,c)=>{
                     
                 },
-                9:(M,L,N,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?main=' + encodeURIComponent(M) +'&main_script=' + encodeURIComponent(L) + (N ? ('&count='+encodeURIComponent(N)):'') ).then(C?C:()=>{}),
+                9:(M,L,N,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register( ml_sw_js+ '?main=' + encodeURIComponent(M) +'&main_script=' + encodeURIComponent(L) + (N ? ('&count='+encodeURIComponent(N)):'') ).then(C?C:()=>{}),
               
         
             };
