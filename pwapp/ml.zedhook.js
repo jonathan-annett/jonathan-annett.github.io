@@ -408,6 +408,10 @@ ml(`
 
         },
         ServiceWorkerGlobalScope : function editInZed(path) {
+            
+            self.ErrorStackParser = ml.i.ErrorStackParser;
+            self.StackFrame       = ml.i.StackFrame;
+            
             return {
                 zedhookHtml      : zedhookHtml,
                 zedhookErrorHtml : zedhookErrorHtml
