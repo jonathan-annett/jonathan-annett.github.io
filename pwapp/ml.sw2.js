@@ -429,6 +429,7 @@ function ml(x,L, o, a, d, s){
                                              }
                                              
                                              function fakeImportScripts(self,scripts) {
+                                                scripts = typeof scripts === 'string' ? [ scripts] :scripts;  
                                                 scripts.forEach(function(url){
                                                     const fn = getScript(self,url);
                                                     fn();
