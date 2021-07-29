@@ -156,7 +156,8 @@ ml([],function(){ml(2,
                                 }
                             };
                             
-                            getNextFileSet(0);
+                            // note - return to avoid the fall through to cb (error)
+                            return getNextFileSet(0);
                         }
                     }
                     
