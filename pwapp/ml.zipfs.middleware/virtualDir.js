@@ -147,13 +147,15 @@ ml([],function(){ml(2,
                         
                         Object.keys(h.e).forEach(function(n){
                             const d = ml.d[n];
-                            if (d && typeof d.F+typeof d.f==="objectfunction") {
+                            if (d && d.F && d.F.ServiceWorkerGlobalScope &&  d.f && d.f.ServiceWorkerGlobalScope) {
                                 result.files[u].mods=result.files[u].mods||{};
                                 result.files[u].mods[n] = {
-                                    src  : ml.d.f.toString(),
-                                    args :d.F.map(function(fn){ return fn.toString(); }),
+                                    src  : d.f.ServiceWorkerGlobalScope.toString(),
+                                    args : d.F.ServiceWorkerGlobalScope.map(function(fn){ return fn.toString(); }),
                                 };
                             }
+                            
+                            
                         });
                        
                     }
