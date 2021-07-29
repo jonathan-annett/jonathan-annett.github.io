@@ -79,7 +79,9 @@ ml([],function(){ml(2,
                                 };
                             });
                             
-                            const virtual_prefix = url.replace(/\//,'')+'/';
+                            const url_with_slash = url.replace(/\//,'')+'/';
+                            const virtual_prefix = url_with_slash.endsWith(zip_root) ? url_with_slash.slice(0,0-zip_root.length) : url_with_slash;
+                            
                             
                             //asynchronously open all the zip files in this db
                             const getNextFileSet =  function (index) {
