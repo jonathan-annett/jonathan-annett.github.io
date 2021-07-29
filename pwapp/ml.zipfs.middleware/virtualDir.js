@@ -194,7 +194,7 @@ ml([],function(){ml(2,
                                                
                                               function inflateb64 (b64) {
                                                  const 
-                                                 binary_string = window.atob(b64),
+                                                 binary_string = atob(b64),
                                                  len = binary_string.length,
                                                  bytes = new Uint8Array(len);
                                                  
