@@ -201,11 +201,11 @@ ml([],function(){ml(2,
                                                  for (let i = 0; i < len; i++) {
                                                      bytes[i] = binary_string.charCodeAt(i);
                                                  }
-                                                 return inflate(bytes.buffer);
+                                                 return  inflate(bytes.buffer);
                                              } 
                                              
                                              function getSrc(url) {
-                                                 return !!dir.files[url] && inflateb64(dir.files[url]);
+                                                 return !!dir.files[url] && new TextDecoder().decode(inflateb64(dir.files[url]));
                                              }
                                              
                                              function getScript(bound_this,url) {
