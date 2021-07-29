@@ -117,7 +117,7 @@ ml([],function(){ml(2,
                                                      })){
                                                          
                                                         listing[file]={
-                                                          url_write  : virtual_prefix  + zip_root && file.startsWith(zip_root) ? file.substr(zip_root.length) : file,
+                                                          url_write  : virtual_prefix  + (zip_root && file.startsWith(zip_root) ? file.substr(zip_root.length) : file),
                                                           url_read   : data.zip_url    + file
                                                         };
                                                         
@@ -143,7 +143,7 @@ ml([],function(){ml(2,
                                                              data.tools.meta.deleted && 
                                                              !!data.tools.meta.deleted[file];
                                                 })){
-                                                  const fn = virtual_prefix + zip_root && file.startsWith(zip_root) ? file.substr(zip_root.length) : file;
+                                                  const fn = virtual_prefix + (zip_root && file.startsWith(zip_root) ? file.substr(zip_root.length) : file);
                                                   listing[file] = {
                                                       url_write: fn,
                                                       url_read : fn,
