@@ -107,11 +107,11 @@ ml([],function(){ml(2,
                                                      // the dirmeta.hidden-json file
                                                      
                                                      if (!zipData.some(function(data,i){
-                                                         return i <= ix && !(
+                                                         return i <= ix && 
                                                              data.tools && 
                                                              data.tools.meta &&
                                                              data.tools.meta.deleted && 
-                                                             data.tools.meta.deleted[file]);
+                                                             !!data.tools.meta.deleted[file];
                                                      })){
                                                          
                                                         listing[file]={
