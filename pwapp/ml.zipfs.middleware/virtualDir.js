@@ -150,19 +150,26 @@ ml([],function(){ml(2,
                  const getNextFile = function(index){ 
                      if (index < ml.H.length) {
                          middleware.databases.cachedURLS.getItem(ml.H[index],function(err,buffer,text){
-                             if (err || !text) {
+                             if (err) {
+                                  return middleware.response500(resolve,err);
+                             }
+                             if (!text) {
                                 fetch(ml.H[index],{mode:'no-cors'}).then(function(response){
                                    if (response.ok) {
                                        response.text().then(function(text){
                                             result.files[ ml.H[index] ] = text;
                                             getNextFile(index+1);
-                                       }).catch(function(){
-                                           resolve(); 
+                                       }).catch(function(err){
+                                           if (err) {
+                                                return  middleware.response500(resolve,err);
+                                           }
+                                          
                                        });
-
                                    }  else {
-                                       resolve(); 
+                                      return  middleware.response500(resolve,new Error (response.statusText||"response not ok"));
                                    }
+                                }).catch(function(err){
+                                    return middleware.response500(resolve,err);
                                 }); 
                              } else {
                                  result.files[ ml.H[index] ] = text;
