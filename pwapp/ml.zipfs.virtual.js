@@ -81,7 +81,7 @@ ml([],function(){ml(2,
                             
                             const url_without_slash = url.replace(/\//,'');
                             const zip_root_without_slash = zip_root.replace(/\//,'');
-                            const virtual_prefix = url_with_slash.endsWith(zip_root_without_slash) ? url_without_slash.slice(0,0-zip_root_without_slash.length)+'/' : url_without_slash+'/';
+                            const virtual_prefix = url_without_slash.endsWith(zip_root_without_slash) ? url_without_slash.slice(0,0-zip_root_without_slash.length)+'/' : url_without_slash+'/';
                             
                             
                             //asynchronously open all the zip files in this db
