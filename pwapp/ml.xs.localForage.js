@@ -3,7 +3,7 @@
 ml(`
 
    xStoreBase     | ml.xs.base.js
-   localforage    | https://unpkg.com/localforage@1.9.0/dist/localforage.js
+   localforage    | localforage.min.js
    
     `,function(){ml(2,
 

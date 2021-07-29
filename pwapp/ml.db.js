@@ -1,7 +1,7 @@
 /* global ml,localforage,self  */
 ml(0,ml(1),[
     
-   'localforage                         | https://unpkg.com/localforage@1.9.0/dist/localforage.js',
+   'localforage                         | localforage.min.js',
    'sha1Lib                             | sha1.js',
    'JSZip@ServiceWorkerGlobalScope      | jszip.min.js',
     
