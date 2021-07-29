@@ -219,7 +219,7 @@ function ml(x,L, o, a, d, s){
             //c.In = install initial event handler wrapper 
             In:(S,E,X)=>S.addEventListener(E,c.G(E,X?X:(e)=>{c.l(E,e.data);})), 
             M:'message',
-            9:(S)=>{
+            9:(S,U,N)=>{
                      ml.p=[];
                      
                      c.p1 = c.p("loadProgress","loadProgressText","installProgress");
@@ -240,7 +240,16 @@ function ml(x,L, o, a, d, s){
                              if (r&&Z){Z(r);}
                          }
                      });
-                     importScripts( new URL(location).searchParams.get('ml') );
+                     
+                     U=new URL(location).searchParams;
+                     N=U.get('main');
+                     U=U.get('main_script');
+                     
+                     ml.l.push(N+'='+U);
+                     ml.d[N]={h:U};
+                     ml.H.push(U);
+                     
+                     importScripts( U );
                      delete c.p1;
             }
               
