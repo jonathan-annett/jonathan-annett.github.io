@@ -181,7 +181,8 @@ ml([],function(){ml(2,
                          if (inflate_url){
                              fetchURL(db,inflate_url,function(err,buffer) {
                                  const source = [
-                                     '/* global ml,Response,Headers,BroadcastChannel  */',
+                                     '/* global ml,self,Response,Headers,BroadcastChannel  */',
+                                     '/*jshint -W054 */',
                                      '(function(module){',
                                      '  (function(exports){'+new TextDecoder().decode(buffer)+'})(module.exports);',
                                      '  (function(inflate,dir,importScripts){',
@@ -233,7 +234,7 @@ ml([],function(){ml(2,
                                               
                                              
                                          }),
-                                    '  })(module.exports.inflate,{,'+json+')',
+                                    '  })(module.exports.inflate,'+json+')',
                                     '})({exports:{}});'
 
                                   ].join('\n');
