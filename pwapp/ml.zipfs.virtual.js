@@ -74,8 +74,8 @@ ml([],function(){ml(2,
                             const trim = 0-base.root.length;
                             const zipData = dirs.map(function(u){
                                 return { 
-                                    zip_url  : u.slice(0,trim),
-                                    zip_alias_root_url : u
+                                    zip_url            : u.slice(0,trim),
+                                    zip_alias_root_url : u.replace(/\//,'')+'/'
                                 };
                             });
                             
@@ -136,7 +136,10 @@ ml([],function(){ml(2,
                                                 listing[file].url_read = virtual_prefix + file;
                                             } else {
                                                 if (!zipData.some(function(data){
-                                                    return !(data.deleted && data.deleted[file]);
+                                                      return data.tools && 
+                                                             data.tools.meta &&
+                                                             data.tools.meta.deleted && 
+                                                             !!data.tools.meta.deleted[file];
                                                 })){
                                                   listing[file] = {
                                                       url_write: virtual_prefix + file,
