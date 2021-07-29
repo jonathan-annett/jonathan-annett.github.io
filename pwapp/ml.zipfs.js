@@ -50,7 +50,8 @@ ml(`
                  virtualDirDB,
                  
                  virtualDirQuery,
-                 newVirtualDirs
+                 newVirtualDirs,
+                 virtualDirListing
                  // from ...
              } = ml.i.virtualDirLib( 
                  // which needs these items...
@@ -191,7 +192,11 @@ ml(`
                                          getZipDirMetaTools,
                                          removeUpdatedURLContents,
                                          updateURLContents,
-                                         defaultMiddlewareChain };
+                                         defaultMiddlewareChain,
+                                         virtualDirListing                       
+                 
+                 
+             };
              
              ml.i.pwaMiddlewares(addMiddlewareListener,pwaMiddlewareOpts);
 

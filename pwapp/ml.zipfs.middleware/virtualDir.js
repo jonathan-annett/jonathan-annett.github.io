@@ -37,10 +37,12 @@ ml([],function(){ml(2,
 
 
     function mware(event,middleware) {
-       
+       const virtual_json_re = /\/virtual\.json$/;
+       const virtual_listing_re = /\/virtual-listing\.json$/
+                  
        return new Promise(function(resolve){
            
-           if (event.fixup_url.endsWith("/virtual.json")) {
+           if (virtual_json_re.test(event.fixup_url)) {
                const json = JSON.stringify(middleware.virtualDirDB,undefined,4);
                return resolve(new Response(json, {
                  status: 200,
@@ -51,7 +53,27 @@ ml([],function(){ml(2,
                }));
            }
            
-           middleware.virtualDirQuery (event.fixup_url).then(function(entry){
+           if (virtual_listing_re.test(event.fixup_url)) {
+               
+               const zip_url = event.fixup_url.replace(virtual_listing_re,'');
+               return middleware.virtualDirListing(zip_url,function(err,listingData){
+                   if  (listingData) {
+                       const json = JSON.stringify(listingData,undefined,4);
+                       return resolve(new Response(json, {
+                         status: 200,
+                         headers: new Headers({
+                           'Content-Type'   : 'application/json',
+                           'Content-Length' : json.length
+                         })
+                       }));
+                   } else {
+                       resolve();
+                   }
+               });
+              
+           }
+           
+            middleware.virtualDirQuery (event.fixup_url).then(function(entry){
                
                if (entry&& entry.response) {
                    
