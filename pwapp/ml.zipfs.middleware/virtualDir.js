@@ -210,11 +210,8 @@ ml([],function(){ml(2,
                                              
                                              function getScript(bound_this,url) {
                                                  return new Function (['bound_self','ml','__filename','__dirname'],
-                                                 [
-                                                     'return function(self,ml,__filename,__dirname){',
-                                                         getSrc(url),
-                                                     '};'
-                                                 ].join('\n')).bind(bound_this,bound_this,ml,url,url.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'));
+                                                 getSrc(url)
+                                                 ).bind(bound_this,bound_this,ml,url,url.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'));
                                              }
                                              
                                              function fakeImportScripts(self,scripts) {
