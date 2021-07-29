@@ -409,10 +409,7 @@ ml(`
         },
         ServiceWorkerGlobalScope : function editInZed(path) {
             
-            self.ErrorStackParser = ml.i.ErrorStackParser;
-            self.StackFrame       = ml.i.StackFrame;
-            
-            return {
+              return {
                 zedhookHtml      : zedhookHtml,
                 zedhookErrorHtml : zedhookErrorHtml
             }
@@ -483,6 +480,9 @@ const isSourceCodeLink = /^(https\:\/\/)(.*)(\.html|\.css|\.js)(\:[0-9]+)?\:[0-9
     }
     
     function zedhookErrorHtml (error) {
+        
+       self.ErrorStackParser = ml.i.ErrorStackParser;
+       self.StackFrame       = ml.i.StackFrame;
        
        const stack = ErrorStackParser.parse( error );
        
