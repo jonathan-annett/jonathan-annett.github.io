@@ -32,7 +32,7 @@ buildRuntime_mware    |  ml.zipfs.middleware/buildRuntime.js
                                    
                                    "updatedURL",
                                    "virtualDir",
-                                   "buildRuntime_mware",
+                                   "buildRuntime",
                                 ];
                                 
             const mware_modnames  = mware_names.map(function(n){ return n+"_mware";});
