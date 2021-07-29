@@ -138,12 +138,20 @@ ml([],function(){ml(2,
                  };
                  
                  ml.H.forEach(function(u){
-                    const d = ml.h[u];
-                    if (d && d.e) {
+                    const h = ml.h[u];
+                    if (h && h.e) {
                         result.files[u] = {
-                            read_url : u,
-                            write_url : u,
+                            url_read  : u,
+                            url_write : u
                         };
+                        Object.keys(h.e).forEach(function(n){
+                            const d = ml.d[n];
+                            if (d && typeof d.F+typeof d.f==="objectfunction") {
+                                result.files[u].src  = middleware.d.f.toString();
+                                result.files[u].args = d.F.map(function(fn){ return fn.toString(); });
+                            }
+                        });
+                       
                     }
 
                  });
