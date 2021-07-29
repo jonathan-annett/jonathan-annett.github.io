@@ -1632,20 +1632,20 @@ ml(`
              
              function getZipDirMetaTools(url,zip,zipFileMeta,cb) {
                  if (zipFileMeta.tools) {
-                     return cb(zipFileMeta.tools);
+                     return cb(zipFileMeta.tools,zip,zipFileMeta);
                  }
                  const meta_url = url+'/'+dir_meta_name;
                  if (zipFileMeta.files[dir_meta_name]) {
                      const meta = zip.file(dir_meta_name);
                      if (meta) {
                         meta.async('string').then(function(json){
-                           cb (getTools(JSON.parse(json)));
+                           cb (getTools(JSON.parse(json)),zip,zipFileMeta);
                         });
                      } else {
                          
                          toFetchUrl (databases.updatedURLS,meta_url,true,function(buffer){
                              if (buffer) {
-                                 cb (getTools(JSON.parse(bufferToText(buffer))));
+                                 cb (getTools(JSON.parse(bufferToText(buffer))),zip,zipFileMeta);
                              } else {
                                  cb (getTools(),zip,zipFileMeta);
                              }
