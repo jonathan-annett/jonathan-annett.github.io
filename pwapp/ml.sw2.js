@@ -65,7 +65,7 @@ function ml(x,L, o, a, d, s){
                    ml.H[c.f](function(U){
                       ml.h[U] && c.k(ml.h[U].e)[c.f]((m)=>{
                          if (!ml.h[U].e[m]) ml.h[U].e[m]=L[m]; 
-                      }) 
+                      });
                    });
                }
                return u.length?c.i(c[0], L,u,a):a();
@@ -228,7 +228,7 @@ function ml(x,L, o, a, d, s){
                      ml.p=[];
                      
                      c.p1 = c.p("loadProgress","loadProgressText","installProgress");
-                     c.In(S,'install',(e)=>{c.p1 && c.p1.logComplete(1);self.skipWaiting();});
+                     c.In(S,'install',()=>{c.p1 && c.p1.logComplete(1);self.skipWaiting();});
                      c.In(S,'activate');
                      c.In(S,'fetch',(e)=>fetch(e.request));
                      c.In(S,c.M,(e,r,m,d,M,Z)=>{
@@ -285,7 +285,7 @@ function ml(x,L, o, a, d, s){
                 try {
                    c.p1 && c.p1.addToTotal(1,N);
                    importScripts(U);
-                   c.n(N,(e)=>{
+                   c.n(N,()=>{
                        ml.h[U] = ml.h[U]   || {e:{}};
                        ml.h[U].e[N]=c.S[N] || false;
                    });
@@ -411,44 +411,43 @@ function ml(x,L, o, a, d, s){
 
 }
 
-                                             
-                                               
-                                              function inflateb64 (b64) {
-                                                 const 
-                                                 binary_string = atob(b64),
-                                                 len = binary_string.length,
-                                                 bytes = new Uint8Array(len);
-                                                 
-                                                 for (let i = 0; i < len; i++) {
-                                                     bytes[i] = binary_string.charCodeAt(i);
-                                                 }
-                                                 return  inflate(bytes.buffer);
-                                             } 
-                                             
-                                             function getSrc(url) {
-                                                 return !!dir.files[url] && new TextDecoder().decode(inflateb64(dir.files[url]));
-                                             }
-                                             
-                                             function getScript(bound_this,url) {
-                                                 return new Function (['bound_self','ml','__filename','__dirname'],
-                                                 getSrc(url)
-                                                 ).bind(bound_this,bound_this,ml,url,url.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'));
-                                             }
-                                             
-                                             function fakeImportScripts(self,scripts) {
-                                                scripts = typeof scripts === 'string' ? [ scripts] :scripts;   
-                                                scripts.forEach(function(url){
-                                                    const fn = getScript(self,ml.c.B(url));
-                                                    fn();
-                                                }); 
-                                                
-                                             }
-                                             importScripts = fakeImportScripts.bind(undefined,self);
-                                             // async load 1-callback per module to pull in tools that bootstrap the amd loader
-                                             self.ml=ml;
-                                             ml.register=ml.bind(self,8);
-                                             ml(9,self);
-                                              
+       
+      function inflateb64 (b64) {
+         const 
+         bstr = atob(b64),
+         len = bstr.length,
+         bytes = new Uint8Array(len);
+         
+         for (let i = 0; i < len; i++) {
+             bytes[i] = bstr.charCodeAt(i);
+         }
+         return  inflate(bytes.buffer);
+     } 
+     
+     function getSrc(url) {
+         return !!dir.files[url] && new TextDecoder().decode(inflateb64(dir.files[url]));
+     }
+     
+     function getScript(bound_this,url) {
+         return new Function (['bound_self','ml','__filename','__dirname'],
+         getSrc(url)
+         ).bind(bound_this,bound_this,ml,url,url.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'));
+     }
+     
+     function fakeImportScripts(self,scripts) {
+        scripts = typeof scripts === 'string' ? [ scripts] :scripts;   
+        scripts.forEach(function(url){
+            const fn = getScript(self,ml.c.B(url));
+            fn();
+        }); 
+        
+     }
+     importScripts = fakeImportScripts.bind(undefined,self);
+     // async load 1-callback per module to pull in tools that bootstrap the amd loader
+     self.ml=ml;
+     ml.register=ml.bind(self,8);
+     ml(9,self);
+      
                                              
                                         
   })(module.exports.inflate,{

@@ -42,7 +42,7 @@ ml([],function(){ml(2,
     const virtual_json_re    = /\/virtual\.json$/;
     const virtual_listing_re = /\/virtual\-listing\.json$/
     const virtual_index_re   = /\/virtual\-index\.json$/;
-    const virtual_sw_loaded_re = /\/virtual\-sw\-loaded\.json$/;           
+    const virtual_sw_loaded_re = /\/virtual\/ml\.sw\.js$/;           
    
     const mwares = [
         
@@ -187,7 +187,7 @@ ml([],function(){ml(2,
                                      '  (function(exports){'+new TextDecoder().decode(buffer)+'})(module.exports);',
                                      '  (function(inflate,dir,importScripts){',
                                      
-                                         middleware.fnSrc(ml,true),
+                                         middleware.fnSrc(ml,true).replace(/\s*\/\/.*\n|^\s*|\s*$/gm,'').replace(/\s*\{\s*\n/g,'{').replace(/\s\}\s/g,'}'),
                                          
                                          middleware.fnSrc(function(dir,pako,self,importScripts,inflate){
                                              
