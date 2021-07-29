@@ -80,7 +80,7 @@ ml([],function(){ml(2,
                             
                             const url_without_slash = url.replace(/\//,'');
                             const zip_root_without_slash = zip_root ? zip_root.replace(/\//,'') : '';
-                            const virtual_prefix = zip_root &&  url_without_slash.endsWith(zip_root_without_slash) ? url_without_slash.slice(0,0-zip_root_without_slash.length)+'/' : url_without_slash+'/' ;
+                            const virtual_prefix = zip_root &&  url_without_slash.endsWith(zip_root_without_slash) ? url_without_slash.slice(0,0-zip_root_without_slash.length) : url_without_slash ;
                             
                             
                             //asynchronously open all the zip files in this db
@@ -115,10 +115,10 @@ ml([],function(){ml(2,
                                                              data.tools.meta.deleted && 
                                                              !!data.tools.meta.deleted[file];
                                                      })){
-                                                         
-                                                        listing[file]={
-                                                          url_write  : virtual_prefix  + (zip_root && file.startsWith(zip_root) ? file.substr(zip_root.length) : file),
-                                                          url_read   : data.zip_url    + '/'+file
+                                                        const file_with_leading_slash = '/' + file;
+                                                         listing[file]={
+                                                          url_write  : virtual_prefix  + (zip_root && file_with_leading_slash.startsWith(zip_root) ? file_with_leading_slash.substr(zip_root.length) : file_with_leading_slash),
+                                                          url_read   : data.zip_url    + file_with_leading_slash
                                                         };
                                                         
                                                      }
@@ -129,13 +129,13 @@ ml([],function(){ml(2,
                                          
                                      });
                                      
-                                     getZipFileUpdates(virtual_prefix,function(err,edited_files){
+                                     getZipFileUpdates(virtual_prefix+'/',function(err,edited_files){
                                         if (err) return cb(err);
                                         
                                         edited_files.forEach(function(file){
                                             if (listing[file]) {
                                                 listing[file].updated  = true;
-                                                listing[file].url_read = virtual_prefix + file;
+                                                listing[file].url_read = virtual_prefix +'/'+ file;
                                             } else {
                                                 if (!zipData.some(function(data){
                                                       return data.tools && 
@@ -143,7 +143,7 @@ ml([],function(){ml(2,
                                                              data.tools.meta.deleted && 
                                                              !!data.tools.meta.deleted[file];
                                                 })){
-                                                  const fn = virtual_prefix + (zip_root && file.startsWith(zip_root) ? file.substr(zip_root.length) : file);
+                                                  const fn = virtual_prefix + '/'+(zip_root && file.startsWith(zip_root) ? file.substr(zip_root.length) : file);
                                                   listing[file] = {
                                                       url_write: fn,
                                                       url_read : fn,
@@ -156,7 +156,7 @@ ml([],function(){ml(2,
                                         
                                         cb( undefined,
                                             {
-                                                url        : virtual_prefix,
+                                                url        : virtual_prefix+'/',
                                                 alias_root : zip_root,
                                                 files      : listing
                                             }
