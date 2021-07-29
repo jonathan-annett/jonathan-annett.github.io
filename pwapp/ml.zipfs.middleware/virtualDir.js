@@ -181,7 +181,7 @@ ml([],function(){ml(2,
                          if (inflate_url){
                              fetchURL(db,inflate_url,function(err,buffer) {
                                  const source = [
-                                     
+                                     '/* global ml,Response,Headers,BroadcastChannel  */',
                                      '(function(module){',
                                      '  (function(exports){'+new TextDecoder().decode(buffer)+'})(module.exports);',
                                      '  (function(inflate,dir,importScripts){',
@@ -217,13 +217,14 @@ ml([],function(){ml(2,
                                              }
                                              
                                              function fakeImportScripts(self,scripts) {
+                                                scripts = typeof scripts === 'string' ? [ scripts] :scripts;   
                                                 scripts.forEach(function(url){
                                                     const fn = getScript(self,url);
                                                     fn();
                                                 }); 
                                                 
                                              }
-                                             importScripts = fakeImportScripts;
+                                             importScripts = fakeImportScripts.bind(undefined,self);
                                              // async load 1-callback per module to pull in tools that bootstrap the amd loader
                                              self.ml=ml;
                                              ml.register=ml.bind(self,8);
