@@ -434,8 +434,7 @@ function ml(x,L, o, a, d, s){
                                                      'return function(){',
                                                          getSrc(url),
                                                      '};'
-                                                 ].join('\n').bind(bound_this,url,url)
-                                                );
+                                                 ].join('\n')).bind(bound_this,url,url.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'));
                                              }
                                              
                                              function fakeImportScripts(self,scripts) {
