@@ -30,7 +30,7 @@ ml([], function() {
 
     {
 
-        ServiceWorkerGlobalScope: function virtualDir_mware() {
+        ServiceWorkerGlobalScope: function buildRuntime_mware() {
             return mware;
         }
     }, {

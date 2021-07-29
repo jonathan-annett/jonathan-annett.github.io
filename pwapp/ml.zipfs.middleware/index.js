@@ -11,6 +11,7 @@ injectHelper_mware    |  ml.zipfs.middleware/injectHelper.js
 stopSW_mware          |  ml.zipfs.middleware/stopSW.js
 updatedURL_mware      |  ml.zipfs.middleware/updatedURL.js
 virtualDir_mware      |  ml.zipfs.middleware/virtualDir.js
+buildRuntime_mware    |  ml.zipfs.middleware/buildRuntime.js
 
 `,function(){ml(2,
 
@@ -30,7 +31,8 @@ virtualDir_mware      |  ml.zipfs.middleware/virtualDir.js
                                    "stopSW",
                                    
                                    "updatedURL",
-                                   "virtualDir"
+                                   "virtualDir",
+                                   "buildRuntime_mware",
                                 ];
                                 
             const mware_modnames  = mware_names.map(function(n){ return n+"_mware";});
