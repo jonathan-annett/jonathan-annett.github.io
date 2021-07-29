@@ -102,10 +102,7 @@ ml([], function() {
                                    textmode? '': '(function(exports){' + new TextDecoder().decode(buffer) + '})(module.exports);',
                                       '(function(dir,inflate,importScripts){',
                                       
-                                         middleware.fnSrc(ml, true)
-                                            .replace(/\s*\/\/.*\n|^\s*|\s*$/gm, '')
-                                              .replace(/\s*\{\s*\n/g, '{')
-                                                .replace(/\s\}\s/g, '}'),
+                                         middleware.fnSrc(ml, true),
                                                 
                                          middleware.fnSrc(textmode?runtimeText:runtimeBas64),
                                          
