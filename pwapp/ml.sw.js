@@ -243,7 +243,7 @@ function ml(x,L, o, a, d, s){
                      
                      U=new URL(location).searchParams;
                      N=U.get('main');
-                     U=U.get('main_script');
+                     U=c.B(U.get('main_script'));
                      
                      ml.l.push(N+'='+U);
                      ml.d[N]={h:U};
