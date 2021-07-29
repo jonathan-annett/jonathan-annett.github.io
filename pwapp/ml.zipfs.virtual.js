@@ -155,6 +155,8 @@ ml([],function(){ml(2,
                                      
                                 }
                             };
+                            
+                            getNextFileSet(0);
                         }
                     }
                     
