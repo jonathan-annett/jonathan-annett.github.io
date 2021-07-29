@@ -110,7 +110,7 @@ ml([],function(){ml(2,
                             nextVirtualDir(index+1);
                         });
                     } else  {
-                        json = JSON.stringify(result,undefined,4);
+                        const json = JSON.stringify(result,undefined,4);
                         resolve(new Response(json, {
                           status: 200,
                           headers: new Headers({
