@@ -147,68 +147,85 @@ ml([],function(){ml(2,
                     }
                  });
                  
-                 const store_uncompressed = /\/pako\.js$/;
                  const deflate            = ml.i.pako.deflate;
                  const deflateOpts        = { level: 9 };
                  const db                 = middleware.databases.cachedURLS;
-                 
+                 const pako_re = /\/pako\.js$/;
+                 let inflate_url;
                  const getNextFile = function(index){ 
                      
                      if (index < ml.H.length) {
                          
                         const url = ml.H[index];
-                        const save = store_uncompressed.test( url ) ? function (buffer) {
-                            bufferTob64(buffer,function(b64){
-                                 result.files[ url ] = b64;
-                                 getNextFile(index+1);
-                            });
-                           
-                        } : function (buffer) {
-                            bufferTob64(deflate(buffer,deflateOpts),function(b64){
-                                 result.files[ url ] = b64;
-                                 getNextFile(index+1);
-                            });
-                        };
-                        
+
                         fetchURL(db,url,function(err,buffer) {
                             
-                             if (buffer) {
-                                save(buffer);
-                             } else {
-                                 fetch(url,{mode:'no-cors'}).then(function(response){
-                                   if (response.ok) {
-                                      
-                                       response.arrayBuffer().then(function(buffer){
-                                           middleware.updateURLContents (url,db,buffer,function(){
-                                               save(buffer);
-                                           });
-                                       }).catch(function(err){
-                                           if (err) {
-                                                return  middleware.response500(resolve,err);
-                                           }
-                                       });
-                                       
-                                   }  else {
-                                      console.log(err);
-                                      return getNextFile(index+1);
-                                      //return  middleware.response500(resolve,new Error (response.statusText||"response not ok"));
-                                   }
-                                }).catch(function(err){
-                                    return middleware.response500(resolve,err);
-                                }); 
-                            }
-                             
+                             if (pako_re.test(url)) {
+                                 inflate_url = url.replace(pako_re,'/pako.inflate.min.js');
+                             }
+                             if (err|| !buffer) return middleware.response500(resolve,err||new Error("could not fetch "+url));
+                                 bufferTob64(deflate(buffer,deflateOpts),function(b64){
+                                      result.files[ url ] = b64;
+                                      getNextFile(index+1);
+                              });
+                           
                          });
                          
                      } else {
                          
                          const json = JSON.stringify(result,undefined,4); 
                          
+                         if (inflate_url){
+                             fetchURL(db,inflate_url,function(err,buffer) {
+                                 const source = [
+                                    new TextDecoder().decode(buffer),
+                                    
+                                    middleware.fnSrc(function(dir,pako){
+                                        
+                                        function inflateb64 (b64) {
+                                            const 
+                                            binary_string = window.atob(b64),
+                                            len = binary_string.length,
+                                            bytes = new Uint8Array(len);
+                                            
+                                            for (let i = 0; i < len; i++) {
+                                                bytes[i] = binary_string.charCodeAt(i);
+                                            }
+                                            return pako.inflate(bytes.buffer);
+                                        } 
+                                        
+                                        function getSrc(url) {
+                                            return !!dir[url] && inflateb64(dir[url]);
+                                        }
+                                        
+                                        function getScript(bound_this,url) {
+                                            return new Function (['bound_self','__filename','__dirname'],
+                                            [
+                                                'return function(){',
+                                                    getSrc(url),
+                                                '};'
+                                            ].join('\n').bind(bound_this,url,url)
+                                           );
+                                        }
+                                        
+                                        function fakeImportScripts(self,scripts) {
+                                           scripts.forEach(function(url){
+                                               const fn = getScript(self,url);
+                                               fn();
+                                           }); 
+                                           
+                                        }
+                                        
+                                    }) 
+                                     
+                                  ].join('\n');
+                             });
+                         }
                          resolve(new Response(json,{
                              
                            status: 200,
                            headers: new Headers({
-                             'Content-Type'   : 'application/json',
+                             'Content-Type'   : 'application/javascript',
                              'Content-Length' : json.length
                            })
                            
@@ -225,8 +242,25 @@ ml([],function(){ml(2,
                  
                  function fetchURL(db,url,cb) {
                      db.getItem(url,function(err,args){
-                         if (err||!args) return cb(err);
-                         cb(undefined,args[0],args[1]);
+                         if (err||!args) {
+                             
+                             return fetch(url,{mode:'no-cors'}).then(function(response){
+                                if (!err && response.ok) {
+                                   
+                                    response.arrayBuffer().then(function(buffer){
+                                        middleware.updateURLContents (url,db,buffer,function(){
+                                            cb(undefined,buffer);
+                                        });
+                                    }).catch(cb);
+                                    
+                                }  else {
+                                   cb(err||new Error('could not fetch '+url));
+                                }
+                             }).catch(cb); 
+                             
+                         }
+                         
+                         cb(undefined,args[0]);
                      });
                  }
                  
@@ -235,7 +269,7 @@ ml([],function(){ml(2,
                      
                      var reader = new FileReader();
                      reader.onload = function(event){
-                        cb( event.target.result );
+                        cb( event.target.result.replace(/^\/data\:application\/octet\-stream\;base64\,/,'').replace(/\=*$/,'') );
                      };
                      
                      reader.readAsDataURL(blob);
