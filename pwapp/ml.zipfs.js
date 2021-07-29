@@ -3,7 +3,7 @@
 ml(` 
     
     sha1Lib                                | sha1.js
-    JSZip@ServiceWorkerGlobalScope         | jszip/3.6.0/jszip.min.js
+    JSZip@ServiceWorkerGlobalScope         | jszip.min.js
     ml_db_Lib@ServiceWorkerGlobalScope     | ml.db.js
     zipUpWriteLib@ServiceWorkerGlobalScope | ml.fetch.updated-write.js
     zipFSListingLib                        | ml.zipfs.dir.sw.js
