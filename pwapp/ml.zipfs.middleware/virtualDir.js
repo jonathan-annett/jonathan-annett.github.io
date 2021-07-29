@@ -37,8 +37,10 @@ ml([],function(){ml(2,
 
 
     function mware(event,middleware) {
-       const virtual_json_re = /\/virtual\.json$/;
-       const virtual_listing_re = /\/virtual-listing\.json$/
+        
+       const virtual_json_re    = /\/virtual\.json$/;
+       const virtual_listing_re = /\/virtual\-listing\.json$/
+       const virtual_index_re   = /\/virtual\-index\.json$/;
                   
        return new Promise(function(resolve){
            
