@@ -181,7 +181,7 @@ ml([],function(){ml(2,
                                      
                                      '(function(module){',
                                      '  (function(exports){'+new TextDecoder().decode(buffer)+'})(module.exports);',
-                                     '  (function(pako){',
+                                     '  (function(pako,dir){',
                                          middleware.fnSrc(function(dir,pako){
                                              
                                              function inflateb64 (b64) {
@@ -220,7 +220,7 @@ ml([],function(){ml(2,
                                              ml.is=fakeImportScripts;
                                              
                                          }),
-                                    '  })(module.exports.pako)',
+                                    '  })(module.exports.pako,'+json+')',
                                     '})({exports:{}});'
 
                                   ].join('\n');
