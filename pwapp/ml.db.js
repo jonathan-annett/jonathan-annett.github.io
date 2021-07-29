@@ -3,7 +3,7 @@ ml(0,ml(1),[
     
    'localforage                         | https://unpkg.com/localforage@1.9.0/dist/localforage.js',
    'sha1Lib                             | sha1.js',
-   'JSZip@ServiceWorkerGlobalScope      | https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
+   'JSZip@ServiceWorkerGlobalScope      | jszip.min.js',
     
     ],function(){ml(2,
 
