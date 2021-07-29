@@ -120,7 +120,7 @@ ml([],function(){ml(2,
                         }));
                     }
                 }
-                
+                nextVirtualDir(0);
                 return true;   
               },
               
