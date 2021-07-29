@@ -8,8 +8,8 @@ ml(`
     
     pwaWindow@Window                           | ml.pwa-win.js'
     sha1Lib@Window                             | sha1.js'
-    ErrorStackParser@ServiceWorkerGlobalScope  | error-stack-parser.js'
     StackFrame@ServiceWorkerGlobalScope        | stack-frame.js
+    ErrorStackParser@ServiceWorkerGlobalScope  | error-stack-parser.js'
    
     `,function(){ml(2,
 
