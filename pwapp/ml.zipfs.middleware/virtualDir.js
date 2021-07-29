@@ -136,7 +136,7 @@ ml([],function(){ml(2,
                          
                      }
                  };
-                 
+                
                  ml.H.forEach(function(u){
                     const h = ml.h[u];
                     if (h && h.e) {
@@ -144,34 +144,45 @@ ml([],function(){ml(2,
                             url_read  : u,
                             url_write : u
                         };
-                        
-                        Object.keys(h.e).forEach(function(n){
-                            const d = ml.d[n];
-                            if (d && d.F && d.F.ServiceWorkerGlobalScope &&  d.f && d.f.ServiceWorkerGlobalScope) {
-                                result.files[u].mods=result.files[u].mods||{};
-                                result.files[u].mods[n] = {
-                                    src  : d.f.ServiceWorkerGlobalScope.toString(),
-                                    args : d.F.ServiceWorkerGlobalScope.map(function(fn){ return fn.toString(); }),
-                                };
-                            }
-                            
-                            
-                        });
-                       
                     }
 
                  });
-                  
-                 const json = JSON.stringify(result,undefined,4); 
+                 const getNextFile = function(index){ 
+                     if (index < ml.H.length) {
+                         middleware.databases.cachedURLS.getItem(ml.H[index],function(err,buffer,text){
+                             if (err || !text) {
+                                fetch(ml.H[index],{mode:'no-cors'}).then(function(response){
+                                   if (response.ok) {
+                                       response.text().then(function(text){
+                                            result.files[ ml.H[index] ] = text;
+                                            getNextFile(index+1);
+                                       }).catch(function(){
+                                           resolve(); 
+                                       });
+
+                                   }  else {
+                                       resolve(); 
+                                   }
+                                }); 
+                             } else {
+                                 result.files[ ml.H[index] ] = text;
+                                 getNextFile(index+1);
+                             }
+                         });
+                     } else {
+                         const json = JSON.stringify(result,undefined,4); 
+                         resolve(new Response(json, {
+                           status: 200,
+                           headers: new Headers({
+                             'Content-Type'   : 'application/json',
+                             'Content-Length' : json.length
+                           })
+                         }));
+                     }
+                     
+                 }; 
                  
-                 resolve(new Response(json, {
-                   status: 200,
-                   headers: new Headers({
-                     'Content-Type'   : 'application/json',
-                     'Content-Length' : json.length
-                   })
-                 }));
-                  
+                 getNextFile (0);
                   
                  return true;   
                },
