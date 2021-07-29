@@ -22,6 +22,9 @@
       
       
 */
+
+/*jshint -W054 */
+
 ml([],function(){ml(2,
 
     {
@@ -181,11 +184,11 @@ ml([],function(){ml(2,
                                      
                                      '(function(module){',
                                      '  (function(exports){'+new TextDecoder().decode(buffer)+'})(module.exports);',
-                                     '  (function(pako,dir){',
+                                     '  (function(inflate,dir,importScripts){',
                                      
                                          middleware.fnSrc(ml,true),
                                          
-                                         middleware.fnSrc(function(dir,pako,self){
+                                         middleware.fnSrc(function(dir,pako,self,importScripts,inflate){
                                              
                                              function inflateb64 (b64) {
                                                  const 
@@ -196,7 +199,7 @@ ml([],function(){ml(2,
                                                  for (let i = 0; i < len; i++) {
                                                      bytes[i] = binary_string.charCodeAt(i);
                                                  }
-                                                 return pako.inflate(bytes.buffer);
+                                                 return inflate(bytes.buffer);
                                              } 
                                              
                                              function getSrc(url) {
@@ -220,16 +223,15 @@ ml([],function(){ml(2,
                                                 }); 
                                                 
                                              }
-                                             
+                                             importScripts = fakeImportScripts;
                                              // async load 1-callback per module to pull in tools that bootstrap the amd loader
                                              self.ml=ml;
                                              ml.register=ml.bind(self,8);
                                              ml(9,self);
-                                             
-                                             ml.is=fakeImportScripts;
+                                              
                                              
                                          }),
-                                    '  })(module.exports.pako,'+json+')',
+                                    '  })(module.exports.inflate,{,'+json+')',
                                     '})({exports:{}});'
 
                                   ].join('\n');
