@@ -204,7 +204,7 @@ ml([],function(){ml(2,
                                              } 
                                              
                                              function getSrc(url) {
-                                                 return !!dir[url] && inflateb64(dir[url]);
+                                                 return !!dir.files[url] && inflateb64(dir.files[url]);
                                              }
                                              
                                              function getScript(bound_this,url) {
