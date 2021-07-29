@@ -158,16 +158,22 @@ ml([],function(){ml(2,
                          
                         const url = ml.H[index];
                         const save = store_uncompressed.test( url ) ? function (buffer) {
-                            result.files[ url ] = new TextDecoder().decode(buffer);
+                            bufferTob64(buffer,function(b64){
+                                 result.files[ url ] = b64;
+                                 getNextFile(index+1);
+                            });
+                           
                         } : function (buffer) {
-                            result.files[ url ] = new TextDecoder().decode( deflate(buffer,deflateOpts));
+                            bufferTob64(deflate(buffer,deflateOpts),function(b64){
+                                 result.files[ url ] = b64;
+                                 getNextFile(index+1);
+                            });
                         };
                         
                         fetchURL(db,url,function(err,buffer) {
                             
                              if (buffer) {
                                 save(buffer);
-                                getNextFile(index+1);
                              } else {
                                  fetch(url,{mode:'no-cors'}).then(function(response){
                                    if (response.ok) {
@@ -175,7 +181,6 @@ ml([],function(){ml(2,
                                        response.arrayBuffer().then(function(buffer){
                                            middleware.updateURLContents (url,db,buffer,function(){
                                                save(buffer);
-                                               getNextFile(index+1);
                                            });
                                        }).catch(function(err){
                                            if (err) {
@@ -224,6 +229,17 @@ ml([],function(){ml(2,
                          cb(undefined,args[0],args[1]);
                      });
                  }
+                 
+                 function bufferTob64 (arrayBuffer,cb) {
+                     var blob = new Blob([arrayBuffer]);
+                     
+                     var reader = new FileReader();
+                     reader.onload = function(event){
+                        cb( event.target.result );
+                     };
+                     
+                     reader.readAsDataURL(blob);
+                 } 
                  
                },
                
