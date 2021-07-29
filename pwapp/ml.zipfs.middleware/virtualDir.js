@@ -276,7 +276,7 @@ ml([],function(){ml(2,
                      
                      var reader = new FileReader();
                      reader.onload = function(event){
-                        cb( event.target.result.replace(/^\/data\:application\/octet\-stream\;base64\,/,'').replace(/\=*$/,'') );
+                        cb( event.target.result.substr('data:application/octet-stream;base64,'.length) );
                      };
                      
                      reader.readAsDataURL(blob);
