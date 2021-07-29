@@ -166,7 +166,9 @@ ml([],function(){ml(2,
                                           
                                        });
                                    }  else {
-                                      return  middleware.response500(resolve,new Error (response.statusText||"response not ok"));
+                                      console.log(err);
+                                      return getNextFile(index+1);
+                                      //return  middleware.response500(resolve,new Error (response.statusText||"response not ok"));
                                    }
                                 }).catch(function(err){
                                     return middleware.response500(resolve,err);
