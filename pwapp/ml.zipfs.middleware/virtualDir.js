@@ -144,11 +144,15 @@ ml([],function(){ml(2,
                             url_read  : u,
                             url_write : u
                         };
+                        
                         Object.keys(h.e).forEach(function(n){
                             const d = ml.d[n];
                             if (d && typeof d.F+typeof d.f==="objectfunction") {
-                                result.files[u].src  = middleware.d.f.toString();
-                                result.files[u].args = d.F.map(function(fn){ return fn.toString(); });
+                                result.files[u].mods=result.files[u].mods||{};
+                                result.files[u].mods[n] = {
+                                    src  : ml.d.f.toString(),
+                                    args :d.F.map(function(fn){ return fn.toString(); }),
+                                };
                             }
                         });
                        
