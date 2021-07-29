@@ -836,7 +836,7 @@ function amd(root_js,bound_self,compile, loadScriptText, ml_stack){
                 8:(m,c)=>{
                     
                 },
-                9:(L,M,N,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?main=' + encodeURIComponent(M) +'&main_script=' + encodeURIComponent(L) + (N ? ('&count='+encodeURIComponent(N)):'') ).then(C?C:()=>{}),
+                9:(M,L,N,C)=>L&& c.w in self[c.n] && self[c.n][c.w].register('./ml.sw.js?main=' + encodeURIComponent(M) +'&main_script=' + encodeURIComponent(L) + (N ? ('&count='+encodeURIComponent(N)):'') ).then(C?C:()=>{}),
               
         
             };
