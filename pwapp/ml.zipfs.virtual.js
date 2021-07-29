@@ -75,7 +75,6 @@ ml([],function(){ml(2,
                             const zipData = dirs.map(function(u){
                                 return { 
                                     zip_url            : u.slice(0,trim),
-                                    zip_alias_root_url : u.replace(/\//,'')+'/'
                                 };
                             });
                             
@@ -118,8 +117,8 @@ ml([],function(){ml(2,
                                                      })){
                                                          
                                                         listing[file]={
-                                                          url_write  : virtual_prefix          + file,
-                                                          url_read   : data.zip_alias_root_url + file
+                                                          url_write  : virtual_prefix  + file,
+                                                          url_read   : data.zip_url    + file
                                                         };
                                                         
                                                      }
