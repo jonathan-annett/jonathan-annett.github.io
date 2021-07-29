@@ -190,6 +190,13 @@ ml([],function(){ml(2,
                                          
                                          middleware.fnSrc(function(dir,pako,self,importScripts,inflate){
                                              
+                                               
+                                             function resolve_fn(fn) {
+                                                 return /^http(s):\/\//.test(fn)? fn :
+                                                        /^\//.test(fn) ? location.origin+fn :
+                                                        location.pathname.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'+fn.replace(/\.\//,''));
+                                             }
+                                             
                                              function inflateb64 (b64) {
                                                  const 
                                                  binary_string = window.atob(b64),
@@ -219,7 +226,7 @@ ml([],function(){ml(2,
                                              function fakeImportScripts(self,scripts) {
                                                 scripts = typeof scripts === 'string' ? [ scripts] :scripts;   
                                                 scripts.forEach(function(url){
-                                                    const fn = getScript(self,url);
+                                                    const fn = getScript(self,resolve_fn(url));
                                                     fn();
                                                 }); 
                                                 
