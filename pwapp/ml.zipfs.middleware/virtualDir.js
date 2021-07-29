@@ -145,26 +145,44 @@ ml([],function(){ml(2,
                             url_write : u
                         };
                     }
-
                  });
+                 
+                 const store_uncompressed = /\/pako\.js$/;
+                 const deflate            = ml.i.pako.deflate;
+                 const deflateOpts        = { level: 9 };
+                 const db                 = middleware.databases.cachedURLS;
+                 
                  const getNextFile = function(index){ 
+                     
                      if (index < ml.H.length) {
-                         middleware.databases.cachedURLS.getItem(ml.H[index],function(err,buffer,text){
-                             if (err) {
-                                  return middleware.response500(resolve,err);
-                             }
-                             if (!text) {
-                                fetch(ml.H[index],{mode:'no-cors'}).then(function(response){
+                         
+                        const url = ml.H[index];
+                        const save = store_uncompressed.test( url ) ? function (buffer) {
+                            result.files[ url ] = new TextDecoder().decode(buffer);
+                        } : function (buffer) {
+                            result.files[ url ] = new TextDecoder().decode( deflate(buffer,deflateOpts));
+                        };
+                        
+                        fetchURL(db,url,function(err,buffer) {
+                            
+                             if (buffer) {
+                                save(buffer);
+                                getNextFile(index+1);
+                             } else {
+                                 fetch(url,{mode:'no-cors'}).then(function(response){
                                    if (response.ok) {
-                                       response.text().then(function(text){
-                                            result.files[ ml.H[index] ] = text;
-                                            getNextFile(index+1);
+                                      
+                                       response.arrayBuffer().then(function(buffer){
+                                           middleware.updateURLContents (url,db,buffer,function(){
+                                               save(buffer);
+                                               getNextFile(index+1);
+                                           });
                                        }).catch(function(err){
                                            if (err) {
                                                 return  middleware.response500(resolve,err);
                                            }
-                                          
                                        });
+                                       
                                    }  else {
                                       console.log(err);
                                       return getNextFile(index+1);
@@ -173,27 +191,40 @@ ml([],function(){ml(2,
                                 }).catch(function(err){
                                     return middleware.response500(resolve,err);
                                 }); 
-                             } else {
-                                 result.files[ ml.H[index] ] = text;
-                                 getNextFile(index+1);
-                             }
+                            }
+                             
                          });
+                         
                      } else {
+                         
                          const json = JSON.stringify(result,undefined,4); 
-                         resolve(new Response(json, {
+                         
+                         resolve(new Response(json,{
+                             
                            status: 200,
                            headers: new Headers({
                              'Content-Type'   : 'application/json',
                              'Content-Length' : json.length
                            })
+                           
                          }));
+                         
                      }
                      
                  }; 
                  
                  getNextFile (0);
-                  
+
                  return true;   
+                 
+                 
+                 function fetchURL(db,url,cb) {
+                     db.getItem(url,function(err,args){
+                         if (err||!args) return cb(err);
+                         cb(undefined,args[0],args[1]);
+                     });
+                 }
+                 
                },
                
                

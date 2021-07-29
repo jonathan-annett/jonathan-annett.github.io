@@ -27,6 +27,7 @@ ml([],function(){ml(2,
     {
 
         ServiceWorkerGlobalScope: function updatedURL_mware(  ) {
+          mware.fetchURL=fetchURL;
           return mware;
         } 
     }, {
@@ -35,6 +36,14 @@ ml([],function(){ml(2,
 
     );
 
+    function fetchURL(db,url,cb) {
+        db.getItem(url,function(err,args){
+            if (err||!args) return cb(err);
+            cb(undefined,args[0],args[1]);
+        });
+    }
+    
+    
 
     function mware(event,middleware) {
        
@@ -49,13 +58,13 @@ ml([],function(){ml(2,
        
        
        function toFetchURL(resolve) {
-           db.getItem(url,function(err,args){
-               if (err||!args) return resolve();
-               resolve(new Response(args[0],{status:200,headers:new Headers(args[1])}));
+           return fetchURL(db,url,function(err,buffer,headers){
+               if (err||!buffer) return resolve();
+               resolve(new Response(buffer,{status:200,headers:new Headers(headers)}));
            });
        }
     
-       function toUpdateUrl (resolve,reject) {
+       function toUpdateUrl (resolve) {
               
            event.request.arrayBuffer().then(function(buffer){
               middleware.updateURLContents (url,db,buffer,function(){
@@ -71,6 +80,7 @@ ml([],function(){ml(2,
            });
            
        }
+       
        
        function toRemoveUrl (resolve,reject) {
               
