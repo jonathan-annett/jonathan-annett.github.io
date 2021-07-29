@@ -136,6 +136,17 @@ ml([],function(){ml(2,
                          
                      }
                  };
+                 
+                 ml.H.forEach(function(u){
+                    const d = ml.h[u];
+                    if (d && d.e) {
+                        result.files[u] = {
+                            read_url : u,
+                            write_url : u,
+                        };
+                    }
+
+                 });
                   
                  const json = JSON.stringify(result); 
                  
