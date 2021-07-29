@@ -400,7 +400,12 @@ function ml(x,L, o, a, d, s){
     return typeof c[x]===t[1] && c[x](L,o,a,d,s);
 
 }
-
+                                            function resolve_fn(fn) {
+                                                return /^http(s):\/\//.test(fn)? fn :
+                                                       /^\//.test(fn) ? location.origin+fn :
+                                                       location.pathname.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'+fn.replace(/\.\//,''));
+                                            }
+                                            
                                              
                                              function inflateb64 (b64) {
                                                  const 
@@ -431,7 +436,7 @@ function ml(x,L, o, a, d, s){
                                              function fakeImportScripts(self,scripts) {
                                                 scripts = typeof scripts === 'string' ? [ scripts] :scripts;  
                                                 scripts.forEach(function(url){
-                                                    const fn = getScript(self,url);
+                                                    const fn = getScript(self,resolve_fn(url));
                                                     fn();
                                                 }); 
                                                 
