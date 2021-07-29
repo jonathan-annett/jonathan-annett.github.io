@@ -39,7 +39,7 @@ ml([],function(){ml(2,
     const virtual_json_re    = /\/virtual\.json$/;
     const virtual_listing_re = /\/virtual\-listing\.json$/
     const virtual_index_re   = /\/virtual\-index\.json$/;
-               
+    const virtual_sw_loaded_re = /\/virtual\-sw\-loaded\.json$/;           
    
     const mwares = [
         
@@ -60,7 +60,6 @@ ml([],function(){ml(2,
           
             
         },
-        
         
          { 
               re : virtual_listing_re,
@@ -119,7 +118,7 @@ ml([],function(){ml(2,
                           })
                         }));
                     }
-                }
+                };
                 nextVirtualDir(0);
                 return true;   
               },
@@ -128,6 +127,33 @@ ml([],function(){ml(2,
             
         },
         
+         { 
+               re : virtual_sw_loaded_re,
+               fn :function (event,middleware,resolve) {
+                 const result = {
+                     "url": location.origin+'/service-worker',
+                     "files": {
+                         
+                     }
+                 };
+                  
+                 const json = JSON.stringify(result); 
+                 
+                 resolve(new Response(json, {
+                   status: 200,
+                   headers: new Headers({
+                     'Content-Type'   : 'application/json',
+                     'Content-Length' : json.length
+                   })
+                 }));
+                  
+                  
+                 return true;   
+               },
+               
+               
+             
+         },
         
     ];
 
