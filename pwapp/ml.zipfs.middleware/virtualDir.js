@@ -57,18 +57,21 @@ ml([],function(){ml(2,
                
                const zip_url = event.fixup_url.replace(virtual_listing_re,'');
                return middleware.virtualDirListing(zip_url,function(err,listingData){
-                   if  (listingData) {
-                       const json = JSON.stringify(listingData,undefined,4);
-                       return resolve(new Response(json, {
-                         status: 200,
-                         headers: new Headers({
-                           'Content-Type'   : 'application/json',
-                           'Content-Length' : json.length
-                         })
-                       }));
+                   if (err) {
+                       console.log(err);
                    } else {
-                       resolve();
+                       if  (listingData) {
+                           const json = JSON.stringify(listingData,undefined,4);
+                           return resolve(new Response(json, {
+                             status: 200,
+                             headers: new Headers({
+                               'Content-Type'   : 'application/json',
+                               'Content-Length' : json.length
+                             })
+                           }));
+                       }
                    }
+                   resolve();
                });
               
            }
