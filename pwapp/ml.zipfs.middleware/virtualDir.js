@@ -178,58 +178,65 @@ ml([],function(){ml(2,
                          if (inflate_url){
                              fetchURL(db,inflate_url,function(err,buffer) {
                                  const source = [
-                                    new TextDecoder().decode(buffer),
-                                    
-                                    middleware.fnSrc(function(dir,pako){
-                                        
-                                        function inflateb64 (b64) {
-                                            const 
-                                            binary_string = window.atob(b64),
-                                            len = binary_string.length,
-                                            bytes = new Uint8Array(len);
-                                            
-                                            for (let i = 0; i < len; i++) {
-                                                bytes[i] = binary_string.charCodeAt(i);
-                                            }
-                                            return pako.inflate(bytes.buffer);
-                                        } 
-                                        
-                                        function getSrc(url) {
-                                            return !!dir[url] && inflateb64(dir[url]);
-                                        }
-                                        
-                                        function getScript(bound_this,url) {
-                                            return new Function (['bound_self','__filename','__dirname'],
-                                            [
-                                                'return function(){',
-                                                    getSrc(url),
-                                                '};'
-                                            ].join('\n').bind(bound_this,url,url)
-                                           );
-                                        }
-                                        
-                                        function fakeImportScripts(self,scripts) {
-                                           scripts.forEach(function(url){
-                                               const fn = getScript(self,url);
-                                               fn();
-                                           }); 
-                                           
-                                        }
-                                        
-                                    }) 
                                      
+                                     '(function(module){',
+                                     '  (function(exports){'+new TextDecoder().decode(buffer)+'})(module.exports);',
+                                     '  (function(pako){',
+                                         middleware.fnSrc(function(dir,pako){
+                                             
+                                             function inflateb64 (b64) {
+                                                 const 
+                                                 binary_string = window.atob(b64),
+                                                 len = binary_string.length,
+                                                 bytes = new Uint8Array(len);
+                                                 
+                                                 for (let i = 0; i < len; i++) {
+                                                     bytes[i] = binary_string.charCodeAt(i);
+                                                 }
+                                                 return pako.inflate(bytes.buffer);
+                                             } 
+                                             
+                                             function getSrc(url) {
+                                                 return !!dir[url] && inflateb64(dir[url]);
+                                             }
+                                             
+                                             function getScript(bound_this,url) {
+                                                 return new Function (['bound_self','__filename','__dirname'],
+                                                 [
+                                                     'return function(){',
+                                                         getSrc(url),
+                                                     '};'
+                                                 ].join('\n').bind(bound_this,url,url)
+                                                );
+                                             }
+                                             
+                                             function fakeImportScripts(self,scripts) {
+                                                scripts.forEach(function(url){
+                                                    const fn = getScript(self,url);
+                                                    fn();
+                                                }); 
+                                                
+                                             }
+                                             ml.is=fakeImportScripts;
+                                             
+                                         }),
+                                    '  })(module.exports.pako)',
+                                    '})({exports:{}});'
+
                                   ].join('\n');
+                                  
+                                  resolve(new Response(source,{
+                                      
+                                    status: 200,
+                                    headers: new Headers({
+                                      'Content-Type'   : 'application/javascript',
+                                      'Content-Length' : source.length
+                                    })
+                                    
+                                  }));
                              });
                          }
-                         resolve(new Response(json,{
-                             
-                           status: 200,
-                           headers: new Headers({
-                             'Content-Type'   : 'application/javascript',
-                             'Content-Length' : json.length
-                           })
-                           
-                         }));
+                         
                          
                      }
                      
@@ -332,7 +339,7 @@ ml([],function(){ml(2,
                    }
                   
                });
-           };
+           }
            
            /*
            if (virtual_json_re.test(event.fixup_url)) {
