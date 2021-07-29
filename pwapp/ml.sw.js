@@ -396,16 +396,5 @@ function ml(x,L, o, a, d, s){
     return typeof c[x]===t[1] && c[x](L,o,a,d,s);
 
 }
-
-// async load 1-callback per module to pull in tools that bootstrap the amd loader
-ml(`
-setImmediateLib | ml.setImmediate.js
-`,self,function (mod,lib){ 
-    switch(mod) {
-          case "setImmediateLib":lib(function(i){
-            ml.c.i = i;
-        });
-    }
-});
 ml.register=ml.bind(self,8);
 ml(9,self);

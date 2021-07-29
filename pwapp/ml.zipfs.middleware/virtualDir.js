@@ -182,7 +182,10 @@ ml([],function(){ml(2,
                                      '(function(module){',
                                      '  (function(exports){'+new TextDecoder().decode(buffer)+'})(module.exports);',
                                      '  (function(pako,dir){',
-                                         middleware.fnSrc(function(dir,pako){
+                                     
+                                         middleware.fnSrc(ml,true),
+                                         
+                                         middleware.fnSrc(function(dir,pako,self){
                                              
                                              function inflateb64 (b64) {
                                                  const 
@@ -217,6 +220,18 @@ ml([],function(){ml(2,
                                                 }); 
                                                 
                                              }
+                                             
+                                             // async load 1-callback per module to pull in tools that bootstrap the amd loader
+                                             ml('setImmediateLib | ml.setImmediate.js',self,function (mod,lib){ 
+                                                 switch(mod) {
+                                                       case "setImmediateLib":lib(function(i){
+                                                         ml.c.i = i;
+                                                     });
+                                                 }
+                                             });
+                                             ml.register=ml.bind(self,8);
+                                             ml(9,self);
+                                             
                                              ml.is=fakeImportScripts;
                                              
                                          }),
