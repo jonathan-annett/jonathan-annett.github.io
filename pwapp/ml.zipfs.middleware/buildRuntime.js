@@ -82,8 +82,7 @@ ml([], function() {
                                 inflate_url = url.replace(pako_re, '/pako.inflate.min.js');
                             }
                             if (err || !buffer) return middleware.response500(resolve, err || new Error("could not fetch " + url));
-                            const compressed = deflate(buffer, deflateOpts);
-                            (textmode?bufferToText:bufferTob64)(compressed, function(data) {
+                            (textmode?bufferToText:bufferTob64)(buffer, function(data) {
                                 result.files[url] = data;
                                 getNextFile(index + 1);
                             });
@@ -99,16 +98,19 @@ ml([], function() {
                                 const source = [
                                     '/* global ml,self,Response,Headers,BroadcastChannel  */',
                                     '/*jshint -W054 */',
-                                    '(function(module){',
-                                    '(function(exports){' + new TextDecoder().decode(buffer) + '})(module.exports);',
-                                      '(function(inflate,dir,importScripts){',
+                                   textmode? '': '(function(module){',
+                                   textmode? '': '(function(exports){' + new TextDecoder().decode(buffer) + '})(module.exports);',
+                                      '(function(dir,inflate,importScripts){',
+                                      
                                          middleware.fnSrc(ml, true)
                                             .replace(/\s*\/\/.*\n|^\s*|\s*$/gm, '')
                                               .replace(/\s*\{\s*\n/g, '{')
                                                 .replace(/\s\}\s/g, '}'),
+                                                
                                          middleware.fnSrc(textmode?runtimeText:runtimeBas64),
-                                      '})(module.exports.inflate,' + json + ')',
-                                    '})({exports:{}});'
+                                         
+                                  '})(' + json + ( textmode ? '': ',module.exports.inflate')+')',
+                                  textmode? '':  '})({exports:{}});'
 
                                 ].join('\n');
 
@@ -163,7 +165,8 @@ ml([], function() {
                 }
 
                 function bufferTob64(arrayBuffer, cb) {
-                    var blob = new Blob([arrayBuffer]);
+                    const compressed = deflate(arrayBuffer, deflateOpts);
+                    var blob = new Blob([compressed]);
 
                     var reader = new FileReader();
                     reader.onload = function(event) {
@@ -231,7 +234,7 @@ ml([], function() {
             if (dir.files[url]){
                 return new Function(
                     ['bound_self', 'ml', '__filename', '__dirname'],
-                    new TextDecoder().decode(inflate(new TextEncoder().encode(dir.files[url])))
+                    dir.files[url]
                 );
             } else {
                 return function(){};
