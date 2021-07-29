@@ -39,7 +39,7 @@ ml([], function() {
 
     );
 
-    const textmode=true;
+    const textmode=false;
 
     const trigger_re = /\/build\/ml\.sw\.js$/;
 
