@@ -107,13 +107,18 @@ ml([],function(){ml(2,
                                                      // the dirmeta.hidden-json file
                                                      
                                                      if (!zipData.some(function(data,i){
-                                                         return i <= ix && !(data.deleted && data.deleted[file]);
+                                                         return i <= ix && !(
+                                                             data.tools && 
+                                                             data.tools.meta &&
+                                                             data.tools.meta.deleted && 
+                                                             data.tools.meta.deleted[file]);
                                                      })){
                                                          
                                                         listing[file]={
                                                           url_write  : virtual_prefix          + file,
                                                           url_read   : data.zip_alias_root_url + file
                                                         };
+                                                        
                                                      }
                                                  }
                                              });

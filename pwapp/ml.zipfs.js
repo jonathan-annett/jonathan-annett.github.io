@@ -1668,13 +1668,16 @@ ml(`
                      const notificationIds = [];
                      const regexps = (meta && meta.hidden ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
                      zipFileMeta.tools = {
+                         
+                             meta : meta,
+                             
                              regexps  : function () {
                                 const regexps = (meta && meta.hidden ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
                                 return regexps;
                              },
                              
                              //metaSrc() creates a simulated meta.tools environment for the browser
-                              metaSrc : function () {
+                             metaSrc : function () {
                                  return [
                                      
                                     "var regExps = ["+zipFileMeta.tools.regexps().map(function(re){
