@@ -7,7 +7,7 @@ ml([],function(){ml(2,
             
             
             
-            return function  (getEmbeddedZipFileResponse) {
+            return function  (getEmbeddedZipFileResponse,getZipDirMetaTools,getZipFileUpdates) {
 
                 const virtualDirDB = {
                 
@@ -15,10 +15,11 @@ ml([],function(){ml(2,
                 };
                 
                  const lib = {
-                    virtualDirQuery,
-                    virtualDirEvent,
-                    newVirtualDirs,
-                    virtualDirDB 
+                    virtualDirQuery   : virtualDirQuery,
+                    virtualDirEvent   : virtualDirEvent,
+                    newVirtualDirs    : newVirtualDirs,
+                    virtualDirDB      : virtualDirDB,
+                    virtualDirListing : virtualDirListing
                 };
                 
                 
@@ -62,7 +63,103 @@ ml([],function(){ml(2,
                         }
                     }
                 }
-
+                
+                // returns a stringlist of all files in the zip (includes hidden files, but not deleted files)
+                function virtualDirListing (url,cb) {
+                    if (virtualDirDB.virtualDirUrls.indexOf(url)>=0) {
+                        const dirs  = virtualDirDB.virtualDirs[url];
+                        const base = virtualDirDB.virtualDirZipBase[url];
+                        if (dirs&& base) {
+                            const zip_root = base.root;
+                            const trim = 0-base.root.length;
+                            const zipData = dirs.map(function(u){
+                                return { 
+                                    zip_url  : u.slice(0,trim),
+                                    zip_alias_root_url : u
+                                };
+                            });
+                            
+                            const virtual_prefix = url.replace(/\//,'')+'/';
+                            
+                            //asynchronously open all the zip files in this db
+                            const getNextFileSet =  function (index) {
+                                if (index<zipData.length) {
+                                    const data = zipData[index];
+                                    getZipDirMetaTools(data.zip_url,function(tools,zip,zipFileMeta){
+                                        data.tools=tools;
+                                        data.zip=zip;
+                                        data.zipFileMeta=zipFileMeta;
+                                        return getNextFileSet(index+1);
+                                    });
+                                } else {
+                                     // merge the individiual file listings 
+                                     // giving priority to those more recent zips (more recent zips have lower index) 
+                                     // does not include files in older zips that have been deleted in newer zips.
+                                     const listing = {};   
+                                     zipData.forEach(function(data,ix){
+                                         data.tools.allFiles(function(files){
+                                             files.forEach(function(file){
+                                                 if (!listing[file]) {
+                                                     // not already listed
+                                                     
+                                                     // scan more recent zips for deleted entries, and omit this file if a newer zip
+                                                     // has deleted this file by placing it's name in the deleted entry in 
+                                                     // the dirmeta.hidden-json file
+                                                     
+                                                     if (!zipData.some(function(data,i){
+                                                         return i <= ix && !(data.deleted && data.deleted[file]);
+                                                     })){
+                                                         
+                                                        listing[file]={
+                                                          url_write  : virtual_prefix          + file,
+                                                          url_read   : data.zip_alias_root_url + file
+                                                        };
+                                                     }
+                                                 }
+                                             });
+                                         });
+                                         
+                                         
+                                     });
+                                     
+                                     getZipFileUpdates(virtual_prefix,function(err,edited_files){
+                                        if (err) return cb(err);
+                                        
+                                        edited_files.forEach(function(file){
+                                            if (listing[file]) {
+                                                listing[file].updated  = true;
+                                                listing[file].url_read = virtual_prefix + file;
+                                            } else {
+                                                if (!zipData.some(function(data){
+                                                    return !(data.deleted && data.deleted[file]);
+                                                })){
+                                                  listing[file] = {
+                                                      url_write: virtual_prefix + file,
+                                                      url_read : virtual_prefix + file,
+                                                      updated  : true,
+                                                      new_file : true
+                                                  };  
+                                                }
+                                            }
+                                        });
+                                        
+                                        cb( undefined,
+                                            {
+                                                url        : virtual_prefix,
+                                                alias_root : zip_root,
+                                                files      : listing
+                                            }
+                                        );
+                                     });
+                                     
+                                     
+                                }
+                            };
+                        }
+                    }
+                    
+                    cb(new Error (url+" is not a valid virtural directory"));
+                }
                 function virtualDirQuery (url) {
                    
                    if (virtualDirDB.virtualDirs && virtualDirDB.virtualDirUrls) {

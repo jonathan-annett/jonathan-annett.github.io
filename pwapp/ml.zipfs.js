@@ -54,7 +54,9 @@ ml(`
                  // from ...
              } = ml.i.virtualDirLib( 
                  // which needs these items...
-                 getEmbeddedZipFileResponse 
+                 getEmbeddedZipFileResponse,
+                 getZipDirMetaToolsExternal,
+                 getZipFileUpdates
              );
              
             
@@ -1640,7 +1642,7 @@ ml(`
                              if (buffer) {
                                  cb (getTools(JSON.parse(bufferToText(buffer))));
                              } else {
-                                 cb (getTools());
+                                 cb (getTools(),zip,zipFileMeta);
                              }
                             
                          });
@@ -1650,7 +1652,7 @@ ml(`
                      
                      
                  } else {
-                     cb (getTools());
+                     cb (getTools(),zip,zipFileMeta);
                  }
                  
                  function getTools(meta) {
