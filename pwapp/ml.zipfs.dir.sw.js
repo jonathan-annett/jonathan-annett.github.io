@@ -386,8 +386,11 @@ ml(`
                                 virtual,alias_root,files, 
                                 hidden_files_exist,
                                 html_details) {
-                               
-                               
+                                try {
+                                console.log("here:",__dirname);
+                                } catch ( err) {
+                                    console.log(err);
+                                }
                                 return replaceTextVars( 
                                    
                                             dir_html, 
