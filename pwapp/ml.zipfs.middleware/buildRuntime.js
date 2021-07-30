@@ -65,15 +65,14 @@ ml([], function() {
                     '/* global ml,self,Response,Headers,BroadcastChannel  */',
                     '/*jshint -W054 */',
                     
-                    '(function(dir,importScripts){',
+                    '(function(importScripts){',
                          fnSrc(ml, true),
                          fnSrc(startupCode),
-                    '})(' + dir_json + ',(function(inflate){'+fnSrc(runtimeBase64)+'})(',
+                    '})((function(dir,inflate){'+fnSrc(runtimeBase64)+'})(',
                    '(function(module){',
                    '(function(exports){' + new TextDecoder().decode(buffer) + '})(module.exports);',
-                   'return module.exports.inflate;'+
-                   '})({exports:{}})'+
-                   ');'
+                   'return module.exports.inflate;',
+                   '})({exports:{}}),'+dir_json+'));'
         
                 ].join("\n"));
                });
@@ -82,10 +81,10 @@ ml([], function() {
                return cb([
                 '/* global ml,self,Response,Headers,BroadcastChannel  */',
                 '/*jshint -W054 */',
-                  '(function(dir,importScripts){',
+                '(function(importScripts){',
                      fnSrc(ml, true),
                      fnSrc(startupCode),
-               '})(' + dir_json +',(function(){'+fnSrc(runtimeClearText)+')())',
+                '})((function(dir){'+fnSrc(runtimeClearText)+')('+dir_json+'));',
     
                ].join("\n"));
            }
