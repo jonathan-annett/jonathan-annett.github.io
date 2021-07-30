@@ -29,7 +29,7 @@ SOFTWARE.
 
 /* jshint maxerr: 10000*/
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
+/* global ml,self,caches, swResponseZipLib  */
 ml('',function(){ml(2,
 
     {

@@ -1,5 +1,5 @@
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
+/* global ml,self,caches, swResponseZipLib  */
 ml([],function(){ml(2,
     {
         Window: function setImmediateLib( ) {

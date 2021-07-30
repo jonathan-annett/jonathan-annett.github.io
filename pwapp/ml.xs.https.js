@@ -1,5 +1,5 @@
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
+/* global ml,self,caches, swResponseZipLib  */
 ml(`
     
    xStoreBase | ${ml.c.app_root}ml.xs.base.js

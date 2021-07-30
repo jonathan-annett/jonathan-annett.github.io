@@ -1,4 +1,4 @@
-/* global ml,self, Response,Headers,BroadcastChannel */
+/* global ml,self, Response,Headers */
 
 ml(`
     

@@ -1,4 +1,4 @@
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
+/* global ml,self,caches, swResponseZipLib  */
 ml(`  
               
               swResponseZipLib@ServiceWorkerGlobalScope  | ${ml.c.app_root}ml.zipfs.js

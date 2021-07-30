@@ -1,4 +1,4 @@
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */(function(define,ml,chrome){//exanple code begins here - ignore the first line of this file
+/* global ml,self,caches, swResponseZipLib  */(function(define,ml,chrome){//exanple code begins here - ignore the first line of this file
 
 
 

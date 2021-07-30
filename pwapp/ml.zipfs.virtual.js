@@ -1,4 +1,4 @@
-/* global ml,self,caches,BroadcastChannel, Response,Headers  */
+/* global ml,self,caches, Response,Headers  */
 ml([],function(){ml(2,
 
     {

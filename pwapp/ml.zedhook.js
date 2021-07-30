@@ -1,9 +1,6 @@
 
 
-/* global BroadcastChannel*/
-
-
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib, ErrorStackParser, fixupUrl  */
+/* global ml,self,caches, swResponseZipLib, ErrorStackParser, fixupUrl  */
 ml(`
     
     pwaWindow@Window                           | ${ml.c.app_root}ml.pwa-win.js'

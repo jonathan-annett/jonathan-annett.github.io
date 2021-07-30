@@ -1,5 +1,5 @@
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
+/* global ml,self,caches, swResponseZipLib  */
 ml(`
     
    serializerLib | ${ml.c.app_root}ml.xs.serializer.js

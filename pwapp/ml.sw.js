@@ -418,6 +418,7 @@ function ml(x,L, o, a, d, s){
        //slightly modified from https://gist.github.com/sechel/e6aff22d9e56df02c5bd09c4afc516e6
        if (global.BroadcastChannel) return;    
        var channels = [];
+       var lsAvailable = typeof localStorage !== 'undefined';
      
        function BroadcastChannel(channel) {
          var $this = this;
@@ -435,13 +436,16 @@ function ml(x,L, o, a, d, s){
          this._mc.port1.start();
          this._mc.port2.start();
      
-         global.addEventListener('storage', function(e) {
-           if (e.storageArea !== global.localStorage) return;
-           if (e.newValue === null) return;
-           if (e.key.substring(0, id.length) !== id) return;
-           var data = JSON.parse(e.newValue);
-           $this._mc.port2.postMessage(data);
-         });
+     
+         if (lsAvailable) {
+             global.addEventListener('storage', function(e) {
+               if (e.storageArea !== global.localStorage) return;
+               if (e.newValue === null) return;
+               if (e.key.substring(0, id.length) !== id) return;
+               var data = JSON.parse(e.newValue);
+               $this._mc.port2.postMessage(data);
+             });
+         }
        }
      
        BroadcastChannel.prototype = {
@@ -457,9 +461,11 @@ function ml(x,L, o, a, d, s){
            var value = JSON.stringify(message);
      
            // Broadcast to other contexts via storage events...
-           var key = this._id + String(Date.now()) + '$' + String(Math.random());
-           global.localStorage.setItem(key, value);
-           setTimeout(function() { global.localStorage.removeItem(key); }, 500);
+           if (lsAvailable) {
+               var key = this._id + String(Date.now()) + '$' + String(Math.random());
+               global.localStorage.setItem(key, value);
+               setTimeout(function() { global.localStorage.removeItem(key); }, 500);
+           }
      
            // Broadcast to current context via ports
            channels[this._id].forEach(function(bc) {
