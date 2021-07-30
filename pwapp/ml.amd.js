@@ -21,8 +21,10 @@
                       fetch  : loadScriptText_fetch}[opt && opt.load || "fetch"] || loadScriptText_fetch :
                       loadScriptText_xhr;
                       
-  const ml_sw_js = opt && opt.ml_sw_js || 'ml.sw.js';
-    
+  const ml_sw_js    = opt && opt.ml_sw_js || 'ml.sw.js';
+  const ml_amd_js   = document.currentScript.src;
+  const ml_amd_implementation_js   = ml_amd_js.replace(/\.js$/,'.implementation.js');
+  
   const root_script = opt&&opt.main&&opt.main_script && resolve_fn(opt.main_script);
 
   const ml_stack = [];
@@ -30,7 +32,7 @@
      ml_stack.push([].slice.call(arguments));
   };
 
-  loadScriptText(resolve_fn("ml.amd.implementation.js"),function(err,text){
+  loadScriptText(ml_amd_implementation_js,function(err,text){
       if (text) {
           
           compile(   [ 'bound_this','root_script','compile','loadScriptText','ml_stack','ml_sw_js','resolve_fn' ], 
