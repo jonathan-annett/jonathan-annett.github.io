@@ -19,13 +19,25 @@
       
       (ie don't resolve to a 404 error, unless there is absolutely no possibility of another middleware resolving the request)
       
-      
+      minify           |   ${ml.c.app_root}uglify-online/uglify/lib/minify.js
+      Dictionary       |   ${ml.c.app_root}uglify-online/uglify/lib/utils.js
+      AST_Token        |   ${ml.c.app_root}uglify-online/uglify/lib/ast.js
+      JS_Parse_Error   |   ${ml.c.app_root}uglify-online/uglify/lib/parse.js
+      TreeTransformer  |   ${ml.c.app_root}uglify-online/uglify/lib/transform.js
+      SymbolDef        |   ${ml.c.app_root}uglify-online/uglify/lib/scope.js
+      OutputStream     |   ${ml.c.app_root}uglify-online/uglify/lib/output.js
+      Compressor       |   ${ml.c.app_root}uglify-online/uglify/lib/compress.js
+      mangleStrings    |   ${ml.c.app_root}uglify-online/uglify/lib/propmangle.js
+     
       
 */
 
 /*jshint -W054 */
 
-ml([], function() {
+ml(`
+
+
+`, function() {
     ml(2,
 
     {
@@ -54,7 +66,6 @@ ml([], function() {
         };        
         const storeBufferFunc = {
             deflate_base64 : bufferTob64,
-            deflate_text   : bufferToDeflateText,
             clear_text     : bufferToText
         };
         const getSourceTemplate = {
@@ -78,26 +89,6 @@ ml([], function() {
                 ].join("\n"));
                });
            },
-           deflate_text :function(middleware,dir_json,inflate_url,cb){
-               const db = middleware.databases.cachedURLS;
-               
-               fetchURL(db, inflate_url, function(err, buffer) {
-                   return cb([
-                    '/* global ml,self,Response,Headers,BroadcastChannel  */',
-                    '/*jshint -W054 */',
-                    
-                    '(function(importScripts){',
-                         fnSrc(ml, true),
-                         fnSrc(startupCode),
-                    '})((function(inflate,dir){'+fnSrc(runtimeInflateText)+'})(',
-                   '(function(module){',
-                   '(function(exports){' + new TextDecoder().decode(buffer) + '})(module.exports);',
-                   'return module.exports.inflate;',
-                   '})({exports:{}}),'+dir_json+'));'
-        
-                ].join("\n"));
-               });
-           },
            clear_text :function(middleware,dir_json,inflate_url,cb){
                return cb([
                 '/* global ml,self,Response,Headers,BroadcastChannel  */',
@@ -113,7 +104,6 @@ ml([], function() {
         };
         
         const default_buildmode= trigger_base64_re.test(event.fixup_url) ? "deflate_base64" : 
-                                 trigger_inflateText_re.test(event.fixup_url) ? "deflate_text" : 
                                  trigger_text_re.test(event.fixup_url)   ? "clear_text" : false;
         
         if (!!default_buildmode) {
@@ -229,11 +219,7 @@ ml([], function() {
              reader.readAsDataURL(blob);
          }
          
-         function bufferToDeflateText(arrayBuffer, cb) {
-             const compressed = deflate(arrayBuffer, deflateOpts);
-             cb(new TextDecoder().decode(compressed));
-         }
-         
+        
          
          function bufferToText(arraybuffer,cb){
              cb(new TextDecoder().decode(arraybuffer));
@@ -285,36 +271,7 @@ ml([], function() {
          
          
          
-         function runtimeInflateText(dir, pako, self, importScripts, inflate) {
-             return importScripts_inflateText.bind(undefined, self);
-             
-             function inflateModule(url) {
-                 if (dir[url]){
-                     return new Function(
-                         ['bound_self', 'ml', '__filename', '__dirname'],
-                         new TextDecoder().decode(inflate(new TextEncoder().encode(dir[url])))
-                     );
-                 } else {
-                     return function(){};
-                 }
-             }
-     
-             function getScript(bound_this, url) {
-                 return inflateModule(url).bind(bound_this, bound_this, ml, url, url.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/, '/'));
-             }
-     
-             function importScripts_inflateText(self, scripts) {
-                 scripts = typeof scripts === 'string' ? [scripts] : scripts;
-                 scripts.forEach(function(url) {
-                     const fn = getScript(self, ml.c.B(url));
-                     fn();
-                 });
-     
-             }
-             
-             
-         }
-         
+        
      
          function runtimeClearText(dir, pako, self, importScripts) {
              return importScripts_clearText.bind(undefined, self);
