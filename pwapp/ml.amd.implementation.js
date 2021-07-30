@@ -2,7 +2,7 @@
 
 /*jshint -W054 */
 
-function amd(root_js,bound_self,compile, loadScriptText, ml_stack,ml_sw_js){
+function amd(app_root,root_js,bound_self,compile, loadScriptText, ml_stack,ml_sw_js){
     
     
     
@@ -42,7 +42,7 @@ function amd(root_js,bound_self,compile, loadScriptText, ml_stack,ml_sw_js){
     };
     ml(1);// make sure ml.cl is exploded 
     ml.c.l=()=>{};// turn of console.log
-    ml.c.app_root = ml.c.b.substr(location.origin.length).replace(/\/$/,'')+"/";
+    ml.c.app_root = app_root;
     bound_self.ml = ml;
     
     if (ml_stack) {

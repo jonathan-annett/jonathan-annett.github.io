@@ -21,9 +21,10 @@
                       fetch  : loadScriptText_fetch}[opt && opt.load || "fetch"] || loadScriptText_fetch :
                       loadScriptText_xhr;
                       
-  const ml_sw_js    = opt && opt.ml_sw_js || 'ml.sw.js';
-  const ml_amd_js   = document.currentScript.src;
-  const ml_amd_implementation_js   = ml_amd_js.replace(/\.js$/,'.implementation.js');
+  const ml_sw_js                 = opt && opt.ml_sw_js || 'ml.sw.js';
+  const ml_amd_js                = document.currentScript.src;
+  const app_root                 = ml_amd_js.substr(location.origin.length).replace(/\/ml\.amd\.js$/,'/');
+  const ml_amd_implementation_js = app_root+'ml.amd.implementation.js';
   
   const root_script = opt&&opt.main&&opt.main_script && resolve_fn(opt.main_script);
 
@@ -35,12 +36,12 @@
   loadScriptText(ml_amd_implementation_js,function(err,text){
       if (text) {
           
-          compile(   [ 'bound_this','root_script','compile','loadScriptText','ml_stack','ml_sw_js','resolve_fn' ], 
+          compile(   ['app_root', 'bound_this','root_script','compile','loadScriptText','ml_stack','ml_sw_js'], 
             [
-              'return amd(root_script,bound_this,compile,loadScriptText,ml_stack,ml_sw_js,resolve_fn);',
+              'return amd(app_root, root_script,bound_this,compile,loadScriptText,ml_stack,ml_sw_js);',
               text
             ].join('\n'),
-          [this,root_script,compile,loadScriptText,ml_stack,ml_sw_js,resolve_fn],
+          [this,app_root,root_script,compile,loadScriptText,ml_stack,ml_sw_js],
           function(err,prom){
               if (prom) {
                   prom.then(function(ml){
