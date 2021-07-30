@@ -273,6 +273,20 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
               }
               
               
+              function pendingPoller () {
+                  
+                  setTimeout(function(){
+                      
+                      betaTesterApproval().then(function(config){
+                         location.replace(config.root);   
+                          
+                      }).catch (pendingPoller);
+                      
+                      
+                  },15 * 60 * 1000)
+                  
+              }
+              
               
               function getConfig(cb) {
                   
@@ -416,6 +430,8 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                                                               html.classList.remove("notbeta");
                                                               localStorage.notbetapending='1'
                                                           }
+                                                          
+                                                          pendingPoller ();
                                                           reject();
                                                       });
                                                   }
