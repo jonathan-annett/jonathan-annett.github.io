@@ -1,5 +1,5 @@
  
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib,ace  */
+/* global ml,self,caches, swResponseZipLib,ace  */
 ml([],function(){ml(2,
 
     {

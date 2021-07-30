@@ -1,4 +1,4 @@
-/*global ml,BroadcastChannel */ 
+/*global ml */ 
 
 // the file "/pwapp/stub.js" (when loaded in a <script\> tag):
 ml(`

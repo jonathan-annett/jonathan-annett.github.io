@@ -1,7 +1,7 @@
-/* global zip_url_base,zip_files, parent_link,BroadcastChannel*/
+/* global zip_url_base,zip_files, parent_link*/
 
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
+/* global ml,self,caches, swResponseZipLib  */
 ml(`
 
 classToolsLib   | ${ml.c.app_root}ml.classtools.js

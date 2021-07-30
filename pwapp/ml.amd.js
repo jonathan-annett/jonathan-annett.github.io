@@ -6,7 +6,7 @@
 
 (function(opt){
 
-  
+ 
   const resolve_fn    = function (fn) {
       return       /^http(s):\/\//.test(fn)? fn :
                   /^\//.test(fn) ? location.origin+fn :
@@ -152,5 +152,6 @@ function compile_newfunc(args,src,arg_values,cb){
     }
 }
 
+
 })(typeof document==='object'&&document.currentScript&&document.currentScript.dataset,
-   typeof document==='object'&&document.currentScript&&document.currentScript.src);
+   typeof document==='object'&&document.currentScript&&document.currentScript.src  );

@@ -7,7 +7,7 @@ jshint maxerr:10000
 /*jslint bitwise: true */
 
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
+/* global ml,self,caches, swResponseZipLib  */
 ml(0,ml(1),`
 
 serializerLib | ${ml.c.app_root}ml.xs.serializer.js

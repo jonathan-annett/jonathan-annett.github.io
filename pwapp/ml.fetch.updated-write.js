@@ -1,7 +1,7 @@
-/* global zip_url_base,zip_files, parent_link,BroadcastChannel*/
+/* global zip_url_base,zip_files, parent_link*/
 
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib,Response  */
+/* global ml,self,caches, swResponseZipLib,Response  */
 ml(`
    zipUpLib                            | ${ml.c.app_root}ml.fetch.updated.js
    sha1Lib                             | ${ml.c.app_root}sha1.js

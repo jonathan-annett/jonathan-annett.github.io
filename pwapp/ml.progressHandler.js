@@ -1,8 +1,9 @@
-/* global zip_url_base,zip_files, parent_link,BroadcastChannel*/
+/* global zip_url_base,zip_files, parent_link */
 
 
-/* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml([],function(){ml(2,
+/* global ml,self,caches, swResponseZipLib  */
+ml(`
+`,function(){ml(2,
 
     {
         Window: function progressHandler( ) {
