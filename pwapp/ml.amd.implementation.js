@@ -14,30 +14,18 @@ function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw
     comile_debug_regex =/^\/\*ml\.debug\*\//,
     
     splitURLRegExp = /((http(?:s?)|ftp):\/\/)?((([^:\n\r]+):([^@\n\r]+))@)?((www\.)?([^\/\n\r]+))\/?([^?\n\r]+)?\??([^#\n\r]*)?#?([^\n\r]*)/,
-    removeCredentials = (function() {
-        try {
-                const removeCredentialsRegExp=/(?<=http(s?):\/\/)(.*\:.*\@)/;
-                
-                return function (x) {
-                    return x.replace(removeCredentialsRegExp,'');
-                };
+    removeCredentials = function (x) {
         
-            } catch (e) {
-                return function (x) {
-                    
-                    const parts = x.split('@');
-                    if (parts.length===1) {
-                        return x;
-                    }
-                    
-                    const prefix = parts[0].split('://')[0];
-                    const suffix = parts.slice(1).join('@');
-                    return prefix+'://'+suffix;
-                };
-             } 
-            
-            
-        })(),
+        const parts = x.split('@');
+        if (parts.length===1) {
+            return x;
+        }
+        
+        const prefix = parts[0].split('://')[0];
+        const suffix = parts.slice(1).join('@');
+        return prefix+'://'+suffix;
+    },
+
     
     getUrlPartIx = function(i,p,s,u){ u=splitURLRegExp.exec(u);return u&&p+u[i]+s;},
     getUrlOrigin = function(u) {return removeCredentials(getUrlPartIx(1,'','/',u));},
