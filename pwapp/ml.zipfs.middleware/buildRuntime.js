@@ -39,9 +39,8 @@ ml([], function() {
 
     );
 
-    const default_buildmode="deflate_base64";
-
-    const trigger_re = /\/build\/ml\.sw\.js$/;
+    const trigger_base64_re  = /\/build\/ml\.sw\.runtime\.b64\.js$/;
+    const trigger_text_re    = /\/build\/ml\.sw\.runtime\.text\.js$/;
     
 
 
@@ -91,19 +90,18 @@ ml([], function() {
             
         };
         
-        if (trigger_re.test(event.fixup_url)) {
+        const default_buildmode= trigger_base64_re.test(event.fixup_url) ? "deflate_base64" : 
+                                 trigger_text_re.test(event.fixup_url)   ? "clear_text" : false;
+        
+        if (!!default_buildmode) {
+            
             return new Promise(function(resolve) {
-                const result = {
-                    "url": location.origin + '/service-worker',
-                    "files": {
-
-                    }
-                };
+                const result = { };
 
                 ml.H.forEach(function(u) {
                     const h = ml.h[u];
                     if (h && h.e) {
-                        result.files[u] = {
+                        result[u] = {
                             url_read: u,
                             url_write: u
                         };
@@ -127,7 +125,7 @@ ml([], function() {
                             if (err || !buffer) return middleware.response500(resolve, err || new Error("could not fetch " + url));
                             
                             storeBufferFunc[buildmode] (buffer, function(data) {
-                                result.files[url] = data;
+                                result[url] = data;
                                 getNextFile(buildmode,index + 1);
                             });
 
@@ -215,9 +213,9 @@ ml([], function() {
          function runtimeBase64(dir, pako, self, importScripts, inflate) {
      
              function inflateModule(url) {
-                 if (dir.files[url]){
+                 if (dir[url]){
                      const
-                     bstr = atob(dir.files[url]),
+                     bstr = atob(dir[url]),
                      len = bstr.length,
                      bytes = new Uint8Array(len);
          
@@ -258,10 +256,10 @@ ml([], function() {
          function runtimeClearText(dir, pako, self, importScripts) {
             
              function inflateModule(url) {
-                 if (dir.files[url]){
+                 if (dir[url]){
                      return new Function(
                          ['bound_self', 'ml', '__filename', '__dirname'],
-                         dir.files[url]
+                         dir[url]
                      );
                  } else {
                      return function(){};
