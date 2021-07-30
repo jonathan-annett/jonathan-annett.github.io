@@ -4,17 +4,17 @@
 /* global ml,qs, self,BroadcastChannel,ResizeObserver  */
 ml(`
     
-    pwaWindow@Window      | ml.pwa-win.js
-    editInZed             | ml.zedhook.js
-    sha1Lib               | sha1.js
-    htmlFileItemLib       | ml.zipfs.dir.file.js
-    htmlFileMetaLib       | ml.zipfs.dir.file.meta.js
-    zipFSApiLib           | ml.zipfs.api.js
+    pwaWindow@Window      | ${ml.c.app_root}ml.pwa-win.js
+    editInZed             | ${ml.c.app_root}ml.zedhook.js
+    sha1Lib               | ${ml.c.app_root}sha1.js
+    htmlFileItemLib       | ${ml.c.app_root}ml.zipfs.dir.file.js
+    htmlFileMetaLib       | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
+    zipFSApiLib           | ${ml.c.app_root}ml.zipfs.api.js
     showdown              | https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.js
-    aceSessionLib         | ml.ace-session.js
-    openWindowLib         | ml.openWindow.js
-    dragSizeWindowLib     | ml.dragSizeWindow.js
-    devClassLib           | ml.devclass.js
+    aceSessionLib         | ${ml.c.app_root}ml.ace-session.js
+    openWindowLib         | ${ml.c.app_root}ml.openWindow.js
+    dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
+    devClassLib           | ${ml.c.app_root}ml.devclass.js
     
     `,function(){ml(2,
 

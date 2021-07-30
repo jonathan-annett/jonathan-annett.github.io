@@ -1,7 +1,7 @@
 /* global ml */
 
 ml(`
-  htmlFileMetaLib      | ml.zipfs.dir.file.meta.js
+  htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
   
 `,function(){ml(2,
 

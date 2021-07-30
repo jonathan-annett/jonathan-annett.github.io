@@ -2,8 +2,8 @@
 
 ml(`
 
-  aceModeList@Window | ace/ext-modelist.js
-  pwaWindow@Window      | ml.pwa-win.js
+  aceModeList@Window    | ${ml.c.app_root}ace/ext-modelist.js
+  pwaWindow@Window      | ${ml.c.app_root}ml.pwa-win.js
     
 `,function(){ml(2,
 

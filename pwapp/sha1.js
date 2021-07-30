@@ -2,7 +2,7 @@
 ml(
 // rusha is only used as a fallback for crypto.subtle, or for sync usage 
 
-`Rusha | rusha.js`,function(){ml(2,
+`Rusha | ${ml.c.app_root}rusha.js`,function(){ml(2,
 
     {   Window: function sha1Lib(lib) { return lib ;},
         ServiceWorkerGlobalScope: function sha1Lib(lib) { return lib ;}

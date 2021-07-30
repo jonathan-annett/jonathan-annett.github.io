@@ -1,6 +1,6 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(`
-    pwaMessage@Window                          | ml.pwa-message.js
+    pwaMessage@Window                          | ${ml.c.app_root}ml.pwa-message.js
 `,function(){ml(2,
 
     {

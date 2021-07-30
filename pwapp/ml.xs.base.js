@@ -2,7 +2,7 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(`
     
-   serializerLib | ml.xs.serializer.js
+   serializerLib | ${ml.c.app_root}ml.xs.serializer.js
     
     `,function(){ml(2,
 

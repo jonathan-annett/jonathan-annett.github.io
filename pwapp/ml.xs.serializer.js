@@ -5,8 +5,8 @@
 
 ml(`
     
-   setImmediateLib | ml.setImmediate.js
-   Rusha           | rusha.js
+   setImmediateLib | ${ml.c.app_root}ml.setImmediate.js
+   Rusha           | ${ml.c.app_root}rusha.js
     
 `,function(){ml(2,
 

@@ -6,10 +6,10 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib, ErrorStackParser, fixupUrl  */
 ml(`
     
-    pwaWindow@Window                           | ml.pwa-win.js'
-    sha1Lib@Window                             | sha1.js'
-    StackFrame@ServiceWorkerGlobalScope        | stack-frame.js
-    ErrorStackParser@ServiceWorkerGlobalScope  | error-stack-parser.js'
+    pwaWindow@Window                           | ${ml.c.app_root}ml.pwa-win.js'
+    sha1Lib@Window                             | ${ml.c.app_root}sha1.js'
+    StackFrame@ServiceWorkerGlobalScope        | ${ml.c.app_root}stack-frame.js
+    ErrorStackParser@ServiceWorkerGlobalScope  | ${ml.c.app_root}error-stack-parser.js'
    
     `,function(){ml(2,
 

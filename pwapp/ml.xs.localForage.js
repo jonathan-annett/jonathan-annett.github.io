@@ -2,8 +2,8 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(`
 
-   xStoreBase     | ml.xs.base.js
-   localforage    | localforage.min.js
+   xStoreBase     | ${ml.c.app_root}ml.xs.base.js
+   localforage    | ${ml.c.app_root}localforage.min.js
    
     `,function(){ml(2,
 

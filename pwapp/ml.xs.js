@@ -2,9 +2,9 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(`
       
-      xStoreBase    | ml.xs.base.js
-      httpsStore    | ml.xs.https.js
-      memoryStore   | ml.xs.memory.js
+      xStoreBase    | ${ml.c.app_root}ml.xs.base.js
+      httpsStore    | ${ml.c.app_root}ml.xs.https.js
+      memoryStore   | ${ml.c.app_root}ml.xs.memory.js
       
       `
     

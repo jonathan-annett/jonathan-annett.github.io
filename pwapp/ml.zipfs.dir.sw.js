@@ -2,11 +2,11 @@
 
 ml(`
     
-    sha1Lib              | sha1.js
-    JSZip                | jszip.min.js
-    htmlFileItemLib      | ml.zipfs.dir.file.js
-    htmlFileMetaLib      | ml.zipfs.dir.file.meta.js
-    zipFSDirHtml         | ml.zipfs.dir.html
+    sha1Lib              | ${ml.c.app_root}sha1.js
+    JSZip                | ${ml.c.app_root}jszip.min.js
+    htmlFileItemLib      | ${ml.c.app_root}ml.zipfs.dir.file.js
+    htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
+    zipFSDirHtml         | ${ml.c.app_root}ml.zipfs.dir.html
 
     `,function(){ml(2,
 

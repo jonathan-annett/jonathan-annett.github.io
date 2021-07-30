@@ -4,8 +4,8 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(`
 
-classToolsLib   | ml.classtools.js
-timerManagerLib | ml.timerman.js 
+classToolsLib   | ${ml.c.app_root}ml.classtools.js
+timerManagerLib | ${ml.c.app_root}ml.timerman.js 
 
 `,function(){ml(2,
 

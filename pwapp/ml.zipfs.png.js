@@ -2,9 +2,9 @@
 
 ml(`
     
-    sha1Lib  | sha1.js
-    UPNG     | upng.js
-    pako     | pako.js
+    sha1Lib  | ${ml.c.app_root}sha1.js
+    UPNG     | ${ml.c.app_root}upng.js
+    pako     | ${ml.c.app_root}pako.js
 
     `,function(){ml(2,
 

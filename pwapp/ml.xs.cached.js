@@ -2,7 +2,7 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(`
     
-   xStoreBase | ml.xs.base.js
+   xStoreBase | ${ml.c.app_root}ml.xs.base.js
     
     `,function(){ml(2,
 

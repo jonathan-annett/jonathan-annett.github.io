@@ -1,10 +1,10 @@
 /* global ml,qs,Headers,BroadcastChannel  */
 ml(`
-pwa                   | ml.pwa.js
-Shell                 | shell/shell.js
-progressHandler       | ml.progressHandler.js
-openWindowLib         | ml.openWindow.js
-dragSizeWindowLib     | ml.dragSizeWindow.js
+pwa                   | ${ml.c.app_root}ml.pwa.js
+Shell                 | ${ml.c.app_root}shell/shell.js
+progressHandler       | ${ml.c.app_root}ml.progressHandler.js
+openWindowLib         | ${ml.c.app_root}ml.openWindow.js
+dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
 
 `,function(){ml(2,
 

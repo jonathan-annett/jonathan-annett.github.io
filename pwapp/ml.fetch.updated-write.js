@@ -3,8 +3,8 @@
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib,Response  */
 ml(`
-   zipUpLib                            | ml.fetch.updated.js
-   sha1Lib                             | sha1.js
+   zipUpLib                            | ${ml.c.app_root}ml.fetch.updated.js
+   sha1Lib                             | ${ml.c.app_root}sha1.js
 `,function(){ml(2,
 
     {

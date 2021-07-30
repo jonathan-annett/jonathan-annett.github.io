@@ -2,16 +2,16 @@
 
 ml(` 
     
-    sha1Lib                                | sha1.js
-    JSZip@ServiceWorkerGlobalScope         | jszip.min.js
-    ml_db_Lib@ServiceWorkerGlobalScope     | ml.db.js
-    zipUpWriteLib@ServiceWorkerGlobalScope | ml.fetch.updated-write.js
-    zipFSListingLib                        | ml.zipfs.dir.sw.js
-    virtualDirLib@ServiceWorkerGlobalScope | ml.zipfs.virtual.js
-    zipPNGLib@ServiceWorkerGlobalScope     | ml.zipfs.png.js
-    pwaMiddlewares                         | ml.zipfs.middleware/index.js
-    editInZed@ServiceWorkerGlobalScope     | ml.zedhook.js
-    fsTable                                | fstab.json
+    sha1Lib                                | ${ml.c.app_root}sha1.js
+    JSZip@ServiceWorkerGlobalScope         | ${ml.c.app_root}jszip.min.js
+    ml_db_Lib@ServiceWorkerGlobalScope     | ${ml.c.app_root}ml.db.js
+    zipUpWriteLib@ServiceWorkerGlobalScope | ${ml.c.app_root}ml.fetch.updated-write.js
+    zipFSListingLib                        | ${ml.c.app_root}ml.zipfs.dir.sw.js
+    virtualDirLib@ServiceWorkerGlobalScope | ${ml.c.app_root}ml.zipfs.virtual.js
+    zipPNGLib@ServiceWorkerGlobalScope     | ${ml.c.app_root}ml.zipfs.png.js
+    pwaMiddlewares                         | ${ml.c.app_root}ml.zipfs.middleware/index.js
+    editInZed@ServiceWorkerGlobalScope     | ${ml.c.app_root}ml.zedhook.js
+    fsTable                                | ${ml.c.app_root}fstab.json
 
     `,function(){ml(2,
 
