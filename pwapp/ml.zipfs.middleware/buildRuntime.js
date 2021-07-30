@@ -18,23 +18,23 @@
       it should not reject unless a catastophic error occurs
       
       (ie don't resolve to a 404 error, unless there is absolutely no possibility of another middleware resolving the request)
-      
-      minify           |   ${ml.c.app_root}uglify-online/uglify/lib/minify.js
-      Dictionary       |   ${ml.c.app_root}uglify-online/uglify/lib/utils.js
-      AST_Token        |   ${ml.c.app_root}uglify-online/uglify/lib/ast.js
-      JS_Parse_Error   |   ${ml.c.app_root}uglify-online/uglify/lib/parse.js
-      TreeTransformer  |   ${ml.c.app_root}uglify-online/uglify/lib/transform.js
-      SymbolDef        |   ${ml.c.app_root}uglify-online/uglify/lib/scope.js
-      OutputStream     |   ${ml.c.app_root}uglify-online/uglify/lib/output.js
-      Compressor       |   ${ml.c.app_root}uglify-online/uglify/lib/compress.js
-      mangleStrings    |   ${ml.c.app_root}uglify-online/uglify/lib/propmangle.js
-     
+         
       
 */
 
 /*jshint -W054 */
 
 ml(`
+  
+minify           |   ${ml.c.app_root}uglify-online/uglify/lib/minify.js
+Dictionary       |   ${ml.c.app_root}uglify-online/uglify/lib/utils.js
+AST_Token        |   ${ml.c.app_root}uglify-online/uglify/lib/ast.js
+JS_Parse_Error   |   ${ml.c.app_root}uglify-online/uglify/lib/parse.js
+TreeTransformer  |   ${ml.c.app_root}uglify-online/uglify/lib/transform.js
+SymbolDef        |   ${ml.c.app_root}uglify-online/uglify/lib/scope.js
+OutputStream     |   ${ml.c.app_root}uglify-online/uglify/lib/output.js
+Compressor       |   ${ml.c.app_root}uglify-online/uglify/lib/compress.js
+mangleStrings    |   ${ml.c.app_root}uglify-online/uglify/lib/propmangle.js
 
 
 `, function() {
