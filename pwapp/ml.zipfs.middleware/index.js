@@ -29,7 +29,6 @@ buildRuntime_mware    |  ml.zipfs.middleware/buildRuntime.js
                                    "forceError",
                                    "injectHelper",
                                    "stopSW",
-                                   
                                    "updatedURL",
                                    "virtualDir",
                                    "buildRuntime",
