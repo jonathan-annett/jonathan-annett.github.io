@@ -30,10 +30,7 @@ SOFTWARE.
 /* jshint maxerr: 10000*/
 
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
-ml(0,ml(1),[
-    
-
-    ],function(){ml(2,ml(3),ml(4),
+ml('',function(){ml(2,
 
     {
 

@@ -184,12 +184,13 @@ ml(`
                 const li_class     = cls.length===0 ? '' : cls.join(' ');
                
                return template({
-                   filename:filename,
-                   li_class:li_class,
-                   basename:basename,
-                   is_in_zip: is_in_zip?'1':'0',
-                   parent_link:options.parent_link,
-                   link_it_path:full_uri,
+                   filename     : filename,
+                   app_root     : ml.c.app_root,
+                   li_class     : li_class,
+                   basename     : basename,
+                   is_in_zip    : is_in_zip?'1':'0',
+                   parent_link  : options.parent_link,
+                   link_it_path : full_uri,
                    link_it_filename:filename,
                    sha1:'',
                    designer:''

@@ -174,6 +174,7 @@ ml([],function(){ml(2,
                     
                     cb(new Error (url+" is not a valid virtural directory"));
                 }
+                
                 function virtualDirQuery (url) {
                    
                    if (virtualDirDB.virtualDirs && virtualDirDB.virtualDirUrls) {
