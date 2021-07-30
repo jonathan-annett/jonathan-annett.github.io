@@ -344,7 +344,7 @@ ml(`
                                                const html = renderHtml (
                                                    dir_html,
                                                    replaceTextVars,
-                                                   tools,updated_prefix,uri,
+                                                   tools,updated_prefix,uri,url,
                                                    virtual,zipFileMeta.alias_root,
                                                    all_files,
                                                    htmlFileItemLibOpts.hidden_files_exist,
@@ -382,21 +382,18 @@ ml(`
                             function renderHtml (
                             
                                 dir_html,replaceTextVars,
-                                tools,updated_prefix,uri,
+                                tools,updated_prefix,uri,url,
                                 virtual,alias_root,files, 
                                 hidden_files_exist,
                                 html_details) {
-                                try {
-                                console.log("here:",__dirname);
-                                } catch ( err) {
-                                    console.log(err);
-                                }
+                                 
                                 return replaceTextVars( 
                                    
                                             dir_html, 
                                             
                                             {
                                                uri:uri,
+                                               ml_amd_js:ml.c.ml_amd_js,
                                                script_uri:'/'+uri+'.meta.js',
                                                head_script:'',
                                                hidden_files_class:hidden_files_exist?' hidden_files_exist':'',
