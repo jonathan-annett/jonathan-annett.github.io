@@ -67,7 +67,7 @@ ml([], function() {
                     '(function(importScripts){',
                          fnSrc(ml, true),
                          fnSrc(startupCode),
-                    '})((function(dir,inflate){'+fnSrc(runtimeBase64)+'})(',
+                    '})((function(inflate,dir){'+fnSrc(runtimeBase64)+'})(',
                    '(function(module){',
                    '(function(exports){' + new TextDecoder().decode(buffer) + '})(module.exports);',
                    'return module.exports.inflate;',
