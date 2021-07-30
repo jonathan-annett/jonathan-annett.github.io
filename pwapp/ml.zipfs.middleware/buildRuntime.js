@@ -64,13 +64,16 @@ ml([], function() {
                    return cb([
                     '/* global ml,self,Response,Headers,BroadcastChannel  */',
                     '/*jshint -W054 */',
-                    '(function(module){',
-                    '(function(exports){' + new TextDecoder().decode(buffer) + '})(module.exports);',
-                      '(function(dir,inflate,importScripts){',
+                    
+                    '(function(dir,importScripts){',
                          fnSrc(ml, true),
                          fnSrc(startupCode),
-                   '})(' + dir_json + ',module.exports.inflate,('+fnSrc(runtimeBase64)+')())',
-                   '})({exports:{}});'
+                    '})(' + dir_json + ',(function(inflate){'+fnSrc(runtimeBase64)+'})(',
+                   '(function(module){',
+                   '(function(exports){' + new TextDecoder().decode(buffer) + '})(module.exports);',
+                   'return module.exports.inflate;'+
+                   '})({exports:{}})'+
+                   ');'
         
                 ].join("\n"));
                });
@@ -82,7 +85,7 @@ ml([], function() {
                   '(function(dir,importScripts){',
                      fnSrc(ml, true),
                      fnSrc(startupCode),
-               '})(' + dir_json +',('+fnSrc(runtimeClearText)+')())',
+               '})(' + dir_json +',(function(){'+fnSrc(runtimeClearText)+')())',
     
                ].join("\n"));
            }
