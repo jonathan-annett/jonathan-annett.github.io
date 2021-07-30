@@ -1,11 +1,11 @@
 /* global ml,localforage,self  */
-ml(0,ml(1),[
+ml(0,ml(1),`
     
-   'localforage                         | localforage.min.js',
-   'sha1Lib                             | sha1.js',
-   'JSZip@ServiceWorkerGlobalScope      | jszip.min.js',
+   localforage                         | ${ml.c.app_root}localforage.min.js
+   sha1Lib                             | ${ml.c.app_root}sha1.js
+   JSZip@ServiceWorkerGlobalScope      | ${ml.c.app_root}jszip.min.js
     
-    ],function(){ml(2,
+    `,function(){ml(2,
 
     {
         Window: function ml_db_Lib( lib ) {

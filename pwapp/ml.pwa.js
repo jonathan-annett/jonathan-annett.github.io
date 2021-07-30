@@ -1,9 +1,9 @@
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(`  
               
-              swResponseZipLib@ServiceWorkerGlobalScope  | ml.zipfs.js
-              pwaMessage@Window                          | ml.pwa-message.js
-              sha1Lib                                    | sha1.js
+              swResponseZipLib@ServiceWorkerGlobalScope  | ${ml.c.app_root}ml.zipfs.js
+              pwaMessage@Window                          | ${ml.c.app_root}ml.pwa-message.js
+              sha1Lib                                    | ${ml.c.app_root}sha1.js
                 
 `,
               

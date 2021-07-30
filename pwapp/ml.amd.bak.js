@@ -10,10 +10,10 @@ jshint maxerr:10000
 /* global ml,self,caches,BroadcastChannel, swResponseZipLib  */
 ml(0,ml(1),`
 
-serializerLib | ml.xs.serializer.js
-xStoreBase    | ml.xs.base.js
-httpsStore    | ml.xs.https.js
-memoryStore   | ml.xs.memory.js
+serializerLib | ${ml.c.app_root}ml.xs.serializer.js
+xStoreBase    | ${ml.c.app_root}ml.xs.base.js
+httpsStore    | ${ml.c.app_root}ml.xs.https.js
+memoryStore   | ${ml.c.app_root}ml.xs.memory.js
 
 `,function(){ml(2,
 
