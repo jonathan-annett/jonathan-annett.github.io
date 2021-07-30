@@ -39,8 +39,9 @@ ml([], function() {
 
     );
 
-    const trigger_base64_re  = /\/build\/ml\.sw\.runtime\.b64\.js$/;
-    const trigger_text_re    = /\/build\/ml\.sw\.runtime\.text\.js$/;
+    const trigger_base64_re      = /\/build\/ml\.sw\.runtime\.b64\.js$/;
+    const trigger_inflateText_re = /\/build\/ml\.sw\.runtime\.inflate\.js$/;
+    const trigger_text_re        = /\/build\/ml\.sw\.runtime\.text\.js$/;
     
 
 
@@ -53,6 +54,7 @@ ml([], function() {
         };        
         const storeBufferFunc = {
             deflate_base64 : bufferTob64,
+            deflate_text   : bufferToDeflateText,
             clear_text     : bufferToText
         };
         const getSourceTemplate = {
@@ -76,6 +78,26 @@ ml([], function() {
                 ].join("\n"));
                });
            },
+           deflate_text :function(middleware,dir_json,inflate_url,cb){
+               const db = middleware.databases.cachedURLS;
+               
+               fetchURL(db, inflate_url, function(err, buffer) {
+                   return cb([
+                    '/* global ml,self,Response,Headers,BroadcastChannel  */',
+                    '/*jshint -W054 */',
+                    
+                    '(function(importScripts){',
+                         fnSrc(ml, true),
+                         fnSrc(startupCode),
+                    '})((function(inflate,dir){'+fnSrc(runtimeInflateText)+'})(',
+                   '(function(module){',
+                   '(function(exports){' + new TextDecoder().decode(buffer) + '})(module.exports);',
+                   'return module.exports.inflate;',
+                   '})({exports:{}}),'+dir_json+'));'
+        
+                ].join("\n"));
+               });
+           },
            clear_text :function(middleware,dir_json,inflate_url,cb){
                return cb([
                 '/* global ml,self,Response,Headers,BroadcastChannel  */',
@@ -91,6 +113,7 @@ ml([], function() {
         };
         
         const default_buildmode= trigger_base64_re.test(event.fixup_url) ? "deflate_base64" : 
+                                 trigger_inflateText_re.test(event.fixup_url) ? "deflate_text" : 
                                  trigger_text_re.test(event.fixup_url)   ? "clear_text" : false;
         
         if (!!default_buildmode) {
@@ -206,12 +229,25 @@ ml([], function() {
              reader.readAsDataURL(blob);
          }
          
+         function bufferToDeflateText(arrayBuffer, cb) {
+             const compressed = deflate(arrayBuffer, deflateOpts);
+             cb(new TextDecoder().decode(compressed));
+         }
+         
+         
          function bufferToText(arraybuffer,cb){
              cb(new TextDecoder().decode(arraybuffer));
          }
          
+         function startupCode (self,ml) {
+            self.ml = ml;
+            ml.register = ml.bind(self, 8);
+            ml(9, self);
+         }
+         
          function runtimeBase64(dir, pako, self, importScripts, inflate) {
-     
+             return importScripts_b64.bind(undefined, self);
+             
              function inflateModule(url) {
                  if (dir[url]){
                      const
@@ -235,7 +271,7 @@ ml([], function() {
                  return inflateModule(url).bind(bound_this, bound_this, ml, url, url.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/, '/'));
              }
      
-             function fakeImportScripts(self, scripts) {
+             function importScripts_b64(self, scripts) {
                  scripts = typeof scripts === 'string' ? [scripts] : scripts;
                  scripts.forEach(function(url) {
                      const fn = getScript(self, ml.c.B(url));
@@ -244,17 +280,44 @@ ml([], function() {
      
              }
              
-             return fakeImportScripts.bind(undefined, self);
+             
          }
          
-         function startupCode (self,ml) {
-            self.ml = ml;
-            ml.register = ml.bind(self, 8);
-            ml(9, self);
+         
+         
+         function runtimeInflateText(dir, pako, self, importScripts, inflate) {
+             return importScripts_inflateText.bind(undefined, self);
+             
+             function inflateModule(url) {
+                 if (dir[url]){
+                     return new Function(
+                         ['bound_self', 'ml', '__filename', '__dirname'],
+                         new TextDecoder().decode(inflate(new TextEncoder().encode(dir[url])))
+                     );
+                 } else {
+                     return function(){};
+                 }
+             }
+     
+             function getScript(bound_this, url) {
+                 return inflateModule(url).bind(bound_this, bound_this, ml, url, url.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/, '/'));
+             }
+     
+             function importScripts_inflateText(self, scripts) {
+                 scripts = typeof scripts === 'string' ? [scripts] : scripts;
+                 scripts.forEach(function(url) {
+                     const fn = getScript(self, ml.c.B(url));
+                     fn();
+                 });
+     
+             }
+             
+             
          }
+         
      
          function runtimeClearText(dir, pako, self, importScripts) {
-            
+             return importScripts_clearText.bind(undefined, self);
              function inflateModule(url) {
                  if (dir[url]){
                      return new Function(
@@ -270,7 +333,7 @@ ml([], function() {
                  return inflateModule(url).bind(bound_this, bound_this, ml, url, url.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/, '/'));
              }
       
-             function fakeImportScripts(self, scripts) {
+             function importScripts_clearText(self, scripts) {
                  scripts = typeof scripts === 'string' ? [scripts] : scripts;
                  scripts.forEach(function(url) {
                      const fn = getScript(self, ml.c.B(url));
@@ -278,7 +341,7 @@ ml([], function() {
                  });
      
              }
-             return fakeImportScripts.bind(undefined, self);
+             
 
          }
     }
