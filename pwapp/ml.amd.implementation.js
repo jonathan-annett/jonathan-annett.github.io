@@ -37,7 +37,7 @@ function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw
     
     commonJSRegExp         = /^require|exports|module$/,
     stripCommentsRegExp    = /\/\/(?![\S]{2,}\.[\w]).*|\/\*(.|\n)+?\*\//g,
-    commonJSRequireScan    = /(?<=require\s*\(\s*[\'\"])([a-z0-9\_\-\.]*)(?=[\'\"]\s*\))/,
+    commonJSRequireScan    = /(?:require\s*\(\s*[\'\"])([a-z0-9\_\-\.]*)(?:[\'\"]\s*\))/,
     commonJSRequireSplit   = commonJSRequireScan[Symbol.split].bind(commonJSRequireScan),
     commonJSQuotedRequires = /(\'.*(require\s*\(\s*(\"|\\\"|\\\')).*\')|(\".*(require\s*\(\s*(\'|\\\"|\\\')).*\")|(\`.*(require\s*\(\s*(\"|\'|\\\"|\\\')).*\`)/g,
     commonJSArgs           = ['require','module','exports'],
