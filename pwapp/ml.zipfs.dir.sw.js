@@ -393,7 +393,7 @@ ml(`
                                             
                                             {
                                                uri:uri,
-                                               ml_amd_js:ml.c.ml_amd_js,
+                                               app_root:ml.c.app_root,
                                                script_uri:'/'+uri+'.meta.js',
                                                head_script:'',
                                                hidden_files_class:hidden_files_exist?' hidden_files_exist':'',
