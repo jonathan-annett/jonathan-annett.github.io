@@ -199,6 +199,18 @@ ml([],function(){ml(2,
                                       };
                                       return resolve (entry);
                                    }
+                                   
+                                   if (subpath === "/") {
+                                      const fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip+'/index.html';
+                                      const entry = {
+                                          fixup_url   : fixup_url,
+                                          url         : url,
+                                          prefix      : prefix
+                                      };
+                                      return resolve (entry);
+                                   }
+                                   
+                                   
                                    const zipurlprefixes = virtualDirDB.virtualDirs[prefix].slice(0);
                                    const locateZipMetadata = function (i) {
                                        
