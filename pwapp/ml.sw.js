@@ -256,6 +256,8 @@ function ml(x,L, o, a, d, s){
            
               
         };
+        
+        ml.c.app_root = ml.c.b.substr(location.origin.length).replace(/\/$/,'')+"/";
        
        
         //ml.g = map iterator for c[0]
