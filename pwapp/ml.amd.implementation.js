@@ -1,8 +1,7 @@
 /* global  self */
 
 /*jshint -W054 */
-
-function amd(app_root,root_js,bound_self,compile, loadScriptText, ml_stack,ml_sw_js){
+function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw_js){
     
     
     

@@ -36,12 +36,13 @@
   loadScriptText(ml_amd_implementation_js,function(err,text){
       if (text) {
           
-          compile(   ['app_root', 'bound_this','root_script','compile','loadScriptText','ml_stack','ml_sw_js'], 
+          compile([        'bound_this','app_root','root_script','compile','loadScriptText','ml_stack','ml_sw_js'], 
             [
-              'return amd(app_root, root_script,bound_this,compile,loadScriptText,ml_stack,ml_sw_js);',
+                'return amd(bound_this,  app_root,  root_script,  compile,  loadScriptText,  ml_stack,  ml_sw_js);',
               text
             ].join('\n'),
-          [this,app_root,root_script,compile,loadScriptText,ml_stack,ml_sw_js],
+          [                 this,        app_root,  root_script,  compile,  loadScriptText,  ml_stack,  ml_sw_js],
+          
           function(err,prom){
               if (prom) {
                   prom.then(function(ml){
