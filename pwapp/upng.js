@@ -741,7 +741,7 @@ ml(0,ml(1),[
                            }
                        }
                        
-                       // alwaysBlend: pokud zjistím, že blendit nelze, nastavím předchozímu snímku dispose=1. Zajistím, aby obsahoval můj obdélník.
+                       
                        var pimg = new Uint8Array(bufs[j-1-tstp]);
                        if(tstp==1) frms[j-1].dispose = 2;
                        
@@ -1102,4 +1102,3 @@ ml(0,ml(1),[
  
 
 });
-
