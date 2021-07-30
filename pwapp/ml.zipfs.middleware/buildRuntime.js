@@ -83,7 +83,7 @@ ml([], function() {
                 '(function(importScripts){',
                      fnSrc(ml, true),
                      fnSrc(startupCode),
-                '})((function(dir){'+fnSrc(runtimeClearText)+')('+dir_json+'));',
+                '})((function(dir){'+fnSrc(runtimeClearText)+'})('+dir_json+'));',
     
                ].join("\n"));
            }
