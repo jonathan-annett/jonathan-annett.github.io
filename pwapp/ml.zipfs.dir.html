@@ -19,7 +19,13 @@
 <body class="disable-select">
 <div class="pointer_track media_query_detect"></div>
 <!--script src="ml.zipfs.dir.js" defer></script-->
-<script src="ml.amd.js" data-main_script="${script_uri}" data-main="pageMain"></script>
+<script src="ml.amd.js" 
+        data-main_script="${script_uri}"
+        data-main="pageMain" 
+        data-load="xhr" 
+        data-ml_sw_js="ml.sw.js"
+        data-compile="script">
+</script>
 <section>
   <header>
       
