@@ -338,9 +338,11 @@ ml(`
        function uncompressedOutput(crypto,pako){
         (function(){
        const SUBTLE = typeof crypto==='object' && typeof crypto.subtle === "object" &&  crypto.subtle;
-       
-       loadScript("${hash}",function(){
-           console.log(window.JSZip);
+       const directory = {
+           pako:pako
+       };
+       loadScript("${hash}",function(exports){
+           console.log({exports,directory});
        });
        
        function loadScript(hash,cb) {
@@ -352,17 +354,34 @@ ml(`
                loadScript.cache={};
            }
            getArchive(function(html){
-               /*HTML_UnescapeArrayBuffer*/ DOM_fetchArrayBuffer ("${hash}",html,function(jszip_src,newhtml){
+               const initialKeys=Object.keys(window);
+               const exports={};
+               HTML_UnescapeArrayBuffer ("${hash}",html,function(jszip_src,newhtml){
                     if (jszip_src) {
                         
                         compile_viascript_base64([],jszip_src,[],function(){
                               getArchive.cache=newhtml;
                               loadScript.cache[hash]=true;
-                              cb();
+                              removeScriptCommentNodes(hash);
+                              fetchUpdatedKeys();
+                              cb(exports,directory);
                         });
-
                     }
                });
+               
+               
+               function fetchUpdatedKeys() {
+                   const newKeys = Object.keys(window);
+                   initialKeys.forEach(function(el) {
+                      const ix = newKeys.indexOf(el);
+                      if (ix>=0) newKeys.splice(ix,1);
+                   });
+                   initialKeys.push.apply(initialKeys,newKeys);
+                   newKeys.forEach(function(key){
+                       exports[key]=window[key];
+                       directory[key]=window[key];
+                   });
+               }
            });
        }
        
@@ -527,10 +546,8 @@ ml(`
        }
        
        
-       function DOM_fetchArrayBuffer(hash,html,cb) {
-           const CB = typeof cb==='function' ? cb : function(x){return x;};
-           
-           if (!DOM_fetchArrayBuffer.cache) {
+       function removeScriptCommentNodes(hash) {
+            if (!removeScriptCommentNodes.cache) {
                var foundComments = [];
                var elementPath = [document.body];
                while (elementPath.length > 0) {
@@ -538,128 +555,28 @@ ml(`
                    for (var i = 0; i < el.childNodes.length; i++) {
                        var node = el.childNodes[i];
                        if (node.nodeType === Node.COMMENT_NODE) {
-                            node.isCodeComment = foundComments.length>0 && foundComments[foundComments.length-1] !== node.previousSibling;
                             foundComments.push(node);
                        } else {
                            elementPath.push(node);
                        }
                    }
                }
-              DOM_fetchArrayBuffer.cache=foundComments.map(function(el){
+              removeScriptCommentNodes.cache=foundComments.map(function(el){
                   const text =  el.isCodeComment ? [ el.textContent ] : el.textContent;
-                  el.parentNode.removeChild(el);
                   return text;
               });
            }
            
-           const first = DOM_fetchArrayBuffer.cache.indexOf('ab:'+hash);
-           const last  = DOM_fetchArrayBuffer.cache.indexOf(hash+':ab');
+           const first = removeScriptCommentNodes.cache.indexOf('ab:'+hash);
+           const last  = removeScriptCommentNodes.cache.indexOf(hash+':ab');
            if (first<0||last<0) {
                return null;
            }
-           const dataset = DOM_fetchArrayBuffer.cache.splice(first,last+1);
-           dataset.shift();dataset.pop();
-           const header = dataset.shift().split(',');
-           const comment = Array.isArray(dataset[0]) ? '/*'+ dataset.shift()[0] + '*/' : '';
-           const getHdrVar=()=>Number.parseInt(header.shift(),36);
-           
-           const byteLength = getHdrVar();
-           if (isNaN(byteLength)) return CB(null);
-           const splitsCount =getHdrVar();
-           if (isNaN(splitsCount)) return CB(null);
-           
-           const strs = [];
-           for (let j =0;j<splitsCount;j++) {
-               strs.push( dataset.shift() );
-           }
-           const raw_stored = strs.join('--');
-           const mode   = getHdrVar();
-           const format = getHdrVar();
-              
-           const stored = new Uint8Array(raw_stored.split('').map((x)=>x.charCodeAt(0))).buffer;
-           const buffer = mode === 1 ? pako.inflate(stored) : stored;
-           const bufferText   = mode === 1 ? encodeArrayBufferToRawString(buffer) : raw_stored ; 
-           const bufferToHash = comment === '' ? buffer : new Uint8Array((comment+bufferText).split('').map((x)=>x.charCodeAt(0))).buffer;
-           
-           const getFormatted = function() {
-              
-               switch (format) {
-                   case 1 : return bufferToHash;
-                   case 2 :
-                   case 0 :
-                        
-                       return format === 2 ? JSON.parse(bufferText) : comment+bufferText;
-               }
-           };
-           if (buffer.byteLength!==byteLength) return CB(null);
+           const nodes = removeScriptCommentNodes.cache.splice(first,last+1);
 
-           if (SUBTLE) {     
-               sha1SubtleCB( bufferToHash ,function(err,checkHash){
-                     return cb(checkHash===hash?getFormatted():null); 
-               });
-           } else {
-                return cb(getFormatted()||null); 
-           }
-           function sha1SubtleCB(buffer,cb){ 
-                   return SUBTLE.digest("SHA-1", buffer)
-                      .then(function(dig){cb(undefined,bufferToHex(dig));})
-                        .catch(cb); 
-               
-           }
-           
-           function splitArrayBufferMaxLen (ab,maxLen) {
-               if (ab.byteLength<maxLen) return [ab];
-               
-               const result  = [ ab.slice(0,maxLen)  ];
-               let start = maxLen;
-               while (start+maxLen <ab.byteLength) {
-                   result.push( ab.slice(start,start+maxLen));
-                   start += maxLen;
-               }
-               result.push( ab.slice(start) );
-               return result;
-           }
-           
-           function encodeArrayBufferToRawString(ab) {
-               const bytesPerChunk = 1024 * 16;
-               const len = ab.byteLength;
-               const bufs = splitArrayBufferMaxLen(ab,bytesPerChunk);
-               const chunks = [];
-               while (bufs.length>0) {
-                   chunks.push(String.fromCharCode.apply(String,new Uint8Array(bufs.shift())));
-               }
-               const result = chunks.join('');
-               chunks.splice(0,chunks.length);
-               return result;
-           }
-
-           function bufferToHex(buffer) {
-               const padding = '00000000';
-               const hexCodes = [];
-               const view = new DataView(buffer);
-               if (view.byteLength===0) return '';
-               if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
-           
-               for (let i = 0; i < view.byteLength; i += 4) {
-                   // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-                   const value = view.getUint32(i);
-                   // toString(16) will give the hex representation of the number without padding
-                   const stringValue = value.toString(16);
-                   // We use concatenation and slice for padding
-                   const paddedValue = (padding + stringValue).slice(-padding.length);
-                   hexCodes.push(
-                       paddedValue.substr(6,2)+
-                       paddedValue.substr(4,2)+
-                       paddedValue.substr(2,2)+
-                       paddedValue.substr(0,2)
-                  );
-               }
-               // Join all the hex strings into one
-               return hexCodes.join("");
-           }
-           
-            
-           
+           nodes.forEach(function(node){
+               node.parentNode.removeChild(node);
+           });
            
 
        }
