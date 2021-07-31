@@ -428,26 +428,26 @@ ml(`
            const raw_stored = strs.join('--');
            const mode   = getHdrVar();
            const format = getHdrVar();
-          
-           if (mode===0 && format===0 && !SUBTLE) return raw_stored;
-           if (mode===0 && format===2 && !SUBTLE) return JSON.parse(raw_stored);
-           
+              
            const stored = new Uint8Array(raw_stored.split('').map((x)=>x.charCodeAt(0))).buffer;
            const buffer = mode === 1 ? pako.inflate(stored) : stored;
+           const bufferText   = mode === 1 ? encodeArrayBufferToRawString(buffer) : raw_stored ; 
+           const bufferToHash = comment === '' ? buffer : new Uint8Array((comment+bufferText).split('').map((x)=>x.charCodeAt(0))).buffer;
+           
            const getFormatted = function() {
               
                switch (format) {
-                   case 1 : return buffer;
+                   case 1 : return bufferToHash;
                    case 2 :
                    case 0 :
-                       const str = mode===0 ? raw_stored : comment + encodeArrayBufferToRawString(buffer);
-                       return format === 2 ? JSON.parse(str) : str;
+                        
+                       return format === 2 ? JSON.parse(bufferText) : comment+bufferText;
                }
            };
            if (buffer.byteLength!==byteLength) return CB(null);
 
-           if (SUBTLE) {
-               sha1SubtleCB(buffer,function(err,checkHash){
+           if (SUBTLE) {     
+               sha1SubtleCB( bufferToHash ,function(err,checkHash){
                      return cb(checkHash===hash?getFormatted():null,before+after); 
                });
            } else {
@@ -630,16 +630,16 @@ ml(`
              const comment = typeof ab==='string' && ab_trimmed.indexOf('/*')===0 ? ab_trimmed.substring(2,ab_trimmed.indexOf('*/')) : false;
              const commentLength = comment ? comment.length+4 : 0;
              const format =  typeof ab==='string' ? 0 : typeof ab ==='object' && typeof ab.byteLength !== 'undefined' ? 1 : 2;
-             const to_hash  = format !== 1 ? decodeArrayBufferFromRawString(format === 0  ? ab : JSON.stringify(ab) ) : ab;
+             const to_hash  = format !== 1 ? decodeArrayBufferFromRawString(format === 0  ? (comment ? ab_trimmed : ab) : JSON.stringify(ab) ) : ab;
              const to_store = format !== 1 ? (format === 0 ? ( comment ? decodeArrayBufferFromRawString(ab_trimmed.substr(commentLength)) : ab ) : to_hash ) :  ab;
              const deflated = ml.i.pako.deflate(to_store,{level:9});
              
              if (cb) {
-                 ml.i.sha1Lib.cb(ab,function(err,hash){
+                 ml.i.sha1Lib.cb(to_hash,function(err,hash){
                     return cb(esc(hash)); 
                  });
              } else {
-                 const hash = ml.i.sha1Lib.sync(ab);
+                 const hash = ml.i.sha1Lib.sync(to_hash);
                  return esc(hash);
              }
              
@@ -651,16 +651,16 @@ ml(`
               
                
                const deflateHtml =   markers.start + 
-                                     HTML_EscapeComment([ab.byteLength,deflate_splits.length,1,format].map(function(x){return x.toString(36);}).join(','))+
+                                     HTML_EscapeComment([to_store.byteLength,deflate_splits.length,1,format].map(function(x){return x.toString(36);}).join(','))+
                                      (comment ? '\n'+HTML_EscapeComment(comment)+'\n' : '')+
                                      HTML_EscapeComment(deflate_splits)+
                                      markers.end;
 
-               const clean_str     = encodeArrayBufferToRawString(ab);
+               const clean_str     = encodeArrayBufferToRawString(to_hash);
                const clean_splits  = deflate_str.split (/\-\-/g);         
                          
                const cleanHtml =   markers.start + 
-                                   HTML_EscapeComment([ab.byteLength,clean_splits.length,0,format].map(function(x){return x.toString(36);}).join(','))+
+                                   HTML_EscapeComment([to_hash.byteLength,clean_splits.length,0,format].map(function(x){return x.toString(36);}).join(','))+
                                    HTML_EscapeComment(clean_splits)+
                                    markers.end;
                                    
