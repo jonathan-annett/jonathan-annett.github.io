@@ -320,7 +320,7 @@ ml(`
                                      '<body>',
                                          '<script>',
                                              inflate_src,
-                                             middleware.fnSrc (minifiedOutput).replace(/\$\{hash\}/g,hash),
+                                             middleware.fnSrc (uncompressedOutput).replace(/\$\{hash\}/g,hash),
                                          '</script>',
                                      '</bo'+'dy>',
                                      jszip_src_html,
@@ -396,7 +396,7 @@ ml(`
            
            const CB = typeof cb==='function' ? cb : function(x){return x;};
 
-           const markers = {start:'<'+'!--ab:'+hash+'-'+'->',end:'<'+'!--'+hash+':ab-'+'->'};
+           const markers = {start:'<!-\-ab:'+hash+'-\->',end:'<!-\-'+hash+':ab-\->'};
            
            let ix = html.indexOf(markers.start);
            if (ix<0) return CB(null);
@@ -409,7 +409,7 @@ ml(`
            
            const getNext=function(){return HTML_UnescapeTag(html,function(remain){html=remain});};
 
-           if (html.indexOf('<'+'!--')!==0) return CB(null);
+           if (html.indexOf('<!-\-')!==0) return CB(null);
            
            const header = getNext().split(','),
                  getHdrVar=()=>Number.parseInt(header.shift(),36);
@@ -509,9 +509,9 @@ ml(`
            }
            
            function HTML_UnescapeTag(html,cb) {
-               const starts = html.indexOf('<'+'!--');
+               const starts = html.indexOf('<!-\-');
                if (starts<0) return null;
-               const ends = html.indexOf('-'+'->');
+               const ends = html.indexOf('-\->');
                if (ends<starts) return null;
                
                const result  = html.substring(starts+4,ends);
@@ -590,7 +590,7 @@ ml(`
          }
 
          function HTML_EscapeComment(comment) {
-            return Array.isArray(comment) ? HTML_EscapeComment(comment.join('-'+'-><'+'!--'))  : '<'+'!--'+comment+'-'+'->';
+            return Array.isArray(comment) ? HTML_EscapeComment(comment.join('-\-><!-\-'))  : '<!-\-'+comment+'-\->';
          }
          
          function HTML_EscapeTags(hash) {
@@ -601,9 +601,9 @@ ml(`
          }
          
          function HTML_UnescapeTag(html,cb) {
-             const starts = html.indexOf('<'+'!--');
+             const starts = html.indexOf('<!-\-');
              if (starts<0) return null;
-             const ends = html.indexOf('-'+'->');
+             const ends = html.indexOf('-\->');
              if (ends<starts) return null;
              
              const result  = html.substring(starts+4,ends);
@@ -626,7 +626,7 @@ ml(`
              const ab_trimmed = typeof ab==='string' ? ab.trim() : false;
              const comment = typeof ab==='string' && ab_trimmed.indexOf('/*')===0 ? ab_trimmed.substring(2,ab_trimmed.indexOf('*/')) : false;
              const commentLength = comment ? comment.length+4 : 0;
-             const commentSize   = comment ? comment.length+('<'+'!---'+'->'.length)  : 0;
+             const commentSize   = comment ? comment.length+('<!-\-' + '-\->'.length)  : 0;
              const format =  typeof ab==='string' ? 0 : typeof ab ==='object' && typeof ab.byteLength !== 'undefined' ? 1 : 2;
              ab = format !== 1 ? decodeArrayBufferFromRawString(format === 0 ? ab_trimmed.substr(commentLength) : JSON.stringify(ab) ) : ab;
              const deflated = ml.i.pako.deflate(ab,{level:9});
@@ -646,7 +646,7 @@ ml(`
                const splits = str.split (/\-\-/g);
                const markers = HTML_EscapeTags(hash);
                
-                 return  comment ? HTML_EscapeComment(comment) : ''+
+                 return  (comment ? HTML_EscapeComment(comment) : '')+
                          markers.start + 
                          HTML_EscapeComment([ab.byteLength,splits.length,mode,format].map(function(x){return x.toString(36);}).join(','))+
                          HTML_EscapeComment(splits)+
