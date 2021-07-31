@@ -411,7 +411,7 @@ ml(`
                  if (buffer.byteLength!==byteLength) return CB(null);
      
                  if (SUBTLE) {
-                     sha1SubtleCB(buffer,function(checkHash){
+                     sha1SubtleCB(buffer,function(err,checkHash){
                            return cb(checkHash===hash?getFormatted():null,before+after); 
                      });
                  } else {
@@ -582,7 +582,7 @@ ml(`
              const mode  = deflated.length < ab.length ? 1 : 0;
              const store = mode === 1 ? deflated : ab;
              if (cb) {
-                 ml.i.sha1Lib.cb(ab,function(hash){
+                 ml.i.sha1Lib.cb(ab,function(err,hash){
                     return cb(esc(hash)); 
                  });
              } else {
@@ -647,7 +647,7 @@ ml(`
              if (buffer.byteLength!==byteLength) return CB(null);
 
              if (cb) {
-                ml.i.sha1Lib.cb(buffer,function(checkHash){
+                ml.i.sha1Lib.cb(buffer,function(err,checkHash){
                    return cb(checkHash===hash?getFormatted():null,before+after); 
                 });
              } else {
