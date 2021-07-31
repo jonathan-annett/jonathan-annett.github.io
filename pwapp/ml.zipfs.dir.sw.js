@@ -1,5 +1,9 @@
 /* global ml,self,localforage,Response,Headers,BroadcastChannel */
+/*
 
+this code runs in the service worker and generatees html and scripting for the virtual zip editor
+
+*/
 ml(`
     
     sha1Lib              | ${ml.c.app_root}sha1.js
@@ -176,7 +180,8 @@ ml(`
                                const head_script = [
                                    
                                    
-                                  ' ml("pwaZipDirListing|'+ml.c.app_root+'ml.zipfs.dir.js",function(){ml(2,',
+                                  ' ml(["pwaZipDirListing|'+ml.c.app_root+'ml.zipfs.dir.js",',
+                                  '     "localDirLib|'+uri+'.json"],function(){ml(2,',
                                   ' ',
                                   '     {',
                                   '         Window: function pageMain( lib ) {',

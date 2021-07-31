@@ -24,7 +24,7 @@
 */
 ml(`
 
-   editInZed             |  ml.zedhook.js
+   editInZed             |  ${ml.c.app_root}ml.zedhook.js
 
 `,function(){ml(2,
 

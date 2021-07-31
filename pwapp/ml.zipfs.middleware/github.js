@@ -1,4 +1,4 @@
-/* global ml,Response,Headers  */
+/* global ml  */
 /*
 
    middleware must either:
@@ -22,14 +22,11 @@
       
       
 */
-
-/*jshint -W054 */
-
 ml([],function(){ml(2,
 
     {
 
-        ServiceWorkerGlobalScope: function virtualDir_mware(  ) {
+        ServiceWorkerGlobalScope: function github_mware(  ) {
           return mware;
         } 
     }, {
@@ -37,11 +34,12 @@ ml([],function(){ml(2,
     }
 
     );
-    
-    
-    const virtual_json_re    = /\/virtual\.json$/;
-    const virtual_listing_re = /\/virtual\-listing\.json$/
-    const virtual_index_re   = /\/virtual\-index\.json$/;
+
+
+        
+    const virtual_json_re    = /\/github\.json$/;
+    const virtual_listing_re = /\/github\-listing\.json$/
+    const virtual_index_re   = /\/github\-index\.json$/;
     
     const mwares = [
         
@@ -87,6 +85,8 @@ ml([],function(){ml(2,
                    
                    return true;
               },
+              
+          
             
         },
         
@@ -122,7 +122,9 @@ ml([],function(){ml(2,
                 nextVirtualDir(0);
                 return true;   
               },
-
+              
+              
+            
         } 
         
     ];
@@ -177,9 +179,14 @@ ml([],function(){ml(2,
                   
                });
            }
-
+           
+    
        });
         
+    }
+    
+    function regexpEscape(str) {
+        return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
     }
 
 });

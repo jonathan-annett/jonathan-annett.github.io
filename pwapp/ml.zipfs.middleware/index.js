@@ -4,16 +4,17 @@
 /* global ml,self,caches, swResponseZipLib  */
 ml(`
 
-databasesZip_mware    |  ml.zipfs.middleware/databasesZip.js
-editSourceCode_mware  |  ml.zipfs.middleware/editSourceCode.js
-forceError_mware      |  ml.zipfs.middleware/forceError.js
-injectHelper_mware    |  ml.zipfs.middleware/injectHelper.js
-stopSW_mware          |  ml.zipfs.middleware/stopSW.js
-updatedURL_mware      |  ml.zipfs.middleware/updatedURL.js
-virtualDir_mware      |  ml.zipfs.middleware/virtualDir.js
-buildRuntime_mware    |  ml.zipfs.middleware/buildRuntime.js
+databasesZip_mware    |  ${ml.c.app_root}ml.zipfs.middleware/databasesZip.js
+editSourceCode_mware  |  ${ml.c.app_root}ml.zipfs.middleware/editSourceCode.js
+forceError_mware      |  ${ml.c.app_root}ml.zipfs.middleware/forceError.js
+injectHelper_mware    |  ${ml.c.app_root}ml.zipfs.middleware/injectHelper.js
+stopSW_mware          |  ${ml.c.app_root}ml.zipfs.middleware/stopSW.js
+updatedURL_mware      |  ${ml.c.app_root}ml.zipfs.middleware/updatedURL.js
+virtualDir_mware      |  ${ml.c.app_root}ml.zipfs.middleware/virtualDir.js`
+//github_mware          |  ${ml.c.app_root}ml.zipfs.middleware/github.js
 
-`,function(){ml(2,
+//`
+,function(){ml(2,
 
     {
 
@@ -32,6 +33,7 @@ buildRuntime_mware    |  ml.zipfs.middleware/buildRuntime.js
                                    "updatedURL",
                                    "virtualDir",
                                    "buildRuntime",
+                                  // "github",
                                 ];
                                 
             const mware_modnames  = mware_names.map(function(n){ return n+"_mware";});

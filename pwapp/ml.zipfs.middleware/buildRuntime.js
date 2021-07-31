@@ -55,7 +55,9 @@ ml(`
     const trigger_inflateText_re = /\/build\/ml\.sw\.runtime\.inflate\.js$/;
     const trigger_text_re        = /\/build\/ml\.sw\.runtime\.text\.js$/;
     
-
+    const trigger_jszip_boot_re        = /\/build\/ml\.jszip_boot\.html$/;
+    
+    
 
     function mware(event, middleware) {
         
@@ -179,6 +181,30 @@ ml(`
             });
         }
         
+        if (trigger_jszip_boot_re.test(event.fixup_url)) {
+            const db = middleware.databases.cachedURLS;
+            const js_zip_url = ml.c.app_root+'jszip.min.js';
+            const inflate_url = ml.c.app_root+'pako.inflate.min.js';
+            HTML_Wrap_JSZip(db,js_zip_url,inflate_url, function(err,html){
+                
+                           
+                
+                return new Promise(function(resolve) {
+                    if (err || !html) return middleware.response500(resolve, err || new Error("could not fetch " + event.fixup_url));
+                
+                    resolve(new Response(html, {
+
+                        status: 200,
+                        headers: new Headers({
+                            'Content-Type': 'text/html',
+                            'Content-Length': html.length
+                        })
+
+                    }));
+                });
+            });
+        }
+        
          function fetchURL(db, url, cb) {
                 db.getItem(url, function(err, args) {
                     if (err || !args) {
@@ -266,12 +292,194 @@ ml(`
      
              }
              
+            
+             
              
          }
          
          
+         function HTML_Wrap_JSZip(db,js_zip_url,inflate_url, cb)  {
+                      fetchURL(db, inflate_url, function(err, buffer) {
+                          if (err) return cb (err);
+                          
+                          const inflate_src =new TextDecoder().decode(buffer);
+                          
+                          fetchURL(db, js_zip_url, function(err, buffer) {
+                              if (err) return cb (err);
+                              
+                              HTML_EscapeArrayBuffer(buffer,function(jszip_src_html){
+                                  
+                                  const hash = get_HTML_Escaped_Hash (jszip_src_html);
+                                  const html = [
+                                     '<html>',
+                                     '<head>',
+                                      
+                                     '</head>',
+                                     '<b'+'ody>',
+                                         '<script>',
+                                         
+         inflate_src,
+             
+         middleware.fnSrc (function(crypto){
+             
+             const SUBTLE = typeof crypto==='object' && typeof crypto.subtle === "object" &&  crypto.subtle;
+             
+             loadScript("${hash}",function(){
+                 console.log(window.JSZip);
+             });
+             
+             function loadScript(hash,cb) {
+                 if (loadScript.cache) {
+                    if (loadScript.cache[hash]) {
+                        return;
+                    }
+                 } else {
+                     loadScript.cache={};
+                 }
+                 getArchive(function(html){
+                     HTML_UnescapeArrayBuffer("${hash}",html,function(jszip_src,newhtml){
+                          if (jszip_src) {
+                              var script = document.createElement('script');
+                              script.type = 'text/javascript';
+                              script.src = 'data:text/javascript;base64,'+btoa(jszip_src);
+                              document.getElementsByTagName('head')[0].appendChild(script);
+                              getArchive.cache=newhtml;
+                              loadScript.cache[hash]=true;
+                              cb();
+                          }    
+                     });
+                 });
+             }
+             
+             function getArchive(cb){
+                 if (getArchive.cache)return cb(getArchive.cache);
+                 var xhr = new XMLHttpRequest();
+                 xhr.open('GET', document.baseURI, true);
+                 xhr.onreadystatechange = function () {
+                     if (xhr.readyState === 4) {
+                         cb((getArchive.cache = xhr.responseText.substr(xhr.responseText.indexOf('</html>')+7)));
+                     }
+                 };
+                 xhr.send(null);
+             }
+     
+             function HTML_UnescapeArrayBuffer(hash,html,cb) {
+                 
+                 const CB = typeof cb==='function' ? cb : function(x){return x;};
+     
+                 const markers = {start:"<!--ab:"+hash+"-->",end:"<!--"+hash+":ab-->"};
+                 
+                 let ix = html.indexOf(markers.start);
+                 if (ix<0) return CB(null);
+                 const before = cb?html.substr(0,ix):0;
+                 html = html.substr(ix+markers.start.length);
+                 let ix = html.indexOf(markers.end);
+                 if (ix<0) return CB(null);
+                 const after = cb?html.subtring(ix+markers.end.length):0;
+                 html = html.substr(0,ix);
+                 
+                 const getNext=function(){return HTML_UnescapeTag(html,function(remain){html=remain});};
+     
+                 if (html.indexOf('<!--')!==0) return CB(null);
+                 
+                 const header = getNext().split(','),
+                       getHdrVar=()=>Number.parseInt(header.shift(),36);
+                 
+                 const byteLength = getHdrVar();
+                 if (isNaN(byteLength)) return CB(null);
+                 const splitsCount =getHdrVar();
+                 if (isNaN(splitsCount)) return CB(null);
+                 
+                 const strs = [];
+                 for (let i =0;i<splitsCount;i++) {
+                     strs.push(getNext());
+                 }
+                 const stored = decodeArrayBufferFromRawString(strs.join('--'));
+                 const buffer = getHdrVar() === 1 ? ml.i.pako.inflate(stored) : stored;
+                 const getFormatted = function() {
+                     const format = getHdrVar();
+                     switch (format) {
+                         case 1 : return buffer;
+                         case 2 :
+                         case 0 :
+                             const str = encodeArrayBufferToRawString(buffer) ;
+                             return format=== 2 ? JSON.parse(str):str;
+                     }
+                 };
+                 if (buffer.byteLength!==byteLength) return CB(null);
+     
+                 if (SUBTLE) {
+                     sha1SubtleCB(buffer,function(checkHash){
+                           return cb(checkHash===hash?getFormatted():null,before+after); 
+                     });
+                 } else {
+                      return cb(getFormatted(),before+after); 
+                 }
+                 function sha1SubtleCB(buffer,cb){ 
+                         return SUBTLE.digest("SHA-1", buffer)
+                            .then(function(dig){cb(undefined,bufferToHex(dig));})
+                              .catch(cb); 
+                     
+                 }
+                 function bufferToHex(buffer) {
+                     const padding = '00000000';
+                     const hexCodes = [];
+                     const view = new DataView(buffer);
+                     if (view.byteLength===0) return '';
+                     if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
+                 
+                     for (let i = 0; i < view.byteLength; i += 4) {
+                         // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
+                         const value = view.getUint32(i);
+                         // toString(16) will give the hex representation of the number without padding
+                         const stringValue = value.toString(16);
+                         // We use concatenation and slice for padding
+                         const paddedValue = (padding + stringValue).slice(-padding.length);
+                         hexCodes.push(
+                             paddedValue.substr(6,2)+
+                             paddedValue.substr(4,2)+
+                             paddedValue.substr(2,2)+
+                             paddedValue.substr(0,2)
+                        );
+                     }
+                     // Join all the hex strings into one
+                     return hexCodes.join("");
+                 }
+                 
+                 function HTML_UnescapeTag(html,cb) {
+                     const starts = html.indexOf('<!--');
+                     if (starts<0) return null;
+                     const ends = html.indexOf('-->');
+                     if (ends<starts) return null;
+                     
+                     const result  = html.substring(starts+4,ends);
+                     const remains = html.substr(ends+3);
+                     if (cb) cb(remains);
+                     return result;
+                 }
+             }
+             
+              
+             
+         }).replace('${hash}',hash),
          
-        
+                                         
+                                           
+                                         '</script>',
+                                     '</body>',
+                                     jszip_src_html,
+                                     '</html>',
+                                   ].join("\n");
+                                  
+                                  
+                                  cb (undefined,html);
+                                  
+                                  
+                              });
+                          });
+                      });
+                  }
+       
      
          function runtimeClearText(dir, pako, self, importScripts) {
              return importScripts_clearText.bind(undefined, self);
@@ -301,6 +509,154 @@ ml(`
              
 
          }
+         
+         function splitArrayBufferMaxLen (ab,maxLen) {
+             if (ab.byteLength<maxLen) return [ab];
+             
+             const result  = [ ab.slice(0,maxLen)  ];
+             let start = maxLen;
+             while (start+maxLen <ab.byteLength) {
+                 result.push( ab.slice(start,start+maxLen));
+                 start += maxLen;
+             }
+             result.push( ab.slice(start) );
+             return result;
+         }
+         
+         function encodeArrayBufferToRawString(ab) {
+             const bytesPerChunk = 1024 * 16;
+             const len = ab.byteLength;
+             const bufs = splitArrayBufferMaxLen(ab,bytesPerChunk);
+             const chunks = [];
+             while (bufs.length>0) {
+                 chunks.push(String.fromCharCode.apply(String,new Uint8Array(bufs.shift())));
+             }
+             const result = chunks.join('');
+             chunks.splice(0,chunks.length);
+             return result;
+         }
+
+         function decodeArrayBufferFromRawString (str,length,cb) {
+             return new Uint8Array(str.split('').map((x)=>x.charCodeAt(0))).buffer;
+         }
+
+         function HTML_EscapeComment(comment) {
+            return Array.isArray(comment) ? HTML_EscapeComment(comment.join('--><!--'))  : '<!--'+comment+'-->';
+         }
+         
+         function HTML_EscapeTags(hash) {
+             return {
+                start:HTML_EscapeComment('ab:'+hash),
+                end:HTML_EscapeComment(hash+':ab')
+             };
+         }
+         
+         function HTML_UnescapeTag(html,cb) {
+             const starts = html.indexOf('<!--');
+             if (starts<0) return null;
+             const ends = html.indexOf('-->');
+             if (ends<starts) return null;
+             
+             const result  = html.substring(starts+4,ends);
+             const remains = html.substr(ends+3);
+             if (cb) cb(remains);
+             return result;
+         }
+         
+         function get_HTML_Escaped_Hash(html) {
+             let hash,update=function(x){ html = x;  };
+             while (!hash && html.length>0) {
+                 hash = HTML_UnescapeTag(html,update) ;
+                 if (hash.indexOf('ab:')===0) {
+                     return hash.substr(3);
+                 }
+             }
+         }
+         
+         function HTML_EscapeArrayBuffer(ab,cb){
+             const format =  typeof ab==='string' ? 0 : typeof ab ==='object' && typeof ab.byteLength !== 'undefined' ? 1 : 2;
+             ab = format !== 1 ? decodeArrayBufferFromRawString(format === 0 ? ab : JSON.stringify(ab) ) : ab;
+             const deflated = ml.i.pako.deflate(ab,{level:9});
+             const mode  = deflated.length < ab.length ? 1 : 0;
+             const store = mode === 1 ? deflated : ab;
+             if (cb) {
+                 ml.i.sha1Lib.cb(ab,function(hash){
+                    return cb(esc(hash)); 
+                 });
+             } else {
+                 const hash = ml.i.sha1Lib.sync(ab);
+                 return esc(hash);
+             }
+             
+             function esc(hash) {
+               const str = encodeArrayBufferToRawString(store);
+               const splits = str.split (/\-\-/g);
+               const markers = HTML_EscapeTags(hash);
+               
+                 return  markers.start + 
+                         HTML_EscapeComment([ab.byteLength,splits.length,mode,format].map(function(x){return x.toString(36);}).join(','))+
+                         HTML_EscapeComment(splits)+
+                         markers.end;
+             }
+         }
+         
+         function HTML_UnescapeArrayBuffer(hash,html,cb) {
+             const CB = typeof cb==='function' ? cb : function(x){return x;};
+
+             const markers = HTML_EscapeTags(hash);
+             
+             let ix = html.indexOf(markers.start);
+             if (ix<0) return CB(null);
+             const before = cb?html.substr(0,ix):0;
+             html = html.substr(ix+markers.start.length);
+             let ix = html.indexOf(markers.end);
+             if (ix<0) return CB(null);
+             const after = cb?html.subtring(ix+markers.end.length):0;
+             html = html.substr(0,ix);
+             
+             const getNext=function(){return HTML_UnescapeTag(html,function(remain){html=remain});};
+
+             if (html.indexOf('<!--')!==0) return CB(null);
+             
+             const header = getNext().split(','),
+                   getHdrVar=()=>Number.parseInt(header.shift(),36);
+             
+             const byteLength = getHdrVar();
+             if (isNaN(byteLength)) return CB(null);
+             const splitsCount =getHdrVar();
+             if (isNaN(splitsCount)) return CB(null);
+             
+             const strs = [];
+             for (let i =0;i<splitsCount;i++) {
+                 strs.push(getNext());
+             }
+             const stored = decodeArrayBufferFromRawString(strs.join('--'));
+             const buffer = getHdrVar() === 1 ? ml.i.pako.inflate(stored) : stored;
+             const getFormatted = function() {
+                 const format = getHdrVar();
+                 switch (format) {
+                     case 1 : return buffer;
+                     case 2 :
+                     case 0 :
+                         const str = encodeArrayBufferToRawString(buffer) ;
+                         return format=== 2 ? JSON.parse(str):str;
+                 }
+             };
+             if (buffer.byteLength!==byteLength) return CB(null);
+
+             if (cb) {
+                ml.i.sha1Lib.cb(buffer,function(checkHash){
+                   return cb(checkHash===hash?getFormatted():null,before+after); 
+                });
+             } else {
+                 if (hash === ml.i.sha1Lib.sync(buffer)) {
+                     return getFormatted();
+                 }
+                 return null;
+             }
+         }
+         
+         
     }
     
    
