@@ -564,8 +564,8 @@ ml(`
               removeScriptCommentNodes.cache=foundComments;
            }
            
-           const first = removeScriptCommentNodes.cache.indexOf('ab:'+hash);
-           const last  = removeScriptCommentNodes.cache.indexOf(hash+':ab');
+           const first = removeScriptCommentNodes.cache.findIndex(function(el){return el.textContent==='ab:'+hash;});
+           const last  = removeScriptCommentNodes.cache.findIndex(function(el){return el.textContent===hash+':ab'});
            if (first<0||last<0) {
                return null;
            }
