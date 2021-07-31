@@ -10,7 +10,8 @@ forceError_mware      |  ${ml.c.app_root}ml.zipfs.middleware/forceError.js
 injectHelper_mware    |  ${ml.c.app_root}ml.zipfs.middleware/injectHelper.js
 stopSW_mware          |  ${ml.c.app_root}ml.zipfs.middleware/stopSW.js
 updatedURL_mware      |  ${ml.c.app_root}ml.zipfs.middleware/updatedURL.js
-virtualDir_mware      |  ${ml.c.app_root}ml.zipfs.middleware/virtualDir.js`
+virtualDir_mware      |  ${ml.c.app_root}ml.zipfs.middleware/virtualDir.js
+buildRuntime_mware    |  ${ml.c.app_root}ml.zipfs.middleware/buildRuntime.js`
 //github_mware          |  ${ml.c.app_root}ml.zipfs.middleware/github.js
 
 //`
