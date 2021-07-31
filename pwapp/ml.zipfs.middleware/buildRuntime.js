@@ -443,6 +443,19 @@ ml(`
                               .catch(cb); 
                      
                  }
+                 function encodeArrayBufferToRawString(ab) {
+                     const bytesPerChunk = 1024 * 16;
+                     const len = ab.byteLength;
+                     const bufs = splitArrayBufferMaxLen(ab,bytesPerChunk);
+                     const chunks = [];
+                     while (bufs.length>0) {
+                         chunks.push(String.fromCharCode.apply(String,new Uint8Array(bufs.shift())));
+                     }
+                     const result = chunks.join('');
+                     chunks.splice(0,chunks.length);
+                     return result;
+                 }
+
                  function bufferToHex(buffer) {
                      const padding = '00000000';
                      const hexCodes = [];
