@@ -396,7 +396,8 @@ ml(`
                  for (let i =0;i<splitsCount;i++) {
                      strs.push(getNext());
                  }
-                 const stored = decodeArrayBufferFromRawString(strs.join('--'));
+                 const stored =new Uint8Array(strs.join('--').split('').map((x)=>x.charCodeAt(0))).buffer;
+
                  const buffer = getHdrVar() === 1 ? ml.i.pako.inflate(stored) : stored;
                  const getFormatted = function() {
                      const format = getHdrVar();
@@ -538,7 +539,7 @@ ml(`
              return result;
          }
 
-         function decodeArrayBufferFromRawString (str,length,cb) {
+         function decodeArrayBufferFromRawString (str) {
              return new Uint8Array(str.split('').map((x)=>x.charCodeAt(0))).buffer;
          }
 
