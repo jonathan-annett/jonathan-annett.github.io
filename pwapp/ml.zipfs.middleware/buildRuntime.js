@@ -657,7 +657,7 @@ ml(`
                                      markers.end;
 
                const clean_str     = encodeArrayBufferToRawString(to_hash);
-               const clean_splits  = deflate_str.split (/\-\-/g);         
+               const clean_splits  = clean_str.split (/\-\-/g);         
                          
                const cleanHtml =   markers.start + 
                                    HTML_EscapeComment([to_hash.byteLength,clean_splits.length,0,format].map(function(x){return x.toString(36);}).join(','))+
