@@ -182,14 +182,16 @@ ml(`
         }
         
         if (trigger_jszip_boot_re.test(event.fixup_url)) {
-            const db = middleware.databases.cachedURLS;
-            const js_zip_url = ml.c.app_root+'jszip.min.js';
-            const inflate_url = ml.c.app_root+'pako.inflate.min.js';
-            HTML_Wrap_JSZip(db,js_zip_url,inflate_url, function(err,html){
-                
-                           
-                
-                return new Promise(function(resolve) {
+              return new Promise(function(resolve) {
+                          
+                    const db = middleware.databases.cachedURLS;
+                    const js_zip_url = ml.c.app_root+'jszip.min.js';
+                    const inflate_url = ml.c.app_root+'pako.inflate.min.js';
+                    HTML_Wrap_JSZip(db,js_zip_url,inflate_url, function(err,html){
+                        
+                                   
+                        
+              
                     if (err || !html) return middleware.response500(resolve, err || new Error("could not fetch " + event.fixup_url));
                 
                     resolve(new Response(html, {
