@@ -414,7 +414,7 @@ ml(`
            const header = getNext().split(','),
                  getHdrVar=()=>Number.parseInt(header.shift(),36);
                  
-           const comment = html.charAt(0)==='\n' ?  getNext() : '';
+           const comment = html.charAt(0)==='\n' ?  '/*'+getNext()+'*/' : '';
            
            const byteLength = getHdrVar();
            if (isNaN(byteLength)) return CB(null);
