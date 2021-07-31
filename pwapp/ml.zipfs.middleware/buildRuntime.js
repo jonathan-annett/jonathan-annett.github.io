@@ -341,13 +341,13 @@ ml(`
                  getArchive(function(html){
                      HTML_UnescapeArrayBuffer("${hash}",html,function(jszip_src,newhtml){
                           if (jszip_src) {
-                              var script = document.createElement('script');
-                              script.type = 'text/javascript';
-                              script.src = 'data:text/javascript;base64,'+btoa(jszip_src);
-                              document.getElementsByTagName('head')[0].appendChild(script);
-                              getArchive.cache=newhtml;
-                              loadScript.cache[hash]=true;
-                              cb();
+                              
+                              compile_viascript_base64([],jszip_src,[],function(){
+                                    getArchive.cache=newhtml;
+                                    loadScript.cache[hash]=true;
+                                    cb();
+                              });
+
                           }    
                      });
                  });
@@ -363,6 +363,20 @@ ml(`
                      }
                  };
                  xhr.send(null);
+             }
+             
+             function compile_viascript_base64(args,src,arg_values,cb){
+                 
+                 const script = document.createElement("script");
+                 script.onload=function(){
+                     cb(undefined,script.exec.apply(undefined,arg_values) );
+                 };
+                 script.src = "data:text/plain;base64," + btoa([
+                     'document.currentScript.exec=function('+args.join(',')+'){',
+                     src,
+                     '};'
+                 ].join('\n'));
+                 document.body.appendChild(script);
              }
      
              function HTML_UnescapeArrayBuffer(hash,html,cb) {
@@ -465,6 +479,8 @@ ml(`
                      if (cb) cb(remains);
                      return result;
                  }
+                 
+                 
              }
              
               
