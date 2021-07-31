@@ -322,7 +322,7 @@ ml(`
                                          
          inflate_src,
              
-         middleware.fnSrc (function(crypto){
+         middleware.fnSrc (function(crypto,pako){
              
              const SUBTLE = typeof crypto==='object' && typeof crypto.subtle === "object" &&  crypto.subtle;
              
