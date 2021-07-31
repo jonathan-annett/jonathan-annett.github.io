@@ -348,7 +348,7 @@ ml(`
                                     cb();
                               });
 
-                          }    
+                          }
                      });
                  });
              }
@@ -601,7 +601,7 @@ ml(`
              const format =  typeof ab==='string' ? 0 : typeof ab ==='object' && typeof ab.byteLength !== 'undefined' ? 1 : 2;
              ab = format !== 1 ? decodeArrayBufferFromRawString(format === 0 ? ab : JSON.stringify(ab) ) : ab;
              const deflated = ml.i.pako.deflate(ab,{level:9});
-             const mode  = deflated.length < ab.length ? 1 : 0;
+             const mode  = deflated.byteLength < ab.byteLength ? 1 : 0;
              const store = mode === 1 ? deflated : ab;
              if (cb) {
                  ml.i.sha1Lib.cb(ab,function(err,hash){
