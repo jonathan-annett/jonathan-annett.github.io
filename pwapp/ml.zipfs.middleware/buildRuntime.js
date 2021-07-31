@@ -417,7 +417,7 @@ ml(`
                  if (mode===0 && format===2 && !SUBTLE) return JSON.parse(raw_stored);
                  
                  const stored = new Uint8Array(raw_stored.split('').map((x)=>x.charCodeAt(0))).buffer;
-                 const buffer = mode === 1 ? ml.i.pako.inflate(stored) : stored;
+                 const buffer = mode === 1 ? pako.inflate(stored) : stored;
                  const getFormatted = function() {
                     
                      switch (format) {
