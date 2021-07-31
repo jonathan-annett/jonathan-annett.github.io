@@ -309,7 +309,7 @@ ml(`
                           fetchURL(db, js_zip_url, function(err, buffer) {
                               if (err) return cb (err);
                               
-                              /*HTML_EscapeArrayBuffer*/ DOM_fetchArrayBuffer(new TextDecoder().decode(buffer),function(jszip_src_html){
+                              HTML_EscapeArrayBuffer (new TextDecoder().decode(buffer),function(jszip_src_html){
                                   
                                   const hash = get_HTML_Escaped_Hash (jszip_src_html);
                                   const html = [
@@ -352,7 +352,7 @@ ml(`
                loadScript.cache={};
            }
            getArchive(function(html){
-               HTML_UnescapeArrayBuffer("${hash}",html,function(jszip_src,newhtml){
+               /*HTML_UnescapeArrayBuffer*/ DOM_fetchArrayBuffer ("${hash}",html,function(jszip_src,newhtml){
                     if (jszip_src) {
                         
                         compile_viascript_base64([],jszip_src,[],function(){
