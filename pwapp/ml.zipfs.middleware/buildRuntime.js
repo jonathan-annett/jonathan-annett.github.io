@@ -463,7 +463,7 @@ ml(`
              
               
              
-         }).replace('${hash}',hash),
+         }).replace(/\$\{hash\}/g,hash),
          
                                          
                                            
