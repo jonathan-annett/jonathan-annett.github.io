@@ -406,7 +406,7 @@ ml(`
                                      '<body>',
                                          '<script>',
                                              inflate_src,
-                                             middleware.fnSrc (minifiedOutput)
+                                             middleware.fnSrc (uncompressedOutput)
                                                  .replace(/\$\{hash\}/g,hash)
                                                  .replace(/\$\{content_hash\}/g,content_hash|''),
                                          '</script>',
