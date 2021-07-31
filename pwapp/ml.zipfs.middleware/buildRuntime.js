@@ -377,7 +377,7 @@ ml(`
                  html = html.substr(ix+markers.start.length);
                  ix = html.indexOf(markers.end);
                  if (ix<0) return CB(null);
-                 const after = cb?html.subtring(ix+markers.end.length):0;
+                 const after = cb?html.substring(ix+markers.end.length):0;
                  html = html.substr(0,ix);
                  
                  const getNext=function(){return HTML_UnescapeTag(html,function(remain){html=remain});};
