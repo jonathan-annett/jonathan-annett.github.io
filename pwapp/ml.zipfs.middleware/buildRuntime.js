@@ -373,7 +373,7 @@ ml(`
                  if (ix<0) return CB(null);
                  const before = cb?html.substr(0,ix):0;
                  html = html.substr(ix+markers.start.length);
-                 let ix = html.indexOf(markers.end);
+                 ix = html.indexOf(markers.end);
                  if (ix<0) return CB(null);
                  const after = cb?html.subtring(ix+markers.end.length):0;
                  html = html.substr(0,ix);
@@ -609,7 +609,7 @@ ml(`
              if (ix<0) return CB(null);
              const before = cb?html.substr(0,ix):0;
              html = html.substr(ix+markers.start.length);
-             let ix = html.indexOf(markers.end);
+             ix = html.indexOf(markers.end);
              if (ix<0) return CB(null);
              const after = cb?html.subtring(ix+markers.end.length):0;
              html = html.substr(0,ix);
