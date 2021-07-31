@@ -557,10 +557,10 @@ ml(`
            if (first<0||last<0) {
                return null;
            }
-           const dataset = DOM_fetchArrayBuffer.cache.splice(first,last);
+           const dataset = DOM_fetchArrayBuffer.cache.splice(first,last+1);
            dataset.shift();dataset.pop();
            const header = dataset.shift().split(',');
-           const comment = Array.isArray(dataset[dataset.length-1]) ? '/*'+ dataset.shift()[0] + '*/' : '';
+           const comment = Array.isArray(dataset[0]) ? '/*'+ dataset.shift()[0] + '*/' : '';
            const getHdrVar=()=>Number.parseInt(header.shift(),36);
            
            const byteLength = getHdrVar();
