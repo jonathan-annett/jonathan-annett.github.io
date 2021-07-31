@@ -309,7 +309,7 @@ ml(`
                           fetchURL(db, js_zip_url, function(err, buffer) {
                               if (err) return cb (err);
                               
-                              HTML_EscapeArrayBuffer(new TextDecoder().decoder(buffer),function(jszip_src_html){
+                              HTML_EscapeArrayBuffer(new TextDecoder().decode(buffer),function(jszip_src_html){
                                   
                                   const hash = get_HTML_Escaped_Hash (jszip_src_html);
                                   const html = [
