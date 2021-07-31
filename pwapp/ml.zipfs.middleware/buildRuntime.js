@@ -413,6 +413,8 @@ ml(`
            
            const header = getNext().split(','),
                  getHdrVar=()=>Number.parseInt(header.shift(),36);
+                 
+           const comment = html.charAt(0)==='\n' ?  getNext() : '';
            
            const byteLength = getHdrVar();
            if (isNaN(byteLength)) return CB(null);
@@ -426,6 +428,7 @@ ml(`
            const raw_stored = strs.join('--');
            const mode   = getHdrVar();
            const format = getHdrVar();
+          
            if (mode===0 && format===0 && !SUBTLE) return raw_stored;
            if (mode===0 && format===2 && !SUBTLE) return JSON.parse(raw_stored);
            
@@ -437,7 +440,7 @@ ml(`
                    case 1 : return buffer;
                    case 2 :
                    case 0 :
-                       const str = mode===0 ? raw_stored : encodeArrayBufferToRawString(buffer);
+                       const str = mode===0 ? raw_stored : comment + encodeArrayBufferToRawString(buffer);
                        return format === 2 ? JSON.parse(str) : str;
                }
            };
@@ -626,12 +629,11 @@ ml(`
              const ab_trimmed = typeof ab==='string' ? ab.trim() : false;
              const comment = typeof ab==='string' && ab_trimmed.indexOf('/*')===0 ? ab_trimmed.substring(2,ab_trimmed.indexOf('*/')) : false;
              const commentLength = comment ? comment.length+4 : 0;
-             const commentSize   = comment ? comment.length+('<!-\-' + '-\->'.length)  : 0;
              const format =  typeof ab==='string' ? 0 : typeof ab ==='object' && typeof ab.byteLength !== 'undefined' ? 1 : 2;
-             ab = format !== 1 ? decodeArrayBufferFromRawString(format === 0 ? ab_trimmed.substr(commentLength) : JSON.stringify(ab) ) : ab;
-             const deflated = ml.i.pako.deflate(ab,{level:9});
-             const mode  = commentSize+deflated.byteLength < ab.byteLength ? 1 : 0;
-             const store = mode === 1 ? deflated : ab;
+             const to_hash  = format !== 1 ? decodeArrayBufferFromRawString(format === 0  ? ab : JSON.stringify(ab) ) : ab;
+             const to_store = format !== 1 ? (format === 0 ? ( comment ? decodeArrayBufferFromRawString(ab_trimmed.substr(commentLength)) : ab ) : to_hash ) :  ab;
+             const deflated = ml.i.pako.deflate(to_store,{level:9});
+             
              if (cb) {
                  ml.i.sha1Lib.cb(ab,function(err,hash){
                     return cb(esc(hash)); 
@@ -642,15 +644,29 @@ ml(`
              }
              
              function esc(hash) {
-               const str = encodeArrayBufferToRawString(store);
-               const splits = str.split (/\-\-/g);
-               const markers = HTML_EscapeTags(hash);
+                 
+               const markers         = HTML_EscapeTags(hash);  
+               const deflate_str     = encodeArrayBufferToRawString(deflated);
+               const deflate_splits  = deflate_str.split (/\-\-/g);
+              
                
-                 return  (comment ? HTML_EscapeComment(comment) : '')+
-                         markers.start + 
-                         HTML_EscapeComment([ab.byteLength,splits.length,mode,format].map(function(x){return x.toString(36);}).join(','))+
-                         HTML_EscapeComment(splits)+
-                         markers.end;
+               const deflateHtml =   markers.start + 
+                                     HTML_EscapeComment([ab.byteLength,deflate_splits.length,1,format].map(function(x){return x.toString(36);}).join(','))+
+                                     (comment ? '\n'+HTML_EscapeComment(comment)+'\n' : '')+
+                                     HTML_EscapeComment(deflate_splits)+
+                                     markers.end;
+
+               const clean_str     = encodeArrayBufferToRawString(ab);
+               const clean_splits  = deflate_str.split (/\-\-/g);         
+                         
+               const cleanHtml =   markers.start + 
+                                   HTML_EscapeComment([ab.byteLength,clean_splits.length,0,format].map(function(x){return x.toString(36);}).join(','))+
+                                   HTML_EscapeComment(clean_splits)+
+                                   markers.end;
+                                   
+                                   
+                return cleanHtml.length < deflateHtml.length ? cleanHtml : deflateHtml;
+
              }
          }
          
