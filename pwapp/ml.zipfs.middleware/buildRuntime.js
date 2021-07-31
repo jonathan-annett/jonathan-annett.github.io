@@ -561,10 +561,7 @@ ml(`
                        }
                    }
                }
-              removeScriptCommentNodes.cache=foundComments.map(function(el){
-                  const text =  el.isCodeComment ? [ el.textContent ] : el.textContent;
-                  return text;
-              });
+              removeScriptCommentNodes.cache=foundComments;
            }
            
            const first = removeScriptCommentNodes.cache.indexOf('ab:'+hash);
