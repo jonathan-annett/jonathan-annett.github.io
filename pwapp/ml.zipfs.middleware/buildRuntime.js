@@ -559,7 +559,7 @@ ml(`
            }
            const dataset = DOM_fetchArrayBuffer.cache.splice(first,last);
            dataset.shift();dataset.pop();
-           const header = dataset.shift();
+           const header = dataset.shift().split(',');
            const comment = Array.isArray(dataset[dataset.length-1]) ? '/*'+ dataset.shift()[0] + '*/' : '';
            const getHdrVar=()=>Number.parseInt(header.shift(),36);
            
