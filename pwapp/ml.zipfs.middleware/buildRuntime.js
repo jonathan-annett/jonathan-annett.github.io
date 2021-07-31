@@ -396,17 +396,22 @@ ml(`
                  for (let i =0;i<splitsCount;i++) {
                      strs.push(getNext());
                  }
-                 const stored =new Uint8Array(strs.join('--').split('').map((x)=>x.charCodeAt(0))).buffer;
-
-                 const buffer = getHdrVar() === 1 ? ml.i.pako.inflate(stored) : stored;
+                 const raw_stored = strs.join('--');
+                 const mode   = getHdrVar();
+                 const format = getHdrVar();
+                 if (mode===0 && format===0 && !SUBTLE) return raw_stored;
+                 if (mode===0 && format===2 && !SUBTLE) return JSON.parse(raw_stored);
+                 
+                 const stored = new Uint8Array(raw_stored.split('').map((x)=>x.charCodeAt(0))).buffer;
+                 const buffer = mode === 1 ? ml.i.pako.inflate(stored) : stored;
                  const getFormatted = function() {
-                     const format = getHdrVar();
+                    
                      switch (format) {
                          case 1 : return buffer;
                          case 2 :
                          case 0 :
-                             const str = encodeArrayBufferToRawString(buffer) ;
-                             return format=== 2 ? JSON.parse(str):str;
+                             const str = mode===0 ? raw_stored : encodeArrayBufferToRawString(buffer);
+                             return format === 2 ? JSON.parse(str) : str;
                      }
                  };
                  if (buffer.byteLength!==byteLength) return CB(null);
@@ -469,7 +474,7 @@ ml(`
                                          
                                            
                                          '</script>',
-                                     '</body>',
+                                     '</bo'+'dy>',
                                      jszip_src_html,
                                      '</html>',
                                    ].join("\n");
