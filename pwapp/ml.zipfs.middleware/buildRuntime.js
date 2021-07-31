@@ -317,205 +317,10 @@ ml(`
                                      '<head>',
                                       
                                      '</head>',
-                                     '<b'+'ody>',
+                                     '<body>',
                                          '<script>',
-                                         
-         inflate_src,
-             
-         middleware.fnSrc (function(crypto,pako){
-             
-             const SUBTLE = typeof crypto==='object' && typeof crypto.subtle === "object" &&  crypto.subtle;
-             
-             loadScript("${hash}",function(){
-                 console.log(window.JSZip);
-             });
-             
-             function loadScript(hash,cb) {
-                 if (loadScript.cache) {
-                    if (loadScript.cache[hash]) {
-                        return;
-                    }
-                 } else {
-                     loadScript.cache={};
-                 }
-                 getArchive(function(html){
-                     HTML_UnescapeArrayBuffer("${hash}",html,function(jszip_src,newhtml){
-                          if (jszip_src) {
-                              
-                              compile_viascript_base64([],jszip_src,[],function(){
-                                    getArchive.cache=newhtml;
-                                    loadScript.cache[hash]=true;
-                                    cb();
-                              });
-
-                          }
-                     });
-                 });
-             }
-             
-             function getArchive(cb){
-                 if (getArchive.cache)return cb(getArchive.cache);
-                 var xhr = new XMLHttpRequest();
-                 xhr.open('GET', document.baseURI, true);
-                 xhr.onreadystatechange = function () {
-                     if (xhr.readyState === 4) {
-                         cb((getArchive.cache = xhr.responseText.substr(xhr.responseText.indexOf('</html>')+7)));
-                     }
-                 };
-                 xhr.send(null);
-             }
-             
-             function compile_viascript_base64(args,src,arg_values,cb){
-                 
-                 const script = document.createElement("script");
-                 script.onload=function(){
-                     cb(undefined,script.exec.apply(undefined,arg_values) );
-                 };
-                 script.src = "data:text/plain;base64," + btoa([
-                     'document.currentScript.exec=function('+args.join(',')+'){',
-                     src,
-                     '};'
-                 ].join('\n'));
-                 document.body.appendChild(script);
-             }
-     
-             function HTML_UnescapeArrayBuffer(hash,html,cb) {
-                 
-                 const CB = typeof cb==='function' ? cb : function(x){return x;};
-     
-                 const markers = {start:"<!--ab:"+hash+"-->",end:"<!--"+hash+":ab-->"};
-                 
-                 let ix = html.indexOf(markers.start);
-                 if (ix<0) return CB(null);
-                 const before = cb?html.substr(0,ix):0;
-                 html = html.substr(ix+markers.start.length);
-                 ix = html.indexOf(markers.end);
-                 if (ix<0) return CB(null);
-                 const after = cb?html.substring(ix+markers.end.length):0;
-                 html = html.substr(0,ix);
-                 
-                 const getNext=function(){return HTML_UnescapeTag(html,function(remain){html=remain});};
-     
-                 if (html.indexOf('<!--')!==0) return CB(null);
-                 
-                 const header = getNext().split(','),
-                       getHdrVar=()=>Number.parseInt(header.shift(),36);
-                 
-                 const byteLength = getHdrVar();
-                 if (isNaN(byteLength)) return CB(null);
-                 const splitsCount =getHdrVar();
-                 if (isNaN(splitsCount)) return CB(null);
-                 
-                 const strs = [];
-                 for (let i =0;i<splitsCount;i++) {
-                     strs.push(getNext());
-                 }
-                 const raw_stored = strs.join('--');
-                 const mode   = getHdrVar();
-                 const format = getHdrVar();
-                 if (mode===0 && format===0 && !SUBTLE) return raw_stored;
-                 if (mode===0 && format===2 && !SUBTLE) return JSON.parse(raw_stored);
-                 
-                 const stored = new Uint8Array(raw_stored.split('').map((x)=>x.charCodeAt(0))).buffer;
-                 const buffer = mode === 1 ? pako.inflate(stored) : stored;
-                 const getFormatted = function() {
-                    
-                     switch (format) {
-                         case 1 : return buffer;
-                         case 2 :
-                         case 0 :
-                             const str = mode===0 ? raw_stored : encodeArrayBufferToRawString(buffer);
-                             return format === 2 ? JSON.parse(str) : str;
-                     }
-                 };
-                 if (buffer.byteLength!==byteLength) return CB(null);
-     
-                 if (SUBTLE) {
-                     sha1SubtleCB(buffer,function(err,checkHash){
-                           return cb(checkHash===hash?getFormatted():null,before+after); 
-                     });
-                 } else {
-                      return cb(getFormatted(),before+after); 
-                 }
-                 function sha1SubtleCB(buffer,cb){ 
-                         return SUBTLE.digest("SHA-1", buffer)
-                            .then(function(dig){cb(undefined,bufferToHex(dig));})
-                              .catch(cb); 
-                     
-                 }
-                 
-                 function splitArrayBufferMaxLen (ab,maxLen) {
-                     if (ab.byteLength<maxLen) return [ab];
-                     
-                     const result  = [ ab.slice(0,maxLen)  ];
-                     let start = maxLen;
-                     while (start+maxLen <ab.byteLength) {
-                         result.push( ab.slice(start,start+maxLen));
-                         start += maxLen;
-                     }
-                     result.push( ab.slice(start) );
-                     return result;
-                 }
-                 
-                 function encodeArrayBufferToRawString(ab) {
-                     const bytesPerChunk = 1024 * 16;
-                     const len = ab.byteLength;
-                     const bufs = splitArrayBufferMaxLen(ab,bytesPerChunk);
-                     const chunks = [];
-                     while (bufs.length>0) {
-                         chunks.push(String.fromCharCode.apply(String,new Uint8Array(bufs.shift())));
-                     }
-                     const result = chunks.join('');
-                     chunks.splice(0,chunks.length);
-                     return result;
-                 }
-
-                 function bufferToHex(buffer) {
-                     const padding = '00000000';
-                     const hexCodes = [];
-                     const view = new DataView(buffer);
-                     if (view.byteLength===0) return '';
-                     if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
-                 
-                     for (let i = 0; i < view.byteLength; i += 4) {
-                         // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-                         const value = view.getUint32(i);
-                         // toString(16) will give the hex representation of the number without padding
-                         const stringValue = value.toString(16);
-                         // We use concatenation and slice for padding
-                         const paddedValue = (padding + stringValue).slice(-padding.length);
-                         hexCodes.push(
-                             paddedValue.substr(6,2)+
-                             paddedValue.substr(4,2)+
-                             paddedValue.substr(2,2)+
-                             paddedValue.substr(0,2)
-                        );
-                     }
-                     // Join all the hex strings into one
-                     return hexCodes.join("");
-                 }
-                 
-                 function HTML_UnescapeTag(html,cb) {
-                     const starts = html.indexOf('<!--');
-                     if (starts<0) return null;
-                     const ends = html.indexOf('-->');
-                     if (ends<starts) return null;
-                     
-                     const result  = html.substring(starts+4,ends);
-                     const remains = html.substr(ends+3);
-                     if (cb) cb(remains);
-                     return result;
-                 }
-                 
-                 
-             }
-             
-              
-             
-         }).replace(/\$\{hash\}/g,hash),
-         
-                                         
-                                           
+                                             inflate_src,
+                                             middleware.fnSrc (minifiedOutput).replace(/\$\{hash\}/g,hash),
                                          '</script>',
                                      '</bo'+'dy>',
                                      jszip_src_html,
@@ -530,7 +335,200 @@ ml(`
                           });
                       });
                   }
+       function uncompressedOutput(crypto,pako){
+        (function(){
+       const SUBTLE = typeof crypto==='object' && typeof crypto.subtle === "object" &&  crypto.subtle;
        
+       loadScript("${hash}",function(){
+           console.log(window.JSZip);
+       });
+       
+       function loadScript(hash,cb) {
+           if (loadScript.cache) {
+              if (loadScript.cache[hash]) {
+                  return;
+              }
+           } else {
+               loadScript.cache={};
+           }
+           getArchive(function(html){
+               HTML_UnescapeArrayBuffer("${hash}",html,function(jszip_src,newhtml){
+                    if (jszip_src) {
+                        
+                        compile_viascript_base64([],jszip_src,[],function(){
+                              getArchive.cache=newhtml;
+                              loadScript.cache[hash]=true;
+                              cb();
+                        });
+
+                    }
+               });
+           });
+       }
+       
+       function getArchive(cb){
+           if (getArchive.cache)return cb(getArchive.cache);
+           var xhr = new XMLHttpRequest();
+           xhr.open('GET', document.baseURI, true);
+           xhr.onreadystatechange = function () {
+               if (xhr.readyState === 4) {
+                   cb((getArchive.cache = xhr.responseText.substr(xhr.responseText.indexOf('</html>')+7)));
+               }
+           };
+           xhr.send(null);
+       }
+       
+       function compile_viascript_base64(args,src,arg_values,cb){
+           
+           const script = document.createElement("script");
+           script.onload=function(){
+               cb(undefined,script.exec.apply(undefined,arg_values) );
+           };
+           script.src = "data:text/plain;base64," + btoa([
+               'document.currentScript.exec=function('+args.join(',')+'){',
+               src,
+               '};'
+           ].join('\n'));
+           document.body.appendChild(script);
+       }
+
+       function HTML_UnescapeArrayBuffer(hash,html,cb) {
+           
+           const CB = typeof cb==='function' ? cb : function(x){return x;};
+
+           const markers = {start:"<!--ab:"+hash+"-->",end:"<!--"+hash+":ab-->"};
+           
+           let ix = html.indexOf(markers.start);
+           if (ix<0) return CB(null);
+           const before = cb?html.substr(0,ix):0;
+           html = html.substr(ix+markers.start.length);
+           ix = html.indexOf(markers.end);
+           if (ix<0) return CB(null);
+           const after = cb?html.substring(ix+markers.end.length):0;
+           html = html.substr(0,ix);
+           
+           const getNext=function(){return HTML_UnescapeTag(html,function(remain){html=remain});};
+
+           if (html.indexOf('<!--')!==0) return CB(null);
+           
+           const header = getNext().split(','),
+                 getHdrVar=()=>Number.parseInt(header.shift(),36);
+           
+           const byteLength = getHdrVar();
+           if (isNaN(byteLength)) return CB(null);
+           const splitsCount =getHdrVar();
+           if (isNaN(splitsCount)) return CB(null);
+           
+           const strs = [];
+           for (let i =0;i<splitsCount;i++) {
+               strs.push(getNext());
+           }
+           const raw_stored = strs.join('--');
+           const mode   = getHdrVar();
+           const format = getHdrVar();
+           if (mode===0 && format===0 && !SUBTLE) return raw_stored;
+           if (mode===0 && format===2 && !SUBTLE) return JSON.parse(raw_stored);
+           
+           const stored = new Uint8Array(raw_stored.split('').map((x)=>x.charCodeAt(0))).buffer;
+           const buffer = mode === 1 ? pako.inflate(stored) : stored;
+           const getFormatted = function() {
+              
+               switch (format) {
+                   case 1 : return buffer;
+                   case 2 :
+                   case 0 :
+                       const str = mode===0 ? raw_stored : encodeArrayBufferToRawString(buffer);
+                       return format === 2 ? JSON.parse(str) : str;
+               }
+           };
+           if (buffer.byteLength!==byteLength) return CB(null);
+
+           if (SUBTLE) {
+               sha1SubtleCB(buffer,function(err,checkHash){
+                     return cb(checkHash===hash?getFormatted():null,before+after); 
+               });
+           } else {
+                return cb(getFormatted(),before+after); 
+           }
+           function sha1SubtleCB(buffer,cb){ 
+                   return SUBTLE.digest("SHA-1", buffer)
+                      .then(function(dig){cb(undefined,bufferToHex(dig));})
+                        .catch(cb); 
+               
+           }
+           
+           function splitArrayBufferMaxLen (ab,maxLen) {
+               if (ab.byteLength<maxLen) return [ab];
+               
+               const result  = [ ab.slice(0,maxLen)  ];
+               let start = maxLen;
+               while (start+maxLen <ab.byteLength) {
+                   result.push( ab.slice(start,start+maxLen));
+                   start += maxLen;
+               }
+               result.push( ab.slice(start) );
+               return result;
+           }
+           
+           function encodeArrayBufferToRawString(ab) {
+               const bytesPerChunk = 1024 * 16;
+               const len = ab.byteLength;
+               const bufs = splitArrayBufferMaxLen(ab,bytesPerChunk);
+               const chunks = [];
+               while (bufs.length>0) {
+                   chunks.push(String.fromCharCode.apply(String,new Uint8Array(bufs.shift())));
+               }
+               const result = chunks.join('');
+               chunks.splice(0,chunks.length);
+               return result;
+           }
+
+           function bufferToHex(buffer) {
+               const padding = '00000000';
+               const hexCodes = [];
+               const view = new DataView(buffer);
+               if (view.byteLength===0) return '';
+               if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
+           
+               for (let i = 0; i < view.byteLength; i += 4) {
+                   // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
+                   const value = view.getUint32(i);
+                   // toString(16) will give the hex representation of the number without padding
+                   const stringValue = value.toString(16);
+                   // We use concatenation and slice for padding
+                   const paddedValue = (padding + stringValue).slice(-padding.length);
+                   hexCodes.push(
+                       paddedValue.substr(6,2)+
+                       paddedValue.substr(4,2)+
+                       paddedValue.substr(2,2)+
+                       paddedValue.substr(0,2)
+                  );
+               }
+               // Join all the hex strings into one
+               return hexCodes.join("");
+           }
+           
+           function HTML_UnescapeTag(html,cb) {
+               const starts = html.indexOf('<!--');
+               if (starts<0) return null;
+               const ends = html.indexOf('-->');
+               if (ends<starts) return null;
+               
+               const result  = html.substring(starts+4,ends);
+               const remains = html.substr(ends+3);
+               if (cb) cb(remains);
+               return result;
+           }
+           
+           
+       }
+       
+    })();
+       }
+       
+       function minifiedOutput() {
+            !function(){const n="object"==typeof crypto&&"object"==typeof crypto.subtle&&crypto.subtle;function t(n){if(t.cache)return n(t.cache);var e=new XMLHttpRequest;e.open("GET",document.baseURI,!0),e.onreadystatechange=function(){4===e.readyState&&n(t.cache=e.responseText.substr(e.responseText.indexOf("</html>")+7))},e.send(null)}!function e(r,c){if(e.cache){if(e.cache[r])return}else e.cache={};t(function(o){!function(t,e,r){const c="function"==typeof r?r:function(n){return n},o={start:"\x3c!--ab:"+t+"--\x3e",end:"\x3c!--"+t+":ab--\x3e"};let s=e.indexOf(o.start);if(s<0)return c(null);const u=r?e.substr(0,s):0;if(e=e.substr(s+o.start.length),(s=e.indexOf(o.end))<0)return c(null);const i=r?e.substring(s+o.end.length):0;e=e.substr(0,s);const f=function(){return function(n,t){const e=n.indexOf("\x3c!--");if(e<0)return null;const r=n.indexOf("--\x3e");if(r<e)return null;const c=n.substring(e+4,r),o=n.substr(r+3);t&&t(o);return c}(e,function(n){e=n})};if(0!==e.indexOf("\x3c!--"))return c(null);const a=f().split(","),l=()=>Number.parseInt(a.shift(),36),h=l();if(isNaN(h))return c(null);const b=l();if(isNaN(b))return c(null);const p=[];for(let n=0;n<b;n++)p.push(f());const d=p.join("--"),g=l(),y=l();if(0===g&&0===y&&!n)return d;if(0===g&&2===y&&!n)return JSON.parse(d);const x=new Uint8Array(d.split("").map(n=>n.charCodeAt(0))).buffer,w=1===g?pako.inflate(x):x,m=function(){switch(y){case 1:return w;case 2:case 0:const n=0===g?d:function(n){n.byteLength;const t=function(n,t){if(n.byteLength<t)return[n];const e=[n.slice(0,t)];let r=t;for(;r+t<n.byteLength;)e.push(n.slice(r,r+t)),r+=t;return e.push(n.slice(r)),e}(n,16384),e=[];for(;t.length>0;)e.push(String.fromCharCode.apply(String,new Uint8Array(t.shift())));const r=e.join("");return e.splice(0,e.length),r}(w);return 2===y?JSON.parse(n):n}};if(w.byteLength!==h)return c(null);if(!n)return r(m(),u+i);!function(t,e){n.digest("SHA-1",t).then(function(n){e(void 0,function(n){const t=[],e=new DataView(n);if(0===e.byteLength)return"";if(e.byteLength%4!=0)throw new Error("incorrent buffer length - not on 4 byte boundary");for(let n=0;n<e.byteLength;n+=4){const r=e.getUint32(n),c=r.toString(16),o=("00000000"+c).slice(-"00000000".length);t.push(o.substr(6,2)+o.substr(4,2)+o.substr(2,2)+o.substr(0,2))}return t.join("")}(n))}).catch(e)}(w,function(n,e){return r(e===t?m():null,u+i)})}("${hash}",o,function(n,o){n&&function(n,t,e,r){const c=document.createElement("script");c.onload=function(){r(void 0,c.exec.apply(void 0,e))},c.src="data:text/plain;base64,"+btoa(["document.currentScript.exec=function("+n.join(",")+"){",t,"};"].join("\n")),document.body.appendChild(c)}([],n,[],function(){t.cache=o,e.cache[r]=!0,c()})})})}("${hash}",function(){console.log(window.JSZip)})}();
+       }
      
          function runtimeClearText(dir, pako, self, importScripts) {
              return importScripts_clearText.bind(undefined, self);
