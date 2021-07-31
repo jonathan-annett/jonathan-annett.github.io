@@ -443,6 +443,20 @@ ml(`
                               .catch(cb); 
                      
                  }
+                 
+                 function splitArrayBufferMaxLen (ab,maxLen) {
+                     if (ab.byteLength<maxLen) return [ab];
+                     
+                     const result  = [ ab.slice(0,maxLen)  ];
+                     let start = maxLen;
+                     while (start+maxLen <ab.byteLength) {
+                         result.push( ab.slice(start,start+maxLen));
+                         start += maxLen;
+                     }
+                     result.push( ab.slice(start) );
+                     return result;
+                 }
+                 
                  function encodeArrayBufferToRawString(ab) {
                      const bytesPerChunk = 1024 * 16;
                      const len = ab.byteLength;
