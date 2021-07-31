@@ -34,9 +34,9 @@ ml(0,ml(1),`
     function dbLib(databaseNames,getZipObject) {
         
         const databases = {};
-        const sha1Sync  = self.sha1Lib.sync;
-        const sha1CB    = self.sha1Lib.cb;
-        const JSZip     = self.JSZip; 
+        const sha1Sync  = ml.i.sha1Lib.sync;
+        const sha1CB    = ml.i.sha1Lib.cb;
+        const JSZip     = ml.i.JSZip; 
         
         databaseNames.forEach(defineDB);
         

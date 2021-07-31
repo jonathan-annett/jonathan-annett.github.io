@@ -54,6 +54,7 @@ ml(`
     const trigger_base64_re      = /\/build\/ml\.sw\.runtime\.b64\.js$/;
     const trigger_inflateText_re = /\/build\/ml\.sw\.runtime\.inflate\.js$/;
     const trigger_text_re        = /\/build\/ml\.sw\.runtime\.text\.js$/;
+    const trigger_jszip_re       = /\/build\/ml\.sw\.runtime\.zip\.html$/;
     
     const trigger_jszip_boot_re        = /\/build\/ml\.jszip_boot\.html$/;
     
@@ -62,14 +63,23 @@ ml(`
     function mware(event, middleware) {
         
         const deflate = ml.i.pako.deflate;
+        const JSZip  = ml.i.JSZip;
         const fnSrc = middleware.fnSrc;
         const deflateOpts = {
             level: 9
         };        
         const storeBufferFunc = {
             deflate_base64 : bufferTob64,
-            clear_text     : bufferToText
+            clear_text     : bufferToText,
+            zip            : bufferToZip
         };
+        
+        const default_buildmode= trigger_base64_re.test(event.fixup_url) ? "deflate_base64" : 
+        trigger_jszip_re.test(event.fixup_url)  ? "zip" : 
+        trigger_text_re.test(event.fixup_url)   ? "clear_text" : false;
+
+        const newZip = default_buildmode === 'zip' ?  new JSZip() : false;
+        
         const getSourceTemplate = {
            deflate_base64 :function(middleware,dir_json,inflate_url,cb){
                const db = middleware.databases.cachedURLS;
@@ -101,12 +111,42 @@ ml(`
                 '})((function(dir){'+fnSrc(runtimeClearText)+'})('+dir_json+'));',
     
                ].join("\n"));
+           },
+           zip : function(middleware,dir_json,inflate_url,cb){
+               
+               newZip.generateAsync({
+                   type: "arraybuffer",
+                   compression: "DEFLATE",
+                   compressionOptions: {
+                       level: 9
+                   },
+                   platform : 'UNIX'
+               }/*,function updateCallback(metadata) {
+                     console.log("progression: " + metadata.percent.toFixed(2) + " %");
+                     if(metadata.currentFile) {
+                         console.log("current file = " + metadata.currentFile);
+                     }
+                 }*/).then(function (buffer) {
+                     
+                     
+                     const db = middleware.databases.cachedURLS;
+                     const js_zip_url = ml.c.app_root+'jszip.min.js';
+                     const inflate_url = ml.c.app_root+'pako.inflate.min.js';
+                     HTML_Wrap_JSZip(db,js_zip_url,inflate_url, buffer, function(err,html){
+                         
+                       cb(undefined,html)
+                     
+                     });
+                  
+                    
+                    
+               }).catch(cb);
            }
-            
         };
         
-        const default_buildmode= trigger_base64_re.test(event.fixup_url) ? "deflate_base64" : 
-                                 trigger_text_re.test(event.fixup_url)   ? "clear_text" : false;
+                                   
+                                 
+        
         
         if (!!default_buildmode) {
             
@@ -139,7 +179,7 @@ ml(`
                             }
                             if (err || !buffer) return middleware.response500(resolve, err || new Error("could not fetch " + url));
                             
-                            storeBufferFunc[buildmode] (buffer, function(data) {
+                            storeBufferFunc[buildmode] (url,buffer, function(data) {
                                 result[url] = data;
                                 getNextFile(buildmode,index + 1);
                             });
@@ -187,7 +227,7 @@ ml(`
                     const db = middleware.databases.cachedURLS;
                     const js_zip_url = ml.c.app_root+'jszip.min.js';
                     const inflate_url = ml.c.app_root+'pako.inflate.min.js';
-                    HTML_Wrap_JSZip(db,js_zip_url,inflate_url, function(err,html){
+                    HTML_Wrap_JSZip(db,js_zip_url,inflate_url, undefined, function(err,html){
                         
                                    
                         
@@ -235,7 +275,7 @@ ml(`
                 });
             }
             
-         function bufferTob64(arrayBuffer, cb) {
+         function bufferTob64(url,arrayBuffer, cb) {
              const compressed = deflate(arrayBuffer, deflateOpts);
              var blob = new Blob([compressed]);
      
@@ -247,9 +287,14 @@ ml(`
              reader.readAsDataURL(blob);
          }
          
+         function bufferToZip(url,arrayBuffer, cb) {
+             const file = url.replace(/^http(s*):\/\//,'');
+             newZip.file(file,arrayBuffer,{date : new Date(),createFolders: false });
+         }
+         
         
          
-         function bufferToText(arraybuffer,cb){
+         function bufferToText(url,arraybuffer,cb){
              cb(new TextDecoder().decode(arraybuffer));
          }
          
@@ -299,8 +344,40 @@ ml(`
              
          }
          
+        
+         function runtimeClearText(dir, pako, self, importScripts) {
+             return importScripts_clearText.bind(undefined, self);
+             function inflateModule(url) {
+                 if (dir[url]){
+                     return new Function(
+                         ['bound_self', 'ml', '__filename', '__dirname'],
+                         dir[url]
+                     );
+                 } else {
+                     return function(){};
+                 }
+             }
+     
+             function getScript(bound_this, url) {
+                 return inflateModule(url).bind(bound_this, bound_this, ml, url, url.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/, '/'));
+             }
+      
+             function importScripts_clearText(self, scripts) {
+                 scripts = typeof scripts === 'string' ? [scripts] : scripts;
+                 scripts.forEach(function(url) {
+                     const fn = getScript(self, ml.c.B(url));
+                     fn();
+                 });
+     
+             }
+             
+
+         }
          
-         function HTML_Wrap_JSZip(db,js_zip_url,inflate_url, cb)  {
+
+         
+         
+         function HTML_Wrap_JSZip(db,js_zip_url,inflate_url,content_zip, cb)  {
                       fetchURL(db, inflate_url, function(err, buffer) {
                           if (err) return cb (err);
                           
@@ -309,7 +386,15 @@ ml(`
                           fetchURL(db, js_zip_url, function(err, buffer) {
                               if (err) return cb (err);
                               
-                              HTML_EscapeArrayBuffer (new TextDecoder().decode(buffer),function(jszip_src_html){
+                              if (content_zip) {
+                                  HTML_EscapeArrayBuffer (content_zip,function(content_html){
+                                     step2(get_HTML_Escaped_Hash (content_html),content_html);
+                                  });
+                              } else {
+                                  step2();
+                              }
+                              function step2(content_hash,content_html){
+                                 HTML_EscapeArrayBuffer (new TextDecoder().decode(buffer),function(jszip_src_html){
                                   
                                   const hash = get_HTML_Escaped_Hash (jszip_src_html);
                                   const html = [
@@ -320,10 +405,13 @@ ml(`
                                      '<body>',
                                          '<script>',
                                              inflate_src,
-                                             middleware.fnSrc (minifiedOutput).replace(/\$\{hash\}/g,hash),
+                                             middleware.fnSrc (minifiedOutput)
+                                                 .replace(/\$\{hash\}/g,hash)
+                                                 .replace(/\$\{content_hash\}/g,content_hash|''),
                                          '</script>',
                                      '</bo'+'dy>',
                                      jszip_src_html,
+                                     !!content_hash&& !!content_html && content_html,
                                      '</html>',
                                    ].join("\n");
                                   
@@ -332,6 +420,7 @@ ml(`
                                   
                                   
                               });
+                              }
                           });
                       });
                   }
@@ -341,35 +430,75 @@ ml(`
        const directory = {
            pako:pako
        };
+       const fake_internet = {
+           
+       };
        loadScript("${hash}",function(exports){
            console.log({exports,directory});
+           mountZip(function(){
+               window.loadZipScript= function(url,cb) {
+                   
+                   window.loadZipText(function(err,text){ 
+                       if (err) return cb (err);
+                        loadScript_imp(text,cb);
+                   });
+               }
+               
+               window.loadZipText= function(url,cb) {
+                   window.loadZipText(function(err,buffer){
+                       if (err) return cb (err);
+                       cb(undefined,new TextEncoder().encode(buffer));
+                   });
+               }
+               
+               window.loadZipBuffer= function(url,cb) {
+                   if ( url in fake_internet) {
+                      fake_internet[url](function(buffer){ cb (undefined,buffer);});
+                   } else {
+                      return cb(new Error("not found"));
+                   }
+               }
+               
+               // fetch every url and return it as an map
+               // also after calling this, every request will happen synchronously
+               window.prepareZipSync = function ( urls ,cb ){
+                   if (urls === undefined) {
+                       return window.prepareZipSync(Object.keys(fake_internet),cb);
+                   } else {
+                       Promise.all(urls.map(function(url){
+                           return new Promise(function (resolve){
+                               fake_internet(resolve);
+                           });
+                       })).then(function (buffers) {
+                           const dir = {};
+                           urls.forEach(function(url,ix){
+                              dir[url]=buffers[ix];
+                           });
+                           cb (dir); 
+                       });
+                   }
+               }
+           });
        });
        
-       function loadScript(hash,cb) {
-           if (loadScript.cache) {
-              if (loadScript.cache[hash]) {
+       function loadScript_imp(source,key,cb) {
+           if (loadScript_imp.cache) {
+              if (loadScript_imp.cache[key]) {
                   return;
               }
            } else {
-               loadScript.cache={};
+               loadScript_imp.cache={};
            }
-           getArchive(function(html){
-               const initialKeys=Object.keys(window);
-               const exports={};
-               HTML_UnescapeArrayBuffer ("${hash}",html,function(jszip_src,newhtml){
-                    if (jszip_src) {
-                        
-                        compile_viascript_base64([],jszip_src,[],function(){
-                              getArchive.cache=newhtml;
-                              loadScript.cache[hash]=true;
-                              removeScriptCommentNodes(hash);
-                              fetchUpdatedKeys();
-                              cb(exports,directory);
-                        });
-                    }
-               });
-               
-               
+           
+           const initialKeys=Object.keys(window);
+           const exports={};
+           
+            compile_viascript_base64([],source,[],function(){
+                  loadScript_imp.cache[key]=true;
+                  fetchUpdatedKeys();
+                  cb(exports,directory);
+            });
+           
                function fetchUpdatedKeys() {
                    const newKeys = Object.keys(window);
                    initialKeys.forEach(function(el) {
@@ -382,7 +511,98 @@ ml(`
                        directory[key]=window[key];
                    });
                }
+           
+       }
+       
+       function loadScript(hash,cb) {
+           if (loadScript_imp.cache) {
+              if (loadScript_imp.cache[hash]) {
+                  return;
+              }
+           }
+           getArchive(function(html){
+               HTML_UnescapeArrayBuffer ("${hash}",html,function(jszip_src,newhtml){
+                    if (jszip_src) {
+                        loadScript_imp(jszip_src,hash,function(exports,directory){
+                            getArchive.cache=newhtml; 
+                            removeScriptCommentNodes(hash);
+                            cb(exports,directory);
+                        });
+                        
+                    }
+               });
            });
+       }
+       
+       function mountZip(cb) {
+          const hash = "${content_hash}";
+          if (hash==='') return ;
+          getArchive(function(html){
+              HTML_UnescapeArrayBuffer ("${hash}",html,function(zipBuffer,newhtml){
+                   if (zipBuffer) {
+                       getArchive.cache=newhtml;
+                        
+                       
+                       JSZip.loadAsync(zipBuffer).then(function (zip) {
+                           
+                           zip.folder("").forEach(function(relativePath, file){
+                               if (!file.dir) {
+                                
+                                  
+                                  if (file.name.indexOf("/")<0) {
+                                      if (file.name.charAt(0)!=='.') {
+                                          const url = "https://"+file.name; 
+                                          let data;
+                                         Object.defineProperty(
+                                          fake_internet,
+                                          url , {
+                                              get : function (cb){
+                                                  delete fake_internet[url];
+                                                  fake_internet[url] = function (cb) {
+                                                      if (data) {
+                                                          return cb(data.slice());
+                                                      }
+                                                      // the following (kluge) is to deal with
+                                                      // the improbable, but possible situation where the same
+                                                      // url is requested twice and the second request occurs before the zip
+                                                      // has extracted the contentd - wait up to 1 second for the zip to finish
+                                                      let remain = 10;
+                                                      const id = setInterval(function(){
+                                                          if (data) {
+                                                              clearInterval(id);
+                                                              cb(data.slice());
+                                                          }
+                                                          if (--remain<0) {
+                                                              clearInterval(id);
+                                                              cb ();
+                                                          }
+                                                      },100);
+                                                  };
+                                                  zip.file(file.name).async('arraybuffer').then(function(buffer){
+                                                     data=buffer; 
+                                                     cb(data.slice());
+                                                  });
+                                              },
+                                              enumerable   : true,
+                                              configurable : true
+                                          });
+                                             
+                                          
+                                          
+                                      }
+                                  }
+                                  
+                               }
+                           });
+                           
+                          
+                       
+                       }).catch(cb);
+                       
+                   }
+              });
+          });
+          
        }
        
        function getArchive(cb){
@@ -581,39 +801,9 @@ ml(`
     })();
        }
        
-       function minifiedOutput() {
+         function minifiedOutput() {
            !function(){const n="object"==typeof crypto&&"object"==typeof crypto.subtle&&crypto.subtle,t={pako:pako};function e(n){if(e.cache)return n(e.cache);var t=new XMLHttpRequest;t.open("GET",document.baseURI,!0),t.onreadystatechange=function(){4===t.readyState&&n(e.cache=t.responseText.substr(t.responseText.indexOf("</html>")+7))},t.send(null)}!function c(o,r){if(c.cache){if(c.cache[o])return}else c.cache={};e(function(i){const s=Object.keys(window),u={};!function(t,e,c){const o="function"==typeof c?c:function(n){return n},r={start:"\x3c!--ab:"+t+"--\x3e",end:"\x3c!--"+t+":ab--\x3e"};let i=e.indexOf(r.start);if(i<0)return o(null);const s=c?e.substr(0,i):0;if(e=e.substr(i+r.start.length),(i=e.indexOf(r.end))<0)return o(null);const u=c?e.substring(i+r.end.length):0;e=e.substr(0,i);const f=function(){return function(n,t){const e=n.indexOf("\x3c!--");if(e<0)return null;const c=n.indexOf("--\x3e");if(c<e)return null;const o=n.substring(e+4,c),r=n.substr(c+3);t&&t(r);return o}(e,function(n){e=n})};if(0!==e.indexOf("\x3c!--"))return o(null);const a=f().split(","),l=()=>Number.parseInt(a.shift(),36),h="\n"===e.charAt(0)?"/*"+f()+"*/":"",d=l();if(isNaN(d))return o(null);const p=l();if(isNaN(p))return o(null);const b=[];for(let n=0;n<p;n++)b.push(f());const y=b.join("--"),g=l(),x=l(),w=new Uint8Array(y.split("").map(n=>n.charCodeAt(0))).buffer,m=1===g?pako.inflate(w):w,N=1===g?function(n){n.byteLength;const t=function(n,t){if(n.byteLength<t)return[n];const e=[n.slice(0,t)];let c=t;for(;c+t<n.byteLength;)e.push(n.slice(c,c+t)),c+=t;return e.push(n.slice(c)),e}(n,16384),e=[];for(;t.length>0;)e.push(String.fromCharCode.apply(String,new Uint8Array(t.shift())));const c=e.join("");return e.splice(0,e.length),c}(m):y,O=""===h?m:new Uint8Array((h+N).split("").map(n=>n.charCodeAt(0))).buffer,j=function(){switch(x){case 1:return O;case 2:case 0:return 2===x?JSON.parse(N):h+N}};if(m.byteLength!==d)return o(null);if(!n)return c(j(),s+u);!function(t,e){n.digest("SHA-1",t).then(function(n){e(void 0,function(n){const t=[],e=new DataView(n);if(0===e.byteLength)return"";if(e.byteLength%4!=0)throw new Error("incorrent buffer length - not on 4 byte boundary");for(let n=0;n<e.byteLength;n+=4){const c=e.getUint32(n),o=c.toString(16),r=("00000000"+o).slice(-"00000000".length);t.push(r.substr(6,2)+r.substr(4,2)+r.substr(2,2)+r.substr(0,2))}return t.join("")}(n))}).catch(e)}(O,function(n,e){return c(e===t?j():null,s+u)})}("${hash}",i,function(n,i){n&&function(n,t,e,c){const o=document.createElement("script");o.onload=function(){c(void 0,o.exec.apply(void 0,e))},o.src="data:text/plain;base64,"+btoa(["document.currentScript.exec=function("+n.join(",")+"){",t,"};"].join("\n")),document.body.appendChild(o)}([],n,[],function(){e.cache=i,c.cache[o]=!0,function n(t){if(!n.cache){for(var e=[],c=[document.body];c.length>0;)for(var o=c.pop(),r=0;r<o.childNodes.length;r++){var i=o.childNodes[r];i.nodeType===Node.COMMENT_NODE?e.push(i):c.push(i)}n.cache=e}const s=n.cache.findIndex(function(n){return n.textContent==="ab:"+t});const u=n.cache.findIndex(function(n){return n.textContent===t+":ab"});if(s<0||u<0)return null;const f=n.cache.splice(s,u+1);f.forEach(function(n){n.parentNode.removeChild(n)})}(o),function(){const n=Object.keys(window);s.forEach(function(t){const e=n.indexOf(t);e>=0&&n.splice(e,1)}),s.push.apply(s,n),n.forEach(function(n){u[n]=window[n],t[n]=window[n]})}(),r(u,t)})})})}("${hash}",function(n){console.log({exports:n,directory:t})})}();
-       }
-     
-         function runtimeClearText(dir, pako, self, importScripts) {
-             return importScripts_clearText.bind(undefined, self);
-             function inflateModule(url) {
-                 if (dir[url]){
-                     return new Function(
-                         ['bound_self', 'ml', '__filename', '__dirname'],
-                         dir[url]
-                     );
-                 } else {
-                     return function(){};
-                 }
-             }
-     
-             function getScript(bound_this, url) {
-                 return inflateModule(url).bind(bound_this, bound_this, ml, url, url.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/, '/'));
-             }
-      
-             function importScripts_clearText(self, scripts) {
-                 scripts = typeof scripts === 'string' ? [scripts] : scripts;
-                 scripts.forEach(function(url) {
-                     const fn = getScript(self, ml.c.B(url));
-                     fn();
-                 });
-     
-             }
-             
-
          }
-         
          function splitArrayBufferMaxLen (ab,maxLen) {
              if (ab.byteLength<maxLen) return [ab];
              
