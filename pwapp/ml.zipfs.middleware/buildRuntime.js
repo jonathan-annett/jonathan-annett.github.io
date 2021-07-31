@@ -290,6 +290,7 @@ ml(`
          function bufferToZip(url,arrayBuffer, cb) {
              const file = url.replace(/^http(s*):\/\//,'');
              newZip.file(file,arrayBuffer,{date : new Date(),createFolders: false });
+             cb('');
          }
          
         
