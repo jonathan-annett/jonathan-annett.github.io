@@ -537,9 +537,9 @@ ml(`
                    var el = elementPath.pop();
                    for (var i = 0; i < el.childNodes.length; i++) {
                        var node = el.childNodes[i];
-                       el.isCodeComment = foundComments.length>0 && foundComments[foundComments.length-1] !== el.previousSibling;
                        if (node.nodeType === Node.COMMENT_NODE) {
-                           foundComments.push(node);
+                            node.isCodeComment = foundComments.length>0 && foundComments[foundComments.length-1] !== node.previousSibling;
+                            foundComments.push(node);
                        } else {
                            elementPath.push(node);
                        }
