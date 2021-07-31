@@ -99,7 +99,7 @@ ml(`
                    '})({exports:{}}),'+dir_json+'));'
         
                 ].join("\n"));
-               });
+               },'application/javascript');
            },
            clear_text :function(middleware,dir_json,inflate_url,cb){
                return cb([
@@ -110,7 +110,7 @@ ml(`
                      fnSrc(startupCode),
                 '})((function(dir){'+fnSrc(runtimeClearText)+'})('+dir_json+'));',
     
-               ].join("\n"));
+               ].join("\n"),'application/javascript');
            },
            zip : function(middleware,dir_json,inflate_url,cb){
                
@@ -134,7 +134,7 @@ ml(`
                      const inflate_url = ml.c.app_root+'pako.inflate.min.js';
                      HTML_Wrap_JSZip(db,js_zip_url,inflate_url, buffer, function(err,html){
                          
-                       cb(undefined,html)
+                       cb(html,'text/html');
                      
                      });
                   
@@ -198,12 +198,12 @@ ml(`
                         return getSourceTemplate[buildmode](
                             
                             middleware,json,inflate_url,
-                            function(source){
+                            function(source,contentType){
                                resolve(new Response(source, {
 
                                    status: 200,
                                    headers: new Headers({
-                                       'Content-Type': 'application/javascript',
+                                       'Content-Type':   contentType,
                                        'Content-Length': source.length
                                    })
 
