@@ -612,15 +612,12 @@ ml(`
        
        function getArchive(cb){
            if (getArchive.cache)return cb(getArchive.cache);
-           const marker = '<div class="'+'${archive_class}'+'">';
            const el=document.querySelector("div.archive"),html=el&&el.innerHTML;
            if (html) {
                el.parentNode.removeChild(el);
-               const ix = html.indexOf(marker);
-               if (ix>=0) {
-                  return cb((getArchive.cache = html.substr(ix+marker.length)));
-               }
+               return cb((getArchive.cache = html));
            } 
+           const marker = '<div class="'+'${archive_class}'+'">';
            var xhr = new XMLHttpRequest();
            xhr.open('GET', document.baseURI, true);
            xhr.onreadystatechange = function () {
