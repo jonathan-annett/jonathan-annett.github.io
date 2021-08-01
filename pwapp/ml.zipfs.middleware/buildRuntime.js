@@ -546,7 +546,7 @@ ml(`
           const hash = "${content_hash}";
           if (hash==='') return ;
           getArchive(function(html){
-              HTML_UnescapeArrayBuffer ("${hash}",html,function(zipBuffer,newhtml){
+              HTML_UnescapeArrayBuffer (hash,html,function(zipBuffer,newhtml){
                    if (zipBuffer) {
                        getArchive.cache=newhtml;
                         
