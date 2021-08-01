@@ -375,7 +375,8 @@ ml(`
                     const  {
                         get_HTML_Escaped_Hash,
                         HTML_EscapeArrayBuffer,
-                        HTML_UnescapeArrayBuffer
+                        HTML_UnescapeArrayBuffer,
+                        compareBuffers
                     } = htmlEscapeLib(
                         typeof crypto==='object' && crypto,
                         typeof crypto==='object' && typeof crypto.subtle === "object" &&  crypto.subtle,
@@ -401,10 +402,12 @@ ml(`
                                   step2();
                               }
                               function step2(content_hash,content_html){
-                                 HTML_EscapeArrayBuffer (new TextDecoder().decode(buffer),function(jszip_src_html){
+                                 HTML_EscapeArrayBuffer (buffer,function(jszip_src_html){
                                   const hash = get_HTML_Escaped_Hash (jszip_src_html);
                                   HTML_UnescapeArrayBuffer(hash,jszip_src_html,function(check){
-                                       if (check!==jszip_src_html) return cb (new Error("qc check fails"));
+                                      
+                                      if (!compareBuffers(check,buffer)) return cb (new Error("qc check fails - jszip bundling"));
+                                      
                                        const html = [
                                           '<html>',
                                           '<head>',
@@ -893,7 +896,6 @@ ml(`
          
          function htmlEscapeLib(crypto,subtle,pako) {
              
-             
              const {
                        toBuffer,
                        toString,
@@ -904,9 +906,6 @@ ml(`
                        HTML_UnescapeArrayBuffer
                    } = htmlUnescapeLib(subtle,pako);
       
-         
-           
-           
              function splitArrayBufferMaxLen (ab,maxLen) {
                  if (ab.byteLength<maxLen) return [ab];
                  
@@ -931,9 +930,7 @@ ml(`
                  chunks.splice(0,chunks.length);
                  return result;
              }
-             
 
-             
              function encodeArrayBufferToRawString(ab) {
                  const storing    = ab.slice();
                  const byteLength = storing.byteLength;
@@ -994,7 +991,24 @@ ml(`
                  }
              }
              
-             
+             function compareBuffers(buf,buf2) {
+                 const len = buf.byteLength;
+                 if (len===buf2.byteLength) {
+                     if (len > 0) {
+                         const u81 = Uint8Array(buf),u82 = Uint8Array(buf2);
+                         
+                         for (let i=0;i<len;i++) {
+                             if (u81[i]!==u82[i]) {
+                                 return false;
+                             }
+                         }
+                         
+                     }  
+                     return true;
+                 }
+                 return false;
+             }
+              
              function arrayBufferEncodingTests() {
 
              
@@ -1086,6 +1100,7 @@ ml(`
          }
              
              return {
+                 compareBuffers,
                  toBuffer,
                  toString,
                  arrayBufferTransfer,
