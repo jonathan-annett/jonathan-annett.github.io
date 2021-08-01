@@ -383,7 +383,6 @@ ml(`
                           if (err) return cb (err);
                           
                           const inflate_src =new TextDecoder().decode(buffer);
-                          const archive_class = "archive";
                           fetchURL(db, js_zip_url, function(err, buffer) {
                               if (err) return cb (err);
                               
@@ -405,19 +404,19 @@ ml(`
                                      '</head>',
                                      '<body>',
                                          
-                                         '<div class="'+archive_class+'">',
-                                        jszip_src_html,
-                                        !!content_hash&& !!content_html && content_html,
-                                        
-                                         '</div>',
-                                         '<script>',
+                                       '<script>',
                                              inflate_src,
                                              middleware.fnSrc (uncompressedOutput)
                                                  .replace(/\$\{hash\}/g,hash)
-                                                 .replace(/\$\{content_hash\}/g,content_hash||'')
-                                                 .replace(/\$\{archive_class\}/g,archive_class||''),
+                                                 .replace(/\$\{content_hash\}/g,content_hash||''),
                                          '</script>',
-                                     '<\/body>',
+                                     '</body>',
+                                     '<archive>',
+                                     jszip_src_html,
+                                     !!content_hash&& !!content_html && content_html,
+                                     
+                                      '</archive>',
+                                   
                                      '</html>',
                                    ].join("\n");
                                   
@@ -613,12 +612,12 @@ ml(`
        
        function getArchive(cb){
            if (getArchive.cache)return cb(getArchive.cache);
-           const el=document.querySelector("div.archive"),html=el&&el.innerHTML;
+           const el=document.querySelector("archive"),html=el&&el.innerHTML;
            if (html) {
                el.parentNode.removeChild(el);
                return cb((getArchive.cache = html));
            } 
-           const marker = '<div class="'+'${archive_class}'+'">';
+           const marker = '<archive>';
            var xhr = new XMLHttpRequest();
            xhr.open('GET', document.baseURI, true);
            xhr.onreadystatechange = function () {
