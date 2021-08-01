@@ -443,7 +443,8 @@ ml(`
        loadScript("${hash}",function(exports){
            console.log({exports,directory});
            window.directory=directory;
-           mountZip(function(){
+           mountZip(function(err){
+               if (err) return;
                window.loadZipScript= function(url,cb) {
                    
                    window.loadZipText(function(err,text){ 
@@ -603,6 +604,7 @@ ml(`
                                }
                            });
                            
+                           cb();
                           
                        
                        }).catch(cb);
