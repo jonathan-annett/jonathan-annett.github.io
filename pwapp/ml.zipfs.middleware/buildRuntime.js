@@ -383,7 +383,7 @@ ml(`
                           if (err) return cb (err);
                           
                           const inflate_src =new TextDecoder().decode(buffer);
-                          
+                          const archive_class = "archive";
                           fetchURL(db, js_zip_url, function(err, buffer) {
                               if (err) return cb (err);
                               
@@ -401,18 +401,22 @@ ml(`
                                   const html = [
                                      '<html>',
                                      '<head>',
-                                      
+                                      '<style>.'+archive_class+'{ display:none;}</style>',
                                      '</head>',
                                      '<body>',
                                          '<script>',
                                              inflate_src,
                                              middleware.fnSrc (uncompressedOutput)
                                                  .replace(/\$\{hash\}/g,hash)
-                                                 .replace(/\$\{content_hash\}/g,content_hash|''),
+                                                 .replace(/\$\{content_hash\}/g,content_hash||'')
+                                                 .replace(/\$\{archive_class\}/g,archive_class||''),
                                          '</script>',
+                                         '<div class="'+archive_class+'">',
+                                        jszip_src_html,
+                                        !!content_hash&& !!content_html && content_html,
+                                        
+                                         '</div>',
                                      '</bo'+'dy>',
-                                     jszip_src_html,
-                                     !!content_hash&& !!content_html && content_html,
                                      '</html>',
                                    ].join("\n");
                                   
@@ -608,11 +612,12 @@ ml(`
        
        function getArchive(cb){
            if (getArchive.cache)return cb(getArchive.cache);
+           const marker = '<div class="'+'${archive_class}'+'">';
            var xhr = new XMLHttpRequest();
            xhr.open('GET', document.baseURI, true);
            xhr.onreadystatechange = function () {
                if (xhr.readyState === 4) {
-                   cb((getArchive.cache = xhr.responseText.substr(xhr.responseText.indexOf('</html>')+7)));
+                   cb((getArchive.cache = xhr.responseText.substr(xhr.responseText.indexOf(marker)+marker.length)));
                }
            };
            xhr.send(null);
