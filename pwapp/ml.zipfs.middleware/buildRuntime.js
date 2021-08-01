@@ -631,7 +631,7 @@ ml(`
            const el=document.querySelector("archive"),html=el&&el.innerHTML;
            if (html) {
                el.parentNode.removeChild(el);
-               return cb((getArchive.cache = html));
+              // return cb((getArchive.cache = html));
            } 
            const marker = '<archive>';
            var xhr = new XMLHttpRequest();
