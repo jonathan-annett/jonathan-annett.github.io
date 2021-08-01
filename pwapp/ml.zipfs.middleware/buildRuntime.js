@@ -404,6 +404,12 @@ ml(`
                                       '<style>.'+archive_class+'{ display:none;}</style>',
                                      '</head>',
                                      '<body>',
+                                         
+                                         '<div class="'+archive_class+'">',
+                                        jszip_src_html,
+                                        !!content_hash&& !!content_html && content_html,
+                                        
+                                         '</div>',
                                          '<script>',
                                              inflate_src,
                                              middleware.fnSrc (uncompressedOutput)
@@ -411,12 +417,7 @@ ml(`
                                                  .replace(/\$\{content_hash\}/g,content_hash||'')
                                                  .replace(/\$\{archive_class\}/g,archive_class||''),
                                          '</script>',
-                                         '<div class="'+archive_class+'">',
-                                        jszip_src_html,
-                                        !!content_hash&& !!content_html && content_html,
-                                        
-                                         '</div>',
-                                     '</bo'+'dy>',
+                                     '<\/body>',
                                      '</html>',
                                    ].join("\n");
                                   
