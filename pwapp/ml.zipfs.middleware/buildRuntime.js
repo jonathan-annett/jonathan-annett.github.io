@@ -904,16 +904,34 @@ ml(`
          function arrayBufferEncodingTests() {
              const crypto=self.crypto;
              
+             
+             function getRandomValues(array) {
+                 const max_length = 1024 * 64;
+                 if (array.length< max_length) return crypto.getRandomValues(array);
+                 
+                 let offset = 0,limit=array.byteLength-max_length;
+                 while (offset<limit) {
+                     crypto.getRandomValues(new Uint8Array (array.buffer,offset,max_length));
+                     offset +=max_length;
+                 }
+                 const remain = array.byteLength-offset;
+                 if (remain>0) {
+                    crypto.getRandomValues(new Uint8Array (array.buffer,offset,remain));
+                 }
+             }
+             
              function randomRoundTrip(size) {
                   const array = new Uint8Array (size);
                   const expectedStoredSize = ((size+(size % 2)) >> 1) + 1;
-                  crypto.getRandomValues(array);
+                  getRandomValues(array);
                   const buffer = array.buffer;
                   if (buffer.byteLength !== size) throw new Error("incorrect pre encoded buffer size");
                   
                   const encoded = encodeArrayBufferToRawString(buffer);
                   
                   if (encoded.length !== expectedStoredSize) throw new Error("incorrect encoded size");
+                  
+                  
                   
                   const decoded = decodeArrayBufferFromRawString(encoded);
                   if (decoded.byteLength !== size) throw new Error("incorrect decoded size");
@@ -927,15 +945,27 @@ ml(`
              }
              
              
-             debugger;
-             randomRoundTrip(16);
-             randomRoundTrip(15);
-             randomRoundTrip(65532);
-             randomRoundTrip(65535);
-             randomRoundTrip(65536);
-             randomRoundTrip(16383);
-             randomRoundTrip(16385);
-             randomRoundTrip(16388);
+             for (let i = 0; i < 1024 ; i ++ ) {
+                 // a few small blocks less than 8 bytes, both odd even lengths
+                 randomRoundTrip(1);
+                 randomRoundTrip(4);
+                 randomRoundTrip(5);
+                 randomRoundTrip(7);
+                 
+                 // a few blocks between 1 and 8192 blocks of odd and even lengths
+                 randomRoundTrip(8);
+                 randomRoundTrip(16);
+                 randomRoundTrip(15);
+                 randomRoundTrip(65532);
+                 randomRoundTrip(65535);
+                 randomRoundTrip(65536);
+                 randomRoundTrip(16383);
+                 randomRoundTrip(16385);
+                 randomRoundTrip(16388);
+                 // random chunk between 512 bytes and 512.5kb
+                 randomRoundTrip( 512 + Math.trunc(Math.random() * 512 * 1024 ) );
+                 console.log("passed",i+1,"tests...");
+             }
              
          }
 
