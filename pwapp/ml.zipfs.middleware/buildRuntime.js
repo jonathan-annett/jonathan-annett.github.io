@@ -400,7 +400,7 @@ ml(`
                                   const html = [
                                      '<html>',
                                      '<head>',
-                                      '<style>.'+archive_class+'{ display:none;}</style>',
+                                      '<style>archive{display:none;}</style>',
                                      '</head>',
                                      '<body>',
                                          
