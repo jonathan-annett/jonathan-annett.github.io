@@ -55,8 +55,10 @@ ml(`
     const trigger_inflateText_re = /\/build\/ml\.sw\.runtime\.inflate\.js$/;
     const trigger_text_re        = /\/build\/ml\.sw\.runtime\.text\.js$/;
     const trigger_jszip_re       = /\/build\/ml\.sw\.runtime\.zip\.html$/;
+    const trigger_jszip_min_re   = /\/build\/ml\.sw\.runtime\.zip\.min\.html$/;
     
     const trigger_jszip_boot_re        = /\/build\/ml\.jszip_boot\.html$/;
+    const trigger_jszip_boot_min_re        = /\/build\/ml\.jszip_boot\.min\.html$/;
     
     
 
@@ -73,9 +75,9 @@ ml(`
             clear_text     : bufferToText,
             zip            : bufferToZip
         };
-        
+        const trigger_jszip_min = trigger_jszip_min_re.test(event.fixup_url);
         const default_buildmode= trigger_base64_re.test(event.fixup_url) ? "deflate_base64" : 
-        trigger_jszip_re.test(event.fixup_url)  ? "zip" : 
+        trigger_jszip_re.test(event.fixup_url)||trigger_jszip_min  ? "zip" : 
         trigger_text_re.test(event.fixup_url)   ? "clear_text" : false;
 
         const newZip = default_buildmode === 'zip' ?  new JSZip() : false;
@@ -132,7 +134,7 @@ ml(`
                      const db = middleware.databases.cachedURLS;
                      const js_zip_url = ml.c.app_root+'jszip.min.js';
                      const inflate_url = ml.c.app_root+'pako.inflate.min.js';
-                     HTML_Wrap_JSZip(db,js_zip_url,inflate_url, buffer, function(err,html){
+                     HTML_Wrap_JSZip(db,js_zip_url,inflate_url, buffer, trigger_jszip_min, function(err,html){
                          
                        cb(html,'text/html');
                      
@@ -220,14 +222,14 @@ ml(`
                 getNextFile(default_buildmode,0);
             });
         }
-        
-        if (trigger_jszip_boot_re.test(event.fixup_url)) {
+        const zipboot_min = trigger_jszip_boot_min_re.test(event.fixup_url);
+        if (zipboot_min||trigger_jszip_boot_re.test(event.fixup_url)) {
               return new Promise(function(resolve) {
                           
                     const db = middleware.databases.cachedURLS;
                     const js_zip_url = ml.c.app_root+'jszip.min.js';
                     const inflate_url = ml.c.app_root+'pako.inflate.min.js';
-                    HTML_Wrap_JSZip(db,js_zip_url,inflate_url, undefined, function(err,html){
+                    HTML_Wrap_JSZip(db,js_zip_url,inflate_url, undefined,zipboot_min, function(err,html){
                         
                                    
                         
@@ -378,7 +380,7 @@ ml(`
 
          
          
-         function HTML_Wrap_JSZip(db,js_zip_url,inflate_url,content_zip, cb)  {
+         function HTML_Wrap_JSZip(db,js_zip_url,inflate_url,content_zip, minified, cb)  {
                       fetchURL(db, inflate_url, function(err, buffer) {
                           if (err) return cb (err);
                           
@@ -406,7 +408,7 @@ ml(`
                                          
                                        '<script>',
                                              inflate_src,
-                                             middleware.fnSrc (uncompressedOutput)
+                                             middleware.fnSrc (minified?minifiedOutput:uncompressedOutput)
                                                  .replace(/\$\{hash\}/g,hash)
                                                  .replace(/\$\{content_hash\}/g,content_hash||''),
                                          '</script>',
