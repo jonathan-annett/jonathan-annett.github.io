@@ -557,48 +557,48 @@ ml(`
                                if (!file.dir) {
                                 
                                   
-                                  if (file.name.indexOf("/")<0) {
-                                      if (file.name.charAt(0)!=='.') {
-                                          const url = "https://"+file.name; 
-                                          let data;
-                                         Object.defineProperty(
-                                          fake_internet,
-                                          url , {
-                                              get : function (cb){
-                                                  delete fake_internet[url];
-                                                  fake_internet[url] = function (cb) {
+                               
+                                  if (file.name.charAt(0)!=='.') {
+                                      const url = "https://"+file.name; 
+                                      let data;
+                                     Object.defineProperty(
+                                      fake_internet,
+                                      url , {
+                                          get : function (cb){
+                                              delete fake_internet[url];
+                                              fake_internet[url] = function (cb) {
+                                                  if (data) {
+                                                      return cb(data.slice());
+                                                  }
+                                                  // the following (kluge) is to deal with
+                                                  // the improbable, but possible situation where the same
+                                                  // url is requested twice and the second request occurs before the zip
+                                                  // has extracted the contentd - wait up to 1 second for the zip to finish
+                                                  let remain = 10;
+                                                  const id = setInterval(function(){
                                                       if (data) {
-                                                          return cb(data.slice());
+                                                          clearInterval(id);
+                                                          cb(data.slice());
                                                       }
-                                                      // the following (kluge) is to deal with
-                                                      // the improbable, but possible situation where the same
-                                                      // url is requested twice and the second request occurs before the zip
-                                                      // has extracted the contentd - wait up to 1 second for the zip to finish
-                                                      let remain = 10;
-                                                      const id = setInterval(function(){
-                                                          if (data) {
-                                                              clearInterval(id);
-                                                              cb(data.slice());
-                                                          }
-                                                          if (--remain<0) {
-                                                              clearInterval(id);
-                                                              cb ();
-                                                          }
-                                                      },100);
-                                                  };
-                                                  zip.file(file.name).async('arraybuffer').then(function(buffer){
-                                                     data=buffer; 
-                                                     cb(data.slice());
-                                                  });
-                                              },
-                                              enumerable   : true,
-                                              configurable : true
-                                          });
-                                             
-                                          
-                                          
-                                      }
+                                                      if (--remain<0) {
+                                                          clearInterval(id);
+                                                          cb ();
+                                                      }
+                                                  },100);
+                                              };
+                                              zip.file(file.name).async('arraybuffer').then(function(buffer){
+                                                 data=buffer; 
+                                                 cb(data.slice());
+                                              });
+                                          },
+                                          enumerable   : true,
+                                          configurable : true
+                                      });
+                                         
+                                      
+                                      
                                   }
+                              
                                   
                                }
                            });
