@@ -374,7 +374,8 @@ ml(`
              
                     const  {
                         get_HTML_Escaped_Hash,
-                        HTML_EscapeArrayBuffer
+                        HTML_EscapeArrayBuffer,
+                        HTML_UnescapeArrayBuffer
                     } = htmlEscapeLib(
                         typeof crypto==='object' && crypto,
                         typeof crypto==='object' && typeof crypto.subtle === "object" &&  crypto.subtle,
@@ -389,44 +390,47 @@ ml(`
                               
                               if (content_zip) {
                                   HTML_EscapeArrayBuffer (content_zip,function(content_html){
-                                     step2(get_HTML_Escaped_Hash (content_html),content_html);
+                                      const content_hash = get_HTML_Escaped_Hash (content_html);
+                                      HTML_UnescapeArrayBuffer(content_hash,content_html,function(check){
+                                          if (check!==content_html) return cb (new Error("qc check fails"));
+                                           step2(content_hash,content_html);
+                                      });
+                                     
                                   });
                               } else {
                                   step2();
                               }
                               function step2(content_hash,content_html){
                                  HTML_EscapeArrayBuffer (new TextDecoder().decode(buffer),function(jszip_src_html){
-                                  
                                   const hash = get_HTML_Escaped_Hash (jszip_src_html);
-                                  const html = [
-                                     '<html>',
-                                     '<head>',
-                                      '<style>archive{display:none;}</style>',
-                                     '</head>',
-                                     '<body>',
-                                         
-                                       '<script>',
-                                             inflate_src,
-                                             middleware.fnSrc (htmlUnescapeLib,true),
-                                             middleware.fnSrc (minified?minifiedOutput:uncompressedOutput)
-                                                 .replace(/\$\{hash\}/g,hash)
-                                                 .replace(/\$\{content_hash\}/g,content_hash||''),
-                                         '</script>',
-                                     '</body>',
-                                     '<archive>',
-                                     jszip_src_html,
-                                     !!content_hash&& !!content_html && content_html,
-                                     
-                                      '</archive>',
-                                   
-                                     '</html>',
-                                   ].join("\n");
-                                  
-                                  
-                                  cb (undefined,html);
-                                  
-                                  
-                              });
+                                  HTML_UnescapeArrayBuffer(hash,jszip_src_html,function(check){
+                                       if (check!==jszip_src_html) return cb (new Error("qc check fails"));
+                                       const html = [
+                                          '<html>',
+                                          '<head>',
+                                           '<style>archive{display:none;}</style>',
+                                          '</head>',
+                                          '<body>',
+                                              
+                                            '<script>',
+                                                  inflate_src,
+                                                  middleware.fnSrc (htmlUnescapeLib,true),
+                                                  middleware.fnSrc (minified?minifiedOutput:uncompressedOutput)
+                                                      .replace(/\$\{hash\}/g,hash)
+                                                      .replace(/\$\{content_hash\}/g,content_hash||''),
+                                              '</script>',
+                                          '</body>',
+                                          '<archive>',
+                                          jszip_src_html,
+                                          !!content_hash&& !!content_html && content_html,
+                                          
+                                           '</archive>',
+                                        
+                                          '</html>',
+                                        ].join("\n");
+                                       cb (undefined,html);
+                                  });
+                                 });
                               }
                           });
                       });
@@ -542,9 +546,9 @@ ml(`
               }
            }
            getArchive(function(html){
-               HTML_UnescapeArrayBuffer ("${hash}",html,function(jszip_src,newhtml){
-                    if (jszip_src) {
-                        loadScript_imp(jszip_src,hash,function(exports,directory){
+               HTML_UnescapeArrayBuffer ("${hash}",html,function(source,newhtml){
+                    if (source) {
+                        loadScript_imp(source,hash,function(exports,directory){
                             getArchive.cache=newhtml; 
                             removeScriptCommentNodes(hash);
                             cb(exports,directory);
@@ -700,8 +704,7 @@ ml(`
          function minifiedOutput() {
             !function(){const n="object"==typeof crypto&&"object"==typeof crypto.subtle&&crypto.subtle,t={pako:pako},e={};function c(n,e,o){if(c.cache){if(c.cache[e])return}else c.cache={};const r=Object.keys(window),i={};!function(n,t,e,c){const o=document,r=o.body,i=o.createElement("script");i.onload=function(){c(void 0,i.exec.apply(void 0,e)),r.removeChild(i)},i.src="data:text/plain;base64,"+btoa(["document.currentScript.exec=function("+n.join(",")+"){",t,"};"].join("\n")),r.appendChild(i)}([],n,[],function(){c.cache[e]=!0,function(){const n=Object.keys(window);r.forEach(function(t){const e=n.indexOf(t);e>=0&&n.splice(e,1)}),r.push.apply(r,n),n.forEach(function(n){i[n]=window[n],t[n]=window[n]})}(),o(i,t)})}function o(n){if(o.cache)return n(o.cache);const t=document.querySelector("archive"),e=t&&t.innerHTML;if(e)return t.parentNode.removeChild(t),n(o.cache=e);var c=new XMLHttpRequest;c.open("GET",document.baseURI,!0),c.onreadystatechange=function(){4===c.readyState&&n(o.cache=c.responseText.substr(c.responseText.indexOf("<archive>")+"<archive>".length))},c.send(null)}function r(t,e,c){const o="function"==typeof c?c:function(n){return n},r={start:"\x3c!--ab:"+t+"--\x3e",end:"\x3c!--"+t+":ab--\x3e"};let i=e.indexOf(r.start);if(i<0)return o(null);const u=c?e.substr(0,i):0;if((i=(e=e.substr(i+r.start.length)).indexOf(r.end))<0)return o(null);const f=c?e.substring(i+r.end.length):0,s=function(){return function(n,t){const e=n.indexOf("\x3c!--");if(e<0)return null;const c=n.indexOf("--\x3e");if(c<e)return null;const o=n.substring(e+4,c),r=n.substr(c+3);t&&t(r);return o}(e,function(n){e=n})};if(0!==(e=e.substr(0,i)).indexOf("\x3c!--"))return o(null);const a=s().split(","),l=()=>Number.parseInt(a.shift(),36),h="\n"===e.charAt(0)?"/*"+s()+"*/":"",d=l();if(isNaN(d))return o(null);const p=l();if(isNaN(p))return o(null);const b=[];for(let n=0;n<p;n++)b.push(s());const y=b.join("--"),w=l(),g=l(),x=new Uint8Array(y.split("").map(n=>n.charCodeAt(0))).buffer,m=1===w?pako.inflate(x):x,v=1===w?function(n){n.byteLength;const t=function(n,t){if(n.byteLength<t)return[n];const e=[n.slice(0,t)];let c=t;for(;c+t<n.byteLength;)e.push(n.slice(c,c+t)),c+=t;return e.push(n.slice(c)),e}(n,16384),e=[];for(;t.length>0;)e.push(String.fromCharCode.apply(String,new Uint8Array(t.shift())));const c=e.join("");return e.splice(0,e.length),c}(m):y,O=""===h?m:new Uint8Array((h+v).split("").map(n=>n.charCodeAt(0))).buffer,N=function(){switch(g){case 1:return O;case 2:case 0:return 2===g?JSON.parse(v):h+v}};if(m.byteLength!==d)return o(null);if(!n)return c(N(),u+f);!function(t,e){n.digest("SHA-1",t).then(function(n){e(void 0,function(n){const t=[],e=new DataView(n);if(0===e.byteLength)return"";if(e.byteLength%4!=0)throw new Error("incorrent buffer length - not on 4 byte boundary");for(let n=0;n<e.byteLength;n+=4){const c=e.getUint32(n),o=c.toString(16),r=("00000000"+o).slice(-"00000000".length);t.push(r.substr(6,2)+r.substr(4,2)+r.substr(2,2)+r.substr(0,2))}return t.join("")}(n))}).catch(e)}(O,function(n,e){return c(e===t?N():null,u+f)})}!function(n,t){if(c.cache&&c.cache[n])return;o(function(e){r("${hash}",e,function(e,r){e&&c(e,n,function(e,c){o.cache=r,function n(t){if(!n.cache){for(var e=[],c=[document.body];c.length>0;)for(var o=c.pop(),r=0;r<o.childNodes.length;r++){var i=o.childNodes[r];i.nodeType===Node.COMMENT_NODE?e.push(i):c.push(i)}n.cache=e}const u=n.cache.findIndex(function(n){return n.textContent==="ab:"+t});const f=n.cache.findIndex(function(n){return n.textContent===t+":ab"});if(u<0||f<0)return null;const s=n.cache.splice(u,f+1);s.forEach(function(n){n.parentNode.removeChild(n)})}(n),t(e,c)})})})}("${hash}",function(n){console.log({exports:n,directory:t}),window.directory=t,function(n){const t="${content_hash}";0;o(function(c){r(t,c,function(t,c){t&&(o.cache=c,JSZip.loadAsync(t).then(function(t){t.folder("").forEach(function(n,c){if(!c.dir&&"."!==c.name.charAt(0)){const n="https://"+c.name;let o;Object.defineProperty(e,n,{get:function(r){delete e[n],e[n]=function(n){if(o)return n(o.slice());let t=10;const e=setInterval(function(){o&&(clearInterval(e),n(o.slice())),--t<0&&(clearInterval(e),n())},100)},t.file(c.name).async("arraybuffer").then(function(n){r((o=n).slice())})},enumerable:!0,configurable:!0})}}),n()}).catch(n))})})}(function(n){n||(window.loadZipScript=function(n,t){window.loadZipText(function(n,e){if(n)return t(n);c(e,t)})},window.loadZipText=function(n,t){window.loadZipBuffer(function(n,e){if(n)return t(n);t(void 0,(new TextEncoder).encode(e))})},window.loadZipBuffer=function(n,t){if(!(n in e))return t(new Error("not found"));e[n](function(n){t(void 0,n)})},window.prepareZipSync=function(n,t){if(void 0===n)return window.prepareZipSync(Object.keys(e),t);Promise.all(n.map(function(n){return new Promise(function(t){e[n](t)})})).then(function(e){const c={};n.forEach(function(n,t){c[n]=e[t]}),t(c)})})})})}();
          }
-         
-         
+
          function htmlUnescapeLib(subtle,pako) {
          
              function toBuffer(x){
@@ -813,12 +816,11 @@ ml(`
                      strs.push(getNext());
                  }
                  const raw_stored = strs.join('--');
-                 const mode   = getHdrVar();
                  const format = getHdrVar();
                     
                  const stored       = decodeArrayBufferFromRawString(raw_stored);
-                 const buffer       = mode    === 1  ? pako.inflate(stored) : stored;
-                 const bufferText   = mode    === 1  ? toString( buffer ) : toString( decodeArrayBufferFromRawString(raw_stored) ) ; 
+                 const buffer       = pako.inflate(stored) ;
+                 const bufferText   = toString( buffer )  ; 
                  const bufferToHash = comment === '' ? buffer : toBuffer(comment+bufferText);
                  
                  const getFormatted = function() {
@@ -981,21 +983,13 @@ ml(`
                   
                    
                    const deflateHtml =   markers.start + 
-                                         HTML_EscapeComment([to_store.byteLength||to_store.length,deflate_splits.length,1,format].map(function(x){return x.toString(36);}).join(','))+
+                                         HTML_EscapeComment([to_store.byteLength||to_store.length,deflate_splits.length,format].map(function(x){return x.toString(36);}).join(','))+
                                          (comment ? '\n'+HTML_EscapeComment(comment)+'\n' : '')+
                                          HTML_EscapeComment(deflate_splits)+
                                          markers.end;
     
-                   const clean_str     = encodeArrayBufferToRawString(to_hash);
-                   const clean_splits  = clean_str.split (/\-\-/g);         
-                             
-                   const cleanHtml =   markers.start + 
-                                       HTML_EscapeComment([to_hash.byteLength,clean_splits.length,0,format].map(function(x){return x.toString(36);}).join(','))+
-                                       HTML_EscapeComment(clean_splits)+
-                                       markers.end;
-                                       
-                                       
-                    return cleanHtml.length < deflateHtml.length ? cleanHtml : deflateHtml;
+
+                    return deflateHtml;
     
                  }
              }
