@@ -407,7 +407,7 @@ ml(`
                                          
                                        '<script>',
                                              inflate_src,
-                                             middleware.fnSrc (htmlEscapLib,true),
+                                             middleware.fnSrc (htmlEscapeLib,true),
                                              middleware.fnSrc (minified?minifiedOutput:uncompressedOutput)
                                                  .replace(/\$\{hash\}/g,hash)
                                                  .replace(/\$\{content_hash\}/g,content_hash||''),
