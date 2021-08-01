@@ -548,11 +548,10 @@ ml(`
                   return;
               }
            }
-           getArchive(function(html){
-               HTML_UnescapeArrayBuffer ("${hash}",html,function(source,newhtml){
+           getArchive(function(htmlBuffer){
+               HTML_UnescapeArrayBuffer ("${hash}",htmlBuffer,function(source,newhtml){
                     if (source) {
                         loadScript_imp(source,hash,function(exports,directory){
-                            getArchive.cache=newhtml; 
                             removeScriptCommentNodes(hash);
                             cb(exports,directory);
                         });
@@ -565,11 +564,10 @@ ml(`
        function mountZip(cb) {
           const hash = "${content_hash}";
           if (hash==='') return ;
-          getArchive(function(html){
-              HTML_UnescapeArrayBuffer (hash,html,function(zipBuffer,newhtml){
+          getArchive(function(htmlBuffer){
+              HTML_UnescapeArrayBuffer (hash,htmlBuffer,function(zipBuffer,newhtml){
                    if (zipBuffer) {
-                       getArchive.cache=newhtml;
-                        
+
                        
                        JSZip.loadAsync(zipBuffer).then(function (zip) {
                            
@@ -636,18 +634,12 @@ ml(`
        
        function getArchive(cb){
            if (getArchive.cache)return cb(getArchive.cache);
-           const el=document.querySelector("archive"),html=el&&el.innerHTML;
-           if (html) {
-               el.parentNode.removeChild(el);
-              // return cb((getArchive.cache = html));
-           } 
-           const marker = '<archive>';
            var xhr = new XMLHttpRequest();
            xhr.responseType = 'arraybuffer'
            xhr.open('GET', document.baseURI, true);
            xhr.onreadystatechange = function () {
                if (xhr.readyState === 4) {
-                   cb((getArchive.cache = toString(xhr.response)));
+                   cb((getArchive.cache = xhr.response));
                }
            };
            xhr.send(null);
