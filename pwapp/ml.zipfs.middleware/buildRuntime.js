@@ -995,7 +995,7 @@ ml(`
                  const len = buf.byteLength;
                  if (len===buf2.byteLength) {
                      if (len > 0) {
-                         const u81 = Uint8Array(buf),u82 = Uint8Array(buf2);
+                         const u81 = new Uint8Array(buf),u82 = new Uint8Array(buf2);
                          
                          for (let i=0;i<len;i++) {
                              if (u81[i]!==u82[i]) {
