@@ -435,6 +435,7 @@ ml(`
        function uncompressedOutput(crypto,pako){
         (function(){
        const  {
+           toString,
            get_HTML_Escaped_Hash,
            HTML_EscapeArrayBuffer,
            HTML_UnescapeArrayBuffer,
@@ -635,10 +636,11 @@ ml(`
            } 
            const marker = '<archive>';
            var xhr = new XMLHttpRequest();
+           xhr.responseType = 'arraybuffer'
            xhr.open('GET', document.baseURI, true);
            xhr.onreadystatechange = function () {
                if (xhr.readyState === 4) {
-                   cb((getArchive.cache = xhr.responseText.substr(xhr.responseText.indexOf(marker)+marker.length)));
+                   cb((getArchive.cache = toString(xhr.response)));
                }
            };
            xhr.send(null);
