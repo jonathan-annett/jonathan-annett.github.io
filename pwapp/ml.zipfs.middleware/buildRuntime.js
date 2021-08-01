@@ -568,7 +568,7 @@ ml(`
                                      Object.defineProperty(
                                       fake_internet,
                                       url , {
-                                          get : function (cb){
+                                          get : function(){return function (cb){
                                               delete fake_internet[url];
                                               fake_internet[url] = function (cb) {
                                                   if (data) {
@@ -594,7 +594,7 @@ ml(`
                                                  data=buffer; 
                                                  cb(data.slice());
                                               });
-                                          },
+                                          };},
                                           enumerable   : true,
                                           configurable : true
                                       });
