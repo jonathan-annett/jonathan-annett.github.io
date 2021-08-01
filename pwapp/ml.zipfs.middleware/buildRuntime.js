@@ -145,11 +145,7 @@ ml(`
                }).catch(cb);
            }
         };
-        
-                                   
-                                 
-        
-        
+
         if (!!default_buildmode) {
             
             return new Promise(function(resolve) {
@@ -294,9 +290,7 @@ ml(`
              newZip.file(file,arrayBuffer,{date : new Date(),createFolders: false });
              cb('');
          }
-         
-        
-         
+
          function bufferToText(url,arraybuffer,cb){
              cb(new TextDecoder().decode(arraybuffer));
          }
@@ -346,8 +340,7 @@ ml(`
              
              
          }
-         
-        
+
          function runtimeClearText(dir, pako, self, importScripts) {
              return importScripts_clearText.bind(undefined, self);
              function inflateModule(url) {
@@ -376,11 +369,17 @@ ml(`
              
 
          }
-         
 
-         
-         
          function HTML_Wrap_JSZip(db,js_zip_url,inflate_url,content_zip, minified, cb)  {
+             
+                    const  {
+                        get_HTML_Escaped_Hash,
+                        HTML_EscapeArrayBuffer
+                    } = htmlEscapeLib(
+                        typeof crypto==='object' && crypto,
+                        typeof crypto==='object' && typeof crypto.subtle === "object" &&  crypto.subtle,
+                        ml.i.pako);
+                    
                       fetchURL(db, inflate_url, function(err, buffer) {
                           if (err) return cb (err);
                           
@@ -408,6 +407,7 @@ ml(`
                                          
                                        '<script>',
                                              inflate_src,
+                                             middleware.fnSrc (htmlEscapLib,true),
                                              middleware.fnSrc (minified?minifiedOutput:uncompressedOutput)
                                                  .replace(/\$\{hash\}/g,hash)
                                                  .replace(/\$\{content_hash\}/g,content_hash||''),
@@ -431,9 +431,17 @@ ml(`
                           });
                       });
                   }
+                  
        function uncompressedOutput(crypto,pako){
         (function(){
-       const SUBTLE = typeof crypto==='object' && typeof crypto.subtle === "object" &&  crypto.subtle;
+       const  {
+           get_HTML_Escaped_Hash,
+           HTML_EscapeArrayBuffer,
+           HTML_UnescapeArrayBuffer,
+           decodeArrayBufferFromRawString,
+           encodeArrayBufferToRawString
+       } = htmlUnescapeLib(typeof crypto==='object'&&crypto.subtle,pako) ;
+       
        const directory = {
            pako:pako
        };
@@ -652,205 +660,6 @@ ml(`
            bdy.appendChild(script);
        }
        
-       function toBuffer(x){
-          if (typeof x === 'string') {
-              return new TextDecoder().decode(x);
-          }  
-       }
-        
-       function toString(x){
-           if (typeof x !== 'string') {
-               return new TextEncoder().encode(x);
-           }  
-       }
-     
-       
-       function arrayBufferTransfer(oldBuffer, newByteLength) {
-           const 
-           srcArray  = new Uint8Array(oldBuffer),
-           destArray = new Uint8Array(newByteLength),
-           copylen = Math.min(srcArray.buffer.byteLength, destArray.buffer.byteLength),
-           floatArrayLength   = Math.trunc(copylen / 8),
-           floatArraySource   = new Float64Array(srcArray.buffer,0,floatArrayLength),
-           floarArrayDest     = new Float64Array(destArray.buffer,0,floatArrayLength);
-           
-           floarArrayDest.set(floatArraySource);
-               
-           let bytesCopied = floatArrayLength * 8;
-           
-       
-           // slowpoke copy up to 7 bytes.
-           while (bytesCopied < newByteLength) {
-               destArray[bytesCopied]=srcArray[bytesCopied];
-               bytesCopied++;
-           }
-           
-         
-           return destArray.buffer;
-       }
-       function splitArrayBufferMaxLen (ab,maxLen) {
-           if (ab.byteLength<maxLen) return [ab];
-           
-           const result  = [ ab.slice(0,maxLen)  ];
-           let start = maxLen;
-           while (start+maxLen <ab.byteLength) {
-               result.push( ab.slice(start,start+maxLen));
-               start += maxLen;
-           }
-           result.push( ab.slice(start) );
-           return result;
-       }
-       
-       function encodeUint16ArrayToRawString(ui16) {
-           const bytesPerChunk = 1024 * 16;
-           const bufs = splitArrayBufferMaxLen(ui16,bytesPerChunk);
-           const chunks = [];
-           while (bufs.length>0) {
-               chunks.push(String.fromCharCode.apply(String,new Uint16Array(bufs.shift())));
-           }
-           const result = chunks.join('');
-           chunks.splice(0,chunks.length);
-           return result;
-       }
-       
-       function decodeUint16ArrayFromRawString(str) {
-           return new Uint16Array(str.split('').map((x)=>x.charCodeAt(0)));
-       }
-       
-       
-       function encodeArrayBufferToRawString(ab) {
-           const storing    = ab.slice();
-           const byteLength = storing.byteLength;
-           const oddEven    = byteLength % 2;
-           const storedByteLength = oddEven === 0 ? byteLength + 2 : byteLength + 3;
-           
-           const storage = arrayBufferTransfer(storing, storedByteLength);
-           const storageView = new Uint16Array(storage);
-           storageView[storageView.length-1]=oddEven;
-           return encodeUint16ArrayToRawString(storageView);
-       }
-
-       function decodeArrayBufferFromRawString (str) {
-           const ui16    = decodeUint16ArrayFromRawString(str);
-           const oddEven = ui16[ui16.length-1];
-           if (oddEven<2) {
-              const storedByteLength = ( (ui16.length-1) * 2 ) - oddEven;
-              return arrayBufferTransfer(ui16.buffer,storedByteLength);
-           }
-       }
-       
-       function HTML_UnescapeTag(html,cb) {
-           const starts = html.indexOf('<!-\-');
-           if (starts<0) return null;
-           const ends = html.indexOf('-\->');
-           if (ends<starts) return null;
-           
-           const result  = html.substring(starts+4,ends);
-           const remains = html.substr(ends+3);
-           if (cb) cb(remains);
-           return result;
-       }
-       
-       
-       function HTML_UnescapeArrayBuffer(hash,html,cb) {
-           
-           const CB = typeof cb==='function' ? cb : function(x){return x;};
-
-           const markers = {start:'<!-\-ab:'+hash+'-\->',end:'<!-\-'+hash+':ab-\->'};
-           
-           let ix = html.indexOf(markers.start);
-           if (ix<0) return CB(null);
-           const before = cb?html.substr(0,ix):0;
-           html = html.substr(ix+markers.start.length);
-           ix = html.indexOf(markers.end);
-           if (ix<0) return CB(null);
-           const after = cb?html.substring(ix+markers.end.length):0;
-           html = html.substr(0,ix);
-           
-           const getNext=function(){return HTML_UnescapeTag(html,function(remain){html=remain});};
-
-           if (html.indexOf('<!-\-')!==0) return CB(null);
-           
-           const header = getNext().split(','),
-                 getHdrVar=()=>Number.parseInt(header.shift(),36);
-                 
-           const comment = html.charAt(0)==='\n' ?  '/*'+getNext()+'*/' : '';
-           
-           const byteLength = getHdrVar();
-           if (isNaN(byteLength)) return CB(null);
-           const splitsCount =getHdrVar();
-           if (isNaN(splitsCount)) return CB(null);
-           
-           const strs = [];
-           for (let i =0;i<splitsCount;i++) {
-               strs.push(getNext());
-           }
-           const raw_stored = strs.join('--');
-           const mode   = getHdrVar();
-           const format = getHdrVar();
-              
-           const stored       = decodeArrayBufferFromRawString(raw_stored);
-           const buffer       = mode    === 1  ? pako.inflate(stored) : stored;
-           const bufferText   = mode    === 1  ? encodeArrayBufferToRawString(buffer) : raw_stored ; 
-           const bufferToHash = comment === '' ? buffer : toBuffer(comment+bufferText);
-           
-           const getFormatted = function() {
-              
-               switch (format) {
-                   case 1 : return bufferToHash;
-                   case 2 :
-                   case 0 :
-                        
-                       return format === 2 ? JSON.parse(bufferText) : comment+bufferText;
-               }
-           };
-           if (buffer.byteLength!==byteLength) return CB(null);
-
-           if (SUBTLE) {     
-               sha1SubtleCB( bufferToHash ,function(err,checkHash){
-                     return cb(checkHash===hash?getFormatted():null,before+after); 
-               });
-           } else {
-                return cb(getFormatted(),before+after); 
-           }
-           function sha1SubtleCB(buffer,cb){ 
-                   return SUBTLE.digest("SHA-1", buffer)
-                      .then(function(dig){cb(undefined,bufferToHex(dig));})
-                        .catch(cb); 
-               
-           }
-
-           function bufferToHex(buffer) {
-               const padding = '00000000';
-               const hexCodes = [];
-               const view = new DataView(buffer);
-               if (view.byteLength===0) return '';
-               if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
-           
-               for (let i = 0; i < view.byteLength; i += 4) {
-                   // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-                   const value = view.getUint32(i);
-                   // toString(16) will give the hex representation of the number without padding
-                   const stringValue = value.toString(16);
-                   // We use concatenation and slice for padding
-                   const paddedValue = (padding + stringValue).slice(-padding.length);
-                   hexCodes.push(
-                       paddedValue.substr(6,2)+
-                       paddedValue.substr(4,2)+
-                       paddedValue.substr(2,2)+
-                       paddedValue.substr(0,2)
-                  );
-               }
-               // Join all the hex strings into one
-               return hexCodes.join("");
-           }
-           
-           
-           
-           
-       }
-       
-       
        function removeScriptCommentNodes(hash) {
             if (!removeScriptCommentNodes.cache) {
                var foundComments = [];
@@ -890,276 +699,308 @@ ml(`
             !function(){const n="object"==typeof crypto&&"object"==typeof crypto.subtle&&crypto.subtle,t={pako:pako},e={};function c(n,e,o){if(c.cache){if(c.cache[e])return}else c.cache={};const r=Object.keys(window),i={};!function(n,t,e,c){const o=document,r=o.body,i=o.createElement("script");i.onload=function(){c(void 0,i.exec.apply(void 0,e)),r.removeChild(i)},i.src="data:text/plain;base64,"+btoa(["document.currentScript.exec=function("+n.join(",")+"){",t,"};"].join("\n")),r.appendChild(i)}([],n,[],function(){c.cache[e]=!0,function(){const n=Object.keys(window);r.forEach(function(t){const e=n.indexOf(t);e>=0&&n.splice(e,1)}),r.push.apply(r,n),n.forEach(function(n){i[n]=window[n],t[n]=window[n]})}(),o(i,t)})}function o(n){if(o.cache)return n(o.cache);const t=document.querySelector("archive"),e=t&&t.innerHTML;if(e)return t.parentNode.removeChild(t),n(o.cache=e);var c=new XMLHttpRequest;c.open("GET",document.baseURI,!0),c.onreadystatechange=function(){4===c.readyState&&n(o.cache=c.responseText.substr(c.responseText.indexOf("<archive>")+"<archive>".length))},c.send(null)}function r(t,e,c){const o="function"==typeof c?c:function(n){return n},r={start:"\x3c!--ab:"+t+"--\x3e",end:"\x3c!--"+t+":ab--\x3e"};let i=e.indexOf(r.start);if(i<0)return o(null);const u=c?e.substr(0,i):0;if((i=(e=e.substr(i+r.start.length)).indexOf(r.end))<0)return o(null);const f=c?e.substring(i+r.end.length):0,s=function(){return function(n,t){const e=n.indexOf("\x3c!--");if(e<0)return null;const c=n.indexOf("--\x3e");if(c<e)return null;const o=n.substring(e+4,c),r=n.substr(c+3);t&&t(r);return o}(e,function(n){e=n})};if(0!==(e=e.substr(0,i)).indexOf("\x3c!--"))return o(null);const a=s().split(","),l=()=>Number.parseInt(a.shift(),36),h="\n"===e.charAt(0)?"/*"+s()+"*/":"",d=l();if(isNaN(d))return o(null);const p=l();if(isNaN(p))return o(null);const b=[];for(let n=0;n<p;n++)b.push(s());const y=b.join("--"),w=l(),g=l(),x=new Uint8Array(y.split("").map(n=>n.charCodeAt(0))).buffer,m=1===w?pako.inflate(x):x,v=1===w?function(n){n.byteLength;const t=function(n,t){if(n.byteLength<t)return[n];const e=[n.slice(0,t)];let c=t;for(;c+t<n.byteLength;)e.push(n.slice(c,c+t)),c+=t;return e.push(n.slice(c)),e}(n,16384),e=[];for(;t.length>0;)e.push(String.fromCharCode.apply(String,new Uint8Array(t.shift())));const c=e.join("");return e.splice(0,e.length),c}(m):y,O=""===h?m:new Uint8Array((h+v).split("").map(n=>n.charCodeAt(0))).buffer,N=function(){switch(g){case 1:return O;case 2:case 0:return 2===g?JSON.parse(v):h+v}};if(m.byteLength!==d)return o(null);if(!n)return c(N(),u+f);!function(t,e){n.digest("SHA-1",t).then(function(n){e(void 0,function(n){const t=[],e=new DataView(n);if(0===e.byteLength)return"";if(e.byteLength%4!=0)throw new Error("incorrent buffer length - not on 4 byte boundary");for(let n=0;n<e.byteLength;n+=4){const c=e.getUint32(n),o=c.toString(16),r=("00000000"+o).slice(-"00000000".length);t.push(r.substr(6,2)+r.substr(4,2)+r.substr(2,2)+r.substr(0,2))}return t.join("")}(n))}).catch(e)}(O,function(n,e){return c(e===t?N():null,u+f)})}!function(n,t){if(c.cache&&c.cache[n])return;o(function(e){r("${hash}",e,function(e,r){e&&c(e,n,function(e,c){o.cache=r,function n(t){if(!n.cache){for(var e=[],c=[document.body];c.length>0;)for(var o=c.pop(),r=0;r<o.childNodes.length;r++){var i=o.childNodes[r];i.nodeType===Node.COMMENT_NODE?e.push(i):c.push(i)}n.cache=e}const u=n.cache.findIndex(function(n){return n.textContent==="ab:"+t});const f=n.cache.findIndex(function(n){return n.textContent===t+":ab"});if(u<0||f<0)return null;const s=n.cache.splice(u,f+1);s.forEach(function(n){n.parentNode.removeChild(n)})}(n),t(e,c)})})})}("${hash}",function(n){console.log({exports:n,directory:t}),window.directory=t,function(n){const t="${content_hash}";0;o(function(c){r(t,c,function(t,c){t&&(o.cache=c,JSZip.loadAsync(t).then(function(t){t.folder("").forEach(function(n,c){if(!c.dir&&"."!==c.name.charAt(0)){const n="https://"+c.name;let o;Object.defineProperty(e,n,{get:function(r){delete e[n],e[n]=function(n){if(o)return n(o.slice());let t=10;const e=setInterval(function(){o&&(clearInterval(e),n(o.slice())),--t<0&&(clearInterval(e),n())},100)},t.file(c.name).async("arraybuffer").then(function(n){r((o=n).slice())})},enumerable:!0,configurable:!0})}}),n()}).catch(n))})})}(function(n){n||(window.loadZipScript=function(n,t){window.loadZipText(function(n,e){if(n)return t(n);c(e,t)})},window.loadZipText=function(n,t){window.loadZipBuffer(function(n,e){if(n)return t(n);t(void 0,(new TextEncoder).encode(e))})},window.loadZipBuffer=function(n,t){if(!(n in e))return t(new Error("not found"));e[n](function(n){t(void 0,n)})},window.prepareZipSync=function(n,t){if(void 0===n)return window.prepareZipSync(Object.keys(e),t);Promise.all(n.map(function(n){return new Promise(function(t){e[n](t)})})).then(function(e){const c={};n.forEach(function(n,t){c[n]=e[t]}),t(c)})})})})}();
          }
          
-         function toBuffer(x){
-            if (typeof x === 'string') {
-                return new TextEncoder().encode(x); 
-            } else {
-                return x;
-            } 
-         }
-          
-         function toString(x){
-             if (typeof x !== 'string') {
-                 return new TextDecoder().decode(x);
-             }  else {
-                 return x;
+         
+         function htmlUnescapeLib(subtle,pako) {
+         
+             function toBuffer(x){
+                if (typeof x === 'string') {
+                    return new TextEncoder().encode(x); 
+                } else {
+                    return x;
+                } 
              }
-         }
-       
-         function arrayBufferTransfer(oldBuffer, newByteLength) {
-             const 
-             srcArray  = new Uint8Array(oldBuffer),
-             destArray = new Uint8Array(newByteLength),
-             copylen = Math.min(srcArray.buffer.byteLength, destArray.buffer.byteLength),
-             floatArrayLength   = Math.trunc(copylen / 8),
-             floatArraySource   = new Float64Array(srcArray.buffer,0,floatArrayLength),
-             floarArrayDest     = new Float64Array(destArray.buffer,0,floatArrayLength);
-             
-             floarArrayDest.set(floatArraySource);
-                 
-             let bytesCopied = floatArrayLength * 8;
-             
-         
-             // slowpoke copy up to 7 bytes.
-             while (bytesCopied < newByteLength) {
-                 destArray[bytesCopied]=srcArray[bytesCopied];
-                 bytesCopied++;
-             }
-             
-           
-             return destArray.buffer;
-         }
-         function splitArrayBufferMaxLen (ab,maxLen) {
-             if (ab.byteLength<maxLen) return [ab];
-             
-             const result  = [ ab.slice(0,maxLen)  ];
-             let start = maxLen;
-             while (start+maxLen <ab.byteLength) {
-                 result.push( ab.slice(start,start+maxLen));
-                 start += maxLen;
-             }
-             result.push( ab.slice(start) );
-             return result;
-         }
-         
-         function encodeUint16ArrayToRawString(ui16) {
-             const bytesPerChunk = 1024 * 16;
-             const bufs = splitArrayBufferMaxLen(ui16,bytesPerChunk);
-             const chunks = [];
-             while (bufs.length>0) {
-                 chunks.push(String.fromCharCode.apply(String,new Uint16Array(bufs.shift())));
-             }
-             const result = chunks.join('');
-             chunks.splice(0,chunks.length);
-             return result;
-         }
-         
-         function decodeUint16ArrayFromRawString(str) {
-             return new Uint16Array(str.split('').map((x)=>x.charCodeAt(0)));
-         }
-         
-         
-         function encodeArrayBufferToRawString(ab) {
-             const storing    = ab.slice();
-             const byteLength = storing.byteLength;
-             const oddEven    = byteLength % 2;
-             const storedByteLength = oddEven === 0 ? byteLength + 2 : byteLength + 3;
-             
-             const storage = arrayBufferTransfer(storing, storedByteLength);
-             const storageView = new Uint16Array(storage);
-             storageView[storageView.length-1]=oddEven;
-             return encodeUint16ArrayToRawString(storageView);
-         }
-
-         function decodeArrayBufferFromRawString (str) {
-             const ui16    = decodeUint16ArrayFromRawString(str);
-             const oddEven = ui16[ui16.length-1];
-             if (oddEven<2) {
-                const storedByteLength = ( (ui16.length-1) * 2 ) - oddEven;
-                return arrayBufferTransfer(ui16.buffer,storedByteLength);
-             }
-         }
-         
-         function HTML_EscapeComment(comment) {
-            return Array.isArray(comment) ? HTML_EscapeComment(comment.join('-\-><!-\-'))  : '<!-\-'+comment+'-\->';
-         }
-         
-         function HTML_EscapeTags(hash) {
-             return {
-                start:HTML_EscapeComment('ab:'+hash),
-                end:HTML_EscapeComment(hash+':ab')
-             };
-         }
-         
-         function HTML_UnescapeTag(html,cb) {
-             const starts = html.indexOf('<!-\-');
-             if (starts<0) return null;
-             const ends = html.indexOf('-\->');
-             if (ends<starts) return null;
-             
-             const result  = html.substring(starts+4,ends);
-             const remains = html.substr(ends+3);
-             if (cb) cb(remains);
-             return result;
-         }
-         
-         function get_HTML_Escaped_Hash(html) {
-             let hash,update=function(x){ html = x;  };
-             while (!hash && html.length>0) {
-                 hash = HTML_UnescapeTag(html,update) ;
-                 if (hash.indexOf('ab:')===0) {
-                     return hash.substr(3);
-                 }
-             }
-         }
-         
-         function HTML_EscapeArrayBuffer(ab,cb){
-             const ab_trimmed    = typeof ab==='string' ? ab.trim() : false;
-             const comment       = typeof ab==='string' && ab_trimmed.indexOf('/*')===0 ? ab_trimmed.substring(2,ab_trimmed.indexOf('*/')) : false;
-             const commentLength = comment ? comment.length+4 : 0;
-             const format        = typeof ab==='string' ? 0 : typeof ab ==='object' && typeof ab.byteLength !== 'undefined' ? 1 : 2;
-             const to_hash       = format !== 1 ? toBuffer(format === 0  ? (comment ? ab_trimmed : ab) : JSON.stringify(ab) ) : ab;
-             const to_store      = format !== 1 ? (format === 0 ? ( comment ? toBuffer(ab_trimmed.substr(commentLength)) : ab ) : to_hash ) :  ab;
-             const deflated      = ml.i.pako.deflate(to_store,{level:9});
-             
-             if (cb) {
-                 ml.i.sha1Lib.cb(to_hash,function(err,hash){
-                    return cb(esc(hash)); 
-                 });
-             } else {
-                 const hash = ml.i.sha1Lib.sync(to_hash);
-                 return esc(hash);
-             }
-             
-             function esc(hash) {
-                 
-               const markers         = HTML_EscapeTags(hash);  
-               const deflate_str     = encodeArrayBufferToRawString(deflated);
-               const deflate_splits  = deflate_str.split (/\-\-/g);
               
-               
-               const deflateHtml =   markers.start + 
-                                     HTML_EscapeComment([to_store.byteLength||to_store.length,deflate_splits.length,1,format].map(function(x){return x.toString(36);}).join(','))+
-                                     (comment ? '\n'+HTML_EscapeComment(comment)+'\n' : '')+
-                                     HTML_EscapeComment(deflate_splits)+
-                                     markers.end;
-
-               const clean_str     = encodeArrayBufferToRawString(to_hash);
-               const clean_splits  = clean_str.split (/\-\-/g);         
-                         
-               const cleanHtml =   markers.start + 
-                                   HTML_EscapeComment([to_hash.byteLength,clean_splits.length,0,format].map(function(x){return x.toString(36);}).join(','))+
-                                   HTML_EscapeComment(clean_splits)+
-                                   markers.end;
-                                   
-                                   
-                return cleanHtml.length < deflateHtml.length ? cleanHtml : deflateHtml;
-
-             }
-         }
-         
-         function HTML_UnescapeArrayBuffer(hash,html,cb) {
-             
-             const CB = typeof cb==='function' ? cb : function(x){return x;};
-  
-             const markers = {start:'<!-\-ab:'+hash+'-\->',end:'<!-\-'+hash+':ab-\->'};
-             
-             let ix = html.indexOf(markers.start);
-             if (ix<0) return CB(null);
-             const before = cb?html.substr(0,ix):0;
-             html = html.substr(ix+markers.start.length);
-             ix = html.indexOf(markers.end);
-             if (ix<0) return CB(null);
-             const after = cb?html.substring(ix+markers.end.length):0;
-             html = html.substr(0,ix);
-             
-             const getNext=function(){return HTML_UnescapeTag(html,function(remain){html=remain});};
-  
-             if (html.indexOf('<!-\-')!==0) return CB(null);
-             
-             const header = getNext().split(','),
-                   getHdrVar=()=>Number.parseInt(header.shift(),36);
-                   
-             const comment = html.charAt(0)==='\n' ?  '/*'+getNext()+'*/' : '';
-             
-             const byteLength = getHdrVar();
-             if (isNaN(byteLength)) return CB(null);
-             const splitsCount =getHdrVar();
-             if (isNaN(splitsCount)) return CB(null);
-             
-             const strs = [];
-             for (let i =0;i<splitsCount;i++) {
-                 strs.push(getNext());
-             }
-             const raw_stored = strs.join('--');
-             const mode   = getHdrVar();
-             const format = getHdrVar();
-                
-             const stored       = decodeArrayBufferFromRawString(raw_stored);
-             const buffer       = mode    === 1  ? pako.inflate(stored) : stored;
-             const bufferText   = mode    === 1  ? encodeArrayBufferToRawString(buffer) : raw_stored ; 
-             const bufferToHash = comment === '' ? buffer : toBuffer(comment+bufferText);
-             
-             const getFormatted = function() {
-                
-                 switch (format) {
-                     case 1 : return bufferToHash;
-                     case 2 :
-                     case 0 :
-                          
-                         return format === 2 ? JSON.parse(bufferText) : comment+bufferText;
+             function toString(x){
+                 if (typeof x !== 'string') {
+                     return new TextDecoder().decode(x);
+                 }  else {
+                     return x;
                  }
-             };
-             if (buffer.byteLength!==byteLength) return CB(null);
-  
-             if (SUBTLE && cb) {     
-                 sha1SubtleCB( bufferToHash ,function(err,checkHash){
-                       return cb(checkHash===hash?getFormatted():null,before+after); 
-                 });
-             } else {
-                  return cb ? cb(getFormatted(),before+after) : getFormatted(); 
              }
-             function sha1SubtleCB(buffer,cb){ 
-                     return SUBTLE.digest("SHA-1", buffer)
-                        .then(function(dig){cb(undefined,bufferToHex(dig));})
-                          .catch(cb); 
+           
+             function arrayBufferTransfer(oldBuffer, newByteLength) {
+                 const 
+                 srcArray  = new Uint8Array(oldBuffer),
+                 destArray = new Uint8Array(newByteLength),
+                 copylen = Math.min(srcArray.buffer.byteLength, destArray.buffer.byteLength),
+                 floatArrayLength   = Math.trunc(copylen / 8),
+                 floatArraySource   = new Float64Array(srcArray.buffer,0,floatArrayLength),
+                 floarArrayDest     = new Float64Array(destArray.buffer,0,floatArrayLength);
+                 
+                 floarArrayDest.set(floatArraySource);
+                     
+                 let bytesCopied = floatArrayLength * 8;
+                 
+             
+                 // slowpoke copy up to 7 bytes.
+                 while (bytesCopied < newByteLength) {
+                     destArray[bytesCopied]=srcArray[bytesCopied];
+                     bytesCopied++;
+                 }
+                 
+               
+                 return destArray.buffer;
+             }
+             
+             function decodeUint16ArrayFromRawString(str) {
+                 return new Uint16Array(str.split('').map((x)=>x.charCodeAt(0)));
+             }
+             
+             function decodeArrayBufferFromRawString (str) {
+                 const ui16    = decodeUint16ArrayFromRawString(str);
+                 const oddEven = ui16[ui16.length-1];
+                 if (oddEven<2) {
+                    const storedByteLength = ( (ui16.length-1) * 2 ) - oddEven;
+                    return arrayBufferTransfer(ui16.buffer,storedByteLength);
+                 }
+             }
+              
+             function HTML_UnescapeTag(html,cb) {
+                 const starts = html.indexOf('<!-\-');
+                 if (starts<0) return null;
+                 const ends = html.indexOf('-\->');
+                 if (ends<starts) return null;
+                 
+                 const result  = html.substring(starts+4,ends);
+                 const remains = html.substr(ends+3);
+                 if (cb) cb(remains);
+                 return result;
+             }
+             
+             function get_HTML_Escaped_Hash(html) {
+                 let hash,update=function(x){ html = x;  };
+                 while (!hash && html.length>0) {
+                     hash = HTML_UnescapeTag(html,update) ;
+                     if (hash.indexOf('ab:')===0) {
+                         return hash.substr(3);
+                     }
+                 }
+             }
+             
+             function HTML_UnescapeArrayBuffer(hash,html,cb) {
+                 
+                 const CB = typeof cb==='function' ? cb : function(x){return x;};
+      
+                 const markers = {start:'<!-\-ab:'+hash+'-\->',end:'<!-\-'+hash+':ab-\->'};
+                 
+                 let ix = html.indexOf(markers.start);
+                 if (ix<0) return CB(null);
+                 const before = cb?html.substr(0,ix):0;
+                 html = html.substr(ix+markers.start.length);
+                 ix = html.indexOf(markers.end);
+                 if (ix<0) return CB(null);
+                 const after = cb?html.substring(ix+markers.end.length):0;
+                 html = html.substr(0,ix);
+                 
+                 const getNext=function(){return HTML_UnescapeTag(html,function(remain){html=remain});};
+      
+                 if (html.indexOf('<!-\-')!==0) return CB(null);
+                 
+                 const header = getNext().split(','),
+                       getHdrVar=()=>Number.parseInt(header.shift(),36);
+                       
+                 const comment = html.charAt(0)==='\n' ?  '/*'+getNext()+'*/' : '';
+                 
+                 const byteLength = getHdrVar();
+                 if (isNaN(byteLength)) return CB(null);
+                 const splitsCount =getHdrVar();
+                 if (isNaN(splitsCount)) return CB(null);
+                 
+                 const strs = [];
+                 for (let i =0;i<splitsCount;i++) {
+                     strs.push(getNext());
+                 }
+                 const raw_stored = strs.join('--');
+                 const mode   = getHdrVar();
+                 const format = getHdrVar();
+                    
+                 const stored       = decodeArrayBufferFromRawString(raw_stored);
+                 const buffer       = mode    === 1  ? pako.inflate(stored) : stored;
+                 const bufferText   = mode    === 1  ? toString( buffer ) : toString( decodeArrayBufferFromRawString(raw_stored) ) ; 
+                 const bufferToHash = comment === '' ? buffer : toBuffer(comment+bufferText);
+                 
+                 const getFormatted = function() {
+                    
+                     switch (format) {
+                         case 1 : return bufferToHash;
+                         case 2 :
+                         case 0 :
+                              
+                             return format === 2 ? JSON.parse(bufferText) : comment+bufferText;
+                     }
+                 };
+                 if (buffer.byteLength!==byteLength) return CB(null);
+      
+                 if (subtle && cb) {     
+                     sha1SubtleCB( bufferToHash ,function(err,checkHash){
+                           return cb(checkHash===hash?getFormatted():null,before+after); 
+                     });
+                 } else {
+                      return cb ? cb(getFormatted(),before+after) : getFormatted(); 
+                 }
+                 function sha1SubtleCB(buffer,cb){ 
+                         return subtle.digest("SHA-1", buffer)
+                            .then(function(dig){cb(undefined,bufferToHex(dig));})
+                              .catch(cb); 
+                     
+                 }
+      
+                 function bufferToHex(buffer) {
+                     const padding = '00000000';
+                     const hexCodes = [];
+                     const view = new DataView(buffer);
+                     if (view.byteLength===0) return '';
+                     if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
+                 
+                     for (let i = 0; i < view.byteLength; i += 4) {
+                         // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
+                         const value = view.getUint32(i);
+                         // toString(16) will give the hex representation of the number without padding
+                         const stringValue = value.toString(16);
+                         // We use concatenation and slice for padding
+                         const paddedValue = (padding + stringValue).slice(-padding.length);
+                         hexCodes.push(
+                             paddedValue.substr(6,2)+
+                             paddedValue.substr(4,2)+
+                             paddedValue.substr(2,2)+
+                             paddedValue.substr(0,2)
+                        );
+                     }
+                     // Join all the hex strings into one
+                     return hexCodes.join("");
+                 }
+                 
+                 
+                 
                  
              }
-  
-             function bufferToHex(buffer) {
-                 const padding = '00000000';
-                 const hexCodes = [];
-                 const view = new DataView(buffer);
-                 if (view.byteLength===0) return '';
-                 if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
+                      
+             return {
+                 toBuffer,
+                 toString,
+                 arrayBufferTransfer,
+                 decodeUint16ArrayFromRawString,
+                 decodeArrayBufferFromRawString,
+                 get_HTML_Escaped_Hash,
+                 HTML_UnescapeArrayBuffer
+             };
+
+         }
+         
+         function htmlEscapeLib(crypto,subtle,pako) {
              
-                 for (let i = 0; i < view.byteLength; i += 4) {
-                     // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-                     const value = view.getUint32(i);
-                     // toString(16) will give the hex representation of the number without padding
-                     const stringValue = value.toString(16);
-                     // We use concatenation and slice for padding
-                     const paddedValue = (padding + stringValue).slice(-padding.length);
-                     hexCodes.push(
-                         paddedValue.substr(6,2)+
-                         paddedValue.substr(4,2)+
-                         paddedValue.substr(2,2)+
-                         paddedValue.substr(0,2)
-                    );
+             
+             const {
+                       toBuffer,
+                       toString,
+                       arrayBufferTransfer,
+                       decodeUint16ArrayFromRawString,
+                       decodeArrayBufferFromRawString,
+                       get_HTML_Escaped_Hash,
+                       HTML_UnescapeArrayBuffer
+                   } = htmlUnescapeLib(subtle,pako);
+      
+         
+           
+           
+             function splitArrayBufferMaxLen (ab,maxLen) {
+                 if (ab.byteLength<maxLen) return [ab];
+                 
+                 const result  = [ ab.slice(0,maxLen)  ];
+                 let start = maxLen;
+                 while (start+maxLen <ab.byteLength) {
+                     result.push( ab.slice(start,start+maxLen));
+                     start += maxLen;
                  }
-                 // Join all the hex strings into one
-                 return hexCodes.join("");
+                 result.push( ab.slice(start) );
+                 return result;
+             }
+             
+             function encodeUint16ArrayToRawString(ui16) {
+                 const bytesPerChunk = 1024 * 16;
+                 const bufs = splitArrayBufferMaxLen(ui16,bytesPerChunk);
+                 const chunks = [];
+                 while (bufs.length>0) {
+                     chunks.push(String.fromCharCode.apply(String,new Uint16Array(bufs.shift())));
+                 }
+                 const result = chunks.join('');
+                 chunks.splice(0,chunks.length);
+                 return result;
+             }
+             
+
+             
+             function encodeArrayBufferToRawString(ab) {
+                 const storing    = ab.slice();
+                 const byteLength = storing.byteLength;
+                 const oddEven    = byteLength % 2;
+                 const storedByteLength = oddEven === 0 ? byteLength + 2 : byteLength + 3;
+                 
+                 const storage = arrayBufferTransfer(storing, storedByteLength);
+                 const storageView = new Uint16Array(storage);
+                 storageView[storageView.length-1]=oddEven;
+                 return encodeUint16ArrayToRawString(storageView);
+             }
+    
+             function HTML_EscapeComment(comment) {
+                return Array.isArray(comment) ? HTML_EscapeComment(comment.join('-\-><!-\-'))  : '<!-\-'+comment+'-\->';
+             }
+             
+             function HTML_EscapeTags(hash) {
+                 return {
+                    start:HTML_EscapeComment('ab:'+hash),
+                    end:HTML_EscapeComment(hash+':ab')
+                 };
+             }
+             
+             function HTML_EscapeArrayBuffer(ab,cb){
+                 const ab_trimmed    = typeof ab==='string' ? ab.trim() : false;
+                 const comment       = typeof ab==='string' && ab_trimmed.indexOf('/*')===0 ? ab_trimmed.substring(2,ab_trimmed.indexOf('*/')) : false;
+                 const commentLength = comment ? comment.length+4 : 0;
+                 const format        = typeof ab==='string' ? 0 : typeof ab ==='object' && typeof ab.byteLength !== 'undefined' ? 1 : 2;
+                 const to_hash       = format !== 1 ? toBuffer(format === 0  ? (comment ? ab_trimmed : ab) : JSON.stringify(ab) ) : ab;
+                 const to_store      = format !== 1 ? (format === 0 ? ( comment ? toBuffer(ab_trimmed.substr(commentLength)) : ab ) : to_hash ) :  ab;
+                 const deflated      = ml.i.pako.deflate(to_store,{level:9});
+                 
+                 if (cb) {
+                     ml.i.sha1Lib.cb(to_hash,function(err,hash){
+                        return cb(esc(hash)); 
+                     });
+                 } else {
+                     const hash = ml.i.sha1Lib.sync(to_hash);
+                     return esc(hash);
+                 }
+                 
+                 function esc(hash) {
+                     
+                   const markers         = HTML_EscapeTags(hash);  
+                   const deflate_str     = encodeArrayBufferToRawString(deflated);
+                   const deflate_splits  = deflate_str.split (/\-\-/g);
+                  
+                   
+                   const deflateHtml =   markers.start + 
+                                         HTML_EscapeComment([to_store.byteLength||to_store.length,deflate_splits.length,1,format].map(function(x){return x.toString(36);}).join(','))+
+                                         (comment ? '\n'+HTML_EscapeComment(comment)+'\n' : '')+
+                                         HTML_EscapeComment(deflate_splits)+
+                                         markers.end;
+    
+                   const clean_str     = encodeArrayBufferToRawString(to_hash);
+                   const clean_splits  = clean_str.split (/\-\-/g);         
+                             
+                   const cleanHtml =   markers.start + 
+                                       HTML_EscapeComment([to_hash.byteLength,clean_splits.length,0,format].map(function(x){return x.toString(36);}).join(','))+
+                                       HTML_EscapeComment(clean_splits)+
+                                       markers.end;
+                                       
+                                       
+                    return cleanHtml.length < deflateHtml.length ? cleanHtml : deflateHtml;
+    
+                 }
              }
              
              
-             
-             
-         }
-         
-                  
-         function arrayBufferEncodingTests() {
-             const crypto=self.crypto;
-             
+             function arrayBufferEncodingTests() {
+
              
              function getRandomValues(array) {
                  const max_length = 1024 * 64;
@@ -1197,28 +1038,28 @@ ml(`
                       if (decodedArray[i]!==array[i]) throw new Error("byte mismatch at offset "+i);
                   }
                   
-                  const html = HTML_EscapeArrayBuffer(buffer);
-                  const hash = get_HTML_Escaped_Hash (html);
-                  const decoded2 = HTML_UnescapeArrayBuffer(hash,html);
+                  const html2 = HTML_EscapeArrayBuffer(buffer);
+                  const hash2 = get_HTML_Escaped_Hash (html2);
+                  const decoded2 = HTML_UnescapeArrayBuffer(hash2,html2);
                   const decodedArray2 = new Uint8Array(decoded2);
                   for (let i=0;i<size;i++) {
                       if (decodedArray2[i]!==array[i]) throw new Error("byte mismatch at offset "+i);
                   }
                   
                   
-                  const str_test1 = "this is a string "+Math.random().toString();
-                  const html2 = HTML_EscapeArrayBuffer(str_test1);
-                  const hash2 = get_HTML_Escaped_Hash (html2);
-                  const decoded3 = HTML_UnescapeArrayBuffer(hash2,html);
+                  const str_test3 = "this is a string "+Math.random().toString();
+                  const html3 = HTML_EscapeArrayBuffer(str_test3);
+                  const hash3 = get_HTML_Escaped_Hash (html3);
+                  const decoded3 = HTML_UnescapeArrayBuffer(hash3,html3);
                   
-                   if (decoded3!==str_test1) throw new Error("string decode does not match");
+                   if (decoded3!==str_test3) throw new Error("string decode does not match");
                   
-                  const str_test2 = "/*blah*/\nthis is a string with a leading comment"+Math.random().toString();
+                  const str_test4 = "/*blah*/\nthis is a string with a leading comment"+Math.random().toString();
                  
-                  const html3 = HTML_EscapeArrayBuffer(str_test2);
-                  const hash3 = get_HTML_Escaped_Hash (html2);
-                  const decoded4 = HTML_UnescapeArrayBuffer(hash2,html);
-                  if (decoded4!==str_test2) throw new Error("string decode does not match");
+                  const html4 = HTML_EscapeArrayBuffer(str_test4);
+                  const hash4 = get_HTML_Escaped_Hash (html4);
+                  const decoded4 = HTML_UnescapeArrayBuffer(hash4,html4);
+                  if (decoded4!==str_test4) throw new Error("string decode does not match");
 
                   return true;
              }
@@ -1247,8 +1088,25 @@ ml(`
              }
              
          }
+             
+             return {
+                 toBuffer,
+                 toString,
+                 arrayBufferTransfer,
+                 decodeUint16ArrayFromRawString,
+                 decodeArrayBufferFromRawString,
+                 HTML_EscapeArrayBuffer,
+                 get_HTML_Escaped_Hash,
+                 HTML_UnescapeArrayBuffer,
+                 encodeArrayBufferToRawString,
+                 arrayBufferEncodingTests
+             };
 
-
+         }
+         
+       
+       
+       
          
     }
     
