@@ -827,28 +827,28 @@ ml(`
          }
          
          
-         if (!ArrayBuffer.transfer) {
-           ArrayBuffer.transfer = function(oldBuffer, newByteLength) {
-             var srcBuffer =    Object(oldBuffer);
-             var destBuffer = new ArrayBuffer(newByteLength);
-             if (!(srcBuffer instanceof ArrayBuffer) || !(destBuffer instanceof ArrayBuffer)) {
-               throw new TypeError('Source and destination must be ArrayBuffer instances');
+         function arrayBufferTransfer(oldBuffer, newByteLength) {
+             const 
+             srcArray  = new Uint8Array(oldBuffer),
+             destArray = new Uint8Array(newByteLength),
+             copylen = Math.min(srcArray.buffer.byteLength, destArray.buffer.byteLength),
+             floatArrayLength   = Math.trunc(copylen / 8),
+             floatArraySource   = new Float64Array(srcArray.buffer,0,floatArrayLength),
+             floarArrayDest     = new Float64Array(destArray.buffer,0,floatArrayLength);
+             
+             floarArrayDest.set(floatArraySource);
+                 
+             let bytesCopied = floatArrayLength * 8;
+             
+         
+             // slowpoke copy up to 7 bytes.
+             while (bytesCopied < newByteLength) {
+                 destArray[bytesCopied]=srcArray[bytesCopied];
+                 bytesCopied++;
              }
-             var copylen = Math.min(srcBuffer.byteLength, destBuffer.byteLength);
-         
-             /* Copy 8 bytes at a time */
-             var length = Math.trunc(copylen / 8);
-             (new Float64Array(destBuffer, 0, length))
-               .set(new Float64Array(srcBuffer, 0, length));
-         
-             /* Copy the remaining 0 to 7 bytes, 1 byte at a time */
-             var offset = length * 8;
-             length = copylen - offset;
-             (new Uint8Array(srcBuffer, offset, length))
-               .set(new Uint8Array(destBuffer, offset, length));
-         
-             return destBuffer;
-           };
+             
+           
+             return destArray.buffer;
          }
          function splitArrayBufferMaxLen (ab,maxLen) {
              if (ab.byteLength<maxLen) return [ab];
@@ -886,7 +886,7 @@ ml(`
              const oddEven    = byteLength % 2;
              const storedByteLength = oddEven === 0 ? byteLength + 2 : byteLength + 3;
              
-             const storage = ArrayBuffer.transfer(storing, storedByteLength);
+             const storage = arrayBufferTransfer(storing, storedByteLength);
              const storageView = new Uint16Array(storage);
              storageView[storageView.length-1]=oddEven;
              return encodeUint16ArrayToRawString(storageView);
@@ -897,7 +897,7 @@ ml(`
              const oddEven = ui16[ui16.length-1];
              if (oddEven<2) {
                 const storedByteLength = ( (ui16.length-1) * 2 ) - oddEven;
-                return ArrayBuffer.transfer(ui16.buffer,storedByteLength);
+                return arrayBufferTransfer(ui16.buffer,storedByteLength);
              }
          }
          
@@ -906,7 +906,7 @@ ml(`
              
              function randomRoundTrip(size) {
                   const array = new Uint8Array (size);
-                  const expectedStoredSize = size + 2 + (size % 2)
+                  const expectedStoredSize = ((size+(size % 2)) >> 1) + 1;
                   crypto.getRandomValues(array);
                   const buffer = array.buffer;
                   if (buffer.byteLength !== size) throw new Error("incorrect pre encoded buffer size");
@@ -915,7 +915,7 @@ ml(`
                   
                   if (encoded.length !== expectedStoredSize) throw new Error("incorrect encoded size");
                   
-                  const decoded = decodeArrayBufferFromRawString(buffer);
+                  const decoded = decodeArrayBufferFromRawString(encoded);
                   if (decoded.byteLength !== size) throw new Error("incorrect decoded size");
                   const decodedArray = new Uint8Array(decoded);
                   
