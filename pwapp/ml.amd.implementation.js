@@ -6,7 +6,7 @@ function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw
     
       
     broadcastChannelPolyfill(self);
-    resizeWatcherPolyfill(self);
+    resizeObserverPolyfill(self);
     
    
     // loads script as a string/arraybuffer
@@ -60,7 +60,7 @@ function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw
     ml.c.app_root = app_root;
     ml.polyfills = {
        broadcastChannelPolyfill,
-       resizeWatcherPolyfill,
+       resizeObserverPolyfill,
     };
     bound_self.ml = ml;
     
@@ -1388,7 +1388,7 @@ function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw
    }
    
    
-   function resizeWatcherPolyfill (global) {
+   function resizeObserverPolyfill (global) {
        
        if (global.ResizeObserver) return ;
        const exports = {}, module = {exports: exports};
