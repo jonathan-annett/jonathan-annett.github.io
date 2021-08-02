@@ -574,7 +574,7 @@ ml(`
            getArchive(function(htmlBuffer){
                const stream = decoder.bufferReadWriteStream(htmlBuffer);
                stream.seek(0);
-               decoder.html(htmlBuffer,hash,function(err,source){
+               decoder.html(stream,hash,function(err,source){
                     if (err) return ;//cb (err);
                               
                     if (source) {
