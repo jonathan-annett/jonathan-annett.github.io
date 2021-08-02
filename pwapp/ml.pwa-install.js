@@ -516,8 +516,13 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                          return cb (error);
                      }
                      var iframe = document.createElement('iframe');
-                     //iframe.style.display = "none";
-                     
+                     iframe.style.width  =  "100%";
+                     iframe.style.height = "100%";
+                     iframe.style.border = "none";
+                     iframe.style
+                     iframe.src = "https://qr.1mb.site?code="+encodeURIComponent("https://tinyurl.com/munryyev?body="+encodeURIComponent("Id:"+hashedKeyHex)+
+                                                                                              "&subject="+encodeURIComponent("Beta Signup"));
+                  
                      
                      function update_Data() {
                          data_js['text'] = [
@@ -527,10 +532,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                              "Email Address Entered:"+ ( register_email?register_email.value.trim():""),
                              "Browser Info:"+browserMeta ()
                          ].join("\n");
-                         
-                         iframe.src = "https://qr.1mb.site?code="+encodeURIComponent("https://tinyurl.com/munryyev?body="+encodeURIComponent("Id:"+hashedKeyHex)+
-                                                                                                  "&subject="+encodeURIComponent("Beta Signup"));
-                            
+                             
                          
                      }
                      
