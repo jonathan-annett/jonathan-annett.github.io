@@ -407,8 +407,8 @@ ml(`
                       
                       encoder.html(undefined,content_zip,function(archive_stream,content_hash,offset,byteLength){
                           archive_stream.offset=0;
-                          decoder.html(archive_stream,content_hash,function(check,hash){
-                              
+                          decoder.html(archive_stream,content_hash,function(err,check,hash){
+                              if (err) return cb (err);
                               if (!compareBuffers(check,content_zip)) return cb (new Error("qc check fails - jszip bundling"));
                               
                                archive_stream.offset=offset+byteLength;
@@ -425,8 +425,9 @@ ml(`
                      encoder.html(archive_stream,buffer,function(archive_stream,hash,offset,byteLength){
                          
                            archive_stream.offset=0;
-                           decoder.html(archive_stream,hash,function(check,hash){
-                               
+                           decoder.html(archive_stream,hash,function(err,check,hash){
+                               if (err) return cb (err);
+                              
                                if (!compareBuffers(check,buffer)) return cb (new Error("qc check fails - jszip bundling"));
                                
                                const html_stream = encoder.bufferReadWriteStream();
@@ -573,9 +574,11 @@ ml(`
            getArchive(function(htmlBuffer){
                const stream = decoder.bufferReadWriteStream(htmlBuffer);
                stream.seek(0);
-               decoder.html(htmlBuffer,hash,function(source){
+               decoder.html(htmlBuffer,hash,function(err,source){
+                    if (err) return ;//cb (err);
+                              
                     if (source) {
-                        loadScript_imp(source,hash,function(exports,directory){
+                        loadScript_imp(new TextDecoder().decode(source),hash,function(exports,directory){
                             removeScriptCommentNodes(hash);
                             cb(exports,directory);
                         });
@@ -591,7 +594,7 @@ ml(`
           getArchive(function(htmlBuffer){
               const stream = decoder.bufferReadWriteStream(htmlBuffer);
               stream.seek(0);
-              decoder.html(stream,hash,function(zipBuffer){
+              decoder.html(stream,hash,function(err,zipBuffer){
                    if (zipBuffer) {
 
                        
