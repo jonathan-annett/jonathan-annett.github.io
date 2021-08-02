@@ -50,12 +50,13 @@ div.progressBar div {
     display:none;
 }
 
-div.no_keyboard
+div.no_keyboard,
 p.no_keyboard {
     display:none;
 }
 
-html.no_keyboard p.no_keyboard {
+html.no_keyboard p.no_keyboard,
+html.no_keyboard div.no_keyboard {
     display:block;
 }
 
