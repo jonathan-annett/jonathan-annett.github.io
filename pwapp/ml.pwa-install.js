@@ -515,6 +515,28 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                      function js_onError(error) {
                          return cb (error);
                      }
+                     var iframe = document.createElement('iframe');
+                     //iframe.style.display = "none";
+                     
+                     
+                     function update_Data() {
+                         data_js['text'] = [
+                             "Beta Tester Application",
+                             "Site URL:"+location.href,
+                             "Browser Hex Id:"+hashedKeyHex,
+                             "Email Address Entered:"+register_email.value.trim(),
+                             "Browser Info:"+browserMeta ()
+                         ].join("\n");
+                         
+                         iframe.src = "https://qr.1mb.site?code="+encodeURIComponent("mailto:rixafe2813@flipssl.com?body="+encodeURIComponent(data_js['text'])+
+                                                                                                  "&subject="+encodeURIComponent(data_js['subject']));
+                            
+                         
+                     }
+                     
+                     update_Data();
+                     
+                     document.body.appendChild(iframe); 
                  
                      var sendButton = document.getElementById("js_send");
                      var register_email = document.querySelector("#" + form_id_js + " [name='register_email']");
@@ -530,21 +552,10 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                                  js_onError(request.response);
                              }
                          };
-                 
-                         data_js['subject'] = "Beta Tester Application "+location.href;
-                         data_js['text'] = [
-                             "Beta Tester Application",
-                             "Site URL:"+location.href,
-                             "Browser Hex Id:"+hashedKeyHex,
-                             "Email Address Entered:"+register_email.value.trim(),
-                             "Browser Info:"+browserMeta ()
-                         ].join("\n");
                          
-                         var iframe = document.createElement('iframe');
-                         //iframe.style.display = "none";
-                         iframe.src = "https://qr.1mb.site?code="+encodeURIComponent("mailto:rixafe2813@flipssl.com?body="+encodeURIComponent(data_js['text'])+
-                                                                                                  "&subject="+encodeURIComponent(data_js['subject']));
-                         document.body.appendChild(iframe);                                          
+                         update_Data();
+
+                                                              
                           
                          var params = toParams(data_js);
                  
@@ -564,6 +575,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                      
                      function email_change() {
                          sendButton.disabled=!validateEmail(register_email);
+                         update_Data();
                      }
                      
                  
