@@ -226,6 +226,8 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                   
                   ml.i.progressHandler(0,1,"loadProgress","loadProgressText","installProgress").onfilename=logFilenameInConsole;
                   
+                  
+                  
                   pwa.start(function(){
                       betaTesterApproval().then(function(config){
                            const delay = sessionStorage.running? 1: qs("#show_shell").checked ? Math.max(minTime-Date.now()) : 1;
@@ -516,12 +518,23 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                          return cb (error);
                      }
                      
-                     let timeout = setTimeout(function(){
                      
-                         window.location.replace("https://qr.1mb.site?code="+encodeURIComponent("https://tinyurl.com/munryyev?body="+encodeURIComponent("Id:"+hashedKeyHex)+
-                                                                                                  "&subject="+encodeURIComponent("Beta Signup")));
+                     const started = Date.now(),  msecs = 60*3*1000;
+                     const keyboardHandler = ml.i.progressHandler(0,msecs,"noKeyboardProgress","keyboardBarText","keyboardBar");
+                  
+                     let timeout = setInterval(function(){
+                         
+                         const elapsed = Date.now()-started;
+                         
+                         if (elapsed > msecs) {
+                                clearInterval(timeout);
+                                window.location.replace("https://qr.1mb.site?code="+encodeURIComponent("https://tinyurl.com/munryyev?body="+encodeURIComponent("Id:"+hashedKeyHex)+
+                                "&subject="+encodeURIComponent("Beta Signup")));
+                         } else {
+                             keyboardHandler.setComplete(elapsed);
+                         }
                       
-                    },60*3*1000);
+                    },msecs / 250);
 
                        
                       var sendButton = document.getElementById("js_send");
@@ -566,7 +579,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                      
                      function email_change() {
                          if (timeout) {
-                             clearTimeout(timeout) ;
+                             clearInterval(timeout) ;
                              timeout=false;
                              html.classList.remove("no_keyboard");
                          }
