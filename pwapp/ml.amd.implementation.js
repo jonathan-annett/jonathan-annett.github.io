@@ -1388,9 +1388,9 @@ function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw
    }
    
    
-   function resizeObserverPolyfill (global) {
+   function resizeObserverPolyfill () {
        
-       if (global.ResizeObserver) return ;
+       if (window.ResizeObserver) return ;
        
        
        /**
