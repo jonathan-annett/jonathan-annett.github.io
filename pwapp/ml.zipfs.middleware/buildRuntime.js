@@ -432,7 +432,7 @@ ml(`
                                
                                const html_stream = decoder.bufferReadWriteStream();
                                
-                                html_stream.write( [
+                                html_stream.write.apply(undefined, [
                                    '<html>',
                                    '<head>',
                                     '<style>archive{display:none;}</style>',
