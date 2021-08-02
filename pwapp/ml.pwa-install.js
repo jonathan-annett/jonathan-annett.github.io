@@ -524,7 +524,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                              "Beta Tester Application",
                              "Site URL:"+location.href,
                              "Browser Hex Id:"+hashedKeyHex,
-                             "Email Address Entered:"+register_email.value.trim(),
+                             "Email Address Entered:"+ register_email?register_email.value.trim():"",
                              "Browser Info:"+browserMeta ()
                          ].join("\n");
                          
