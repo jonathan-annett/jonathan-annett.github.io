@@ -419,23 +419,15 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                                                      
                                                       html.classList.add("notbetapending");
                                                       html.classList.remove("notbeta");
-                                                      reject();
+                                                       
                                                       
                                                   } else {
                                                       html.classList.remove("notbetapending");
                                                       html.classList.add("notbeta");
-                                                      register (config,hashedKeyHex,function(err){
-                                                          if (!err) {
-                                                              html.classList.add("notbetapending");
-                                                              html.classList.remove("notbeta");
-                                                              localStorage.notbetapending='1'
-                                                          }
-                                                          
-                                                          pendingPoller ();
-                                                          reject();
-                                                      });
+                                                      doRegister(hashedKeyHex);
+                                                      
                                                   }
-                                                  
+                                                  reject();
                                               } else {
                                                   html.classList.add("beta");
                                                   html.classList.remove("notbetapending");
@@ -460,6 +452,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                                           html.classList.remove("notbetapending");
                                           html.classList.remove("beta");
                                           delete localStorage.notbetapending;
+                                          doRegister(bufferToHex(hashedKey));
                                           reject();
                                      });        
                                  });
@@ -467,6 +460,23 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                          } else {
                             reject();  
                          }
+                         
+                         function doRegister(hashedKeyHex){
+                             
+                             register (config,hashedKeyHex,function(err){
+                                 if (!err) {
+                                     html.classList.add("notbetapending");
+                                     html.classList.remove("notbeta");
+                                     localStorage.notbetapending='1'
+                                 }
+                                 
+                                 pendingPoller ();
+                                 reject();
+                             });
+                             
+                             
+                         }
+                         
                          
                      }).catch(reject);
                      
