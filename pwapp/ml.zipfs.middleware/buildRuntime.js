@@ -134,9 +134,9 @@ ml(`
                      const db = middleware.databases.cachedURLS;
                      const js_zip_url = ml.c.app_root+'jszip.min.js';
                      const inflate_url = ml.c.app_root+'pako.inflate.min.js';
-                     HTML_Wrap_JSZip(db,js_zip_url,inflate_url, buffer, trigger_jszip_min, function(err,html){
+                     HTML_Wrap_JSZip(db,js_zip_url,inflate_url, buffer, trigger_jszip_min, function(err,htmlBuffer){
                          
-                       cb(html,'text/html');
+                       cb(htmlBuffer,'text/html');
                      
                      });
                   
@@ -202,7 +202,7 @@ ml(`
                                    status: 200,
                                    headers: new Headers({
                                        'Content-Type':   contentType,
-                                       'Content-Length': source.length
+                                       'Content-Length': source.length || source.byteLength
                                    })
 
                                }));
@@ -453,7 +453,7 @@ ml(`
                                     '</archive>',
                                    '</html>',
                                  ]) ;  
-                                 cb (undefined,html_stream);
+                                 cb (undefined,html_stream.buffer);
                                
                            });
                            
