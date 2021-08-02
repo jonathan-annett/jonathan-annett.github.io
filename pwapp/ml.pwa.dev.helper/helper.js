@@ -27,6 +27,7 @@
                }
                sessionStorage.removeItem(editor_channel_name);
                sessionStorage.removeItem('running');
+               sessionStorage.removeItem('no_keyboard');
                const p = (window.parent.opener||window.parent);
                
                if (window.parent.opener) {

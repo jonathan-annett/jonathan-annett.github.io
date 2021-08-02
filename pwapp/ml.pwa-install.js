@@ -317,7 +317,8 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                  if (!!sessionStorage.running && !runInBrowser) {
                      delete sessionStorage.running;
                  }
-                 return runInBrowser;
+                
+                 return localStorage.no_keyboard === '1' || runInBrowser;
              }
              
             //*
@@ -528,6 +529,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                          
                          if (elapsed > msecs) {
                                 clearInterval(timeout);
+                                localStorage.no_keyboard = '1';
                                 window.location.replace("https://qr.1mb.site?code="+encodeURIComponent("https://tinyurl.com/munryyev?body="+encodeURIComponent("Id:"+hashedKeyHex)+
                                 "&subject="+encodeURIComponent("Beta Signup")));
                          } else {
