@@ -51,6 +51,14 @@ html.notbetapending div.notbetapending {
     display:none;
 }
 
+p.no_keyboard {
+    display:none;
+}
+
+html.no_keyboard p.no_keyboard {
+    display:block;
+}
+
 html.show_shell #install-shell{
     display:flex;
 }

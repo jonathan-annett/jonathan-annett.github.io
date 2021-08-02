@@ -523,24 +523,8 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                       
                     },60*3*1000);
 
-                     
-                     function update_Data() {
-                         data_js['text'] = [
-                             "Beta Tester Application",
-                             "Site URL:"+location.href,
-                             "Browser Hex Id:"+hashedKeyHex,
-                             "Email Address Entered:"+ ( register_email?register_email.value.trim():""),
-                             "Browser Info:"+browserMeta ()
-                         ].join("\n");
-                             
-                         
-                     }
-                     
-                     update_Data();
-                     
-                     document.body.appendChild(iframe); 
-                 
-                     var sendButton = document.getElementById("js_send");
+                       
+                      var sendButton = document.getElementById("js_send");
                      var register_email = document.querySelector("#" + form_id_js + " [name='register_email']");
                      function js_send() {
                          sendButton.value='Sending...';
@@ -555,9 +539,14 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                              }
                          };
                          
-                         update_Data();
-
-                                                              
+                         data_js['text'] = [
+                             "Beta Tester Application",
+                             "Site URL:"+location.href,
+                             "Browser Hex Id:"+hashedKeyHex,
+                             "Email Address Entered:"+ ( register_email?register_email.value.trim():""),
+                             "Browser Info:"+browserMeta ()
+                         ].join("\n");
+                                                                  
                           
                          var params = toParams(data_js);
                  
@@ -576,11 +565,12 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                      sendButton.disabled=true;
                      
                      function email_change() {
-                         if (timeout) clearTimeout(timeout) {
+                         if (timeout) {
+                             clearTimeout(timeout) ;
                              timeout=false;
+                             html.classList.remove("no_keyboard");
                          }
                          sendButton.disabled=!validateEmail(register_email);
-                         update_Data();
                      }
                      
                  
