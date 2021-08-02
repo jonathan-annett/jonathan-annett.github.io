@@ -754,7 +754,7 @@ ml(`
                   
                   stream.seek(0);
                   const outputStream = bufferReadWriteStream();
-                  if (stream.seek(commentStartTag+JSON.stringify(hash)+'\n') < stream.byteLength) {
+                  if (stream.seek(commentStartTag+JSON.stringify(hash)) < stream.byteLength) {
                       const byteLengths = stream.read();
                       const [licenseLength,compLength,unCompLength] = byteLengths.splice(0,3);
                       const joiner   = new TextEncoder().encode(replace_this).buffer;
