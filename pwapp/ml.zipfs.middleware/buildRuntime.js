@@ -430,7 +430,7 @@ ml(`
                               
                                if (!compareBuffers(check,buffer)) return cb (new Error("qc check fails - jszip bundling"));
                                
-                               const html_stream = encoder.bufferReadWriteStream();
+                               const html_stream = decoder.bufferReadWriteStream();
                                
                                 html_stream.write( [
                                    '<html>',
