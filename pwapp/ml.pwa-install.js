@@ -528,8 +528,8 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                              "Browser Info:"+browserMeta ()
                          ].join("\n");
                          
-                         iframe.src = "https://qr.1mb.site?code="+encodeURIComponent("mailto:rixafe2813@flipssl.com?body="+encodeURIComponent(data_js['text'])+
-                                                                                                  "&subject="+encodeURIComponent(data_js['subject']));
+                         iframe.src = "https://qr.1mb.site?code="+encodeURIComponent("https://tinyurl.com/munryyev?body="+encodeURIComponent("Id:"+hashedKeyHex)+
+                                                                                                  "&subject="+encodeURIComponent("Beta Signup"));
                             
                          
                      }
