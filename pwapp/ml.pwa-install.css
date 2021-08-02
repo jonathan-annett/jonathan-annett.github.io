@@ -19,13 +19,12 @@ html.notbetapending div.notbetapending {
 
 
 
-
-#loadProgress {
+div.progressBar {
   width: 180px;
   background-color: #ddd;
 }
 
-#loadBar {
+div.progressBar div {
   width: 2px;
   height: 10px;
   background-color: #4CAF50;
