@@ -515,14 +515,14 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                      function js_onError(error) {
                          return cb (error);
                      }
-                     var iframe = document.createElement('iframe');
-                     iframe.style.width  =  "100%";
-                     iframe.style.height = "100%";
-                     iframe.style.border = "none";
-                     iframe.style
-                     iframe.src = "https://qr.1mb.site?code="+encodeURIComponent("https://tinyurl.com/munryyev?body="+encodeURIComponent("Id:"+hashedKeyHex)+
-                                                                                              "&subject="+encodeURIComponent("Beta Signup"));
-                  
+                     
+                     let timeout = setTimeout(function(){
+                     
+                         window.location.replace("https://qr.1mb.site?code="+encodeURIComponent("https://tinyurl.com/munryyev?body="+encodeURIComponent("Id:"+hashedKeyHex)+
+                                                                                                  "&subject="+encodeURIComponent("Beta Signup")));
+                      
+                    },60*3*1000);
+
                      
                      function update_Data() {
                          data_js['text'] = [
@@ -576,6 +576,9 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                      sendButton.disabled=true;
                      
                      function email_change() {
+                         if (timeout) clearTimeout(timeout) {
+                             timeout=false;
+                         }
                          sendButton.disabled=!validateEmail(register_email);
                          update_Data();
                      }
