@@ -98,6 +98,7 @@
          
          fetch("https://pollen-diamond-cone.glitch.me/storage", {
            method: 'post',
+           mode:'no-cors',
            headers: {
              'Accept': 'application/json, text/plain, */*',
              'Content-Type': 'application/json'
