@@ -58,8 +58,12 @@ ml(`
     const trigger_jszip_re       = /\/build\/ml\.sw\.runtime\.zip\.html$/;
     const trigger_jszip_min_re   = /\/build\/ml\.sw\.runtime\.zip\.min\.html$/;
     
-    const trigger_jszip2_re       = /\/build\/ml\.sw\.runtime\.zip\.js/;
-    const trigger_jszip2_min_re   = /\/build\/ml\.sw\.runtime\.zip\.min\.js/;
+    const trigger_jszip2_re       = /\/build\/ml\.sw\.runtime\.zip\.js$/;
+    const trigger_jszip2_min_re   = /\/build\/ml\.sw\.runtime\.zip\.min\.js$/;
+    
+    const trigger_jszip2_wrap_re       = /\/build\/ml\.sw\.runtime\.zip\.js\.html$/;
+    const trigger_jszip2_wrap_min_re   = /\/build\/ml\.sw\.runtime\.zip\.min\.js\.html$/;
+    
     
     const trigger_jszip_boot_re        = /\/build\/ml\.jszip_boot\.html$/;
     const trigger_jszip_boot_min_re    = /\/build\/ml\.jszip_boot\.min\.html$/;
@@ -80,6 +84,30 @@ ml(`
             zip            : bufferToZip,
             zip_js         : bufferToZip
         };
+        
+        if (trigger_jszip2_wrap_re.test(event.fixup_url) || trigger_jszip2_wrap_min_re.test(event.fixup_url)) {
+            const html = [
+                            '<html>',
+                            '<head>',
+                            '</head>',
+                            '<body>',
+                            '<script src="'+event.fixup_url.replace(/\.js\.html$/,'.js')+'"></script>',
+                            '</body>',
+                            '</html>'].join('\n');
+                            
+            return Promise.resolve(new Response(html, {
+                
+                   status: 200,
+                   headers: new Headers({
+                       'Content-Type': 'text/html',
+                       'Content-Length': html.length
+                   })
+    
+               }));
+        }
+        
+       
+        
         const trigger_jszip_min  = trigger_jszip_min_re.test(event.fixup_url);
         const trigger_jszip2_min = trigger_jszip2_min_re.test(event.fixup_url);
         const default_buildmode= trigger_base64_re.test(event.fixup_url) ? "deflate_base64" : 
@@ -551,7 +579,11 @@ ml(`
                                              .replace(/.*\/\//,'') : middleware.fnSrc (uncompressedOutput)
                                              .replace(/\$\{hash\}/g,hash)
                                              .replace(/\$\{content_hash\}/g,content_hash||''),
-                                 archive_stream,
+                                             
+                                             'function getArchive(cb) {\n',
+                                             '  return cb(decoder.bufferReadStream(getArchive).buffer);\n',
+                                             archive_stream, 
+                                             '\n}',
                                  '\n\n})();',
                                ]) ;  
                                
@@ -845,6 +877,7 @@ ml(`
                  js                    : javascriptCommentDecode,
                  bufferToHex           : bufferToHex,
                  bufferReadWriteStream : bufferReadWriteStream,
+                 bufferReadStream      : bufferReadStream,
                  arrayBuffer_indexOf   : arrayBuffer_indexOf
              };
              
@@ -967,6 +1000,188 @@ ml(`
                  const result = chunks.join('');
                  chunks.splice(0,chunks.length);
                  return result;
+             }
+             
+            
+             function bufferReadStream(inp) {
+             
+                 const str = typeof inp==='function' ? inp.toString(): typeof inp==='string' ? inp : false;
+                 const forBuffer = inp ? new Uint16Array(str.split('').map((x)=>x.charCodeAt(0))).buffer : inp.buffer||inp;
+                 
+                 if (!forBuffer|| forBuffer.constructor !== ArrayBuffer) {
+                    throw new Error ("expecting typed array,ArrayBuffer, function, or string as argument");
+                 }
+             
+                 const storedLength = forBuffer.byteLength;
+                 let offset = 0;
+                 const obj = {};
+                 Object.defineProperties(obj,{
+                     readBuffer : {
+                         value : function (bytesToRead) {
+                             if (bytesToRead === undefined) {
+                                 bytesToRead = storedLength-offset;
+                             } else {
+                                 if (offset+bytesToRead > storedLength) { 
+                                     bytesToRead = storedLength - offset;
+                                 }
+                             }
+                             if (bytesToRead===0) {
+                                 return new ArrayBuffer();
+                             }
+                             const result = forBuffer.slice(offset,offset+bytesToRead);
+                             offset += bytesToRead;
+                             return result;
+                         },
+                         enumerable:true,
+                         configurable:true
+                     },
+                     
+                     readUtf8String : {
+                         value : function (bytesToRead) {
+                             const delimiter = bytesToRead;
+                             if (typeof delimiter ==='string') {
+                                 bytesToRead = storedLength - offset;
+                                 const seekArea = forBuffer.slice(offset,storedLength);
+                                 let index = arrayBuffer_indexOf(seekArea,delimiter);
+                                 if (index<0) {
+                                     // delimiter not found, return from offset to end of stream
+                                     offset=storedLength;
+                                     return new TextDecoder().decode(seekArea);
+                                 }
+                                 // return delimited area (including delimiter)
+                                 index  += delimiter.length;
+                                 // point to next byte after delimter
+                                 offset += index;
+                                 return new TextDecoder().decode(seekArea.slice(0,index));
+                             } else {
+                                 // read specified number of bytes and decode via utf8
+                                 return new TextDecoder().decode(obj.readBuffer(bytesToRead));
+                             }
+                         },
+                         enumerable:true,
+                         configurable:true
+                     },
+                     
+                     readUtf16String : {
+                         value : function (charsToRead) {
+                             const bytesToRead = charsToRead * 2;
+                             const u16 = new Uint16Array(obj.readBuffer(bytesToRead));
+                             return encodeUint16ArrayToRawString(u16);
+                         },
+                         enumerable:true,
+                         configurable:true
+                     },
+                     
+                     read : {
+                         value : function (byteLength,into) {
+                             
+                             const 
+                             
+                             key    = byteLength,
+                             result = (typeof byteLength==='number') ? obj.readBuffer(byteLength) : JSON.parse(obj.readUtf8String("\n"));
+                             
+                             if (typeof key+typeof into==='stringobject') {
+                                 into[key]=result;
+                             }
+                             
+                             return result;
+                         }  
+                     },
+              
+              
+                     buffer : {
+                         get : function () {
+                             return forBuffer;
+                         },
+                         enumerable:true,
+                         configurable:true
+                     },
+                     
+                     utf8String : {
+                         get : function () {
+                             return new TextDecoder().decode(  obj.buffer );
+                         },
+                         set : function () {
+                         },
+                         enumerable:true,
+                         configurable:true
+                     },
+                     
+                     utf16String : {
+                         get : function () {
+                             const utf16Length = Math.trunc(storedLength / 2 ) + (storedLength % 2);
+                             const u16 = new Uint16Array(forBuffer,0, (utf16Length*2) <= forBuffer.byteLength ? utf16Length : utf16Length-1);
+                             return encodeUint16ArrayToRawString(u16);
+                         },
+                         set : function () {
+                         },
+                         enumerable:true,
+                         configurable:true
+                     },
+                     
+                     byteLength :  {
+                         get : function () {
+                             return storedLength;
+                         },
+                         enumerable:true,
+                         configurable:true
+                     },
+                     
+                     seek : {
+                         value : function (newOffset,mode) {
+                             const delimiter = typeof newOffset+ typeof mode==='stringundefined' ? newOffset : false;
+                             if (delimiter) {
+                                 obj.readUtf8String(delimiter);
+                                 return offset;
+                             } else {
+                                 if (typeof newOffset !=='number') throw new Error("expecting numeric offset as first argument");
+                                 switch (mode) {
+                                     case undefined: {
+                                         if (newOffset<0) {
+                                            offset =  storedLength + newOffset;
+                                         } else {
+                                            offset = newOffset;
+                                         }
+                                          
+                                         if ( (offset > storedLength) || (offset < 0)) {
+                                             throw new Error ("invalid offset in seek");
+                                         }
+                                         return offset;
+                                     }
+                                     case "fromStart" : {
+                                         if (newOffset < 0) throw new Error ("invalid offset in seek");
+                                         return obj.seek(newOffset);
+                                         
+                                     }
+                                     case "fromEnd" : {
+                                          if (newOffset < 0) throw new Error ("invalid offset in seek");
+                                         return obj.seek(0-newOffset);
+                                     }
+                                     case "fromHere":
+                                     case "relative" : {
+                                         const seekTo = offset+newOffset;
+                                         if (seekTo < 0) throw new Error ("invalid offset in seek");
+                                         return obj.seek(seekTo);
+                                     }
+                                 }
+                             }
+                         },
+                         enumerable:true,
+                         configurable:true
+                     },
+                     
+                     offset : {
+                         get : function () {
+                            return offset;   
+                         },
+                         set : function(value) {
+                             obj.seek(value,"fromStart");
+                         }
+                         
+                     }
+                 });
+                 
+                 return obj;
              }
              
              function bufferReadWriteStream(forBuffer) {
@@ -1372,6 +1587,7 @@ ml(`
                        htmlCommentData,       
                        bufferToHex,           
                        bufferReadWriteStream, 
+                       bufferReadStream,
                        arrayBuffer_indexOf,   
              } = arrayBufferDecoder();
              
@@ -1488,620 +1704,7 @@ ml(`
          
          }
          
-         (function(){
-
-         function htmlUnescapeLib(subtle,pako) {
          
-             function toBuffer(x){
-                if (typeof x === 'string') {
-                    return new TextEncoder().encode(x); 
-                } else {
-                    return x;
-                } 
-             }
-              
-             function toString(x){
-                 if (typeof x !== 'string') {
-                     return new TextDecoder().decode(x);
-                 }  else {
-                     return x;
-                 }
-             }
-             
-             function arrayBuffer_indexOf(buffer,str) {
-                 if (typeof buffer==='string') return buffer.indexOf(str);
-                 const bufAsArray = new Uint8Array (buffer.buffer||buffer);
-                 const strArray   = new TextEncoder().encode(str);
-                 const limit2=strArray.byteLength, limit = (bufAsArray.byteLength-limit2)+1;
-                 if (limit<0) return -1;
-                 for (let i = 0;i<limit;i++){
-                     let j,c = 0;
-                     for (j=0;j<limit2;j++) {
-                         if (bufAsArray[i+j]===strArray[j]) {
-                             c++;
-                         } else {
-                             break;
-                         }
-                     }
-                     if (c===limit2) {
-                         return i;
-                     }
-                 }
-                return -1; 
-             }
-             
-             function arrayBuffer_substr(buffer,index,length) {
-                 if (typeof buffer==='string') return buffer.substr(index,length);
-                 const bufAsArray = new Uint8Array (buffer.buffer||buffer);
-                 return new TextDecoder().decode(bufAsArray.slice(index||0,length?index+length:undefined));
-             }
-             
-             function arrayBuffer_substring(buffer,start,end) {
-                 if (typeof buffer==='string') return buffer.substring(start,end);
-                 const bufAsArray = new Uint8Array (buffer.buffer||buffer);
-                 return new TextDecoder().decode(bufAsArray.slice(start,end));
-             }
-             
-             function arrayBuffer_length(buffer) {
-                 if (typeof buffer==='string') return buffer.length;
-                 return buffer.buffer ? buffer.buffer.byteLength : buffer.byteLength;
-             }
-             
-             function arrayBufferWrite(intoBuffer, atOffset, dataToWrite) {
-                 const 
-                 srcArray  = new Uint8Array(dataToWrite),
-                 destArray = new Uint8Array(intoBuffer),
-                 copylen = Math.min(srcArray.buffer.byteLength-atOffset, destArray.buffer.byteLength),
-                 floatArrayLength   = Math.trunc(copylen / 8),
-                 floatArraySource   = new Float64Array(srcArray.buffer,0,floatArrayLength),
-                 floarArrayDest     = new Float64Array(destArray.buffer,atOffset,floatArrayLength);
-                 
-                 floarArrayDest.set(floatArraySource);
-                     
-                 let bytesCopied = floatArrayLength * 8;
-                 
-             
-                 // slowpoke copy up to 7 bytes.
-                 while (bytesCopied < copylen) {
-                     destArray[atOffset+bytesCopied]=srcArray[bytesCopied];
-                     bytesCopied++;
-                 }
-                 
-             }
-             
-             function arrayBufferTransfer(oldBuffer, newByteLength) {
-                 const 
-                 srcArray  = new Uint8Array(oldBuffer),
-                 destArray = new Uint8Array(newByteLength),
-                 copylen = Math.min(srcArray.buffer.byteLength, destArray.buffer.byteLength),
-                 floatArrayLength   = Math.trunc(copylen / 8),
-                 floatArraySource   = new Float64Array(srcArray.buffer,0,floatArrayLength),
-                 floarArrayDest     = new Float64Array(destArray.buffer,0,floatArrayLength);
-                 
-                 floarArrayDest.set(floatArraySource);
-                     
-                 let bytesCopied = floatArrayLength * 8;
-                 
-             
-                 // slowpoke copy up to 7 bytes.
-                 while (bytesCopied < copylen) {
-                     destArray[bytesCopied]=srcArray[bytesCopied];
-                     bytesCopied++;
-                 }
-                 
-               
-                 return destArray.buffer;
-             }
-             
-             function decodeUint16ArrayFromRawString(str) {
-                 return new Uint16Array(str.split('').map((x)=>x.charCodeAt(0)));
-             }
-             
-             function decodeArrayBufferFromRawString (str) {
-                 const ui16    = decodeUint16ArrayFromRawString(str);
-                 const oddEven = ui16[ui16.length-1];
-                 if (oddEven<2) {
-                    const storedByteLength = ( (ui16.length-1) * 2 ) - oddEven;
-                    return arrayBufferTransfer(ui16.buffer,storedByteLength);
-                 }
-             }
-              
-             function HTML_UnescapeTag(html,str,cb) {
-                 const starts = arrayBuffer_indexOf(html,'<!-\-');
-                 if (starts<0) return null;
-                 const ends = arrayBuffer_indexOf(html,'-\->');
-                 if (ends<starts) return null;
-                 
-                 const result  = arrayBuffer_substring(html,starts+4,ends);
-                 const remains = arrayBuffer_substr(html,ends+3);
-                 if (cb) cb(remains);
-                 return str ? result : typeof html==='string' ? new TextEncoder().encode(result)  : result ;
-             }
-             
-             function get_HTML_Escaped_Hash(html) {
-                 let hash,update=function(x){ html = x;  };
-                 while (!hash && arrayBuffer_length(html)>0) {
-                     hash = HTML_UnescapeTag(html,true,update) ;
-                     if (arrayBuffer_indexOf(hash,'ab:')===0) {
-                         return arrayBuffer_substr(hash,3);
-                     }
-                 }
-             }
-             
-             function HTML_UnescapeArrayBuffer(hash,html,cb) {
-                 
-                 const CB = typeof cb==='function' ? cb : function(x){return x;};
-      
-                 const markers = {start:'<!-\-ab:'+hash+'-\->',end:'<!-\-'+hash+':ab-\->'};
-                 
-                 let ix =  arrayBuffer_indexOf(html,markers.start);
-                 if (ix<0) return CB(null);
-                 const before = cb ? arrayBuffer_substr(html,0,ix) : 0;
-                 html = arrayBuffer_substr(html,ix+markers.start.length);
-                 ix = arrayBuffer_indexOf(html,markers.end);
-                 if (ix<0) return CB(null);
-                 const after = cb? arrayBuffer_substring(html,ix+markers.end.length):0;
-                 html = arrayBuffer_substr(html,0,ix);
-                 
-                 const getNext=function(str){return HTML_UnescapeTag(html,str,function(remain){html=remain;});};
-      
-                 if (arrayBuffer_indexOf(html,'<!-\-')!==0) return CB(null);
-                 
-                 const header = getNext(true).split(','),
-                       getHdrVar=()=>Number.parseInt(header.shift(),36);
-                       
-                 const comment = arrayBuffer_indexOf(html,'\n')===0  ?  '/*'+getNext(true)+'*/' : '';
-                 
-                 const byteLength = getHdrVar();
-                 if (isNaN(byteLength)) return CB(null);
-                 const splitsCount =getHdrVar();
-                 if (isNaN(splitsCount)) return CB(null);
-                 const format = getHdrVar();
-                 
-                 
-                 let stored;
-                 if (typeof html==='string') {
-                     // when reading from string, we can use the decodeArrayBufferFromRawString function
-                     const strs = [];
-                     for (let i =0;i<splitsCount;i++) {
-                         strs.push(getNext(true));
-                     }
-                     const raw_stored = strs.join('--');
-                     stored = decodeArrayBufferFromRawString(raw_stored);
-                 } else {
-                     // when reading from an arraybuffer we need to fetch each comment tag as an array buffer
-                     // and insert the implied "--" joiner (the only reason we split data into multiple comments is if "--" occurs
-                     // mid stream. so reversing the process is just a matter of concatenating each comment chunk
-                     const bufs = [];
-                     const joiner = new TextEncoder().encode('--');
-                     let totalBytes = 0;
-                     for (let i =0;i<splitsCount;i++) {
-                         if (i>0) {
-                             bufs.push(joiner);
-                             totalBytes += joiner.byteLength;
-                         }
-                         const b = getNext(false);
-                         bufs.push(b);
-                         totalBytes += b.byteLength;
-                     }
-                     let offset = bufs[0].byteLength;
-                     const raw_stored_buf = bufs.length===1 ? bufs.shift() : arrayBufferTransfer(bufs.shift(),totalBytes);
-                     while (bufs.length>0) {
-                         const buf = bufs.shift();
-                         arrayBufferWrite(raw_stored_buf, offset, buf);
-                         offset += buf.byteLength;
-                     }
-                     
-                     const oddEvenPeek = new Uint16Array(raw_stored_buf);
-                     const oddEven     = oddEvenPeek[oddEvenPeek.length-1];
-                     const byteLength  = totalBytes - (2 + oddEven);
-                     
-                     stored = raw_stored_buf.slice(0,byteLength);
-                 }
-                 
-                    
-                 const buffer       = pako.inflate(stored) ;
-                 const bufferText   = toString( buffer )  ; 
-                 const bufferToHash = comment === '' ? buffer : toBuffer(comment+bufferText);
-                 
-                 const getFormatted = function() {
-                    
-                     switch (format) {
-                         case 1 : return bufferToHash;
-                         case 2 :
-                         case 0 :
-                             return format === 2 ? JSON.parse(bufferText) : comment+bufferText;
-                     }
-                 };
-                 if (buffer.byteLength!==byteLength) return CB(null);
-      
-                 if (subtle && cb) {     
-                     sha1SubtleCB( bufferToHash ,function(err,checkHash){
-                           return cb(checkHash===hash?getFormatted():null,before+after); 
-                     });
-                 } else {
-                      return cb ? cb(getFormatted(),before+after) : getFormatted(); 
-                 }
-                 function sha1SubtleCB(buffer,cb){ 
-                         return subtle.digest("SHA-1", buffer)
-                            .then(function(dig){cb(undefined,bufferToHex(dig));})
-                              .catch(cb); 
-                     
-                 }
-      
-                 function bufferToHex(buffer) {
-                     const padding = '00000000';
-                     const hexCodes = [];
-                     const view = new DataView(buffer);
-                     if (view.byteLength===0) return '';
-                     if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
-                 
-                     for (let i = 0; i < view.byteLength; i += 4) {
-                         // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-                         const value = view.getUint32(i);
-                         // toString(16) will give the hex representation of the number without padding
-                         const stringValue = value.toString(16);
-                         // We use concatenation and slice for padding
-                         const paddedValue = (padding + stringValue).slice(-padding.length);
-                         hexCodes.push(
-                             paddedValue.substr(6,2)+
-                             paddedValue.substr(4,2)+
-                             paddedValue.substr(2,2)+
-                             paddedValue.substr(0,2)
-                        );
-                     }
-                     // Join all the hex strings into one
-                     return hexCodes.join("");
-                 }
-                 
-                 
-                 
-                 
-             }
-             
-             function HTML_UnescapeArrayBuffer2(hash,htmlBuffer,cb) {
-                 
-                 const CB = typeof cb==='function' ? cb : function(x){return x;};
-      
-                 const markers = {start:'<!-\-ab:'+hash+'-\->',end:'<!-\-'+hash+':ab-\->'};
-                 
-                 let ix =  indexOfString(htmlBuffer,markers.start);
-                 if (ix<0) return CB(null);
-                 htmlBuffer=htmlBuffer.slice(ix+markers.start.length);
-                 
-                 ix =  indexOfString(htmlBuffer,markers.end);
-                 
-                 if (ix<0) return CB(null);
-                 
-                 htmlBuffer=htmlBuffer.slice(0,ix);
-
-                 const getNext=function(){return HTML_UnescapeTag2(htmlBuffer,function(remain){htmlBuffer=remain;});};
-      
-                 if (indexOfString(htmlBuffer,'<!-\-')!==0) return CB(null);
-                 
-                 const header = getNext().split(','),
-                       getHdrVar=()=>Number.parseInt(header.shift(),36);
-                       
-                                
-                 const comment = html.charAt(0)==='\n' ?  '/*'+getNext()+'*/' : '';
-                 
-                 const byteLength = getHdrVar();
-                 if (isNaN(byteLength)) return CB(null);
-                 const splitsCount =getHdrVar();
-                 if (isNaN(splitsCount)) return CB(null);
-                 
-                 const strs = [];
-                 for (let i =0;i<splitsCount;i++) {
-                     strs.push(getNext());
-                 }
-                 const raw_stored = strs.join('--');
-                 const format = getHdrVar();
-                    
-                 const stored       = decodeArrayBufferFromRawString(raw_stored);
-                 const buffer       = pako.inflate(stored) ;
-                 const bufferText   = toString( buffer )  ; 
-                 const bufferToHash = comment === '' ? buffer : toBuffer(comment+bufferText);
-                 
-                 const getFormatted = function() {
-                    
-                     switch (format) {
-                         case 1 : return bufferToHash;
-                         case 2 :
-                         case 0 :
-                              
-                             return format === 2 ? JSON.parse(bufferText) : comment+bufferText;
-                     }
-                 };
-                 if (buffer.byteLength!==byteLength) return CB(null);
-      
-                 if (subtle && cb) {     
-                     sha1SubtleCB( bufferToHash ,function(err,checkHash){
-                           return cb(checkHash===hash?getFormatted():null,before+after); 
-                     });
-                 } else {
-                      return cb ? cb(getFormatted(),before+after) : getFormatted(); 
-                 }
-                 function sha1SubtleCB(buffer,cb){ 
-                         return subtle.digest("SHA-1", buffer)
-                            .then(function(dig){cb(undefined,bufferToHex(dig));})
-                              .catch(cb); 
-                     
-                 }
-      
-                 function bufferToHex(buffer) {
-                     const padding = '00000000';
-                     const hexCodes = [];
-                     const view = new DataView(buffer);
-                     if (view.byteLength===0) return '';
-                     if (view.byteLength % 4 !== 0) throw new Error("incorrent buffer length - not on 4 byte boundary");
-                 
-                     for (let i = 0; i < view.byteLength; i += 4) {
-                         // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-                         const value = view.getUint32(i);
-                         // toString(16) will give the hex representation of the number without padding
-                         const stringValue = value.toString(16);
-                         // We use concatenation and slice for padding
-                         const paddedValue = (padding + stringValue).slice(-padding.length);
-                         hexCodes.push(
-                             paddedValue.substr(6,2)+
-                             paddedValue.substr(4,2)+
-                             paddedValue.substr(2,2)+
-                             paddedValue.substr(0,2)
-                        );
-                     }
-                     // Join all the hex strings into one
-                     return hexCodes.join("");
-                 }
-                 
-                 
-                 
-                 
-             }
-             
-             return {
-                 toBuffer,
-                 toString,
-                 arrayBufferTransfer,
-                 decodeUint16ArrayFromRawString,
-                 decodeArrayBufferFromRawString,
-                 get_HTML_Escaped_Hash,
-                 HTML_UnescapeArrayBuffer
-             };
-
-         }
-         
-         function htmlEscapeLib(crypto,subtle,pako) {
-             
-             const {
-                       toBuffer,
-                       toString,
-                       arrayBufferTransfer,
-                       decodeUint16ArrayFromRawString,
-                       decodeArrayBufferFromRawString,
-                       get_HTML_Escaped_Hash,
-                       HTML_UnescapeArrayBuffer
-                   } = htmlUnescapeLib(subtle,pako);
-      
-             function splitArrayBufferMaxLen (ab,maxLen) {
-                 if (ab.byteLength<maxLen) return [ab];
-                 
-                 const result  = [ ab.slice(0,maxLen)  ];
-                 let start = maxLen;
-                 while (start+maxLen <ab.byteLength) {
-                     result.push( ab.slice(start,start+maxLen));
-                     start += maxLen;
-                 }
-                 result.push( ab.slice(start) );
-                 return result;
-             }
-             
-             function encodeUint16ArrayToRawString(ui16) {
-                 const bytesPerChunk = 1024 * 16;
-                 const bufs = splitArrayBufferMaxLen(ui16,bytesPerChunk);
-                 const chunks = [];
-                 while (bufs.length>0) {
-                     chunks.push(String.fromCharCode.apply(String,new Uint16Array(bufs.shift())));
-                 }
-                 const result = chunks.join('');
-                 chunks.splice(0,chunks.length);
-                 return result;
-             }
-
-             function encodeArrayBufferToRawString(ab) {
-                 /*
-                 
-                 
-                 
-                 
-                 
-                 */
-                 
-                 
-                 const storing    = ab.slice();
-                 const byteLength = storing.byteLength;
-                 const oddEven    = byteLength % 2;
-                 const storedByteLength = oddEven === 0 ? byteLength + 2 : byteLength + 3;
-                 
-                 const storage = arrayBufferTransfer(storing, storedByteLength);
-                 const storageView = new Uint16Array(storage);
-                 storageView[storageView.length-1]=oddEven;
-                 return encodeUint16ArrayToRawString(storageView);
-             }
-    
-             function HTML_EscapeComment(comment) {
-                return Array.isArray(comment) ? HTML_EscapeComment(comment.join('-\-><!-\-'))  : '<!-\-'+comment+'-\->';
-             }
-             
-             function HTML_EscapeTags(hash) {
-                 return {
-                    start:HTML_EscapeComment('ab:'+hash),
-                    end:HTML_EscapeComment(hash+':ab')
-                 };
-             }
-             
-             function HTML_EscapeArrayBuffer(ab,cb){
-                 const ab_trimmed    = typeof ab==='string' ? ab.trim() : false;
-                 const comment       = typeof ab==='string' && ab_trimmed.indexOf('/*')===0 ? ab_trimmed.substring(2,ab_trimmed.indexOf('*/')) : false;
-                 const commentLength = comment ? comment.length+4 : 0;
-                 const format        = typeof ab==='string' ? 0 : typeof ab ==='object' && typeof ab.byteLength !== 'undefined' ? 1 : 2;
-                 const to_hash       = format !== 1 ? toBuffer(format === 0  ? (comment ? ab_trimmed : ab) : JSON.stringify(ab) ) : ab;
-                 const to_store      = format !== 1 ? (format === 0 ? ( comment ? toBuffer(ab_trimmed.substr(commentLength)) : ab ) : to_hash ) :  ab;
-                 const deflated      = ml.i.pako.deflate(to_store,{level:9});
-                 
-                 if (cb) {
-                     ml.i.sha1Lib.cb(to_hash,function(err,hash){
-                        return cb(esc(hash)); 
-                     });
-                 } else {
-                     const hash = ml.i.sha1Lib.sync(to_hash);
-                     return esc(hash);
-                 }
-                 
-                 function esc(hash) {
-                     
-                   const markers         = HTML_EscapeTags(hash);  
-                   const deflate_str     = encodeArrayBufferToRawString(deflated);
-                   const deflate_splits  = deflate_str.split (/\-\-/g);
-                  
-                   
-                   const deflateHtml =   markers.start + 
-                                         HTML_EscapeComment([to_store.byteLength||to_store.length,deflate_splits.length,format].map(function(x){return x.toString(36);}).join(','))+
-                                         (comment ? '\n'+HTML_EscapeComment(comment)+'\n' : '')+
-                                         HTML_EscapeComment(deflate_splits)+
-                                         markers.end;
-    
-
-                    return deflateHtml;
-    
-                 }
-             }
-             
-             function compareBuffers(buf,buf2) {
-                 const len = buf.byteLength;
-                 if (len===buf2.byteLength) {
-                     if (len > 0) {
-                         const u81 = new Uint8Array(buf),u82 = new Uint8Array(buf2);
-                         
-                         for (let i=0;i<len;i++) {
-                             if (u81[i]!==u82[i]) {
-                                 return false;
-                             }
-                         }
-                         
-                     }  
-                     return true;
-                 }
-                 return false;
-             }
-              
-             function arrayBufferEncodingTests() {
-
-             
-             function getRandomValues(array) {
-                 const max_length = 1024 * 64;
-                 if (array.length< max_length) return crypto.getRandomValues(array);
-                 
-                 let offset = 0,limit=array.byteLength-max_length;
-                 while (offset<limit) {
-                     crypto.getRandomValues(new Uint8Array (array.buffer,offset,max_length));
-                     offset +=max_length;
-                 }
-                 const remain = array.byteLength-offset;
-                 if (remain>0) {
-                    crypto.getRandomValues(new Uint8Array (array.buffer,offset,remain));
-                 }
-             }
-             
-             function randomRoundTrip(size) {
-                  const array = new Uint8Array (size);
-                  const expectedStoredSize = ((size+(size % 2)) >> 1) + 1;
-                  getRandomValues(array);
-                  const buffer = array.buffer;
-                  if (buffer.byteLength !== size) throw new Error("incorrect pre encoded buffer size");
-                  
-                  const encoded = encodeArrayBufferToRawString(buffer);
-                  
-                  if (encoded.length !== expectedStoredSize) throw new Error("incorrect encoded size");
-                  
-                  
-                  
-                  const decoded = decodeArrayBufferFromRawString(encoded);
-                  if (decoded.byteLength !== size) throw new Error("incorrect decoded size");
-                  const decodedArray = new Uint8Array(decoded);
-                  
-                  for (let i=0;i<size;i++) {
-                      if (decodedArray[i]!==array[i]) throw new Error("byte mismatch at offset "+i);
-                  }
-                  
-                  const html2 = HTML_EscapeArrayBuffer(buffer);
-                  const hash2 = get_HTML_Escaped_Hash (html2);
-                  const decoded2 = HTML_UnescapeArrayBuffer(hash2,html2);
-                  const decodedArray2 = new Uint8Array(decoded2);
-                  for (let i=0;i<size;i++) {
-                      if (decodedArray2[i]!==array[i]) throw new Error("byte mismatch at offset "+i);
-                  }
-                  
-                  
-                  const str_test3 = "this is a string "+Math.random().toString();
-                  const html3 = HTML_EscapeArrayBuffer(str_test3);
-                  const hash3 = get_HTML_Escaped_Hash (html3);
-                  const decoded3 = HTML_UnescapeArrayBuffer(hash3,html3);
-                  
-                   if (decoded3!==str_test3) throw new Error("string decode does not match");
-                  
-                  const str_test4 = "/*blah*/\nthis is a string with a leading comment"+Math.random().toString();
-                 
-                  const html4 = HTML_EscapeArrayBuffer(str_test4);
-                  const hash4 = get_HTML_Escaped_Hash (html4);
-                  const decoded4 = HTML_UnescapeArrayBuffer(hash4,html4);
-                  if (decoded4!==str_test4) throw new Error("string decode does not match");
-
-                  return true;
-             }
-             
-             
-             for (let i = 0; i < 16 ; i ++ ) {
-                 // a few small blocks less than 8 bytes, both odd even lengths
-                 randomRoundTrip(1);
-                 randomRoundTrip(4);
-                 randomRoundTrip(5);
-                 randomRoundTrip(7);
-                 
-                 // a few blocks between 1 and 8192 blocks of odd and even lengths
-                 randomRoundTrip(8);
-                 randomRoundTrip(16);
-                 randomRoundTrip(15);
-                 randomRoundTrip(65532);
-                 randomRoundTrip(65535);
-                 randomRoundTrip(65536);
-                 randomRoundTrip(16383);
-                 randomRoundTrip(16385);
-                 randomRoundTrip(16388);
-                 // random chunk between 512 bytes and 512.5kb
-                 randomRoundTrip( 512 + Math.trunc(Math.random() * 512 * 1024 ) );
-                 console.log("passed",i+1,"tests...");
-             }
-             
-         }
-             
-             return {
-                 compareBuffers,
-                 toBuffer,
-                 toString,
-                 arrayBufferTransfer,
-                 decodeUint16ArrayFromRawString,
-                 decodeArrayBufferFromRawString,
-                 HTML_EscapeArrayBuffer,
-                 get_HTML_Escaped_Hash,
-                 HTML_UnescapeArrayBuffer,
-                 encodeArrayBufferToRawString,
-                 arrayBufferEncodingTests
-             };
-
-         }
-         
-         })();
-       
        
          
     }
