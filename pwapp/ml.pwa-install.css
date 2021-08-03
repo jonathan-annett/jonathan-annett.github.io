@@ -17,6 +17,21 @@ html.notbetapending div.notbetapending {
   user-select: none;
 }
 
+body {
+    overflow-y:hidden;
+    overflow-x:hidden;
+    background-color: #f5f5f5 !important;
+}
+
+::backdrop {
+    z-index:0;  
+    background-color: #f5f5f5 !important;
+}
+
+html, *:fullscreen, *:-webkit-full-screen, *:-moz-full-screen {
+    background-color: #f5f5f5 !important;
+    z-index:1;
+}
 
 
 div.progressBar {
