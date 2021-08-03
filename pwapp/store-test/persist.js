@@ -4,9 +4,8 @@
  
  const urlParams = new URLSearchParams(queryString);
  
- let storageJson,checkStore;
- 
  const id = urlParams.get('id');
+ 
  if (id) {
      // startup with id
      if (!localStorage.test) {
@@ -16,7 +15,7 @@
         //there is some storage - send it to server
         const json = JSON.stringify(backup ());
         serverCmd( id,"setItem",json);
-        testStorage()
+        testStorage();
      }
      
 } else {
@@ -25,10 +24,15 @@
         const json = atob(req);
         const data = JSON.parse(json);
         if (data) {
-               restore(data);
-              
+           restore(data);
+           testStorage();
+        } else { 
+            testStorage();
+            const json = JSON.stringify(backup ());
+            serverCmd( id,"setItem",json);
+           
         }
-         testStorage();
+      
     }
 }
 
