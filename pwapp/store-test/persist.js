@@ -8,24 +8,25 @@
  
  const id = urlParams.get('id');
  if (id) {
+     // startup with id
      if (!localStorage.test) {
-         serverCmd(id,"getItem",Math.random().toString(36).substr(-8),function(err,data){
-            if (!err && data) {
-                storageJson=data;
-                restore(JSON.parse(data));
-            }
-            testStorage();
-         });
+         // must be first boot
+         serverCmd(id,"getItem",Math.random().toString(36).substr(-8),true);
      } else {
-        testStorage();
+        //there is some storage - send it to server
+        const json = JSON.stringify(backup ());
+        serverCmd( id,"setItem",json);
+        testStorage()
      }
+     
 } else {
     const req = urlParams.get('req');
     if (req) {
         const json = atob(req);
         const data = JSON.parse(json);
         if (data) {
-            console.log(data);
+               restore(data);
+               testStorage();
         }
         
     }
@@ -48,30 +49,6 @@ function testStorage(){
          }
          
 }
-
-
-
-function checkStorage() {
-    if (checkStore) {
-        clearTimeout(checkStore);
-        checkStore=undefined;
-    }
-    const json = JSON.stringify(backup ());
-    if (json!==storageJson) {
-        
-            serverCmd(
-                id,"setItem",
-                json,
-                function(err,data){
-                  storageJson = json;
-                  checkStore = setTimeout(checkStorage,30000); 
-               });
-            
-    } else {
-       checkStore = setTimeout(checkStorage,30000);
-    }
-}
-
 
 
  function backup () {
@@ -98,12 +75,12 @@ function checkStorage() {
  }
  
  
- function serverCmd(id,cmd,data,cb) {
+ function serverCmd(id,cmd,data,hasResponse) {
      const salt = "wkjsdfksnfknaskfjfjksfd86783ikjenbf";
      const json = JSON.stringify(data);
-     const here = typeof cb==='function' ? location.href.replace(/\?.*$/,'') : false;
+     const here =hasResponse ? location.href.replace(/\?.*$/,'') : false;
      sha1SubtleCB(new TextEncoder().encode(id+json+salt+here),function(err,sha1){
-          if (err) return cb(err);
+          if (err) throw err;
           
          const payload = JSON.stringify({
              id,cmd,data,sha1,for:here
