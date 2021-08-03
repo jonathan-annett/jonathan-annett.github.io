@@ -19,6 +19,11 @@
      } else {
         testStorage();
      }
+} else {
+    const req = urlParams.get('req');
+    if (req) {
+        console.log(req);
+    }
 }
 
 function testStorage(){
@@ -37,7 +42,6 @@ function testStorage(){
              console.log("retreived:document.cookie="+document.cookie);
          }
          
-         checkStorage();
 }
 
 
@@ -92,11 +96,12 @@ function checkStorage() {
  function serverCmd(id,cmd,data,cb) {
      const salt = "wkjsdfksnfknaskfjfjksfd86783ikjenbf";
      const json = JSON.stringify(data);
-     sha1SubtleCB(new TextEncoder().encode(id+json+salt),function(err,sha1){
+     const here = location.href.replace(/\?*$/,'');
+     sha1SubtleCB(new TextEncoder().encode(id+json+salt+here),function(err,sha1){
           if (err) return cb(err);
           
          const payload = JSON.stringify({
-             id,cmd,data,sha1
+             id,cmd,data,sha1,for:here
          });
          
          const iframe= document.createElement('iframe');
