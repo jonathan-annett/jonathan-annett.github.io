@@ -51,12 +51,12 @@
                     local : {},
                     forage : {}
                 }
-                Object.keys(localStorage).forEach(function(key)(k){
+                Object.keys(localStorage).forEach(function(k){
                     data.local[k]=localStorage.getItem(k);
                 }); 
                 
                 localforage.keys().then(function(keys){
-                    Promise.all(keys.map(function(key)(k){
+                    Promise.all(keys.map(function(k){
                       return localStorage.getItem(k);
                     }).then(function(values){
                         keys.forEach(function(k,ix){
@@ -73,14 +73,14 @@
 
             function restore (data,cb ) {
                 try {
-                    Object.keys(data.local).forEach(function(key)(k){
+                    Object.keys(data.local).forEach(function(k){
                         localStorage.setItem(k,data.local[k]);
                     }); 
                 } catch (e) {
                     return cb(e);
                 }
                 
-                Promise.all(Object.keys(data.forage).map(function(key)(k){
+                Promise.all(Object.keys(data.forage).map(function(k){
                                 return localforage.setItem(k,data.local[k]);
                             })).then(function(){
                     cb ();
