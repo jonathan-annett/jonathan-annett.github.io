@@ -1,5 +1,5 @@
 
-/* global localforage, URLSearchParams,crypto */
+/* global URLSearchParams,crypto */
  const queryString = window.location.search;
  
  const urlParams = new URLSearchParams(queryString);
@@ -40,32 +40,7 @@ function testStorage(){
              console.log("retreived:document.cookie="+document.cookie);
          }
          
-         localforage.getItem('test', function (err, value) {
-             if (err) {
-                console.log("error getting localForage:",err);
-             }
-              if (value) {
-                  console.log("retreived:localForage.test="+value);
-                  checkStorage();
-              } else {
-                  localforage.setItem('test', Math.random().toString(36).substr(-8), function (err) {
-                      if (err) {
-                          console.log("error setting localForage:",err);
-                       }
-                       localforage.getItem('test', function (err, value) {
-                           if (err) {
-                              console.log("error getting localForage:",err);
-                           }
-                            if (value) {
-                                console.log("defined:localForage.test="+value);
-                            } 
-                            
-                            checkStorage();
-                       });
-                  });
-              }
-         });
-         
+         checkStorage();
 }
 
 
@@ -104,38 +79,18 @@ function checkStorage() {
          data.local[k]=localStorage.getItem(k);
      }); 
      
-     localforage.keys().then(function(keys){
-         Promise.all(keys.map(function(k){
-           return localStorage.getItem(k);
-         })).then(function(values){
-             
-             keys.forEach(function(k,ix){
-                 data.forage[k]=values[ix];
-             });
-             
-             cb(data);
-         });
-     });
+    return data;
      
  }
  
 
- function restore (data,cb ) {
+ function restore (data ) {
      try {
          Object.keys(data.local).forEach(function(k){
              localStorage.setItem(k,data.local[k]);
          }); 
      } catch (e) {
-         return cb(e);
      }
-     
-     Promise.all(Object.keys(data.forage).map(function(k){
-                     return localforage.setItem(k,data.local[k]);
-                 })).then(function(){
-         cb ();
-     }).catch(cb);
-     
-
  }
  
  
