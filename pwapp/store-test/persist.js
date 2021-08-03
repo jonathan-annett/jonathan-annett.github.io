@@ -28,7 +28,7 @@ const urlParams = new URLSearchParams(queryString);
          const reqId  = data_id;
          const url    = scan_url+"?id="+encodeURIComponent(reqId);
          const url2   = scan_url+"collect?id="+encodeURIComponent(reqId)+"&for="+encodeURIComponent(here);
-         const qr_url = "https://qr.1mb.site?code="+encodeURIComponent(url)+"&then="+encodeURIComponent(url2)+"&delay=10";
+         const qr_url = "https://qr.1mb.site?code="+encodeURIComponent(url)+"&then="+encodeURIComponent(url2)+"&delay=1";
          window.location.replace(qr_url);
          
     } else {
