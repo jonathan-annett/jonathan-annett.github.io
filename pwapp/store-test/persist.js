@@ -23,7 +23,7 @@
     const req = urlParams.get('req');
     if (req) {
         const json = atob(req);
-        const data = JSON.parse(req);
+        const data = JSON.parse(json);
         if (data) {
             console.log(data);
         }
