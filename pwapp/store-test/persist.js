@@ -26,9 +26,9 @@
         const data = JSON.parse(json);
         if (data) {
                restore(data);
-               testStorage();
+              
         }
-        
+         testStorage();
     }
 }
 
