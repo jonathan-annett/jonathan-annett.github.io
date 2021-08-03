@@ -96,16 +96,13 @@
              id,cmd,data,sha1
          });
          
-         fetch("https://pollen-diamond-cone.glitch.me/storage", {
-           method: 'post',
-           mode:'no-cors',
-           headers: {
-             'Accept': 'application/json, text/plain, */*',
-             'Content-Type': 'application/json'
-           },
-           body: payload
-         }).then(res => res.json())
-           .then(res => console.log(res));
+         const iframe= document.createElement('iframe');
+         
+         iframe.style.display="none";
+         
+         iframe.src = "https://pollen-diamond-cone.glitch.me?req="+encodeURIComponent(btoa(payload));
+         document.body.appendChild(iframe);
+          
          
          /* 
          var xhr = new XMLHttpRequest(); 
@@ -168,6 +165,8 @@
  const id = urlParams.get('id');
  if (id) {
      serverCmd(id,"getItem",Math.random().toString(36).substr(-8),function(err,data){
+         
         console.log(err,data);
+        
      });
  }
