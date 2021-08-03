@@ -835,8 +835,8 @@ ml(`
          function arrayBufferDecoder(crypto,pako) {
              
              
-             const javascriptCommentData = [ '/*\n',' */\n',   '*/', ' */\n/*',   '/*',   '*/',  16 ];
-             const htmlCommentData       = [ '<!--\n','-->\n', '--', '-->\n<!--', '<!--', '-->', 16 ];
+             const javascriptCommentData = [ '/*',' */',   '*/', ' *//*',   '/*',   '*/',  16 ];
+             const htmlCommentData       = [ '<!--','-->', '--', '--><!--', '<!--', '-->', 16 ];
              
              return {
                  javascriptCommentData : javascriptCommentData,
