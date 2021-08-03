@@ -91,7 +91,7 @@
      const json = JSON.stringify(data);
      sha1SubtleCB(new TextEncoder().encode(id+json+salt),function(){
          const payload = JSON.stringify({
-             id,cmd,data
+             id,cmd,data,sha1
          });
          
          var xhr = new XMLHttpRequest(); 
