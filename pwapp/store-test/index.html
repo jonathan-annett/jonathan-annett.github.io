@@ -7,16 +7,16 @@
         
             if (!localStorage.test) {
                 localStorage.test = Math.random().toString(36).substr(-8);
-                console.log("defined:localStorage.test=",localStorage.test);
+                console.log("defined:localStorage.test="+localStorage.test);
             } else {
-                console.log("retreived:localStorage.test=",localStorage.test);
+                console.log("retreived:localStorage.test="+localStorage.test);
             }
             
             if (!document.cookie) {
                 document.cookie = Math.random().toString(36).substr(-8);
-                console.log("defined:document.cookie=",document.cookie);
+                console.log("defined:document.cookie="+document.cookie);
             } else {
-                console.log("retreived:document.cookie=",document.cookie);
+                console.log("retreived:document.cookie="+document.cookie);
             }
             
         </script>
