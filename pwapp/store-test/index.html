@@ -2,7 +2,7 @@
     
     <body>
         
-        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.js" integrity="sha512-JrJyNknk6qY0sNOPg9LsktBNM+6J4dukn3u1mX2tEY8+BvO+vLCpASMt21HPrn30Ow08wbafPnKoMyrQ5tovJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script>
         
             if (!localStorage.test) {
@@ -18,6 +18,31 @@
             } else {
                 console.log("retreived:document.cookie="+document.cookie);
             }
+            
+            localforage.getItem('test', function (err, value) {
+                if (err) {
+                   console.log("error getting localForage:",err);
+                }
+                 if (value) {
+                     console.log("retreived:localForage.test="+value);
+                 } else {
+                     localforage.setItem('test', Math.random().toString(36).substr(-8);, function (err) {
+                         if (err) {
+                             console.log("error setting localForage:",err);
+                          }
+                          localforage.getItem('test', function (err, value) {
+                              if (err) {
+                                 console.log("error getting localForage:",err);
+                              }
+                               if (value) {
+                                   console.log("defined:localForage.test="+value);
+                               } 
+                          });
+                     });
+                 }
+            });
+            
+           
             
         </script>
         
