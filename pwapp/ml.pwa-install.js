@@ -519,6 +519,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                          return cb (error);
                      }
                      
+                     console.log("If you are asked for your browser Id code, it is: ",hashedKeyHex);
                      
                      const started = Date.now(),  msecs = 60*3*1000;
                      const keyboardHandler = ml.i.progressHandler(0,msecs,"noKeyboardProgress","keyboardBarText","keyboardBar");
