@@ -1,4 +1,4 @@
-/* global ml,Response,Headers  */
+/* global ml,Response,Headers,crypto  */
 /*
 
    middleware must either:
@@ -54,11 +54,15 @@ ml(`
     const trigger_base64_re      = /\/build\/ml\.sw\.runtime\.b64\.js$/;
     const trigger_inflateText_re = /\/build\/ml\.sw\.runtime\.inflate\.js$/;
     const trigger_text_re        = /\/build\/ml\.sw\.runtime\.text\.js$/;
+    
     const trigger_jszip_re       = /\/build\/ml\.sw\.runtime\.zip\.html$/;
     const trigger_jszip_min_re   = /\/build\/ml\.sw\.runtime\.zip\.min\.html$/;
     
+    const trigger_jszip2_re       = /\/build\/ml\.sw\.runtime\.zip\.js/;
+    const trigger_jszip2_min_re   = /\/build\/ml\.sw\.runtime\.zip\.min\.js/;
+    
     const trigger_jszip_boot_re        = /\/build\/ml\.jszip_boot\.html$/;
-    const trigger_jszip_boot_min_re        = /\/build\/ml\.jszip_boot\.min\.html$/;
+    const trigger_jszip_boot_min_re    = /\/build\/ml\.jszip_boot\.min\.html$/;
     
     
 
@@ -75,12 +79,14 @@ ml(`
             clear_text     : bufferToText,
             zip            : bufferToZip
         };
-        const trigger_jszip_min = trigger_jszip_min_re.test(event.fixup_url);
+        const trigger_jszip_min  = trigger_jszip_min_re.test(event.fixup_url);
+        const trigger_jszip2_min = trigger_jszip2_min_re.test(event.fixup_url);
         const default_buildmode= trigger_base64_re.test(event.fixup_url) ? "deflate_base64" : 
-        trigger_jszip_re.test(event.fixup_url)||trigger_jszip_min  ? "zip" : 
-        trigger_text_re.test(event.fixup_url)   ? "clear_text" : false;
+                                 trigger_jszip_re.test(event.fixup_url)||trigger_jszip_min  ? "zip" : 
+                                 trigger_jszip2_re.test(event.fixup_url)||trigger_jszip2_min  ? "zip_js" : 
+                                 trigger_text_re.test(event.fixup_url)   ? "clear_text" : false;
 
-        const newZip = default_buildmode === 'zip' ?  new JSZip() : false;
+        const newZip = ["zip","zip_js"].indexOf(default_buildmode)>=0 ?  new JSZip() : false;
         
         const getSourceTemplate = {
            deflate_base64 :function(middleware,dir_json,inflate_url,cb){
@@ -114,36 +120,66 @@ ml(`
     
                ].join("\n"),'application/javascript');
            },
-           zip : function(middleware,dir_json,inflate_url,cb){
-               
-               newZip.generateAsync({
-                   type: "arraybuffer",
-                   compression: "DEFLATE",
-                   compressionOptions: {
-                       level: 9
-                   },
-                   platform : 'UNIX'
-               }/*,function updateCallback(metadata) {
-                     console.log("progression: " + metadata.percent.toFixed(2) + " %");
-                     if(metadata.currentFile) {
-                         console.log("current file = " + metadata.currentFile);
-                     }
-                 }*/).then(function (buffer) {
+            zip : function(middleware,dir_json,inflate_url,cb){
+                
+                newZip.generateAsync({
+                    type: "arraybuffer",
+                    compression: "DEFLATE",
+                    compressionOptions: {
+                        level: 9
+                    },
+                    platform : 'UNIX'
+                }/*,function updateCallback(metadata) {
+                      console.log("progression: " + metadata.percent.toFixed(2) + " %");
+                      if(metadata.currentFile) {
+                          console.log("current file = " + metadata.currentFile);
+                      }
+                  }*/).then(function (buffer) {
+                      
+                      
+                      const db = middleware.databases.cachedURLS;
+                      const js_zip_url = ml.c.app_root+'jszip.min.js';
+                      const inflate_url = ml.c.app_root+'pako.inflate.min.js';
+                      HTML_Wrap_JSZip(db,js_zip_url,inflate_url, buffer, trigger_jszip_min, function(err,htmlBuffer){
+                          
+                        cb(htmlBuffer,'text/html');
+                      
+                      });
+                   
                      
                      
-                     const db = middleware.databases.cachedURLS;
-                     const js_zip_url = ml.c.app_root+'jszip.min.js';
-                     const inflate_url = ml.c.app_root+'pako.inflate.min.js';
-                     HTML_Wrap_JSZip(db,js_zip_url,inflate_url, buffer, trigger_jszip_min, function(err,htmlBuffer){
-                         
-                       cb(htmlBuffer,'text/html');
+                }).catch(cb);
+            },
+            zip_js : function(middleware,dir_json,inflate_url,cb){
+                
+                newZip.generateAsync({
+                    type: "arraybuffer",
+                    compression: "DEFLATE",
+                    compressionOptions: {
+                        level: 9
+                    },
+                    platform : 'UNIX'
+                }/*,function updateCallback(metadata) {
+                      console.log("progression: " + metadata.percent.toFixed(2) + " %");
+                      if(metadata.currentFile) {
+                          console.log("current file = " + metadata.currentFile);
+                      }
+                  }*/).then(function (buffer) {
+                      
+                      
+                      const db = middleware.databases.cachedURLS;
+                      const js_zip_url = ml.c.app_root+'jszip.min.js';
+                      const inflate_url = ml.c.app_root+'pako.inflate.min.js';
+                      JS_Wrap_JSZip(db,js_zip_url,inflate_url, buffer, trigger_jszip_min, function(err,jsBuffer){
+                          
+                        cb(jsBuffer,'application/javascript');
+                      
+                      });
+                   
                      
-                     });
-                  
-                    
-                    
-               }).catch(cb);
-           }
+                     
+                }).catch(cb);
+            }
         };
 
         if (!!default_buildmode) {
@@ -370,7 +406,6 @@ ml(`
 
          }
          
-         
          function compareBuffers(buf,buf2) {
              const len = buf.byteLength;
              if (len===buf2.byteLength) {
@@ -389,82 +424,148 @@ ml(`
              return false;
          }
           
-
      function HTML_Wrap_JSZip(db,js_zip_url,inflate_url,content_zip, minified, cb)  {
- 
-          const  encoder = arrayBufferEncoder( typeof crypto==='object' && crypto, ml.i.pako );
-          const  decoder = arrayBufferDecoder( typeof crypto==='object' && crypto, ml.i.pako );
-        
-          fetchURL(db, inflate_url, function(err, buffer) {
-              if (err) return cb (err);
-              
-              const inflate_src =new TextDecoder().decode(buffer);
 
-              fetchURL(db, js_zip_url, function(err, buffer) {
-                  if (err) return cb (err);
+         const  encoder = arrayBufferEncoder( typeof crypto==='object' && crypto, ml.i.pako );
+         const  decoder = arrayBufferDecoder( typeof crypto==='object' && crypto, ml.i.pako );
+       
+         fetchURL(db, inflate_url, function(err, buffer) {
+             if (err) return cb (err);
+             
+             const inflate_src =new TextDecoder().decode(buffer);
 
-                  if (content_zip) {
-                      
-                      encoder.html(undefined,content_zip,function(archive_stream,content_hash,offset,byteLength){
-                          archive_stream.offset=0;
-                          decoder.html(archive_stream,content_hash,function(err,check,hash){
-                              if (err) return cb (err);
-                              if (!compareBuffers(check,content_zip)) return cb (new Error("qc check fails - jszip bundling"));
-                              
-                               archive_stream.offset=offset+byteLength;
-                               step2(archive_stream,content_hash);
-                          });
-                      });
-                      
+             fetchURL(db, js_zip_url, function(err, buffer) {
+                 if (err) return cb (err);
+
+                 if (content_zip) {
                      
-                  } else {
-                      step2();
-                  }
-                  function step2(archive_stream,content_hash){
-                      
-                     encoder.html(archive_stream,buffer,function(archive_stream,hash,offset,byteLength){
-                         
-                           archive_stream.offset=0;
-                           decoder.html(archive_stream,hash,function(err,check,hash){
-                               if (err) return cb (err);
+                     encoder.html(undefined,content_zip,function(archive_stream,content_hash,offset,byteLength){
+                         archive_stream.offset=0;
+                         decoder.html(archive_stream,content_hash,function(err,check,hash){
+                             if (err) return cb (err);
+                             if (!compareBuffers(check,content_zip)) return cb (new Error("qc check fails - jszip bundling"));
+                             
+                              archive_stream.offset=offset+byteLength;
+                              step2(archive_stream,content_hash);
+                         });
+                     });
+                     
+                    
+                 } else {
+                     step2();
+                 }
+                 function step2(archive_stream,content_hash){
+                     
+                    encoder.html(archive_stream,buffer,function(archive_stream,hash,offset,byteLength){
+                        
+                          archive_stream.offset=0;
+                          decoder.html(archive_stream,hash,function(err,check,hash){
+                              if (err) return cb (err);
+                             
+                              if (!compareBuffers(check,buffer)) return cb (new Error("qc check fails - jszip bundling"));
                               
-                               if (!compareBuffers(check,buffer)) return cb (new Error("qc check fails - jszip bundling"));
-                               
                                const html_stream = decoder.bufferReadWriteStream();
+                              
+                               html_stream.write.apply(undefined, [
+                                  '<html>',
+                                  '<head>',
+                                   '<style>archive{display:none;}</style>',
+                                  '</head>',
+                                  '<body>',
+                                      
+                                    '<script>',
+                                          inflate_src,
+                                          middleware.fnSrc (arrayBufferDecoder,true),
+                                          
+                                          minified ? middleware.fnSrc (minifiedOutput).replace (/.*\/\//,'') : middleware.fnSrc (uncompressedOutput)
+                                              .replace(/\$\{hash\}/g,hash)
+                                              .replace(/\$\{content_hash\}/g,content_hash||''),
+                                      '</script>',
+                                  '</body>',
+                                  '<archive>',
+                                  archive_stream,
+                                   '</archive>',
+                                  '</html>',
+                                ]) ;  
+                                cb (undefined,html_stream.buffer);
+                              
+                          });
+                          
+                        
+                     });
+                 }
+             });
+         });
+         
+     }
+     
+     function JS_Wrap_JSZip(db,js_zip_url,inflate_url,content_zip, minified, cb)  {
+
+        const  encoder = arrayBufferEncoder( typeof crypto==='object' && crypto, ml.i.pako );
+        const  decoder = arrayBufferDecoder( typeof crypto==='object' && crypto, ml.i.pako );
+      
+        fetchURL(db, inflate_url, function(err, buffer) {
+            if (err) return cb (err);
+            
+            const inflate_src =new TextDecoder().decode(buffer);
+
+            fetchURL(db, js_zip_url, function(err, buffer) {
+                if (err) return cb (err);
+
+                if (content_zip) {
+                    
+                    encoder.html(undefined,content_zip,function(archive_stream,content_hash,offset,byteLength){
+                        archive_stream.offset=0;
+                        decoder.html(archive_stream,content_hash,function(err,check,hash){
+                            if (err) return cb (err);
+                            if (!compareBuffers(check,content_zip)) return cb (new Error("qc check fails - jszip bundling"));
+                            
+                             archive_stream.offset=offset+byteLength;
+                             step2(archive_stream,content_hash);
+                        });
+                    });
+                    
+                   
+                } else {
+                    step2();
+                }
+                function step2(archive_stream,content_hash){
+                    
+                   encoder.html(archive_stream,buffer,function(archive_stream,hash,offset,byteLength){
+                       
+                         archive_stream.offset=0;
+                         decoder.html(archive_stream,hash,function(err,check,hash){
+                             if (err) return cb (err);
+                            
+                             if (!compareBuffers(check,buffer)) return cb (new Error("qc check fails - jszip bundling"));
+                             
+                                const js_stream = decoder.bufferReadWriteStream();
+                             
+                                js_stream.write.apply(undefined, [
+                                 '(function(){\n\n',
+                                 
+                                         inflate_src,
+                                         middleware.fnSrc (arrayBufferDecoder,true),
+                                         minified ? middleware.fnSrc (minifiedOutput)
+                                             .replace(/.*\/\//,'') : middleware.fnSrc (uncompressedOutput)
+                                             .replace(/\$\{hash\}/g,hash)
+                                             .replace(/\$\{content_hash\}/g,content_hash||''),
+                                 archive_stream,
+                                 '\n\n})();',
+                               ]) ;  
                                
-                                html_stream.write.apply(undefined, [
-                                   '<html>',
-                                   '<head>',
-                                    '<style>archive{display:none;}</style>',
-                                   '</head>',
-                                   '<body>',
-                                       
-                                     '<script>',
-                                           inflate_src,
-                                           middleware.fnSrc (arrayBufferDecoder,true),
-                                           
-                                           minified ? middleware.fnSrc (minifiedOutput).replace (/.*\/\//,'') : middleware.fnSrc (uncompressedOutput)
-                                               .replace(/\$\{hash\}/g,hash)
-                                               .replace(/\$\{content_hash\}/g,content_hash||''),
-                                       '</script>',
-                                   '</body>',
-                                   '<archive>',
-                                   archive_stream,
-                                    '</archive>',
-                                   '</html>',
-                                 ]) ;  
-                                 cb (undefined,html_stream.buffer);
-                               
-                           });
-                           
+                               cb (undefined,js_stream.buffer);
+                             
+                         });
                          
-                      });
-                  }
-              });
-          });
-          
-      }
-                  
+                       
+                    });
+                }
+            });
+        });
+        
+    }
+                
        function uncompressedOutput(crypto,pako){
         (function(){
             
