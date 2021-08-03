@@ -12,7 +12,9 @@
           "ee29a5b4399bc6433697cdf96e931b1eba960b8237cfb0cee32a4f5958a501cd",  "<--jonathan (safari osx)",
           "f41b0ec55544bc980d448e17dc85c90080686e1eaff22bf520bd09507ff175b6",  "<--patch (firefox)",
           "591dc6136f7fafa9ebda15fc7b80a71303b93f5b961c56031f6a2ecf339a0b7a",  "<--jonathan (virtualBox Chromium 63)",
-          "6bf14c094afb6eab41fe5c6141706082c54031293a42ff50145f63453fe2865e",  "<--patch (casparcg/Chromium 63)"
+          "6bf14c094afb6eab41fe5c6141706082c54031293a42ff50145f63453fe2865e",  "<--patch (casparcg/Chromium 63)",
+          "c7e031b40d010e637e800e40fb0198ef0564d86600bdd064e9a640753ae5a05a",  "<--jonathan (casparcg/Chromium 63)"
+          
          ],
          
        "register_id": "i4v2usf8c2duj2l48tjqx6m5"
