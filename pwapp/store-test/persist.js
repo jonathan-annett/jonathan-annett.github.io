@@ -4,12 +4,14 @@
  
  const urlParams = new URLSearchParams(queryString);
  
+ let storageJson,checkStore;
  
  const id = urlParams.get('id');
  if (id) {
      if (!localStorage.test) {
          serverCmd(id,"getItem",Math.random().toString(36).substr(-8),function(err,data){
             if (!err && data) {
+                storageJson=data;
                 restore(JSON.parse(data),function(){
                     testStorage();
                 });
@@ -20,7 +22,7 @@
      } else {
         testStorage();
      }
- }
+}
 
 function testStorage(){
          
@@ -44,6 +46,7 @@ function testStorage(){
              }
               if (value) {
                   console.log("retreived:localForage.test="+value);
+                  checkStorage();
               } else {
                   localforage.setItem('test', Math.random().toString(36).substr(-8), function (err) {
                       if (err) {
@@ -56,12 +59,42 @@ function testStorage(){
                             if (value) {
                                 console.log("defined:localForage.test="+value);
                             } 
+                            
+                            checkStorage();
                        });
                   });
               }
          });
          
 }
+
+
+
+function checkStorage() {
+    if (checkStore) {
+        clearTimeout(checkStore);
+        checkStore=undefined;
+    }
+    backup (function(db){
+        const json = JSON.stringify(db);
+        if (json!==storageJson) {
+            
+                serverCmd(
+                    id,"setItem",
+                    json,
+                    function(err,data){
+                      storageJson = json;
+                      checkStore = setTimeout(checkStorage,30000); 
+                   });
+                
+        } else {
+           checkStore = setTimeout(checkStorage,30000);
+        }
+    }) ;
+}
+
+
+
  function backup (cb) {
      const data = {
          local : {},
