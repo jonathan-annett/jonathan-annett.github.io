@@ -77,7 +77,8 @@ ml(`
         const storeBufferFunc = {
             deflate_base64 : bufferTob64,
             clear_text     : bufferToText,
-            zip            : bufferToZip
+            zip            : bufferToZip,
+            zip_js         : bufferToZip
         };
         const trigger_jszip_min  = trigger_jszip_min_re.test(event.fixup_url);
         const trigger_jszip2_min = trigger_jszip2_min_re.test(event.fixup_url);
