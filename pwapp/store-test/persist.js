@@ -10,7 +10,7 @@ const urlParams = new URLSearchParams(queryString);
  if (b64Json){
      
      // loading with payload from mobile device
-    const json  = btoa(b64Json);
+    const json  = atob(b64Json);
     try {
         const data = JSON.parse(json);
         if (data) {
