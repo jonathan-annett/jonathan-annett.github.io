@@ -517,7 +517,7 @@ ml(`
                     
                     encoder.js(undefined,content_zip,function(archive_stream,content_hash,offset,byteLength){
                         archive_stream.offset=0;
-                        decoder.html(archive_stream,content_hash,function(err,check,hash){
+                        decoder.js(archive_stream,content_hash,function(err,check,hash){
                             if (err) return cb (err);
                             if (!compareBuffers(check,content_zip)) return cb (new Error("qc check fails - jszip bundling"));
                             
@@ -535,7 +535,7 @@ ml(`
                    encoder.js(archive_stream,buffer,function(archive_stream,hash,offset,byteLength){
                        
                          archive_stream.offset=0;
-                         decoder.html(archive_stream,hash,function(err,check,hash){
+                         decoder.js(archive_stream,hash,function(err,check,hash){
                              if (err) return cb (err);
                             
                              if (!compareBuffers(check,buffer)) return cb (new Error("qc check fails - jszip bundling"));
