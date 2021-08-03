@@ -594,14 +594,14 @@ ml(`
                        if (err) return cb (err);
                         loadScript_imp(text,cb);
                    });
-               }
+               };
                
                window.loadZipText= function(url,cb) {
                    window.loadZipBuffer(function(err,buffer){
                        if (err) return cb (err);
                        cb(undefined,new TextEncoder().encode(buffer));
                    });
-               }
+               };
                
                window.loadZipBuffer= function(url,cb) {
                    if ( url in fake_internet) {
@@ -609,7 +609,7 @@ ml(`
                    } else {
                       return cb(new Error("not found"));
                    }
-               }
+               };
                
                // fetch every url and return it as an map
                // also after calling this, every request will happen synchronously
@@ -629,7 +629,7 @@ ml(`
                            cb (dir); 
                        });
                    }
-               }
+               };
            });
            
        });
@@ -766,7 +766,7 @@ ml(`
        function getArchive(cb){
            if (getArchive.cache)return cb(getArchive.cache);
            var xhr = new XMLHttpRequest();
-           xhr.responseType = 'arraybuffer'
+           xhr.responseType = 'arraybuffer';
            xhr.open('GET', document.baseURI, true);
            xhr.onreadystatechange = function () {
                if (xhr.readyState === 4) {
@@ -811,7 +811,7 @@ ml(`
            }
            
            const first = removeScriptCommentNodes.cache.findIndex(function(el){return el.textContent==='ab:'+hash;});
-           const last  = removeScriptCommentNodes.cache.findIndex(function(el){return el.textContent===hash+':ab'});
+           const last  = removeScriptCommentNodes.cache.findIndex(function(el){return el.textContent===hash+':ab';});
            if (first<0||last<0) {
                return null;
            }
@@ -871,15 +871,26 @@ ml(`
                               stream.offset += joinerSkip;
                               outputStream.writeBuffer(joiner);
                           }
-                          outputStream.writeBuffer( stream.readBuffer(byteLength) )
+                          outputStream.writeBuffer( stream.readBuffer(byteLength) );
                       });
                       try {
-                          const buffer = pako.inflate(outputStream.buffer);
-                          crypto.subtle.digest("SHA-1", buffer).then(function(digest){
-                              if (bufferToHex(digest)===hash) {
-                                  cb (undefined,buffer,hash);
+                          
+                          if (outputStream.byteLength===compLength) {
+                              const buffer = pako.inflate(outputStream.buffer);
+                              if (buffer.byteLength === unCompLength) {
+                                  return crypto.subtle.digest("SHA-1", buffer).then(function(digest){
+                                      if (bufferToHex(digest)===hash) {
+                                          cb (undefined,buffer,hash);
+                                      } else {
+                                          cb (new Error("integrity check fails"));
+                                      }
+                                  });
+                              } else {
+                                  cb (new Error("uncompresed length incorrect"));
                               }
-                          });
+                          } else {
+                              cb (new Error("compressed length incorrect"));
+                          }
                        
                       } catch (e) {
                           cb(e);
@@ -1037,7 +1048,7 @@ ml(`
                              }
                          }
                          index ++;
-                         modulus = modulus >> 1;
+                         modulus = modulus /2 ;
                          // eventually  we will reach Uint8Array, which can deal with any offset criteria.
                      }
                      
@@ -1632,7 +1643,7 @@ ml(`
                  const after = cb? arrayBuffer_substring(html,ix+markers.end.length):0;
                  html = arrayBuffer_substr(html,0,ix);
                  
-                 const getNext=function(str){return HTML_UnescapeTag(html,str,function(remain){html=remain});};
+                 const getNext=function(str){return HTML_UnescapeTag(html,str,function(remain){html=remain;});};
       
                  if (arrayBuffer_indexOf(html,'<!-\-')!==0) return CB(null);
                  
@@ -1764,16 +1775,14 @@ ml(`
                  
                  htmlBuffer=htmlBuffer.slice(0,ix);
 
-                 const getNext=function(){return HTML_UnescapeTag2(htmlBuffer,function(remain){htmlBuffer=remain});};
+                 const getNext=function(){return HTML_UnescapeTag2(htmlBuffer,function(remain){htmlBuffer=remain;});};
       
                  if (indexOfString(htmlBuffer,'<!-\-')!==0) return CB(null);
                  
                  const header = getNext().split(','),
                        getHdrVar=()=>Number.parseInt(header.shift(),36);
                        
-                       
-                 htmlBuffer
-                       
+                                
                  const comment = html.charAt(0)==='\n' ?  '/*'+getNext()+'*/' : '';
                  
                  const byteLength = getHdrVar();
