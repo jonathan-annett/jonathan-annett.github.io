@@ -26,7 +26,7 @@
                  if (value) {
                      console.log("retreived:localForage.test="+value);
                  } else {
-                     localforage.setItem('test', Math.random().toString(36).substr(-8);, function (err) {
+                     localforage.setItem('test', Math.random().toString(36).substr(-8), function (err) {
                          if (err) {
                              console.log("error setting localForage:",err);
                           }
