@@ -17,9 +17,12 @@ const urlParams = new URLSearchParams(queryString);
         
     }
 } else {
+    const scan_url = "https://pollen-diamond-cone.glitch.me/";
+    const here     = location.href.split('?')[0];
     const reqId  = Math.random().toString(36).substr(-8)+Math.random().toString(36).substr(-8)+Math.random().toString(36).substr(-8)+Math.random().toString(36).substr(-8);
-    const url    = "https://pollen-diamond-cone.glitch.me/id="+encodeURIComponent(reqId);
-    const qr_url = "https://qr.1mb.site?code="+encodeURIComponent(url)+"&then="+encodeURIComponent(url+"&for="+encodeURIComponent(location.href.split('?')[0]));
+    const url    = scan_url+"?id="+encodeURIComponent(reqId);
+    const url2   = scan_url+"collect?id="+encodeURIComponent(reqId)+"&for="+encodeURIComponent(here);
+    const qr_url = "https://qr.1mb.site?code="+encodeURIComponent(url)+"&then="+encodeURIComponent(url2)+"&delay=10";
     window.location.replace(qr_url);
 }
 
