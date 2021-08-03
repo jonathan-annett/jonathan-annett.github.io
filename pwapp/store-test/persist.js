@@ -67,11 +67,10 @@ const urlParams = new URLSearchParams(queryString);
 
  function backup () {
      const data = {
-         local : {},
-         forage : {}
+        
      }
      Object.keys(localStorage).forEach(function(k){
-         data.local[k]=localStorage.getItem(k);
+         data[k]=localStorage.getItem(k);
      }); 
      
     return data;
@@ -81,8 +80,8 @@ const urlParams = new URLSearchParams(queryString);
 
  function restore (data ) {
      try {
-         Object.keys(data.local).forEach(function(k){
-             localStorage.setItem(k,data.local[k]);
+         Object.keys(data).forEach(function(k){
+             localStorage.setItem(k,data[k]);
          }); 
      } catch (e) {
      }
