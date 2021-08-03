@@ -50,7 +50,7 @@ const urlParams = new URLSearchParams(queryString);
             const json = JSON.stringify(data);
             if (json!==last_json) {
                 let iframe = document.createElement("iframe");
-                iframe.src = "https://pollen-diamond-cone.glitch.me/deposit?id="+encodeURIComponent(data_id)+"&data="+encodeURIComponent(data);
+                iframe.src = "https://pollen-diamond-cone.glitch.me/deposit?id="+encodeURIComponent(data_id)+"&data="+encodeURIComponent(btoa(data));
                 document.body.appendChild(iframe);
                 setTimeout(function(){ document.body.removeChild(iframe);},5000);
                 last_json=json;
