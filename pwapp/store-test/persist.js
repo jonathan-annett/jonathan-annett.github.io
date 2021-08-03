@@ -2,39 +2,27 @@
 /* global URLSearchParams,crypto */
  const queryString = window.location.search;
  
- const urlParams = new URLSearchParams(queryString);
+const urlParams = new URLSearchParams(queryString);
  
- const id = urlParams.get('id');
  
- if (id) {
-     // startup with id
-     if (!localStorage.test) {
-         // must be first boot
-         serverCmd(id,"getItem",Math.random().toString(36).substr(-8),true);
-     } else {
-        //there is some storage - send it to server
-        const json = JSON.stringify(backup ());
-        serverCmd( id,"setItem",json);
-        testStorage();
-     }
-     
-} else {
-    const req = urlParams.get('req');
-    if (req) {
-        const json = atob(req);
+ const b64Json = urlParams.get("data");
+ if (b64Json){
+    const json  = btoa(b64Json);
+    try {
         const data = JSON.parse(json);
         if (data) {
            restore(data);
-           testStorage();
-        } else { 
-            testStorage();
-            const json = JSON.stringify(backup ());
-            serverCmd( id,"setItem",json,!localStorage.test);
-           
         }
-      
-    }  
+    } catch (e) {
+        
+    }
+} else {
+    const reqId  = Math.random().toString(36).substr(-8)+Math.random().toString(36).substr(-8)+Math.random().toString(36).substr(-8)+Math.random().toString(36).substr(-8);
+    const url    = "https://pollen-diamond-cone.glitch.me/id="+encodeURIComponent(reqId);
+    const qr_url = "https://qr.1mb.site?code="+encodeURIComponent(url)+"&then="+encodeURIComponent(url+"&for="+encodeURIComponent(location.href.split('?')[0]));
+    window.location.replace(qr_url);
 }
+
 
 function testStorage(){
          
@@ -78,40 +66,7 @@ function testStorage(){
      }
  }
  
- 
- function serverCmd(id,cmd,data,hasResponse) {
-     const salt = "wkjsdfksnfknaskfjfjksfd86783ikjenbf";
-     const json = JSON.stringify(data);
-     const here =hasResponse ? location.href.replace(/\?.*$/,'') : '';
-     sha1SubtleCB(new TextEncoder().encode(id+json+salt+here),function(err,sha1){
-          if (err) throw err;
-          
-         const payload = JSON.stringify({
-             id,cmd,data,sha1,for:here
-         });
-         const url = "https://pollen-diamond-cone.glitch.me?req="+encodeURIComponent(btoa(payload));
-         if (hasResponse) {
-             window.location.replace(url);
-         } else {
-             const iframe = document.createElement('iframe');
-             iframe.src = url;
-             let count = document.body.querySelectorAll('iframe').length;
-             document.body.appendChild(iframe);
-             let poller = setInterval(function(){
-                 if (count < document.body.querySelectorAll('iframe').length) {
-                    clearInterval(poller);
-                    setTimeout(function(){
-                         document.body.removeChild(iframe);
-                    },1000);
-                 }
-             },5000);
-             
-         }
-       
-     });  
- }
- 
- 
+  
  function bufferToHex(buffer) {
      const padding = '00000000';
      const hexCodes = [];
