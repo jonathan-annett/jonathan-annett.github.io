@@ -96,7 +96,7 @@ function checkStorage() {
  function serverCmd(id,cmd,data,cb) {
      const salt = "wkjsdfksnfknaskfjfjksfd86783ikjenbf";
      const json = JSON.stringify(data);
-     const here = location.href.replace(/\?*$/,'');
+     const here = location.href.replace(/\?.*$/,'');
      sha1SubtleCB(new TextEncoder().encode(id+json+salt+here),function(err,sha1){
           if (err) return cb(err);
           
