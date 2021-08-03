@@ -92,7 +92,7 @@ function testStorage(){
              const iframe = document.createElement('iframe');
              iframe.src = url;
              let count = document.body.querySelectorAll('iframe').length;
-             document.body.addChild(iframe);
+             document.body.appenChild(iframe);
              let poller = setInterval(function(){
                  if (count < document.body.querySelectorAll('iframe').length) {
                     clearInterval(poller);
