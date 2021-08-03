@@ -89,7 +89,9 @@
  function serverCmd(id,cmd,data,cb) {
      const salt = "wkjsdfksnfknaskfjfjksfd86783ikjenbf";
      const json = JSON.stringify(data);
-     sha1SubtleCB(new TextEncoder().encode(id+json+salt),function(){
+     sha1SubtleCB(new TextEncoder().encode(id+json+salt),function(err,sha1){
+          if (err) return cb(err);
+          
          const payload = JSON.stringify({
              id,cmd,data,sha1
          });
