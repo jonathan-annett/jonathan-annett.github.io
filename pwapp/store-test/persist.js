@@ -101,15 +101,31 @@ function checkStorage() {
  function serverCmd(id,cmd,data,cb) {
      const salt = "wkjsdfksnfknaskfjfjksfd86783ikjenbf";
      const json = JSON.stringify(data);
-     const here = location.href.replace(/\?.*$/,'');
+     const here = typeof cb==='function' ? location.href.replace(/\?.*$/,'') : false;
      sha1SubtleCB(new TextEncoder().encode(id+json+salt+here),function(err,sha1){
           if (err) return cb(err);
           
          const payload = JSON.stringify({
              id,cmd,data,sha1,for:here
          });
-              
-         window.location.replace("https://pollen-diamond-cone.glitch.me?req="+encodeURIComponent(btoa(payload)));
+         const url = "https://pollen-diamond-cone.glitch.me?req="+encodeURIComponent(btoa(payload));
+         if (here) {
+             window.location.replace(url);
+         } else {
+             const iframe = document.createElement('iframe');
+             iframe.src = url;
+             let count = document.body.querySelector('iframe').length;
+             document.body.addChild(iframe);
+             let poller = setInterval(function(){
+                 if (count < document.body.querySelector('iframe').length) {
+                    clearInterval(poller);
+                    setTimeout(function(){
+                         document.body.removeChild(iframe);
+                    },1000);
+                 }
+             },5000);
+             
+         }
        
      });  
  }
