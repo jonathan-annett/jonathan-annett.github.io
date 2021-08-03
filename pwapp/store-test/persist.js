@@ -91,10 +91,10 @@ function testStorage(){
          } else {
              const iframe = document.createElement('iframe');
              iframe.src = url;
-             let count = document.body.querySelector('iframe').length;
+             let count = document.body.querySelectorAll('iframe').length;
              document.body.addChild(iframe);
              let poller = setInterval(function(){
-                 if (count < document.body.querySelector('iframe').length) {
+                 if (count < document.body.querySelectorAll('iframe').length) {
                     clearInterval(poller);
                     setTimeout(function(){
                          document.body.removeChild(iframe);
