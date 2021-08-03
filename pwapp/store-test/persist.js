@@ -96,7 +96,19 @@
              id,cmd,data,sha1
          });
          
+         fetch("https://pollen-diamond-cone.glitch.me/storage", {
+           method: 'post',
+           headers: {
+             'Accept': 'application/json, text/plain, */*',
+             'Content-Type': 'application/json'
+           },
+           body: payload
+         }).then(res => res.json())
+           .then(res => console.log(res));
+         
+         /* 
          var xhr = new XMLHttpRequest(); 
+        
          xhr.open("POST", "https://pollen-diamond-cone.glitch.me/storage");
          xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
          
@@ -115,7 +127,7 @@
                }
             }};
             
-         xhr.send(payload);
+         xhr.send(payload);*/
      });  
  }
  
