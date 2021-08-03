@@ -29,11 +29,11 @@
         } else { 
             testStorage();
             const json = JSON.stringify(backup ());
-            serverCmd( id,"setItem",json);
+            serverCmd( id,"setItem",json,!localStorage.test);
            
         }
       
-    }
+    }  
 }
 
 function testStorage(){
