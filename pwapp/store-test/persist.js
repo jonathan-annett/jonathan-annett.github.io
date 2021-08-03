@@ -30,7 +30,7 @@ const urlParams = new URLSearchParams(queryString);
          const url2   = scan_url+"collect?id="+encodeURIComponent(reqId)+"&for="+encodeURIComponent(here);
          const qr_url = "https://qr.1mb.site?code="+encodeURIComponent(url)+"&then="+encodeURIComponent(url2)+"&delay=10";
          window.location.replace(qr_url);
-         return;
+         
     } else {
         testStorage()
     }
