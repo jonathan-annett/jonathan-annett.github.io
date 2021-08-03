@@ -4,44 +4,64 @@
  
  const urlParams = new URLSearchParams(queryString);
  
- if (!localStorage.test) {
-     localStorage.test = Math.random().toString(36).substr(-8);
-     console.log("defined:localStorage.test="+localStorage.test);
- } else {
-     console.log("retreived:localStorage.test="+localStorage.test);
- }
  
- if (!document.cookie) {
-     document.cookie = Math.random().toString(36).substr(-8);
-     console.log("defined:document.cookie="+document.cookie);
- } else {
-     console.log("retreived:document.cookie="+document.cookie);
- }
- 
- localforage.getItem('test', function (err, value) {
-     if (err) {
-        console.log("error getting localForage:",err);
+ const id = urlParams.get('id');
+ if (id) {
+     if (!localStorage.test) {
+         serverCmd(id,"getItem",Math.random().toString(36).substr(-8),function(err,data){
+            if (!err && data) {
+                restore(JSON.parse(data),function(){
+                    testStorage();
+                });
+            } else {
+                testStorage();
+            }
+         });
+     } else {
+        testStorage();
      }
-      if (value) {
-          console.log("retreived:localForage.test="+value);
-      } else {
-          localforage.setItem('test', Math.random().toString(36).substr(-8), function (err) {
-              if (err) {
-                  console.log("error setting localForage:",err);
-               }
-               localforage.getItem('test', function (err, value) {
-                   if (err) {
-                      console.log("error getting localForage:",err);
-                   }
-                    if (value) {
-                        console.log("defined:localForage.test="+value);
-                    } 
-               });
-          });
-      }
- });
- 
- 
+ }
+
+function testStorage(){
+         
+         if (!localStorage.test) {
+             localStorage.test = Math.random().toString(36).substr(-8);
+             console.log("defined:localStorage.test="+localStorage.test);
+         } else {
+             console.log("retreived:localStorage.test="+localStorage.test);
+         }
+         
+         if (!document.cookie) {
+             document.cookie = Math.random().toString(36).substr(-8);
+             console.log("defined:document.cookie="+document.cookie);
+         } else {
+             console.log("retreived:document.cookie="+document.cookie);
+         }
+         
+         localforage.getItem('test', function (err, value) {
+             if (err) {
+                console.log("error getting localForage:",err);
+             }
+              if (value) {
+                  console.log("retreived:localForage.test="+value);
+              } else {
+                  localforage.setItem('test', Math.random().toString(36).substr(-8), function (err) {
+                      if (err) {
+                          console.log("error setting localForage:",err);
+                       }
+                       localforage.getItem('test', function (err, value) {
+                           if (err) {
+                              console.log("error getting localForage:",err);
+                           }
+                            if (value) {
+                                console.log("defined:localForage.test="+value);
+                            } 
+                       });
+                  });
+              }
+         });
+         
+}
  function backup (cb) {
      const data = {
          local : {},
@@ -162,11 +182,3 @@
      
  }
  
- const id = urlParams.get('id');
- if (id) {
-     serverCmd(id,"getItem",Math.random().toString(36).substr(-8),function(err,data){
-         
-        console.log(err,data);
-        
-     });
- }
