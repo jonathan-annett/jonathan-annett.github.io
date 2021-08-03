@@ -515,7 +515,7 @@ ml(`
 
                 if (content_zip) {
                     
-                    encoder.html(undefined,content_zip,function(archive_stream,content_hash,offset,byteLength){
+                    encoder.js(undefined,content_zip,function(archive_stream,content_hash,offset,byteLength){
                         archive_stream.offset=0;
                         decoder.html(archive_stream,content_hash,function(err,check,hash){
                             if (err) return cb (err);
@@ -532,7 +532,7 @@ ml(`
                 }
                 function step2(archive_stream,content_hash){
                     
-                   encoder.html(archive_stream,buffer,function(archive_stream,hash,offset,byteLength){
+                   encoder.js(archive_stream,buffer,function(archive_stream,hash,offset,byteLength){
                        
                          archive_stream.offset=0;
                          decoder.html(archive_stream,hash,function(err,check,hash){
