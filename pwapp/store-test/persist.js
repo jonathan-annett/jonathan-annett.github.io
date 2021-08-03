@@ -17,14 +17,43 @@ const urlParams = new URLSearchParams(queryString);
         
     }
 } else {
-    const scan_url = "https://pollen-diamond-cone.glitch.me/";
-    const here     = location.href.split('?')[0];
-    const reqId  = Math.random().toString(36).substr(-8)+Math.random().toString(36).substr(-8)+Math.random().toString(36).substr(-8)+Math.random().toString(36).substr(-8);
-    const url    = scan_url+"?id="+encodeURIComponent(reqId);
-    const url2   = scan_url+"collect?id="+encodeURIComponent(reqId)+"&for="+encodeURIComponent(here);
-    const qr_url = "https://qr.1mb.site?code="+encodeURIComponent(url)+"&then="+encodeURIComponent(url2)+"&delay=10";
-    window.location.replace(qr_url);
+    const data_id = localStorage.data_id;
+    if (!data_id) {
+        
+         const data_id = Math.random().toString(36).substr(-8)+Math.random().toString(36).substr(-8)+Math.random().toString(36).substr(-8)+Math.random().toString(36).substr(-8) + Date.now().toString(36).substr(-6);
+         localStorage.data_id = data_id;
+        
+         const scan_url = "https://pollen-diamond-cone.glitch.me/";
+         const here     = location.href.split('?')[0];
+         const reqId  = data_id;
+         const url    = scan_url+"?id="+encodeURIComponent(reqId);
+         const url2   = scan_url+"collect?id="+encodeURIComponent(reqId)+"&for="+encodeURIComponent(here);
+         const qr_url = "https://qr.1mb.site?code="+encodeURIComponent(url)+"&then="+encodeURIComponent(url2)+"&delay=10";
+         window.location.replace(qr_url);
+         return;
+    } else {
+        testStorage()
+    }
+    let data = backup ();
+    delete data.data_id;
+    let last_json = JSON.stringify(data);
+    
+    let interval = setInterval(function(){
+        const data = backup ();
+        const data_id = data.data_id;
+        delete data.data_id;
+        const json = JSON.stringify(data);
+        if (json!==last_json) {
+            let iframe = document.createElement("iframe");
+            iframe.src = "https://pollen-diamond-cone.glitch.me/deposit?id="+encodeURIComponent(data_id)+"&data="+encodeURIComponent(data);
+            document.body.appendChild(iframe);
+            setTimeout(function(){ document.body.removeChild(iframe);},5000);
+            last_json=json;
+        }
+        
+    },30*1000);
 }
+
 
 
 function testStorage(){
@@ -36,12 +65,7 @@ function testStorage(){
              console.log("retreived:localStorage.test="+localStorage.test);
          }
          
-         if (!document.cookie) {
-             document.cookie = Math.random().toString(36).substr(-8);
-             console.log("defined:document.cookie="+document.cookie);
-         } else {
-             console.log("retreived:document.cookie="+document.cookie);
-         }
+         
          
 }
 
