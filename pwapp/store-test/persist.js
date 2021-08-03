@@ -78,7 +78,7 @@ function testStorage(){
  function serverCmd(id,cmd,data,hasResponse) {
      const salt = "wkjsdfksnfknaskfjfjksfd86783ikjenbf";
      const json = JSON.stringify(data);
-     const here =hasResponse ? location.href.replace(/\?.*$/,'') : false;
+     const here =hasResponse ? location.href.replace(/\?.*$/,'') : '';
      sha1SubtleCB(new TextEncoder().encode(id+json+salt+here),function(err,sha1){
           if (err) throw err;
           
@@ -86,7 +86,7 @@ function testStorage(){
              id,cmd,data,sha1,for:here
          });
          const url = "https://pollen-diamond-cone.glitch.me?req="+encodeURIComponent(btoa(payload));
-         if (here) {
+         if (hasResponse) {
              window.location.replace(url);
          } else {
              const iframe = document.createElement('iframe');
