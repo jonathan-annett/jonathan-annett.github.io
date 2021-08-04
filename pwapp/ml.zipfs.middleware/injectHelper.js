@@ -1,25 +1,10 @@
 /* global ml  */
 /*
 
-   middleware must either:
-   
-      return a promise that resolves to a response
-      
-      or
-      
-      return undefined if it can't handle the request (the default)
-      
-      or 
-      
-      return a promise that resolves to undefined, in the event that it's unknown at the point of return 
-      if the request can be hanlded
-      
-      
-      it should not reject unless a catastophic error occurs
-      
-      (ie don't resolve to a 404 error, unless there is absolutely no possibility of another middleware resolving the request)
-      
-      
+  this middleware is not for production, but for development
+  it looks for index.html files he root of a zip file, and injects an iframe to assist the inbuilt editor to 
+  manipulate css and scripts in real time, for testing.
+  as such, this entire middleware module is excluded the built app.
       
 */
 ml([],function(){ml(2,
@@ -45,17 +30,27 @@ ml([],function(){ml(2,
    
     function mware(event,middleware) {
        
-       let fixup_uri = event.fixup_url.replace(middleware.isLocal,'');
+       let fixup_uri        = event.fixup_url.replace(middleware.isLocal,'');
        const might_be_index = generic_index.test(fixup_uri);
-       let isIndexPage = might_be_index && github_zip_index.test(fixup_uri) ||  zip_index.test(fixup_uri);
+       // first look for index.htmls under the root of literal url (or aliased root in the case of zipped github repos) 
+       // eg https://example.com/pwapp/somezipfile.zip/index.html
+       // eg https://example.com/pwapp/zipped_repo-master.zip/zipped_repo-master/index.html
+       let isIndexPage      = might_be_index && github_zip_index.test(fixup_uri) ||  zip_index.test(fixup_uri);
        
-       if (!isIndexPage && might_be_index) {
-           isIndexPage = !! middleware.virtualDirDB.virtualDirs[ event.fixup_url ];
-           if (isIndexPage) {
-               fixup_uri += '/index.html';
-           } else {
+       if (!isIndexPage) {
+           // ok so not one of those - now see if it's an index inthe root of a virtual dir url
+           if (might_be_index) { 
+               // if the url points directly to a file called index.html, remove it, so we get the dir name
+               // then see if that is a virtual dir.
                isIndexPage = !! middleware.virtualDirDB.virtualDirs[ event.fixup_url.replace(generic_index,'') ] ;
-           } 
+           } else {
+               // this url doesn' end in index.html, but if it points to an entry in virtualDirs, it's a virtual dir, so add the index.html
+               isIndexPage = !! middleware.virtualDirDB.virtualDirs[ event.fixup_url ];
+               if (isIndexPage) {
+                   // append the index.html to the url
+                   fixup_uri += '/index.html';
+               }
+           }
        }
        
        if (middleware.isLocalDomain(event) && isIndexPage ) {
@@ -84,6 +79,9 @@ ml([],function(){ml(2,
                        });
                        
                    } else {
+                       
+                       // the url didn't resolve to an actual index.html file, so give up and let the next middleware have a go
+                       
                        resolve();
                    }
                    
