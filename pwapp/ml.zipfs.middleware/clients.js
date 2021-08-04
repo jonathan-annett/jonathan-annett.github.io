@@ -64,7 +64,6 @@ ml([],function(){ml(2,
                 
                });
                
-               return middleware.response500(resolve,new Error("Forced Error to Test Browser"));
            });
        } 
         
