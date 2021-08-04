@@ -46,13 +46,12 @@ ml([],function(){ml(2,
     function mware(event,middleware) {
        
        const fixup_uri = event.fixup_url.replace(middleware.isLocal,'');
-
-       let isIndexPage = github_zip_index.test(fixup_uri) ||  zip_index.test(fixup_uri);
+       const might_be_index = generic_index.test(fixup_uri);
+       let isIndexPage = might_be_index && github_zip_index.test(fixup_uri) ||  zip_index.test(fixup_uri);
        
-       if (!isIndexPage && generic_index.test(fixup_uri)) {
-           
-           isIndexPage =  !! middleware.virtualDirDB.virtualDirUrls [ event.fixup_url.replace(generic_index,'') ];
-           
+       if (!isIndexPage && might_be_index) {
+           const index_path = event.fixup_url.replace(generic_index,'');
+           isIndexPage =  middleware.virtualDirDB.virtualDirUrls.indexOf( index_path  )>=0;
        }
        
        if (middleware.isLocalDomain(event) && isIndexPage ) {
