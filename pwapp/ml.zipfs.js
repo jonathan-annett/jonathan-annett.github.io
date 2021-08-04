@@ -242,7 +242,7 @@ ml(`
 
              };
              
-             const bypass = /(\/fstab\.json$|\/betakeys\.json$)/;
+             const bypass = /\/fstab\.json$/;
              ml.c.fetch = function (url) {
     
                  return bypass.test(url) ?  fetch(url) : new Promise(function(resolve,reject){

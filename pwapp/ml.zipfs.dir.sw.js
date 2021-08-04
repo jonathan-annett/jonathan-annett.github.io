@@ -59,8 +59,6 @@ ml(`
                                            }));
                                        }
                                        
-                                       
-                                       
                                        getZipFileUpdates(virtual ? virtual :  url,function(err,additonalFiles){
                                            
                                            getZipDirMetaTools(url,zip,zipFileMeta,function(tools){
@@ -181,7 +179,7 @@ ml(`
                                    
                                    
                                   ' ml(["pwaZipDirListing|'+ml.c.app_root+'ml.zipfs.dir.js",',
-                                  '     "localDirLib|'+uri+'.json"],function(){ml(2,',
+                                  '     "localDirLib|/'+uri+'.json"],function(){ml(2,',
                                   ' ',
                                   '     {',
                                   '         Window: function pageMain( lib ) {',
