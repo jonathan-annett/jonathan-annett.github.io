@@ -242,8 +242,11 @@ ml(`
 
              };
              
+             const bypass = /(\/fstab\.json\/$|\/betakeys\.json\/$)/;
              ml.c.fetch = function (url) {
-                 return new Promise(function(resolve,reject){
+    
+                 return bypass.test(url) ?  fetch(url) : new Promise(function(resolve,reject){
+                     
                      fetchInternal(url,function(err,response){
                          if (err) return reject(err);
                          resolve(response);
