@@ -338,12 +338,11 @@ ml(`
                                 zip_files.push(filename);
                             }
                             
-                            dir.files[filename] = {
-                                url_read  : dir.url+filename,
-                                url_write : dir.url+filename
+                            const entry = dir.files[filename] = {
+                                url_write : dir.url+(filename.replace(alias_root_fix,''))
                             };
-                            
-                            
+                            entry.url_read  = entry.url_write; 
+                           
                             writeFileBuffer(filename,buffer,function(err,hash){
                                 
                                 
@@ -497,7 +496,7 @@ ml(`
                     const li = find_li(filename);
                     
                     
-                   pwaApi.removeUpdatedURLContents(dir.url+filename);
+                   pwaApi.removeUpdatedURLContents(dir.url+(filename.replace(alias_root_fix,'')));
                    
                    
                    
@@ -572,7 +571,7 @@ ml(`
                         newLi.classList.add("image_viewer");
                         newLi.appendChild(img);
                         li.parentElement.insertBefore(newLi,nextSib);
-                        img.src = dir.url+filename;
+                        img.src = dir.url+(filename.replace(alias_root_fix,''));
                         li.classList.add("editing");
                         
                     }
@@ -662,7 +661,7 @@ ml(`
                         html : view_html
                     };
                     const not_custom = function (fn) {
-                       const file_url = dir.url+fn; 
+                       const file_url = dir.url+(fn.replace(alias_root_fix,'')); 
                        return open_url (file_url,cb) ;       
                     };
                     
@@ -955,7 +954,7 @@ ml(`
                         return cb ();
                     }
                     
-                    const file_url = dir.url+filename; 
+                    const file_url = dir.url+(filename.replace(alias_root_fix,'')); 
                     
                     readFileText(filename,function(err,buffer,updated,hash,withCSS){
                         openStylesheetHelper(editor_channel,file_url,withCSS,function(obj) {  
@@ -1233,7 +1232,7 @@ ml(`
                             },
                         function(err,json){
                             const buffer = new TextEncoder().encode(json);
-                            const file_url = dir.url+filename+".hidden-json";
+                            const file_url = dir.url+(filename.replace(alias_root_fix,''))+".hidden-json";
                             pwaApi.updateURLContents (file_url,buffer,false,function(err) {
                                 cb();
                             });
@@ -1292,7 +1291,7 @@ ml(`
     
                 function openInbuiltEditor (filename,li,cb,height,textContent) {
                     li=li||find_li (filename);
-                    const file_url =  dir.url+filename;
+                    const file_url =  dir.url+(filename.replace(alias_root_fix,''));
                     let editor_id = li.dataset.editor_id;
                     if (!editor_id) {
                         while (true) {
@@ -1318,7 +1317,7 @@ ml(`
                         li_ed.sizebar = dragSize("#"+editor_id,["#"+editor_id+"_grab_bar"]);
                        
                         
-                        const file_session_url = dir.url + filename +".hidden-json";
+                        const file_session_url = dir.url + (filename.replace(alias_root_fix,'')) +".hidden-json";
                         
                         
                         readFileText(filename,function(err,buffer,updated,hash,text){
@@ -1904,7 +1903,7 @@ ml(`
                 
                 
                 function writeFileAssociatedBuffer(filename,assoc,buffer,cb) {
-                    const file_url = dir.url+filename+'.'+(assoc.replace(/^\./),'');
+                    const file_url = dir.url+ (filename.replace(alias_root_fix,''))+'.'+(assoc.replace(/^\./),'');
                     pwaApi.updateURLContents (file_url,true,function(err,hash) {
                         if (err) return cb(err);
                         return cb (undefined,file_url);
@@ -1916,7 +1915,7 @@ ml(`
                 }
                 
                 function readFileAssociatedBuffer(filename,assoc,cb) {
-                      const file_url = dir.url+filename+'.'+(assoc.replace(/^\./),'');
+                      const file_url = dir.url+(filename.replace(alias_root_fix,''))+'.'+(assoc.replace(/^\./),'');
                       pwaApi.fetchUpdatedURLContents(file_url,false,function(err,buffer){
                            if (err) return cb(err);
                            return cb (undefined,buffer,file_url);
