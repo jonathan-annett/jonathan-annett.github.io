@@ -11,7 +11,10 @@ injectHelper_mware    |  ${ml.c.app_root}ml.zipfs.middleware/injectHelper.js
 stopSW_mware          |  ${ml.c.app_root}ml.zipfs.middleware/stopSW.js
 updatedURL_mware      |  ${ml.c.app_root}ml.zipfs.middleware/updatedURL.js
 virtualDir_mware      |  ${ml.c.app_root}ml.zipfs.middleware/virtualDir.js
-buildRuntime_mware    |  ${ml.c.app_root}ml.zipfs.middleware/buildRuntime.js`
+buildRuntime_mware    |  ${ml.c.app_root}ml.zipfs.middleware/buildRuntime.js
+clients_mware         |  ${ml.c.app_root}ml.zipfs.middleware/clients.js
+
+`
 //github_mware          |  ${ml.c.app_root}ml.zipfs.middleware/github.js
 
 //`
@@ -34,6 +37,7 @@ buildRuntime_mware    |  ${ml.c.app_root}ml.zipfs.middleware/buildRuntime.js`
                                    "updatedURL",
                                    "virtualDir",
                                    "buildRuntime",
+                                   "clients"
                                   // "github",
                                 ];
                                 
