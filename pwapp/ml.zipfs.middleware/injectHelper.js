@@ -45,13 +45,17 @@ ml([],function(){ml(2,
    
     function mware(event,middleware) {
        
-       const fixup_uri = event.fixup_url.replace(middleware.isLocal,'');
+       let fixup_uri = event.fixup_url.replace(middleware.isLocal,'');
        const might_be_index = generic_index.test(fixup_uri);
        let isIndexPage = might_be_index && github_zip_index.test(fixup_uri) ||  zip_index.test(fixup_uri);
        
        if (!isIndexPage && might_be_index) {
-           const index_path = event.fixup_url.replace(generic_index,'');
-           isIndexPage =  middleware.virtualDirDB.virtualDirUrls.indexOf( index_path  )>=0;
+           isIndexPage = !! middleware.virtualDirDB.virtualDirs[ event.fixup_url ];
+           if (isIndexPage) {
+               fixup_uri += '/index.html';
+           } else {
+               isIndexPage = !! middleware.virtualDirDB.virtualDirs[ event.fixup_url.replace(generic_index,'') ] ;
+           } 
        }
        
        if (middleware.isLocalDomain(event) && isIndexPage ) {
