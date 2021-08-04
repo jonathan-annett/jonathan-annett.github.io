@@ -72,6 +72,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
             });
             
             
+           
             ml.i.dragSizeWindowLib.drag('#install-shell',[
                 "#install-shell > div.shell__status-bar"   ,
                 "#install-shell > div.shell__status-bar > div.status-bar__title" 
@@ -95,8 +96,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
             };
             
 
-            [
-                 "registered",
+            [    "registered",
                  "activated"].forEach(function(x){
                  window.addEventListener('ml.pwa.'+x,function(){
                      
@@ -134,6 +134,16 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                         return pwa.unregister(config.root,function(){
                             console.log("unregistered service worker, restarting...");
                         });
+                    } else {
+                        
+                        fetch ("service-worker-clients.json").then(function(response){
+                            response.text().then(function(text){
+                                JSON.parse(text).forEach(function(x){
+                                    console.log(url);
+                                });
+                            });
+                        });
+                        
                     }
                   
                }
@@ -222,11 +232,8 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                     {"input": "install pwapp", "output": [""]},
                   ];
                   shell.init();
-                
                   
                   ml.i.progressHandler(0,1,"loadProgress","loadProgressText","installProgress").onfilename=logFilenameInConsole;
-                  
-                  
                   
                   pwa.start(function(){
                       betaTesterApproval().then(function(config){
