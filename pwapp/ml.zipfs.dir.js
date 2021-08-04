@@ -343,12 +343,13 @@ ml(`
                                 url_write : dir.url+filename
                             };
                             
-                            pwaApi.updateURLContents (dir.files[filename].url_write,buffer,true,function(err,hash) {
-                                if (err) {
-                                    return ;
-                                }
-                               // li_ed.hashDisplay.textContent=hash;
+                            
+                            writeFileBuffer(filename,buffer,function(err,hash){
+                                
+                                
                             });
+                                
+                           
     
                         });
                     }
@@ -652,7 +653,7 @@ ml(`
                 
                 function open_file (fn,cb) {
                     
-                    const file_url = dir.url+fn; 
+                   
                     
                     const ext = fn.substr(fn.lastIndexOf('.')+1);
                     const custom_url_openers = {
@@ -660,15 +661,16 @@ ml(`
                         svg  : open_svg,
                         html : view_html
                     };
-                    const not_custom = function (filename,file_url) {
+                    const not_custom = function (fn) {
+                       const file_url = dir.url+fn; 
                        return open_url (file_url,cb) ;       
                     };
                     
-                    return (custom_url_openers[ext] || not_custom) (fn,file_url);
+                    return (custom_url_openers[ext] || not_custom) (fn,cb);
                 }
                
-                function open_html (html,file_url,cb) {
-                    console.log("creating temp file",file_url);
+                function open_html (html,filename,tmp_name,cb) {
+                    console.log("creating temp file",filename,tmp_name);
                     
                     var api = {
                         
@@ -701,12 +703,13 @@ ml(`
                           
                     };
                      
-                    pwaApi.updateURLContents (file_url ,new TextEncoder().encode(html),true,function(err,hash) {
+                        
+                    writeFileAssociatedText(filename,tmp_name,html,function(err,file_url){
                         
                         if (err) {
                             return ;
                         }
-                        console.log("opening temp url",file_url);
+                        console.log("opening temp url",filename,tmp_name);
                         api.win = open_url(file_url,function(ev,w){
                             api.win=w;
                             switch (ev) {
@@ -716,7 +719,7 @@ ml(`
                                             pwaApi.removeUpdatedURLContents(file_url,function(){
                                                 console.log("removed temp file",file_url);
                                                 if (cb) {
-                                                    cb("opened");
+                                                    cb("opened",file_url);
                                                 }
                                             });
                                         },500);
@@ -729,7 +732,7 @@ ml(`
                                     } else {
                                         delete api.win;
                                         if (cb) {
-                                            cb("closed");
+                                            cb("closed",file_url);
                                         }
                                     }
                                     break;
@@ -743,16 +746,20 @@ ml(`
                     return api;
                 }
                 
-                function open_markdown (filename,file_url) {
+                function open_markdown (filename) {
                     var converter = new MarkdownConverter();
-                    pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,buffer){
+                    
+                    readFileText(filename,function(err,buffer,updated,hash,text){
                         let win;
                         if (err) {
                             return;
                         } else {
-                            const html  = converter.makeHtml(new TextDecoder().decode(buffer));
-                            const suffix = Math.random().toString(36)+ ".html";
-                            win = open_html (html,file_url+suffix,function(state){
+                            const html  = converter.makeHtml(text);
+                            win = open_html (
+                                html,
+                                filename,
+                                Math.random().toString(36).substr(-8)+ ".html",
+                                function(state,file_url){
                                 // window closed so remive edit hook
                                 switch (state) {
                                     // add edit hook to update text due to editing.
@@ -770,15 +777,17 @@ ml(`
                     });
                 }
                 
-                function view_html (filename,file_url) {
-                    pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,buffer){
+                function view_html (filename) {
+                    readFileText(filename,function(err,buffer,updated,hash,html){
                         let win;
                         if (err) {
                             return;
                         } else {
-                            const html  = new TextDecoder().decode(buffer);
-                            const suffix = Math.random().toString(36)+ ".html";
-                            win = open_html (html,file_url+suffix,function(state){
+                            win = open_html (
+                                html,
+                                filename, 
+                                Math.random().toString(36).substr(-8)+ ".html" ,
+                                function(state,file_url){
                                 // window closed so remive edit hook
                                 switch (state) {
                                     // add edit hook to update text due to editing.
@@ -830,8 +839,9 @@ ml(`
                     }
                 }
                 
-                function open_svg (filename,file_url) {
-                    pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,buffer){
+                function open_svg (filename) {
+                    
+                    readFileText(filename,function(err,buffer,updated,hash,svg){
                         if (err) {
                             return;
                         } else {
@@ -845,13 +855,16 @@ ml(`
                                 '</title>',
                                 '</head>',
                                 '<body>',
-                                 new TextDecoder().decode(buffer),
+                                 svg,
                                  '</body>',
                                  '/html>'
                                 ].join('\n');
                                 
-                            const suffix = Math.random().toString(36)+ ".html";
-                            return open_html (html,file_url+suffix);
+                            return open_html (
+                                html,
+                                filename,
+                                Math.random().toString(36).substr(-8)+ ".html" 
+                            );
     
                         }
                     });
@@ -943,8 +956,8 @@ ml(`
                     }
                     
                     const file_url = dir.url+filename; 
-                    pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,text,updated,hash){
-                        const withCSS = new TextDecoder().decode(text);
+                    
+                    readFileText(filename,function(err,buffer,updated,hash,withCSS){
                         openStylesheetHelper(editor_channel,file_url,withCSS,function(obj) {  
                             obj.close(true);
                             cb();
@@ -1307,12 +1320,14 @@ ml(`
                         
                         const file_session_url = dir.url + filename +".hidden-json";
                         
-                        pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,text,updated,hash){
-                            const currentText = textContent || new TextDecoder().decode(text);
+                        
+                        readFileText(filename,function(err,buffer,updated,hash,text){
+                            const currentText = textContent || text;
                             
                             if (err) {
                                 li_ed.editor.session.setValue("error:"+err.message||err);
                             } else {
+                                
                                 pwaApi.fetchUpdatedURLContents(file_session_url,false,function(err,sess_json){
                                         
                                     sess_json = err ? false : new TextDecoder().decode(sess_json);
@@ -1527,10 +1542,7 @@ ml(`
                                         
                                 }); 
                             }
-                            
-                            
-    
-                            
+
                         });
                         
                         return li_ed;
@@ -1833,6 +1845,90 @@ ml(`
                    
                     
                 }
+                
+                
+                function readFileBuffer(filename,cb) {
+                    const entry = dir.files[filename];
+                    if (entry){
+                          const updated = entry.url_read===entry.url_write;
+                          
+                          fetch (entry.url_read).then(function(response){
+                              
+                             response.arraybuffer().then(function(buffer){
+                                 
+                                 sha1(buffer,function(err,hash){
+                                     if (err) return cb(err);
+                                     return cb(undefined,buffer,updated,hash)
+                                 });
+                                   
+                               }).catch(cb);
+                               
+                          }).catch(cb);
+                      
+                    } else {
+                        return cb(new Error("not found"));
+                    }
+                }
+                
+                function readFileText(filename,cb) {
+                    readFileBuffer(filename,function(err,buffer,hash){
+                       if (err) return cb(err);
+                       return cb (undefined,buffer,hash,new TextDecoder().decode(buffer));
+                    });
+                }
+                
+                function writeFileBuffer(filename,buffer,cb) {
+                    const entry = dir.files[filename];
+                    if (entry){
+                          pwaApi.updateURLContents (dir.files[filename].url_write,buffer,true,function(err,hash) {
+                              sha1(buffer,function(err,hash){
+                                 if (err) return cb(err);
+                                 entry.url_orig = entry.url_orig || entry.url_read;
+                                 entry.url_read = entry.url_write;
+                                 
+                                 return cb(undefined,hash)
+                              });
+                          });
+                    } else {
+                        return cb(new Error("not found"));
+                    }
+                }
+                
+                
+                function writeFileText(filename,text,cb) {
+                    writeFileBuffer(filename,new TextEncoder().encode(text),cb);
+                }
+                
+                
+                
+                
+                
+                function writeFileAssociatedBuffer(filename,assoc,buffer,cb) {
+                    const file_url = dir.url+filename+'.'+(assoc.replace(/^\./),'');
+                    pwaApi.updateURLContents (file_url,true,function(err,hash) {
+                        if (err) return cb(err);
+                        return cb (undefined,file_url);
+                    });
+                }
+                
+                function writeFileAssociatedText(filename,assoc,text,cb) {
+                    writeFileAssociatedBuffer(filename,assoc,new TextEncoder().encode(text),cb);
+                }
+                
+                function readFileAssociatedBuffer(filename,assoc,cb) {
+                      const file_url = dir.url+filename+'.'+(assoc.replace(/^\./),'');
+                      pwaApi.fetchUpdatedURLContents(file_url,false,function(err,buffer){
+                           if (err) return cb(err);
+                           return cb (undefined,buffer,file_url);
+                      });
+                } 
+                
+                function readFileAssociatedText(filename,assoc,cb) {
+                    readFileAssociatedBuffer(filename,assoc,function(err,buffer,file_url) {
+                        if (err) return cb(err);
+                        return cb(undefined,new TextDecoder().decode(buffer),file_url);
+                    });
+                }
     
                 
                 function zipPoller(index) {
@@ -1850,12 +1946,14 @@ ml(`
                                 const sha_el = qs(li,".sha1");
                                 if(sha_el && sha_el.textContent.trim()==='') {
                                     sha_el.textContent='--hashing---';
-                                    pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,buffer,updated,hash){
+                                    
+                                    
+                                    readFileText(filename,function(err,buffer,updated,hash,text){
+                                        
                                         if (fileIsEditable(filename)){
                                             sha_el.textContent='--syntax scanning---';
                                             const mode = aceModeForFile(filename);
                                             if (mode) {
-                                                const text = new TextDecoder().decode(buffer);
                                                 lintSource(hash,text,mode,function(errors,warnings){
                                                     li.classList[errors?"add":"remove"]("errors");
                                                     li.classList[warnings?"add":"remove"]("warnings");
