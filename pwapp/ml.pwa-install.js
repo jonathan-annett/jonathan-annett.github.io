@@ -139,7 +139,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                         fetch ("service-worker-clients.json").then(function(response){
                             response.text().then(function(text){
                                 JSON.parse(text).forEach(function(x){
-                                    console.log(url);
+                                    console.log(x.url);
                                 });
                             });
                         });
