@@ -37,8 +37,8 @@ ml([],function(){ml(2,
 
 
     function mware(event,middleware) {
-       //  /service-worker-clients.js
-       if (middleware.isLocalDomain(event,/\/service\-worker\-clients\.js$/)) {
+       //  /service-worker-clients.json
+       if (middleware.isLocalDomain(event,/\/service\-worker\-clients\.json$/)) {
            return new Promise(function(resolve){
                
                clients.matchAll({includeUncontrolled:true,type:"all"}).then(function(clientList) {
