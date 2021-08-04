@@ -1854,7 +1854,7 @@ ml(`
                           
                           fetch (entry.url_read).then(function(response){
                               
-                             response.arraybuffer().then(function(buffer){
+                             response.arrayBuffer().then(function(buffer){
                                  
                                  sha1(buffer,function(err,hash){
                                      if (err) return cb(err);
