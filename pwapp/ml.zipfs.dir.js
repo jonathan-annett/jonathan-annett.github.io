@@ -22,15 +22,8 @@ ml(`
             
             return ZipDirEditorLib;
             
-            function ZipDirEditorLib(
-                zip_url_base,
-                zip_virtual_dir,
-                full_zip_uri,
-                parent_link,
-                dir){
+            function ZipDirEditorLib(zip_url_base,alias_root_fix,alias_root,zip_virtual_dir,full_zip_uri,parent_link,dir) {
                 var 
-                alias_root = dir.alias_root.replace(/^\//,'')+'/', 
-                alias_root_fix = new RegExp('^'+regexpEscape(alias_root),''),
                 updated_prefix = dir.url,
                 zip_files = Object.keys(dir.files),
                 
