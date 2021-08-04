@@ -45,7 +45,7 @@ ml([],function(){ml(2,
                isIndexPage = !! middleware.virtualDirDB.virtualDirs[ event.fixup_url.replace(generic_index,'') ] ;
            } else {
                // this url doesn' end in index.html, but if it points to an entry in virtualDirs, it's a virtual dir, so add the index.html
-               isIndexPage = !! middleware.virtualDirDB.virtualDirs[ event.fixup_url ];
+               isIndexPage = !! middleware.virtualDirDB.virtualDirs[ event.fixup_url.replace(/\/$/,'') ];
                if (isIndexPage) {
                    // append the index.html to the url
                    fixup_uri += '/index.html';
