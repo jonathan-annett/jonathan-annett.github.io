@@ -41,12 +41,19 @@ ml([],function(){ml(2,
    const indexPageBodyInjectReplace = indexPageBodyInject + '</body>';
    const github_zip_index     = /(?:\/)([a-zA-Z0-9\-\_\~]*)\.zip\/(\1)\/index\.html$/;
    const zip_index            = /\.zip\/index\.html$/;
-
+   const generic_index        =  /\/index\.html$/;
+   
     function mware(event,middleware) {
        
        const fixup_uri = event.fixup_url.replace(middleware.isLocal,'');
 
-       const isIndexPage = github_zip_index.test(fixup_uri) ||  zip_index.test(fixup_uri);
+       let isIndexPage = github_zip_index.test(fixup_uri) ||  zip_index.test(fixup_uri);
+       
+       if (!isIndexPage && generic_index.test(fixup_uri)) {
+           
+           isIndexPage =  !! middleware.virtualDirDB.virtualDirUrls [ event.fixup_url.replace(event.fixup_url) ];
+           
+       }
        
        if (middleware.isLocalDomain(event) && isIndexPage ) {
            
