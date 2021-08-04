@@ -134,17 +134,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                         return pwa.unregister(config.root,function(){
                             console.log("unregistered service worker, restarting...");
                         });
-                    } else {
-                        
-                        fetch ("service-worker-clients.json").then(function(response){
-                            response.text().then(function(text){
-                                JSON.parse(text).forEach(function(x){
-                                    console.log(x.url);
-                                });
-                            });
-                        });
-                        
-                    }
+                      }
                   
                }
            }).catch(

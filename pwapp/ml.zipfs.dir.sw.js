@@ -212,7 +212,8 @@ ml(`
                                   
                                   tools.metaSrc(),
                                   '         ml.i.localDirLib(function(e,dir){',
-                                  '            ml.i.pwaZipDirListing(zip_url_base,zip_virtual_dir,zip_files,full_zip_uri,updated_prefix,alias_root_fix,alias_root,parent_link,dir);',
+                                  //'            ml.i.pwaZipDirListing(zip_url_base,zip_virtual_dir,zip_files,full_zip_uri,updated_prefix,alias_root_fix,alias_root,parent_link,dir);',
+                                  '            ml.i.pwaZipDirListing(zip_url_base,zip_virtual_dir,full_zip_uri,parent_link,dir);',
                                   '         });',
                                   '         ',
                                   '         return lib;',

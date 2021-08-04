@@ -25,14 +25,14 @@ ml(`
             function ZipDirEditorLib(
                 zip_url_base,
                 zip_virtual_dir,
-                zip_files,
                 full_zip_uri,
-                updated_prefix, 
-                alias_root_fix,
-                alias_root, 
                 parent_link,
                 dir){
                 var 
+                alias_root = dir.alias_root.replace(/^\//,'')+'/', 
+                alias_root_fix = new RegExp('^'+regexpEscape(dir.alias_root),''),
+                updated_prefix = dir.uri,
+                zip_files = Object.keys(dir.files),
                 
                 // some edit modes don't generate annotations, 
                 annotationsWorkerDetectDelay = 2000,
@@ -139,6 +139,10 @@ ml(`
                    pwaApi : pwaApi
                 };
                 
+                
+                function regexpEscape(str) {
+                    return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
+                }
     
                 function onDOMContentLoaded (){
                 
