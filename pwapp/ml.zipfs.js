@@ -177,13 +177,10 @@ ml(`
                        defaultFetchEvent         // last but not least... if url has not been cached, download and cache it.
                    ];
   
-             const urls_with_helpers = [];
-             
              const pwaMiddlewareOpts = { databases,
                                          response200,
                                          response500,
                                          fnSrc,
-                                         urls_with_helpers,
                                          virtualDirDB,
                                          virtualDirQuery,
                                          getZipObject,
@@ -707,7 +704,6 @@ ml(`
                       return true;
                   });
                   const json = JSON.stringify(source);
-                  urls_with_helpers.splice(0,urls_with_helpers.length);
                   const rules_template = parseTemplate(source);
                   fixupLog("parsed rules_template",rules_template);
                   fixupUrlEvent.rules = function (baseURI) {
@@ -729,18 +725,15 @@ ml(`
                                 x[k]= new RegExp(x[k],x.flags||'');
                             }
                          };
-                         const replacements = function (x,k,l) {
+                         const replacements = function (x,k) {
                              if (x[k]) {
                                 x[k] = x[k].replace(/\$\{origin\}/g,location.origin);
-                                if (l && l.indexOf(x[k])<0) {
-                                    l.push(x[k])
-                                }
                              }
                          };
                          
                          regexs(source,'match');   
                          regexs(source,'replace'); 
-                         replacements(source,'with',urls_with_helpers);
+                         replacements(source,'with');
                          replacements(source,'addPrefix');
                          return source;
                      }

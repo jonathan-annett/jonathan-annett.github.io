@@ -1,12 +1,12 @@
 
 /* global URLSearchParams,crypto */
- const queryString = window.location.search;
+const queryString = window.location.search;
  
 const urlParams = new URLSearchParams(queryString);
 
- const here     = location.href.split('?')[0];
+const here     = location.href.split('?')[0];
  
- const b64Json = urlParams.get("data");
+const b64Json = urlParams.get("data");
  if (b64Json){
      
      // loading with payload from mobile device
@@ -57,6 +57,17 @@ const urlParams = new URLSearchParams(queryString);
             }
             
         },10*1000);
+        
+        window.addEventListener("message", (event) => {
+          if (event.origin.indexOf("https://pollen-diamond-cone.glitch.me")!==0) {
+            return;
+          }
+            
+          
+          
+        
+          // ...
+        }, false);
             
     }
 }
@@ -119,4 +130,12 @@ const urlParams = new URLSearchParams(queryString);
               .catch(cb); 
      
  }
+ 
+ 
+ (function () {
+     
+             
+    
+     
+ })()
  

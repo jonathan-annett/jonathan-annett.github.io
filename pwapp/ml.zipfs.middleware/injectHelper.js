@@ -35,17 +35,21 @@ ml([],function(){ml(2,
 
     );
 
+   const indexPageBodyInject = '<iframe title="development helper" frameBorder="0" width="180" height="60" src="ml.pwa.dev.helper/helper.html" style="position:absolute;right:0;top:0;"></iframe>';
+   const indexPageBodyInjected = new RegExp(regexpEscape(indexPageBodyInject),'');
+   const indexPageBodyInjectAt = /<\/body\>/i;
+   const indexPageBodyInjectReplace = indexPageBodyInject + '</body>';
+   const github_zip_index     = /(?:\/)([a-zA-Z0-9\-\_\~]*)\.zip\/(\1)\/index\.html$/;
+   const zip_index            = /\.zip\/index\.html$/;
 
     function mware(event,middleware) {
        
        const fixup_uri = event.fixup_url.replace(middleware.isLocal,'');
 
-       const indexPageBodyInject = '<iframe title="development helper" frameBorder="0" width="180" height="60" src="ml.pwa.dev.helper/helper.html" style="position:absolute;right:0;top:0;"></iframe>';
-       const indexPageBodyInjected = new RegExp(regexpEscape(indexPageBodyInject),'');
-       const indexPageBodyInjectAt = /<\/body\>/i;
-       const indexPageBodyInjectReplace = indexPageBodyInject + '</body>';
+       const isIndexPage = github_zip_index.test(fixup_uri) ||  zip_index.test(fixup_uri);
        
-       if (middleware.isLocalDomain(event) && middleware.urls_with_helpers.indexOf(fixup_uri)>=0 ) {
+       if (middleware.isLocalDomain(event) && isIndexPage ) {
+           
            return new Promise(function(resolve){
                
                
