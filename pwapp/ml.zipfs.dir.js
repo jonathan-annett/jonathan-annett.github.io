@@ -31,7 +31,7 @@ ml(`
                 var 
                 alias_root = dir.alias_root.replace(/^\//,'')+'/', 
                 alias_root_fix = new RegExp('^'+regexpEscape(dir.alias_root),''),
-                updated_prefix = dir.uri,
+                updated_prefix = dir.url,
                 zip_files = Object.keys(dir.files),
                 
                 // some edit modes don't generate annotations, 
