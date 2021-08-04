@@ -1871,9 +1871,9 @@ ml(`
                 }
                 
                 function readFileText(filename,cb) {
-                    readFileBuffer(filename,function(err,buffer,hash){
+                    readFileBuffer(filename,function(err,buffer,updated,hash){
                        if (err) return cb(err);
-                       return cb (undefined,buffer,hash,new TextDecoder().decode(buffer));
+                       return cb (undefined,buffer,updated,hash,new TextDecoder().decode(buffer));
                     });
                 }
                 
