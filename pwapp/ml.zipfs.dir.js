@@ -30,7 +30,7 @@ ml(`
                 dir){
                 var 
                 alias_root = dir.alias_root.replace(/^\//,'')+'/', 
-                alias_root_fix = new RegExp('^'+regexpEscape(dir.alias_root),''),
+                alias_root_fix = new RegExp('^'+regexpEscape(alias_root),''),
                 updated_prefix = dir.url,
                 zip_files = Object.keys(dir.files),
                 
