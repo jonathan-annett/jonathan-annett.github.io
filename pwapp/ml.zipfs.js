@@ -241,6 +241,16 @@ ml(`
                   }
 
              };
+             
+             ml.c.fetch = function (url) {
+                 return new Promise(function(resolve,reject){
+                     fetchInternal(url,function(err,response){
+                         if (err) return reject(err);
+                         resolve(response);
+                     })
+                 })  
+             };
+             
            
              return lib;
              
@@ -376,6 +386,8 @@ ml(`
                  };
                  processFetchRequestInternal(fakeEvent,cb);
              }
+             
+             
              
              function fetchInternalBuffer(url,cb){
                   fetchInternal(url,function(err,response){

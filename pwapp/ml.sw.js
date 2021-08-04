@@ -254,10 +254,10 @@ function ml(x,L, o, a, d, s){
                      
                      importScripts( U );
                      delete c.p1;
-            }
-              
-           
-              
+            },
+            
+            fetch : fetch
+
         };
         
         ml.c.app_root = ml.c.b.substr(location.origin.length).replace(/\/$/,'')+"/";
@@ -310,7 +310,7 @@ function ml(x,L, o, a, d, s){
                      ml.h[U] = {e:{},E:{}};
                      // create swizzle wrapper to fetch and then cache json object 
                      W=(C)=>{
-                          fetch(U).then(
+                          c.fetch(U).then(
                               (r)=>{
                                   r.text().then((t,o,u)=>{
                                       try {
@@ -359,7 +359,7 @@ function ml(x,L, o, a, d, s){
                                      return t;
                                  };
                                  W=(C)=>{
-                                      fetch(U).then(
+                                      c.fetch(U).then(
                                           (r)=>{
                                               r.text().then((t,o,u)=>{
                                                  ml.h[U].E[N]=t;

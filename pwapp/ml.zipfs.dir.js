@@ -15,7 +15,6 @@ ml(`
     openWindowLib         | ${ml.c.app_root}ml.openWindow.js
     dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
     devClassLib           | ${ml.c.app_root}ml.devclass.js
-    
     `,function(){ml(2,
 
     {
