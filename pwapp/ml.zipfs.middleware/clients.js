@@ -42,15 +42,17 @@ ml([],function(){ml(2,
            return new Promise(function(resolve){
                
                clients.matchAll({includeUncontrolled:true,type:"all"}).then(function(clientList) {
-                   const urls = [];
+                   const cs = [];
                    for (var i = 0 ; i < clientList.length ; i++) {
-                       urls.push({
-                           id:clientList[i].id,
-                           type:clientList[i].type,
-                           url:clientList[i].url
-                       });
+                       if (event.clientId !== id:clientList[i].id ) {
+                           cs.push({
+                               id:clientList[i].id,
+                               type:clientList[i].type,
+                               url:clientList[i].url
+                           });
+                       }
                    }
-                   const json = JSON.stringify(urls,undefined,4);
+                   const json = JSON.stringify(cs,undefined,4);
                    resolve(new Response(json, {
                     
                        status: 200,
