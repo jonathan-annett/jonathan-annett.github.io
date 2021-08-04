@@ -310,7 +310,7 @@ function ml(x,L, o, a, d, s){
                      ml.h[U] = {e:{},E:{}};
                      // create swizzle wrapper to fetch and then cache json object 
                      W=(C)=>{
-                          fetch(U).then(
+                          c.fetch(U).then(
                               (r)=>{
                                   r.text().then((t,o,u)=>{
                                       try {
