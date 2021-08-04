@@ -30,7 +30,8 @@ ml(`
                 updated_prefix, 
                 alias_root_fix,
                 alias_root, 
-                parent_link){
+                parent_link,
+                dir){
                 var 
                 
                 // some edit modes don't generate annotations, 
