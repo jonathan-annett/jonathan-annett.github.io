@@ -179,7 +179,7 @@ ml(`
                                    
                                    
                                   ' ml(["pwaZipDirListing|'+ml.c.app_root+'ml.zipfs.dir.js",',
-                                  '     "localDirLib| https://jonathan-annett.github.io/pwapp/virtual-listing.json"],function(){ml(2,',
+                                  '     "localDirLib|'+ updated_prefix+ 'virtual-listing.json"],function(){ml(2,',
                                   ' ',
                                   '     {',
                                   '         Window: function pageMain( lib ) {',
