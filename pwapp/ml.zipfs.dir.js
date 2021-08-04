@@ -336,13 +336,15 @@ ml(`
                             
                             if (zip_files.indexOf(filename)<0) {
                                 zip_files.push(filename);
-                                
-                                
                             }
                             
-                            pwaApi.updateURLContents (filename,buffer,true,function(err,hash) {
+                            dir.files[filename] = {
+                                url_read  : dir.url+filename,
+                                url_write : dir.url+filename
+                            };
+                            
+                            pwaApi.updateURLContents (dir.files[filename].url_write,buffer,true,function(err,hash) {
                                 if (err) {
-                                    
                                     return ;
                                 }
                                // li_ed.hashDisplay.textContent=hash;
@@ -494,8 +496,10 @@ ml(`
                     const li = find_li(filename);
                     
                     
-                   const file_url = pwaApi.filename_to_url(filename);
-                   pwaApi.removeUpdatedURLContents(file_url);
+                   pwaApi.removeUpdatedURLContents(dir.url+filename);
+                   
+                   
+                   
                    refreshStylesheeet(filename,function() {
                        if (li) {
                            // if the editor is open an editor id will exist in the li element 
@@ -525,9 +529,6 @@ ml(`
                                   li.classList.remove("edited");
                                }
                            }
-                           
-                           
-                               
                        }
                    });
                    
@@ -566,12 +567,11 @@ ml(`
                         li.classList.remove("editing");
                     } else {
                         const img = document.createElement("img");
-                        const file_url = pwaApi.filename_to_url(filename);
                         const newLi = document.createElement("li");
                         newLi.classList.add("image_viewer");
                         newLi.appendChild(img);
                         li.parentElement.insertBefore(newLi,nextSib);
-                        img.src = file_url;
+                        img.src = dir.url+filename;
                         li.classList.add("editing");
                         
                     }
@@ -652,7 +652,7 @@ ml(`
                 
                 function open_file (fn,cb) {
                     
-                    const file_url = pwaApi.filename_to_url(fn);
+                    const file_url = dir.url+fn; 
                     
                     const ext = fn.substr(fn.lastIndexOf('.')+1);
                     const custom_url_openers = {
@@ -745,7 +745,7 @@ ml(`
                 
                 function open_markdown (filename,file_url) {
                     var converter = new MarkdownConverter();
-                    pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer){
+                    pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,buffer){
                         let win;
                         if (err) {
                             return;
@@ -771,7 +771,7 @@ ml(`
                 }
                 
                 function view_html (filename,file_url) {
-                    pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer){
+                    pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,buffer){
                         let win;
                         if (err) {
                             return;
@@ -831,7 +831,7 @@ ml(`
                 }
                 
                 function open_svg (filename,file_url) {
-                    pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer){
+                    pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,buffer){
                         if (err) {
                             return;
                         } else {
@@ -942,8 +942,8 @@ ml(`
                         return cb ();
                     }
                     
-                    const file_url = pwaApi.filename_to_url(filename);
-                    pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
+                    const file_url = dir.url+filename; 
+                    pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,text,updated,hash){
                         const withCSS = new TextDecoder().decode(text);
                         openStylesheetHelper(editor_channel,file_url,withCSS,function(obj) {  
                             obj.close(true);
@@ -1220,7 +1220,7 @@ ml(`
                             },
                         function(err,json){
                             const buffer = new TextEncoder().encode(json);
-                            const file_url = pwaApi.filename_to_url(filename)+".hidden-json";
+                            const file_url = dir.url+filename+".hidden-json";
                             pwaApi.updateURLContents (file_url,buffer,false,function(err) {
                                 cb();
                             });
@@ -1279,7 +1279,7 @@ ml(`
     
                 function openInbuiltEditor (filename,li,cb,height,textContent) {
                     li=li||find_li (filename);
-                    const file_url = pwaApi.filename_to_url(filename);
+                    const file_url =  dir.url+filename;
                     let editor_id = li.dataset.editor_id;
                     if (!editor_id) {
                         while (true) {
@@ -1305,9 +1305,9 @@ ml(`
                         li_ed.sizebar = dragSize("#"+editor_id,["#"+editor_id+"_grab_bar"]);
                        
                         
-                        const file_session_url = pwaApi.filename_to_url(filename)+".hidden-json";
+                        const file_session_url = dir.url + filename +".hidden-json";
                         
-                        pwaApi.fetchUpdatedURLContents(file_url,true,function(err,text,updated,hash){
+                        pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,text,updated,hash){
                             const currentText = textContent || new TextDecoder().decode(text);
                             
                             if (err) {
@@ -1366,7 +1366,7 @@ ml(`
                                         };
                                         
                                         li_ed.reload = function () {
-                                            pwaApi.fetchUpdatedURLContents(file_url,true,function(err,buffer,updated,hash){
+                                            pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,buffer,updated,hash){
                                                 const text = new TextDecoder().decode(buffer);
                                                 li_ed.setText(text);
                                                 if (li_ed.edit_helper) {
@@ -1406,10 +1406,12 @@ ml(`
                                                     
                                                     if (li_ed.text_changed) {
                                                         li_ed.text_changed=false;
-                                                       pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
+                                                       pwaApi.updateURLContents (dir.files[filename].url_write,buffer,true,function(err,hash) {
                                                         if (err) {
                                                             return ;
                                                         }
+                                                        dir.files[filename].url_orig = dir.files[filename].url_orig || dir.files[filename].url_read;
+                                                        dir.files[filename].url_read = dir.files[filename].url_write;
                                                         li.classList.add("edited");
                                                         li_ed.hashDisplay.textContent=hash;
                                                         if (edit_hooks[file_url]) {
@@ -1472,10 +1474,12 @@ ml(`
                                                         }
                                                         if (transientEditorMetaResave(li_ed)||li_ed.annotationsWorkerDetect===false) {
                                                            
-                                                            pwaApi.updateURLContents (file_url,buffer,true,function(err,hash) {
+                                                            pwaApi.updateURLContents (dir.files[filename].url_write,buffer,true,function(err,hash) {
                                                                 if (err) {
                                                                     return ;
                                                                 }
+                                                                dir.files[filename].url_orig = dir.files[filename].url_orig || dir.files[filename].url_read;
+                                                                dir.files[filename].url_read = dir.files[filename].url_write;
                                                                 // since we are saving the text, we can clear the li_ed.text_changed flag
                                                                 li_ed.text_changed=false;
                                                                 li.classList.add("edited");
@@ -1846,7 +1850,7 @@ ml(`
                                 const sha_el = qs(li,".sha1");
                                 if(sha_el && sha_el.textContent.trim()==='') {
                                     sha_el.textContent='--hashing---';
-                                    pwaApi.fetchUpdatedURLContents(filename,true,function(err,buffer,updated,hash){
+                                    pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,buffer,updated,hash){
                                         if (fileIsEditable(filename)){
                                             sha_el.textContent='--syntax scanning---';
                                             const mode = aceModeForFile(filename);
