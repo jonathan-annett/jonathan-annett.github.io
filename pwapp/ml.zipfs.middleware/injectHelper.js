@@ -20,7 +20,7 @@ ml([],function(){ml(2,
 
     );
 
-   const indexPageBodyInject = '<iframe title="development helper" frameBorder="0" width="180" height="60" src="ml.pwa.dev.helper/helper.html" style="position:absolute;right:0;top:0;"></iframe>';
+   const indexPageBodyInject = '<iframe title="development helper" frameBorder="0" width="180" height="60" src="'+ml.c.app_root+'ml.pwa.dev.helper/helper.html" style="position:absolute;right:0;top:0;"></iframe>';
    const indexPageBodyInjected = new RegExp(regexpEscape(indexPageBodyInject),'');
    const indexPageBodyInjectAt = /<\/body\>/i;
    const indexPageBodyInjectReplace = indexPageBodyInject + '</body>';
@@ -39,10 +39,10 @@ ml([],function(){ml(2,
        
        if (!isIndexPage) {
            // ok so not one of those - now see if it's an index inthe root of a virtual dir url
-           if (might_be_index) { 
+           if (might_be_index) {
                // if the url points directly to a file called index.html, remove it, so we get the dir name
                // then see if that is a virtual dir.
-               isIndexPage = !! middleware.virtualDirDB.virtualDirs[ event.fixup_url.replace(generic_index,'') ] ;
+               isIndexPage = !! middleware.virtualDirDB.virtualDirs[ event.fixup_url.replace(generic_index,'') ];
            } else {
                // this url doesn' end in index.html, but if it points to an entry in virtualDirs, it's a virtual dir, so add the index.html
                isIndexPage = !! middleware.virtualDirDB.virtualDirs[ event.fixup_url.replace(/\/$/,'') ];
