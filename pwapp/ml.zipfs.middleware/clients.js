@@ -44,7 +44,7 @@ ml([],function(){ml(2,
                clients.matchAll({includeUncontrolled:true,type:"all"}).then(function(clientList) {
                    const cs = [];
                    for (var i = 0 ; i < clientList.length ; i++) {
-                       if (event.clientId !== clientList[i].id ) {
+                       if (event.fixup_url !== clientList[i].url ) {
                            cs.push({
                                id:clientList[i].id,
                                type:clientList[i].type,
