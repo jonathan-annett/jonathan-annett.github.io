@@ -243,7 +243,10 @@ ml([],function(){ml(2,
                                    
                                        } else {
                                            const zip_root = virtualDirDB.virtualDirZipBase[prefix].root;
-                                           return resolve({aliased_url:prefix + zip_root + url.substr(prefix.length)});
+                                           return resolve({
+                                               aliased_url:prefix + zip_root + url.substr(prefix.length),
+                                               prefix      : prefix
+                                           });
                                        }
                                        
                                    };
