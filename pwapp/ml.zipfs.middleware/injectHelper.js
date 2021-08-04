@@ -51,7 +51,7 @@ ml([],function(){ml(2,
        
        if (!isIndexPage && generic_index.test(fixup_uri)) {
            
-           isIndexPage =  !! middleware.virtualDirDB.virtualDirUrls [ event.fixup_url.replace(event.fixup_url,'') ];
+           isIndexPage =  !! middleware.virtualDirDB.virtualDirUrls [ event.fixup_url.replace(generic_index,'') ];
            
        }
        
