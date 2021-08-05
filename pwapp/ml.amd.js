@@ -9,8 +9,8 @@
  
   const resolve_fn    = function (fn) {
       return       /^http(s):\/\//.test(fn)? fn :
-                  /^\//.test(fn) ? location.origin+fn :
-                  location.pathname.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'+fn.replace(/\.\//,''));
+                   /^\//.test(fn) ? location.origin+fn :
+                   location.pathname.replace(/\/[a-zA-Z0-9\-\_\.~\!\*\'\(\)\;\:\@\=\+\$\,\[\]]*$/,'/'+fn.replace(/\.\//,''));
 
   };
   const compile    = { script   : compile_viascript,

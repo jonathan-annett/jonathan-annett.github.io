@@ -46,7 +46,7 @@ function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw
     commonJSQuotedRequires = /(\'.*(require\s*\(\s*(\"|\\\"|\\\')).*\')|(\".*(require\s*\(\s*(\'|\\\"|\\\')).*\")|(\`.*(require\s*\(\s*(\"|\'|\\\"|\\\')).*\`)/g,
     commonJSArgs           = ['require','module','exports'],
     
-    scriptBase             = getPathDir(getUrlPath(root_js)),
+    scriptBase             = getPathDir(getUrlPath(root_js.replace(/\?.*/,''))),
     
     urlIndex = {};
     
@@ -550,6 +550,9 @@ function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw
         // we basically set traps for all of the above, and associated the objects created with the url.
         // calling define can happen more than once, as can calling ml
         // it's presumed that modifying window, replacing exports, or calling define happens synchronously, while require may happen at any time going forward
+        
+        const script_url_query = /.*\?/.test(script_url) ? script_url.replace(/.*\?/,'?') : '';
+        script_url = script_url.replace(/\?.*/,'');
         
         if (urlIndex [script_url].module && !urlIndex [script_url].modDef) {
             // this has already been installed
@@ -1177,9 +1180,9 @@ function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw
         loadScriptText(url,function(err,text){
             
            if (err) return cb(err);
-           
-           if (url.slice(-3)===".js") {
-               const filename = getUrlPath(url);
+           const url_ = url.replace(/\?.*/,'');
+           if (url_.slice(-3)===".js") {
+               const filename = getUrlPath(url_);
                const dirname  = getPathDir(filename);
                const compile_mode = comile_debug_regex.test(text) ? compile_viascript_base64 : compile;
                const regex = /(\s|\;|\/|\n)+(ml\s*\()/;
@@ -1206,7 +1209,7 @@ function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw
                                 }
                             };
                             
-                            urlIndex[url] = mod;
+                            urlIndex[url_] = mod;
                             return cb (undefined, mod);
                         });
                    
@@ -1247,7 +1250,7 @@ function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw
                
                */
                
-           } else if (url.slice(-5)===".json") {
+           } else if (url_.slice(-5)===".json") {
              try {
                    
                    const obj = JSON.parse(text);
@@ -1260,7 +1263,7 @@ function amd(bound_self,app_root,root_js,compile, loadScriptText, ml_stack,ml_sw
                       }
                    };
                    
-                   urlIndex[url] = mod;
+                   urlIndex[url_] = mod;
                    
                    return cb (undefined,mod);
 
