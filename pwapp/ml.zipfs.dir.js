@@ -1825,13 +1825,13 @@ ml(`
                     }
                 }
                 
-                function saveInbuiltEditorChanges(filename,li,force) {
+                function saveInbuiltEditorChanges(filename,li) {
                      li=li||find_li (filename);
                      let editor_id = li.dataset.editor_id;
                      if (editor_id) {
                          const ed = qs("#"+editor_id);
                          const li_ed = ed.parentNode;
-                         li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(force,function(){
+                         li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(true,function(){
                              li.classList.remove("editing");
                              
                              li.classList.remove("errors");
