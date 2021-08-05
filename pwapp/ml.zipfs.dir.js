@@ -1538,7 +1538,7 @@ ml(`
     
                 function openInbuiltEditor (filename,li,cb,height,textContent) {
                     li=li||find_li (filename);
-                    const file_url = (dir.url,filename); 
+                    const file_url = join(dir.url,filename); 
                     let editor_id = li.dataset.editor_id;
                     if (!editor_id) {
                         while (true) {
