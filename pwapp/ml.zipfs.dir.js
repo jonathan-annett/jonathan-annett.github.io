@@ -14,6 +14,8 @@ ml(`
     openWindowLib         | ${ml.c.app_root}ml.openWindow.js
     dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
     devClassLib           | ${ml.c.app_root}ml.devclass.js
+    Tabulator             | ${ml.c.app_root}tabulator/dist/tabulator.min.js
+    
     `,function(){ml(2,
 
     {
