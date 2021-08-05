@@ -245,7 +245,7 @@ ml(`
                            if (ix<-1) {
                                dir.files[filename] = -2 - ix;
                            } 
-                           const url = dir.url + filename;
+                           const url = join(dir.url,filename);
                            const li = find_li(filename);
                            removeUpdatedURLContents(url,li,cb);
                            
@@ -586,7 +586,7 @@ ml(`
                             }
                             
                             const entry = dir.files[filename] = {
-                                url_write : dir.url+(filename.replace(alias_root_fix,''))
+                                url_write : join(dir.url,filename)
                             };
                             entry.url_read  = entry.url_write; 
                            
@@ -818,7 +818,7 @@ ml(`
                         newLi.classList.add("image_viewer");
                         newLi.appendChild(img);
                         li.parentElement.insertBefore(newLi,nextSib);
-                        img.src = dir.url+(filename.replace(alias_root_fix,''));
+                        img.src = join(dir.url,filename);
                         li.classList.add("editing");
                         
                     }
@@ -908,7 +908,7 @@ ml(`
                         html : view_html
                     };
                     const not_custom = function (fn) {
-                       const file_url = dir.url+(fn.replace(alias_root_fix,'')); 
+                       const file_url = join(dir.url,fn); 
                        return open_url (file_url,cb) ;       
                     };
                     
@@ -1202,7 +1202,7 @@ ml(`
                         return cb ();
                     }
                     
-                    const file_url = dir.url+(filename.replace(alias_root_fix,'')); 
+                    const file_url = (dir.url,filename); 
                     
                     readFileText(filename,function(err,buffer,updated,hash,withCSS){
                         openStylesheetHelper(editor_channel,file_url,withCSS,function(obj) {  
@@ -1538,7 +1538,7 @@ ml(`
     
                 function openInbuiltEditor (filename,li,cb,height,textContent) {
                     li=li||find_li (filename);
-                    const file_url =  dir.url+(filename.replace(alias_root_fix,''));
+                    const file_url = (dir.url,filename); 
                     let editor_id = li.dataset.editor_id;
                     if (!editor_id) {
                         while (true) {
