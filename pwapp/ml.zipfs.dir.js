@@ -254,7 +254,7 @@ ml(`
                                              li.classList[updated?"add":"remove"]('edited');
                                              li.classList[!!li.dataset.editor_id ?"add":"remove"]('editing');
                                          }
-                                         return cb(undefined,buffer,updated,hash,file_url);
+                                         return cb(undefined,buffer,false,hash,file_url);
 
                                      });
                                        
