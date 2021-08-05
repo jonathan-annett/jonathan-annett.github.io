@@ -122,8 +122,7 @@ ml(`
                 
                    
                 function file_template(vars) {
-                    
-                    return replaceTextVars(
+                    const html = replaceTextVars(
                         replaceWrapperText(
                             html_details_html,
                             "link_it",
@@ -133,7 +132,9 @@ ml(`
                                 )
                             ),
                         vars
-                    ).replace(fixup_re,'<span class="alias_root">'+alias_root+'</span>'); 
+                    );
+                    
+                    return html.replace(fixup_re,'<span class="alias_root">'+alias_root+'</span>'); 
                 }
                 
                 function linkit(uri,disp){ 
