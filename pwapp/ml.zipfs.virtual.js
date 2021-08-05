@@ -66,7 +66,9 @@ ml([],function(){ml(2,
                 
                 // returns a stringlist of all files in the zip (includes hidden files, but not deleted files)
                 function virtualDirListing (url,cb) {
+                    
                     if (virtualDirDB.virtualDirUrls.indexOf(url)>=0) {
+                        
                         const dirs  = virtualDirDB.virtualDirs[url];
                         const base = virtualDirDB.virtualDirZipBase[url];
                         if (dirs&& base) {
@@ -83,7 +85,9 @@ ml([],function(){ml(2,
                             
                             const url_without_leading_slash = url.replace(/^\//,'');
                             const zip_root_without_slash = zip_root ? zip_root.replace(/\//,'') : '';
-                            const virtual_prefix = zip_root &&  url_without_leading_slash.endsWith(zip_root_without_slash) ? url_without_leading_slash.slice(0,0-zip_root_without_slash.length) : url_without_leading_slash ;
+                            const virtual_prefix = zip_root &&  url_without_leading_slash.endsWith(zip_root_without_slash) ? 
+                                                                url_without_leading_slash.slice(0,0-zip_root_without_slash.length) : 
+                                                                url_without_leading_slash;
                             
                             
                             //asynchronously open all the zip files in this db
@@ -118,12 +122,7 @@ ml([],function(){ml(2,
                                                              data.tools.meta.deleted && 
                                                              !!data.tools.meta.deleted[file];
                                                      })){
-                                                        const file_with_leading_slash = '/' + file;
-                                                         listing[file]={
-                                                          url_write  : virtual_prefix  + (zip_root && file_with_leading_slash.startsWith(zip_root) ? file_with_leading_slash.substr(zip_root.length) : file_with_leading_slash),
-                                                          url_read   : data.zip_url    + file_with_leading_slash
-                                                        };
-                                                        
+                                                         listing[file]=dirs_trimmed.indexOf(data.zip_url );
                                                      }
                                                  }
                                              });
@@ -145,12 +144,7 @@ ml([],function(){ml(2,
                                                              !!data.tools.meta.deleted[file];
                                                 })){
                                                   const fn = virtual_prefix + '/'+(zip_root && file.startsWith(zip_root) ? file.substr(zip_root.length) : file);
-                                                  listing[file] = {
-                                                      url_write: fn,
-                                                      url_read : fn,
-                                                      updated  : true,
-                                                      new_file : true
-                                                  };  
+                                                  listing[file] = -1;
                                                 }
                                             }
                                         });
@@ -158,7 +152,6 @@ ml([],function(){ml(2,
                                         cb( undefined,
                                             {
                                                 url        : virtual_prefix+'/',
-                                                zip_uri    : url.replace(/^.*:\/\//,'').replace(/^.*\//,'/'),
                                                 zips       : dirs_trimmed,
                                                 alias_root : zip_root.replace(/^\//,'').replace(/\/$/,'') + '/',
                                                 files      : listing
@@ -172,6 +165,7 @@ ml([],function(){ml(2,
                             
                             // note - return to avoid the fall through to cb (error)
                             return getNextFileSet(0);
+                            
                         }
                     }
                     
