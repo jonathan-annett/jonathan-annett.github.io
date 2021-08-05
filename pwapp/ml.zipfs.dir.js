@@ -1496,7 +1496,7 @@ ml(`
                         li.classList[ error_list.length > 0 ? "add" : "remove" ]("warnings");
                         
                             
-                        qs("html").classList[  errorsExist () ?"remove":"add"]("errors");
+                        qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
                         
                     } else {
                         errors = null;
@@ -1659,7 +1659,7 @@ ml(`
                                                     }
                                                 } else {
                                                     delete ignoreErrors[filename];
-                                                    qs("html").classList[  errorsExist () ?"remove":"add"]("errors");
+                                                    qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
                                                 }
                                                 
                                                 
@@ -1725,7 +1725,7 @@ ml(`
                                                                 
                                                                 li.classList.remove("pending");
                                                                 delete ignoreErrors[filename];
-                                                                qs("html").classList[  errorsExist () ?"remove":"add"]("errors");
+                                                                qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
                                                             });
                                                         } else {
                                                             // since the text has changed, bit has errors, we need to flag it
