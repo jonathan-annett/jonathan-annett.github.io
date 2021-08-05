@@ -31,33 +31,37 @@ ml(`
     {
 
         ServiceWorkerGlobalScope: function editSourceCode_mware(  ) {
-          return mware;
+          return getMWare() ;
         } 
     }, {
         ServiceWorkerGlobalScope: [] 
     }
 
     );
-
-    const isSourceCodeLink = /^(https\:\/\/)(.*)(\.html|\.css|\.js)(\:[0-9]+)?\:[0-9]+$/;
+    
+    function getMWare() {
+    
+        const isSourceCodeLink = /^(https\:\/\/)(.*)(\.html|\.css|\.js)(\:[0-9]+)?\:[0-9]+$/;
+        const editInZedHtml = ml.i.editInZed.zedhookHtml;  
+        
+        return mware;
+        
+        function mware(event,middleware) {
             
-    function mware(event,middleware) {
-                
-        const editInZedHtml = ml.i.editInZed.zedhookHtml;
-        
-        if ( middleware.isLocalDomain(event,isSourceCodeLink)) {
-            return new Promise(function(resolve){
-                
-                       const html  =  editInZedHtml (event.fixup_url);
-                       
-                       middleware.response200 (resolve,html,{
-                           name          : event.fixup_url.replace(middleware.isLocal,''),
-                           contentType   : 'text/html',
-                           contentLength : html.length
-                       });
-            });
-        } 
-        
+            if ( middleware.isLocalDomain(event,isSourceCodeLink)) {
+                return new Promise(function(resolve){
+                    
+                           const html  =  editInZedHtml (event.fixup_url);
+                           
+                           middleware.response200 (resolve,html,{
+                               name          : event.fixup_url.replace(middleware.isLocal,''),
+                               contentType   : 'text/html',
+                               contentLength : html.length
+                           });
+                });
+            } 
+        }
+    
     }
 
 });

@@ -97,7 +97,7 @@ databasesZipHtml@ServiceWorkerGlobalScope  |  ${ml.c.app_root}/ml.zipfs.middlewa
         },
         ServiceWorkerGlobalScope: function databasesZip_mware(  ) {
           
-          return mware;
+          return getMware();
           
         } 
     }, {
@@ -108,17 +108,16 @@ databasesZipHtml@ServiceWorkerGlobalScope  |  ${ml.c.app_root}/ml.zipfs.middlewa
     );
 
  
-    
-     
-  function mware(event,middleware) {
-      
-         const sha1 = ml.i.sha1Lib.cb;
+function getMware() {
+     const sha1 = ml.i.sha1Lib.cb;
         
-         const progressHandler = ml.i.progressHandler; 
-         
+     const progressHandler = ml.i.progressHandler; 
+     
+     return mware;
+  
+     function mware(event,middleware) {
+      
          if ( middleware.isLocalDomain(event,/\/databases\.zip$/)) {
-            
-            
             
             return new Promise(function(resolve){
                 
@@ -194,6 +193,9 @@ databasesZipHtml@ServiceWorkerGlobalScope  |  ${ml.c.app_root}/ml.zipfs.middlewa
             
         }
         
+    }
+    
+    
     }
 
 });
