@@ -1853,6 +1853,7 @@ ml(`
                          li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(true,function(){
                              li.classList.remove("save-edits");
                              ignoreErrors[filename]=true;
+                             qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
                          });
                      }
                 }
