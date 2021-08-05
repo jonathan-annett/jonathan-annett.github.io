@@ -588,6 +588,9 @@ ml(`
 
              function fetchFileFromZipEvent (event) {
                  const params    = event.fixup_params();
+                 if (params.virtual_prefix) {
+                     event.virtual_prefix = params.virtual_prefix;
+                 }
                  return  doFetchZipUrl(event.request,event.fixup_url,params,event.virtual_prefix);
              }
 

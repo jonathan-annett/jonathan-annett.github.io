@@ -43,6 +43,7 @@ ml(`
                        function resolveZipListing_Script (zip_meta_js_url,buffer,virtual) {
                            
                            const url = zip_meta_js_url.replace(/\.zip\.meta\.js$/,'.zip');
+                           
                            return new Promise(function (resolve){
                                
                                getZipObject(url,buffer,function(err,zip,zipFileMeta) {
@@ -165,7 +166,7 @@ ml(`
                                    
                                    
                                   ' ml(["pwaZipDirListing|'+ml.c.app_root+'ml.zipfs.dir.js",',
-                                  '     "localDirLib|'+ updated_prefix+ 'virtual-listing.json"],function(){ml(2,',
+                                  '     "localDirLib|'+ updated_prefix+ 'virtual-listing.json'+(virtual?'?virtual_prefix='+encodeURIComponent(virtual):'')+'"],function(){ml(2,',
                                   ' ',
                                   '     {',
                                   '         Window: function pageMain( lib ) {',
@@ -371,7 +372,7 @@ ml(`
                                             {
                                                uri:uri,
                                                app_root:ml.c.app_root,
-                                               script_uri:'/'+uri+'.meta.js'+(virtual?'?virtual_uri='+encodeURIComponent(virtual):''),
+                                               script_uri:'/'+uri+'.meta.js'+(virtual?'?virtual_prefix='+encodeURIComponent(virtual):''),
                                                head_script:'',
                                                hidden_files_class:hidden_files_exist?' hidden_files_exist':'',
                                                designer:'',
