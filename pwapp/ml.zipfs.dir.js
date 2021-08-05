@@ -681,14 +681,8 @@ ml(`
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
                      
-                    saveInbuiltEditorChanges ( filename,li, function(){
-                         li.classList.remove("errors");
-                         li.classList.remove("warnings");
-                         li.classList.remove("save-edits");
-                         
-                         toggleInbuiltEditor ( filename,li );
-                    },true)
-                   
+                    saveInbuiltEditorChanges ( filename,li);
+
                     
                 }
                 
@@ -1608,7 +1602,7 @@ ml(`
                                             });
                                         };
 
-                                        li_ed.changeAnnotationFunc = function (force){
+                                        li_ed.changeAnnotationFunc = function (force,cb){
                                                 
                                             // to ignore callback after destruction, the li_ed.changeAnnotationFunc
                                             // is deleted before calling editor.destroy();
@@ -1642,6 +1636,10 @@ ml(`
                                                             }
                                                             
                                                             li.classList.remove("pending");
+                                                            
+                                                            if (typeof cb==='function') {
+                                                                cb();
+                                                            }
 
                                                         });
                                                     }
@@ -1827,16 +1825,21 @@ ml(`
                     }
                 }
                 
-                function saveInbuiltEditorChanges(filename,li,cb,force) {
+                function saveInbuiltEditorChanges(filename,li,force) {
                      li=li||find_li (filename);
                      let editor_id = li.dataset.editor_id;
                      if (editor_id) {
-                         li.classList.remove("editing");
-                         
                          const ed = qs("#"+editor_id);
-                         
                          const li_ed = ed.parentNode;
-                         li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(force);
+                         li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(force,function(){
+                             li.classList.remove("editing");
+                             
+                             li.classList.remove("errors");
+                             li.classList.remove("warnings");
+                             li.classList.remove("save-edits");
+                         
+                             toggleInbuiltEditor ( filename,li );
+                         });
                      }
                 }
                 
