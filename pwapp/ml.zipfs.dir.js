@@ -9,7 +9,6 @@ ml(`
     sha1Lib               | ${ml.c.app_root}sha1.js
     htmlFileItemLib       | ${ml.c.app_root}ml.zipfs.dir.file.js
     htmlFileMetaLib       | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
-    zipFSApiLib           | ${ml.c.app_root}ml.zipfs.api.js
     showdown              | https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.js
     aceSessionLib         | ${ml.c.app_root}ml.ace-session.js
     openWindowLib         | ${ml.c.app_root}ml.openWindow.js
@@ -20,18 +19,20 @@ ml(`
     {
         Window: function pwaZipDirListing(pwa,zipFSApiLib,sha1,MarkdownConverter ) {
             
+            const session_data = ".hidden-json";
+            
             return ZipDirEditorLib;
             
             function ZipDirEditorLib(dir,parent_link) {
                 var 
                 
-                zip_url_base    = dir.zip_uri,
-                alias_root      = dir.alias_root,
-                alias_root_fix  = new RegExp('^'+regexpEscape(alias_root) ,''),
-                zip_virtual_dir = dir.url,
-                full_zip_uri    = location.origin+zip_url_base,
+                //zip_url_base    = dir.zip_uri,
+                //alias_root      = dir.alias_root,
+                alias_root_fix  = new RegExp('^'+regexpEscape(dir.alias_root) ,''),
+                //zip_virtual_dir = dir.url,
+                //full_zip_uri    = location.origin+zip_url_base,
 
-                updated_prefix = dir.url,
+                //updated_prefix = dir.url,
                 zip_files = Object.keys(dir.files),
                 
                 // some edit modes don't generate annotations, 
@@ -49,7 +50,16 @@ ml(`
                 editor_channel_name = window.parent ? "ch_"+editor_url.replace(/\/|\:|\.|\-/g,'') : false,
                 editor_channel      = editor_channel_name ? new BroadcastChannel(editor_channel_name) : false;
 
-                const pwaApi = zipFSApiLib (pwa,full_zip_uri,zip_virtual_dir,find_li,alias_root_fix,alias_root,updated_prefix);   
+                /*
+                const pwaApi = zipFSApiLib (
+                    pwa,
+                    full_zip_uri,
+                    dir.url,
+                    find_li,
+                    alias_root_fix,
+                    dir.alias_root,
+                    dir.url
+                );*/   
                                  
                 const resizers = ResizeWatcher();
                 const available_html = [];
@@ -107,7 +117,7 @@ ml(`
                 
                 var zoomEl,fs_li_ed,pre_zoom_height,zoom_filename;    
                
-                
+                /*
                 const htmlFileItemLibOpts = {
                     uri:zip_url_base.replace(/^\//,''),
                     alias_root,
@@ -133,16 +143,250 @@ ml(`
                     linkit
                 }  = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
     
+                */
                 
                 const modified_files = {};
                 const lib = {
-                   pwaApi : pwaApi
+                  // pwaApi : pwaApi
                 };
                 
                 
                 function regexpEscape(str) {
                     return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
                 }
+                                
+                function toggleDeleteFile(filename,cb) {
+                    // toggle the metadata deleted status for filename in the root zip file
+                    return pwa.toggleDeleteFile(dir.zips[0],filename,cb);
+                }
+                
+                function deleteFile(filename,cb) {
+                    // set the metadata deleted status for filename in the root zip file
+                    return pwa.deleteFile(dir.zips[0],filename,function(err,msg){
+                        const ix = zip_files.indexOf(filename);
+                        if (ix >=0) {
+                            zip_files.splice(ix,1);
+                        }
+                        if(cb)cb(err,msg);
+                    });
+                }
+                
+                function unDeleteFile(filename,cb) {
+                    // clear the metadata deleted status for filename in the root zip file
+                    return pwa.unDeleteFile(dir.zips[0],filename,function(err,msg){
+                        const ix = zip_files.indexOf(filename);
+                        if (ix <0) {
+                            zip_files.push(filename);
+                        }
+                        if(cb)cb(err,msg);
+                    });
+                }
+                
+                function removeUpdatedURLContents(file_url,li,cb) {
+     
+                   return pwa.removeUpdatedURLContents(
+                       file_url,
+                       function(err,msg){
+                          if (li) li.classList.remove('edited');
+                          if(cb)cb(err,msg&&msg.url); 
+                       });
+                }
+                
+                function updateURLContents(file_url,li,content,hash,cb) {
+     
+                    return pwa.updateURLContents(
+                        file_url,
+                        content,
+                        hash,
+                        function(err,msg){
+                            if (li) {
+                                li.classList.add('edited');
+                                li.classList[!!li.dataset.editor_id ?"add":"remove"]('editing');
+                            }
+                            if(cb)cb(err,msg && msg.hash,msg&&msg.url);
+                        }
+                    );
+                }
+                
+                function fetchUpdatedURLContents(file_url,li,hash,cb) {
+                    return pwa.fetchUpdatedURLContents(
+                        file_url,
+                        hash,
+                        function(err,msg){
+                           if (err) return cb (err);
+                           if (li) {
+                               li.classList[msg.updated?"add":"remove"]('edited');
+                               li.classList[!!li.dataset.editor_id ?"add":"remove"]('editing');
+                           }
+                           cb(undefined,msg.content,msg.updated,msg.hash,msg.url);
+                        }
+                    );
+                }
+                
+                function removeUpdatedFile (filename,cb) {
+                    const ix = dir.files[filename];
+                    if (typeof ix === 'number'){
+                           // file exists - postive index = index to dir.zips[] array to indicate unchanged
+                           //
+                           // negative index:
+                           // -1 means this is a new file
+                           // -2 == originally in dir.zips[0], but has been updated
+                           // -3 == originally in dir.zips[1], but has been updated
+                           
+                           
+                           if (ix>=0) {
+                               // file was not updated.
+                               return cb ();
+                           }
+                           if (ix<-1) {
+                               dir.files[filename] = -2 - ix;
+                           } 
+                           const url = dir.url + filename;
+                           const li = find_li(filename);
+                           removeUpdatedURLContents(url,li,cb);
+                           
+                    } else {
+                        return cb(new Error("not found"));
+                    }
+                }
+                
+                function readFileBuffer(filename,cb) {// cb--> err,buffer,updated,hash,url
+                    const ix = dir.files[filename];
+                    if (typeof ix === 'number'){
+                           // file exists - postive index = index to dir.zips[] array to indicate unchanged
+                           //
+                           // negative index:
+                           // -1 means this is a new file
+                           // -2 == originally in dir.zips[0], but has been updated
+                           // -3 == originally in dir.zips[1], but has been updated
+                           
+                          const as_per_zip = ix < 0 ? false : dir.zips[ix];
+                          const updated = !as_per_zip ;
+                          const url = (updated ? dir.url : as_per_zip) + filename;
+                          const li = find_li(filename);
+                          if (updated) {
+                              // get updated content.
+                              fetchUpdatedURLContents(url,li,true,cb);
+                          } else {
+                              // get file from zip.
+                              fetch (url).then(function(response){
+                                  
+                                 response.arrayBuffer().then(function(buffer){
+                                     
+                                     sha1(buffer,function(err,hash){
+                                         if (err) return cb(err);
+                                         if (li) {
+                                             li.classList[updated?"add":"remove"]('edited');
+                                             li.classList[!!li.dataset.editor_id ?"add":"remove"]('editing');
+                                         }
+                                         return cb(undefined,buffer,updated,hash,url);
+
+                                     });
+                                       
+                                   }).catch(cb);
+                                   
+                              }).catch(cb);
+                          }
+
+                    } else {
+                        return cb(new Error("not found"));
+                    }
+                }
+                
+                function readFileText(filename,cb) {
+                    readFileBuffer(filename,function(err,buffer,updated,hash){
+                       if (err) return cb(err);
+                       return cb (undefined,buffer,updated,hash,new TextDecoder().decode(buffer));
+                    });
+                }
+                
+                function writeFileBuffer(filename,buffer,cb) {
+                    const ix = dir.files[filename];
+                    if (typeof ix==='number'){
+                          // file exists - overwrite is possible
+                          const url = dir.url  + filename;
+                          updateURLContents (dir.url+filename,find_li(filename),buffer,true,function(err,hash) {
+                              if (err) return cb(err);
+                                 if (ix >=0 ) {
+                                     // file no longer in zip - so force to negative index 
+                                     dir.files[filename] = 0 - (2+ix);
+                                 }
+                                 return cb(undefined,hash,url);
+                          });
+                    } else {
+                        return cb(new Error("not found"));
+                    }
+                }
+                
+                function createFileBuffer(filename,buffer,cb) {
+                    const ix = dir.files[filename];
+                    if (typeof ix==='number'){
+                        // file already exists
+                        return cb(new Error("file exists"));
+                    } else {
+                        dir.files[filename]=-1;
+                        writeFileBuffer(filename,buffer,cb);
+                    }
+                }
+                
+                function forceWriteFileBuffer(filename,buffer,cb) {
+                    const ix = dir.files[filename];
+                    if (typeof ix!=='number'){
+                        // file doesn't exists - set new file state
+                        dir.files[filename]=-1;
+                    }
+                    writeFileBuffer(filename,buffer,cb);
+                }
+                
+                function writeFileText(filename,text,cb) {
+                    writeFileBuffer(filename,new TextEncoder().encode(text),cb);
+                }
+                
+                function createFileText(filename,text,cb) {
+                    createFileBuffer(filename,new TextEncoder().encode(text),cb);
+                }
+                
+                function forceWriteFileText(filename,text,cb) {
+                    forceWriteFileBuffer(filename,new TextEncoder().encode(text),cb);
+                }
+                
+                
+                
+                function writeFileAssociatedBuffer(filename,assoc,buffer,cb) {
+                    const file_url = dir.url+ (filename.replace(alias_root_fix,''))+'.'+(assoc.replace(/^\./),'');
+                    updateURLContents (file_url,find_li(filename),true,function(err,hash) {
+                        if (err) return cb(err);
+                        return cb (undefined,file_url);
+                    });
+                }
+                
+                function writeFileAssociatedText(filename,assoc,text,cb) {
+                    writeFileAssociatedBuffer(filename,assoc,new TextEncoder().encode(text),cb);
+                }
+                
+                function readFileAssociatedBuffer(filename,assoc,cb) {
+                      const file_url = dir.url+(filename.replace(alias_root_fix,''))+'.'+(assoc.replace(/^\./),'');
+                      fetchUpdatedURLContents(file_url,find_li(filename),false,function(err,buffer){
+                           if (err) return cb(err);
+                           return cb (undefined,buffer,file_url);
+                      });
+                } 
+                
+                function readFileAssociatedText(filename,assoc,cb) {
+                    readFileAssociatedBuffer(filename,assoc,function(err,buffer,file_url) {
+                        if (err) return cb(err);
+                        return cb(undefined,new TextDecoder().decode(buffer),file_url);
+                    });
+                }
+    
+                function removeFileAssociatedData (filename,assoc,cb) {
+                    const file_url = dir.url+ (filename.replace(alias_root_fix,''))+'.'+(assoc.replace(/^\./),'');
+                    removeUpdatedURLContents (file_url,find_li(filename),function(err) {
+                        if (err) return cb(err);
+                        return cb (undefined,file_url);
+                    });
+                }
+                
     
                 function onDOMContentLoaded (){
                 
@@ -176,7 +420,7 @@ ml(`
                     
                     
                     qs("#img_dl_link",function click(){
-                        pwa.getPNGZipImage(full_zip_uri,"files",zip_virtual_dir,qs("#show_dl_img"),qs("#img_dl_link2"),"download");
+                        pwa.getPNGZipImage(dir.zips[0],"files",dir.url,qs("#show_dl_img"),qs("#img_dl_link2"),"download");
                     });
                     
     
@@ -190,7 +434,6 @@ ml(`
                     [].forEach.call(document.querySelectorAll("li > a.deletefile"),addDeleteClick);
                     [].forEach.call(document.querySelectorAll("li > a.undeletefile"),addUndeleteClick);
                     [].forEach.call(document.querySelectorAll("li > a.undo-edits"),addUndoEditsClick);
-                    
                     [].forEach.call(document.querySelectorAll("li > a.save-edits"),addSaveEditsClick);
 
                     
@@ -199,31 +442,31 @@ ml(`
                  
                     if (editor_channel) {
                     
-                            getStylesheets(editor_channel,zip_virtual_dir,function(urls){
+                            getStylesheets(editor_channel,dir.url,function(urls){
                                 
                                 available_css.splice(0,available_css.length);
                                 
                                 available_css.push.apply(available_css,urls.map(function(u){
-                                    return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
+                                    return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(dir.url.length+1);
                                 }));
                                 
                                 //console.log({available_css});
                                 
-                                getScripts(editor_channel,zip_virtual_dir,function(urls){
+                                getScripts(editor_channel,dir.url,function(urls){
                                     
                                     available_scripts.splice(0,available_scripts.length);
                                     
                                     available_scripts.push.apply(available_scripts,urls.map(function(u){
-                                        return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
+                                        return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(dir.url.length+1);
                                     }));
                                     
                                     
-                                    getHtmls(editor_channel,zip_virtual_dir,function(html_urls){
+                                    getHtmls(editor_channel,dir.url,function(html_urls){
                                         
                                         available_html.splice(0,available_html.length);
                                         
                                         available_html.push.apply(available_html,html_urls.map(function(u){
-                                            return (alias_root ? alias_root :'' ) +  u.substr(zip_virtual_dir.length+1);
+                                            return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(dir.url.length+1);
                                         }));
                                         
                                         
@@ -248,8 +491,8 @@ ml(`
                                                     if (entry) {
                                                         if (entry.fixup_url ) {
                                                            
-                                                            if (entry.fixup_url.indexOf(zip_virtual_dir)===0) {
-                                                                const uri = (alias_root ? alias_root :'' ) +  entry.fixup_url.substr(zip_virtual_dir.length+1);
+                                                            if (entry.fixup_url.indexOf(dir.url)===0) { 
+                                                                const uri = (dir.alias_root ? dir.alias_root :'' ) +  entry.fixup_url.substr(dir.url.length+1);
                                                                 const li = find_li(uri);
                                                                 if (li) {
                                                                     available_html[ix] = uri;
@@ -329,7 +572,7 @@ ml(`
                     
                     
                     function uploadFile(file) {
-                        const filename = alias_root +file.name;
+                        const filename = dir.alias_root + file.name;
                         file.arrayBuffer().then (function(buffer){
                             
                             console.log(filename,"<- uploading to--",buffer);
@@ -496,9 +739,9 @@ ml(`
                     const li = find_li(filename);
                     
                     
-                   pwaApi.removeUpdatedURLContents(dir.url+(filename.replace(alias_root_fix,'')));
-                   
-                   
+                    
+                    removeUpdatedFile (filename);
+
                    
                    refreshStylesheeet(filename,function() {
                        if (li) {
@@ -588,7 +831,7 @@ ml(`
     
                    if (li && !li.classList.contains("deleted")) {
                        closeInbuiltEditor(filename,li,function(){
-                           pwaApi.toggleDeleteFile(filename,function(err,msg){
+                           toggleDeleteFile(filename,function(err,msg){
                                if (err) return;
                                li.classList[msg.deleted?"add":"remove"]('deleted');
                                li.classList[msg.deleted?"add":"remove"]('hidden');
@@ -607,7 +850,7 @@ ml(`
                        
                        if (li && li.classList.contains("deleted")) {
                            closeInbuiltEditor(filename,li,function(){
-                               pwaApi.toggleDeleteFile(filename,function(err,msg){
+                               toggleDeleteFile(filename,function(err,msg){
                                    if (err) return;
                                    li.classList[msg.deleted?"add":"remove"]('deleted');
                                    li.classList[msg.deleted?"add":"remove"]('hidden');
@@ -715,7 +958,8 @@ ml(`
                                 case "opened" : {
                                         console.log("window opened for",file_url)
                                         setTimeout(function(){
-                                            pwaApi.removeUpdatedURLContents(file_url,function(){
+                                            
+                                            removeUpdatedURLContents(file_url,find_li(filename),function(){
                                                 console.log("removed temp file",file_url);
                                                 if (cb) {
                                                     cb("opened",file_url);
@@ -1230,13 +1474,12 @@ ml(`
                             ["theme"],{
                                 height : ed.offsetHeight
                             },
+                            
                         function(err,json){
-                            const buffer = new TextEncoder().encode(json);
-                            const file_url = dir.url+(filename.replace(alias_root_fix,''))+".hidden-json";
-                            pwaApi.updateURLContents (file_url,buffer,false,function(err) {
-                                cb();
-                            });
+                            if (err) return cb(err);
+                            writeFileAssociatedText(filename,session_data,json,cb);
                         });
+                        
                         
                     }
                 }
@@ -1317,19 +1560,15 @@ ml(`
                         li_ed.sizebar = dragSize("#"+editor_id,["#"+editor_id+"_grab_bar"]);
                        
                         
-                        const file_session_url = dir.url + (filename.replace(alias_root_fix,'')) +".hidden-json";
-                        
-                        
-                        readFileText(filename,function(err,buffer,updated,hash,text){
+                          readFileText(filename,function(err,buffer,updated,hash,text){
                             const currentText = textContent || text;
                             
                             if (err) {
                                 li_ed.editor.session.setValue("error:"+err.message||err);
                             } else {
                                 
-                                pwaApi.fetchUpdatedURLContents(file_session_url,false,function(err,sess_json){
-                                        
-                                    sess_json = err ? false : new TextDecoder().decode(sess_json);
+                                readFileAssociatedText(filename,session_data,function(err,sess_json){
+                                         
                                     if (sess_json) {
                                         
                                          ace_session_json.deserialize(li_ed.editor,sess_json,function(err,data){
@@ -1380,8 +1619,7 @@ ml(`
                                         };
                                         
                                         li_ed.reload = function () {
-                                            pwaApi.fetchUpdatedURLContents(dir.files[filename].url_read,true,function(err,buffer,updated,hash){
-                                                const text = new TextDecoder().decode(buffer);
+                                            readFileText(filename,function(err,buffer,updated,hash,text){
                                                 li_ed.setText(text);
                                                 if (li_ed.edit_helper) {
                                                     li_ed.edit_helper.update(text);
@@ -1393,12 +1631,8 @@ ml(`
                                                 }
                                                 li.classList.remove("pending");
                                             });
-                                        }
-                                        
-                                        
-                                        
-                                        
-                                        
+                                        };
+
                                         li_ed.changeAnnotationFunc = function (){
                                                 
                                             // to ignore callback after destruction, the li_ed.changeAnnotationFunc
@@ -1415,29 +1649,26 @@ ml(`
                                                 li.classList.remove("worker");
                                                 if (transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations())) {
                                                    
-                                                    const textContent = li_ed.editor.session.getValue();
-                                                    const buffer = new TextEncoder().encode(textContent);
-                                                    
+
                                                     if (li_ed.text_changed) {
-                                                        li_ed.text_changed=false;
-                                                       pwaApi.updateURLContents (dir.files[filename].url_write,buffer,true,function(err,hash) {
-                                                        if (err) {
-                                                            return ;
-                                                        }
-                                                        dir.files[filename].url_orig = dir.files[filename].url_orig || dir.files[filename].url_read;
-                                                        dir.files[filename].url_read = dir.files[filename].url_write;
-                                                        li.classList.add("edited");
-                                                        li_ed.hashDisplay.textContent=hash;
-                                                        if (edit_hooks[file_url]) {
-                                                            edit_hooks[file_url].forEach(function(fn){
-                                                                fn("edited",file_url,textContent,buffer);
-                                                            });
-                                                        }
                                                         
-                                                        li.classList.remove("pending");
-                                                       
-                                                    
-                                                    });
+                                                       li_ed.text_changed=false;
+                                                       const  textContent = li_ed.editor.session.getValue();
+                                                       writeFileText(filename,textContent,function(err,hash){
+                                                            if (err) {
+                                                                return ;
+                                                            }
+                                                            li.classList.add("edited");
+                                                            li_ed.hashDisplay.textContent=hash;
+                                                            if (edit_hooks[file_url]) {
+                                                                edit_hooks[file_url].forEach(function(fn){
+                                                                    fn("edited",file_url,textContent,buffer);
+                                                                });
+                                                            }
+                                                            
+                                                            li.classList.remove("pending");
+
+                                                        });
                                                     }
                                                 }
                                                 
@@ -1482,23 +1713,21 @@ ml(`
                                                     
                                                         // delta.start, delta.end, delta.lines, delta.action
                                                         const textContent = li_ed.editor.session.getValue();
-                                                        const buffer = new TextEncoder().encode(textContent);
                                                         if (li_ed.edit_helper) {
                                                             li_ed.edit_helper.update(textContent);
                                                         }
                                                         if (transientEditorMetaResave(li_ed)||li_ed.annotationsWorkerDetect===false) {
                                                            
-                                                            pwaApi.updateURLContents (dir.files[filename].url_write,buffer,true,function(err,hash) {
+                                                            writeFileText(filename,textContent,function(err,hash){
                                                                 if (err) {
                                                                     return ;
                                                                 }
-                                                                dir.files[filename].url_orig = dir.files[filename].url_orig || dir.files[filename].url_read;
-                                                                dir.files[filename].url_read = dir.files[filename].url_write;
                                                                 // since we are saving the text, we can clear the li_ed.text_changed flag
                                                                 li_ed.text_changed=false;
                                                                 li.classList.add("edited");
                                                                 li_ed.hashDisplay.textContent=hash;
                                                                 if (edit_hooks[file_url]) {
+                                                                    const buffer = new TextEncoder().encode(textContent);
                                                                     edit_hooks[file_url].forEach(function(fn){
                                                                         fn("edited",file_url,textContent,buffer);
                                                                     });
@@ -1844,92 +2073,7 @@ ml(`
                    
                     
                 }
-                
-                
-                function readFileBuffer(filename,cb) {
-                    const entry = dir.files[filename];
-                    if (entry){
-                          const updated = entry.url_read===entry.url_write;
-                          
-                          fetch (entry.url_read).then(function(response){
-                              
-                             response.arrayBuffer().then(function(buffer){
-                                 
-                                 sha1(buffer,function(err,hash){
-                                     if (err) return cb(err);
-                                     return cb(undefined,buffer,updated,hash)
-                                 });
-                                   
-                               }).catch(cb);
-                               
-                          }).catch(cb);
-                      
-                    } else {
-                        return cb(new Error("not found"));
-                    }
-                }
-                
-                function readFileText(filename,cb) {
-                    readFileBuffer(filename,function(err,buffer,updated,hash){
-                       if (err) return cb(err);
-                       return cb (undefined,buffer,updated,hash,new TextDecoder().decode(buffer));
-                    });
-                }
-                
-                function writeFileBuffer(filename,buffer,cb) {
-                    const entry = dir.files[filename];
-                    if (entry){
-                          pwaApi.updateURLContents (dir.files[filename].url_write,buffer,true,function(err,hash) {
-                              sha1(buffer,function(err,hash){
-                                 if (err) return cb(err);
-                                 entry.url_orig = entry.url_orig || entry.url_read;
-                                 entry.url_read = entry.url_write;
-                                 
-                                 return cb(undefined,hash)
-                              });
-                          });
-                    } else {
-                        return cb(new Error("not found"));
-                    }
-                }
-                
-                
-                function writeFileText(filename,text,cb) {
-                    writeFileBuffer(filename,new TextEncoder().encode(text),cb);
-                }
-                
-                
-                
-                
-                
-                function writeFileAssociatedBuffer(filename,assoc,buffer,cb) {
-                    const file_url = dir.url+ (filename.replace(alias_root_fix,''))+'.'+(assoc.replace(/^\./),'');
-                    pwaApi.updateURLContents (file_url,true,function(err,hash) {
-                        if (err) return cb(err);
-                        return cb (undefined,file_url);
-                    });
-                }
-                
-                function writeFileAssociatedText(filename,assoc,text,cb) {
-                    writeFileAssociatedBuffer(filename,assoc,new TextEncoder().encode(text),cb);
-                }
-                
-                function readFileAssociatedBuffer(filename,assoc,cb) {
-                      const file_url = dir.url+(filename.replace(alias_root_fix,''))+'.'+(assoc.replace(/^\./),'');
-                      pwaApi.fetchUpdatedURLContents(file_url,false,function(err,buffer){
-                           if (err) return cb(err);
-                           return cb (undefined,buffer,file_url);
-                      });
-                } 
-                
-                function readFileAssociatedText(filename,assoc,cb) {
-                    readFileAssociatedBuffer(filename,assoc,function(err,buffer,file_url) {
-                        if (err) return cb(err);
-                        return cb(undefined,new TextDecoder().decode(buffer),file_url);
-                    });
-                }
-    
-                
+               
                 function zipPoller(index) {
                     //main purpose is to keep service worker awake. but while we are doing that, might as well hash each file and display it
                     index = index || 0;

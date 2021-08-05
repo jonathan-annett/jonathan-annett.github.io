@@ -167,9 +167,11 @@ ml([],function(){ml(2,
                             return getNextFileSet(0);
                             
                         }
+                        
                     }
                     
                     cb(new Error (url+" is not a valid virtural directory"));
+                    
                 }
                 
                 function virtualDirQuery (url) {
