@@ -192,12 +192,12 @@ ml(`
                        });
                 }
                 
-                function updateURLContents(file_url,li,content,hash,cb) {
+                function updateURLContents(file_url,li,content,cb) {
      
                     return pwa.updateURLContents(
                         file_url,
                         content,
-                        hash,
+                        true,
                         function(err,msg){
                             if (li) {
                                 li.classList.add('edited');
@@ -305,7 +305,7 @@ ml(`
                     if (typeof ix==='number'){
                           // file exists - overwrite is possible
                           const url = dir.url  + filename;
-                          updateURLContents (dir.url+filename,find_li(filename),buffer,true,function(err,hash) {
+                          updateURLContents (dir.url+filename,find_li(filename),buffer,function(err,hash) {
                               if (err) return cb(err);
                                  if (ix >=0 ) {
                                      // file no longer in zip - so force to negative index 
@@ -354,7 +354,7 @@ ml(`
                 
                 function writeFileAssociatedBuffer(filename,assoc,buffer,cb) {
                     const file_url = dir.url+ (filename.replace(alias_root_fix,''))+'.'+(assoc.replace(/^\./),'');
-                    updateURLContents (file_url,find_li(filename),true,function(err,hash) {
+                    updateURLContents (file_url,find_li(filename),buffer,function(err,hash) {
                         if (err) return cb(err);
                         return cb (undefined,file_url);
                     });
