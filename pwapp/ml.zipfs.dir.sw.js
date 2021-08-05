@@ -359,12 +359,21 @@ ml(`
 
                             function renderHtml (
                             
-                                dir_html,replaceTextVars,
-                                tools,updated_prefix,uri,url,
-                                virtual,alias_root,files, 
+                                dir_html,
+                                replaceTextVars,
+                                tools,
+                                updated_prefix,uri,url,
+                                virtual,
+                                alias_root,
+                                files, 
                                 hidden_files_exist,
                                 html_details) {
-                                 
+                                const origin = location.origin;
+                                
+                                const virtual_prefix =  virtual ?  '?virtual_prefix='+encodeURIComponent(
+                                          virtual.indexOf(origin)===0? virtual.substr(origin.length) : virtual 
+                                          ) : '';
+                                          
                                 return replaceTextVars( 
                                    
                                             dir_html, 
@@ -372,7 +381,7 @@ ml(`
                                             {
                                                uri:uri,
                                                app_root:ml.c.app_root,
-                                               script_uri:'/'+uri+'.meta.js'+(virtual?'?virtual_prefix='+encodeURIComponent(virtual):''),
+                                               script_uri:'/'+uri+'.meta.js' + virtual_prefix ,
                                                head_script:'',
                                                hidden_files_class:hidden_files_exist?' hidden_files_exist':'',
                                                designer:'',

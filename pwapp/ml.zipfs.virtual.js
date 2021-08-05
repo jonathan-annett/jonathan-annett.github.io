@@ -133,19 +133,16 @@ ml([],function(){ml(2,
                                         if (err) return cb(err);
                                         
                                         edited_files.forEach(function(file){
-                                            if (listing[file]) {
-                                                listing[file].updated  = true;
-                                                listing[file].url_read = virtual_prefix +'/'+ file;
-                                            } else {
-                                                if (!zipData.some(function(data){
-                                                      return data.tools && 
-                                                             data.tools.meta &&
-                                                             data.tools.meta.deleted && 
-                                                             !!data.tools.meta.deleted[file];
-                                                })){
-                                                  const fn = virtual_prefix + '/'+(zip_root && file.startsWith(zip_root) ? file.substr(zip_root.length) : file);
-                                                  listing[file] = -1;
+                                            const ix = listing[file];
+                                            
+                                            if (typeof ix==='number') {
+                                                if (ix >=0 ) {
+                                                    // file is in zip, and has been updated.
+                                                    listing[file] = 0 - (2 + ix);
                                                 }
+                                            } else {
+                                                // file not in any zip
+                                                listing[file] = -1;
                                             }
                                         });
                                         
