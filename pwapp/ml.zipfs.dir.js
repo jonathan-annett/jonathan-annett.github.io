@@ -53,6 +53,12 @@ ml(`
                 const edit_hooks = {};
                 const editorErrors = {};
                 const editorWarnings = {};
+                const ignoreErrors = {};
+                function errorsExist () {
+                    return Object.keys(editorErrors).some(function(filename){
+                        return !ignoreErrors[filename];
+                    });
+                }
 
                 qs ("h1 a.restart",function click(e) {
                      if (editor_channel) {
@@ -485,7 +491,7 @@ ml(`
                     
                     
                     window.addEventListener('beforeunload', function (event)  {
-                      if ( Object.keys( editorErrors ) .length > 0 ) {
+                      if ( errorsExist () ) {
                         qs('html').classList.add("before_unload"); 
                         setTimeout(function(){
                             setTimeout(function(){
@@ -680,10 +686,7 @@ ml(`
                     e.stopPropagation();
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
-                     
                     saveInbuiltEditorChanges ( filename,li);
-
-                    
                 }
                 
                 
@@ -1493,7 +1496,7 @@ ml(`
                         li.classList[ error_list.length > 0 ? "add" : "remove" ]("warnings");
                         
                             
-                        qs("html").classList[Object.keys(editorErrors).length===0?"remove":"add"]("errors");
+                        qs("html").classList[  errorsExist () ?"remove":"add"]("errors");
                         
                     } else {
                         errors = null;
@@ -1654,6 +1657,9 @@ ml(`
 
                                                         });
                                                     }
+                                                } else {
+                                                    delete ignoreErrors[filename];
+                                                    qs("html").classList[  errorsExist () ?"remove":"add"]("errors");
                                                 }
                                                 
                                                 
@@ -1718,6 +1724,8 @@ ml(`
                                                                 }
                                                                 
                                                                 li.classList.remove("pending");
+                                                                delete ignoreErrors[filename];
+                                                                qs("html").classList[  errorsExist () ?"remove":"add"]("errors");
                                                             });
                                                         } else {
                                                             // since the text has changed, bit has errors, we need to flag it
@@ -1844,8 +1852,7 @@ ml(`
                          const li_ed = ed.parentNode;
                          li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(true,function(){
                              li.classList.remove("save-edits");
-                         
-                            // toggleInbuiltEditor ( filename,li );
+                             ignoreErrors[filename]=true;
                          });
                      }
                 }
