@@ -42,7 +42,7 @@ ml(`
                        
                        function resolveZipListing_Script (zip_meta_js_url,buffer,virtual) {
                            
-                           const url = zip_meta_js_url.replace(/\.zip\.meta\.js/,'.zip');
+                           const url = zip_meta_js_url.replace(/\.zip\.meta\.js^/,'.zip');
                            return new Promise(function (resolve){
                                
                                getZipObject(url,buffer,function(err,zip,zipFileMeta) {
@@ -371,7 +371,7 @@ ml(`
                                             {
                                                uri:uri,
                                                app_root:ml.c.app_root,
-                                               script_uri:'/'+uri+'.meta.js',
+                                               script_uri:'/'+uri+'.meta.js'+(virtual?'?virtual_uri='+encodeURIComponent(virtual):''),
                                                head_script:'',
                                                hidden_files_class:hidden_files_exist?' hidden_files_exist':'',
                                                designer:'',

@@ -250,8 +250,8 @@ ml(`
                      fetchInternal(url,function(err,response){
                          if (err) return reject(err);
                          resolve(response);
-                     })
-                 })  
+                     });
+                 });
              };
              
            
