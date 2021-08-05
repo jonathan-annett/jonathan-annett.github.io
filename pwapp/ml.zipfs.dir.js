@@ -681,8 +681,14 @@ ml(`
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
                      
-                    saveInbuiltEditorChanges ( filename,li )
-                    li.classList.remove("errors");
+                    saveInbuiltEditorChanges ( filename,li, function(){
+                         li.classList.remove("errors");
+                         li.classList.remove("warnings");
+                         li.classList.remove("save-edits");
+                         
+                         toggleInbuiltEditor ( filename,li );
+                    },true)
+                   
                     
                 }
                 
@@ -1602,7 +1608,7 @@ ml(`
                                             });
                                         };
 
-                                        li_ed.changeAnnotationFunc = function (){
+                                        li_ed.changeAnnotationFunc = function (force){
                                                 
                                             // to ignore callback after destruction, the li_ed.changeAnnotationFunc
                                             // is deleted before calling editor.destroy();
@@ -1616,10 +1622,10 @@ ml(`
                                                     li_ed.annotationsWorkerDetect=true;
                                                 }
                                                 li.classList.remove("worker");
-                                                if (transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations())) {
+                                                if (transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations())||force===true) {
                                                    
 
-                                                    if (li_ed.text_changed) {
+                                                    if (li_ed.text_changed||force===true) {
                                                         
                                                        li_ed.text_changed=false;
                                                        const  textContent = li_ed.editor.session.getValue();
@@ -1821,7 +1827,7 @@ ml(`
                     }
                 }
                 
-                function saveInbuiltEditorChanges(filename,li,cb) {
+                function saveInbuiltEditorChanges(filename,li,cb,force) {
                      li=li||find_li (filename);
                      let editor_id = li.dataset.editor_id;
                      if (editor_id) {
@@ -1830,7 +1836,7 @@ ml(`
                          const ed = qs("#"+editor_id);
                          
                          const li_ed = ed.parentNode;
-                         li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc();
+                         li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(force);
                      }
                 }
                 
