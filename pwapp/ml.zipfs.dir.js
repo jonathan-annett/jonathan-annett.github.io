@@ -682,7 +682,7 @@ ml(`
                     const li = find_li(filename);
                      
                     saveInbuiltEditorChanges ( filename,li )
-                    
+                    li.classList.remove("errors");
                     
                 }
                 
