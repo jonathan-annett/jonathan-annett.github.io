@@ -106,6 +106,9 @@ ml(`
             return text;
         }
         
+        function regexpEscape(str) {
+            return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
+        }
         
         function html_file_template(dir_html) {
                 
@@ -113,9 +116,11 @@ ml(`
                 if (!html_details_html) return false;
                 
                 const link_it_html    = extractWrapperText(html_details_html,'link_it');
-                
+                const fixup_re =  new RegExp("^"+regexpEscape('<!--alias_root=-->'+alias_root),'g');
                 return file_template;
                 
+                
+                   
                 function file_template(vars) {
                     
                     return replaceTextVars(
@@ -128,7 +133,7 @@ ml(`
                                 )
                             ),
                         vars
-                    ); 
+                    ).replace(fixup_re,'<span class="alias_root">'+alias_root+'</span>'); 
                 }
                 
                 function linkit(uri,disp){ 
