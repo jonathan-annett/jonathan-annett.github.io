@@ -1467,15 +1467,17 @@ ml(`
                         const warning_list = editorWarnings [ li_ed.filename ] || (editorWarnings [ li_ed.filename ] = [] );
                         error_list.splice(0,error_list.length);
                         warning_list.splice(0,warning_list.length);
-                        
+                        const grab = function (l,x){
+                            l.push ({line:x.row,column:x.column,text:x.text});
+                        };
                         for (var key in annot){
                             if (annot.hasOwnProperty(key)) {
                                 if  (annot[key].type === "warning") {
-                                    warning_list.push(annot[key]);
+                                    grab(warning_list,annot[key]);
                                     warnings = true;
                                 }
                                 if  (annot[key].type === "error") {
-                                    error_list.push(annot[key]);
+                                    grab(error_list,annot[key]);
                                     errors = true;
                                 }
                             }

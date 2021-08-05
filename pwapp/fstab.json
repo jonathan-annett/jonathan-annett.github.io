@@ -48,6 +48,11 @@
                 "zips" : [ "https://jonathan-annett.github.io/pwapp/shell.js-master.zip" ]
             },
             
+            "https://jonathan-annett.github.io/pwapp/tabulator" : {
+                "alias_root" : "/tabulator-master",
+                "zips" : [ "https://jonathan-annett.github.io/pwapp/tabulator-master.zip" ]
+            },
+
             "https://jonathan-annett.github.io/pwapp/fontawesome" : {
                 "alias_root" : "/fontawesome-free-5.15.3-web",
                 "zips" : [ "https://jonathan-annett.github.io/pwapp/fontawesome-free-5.15.3-web.zip" ]
