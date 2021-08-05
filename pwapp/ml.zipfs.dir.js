@@ -26,13 +26,7 @@ ml(`
             function ZipDirEditorLib(dir,parent_link) {
                 var 
                 
-                //zip_url_base    = dir.zip_uri,
-                //alias_root      = dir.alias_root,
                 alias_root_fix  = new RegExp('^'+regexpEscape(dir.alias_root) ,''),
-                //zip_virtual_dir = dir.url,
-                //full_zip_uri    = location.origin+zip_url_base,
-
-                //updated_prefix = dir.url,
                 zip_files = Object.keys(dir.files),
                 
                 // some edit modes don't generate annotations, 
@@ -50,16 +44,7 @@ ml(`
                 editor_channel_name = window.parent ? "ch_"+editor_url.replace(/\/|\:|\.|\-/g,'') : false,
                 editor_channel      = editor_channel_name ? new BroadcastChannel(editor_channel_name) : false;
 
-                /*
-                const pwaApi = zipFSApiLib (
-                    pwa,
-                    full_zip_uri,
-                    dir.url,
-                    find_li,
-                    alias_root_fix,
-                    dir.alias_root,
-                    dir.url
-                );*/   
+                
                                  
                 const resizers = ResizeWatcher();
                 const available_html = [];
@@ -117,33 +102,7 @@ ml(`
                 
                 var zoomEl,fs_li_ed,pre_zoom_height,zoom_filename;    
                
-                /*
-                const htmlFileItemLibOpts = {
-                    uri:zip_url_base.replace(/^\//,''),
-                    alias_root,
-                    tools : {
-                        isHidden : function() {
-                            
-                        },
-                        isDeleted: function () {
-                            
-                        },
-                    },
-                    zip_files,
-                    fileisEdited:function(){return true;},
-                    updated_prefix,
-                    parent_link,
-                    hidden_files_exist : false // this gets updated by html_file_item()
-                };
                 
-                const {
-                    html_file_item,
-                    get_html_file_item,
-                    boldit,
-                    linkit
-                }  = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
-    
-                */
                 
                 const modified_files = {};
                 const lib = {
@@ -721,9 +680,9 @@ ml(`
                     e.stopPropagation();
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
-                    if (e.shiftKey) {
-                        saveInbuiltEditorChanges ( filename,li )
-                    }
+                     
+                    saveInbuiltEditorChanges ( filename,li )
+                    
                     
                 }
                 
