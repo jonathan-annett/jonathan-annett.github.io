@@ -154,6 +154,10 @@ ml(`
                 function regexpEscape(str) {
                     return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
                 }
+                
+                function join(url,file,assoc) {
+                    return url.replace(/\/*$/,'') + '/' + ( file.replace(/^\/*/,'').replace(alias_root_fix,'') ) + assoc ? ('.'+assoc) : '';
+                }
                                 
                 function toggleDeleteFile(filename,cb) {
                     // toggle the metadata deleted status for filename in the root zip file
@@ -262,14 +266,14 @@ ml(`
                            
                           const as_per_zip = ix < 0 ? false : dir.zips[ix];
                           const updated = !as_per_zip ;
-                          const url = (updated ? dir.url : as_per_zip) + filename;
+                          const file_url = join(updated ? dir.url : as_per_zip, filename);
                           const li = find_li(filename);
                           if (updated) {
                               // get updated content.
-                              fetchUpdatedURLContents(url,li,true,cb);
+                              fetchUpdatedURLContents(file_url,li,true,cb);
                           } else {
                               // get file from zip.
-                              fetch (url).then(function(response){
+                              fetch (file_url).then(function(response){
                                   
                                  response.arrayBuffer().then(function(buffer){
                                      
@@ -279,7 +283,7 @@ ml(`
                                              li.classList[updated?"add":"remove"]('edited');
                                              li.classList[!!li.dataset.editor_id ?"add":"remove"]('editing');
                                          }
-                                         return cb(undefined,buffer,updated,hash,url);
+                                         return cb(undefined,buffer,updated,hash,file_url);
 
                                      });
                                        
@@ -304,14 +308,14 @@ ml(`
                     const ix = dir.files[filename];
                     if (typeof ix==='number'){
                           // file exists - overwrite is possible
-                          const url = dir.url  + filename;
-                          updateURLContents (dir.url+filename,find_li(filename),buffer,function(err,hash) {
+                          const file_url = join( dir.url, filename);
+                          updateURLContents (file_url,find_li(filename),buffer,function(err,hash) {
                               if (err) return cb(err);
                                  if (ix >=0 ) {
                                      // file no longer in zip - so force to negative index 
                                      dir.files[filename] = 0 - (2+ix);
                                  }
-                                 return cb(undefined,hash,url);
+                                 return cb(undefined,hash,file_url);
                           });
                     } else {
                         return cb(new Error("not found"));
@@ -319,21 +323,21 @@ ml(`
                 }
                 
                 function createFileBuffer(filename,buffer,cb) {
-                    const ix = dir.files[filename];
+                    const ix = dir.files[ filename ];
                     if (typeof ix==='number'){
                         // file already exists
                         return cb(new Error("file exists"));
                     } else {
-                        dir.files[filename]=-1;
+                        dir.files[ filename ]=-1;
                         writeFileBuffer(filename,buffer,cb);
                     }
                 }
                 
                 function forceWriteFileBuffer(filename,buffer,cb) {
-                    const ix = dir.files[filename];
+                    const ix = dir.files[ filename ];
                     if (typeof ix!=='number'){
                         // file doesn't exists - set new file state
-                        dir.files[filename]=-1;
+                        dir.files[ filename ]=-1;
                     }
                     writeFileBuffer(filename,buffer,cb);
                 }
@@ -353,7 +357,7 @@ ml(`
                 
                 
                 function writeFileAssociatedBuffer(filename,assoc,buffer,cb) {
-                    const file_url = dir.url + (filename.replace(alias_root_fix,'')) +'.'+ (assoc.replace(/^\./),'');
+                    const file_url = join(dir.url,filename,assoc);
                     updateURLContents (file_url,find_li(filename),buffer,function(err,hash) {
                         if (err) return cb(err);
                         return cb (undefined,file_url);
@@ -365,7 +369,7 @@ ml(`
                 }
                 
                 function readFileAssociatedBuffer(filename,assoc,cb) {
-                      const file_url = dir.url+(filename.replace(alias_root_fix,''))+'.'+(assoc.replace(/^\./),'');
+                      const file_url = join(dir.url,filename,assoc);
                       fetchUpdatedURLContents(file_url,find_li(filename),false,function(err,buffer){
                            if (err) return cb(err);
                            return cb (undefined,buffer,file_url);
@@ -380,7 +384,7 @@ ml(`
                 }
     
                 function removeFileAssociatedData (filename,assoc,cb) {
-                    const file_url = dir.url+ (filename.replace(alias_root_fix,''))+'.'+(assoc.replace(/^\./),'');
+                    const file_url = join(dir.url,filename,assoc);
                     removeUpdatedURLContents (file_url,find_li(filename),function(err) {
                         if (err) return cb(err);
                         return cb (undefined,file_url);
