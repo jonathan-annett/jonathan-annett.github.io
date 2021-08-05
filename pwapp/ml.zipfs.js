@@ -282,7 +282,7 @@ ml(`
               
                  for (; i < qArr.length; i++){
                      pair = qArr[i].split('=');
-                     retObj[pair[0]] = pair[1];
+                     retObj[pair[0]] = decodeURIComponent(pair[1]);
                  }
               
                  return retObj;
