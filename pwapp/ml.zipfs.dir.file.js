@@ -119,7 +119,14 @@ ml(`
                 function file_template(vars) {
                     
                     return replaceTextVars(
-                        replaceWrapperText(html_details_html,"link_it",linkit(vars.link_it_path,vars.link_it_filename)),
+                        replaceWrapperText(
+                            html_details_html,
+                            "link_it",
+                            linkit(
+                                vars.link_it_path, 
+                                vars.link_it_filename
+                                )
+                            ),
                         vars
                     ); 
                 }
@@ -135,7 +142,7 @@ ml(`
                 
                 function link_it_wrapper(path,filename) {
                    return  replaceWrapperText(
-                             replaceWrapperText(link_it_html,"link_it_filename",filename),
+                             replaceWrapperText(link_it_html,"link_it_filename",filename.replace(alias_root)),
                              "link_it_path",
                              path
                            );  
@@ -199,7 +206,7 @@ ml(`
             
         }
         
-
+        
          
         function boldit(uri,disp){
             const split=(disp||uri).split("/");
