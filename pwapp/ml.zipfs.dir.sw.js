@@ -210,7 +210,7 @@ ml(`
                                   '         parent_link='+JSON.stringify(parent_link)+',',
                                   '         full_zip_uri           = location.origin+zip_url_base;',
                                   
-                                  tools.metaSrc(),
+                                  //tools.metaSrc(),
                                   '         ml.i.localDirLib(function(e,dir){',
                                   '            ml.i.pwaZipDirListing(zip_url_base,alias_root_fix,alias_root,zip_virtual_dir,full_zip_uri,parent_link,dir);',
                                   '         });',
