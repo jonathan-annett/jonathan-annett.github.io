@@ -51,8 +51,8 @@ ml(`
                 const available_css = [];
                 const available_scripts = [];
                 const edit_hooks = {};
-                
-                const editorErrors = [];
+                const editorErrors = {};
+                const editorWarnings = {};
 
                 qs ("h1 a.restart",function click(e) {
                      if (editor_channel) {
@@ -485,7 +485,7 @@ ml(`
                     
                     
                     window.addEventListener('beforeunload', function (event)  {
-                      if (editorErrors.length>0) {
+                      if ( Object.keys( editorErrors ) .length > 0 ) {
                         qs('html').classList.add("before_unload"); 
                         setTimeout(function(){
                             setTimeout(function(){
@@ -1460,29 +1460,40 @@ ml(`
                     let warnings = false;
                     
                     if (annot) {
+                        const error_list   = editorErrors [ li_ed.filename ]   || (editorErrors   [ li_ed.filename ] = [] );
+                        const warning_list = editorWarnings [ li_ed.filename ] || (editorWarnings [ li_ed.filename ] = [] );
+                        error_list.splice(0,error_list.length);
+                        warning_list.splice(0,warning_list.length);
+                        
                         for (var key in annot){
                             if (annot.hasOwnProperty(key)) {
-                                if  (annot[key].type === "warning") warnings = true;
-                                if  (annot[key].type === "error") errors = true;
-                                if (warnings && errors) break;
+                                if  (annot[key].type === "warning") {
+                                    warning_list.push(annot[key]);
+                                    warnings = true;
+                                }
+                                if  (annot[key].type === "error") {
+                                    error_list.push(annot[key]);
+                                    errors = true;
+                                }
                             }
+                        }
+                        
+                        if (warning_list.length===0) {
+                            delete editorWarnings[ li_ed.filename ];
+                        }
+                        
+                        if (error_list.length===0) {
+                            delete editorErrors[ li_ed.filename ];
                         }
                         
                         const li=find_li(li_ed.filename);
-                        li.classList[errors?"add":"remove"]("errors");
-                        li.classList[warnings?"add":"remove"]("warnings");
-                        const ix = editorErrors.indexOf(li_ed.filename);
-                        if (errors) {
-                            if (ix<0) {
-                                editorErrors.push(li_ed.filename);
-                            }
-                        } else {
-                            if (ix>=0) {
-                                editorErrors.splice(ix,1);
-                            }
-                        }
                         
-                        qs("html").classList[editorErrors.length===0?"remove":"add"]("errors");
+                        li.classList[ error_list.length > 0 ? "add" : "remove" ]("errors");
+                        
+                        li.classList[ error_list.length > 0 ? "add" : "remove" ]("warnings");
+                        
+                            
+                        qs("html").classList[Object.keys(editorErrors).length===0?"remove":"add"]("errors");
                         
                     } else {
                         errors = null;
@@ -1832,13 +1843,9 @@ ml(`
                          const ed = qs("#"+editor_id);
                          const li_ed = ed.parentNode;
                          li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(true,function(){
-                             li.classList.remove("editing");
-                             
-                             li.classList.remove("errors");
-                             li.classList.remove("warnings");
                              li.classList.remove("save-edits");
                          
-                             toggleInbuiltEditor ( filename,li );
+                            // toggleInbuiltEditor ( filename,li );
                          });
                      }
                 }
