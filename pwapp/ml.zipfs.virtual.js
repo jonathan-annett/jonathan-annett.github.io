@@ -72,9 +72,12 @@ ml([],function(){ml(2,
                         if (dirs&& base) {
                             const zip_root = base.root;
                             const trim = 0-base.root.length;
-                            const zipData = dirs.map(function(u){
+                            const dirs_trimmed =  dirs.map(function(u){
+                                return u.slice(0,trim);
+                            });
+                            const zipData = dirs_trimmed.map(function(u){
                                 return { 
-                                    zip_url            : u.slice(0,trim),
+                                    zip_url            : u
                                 };
                             });
                             
@@ -125,8 +128,6 @@ ml([],function(){ml(2,
                                                  }
                                              });
                                          });
-                                         
-                                         
                                      });
                                      
                                      getZipFileUpdates(virtual_prefix+'/',function(err,edited_files){
@@ -157,7 +158,9 @@ ml([],function(){ml(2,
                                         cb( undefined,
                                             {
                                                 url        : virtual_prefix+'/',
-                                                alias_root : zip_root,
+                                                zip_uri    : url.replace(/^.*:\/\//,'').replace(/^.*\//,'/'),
+                                                zips       : dirs_trimmed,
+                                                alias_root : zip_root.replace(/^\//,'').replace(/\/$/,'') + '/',
                                                 files      : listing
                                             }
                                         );

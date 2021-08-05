@@ -22,8 +22,15 @@ ml(`
             
             return ZipDirEditorLib;
             
-            function ZipDirEditorLib(zip_url_base,alias_root_fix,alias_root,zip_virtual_dir,full_zip_uri,parent_link,dir) {
+            function ZipDirEditorLib(dir,parent_link) {
                 var 
+                
+                zip_url_base    = dir.zip_uri,
+                alias_root      = dir.alias_root,
+                alias_root_fix  = new RegExp('^'+regexpEscape(alias_root) ,''),
+                zip_virtual_dir = dir.url,
+                full_zip_uri    = location.origin+zip_url_base,
+
                 updated_prefix = dir.url,
                 zip_files = Object.keys(dir.files),
                 
@@ -60,7 +67,7 @@ ml(`
                                 window.close();
                             },10);
                      } else {
-                         window.location = window.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+ zip_virtual_dir.replace(location.origin,'');
+                         window.location = window.location.pathname.replace(/\/$/,'') +'/stopping?stop-service-worker='+ ml.c.app_root;
                      }
                 });
 

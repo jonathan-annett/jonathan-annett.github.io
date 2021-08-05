@@ -67,6 +67,7 @@ ml([],function(){ml(2,
              { 
                   re : virtual_listing_re,
                   fn :function (event,middleware,resolve) {
+                      
                        const zip_url = event.fixup_url.replace(virtual_listing_re,'');
                        middleware.virtualDirListing(zip_url,function(err,listingData){
                            if (err) {

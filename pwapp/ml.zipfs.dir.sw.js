@@ -41,6 +41,7 @@ ml(`
                        
                        
                        function resolveZipListing_Script (zip_meta_js_url,buffer,virtual) {
+                           
                            const url = zip_meta_js_url.replace(/\.zip\.meta\.js/,'.zip');
                            return new Promise(function (resolve){
                                
@@ -127,12 +128,7 @@ ml(`
                                                
                                                
                                                const script = renderScript (
-                                                   tools,
                                                    updated_prefix,
-                                                   uri,
-                                                   virtual,
-                                                   zipFileMeta.alias_root,
-                                                   all_files,
                                                    parent_link
                                                );
                            
@@ -164,17 +160,7 @@ ml(`
                                return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
                            }
 
-                            function renderScript (
-                            
-                                tools,
-                                updated_prefix,
-                                uri,
-                                virtual,
-                                alias_root,
-                                files, 
-                                parent_link) {
-                               
-                               
+                            function renderScript (updated_prefix,parent_link) {
                                const head_script = [
                                    
                                    
@@ -183,9 +169,6 @@ ml(`
                                   ' ',
                                   '     {',
                                   '         Window: function pageMain( lib ) {',
-                                  '             lib = lib ||{};',
-                                  '             // add / override window specific methods here',
-                                  '             ',
                                   '             return lib;',
                                   '         }',
                                   '     }, {',
@@ -201,18 +184,19 @@ ml(`
                                   '     function directoryInfo () {',
                                   '         const lib = {}  ;',
                                   
-                                  '         var zip_url_base='+JSON.stringify('/'+uri)+',',
-                                  '         updated_prefix='+ JSON.stringify(updated_prefix)+',',
-                                  '         zip_virtual_dir'+(virtual?'='+JSON.stringify(virtual):'')+',',
-                                  '         alias_root_fix='+(alias_root?"/^"+regexpEscape(alias_root)+"/":'/^\\s/')+',',
-                                  '         alias_root='+JSON.stringify(alias_root)+',',
-                                 // '         zip_files='+JSON.stringify(files,undefined,4)+',',
-                                  '         parent_link='+JSON.stringify(parent_link)+',',
-                                  '         full_zip_uri           = location.origin+zip_url_base;',
-                                  
+                                //  '         var zip_url_base='+JSON.stringify('/'+uri)+',',
+                                //  '         updated_prefix='+ JSON.stringify(updated_prefix)+',',
+                                //  '         zip_virtual_dir'+(virtual?'='+JSON.stringify(virtual):'')+',',
+                                //  '         alias_root_fix='+(alias_root?"/^"+regexpEscape(alias_root)+"/":'/^\\s/')+',',
+                                //  '         alias_root='+JSON.stringify(alias_root)+',',
+                                // // '         zip_files='+JSON.stringify(files,undefined,4)+',',
+                                //  '         parent_link='+JSON.stringify(parent_link)+',',
+                                //  '         full_zip_uri           = location.origin+zip_url_base;',
+                                //  
                                   //tools.metaSrc(),
                                   '         ml.i.localDirLib(function(e,dir){',
-                                  '            ml.i.pwaZipDirListing(zip_url_base,alias_root_fix,alias_root,zip_virtual_dir,full_zip_uri,parent_link,dir);',
+                                  //'            ml.i.pwaZipDirListing(zip_url_base,alias_root_fix,alias_root,zip_virtual_dir,full_zip_uri,parent_link,dir);',
+                                  '            ml.i.pwaZipDirListing(dir,parent_link);',
                                   '         });',
                                   '         ',
                                   '         return lib;',
