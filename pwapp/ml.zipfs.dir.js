@@ -156,7 +156,13 @@ ml(`
                 }
                 
                 function join(url,file,assoc) {
-                    return url.replace(/\/*$/,'') + '/' + ( file.replace(/^\/*/,'').replace(alias_root_fix,'') ) + assoc ? ('.'+assoc) : '';
+                    url  = url.replace(/\/$/,'');
+                    file = file.replace(alias_root_fix,'');
+                    
+                    if (assoc) {
+                        return url + '/' + file  + '.' + assoc;
+                    }
+                    return url + '/' + file ;
                 }
                                 
                 function toggleDeleteFile(filename,cb) {
