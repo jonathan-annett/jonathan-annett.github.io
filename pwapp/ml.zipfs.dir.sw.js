@@ -84,7 +84,7 @@ ml(`
                                                    file_listing,
                                                    fileisEdited,
                                                    updated_prefix,
-                                                   hidden_files_exist : false // this gets updated by html_file_item()
+                                                   hidden_files_exist : false  
                                                };
                                                
                                                const {
@@ -115,7 +115,6 @@ ml(`
                                                
                                                parent_link = cleanup_links(parent_link);
                                               
-                                                       
                                                htmlFileItemLibOpts.parent_link = parent_link;
                                               
                                                const all_files = file_listing.concat(
@@ -251,9 +250,7 @@ ml(`
                                                statusText: err.message|| err
                                            }));
                                        }
-                                       
-                                       
-                                       
+
                                        getZipFileUpdates(virtual ? virtual :  url,function(err,additonalFiles){
                                            
                                            getZipDirMetaTools(url,zip,zipFileMeta,function(tools){
@@ -279,11 +276,10 @@ ml(`
                                                    file_listing,
                                                    fileisEdited,
                                                    updated_prefix,
-                                                   hidden_files_exist : false // this gets updated by html_file_item()
+                                                   hidden_files_exist : false 
                                                };
                                                
                                                const {
-                                                   html_file_item,
                                                    get_html_file_item,
                                                    boldit,
                                                    linkit,
@@ -291,7 +287,7 @@ ml(`
                                                    replaceTextVars
                                                } = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
                                                
-                                               const html_file_func = get_html_file_item(dir_html) || html_file_item;
+                                               const html_file_func = get_html_file_item(dir_html);
 
                                                const cleanup_links = function(str) {
                                                    top_uri_res.forEach(function(re){
@@ -305,21 +301,16 @@ ml(`
                                                });
                                                
                                                var parent_link="";
-                                               
-                                               
-                                               
-                                              
+
                                                parent_link = uri_full_split.map(function(href,i,a){
                                                    const parts = href.split('/.zip');
                                                    const disp  = parts.length===1?undefined:parts.pop();
                                                    const res   = (href.endsWith(uri)?boldit:linkit) (href,disp);
                                                    return res;
                                                }).join("");
-                                               
-                                               
+
                                                parent_link = cleanup_links(parent_link);
-                                              
-                                                       
+
                                                htmlFileItemLibOpts.parent_link = parent_link;
                                               
                                                const all_files = file_listing.concat(
@@ -330,7 +321,6 @@ ml(`
                                                    
                                                ).sort();
                                                
-                                               //const html_details = all_files.map(html_file_item);
                                                const html_details = all_files.map(html_file_func);
                                                
                                                
@@ -364,7 +354,8 @@ ml(`
                                                                      'Content-Length' : html.length,
                                                                      'ETag'           : zipFileMeta.etag,
                                                                      'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                                                     'Last-Modified'  : zipFileMeta.date.toString() } )
+                                                                     'Last-Modified'  : zipFileMeta.date.toString() 
+                                                                   })
                                                        })
                                               );
                                               
@@ -409,9 +400,7 @@ ml(`
 
                        }
 
-                       
-                       
-                       
+                       /*
                        function resolveZipListing (url,buffer,virtual) {
                            
                            return new Promise(function (resolve){
@@ -458,11 +447,10 @@ ml(`
                                                    file_listing,
                                                    fileisEdited,
                                                    updated_prefix,
-                                                   hidden_files_exist : false // this gets updated by html_file_item()
+                                                   hidden_files_exist : false 
                                                };
                                                
                                                const {
-                                                   html_file_item,
                                                    get_html_file_item,
                                                    boldit,
                                                    linkit,
@@ -470,7 +458,7 @@ ml(`
                                                    replaceTextVars
                                                } = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
                                                
-                                               const html_file_func = get_html_file_item(dir_html) || html_file_item;
+                                               const html_file_func = get_html_file_item(dir_html) ;
 
                                                const cleanup_links = function(str) {
                                                    top_uri_res.forEach(function(re){
@@ -509,18 +497,12 @@ ml(`
                                                    
                                                ).sort();
                                                
-                                               //const html_details = all_files.map(html_file_item);
                                                const html_details = all_files.map(html_file_func);
                                                
                                                
                                                
                                                
-                                               /*
-                                               function renderHtml (
-                                               htmlTemplate,tools,updated_prefix,uri,
-                                               virtual,alias_root,files, hidden_files_exist,
-                                               html_details,parent_link) {
-                                               */
+                                               
                            
                                                const html = renderHtml (
                                                    dir_html,
@@ -603,16 +585,17 @@ ml(`
                                 );
                                
                                
-                               /*
+                               //*
                                return htmlTemplate .replace(/<\!--head_script--\>/,head_script.join("\n") )
                                                    .replace(/\$\{uri\}/g,uri)
                                                    .replace(/\$\{html_details\}/, html_details.join("\n") )
                                                    .replace(/\$\{hidden_files_class\}/,hidden_files_exist?' hidden_files_exist':'');
-                                */   
+                                * /   
                            }
 
                        }
-
+                       */
+                       
                        function resolveZipDownload( url, mode, alias) {
                            
                            return new Promise(function(resolve){
