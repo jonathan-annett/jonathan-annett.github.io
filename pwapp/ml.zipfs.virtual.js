@@ -187,75 +187,52 @@ ml([],function(){ml(2,
                                // pull in the list of replacement zips that are layered under this url
                                // (earlier entries replace later entries, so we loop until we get a hit inside the zip file
                                 // this also has the effect of precaching the zip file's data for the unzip process
-                                
+                                const entry = {
+                                    url         : url,
+                                    prefix      : prefix
+                                };    
                                return new Promise(function (resolve){
                                    const subpath = url.substr(prefix.length);
                                    if (subpath === "/edit") {
-                                      const fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip;
-                                      const entry = {
-                                          fixup_url   : fixup_url,
-                                          url         : url,
-                                          prefix      : prefix
-                                      };
+                                      entry.fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip;
                                       return resolve (entry);
                                    }
                                    
                                    if (subpath === "/") {
-                                      const fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip+'/index.html';
-                                      const entry = {
-                                          fixup_url   : fixup_url,
-                                          url         : url,
-                                          prefix      : prefix
-                                      };
+                                      entry.fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip+'/index.html';
                                       return resolve (entry);
                                    }
                                    
                                    
                                    const zipurlprefixes = virtualDirDB.virtualDirs[prefix].slice(0);
+                                   entry.aliased_url     = entry.prefix + 
+                                                           virtualDirDB.virtualDirZipBase[prefix].root + 
+                                                           url.substr(entry.prefix.length);
+                                   const zipFileResponseOpts = { virtual_prefix : entry.prefix };
+                                   
                                    const locateZipMetadata = function (i) {
                                        
                                        if (i<zipurlprefixes.length) {
-                                           
-                                           const fixup_url = zipurlprefixes[i]+subpath;
-                                           
                                            getEmbeddedZipFileResponse(
-                                               
-                                               fixup_url,
-                                               
-                                               {virtual_prefix : prefix},
-                                               
-                                               function(err,response){
+                                               zipurlprefixes[i]+subpath,
+                                               zipFileResponseOpts,
+                                               function (err,response){
                                                    if (err||!response) return locateZipMetadata(i+1);
                                                    //console.log("resolved vitualdir",url,"==>",fixup_url);
-                                                   const zip_root = virtualDirDB.virtualDirZipBase[prefix].root;
-                                                   const entry = {
-                                                       fixup_url   : fixup_url,
-                                                       aliased_url : prefix + zip_root + url.substr(prefix.length),
-                                                       url         : url,
-                                                       response    : response,
-                                                       prefix      : prefix
-                                                   };
+                                                   entry.fixup_url = zipurlprefixes[i]+subpath;
+                                                   entry.response  = response;
                                                    return resolve (entry);
                                                }
-                                               
                                            );
-                                                  
-                                   
+                                           
                                        } else {
-                                           const zip_root = virtualDirDB.virtualDirZipBase[prefix].root;
-                                           return resolve({
-                                               aliased_url:prefix + zip_root + url.substr(prefix.length),
-                                               prefix      : prefix
-                                           });
+                                           resolve(entry);
                                        }
-                                       
                                    };
-                                   
                                    return locateZipMetadata(0);
                                });
                        }
                    }
-                   
                    return Promise.resolve();
                 }
                  

@@ -129,7 +129,8 @@ ml(`
                                                
                                                const script = renderScript (
                                                    tools,
-                                                   updated_prefix,uri,
+                                                   updated_prefix,
+                                                   uri,
                                                    virtual,
                                                    zipFileMeta.alias_root,
                                                    all_files,
