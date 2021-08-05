@@ -196,7 +196,7 @@ ml(`
                                   //tools.metaSrc(),
                                   '         ml.i.localDirLib(function(e,dir){',
                                   //'            ml.i.pwaZipDirListing(zip_url_base,alias_root_fix,alias_root,zip_virtual_dir,full_zip_uri,parent_link,dir);',
-                                  '            ml.i.pwaZipDirListing(dir,parent_link);',
+                                  '            ml.i.pwaZipDirListing(dir,'+JSON.stringify(parent_link)+');',
                                   '         });',
                                   '         ',
                                   '         return lib;',
