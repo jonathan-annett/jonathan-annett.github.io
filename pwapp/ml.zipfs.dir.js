@@ -19,7 +19,7 @@ ml(`
     {
         Window: function pwaZipDirListing(pwa,zipFSApiLib,sha1,MarkdownConverter ) {
             
-            const session_data = ".hidden-json";
+            const session_data = "hidden-json";
             
             return ZipDirEditorLib;
             
@@ -353,7 +353,7 @@ ml(`
                 
                 
                 function writeFileAssociatedBuffer(filename,assoc,buffer,cb) {
-                    const file_url = dir.url+ (filename.replace(alias_root_fix,''))+'.'+(assoc.replace(/^\./),'');
+                    const file_url = dir.url + (filename.replace(alias_root_fix,'')) +'.'+ (assoc.replace(/^\./),'');
                     updateURLContents (file_url,find_li(filename),buffer,function(err,hash) {
                         if (err) return cb(err);
                         return cb (undefined,file_url);
