@@ -116,7 +116,7 @@ ml(`
                 if (!html_details_html) return false;
                 
                 const link_it_html    = extractWrapperText(html_details_html,'link_it');
-                const fixup_re =  new RegExp("^"+regexpEscape('<!--alias_root=-->'+alias_root),'g');
+                const fixup_re =  new RegExp(regexpEscape('<!--alias_root=-->'+alias_root),'g');
                 return file_template;
                 
                 
