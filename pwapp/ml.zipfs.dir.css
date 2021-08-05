@@ -314,7 +314,8 @@ ul li.hidden.deleted { background-color : red; }
 
 
 ul.hide_hidden li.hidden, 
-ul.hide_full_path span.full_path { display : none; }
+ul.hide_full_path span.full_path,
+ul.hide_full_path span.alias_root { display : none; }
 .disable-select {
   -webkit-user-select: none;
   -moz-user-select: none;
