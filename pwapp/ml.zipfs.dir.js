@@ -22,6 +22,7 @@ ml(`
         Window: function pwaZipDirListing(pwa,zipFSApiLib,sha1,MarkdownConverter ) {
             
             const session_data = "hidden-json";
+            const Tabulator    = ml.i.Tabulator;
             
             return ZipDirEditorLib;
             
@@ -56,6 +57,7 @@ ml(`
                 const editorErrors = {};
                 const editorWarnings = {};
                 const ignoreErrors = {};
+                let errorsTable;
                 function errorsExist () {
                     return Object.keys(editorErrors).some(function(filename){
                         return !ignoreErrors[filename];
@@ -1457,7 +1459,53 @@ ml(`
                         
                     }
                 }
-              
+                
+                function errorTableData() {
+                   let data = [];
+                   Object.keys(editorErrors).forEach(function(filename){
+                       editorErrors[filename].forEach(function(err){
+                           data.push({type:"Error",text:err.text,filename:filename,row:err.row,column:err.column});
+                       });
+                   });
+                   Object.keys(editorWarnings).forEach(function(filename){
+                       editorWarnings[filename].forEach(function(err){
+                           data.push({type:"Warning",text:err.text,filename:filename,row:err.row,column:err.column});
+                       });
+                   });
+                   data.sort(function(a,b){
+                       if (a.filename===b.filename) {
+                           return a.row < b.row ? -1 : a.row > b.row ? 1 : 0;
+                       } else {
+                           return a.filename < b.filename ? -1 : 1;
+                       }
+                   });
+                   data.forEach(function(x,ix){x,x.id=ix+1;});
+                   return data;
+                }
+                
+                function updateErrorsTable(cb) {
+                    const data = errorTableData();
+                    if(!errorsTable) {
+                        errorsTable = new Tabulator("#errors_table", {
+                            data:data,
+                            autoColumns:true,
+                            autoColumnsDefinitions:[
+                                {title:"Error/Warning",  field:"type",     headerFilter:true}, 
+                                {title:"Filename",       field:"filename", headerFilter:true}, 
+                                {title:"Message",        field:"text",}, 
+                                {title:"Line",           field:"row"}, 
+                                {title:"Column",         field:"column"}, 
+                            ],
+                        });
+                        cb(errorsTable);
+                    } else {
+                        errorsTable.updateOrAddData (data).then(function(){
+                            cb(errorsTable);
+                        });
+                    }
+                }
+                
+
                 function transientEditorMetaResave(li_ed,delay,annot) {
                     if (li_ed.transient_timeout) clearTimeout(li_ed.transient_timeout);
                     
@@ -1470,7 +1518,7 @@ ml(`
                         error_list.splice(0,error_list.length);
                         warning_list.splice(0,warning_list.length);
                         const grab = function (l,x){
-                            l.push ({line:x.row,column:x.column,text:x.text});
+                            l.push ({row:x.row,column:x.column,text:x.text});
                         };
                         for (var key in annot){
                             if (annot.hasOwnProperty(key)) {
@@ -1501,6 +1549,10 @@ ml(`
                         
                             
                         qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
+                        
+                        updateErrorsTable(function(){
+                            
+                        });
                         
                     } else {
                         errors = null;
