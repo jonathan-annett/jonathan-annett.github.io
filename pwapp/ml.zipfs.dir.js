@@ -256,7 +256,7 @@ ml(`
                                      sha1(buffer,function(err,hash){
                                          if (err) return cb(err);
                                          if (li) {
-                                             li.classList.add('edited');
+                                             li.classList.remove('edited');
                                              li.classList[!!li.dataset.editor_id ?"add":"remove"]('editing');
                                          }
                                          return cb(undefined,buffer,false,hash,file_url);
