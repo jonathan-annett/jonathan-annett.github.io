@@ -648,6 +648,7 @@ ml(`
                     if (li.classList.contains("editing") && (!nextSib || (nextSib &&  nextSib.classList.contains("image_viewer"))) ) {
                         li.parentElement.removeChild(li.nextSibling);
                         li.classList.remove("editing");
+                        qs(li,".sha1").textContent = '';
                     } else {
                         const img = document.createElement("img");
                         const newLi = document.createElement("li");
