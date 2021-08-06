@@ -366,7 +366,7 @@ ml(`
                       }
                     });
                     
-                    zipPoller(0);
+                  
                     
                 }
                 
@@ -2095,7 +2095,7 @@ ml(`
                    window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
                 }
                 
-               
+               zipPoller(0);
                 
                 return lib;
                 
