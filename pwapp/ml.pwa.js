@@ -236,7 +236,6 @@ ml(`
                         });
                     },
                     
-                    
                     getUpdatedURLs : function (msg,cb) {
                        const regexTest = new RegExp (msg.regexTest,'');
                        zipFS.getUpdatedURLs(regexTest,msg.data.db||"updatedURLS",function(err,urls){
@@ -244,7 +243,6 @@ ml(`
                             cb({urls:urls});
                        });
                    },
-                    
                     
                     fixupUrl : function (msg,cb) {
                                    

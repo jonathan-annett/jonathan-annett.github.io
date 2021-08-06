@@ -161,216 +161,24 @@ ml(`
                     });
                 }
                 
-                function removeUpdatedURLContents(file_url,li,db,cb) {
-     
-                   return pwa.removeUpdatedURLContents(
-                       file_url,
-                       db,
-                       function(err,msg){
-                          if (li) li.classList.remove('edited');
-                          if(cb)cb(err,msg&&msg.url); 
-                       });
-                }
-                
-                function updateURLContents(file_url,li,content,db,cb) {
-     
-                    return pwa.updateURLContents(
-                        file_url,
-                        content,
-                        true,
-                        db,
-                        function(err,msg){
-                            if (li) {
-                                li.classList.add('edited');
-                                li.classList[!!li.dataset.editor_id ?"add":"remove"]('editing');
-                            }
-                            if(cb)cb(err,msg && msg.hash,msg&&msg.url);
-                        }
-                    );
-                }
-                
-                function fetchUpdatedURLContents(file_url,li,hash,db,cb) {
-                    return pwa.fetchUpdatedURLContents(
-                        file_url,
-                        hash,
-                        db,
-                        function(err,msg){
-                           if (err) return cb (err);
-                           if (li) {
-                               li.classList[msg.updated?"add":"remove"]('edited');
-                               li.classList[!!li.dataset.editor_id ?"add":"remove"]('editing');
-                           }
-                           cb(undefined,msg.content,msg.updated,msg.hash,msg.url);
-                        }
-                    );
-                }
-                
-                function removeUpdatedFile (filename,cb) {
-                    const ix = dir.files[filename];
-                    if (typeof ix === 'number'){
-                           // file exists - postive index = index to dir.zips[] array to indicate unchanged
-                           //
-                           // negative index:
-                           // -1 means this is a new file
-                           // -2 == originally in dir.zips[0], but has been updated
-                           // -3 == originally in dir.zips[1], but has been updated
-                           
-                           
-                           if (ix>=0) {
-                               // file was not updated.
-                               return cb ();
-                           }
-                           if (ix<-1) {
-                               dir.files[filename] = -2 - ix;
-                           } 
-                           const url = join(dir.url,filename);
-                           const li = find_li(filename);
-                           removeUpdatedURLContents(url,li,"updatedURLS",cb);
-                           
-                    } else {
-                        return cb(new Error("not found"));
-                    }
-                }
-                
-                function readFileBuffer(filename,cb) {// cb--> err,buffer,updated,hash,url
-                    const ix = dir.files[filename];
-                    if (typeof ix === 'number'){
-                           // file exists - postive index = index to dir.zips[] array to indicate unchanged
-                           //
-                           // negative index:
-                           // -1 means this is a new file
-                           // -2 == originally in dir.zips[0], but has been updated
-                           // -3 == originally in dir.zips[1], but has been updated
-                           
-                          const as_per_zip = ix < 0 ? false : dir.zips[ix];
-                          const updated = !as_per_zip ;
-                          const file_url = join(updated ? dir.url : as_per_zip, filename);
-                          const li = find_li(filename);
-                          if (updated) {
-                              // get updated content.
-                              fetchUpdatedURLContents(file_url,li,true,"updatedURLS",cb);
-                              
-                          } else {
-                              // get file from zip.
-                              fetch (file_url).then(function(response){
-                                  
-                                 response.arrayBuffer().then(function(buffer){
-                                     
-                                     sha1(buffer,function(err,hash){
-                                         if (err) return cb(err);
-                                         if (li) {
-                                             li.classList.remove('edited');
-                                             li.classList[!!li.dataset.editor_id ?"add":"remove"]('editing');
-                                         }
-                                         return cb(undefined,buffer,false,hash,file_url);
-
-                                     });
-                                       
-                                   }).catch(cb);
-                                   
-                              }).catch(cb);
-                          }
-
-                    } else {
-                        return cb(new Error("not found"));
-                    }
-                }
-                
-                function readFileText(filename,cb) {
-                    readFileBuffer(filename,function(err,buffer,updated,hash){
-                       if (err) return cb(err);
-                       return cb (undefined,buffer,updated,hash,new TextDecoder().decode(buffer));
-                    });
-                }
-                
-                function writeFileBuffer(filename,buffer,cb) {
-                    const ix = dir.files[filename];
-                    if (typeof ix==='number'){
-                          // file exists - overwrite is possible
-                          const file_url = join( dir.url, filename);
-                          updateURLContents (file_url,find_li(filename),buffer,"updatedURLS",function(err,hash) {
-                              if (err) return cb(err);
-                                 if (ix >=0 ) {
-                                     // file no longer in zip - so force to negative index 
-                                     dir.files[filename] = 0 - (2+ix);
-                                 }
-                                 return cb(undefined,hash,file_url);
-                          });
-                    } else {
-                        return cb(new Error("not found"));
-                    }
-                }
-                
-                function createFileBuffer(filename,buffer,cb) {
-                    const ix = dir.files[ filename ];
-                    if (typeof ix==='number'){
-                        // file already exists
-                        return cb(new Error("file exists"));
-                    } else {
-                        dir.files[ filename ]=-1;
-                        writeFileBuffer(filename,buffer,cb);
-                    }
-                }
-                
-                function forceWriteFileBuffer(filename,buffer,cb) {
-                    const ix = dir.files[ filename ];
-                    if (typeof ix!=='number'){
-                        // file doesn't exists - set new file state
-                        dir.files[ filename ]=-1;
-                    }
-                    writeFileBuffer(filename,buffer,cb);
-                }
-                
-                function writeFileText(filename,text,cb) {
-                    writeFileBuffer(filename,new TextEncoder().encode(text),cb);
-                }
-                
-                function createFileText(filename,text,cb) {
-                    createFileBuffer(filename,new TextEncoder().encode(text),cb);
-                }
-                
-                function forceWriteFileText(filename,text,cb) {
-                    forceWriteFileBuffer(filename,new TextEncoder().encode(text),cb);
-                }
+                const {removeUpdatedURLContents,updateURLContents,fetchUpdatedURLContents} = updateURLApi ();
                 
                 
                 
-                function writeFileAssociatedBuffer(filename,assoc,buffer,cb) {
-                    const file_url = join(dir.url,filename,assoc);
-                    updateURLContents (file_url,undefined,buffer,"updatedMetadata",function(err,hash) {
-                        if (err) return cb(err);
-                        return cb (undefined,file_url);
-                    });
-                }
+                 
+               
+                const fbufApi = fileBufferApi(dir);
                 
-                function writeFileAssociatedText(filename,assoc,text,cb) {
-                    writeFileAssociatedBuffer(filename,assoc,new TextEncoder().encode(text),cb);
-                }
+                //const { removeUpdatedFile,readFileBuffer,writeFileBuffer,createFileBuffer, forceWriteFileBuffer } = fbufApi;
                 
-                function readFileAssociatedBuffer(filename,assoc,cb) {
-                      const file_url = join(dir.url,filename,assoc);
-                      fetchUpdatedURLContents(file_url,undefined,false,"updatedMetadata",function(err,buffer){
-                           if (err) return cb(err);
-                           return cb (undefined,buffer,file_url);
-                      });
-                } 
+                const ftextApi =  fileTextApi(fbufApi);
                 
-                function readFileAssociatedText(filename,assoc,cb) {
-                    readFileAssociatedBuffer(filename,assoc,function(err,buffer,file_url) {
-                        if (err) return cb(err);
-                        return cb(undefined,new TextDecoder().decode(buffer),file_url);
-                    });
-                }
-    
-                function removeFileAssociatedData (filename,assoc,cb) {
-                    const file_url = join(dir.url,filename,assoc);
-                    removeUpdatedURLContents (file_url,undefined,"updatedMetadata",function(err) {
-                        if (err) return cb(err);
-                        return cb (undefined,file_url);
-                    });
-                }
+                const { readFileText,writeFileText,createFileText,forceWriteFileText } = ftextApi;
                 
-    
+                const { writeFileAssociatedText,readFileAssociatedText,removeFileAssociatedData } = fileAssocApi(fbufApi);
+                
+                
+                
                 function onDOMContentLoaded (){
                 
                     const showHidden=document.querySelector("h1 input.hidden_chk");
@@ -939,12 +747,13 @@ ml(`
                                         console.log("window opened for",file_url)
                                         setTimeout(function(){
                                             
-                                            removeUpdatedURLContents(file_url,undefined,"updatedMetadata",function(){
+                                            removeFileAssociatedData(filename,tmp_name,function(){
                                                 console.log("removed temp file",file_url);
                                                 if (cb) {
                                                     cb("opened",file_url);
                                                 }
                                             });
+                                            
                                         },500);
                                         
                                     }
@@ -2214,7 +2023,258 @@ ml(`
                 
                 return lib;
                 
+               
             }
+            
+            
+            function updateURLApi (pwa) {
+                
+                return {removeUpdatedURLContents,updateURLContents,fetchUpdatedURLContents};
+                
+                function removeUpdatedURLContents(file_url,db,cb) {
+     
+                   return pwa.removeUpdatedURLContents(
+                       file_url,
+                       db,
+                       function(err,msg){
+                          if(cb)cb(err,msg&&msg.url); 
+                       });
+                }
+                
+                function updateURLContents(file_url,content,db,cb) {
+     
+                    return pwa.updateURLContents(
+                        file_url,
+                        content,
+                        true,
+                        db,
+                        function(err,msg){
+                            if(cb)cb(err,msg && msg.hash,msg&&msg.url);
+                        }
+                    );
+                }
+                
+                function fetchUpdatedURLContents(file_url,hash,db,cb) {
+                    return pwa.fetchUpdatedURLContents(
+                        file_url,
+                        hash,
+                        db,
+                        function(err,msg){
+                           if (err) return cb (err);
+                           cb(undefined,msg.content,msg.updated,msg.hash,msg.url);
+                        }
+                    );
+                }
+                
+            }
+            
+            function fileBufferApi(pwa,dir){
+                
+                const alias_root_fix  = new RegExp('^'+regexpEscape(dir.alias_root) ,'');
+                const urlAPI = updateURLApi ();
+                const { removeUpdatedURLContents,updateURLContents,fetchUpdatedURLContents } = urlAPI;
+                
+                return { removeUpdatedFile,readFileBuffer,writeFileBuffer,createFileBuffer,forceWriteFileBuffer, urlAPI,dir,join} ;
+                
+                function join(url,file,assoc) {
+                    url  = url.replace(/\/$/,'');
+                    file = file.replace(alias_root_fix,'');
+                    
+                    if (assoc) {
+                        return url + '/' + file  + '.' + assoc;
+                    }
+                    return url + '/' + file ;
+                }
+                
+                function regexpEscape(str) {
+                    return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
+                }
+                
+                     
+                
+                function removeUpdatedFile (filename,cb) {
+                    const ix = dir.files[filename];
+                    if (typeof ix === 'number'){
+                           // file exists - postive index = index to dir.zips[] array to indicate unchanged
+                           //
+                           // negative index:
+                           // -1 means this is a new file
+                           // -2 == originally in dir.zips[0], but has been updated
+                           // -3 == originally in dir.zips[1], but has been updated
+                           
+                           
+                           if (ix>=0) {
+                               // file was not updated.
+                               return cb ();
+                           }
+                           if (ix<-1) {
+                               dir.files[filename] = -2 - ix;
+                           } 
+                           const url = join(dir.url,filename);
+                           removeUpdatedURLContents(url,"updatedURLS",cb);
+                           
+                    } else {
+                        return cb(new Error("not found"));
+                    }
+                }
+                
+                function readFileBuffer(filename,cb) {// cb--> err,buffer,updated,hash,url
+                    const ix = dir.files[filename];
+                    if (typeof ix === 'number'){
+                           // file exists - postive index = index to dir.zips[] array to indicate unchanged
+                           //
+                           // negative index:
+                           // -1 means this is a new file
+                           // -2 == originally in dir.zips[0], but has been updated
+                           // -3 == originally in dir.zips[1], but has been updated
+                           
+                          const as_per_zip = ix < 0 ? false : dir.zips[ix];
+                          const updated = !as_per_zip ;
+                          const file_url = join(updated ? dir.url : as_per_zip, filename);
+                          if (updated) {
+                              // get updated content.
+                              fetchUpdatedURLContents(file_url,true,"updatedURLS",cb);
+                              
+                          } else {
+                              // get file from zip.
+                              fetch (file_url).then(function(response){
+                                  
+                                 response.arrayBuffer().then(function(buffer){
+                                     
+                                     sha1(buffer,function(err,hash){
+                                         if (err) return cb(err);
+                                         return cb(undefined,buffer,false,hash,file_url);
+
+                                     });
+                                       
+                                   }).catch(cb);
+                                   
+                              }).catch(cb);
+                          }
+
+                    } else {
+                        return cb(new Error("not found"));
+                    }
+                }
+                
+                function writeFileBuffer(filename,buffer,cb) {
+                    const ix = dir.files[filename];
+                    if (typeof ix==='number'){
+                          // file exists - overwrite is possible
+                          const file_url = join( dir.url, filename);
+                          updateURLContents (file_url,buffer,"updatedURLS",function(err,hash) {
+                              if (err) return cb(err);
+                                 if (ix >=0 ) {
+                                     // file no longer in zip - so force to negative index 
+                                     dir.files[filename] = 0 - (2+ix);
+                                 }
+                                 return cb(undefined,hash,file_url);
+                          });
+                    } else {
+                        return cb(new Error("not found"));
+                    }
+                }
+                
+                function createFileBuffer(filename,buffer,cb) {
+                    const ix = dir.files[ filename ];
+                    if (typeof ix==='number'){
+                        // file already exists
+                        return cb(new Error("file exists"));
+                    } else {
+                        dir.files[ filename ]=-1;
+                        writeFileBuffer(filename,buffer,cb);
+                    }
+                }
+                
+                function forceWriteFileBuffer(filename,buffer,cb) {
+                    const ix = dir.files[ filename ];
+                    if (typeof ix!=='number'){
+                        // file doesn't exists - set new file state
+                        dir.files[ filename ]=-1;
+                    }
+                    writeFileBuffer(filename,buffer,cb);
+                }
+                
+            
+            }
+            
+            function fileTextApi (bufApi) {
+                
+                return { readFileText, writeFileText, createFileText, forceWriteFileText } ;
+                
+                function readFileText(filename,cb) {
+                    bufApi.readFileBuffer(filename,function(err,buffer,updated,hash){
+                       if (err) return cb(err);
+                       return cb (undefined,buffer,updated,hash,new TextDecoder().decode(buffer));
+                    });
+                }
+                
+                function writeFileText(filename,text,cb) {
+                    bufApi.writeFileBuffer(filename,new TextEncoder().encode(text),cb);
+                }
+                
+                function createFileText(filename,text,cb) {
+                    bufApi.createFileBuffer(filename,new TextEncoder().encode(text),cb);
+                }
+                
+                function forceWriteFileText(filename,text,cb) {
+                    bufApi.forceWriteFileBuffer(filename,new TextEncoder().encode(text),cb);
+                }
+
+            }
+            
+            function fileAssocApi(fbufApi) {
+                
+                const {updateURLContents,fetchUpdatedURLContents,removeUpdatedURLContents} =  fbufApi.urlAPI;
+                
+                return { writeFileAssociatedText,readFileAssociatedText,removeFileAssociatedData };
+                
+                function join (filename,assoc) {
+                    return fbufApi.join(fbufApi.dir.url,filename,assoc);
+                }
+                
+                function writeFileAssociatedBuffer(filename,assoc,buffer,cb) {
+                    const file_url = join(filename,assoc);
+                    updateURLContents (file_url,undefined,buffer,"updatedMetadata",function(err,hash) {
+                        if (err) return cb(err);
+                        return cb (undefined,file_url);
+                    });
+                }
+                
+                function readFileAssociatedBuffer(filename,assoc,cb) {
+                      const file_url = join(filename,assoc);
+                      fetchUpdatedURLContents(file_url,undefined,false,"updatedMetadata",function(err,buffer){
+                           if (err) return cb(err);
+                           return cb (undefined,buffer,file_url);
+                      });
+                } 
+                
+                
+                function writeFileAssociatedText(filename,assoc,text,cb) {
+                    writeFileAssociatedBuffer(filename,assoc,new TextEncoder().encode(text),cb);
+                }
+                
+                function readFileAssociatedText(filename,assoc,cb) {
+                    readFileAssociatedBuffer(filename,assoc,function(err,buffer,file_url) {
+                        if (err) return cb(err);
+                        return cb(undefined,new TextDecoder().decode(buffer),file_url);
+                    });
+                }
+    
+                function removeFileAssociatedData (filename,assoc,cb) {
+                    const file_url = join(filename,assoc);
+                    removeUpdatedURLContents (file_url,undefined,"updatedMetadata",function(err) {
+                        if (err) return cb(err);
+                        return cb (undefined,file_url);
+                    });
+                }
+                
+            
+            }
+            
+            
+            
+            
         } 
     }, {
         Window: [
