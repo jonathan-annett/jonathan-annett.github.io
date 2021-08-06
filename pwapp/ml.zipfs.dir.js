@@ -75,11 +75,13 @@ ml(`
                     });
                 }
                 
-                function createEditor (id,theme,mode) {
-                    let editor = ace.edit(id, {
-                        theme:theme,
-                        mode: mode
-                    });
+                function createEditor (id,mode,theme) {
+                    const opts = {
+                         mode: mode
+                    };
+                    if (theme) {opts.theme=theme;}
+                    
+                    let editor = ace.edit(id,opts);
                     
                     onChangeMode(undefined,editor.getSession());
                     editor.session.on('changeMode', onChangeMode);
@@ -1517,7 +1519,7 @@ ml(`
                         li.parentNode.insertBefore(li_ed, li.nextSibling);
                         
                         
-                        li_ed.editor = createEditor(editor_id,aceThemeForFile(filename),aceModeForFile(filename));
+                        li_ed.editor = createEditor(editor_id,aceModeForFile(filename),aceThemeForFile(filename));
 
                        
                         li_ed.sizebar = dragSize("#"+editor_id,["#"+editor_id+"_grab_bar"]);
@@ -1947,7 +1949,7 @@ ml(`
                     div.appendChild(pre);
                     div.style.display="none";
                     let timeout,hasWorker;
-                    let editor = createEditor(pre.id,"ace/theme/chrome",mode);
+                    let editor = createEditor(pre.id,mode);
 
                      aceModeHasWorker(mode,function(answer){
                         hasWorker = answer;
