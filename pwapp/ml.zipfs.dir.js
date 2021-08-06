@@ -333,7 +333,7 @@ ml(`
                 
                 function writeFileAssociatedBuffer(filename,assoc,buffer,cb) {
                     const file_url = join(dir.url,filename,assoc);
-                    updateURLContents (file_url,find_li(filename),buffer,function(err,hash) {
+                    updateURLContents (file_url,undefined,buffer,function(err,hash) {
                         if (err) return cb(err);
                         return cb (undefined,file_url);
                     });
@@ -345,7 +345,7 @@ ml(`
                 
                 function readFileAssociatedBuffer(filename,assoc,cb) {
                       const file_url = join(dir.url,filename,assoc);
-                      fetchUpdatedURLContents(file_url,find_li(filename),false,function(err,buffer){
+                      fetchUpdatedURLContents(file_url,undefined,false,function(err,buffer){
                            if (err) return cb(err);
                            return cb (undefined,buffer,file_url);
                       });
@@ -360,7 +360,7 @@ ml(`
     
                 function removeFileAssociatedData (filename,assoc,cb) {
                     const file_url = join(dir.url,filename,assoc);
-                    removeUpdatedURLContents (file_url,find_li(filename),function(err) {
+                    removeUpdatedURLContents (file_url,undefined,function(err) {
                         if (err) return cb(err);
                         return cb (undefined,file_url);
                     });
