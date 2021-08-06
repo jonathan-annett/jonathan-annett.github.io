@@ -1490,8 +1490,8 @@ ml(`
                             data:data,
                             autoColumns:true,
                             autoColumnsDefinitions:[
-                                {title:"Error/Warning",  field:"type",     headerFilter:true}, 
-                                {title:"Filename",       field:"filename", headerFilter:true}, 
+                                {title:"Error/Warning",  field:"type",}, 
+                                {title:"Filename",       field:"filename",}, 
                                 {title:"Message",        field:"text",}, 
                                 {title:"Line",           field:"row"}, 
                                 {title:"Column",         field:"column"}, 
