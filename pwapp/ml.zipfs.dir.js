@@ -74,6 +74,26 @@ ml(`
                         return !ignoreErrors[filename];
                     });
                 }
+                
+                function createEditor (id,theme,mode) {
+                    let editor = ace.edit(id, {
+                        theme:theme,
+                        mode: mode
+                    });
+                    
+                    editor.session.on('changeMode', function(e, session){
+                      if ("ace/mode/javascript" === session.getMode().$id) {
+                        if (!!session.$worker) {
+                          session.$worker.send("setOptions", [{
+                            "-W095": false,
+                            "-W025": false,
+                            'maxerr':10000
+                          }]);
+                        }
+                      }
+                    });
+                    return editor;
+                }
 
                 qs ("h1 a.restart",function click(e) {
                      if (editor_channel) {
@@ -1482,11 +1502,8 @@ ml(`
                         li.parentNode.insertBefore(li_ed, li.nextSibling);
                         
                         
-                        li_ed.editor = ace.edit(editor_id, {
-                            theme:   aceThemeForFile(filename),
-                            mode:    aceModeForFile(filename),
-                        });
-                        
+                        li_ed.editor = createEditor(editor_id,aceThemeForFile(filename),aceModeForFile(filename));
+
                        
                         li_ed.sizebar = dragSize("#"+editor_id,["#"+editor_id+"_grab_bar"]);
                        
@@ -1915,10 +1932,8 @@ ml(`
                     div.appendChild(pre);
                     div.style.display="none";
                     let timeout,hasWorker;
-                    let editor = ace.edit(pre.id, {
-                        mode: mode
-                    });
-                    
+                    let editor = createEditor(pre.id,"ace/theme/chrome",mode);
+
                      aceModeHasWorker(mode,function(answer){
                         hasWorker = answer;
                         if (hasWorker) {
