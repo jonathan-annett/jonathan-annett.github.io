@@ -1462,12 +1462,12 @@ ml(`
                    let data = [];
                    Object.keys(editorErrors).forEach(function(filename){
                        editorErrors[filename].forEach(function(err){
-                           data.push({type:"Error",text:err.text,filename:filename,row:err.row,column:err.column});
+                           data.push({type:"Error",text:err.text,filename:filename,line:err.row+1,column:err.column});
                        });
                    });
                    Object.keys(editorWarnings).forEach(function(filename){
                        editorWarnings[filename].forEach(function(err){
-                           data.push({type:"Warning",text:err.text,filename:filename,row:err.row,column:err.column});
+                           data.push({type:"Warning",text:err.text,filename:filename,line:err.row+1,column:err.column});
                        });
                    });
                    data.sort(function(a,b){
@@ -1513,8 +1513,8 @@ ml(`
                                    const li_ed = ed.parentNode;
                                    const editor = li_ed.editor;
                                    editor.resize(true);
-                                   editor.scrollToLine(row._row.data.row, true, true, function () {});
-                                   editor.gotoLine(row._row.data.row, row._row.data.column, true);
+                                   editor.scrollToLine(row._row.data.line, true, true, function () {});
+                                   editor.gotoLine(row._row.data.line, row._row.data.column, true);
                                }
                             }
                         });
