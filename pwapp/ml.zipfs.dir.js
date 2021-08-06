@@ -2064,8 +2064,9 @@ ml(`
                                                     li.classList[errors?"add":"remove"]("errors");
                                                     li.classList[warnings?"add":"remove"]("warnings");
                                                     sha_el.textContent = hash;
+                                                    setTimeout(zipPoller,10,index+1);
                                                 }); 
-                                                setTimeout(zipPoller,10,index+1);
+                                                
                                             } else {
                                                 sha_el.textContent=hash;
                                                 setTimeout(zipPoller,10,index+1);
