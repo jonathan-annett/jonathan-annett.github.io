@@ -394,3 +394,7 @@ li.grab_bar {
     height:8px;
 }
 
+#errors_table {
+  left :32px;
+  margin-right:32px;
+}
