@@ -1936,7 +1936,8 @@ ml(`
                 function lintSource (hash,src,mode,filename,cb) {
                     const lintr = linters[mode];
                     if (lintr) {
-                        return lintr.push(hash,src,filename,cb);
+                        lintr.push(hash,src,filename,cb);
+                        return lintr;
                     }
                     linters[mode]=linter (mode);
                     linters[mode].push(hash,src,filename,cb);
