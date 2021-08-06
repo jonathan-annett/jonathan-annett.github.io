@@ -81,17 +81,20 @@ ml(`
                         mode: mode
                     });
                     
-                    editor.session.on('changeMode', function(e, session){
-                      if ("ace/mode/javascript" === session.getMode().$id) {
-                        if (!!session.$worker) {
-                          session.$worker.send("setOptions", [{
-                            "-W095": false,
-                            "-W025": false,
-                            'maxerr':10000
-                          }]);
-                        }
-                      }
-                    });
+                    onChangeMode(undefined,editor.getSession());
+                    editor.session.on('changeMode', onChangeMode);
+                    
+                    function onChangeMode(e, session) {
+                       if ("ace/mode/javascript" === session.getMode().$id) {
+                         if (!!session.$worker) {
+                           session.$worker.send("setOptions", [{
+                             "-W095": false,
+                             "-W025": false,
+                             'maxerr':10000
+                           }]);
+                         }
+                       } 
+                    }
                     return editor;
                 }
 
