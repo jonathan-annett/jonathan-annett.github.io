@@ -1515,6 +1515,7 @@ ml(`
                                    editor.resize(true);
                                    editor.scrollToLine(row._row.data.line, true, true, function () {});
                                    editor.gotoLine(row._row.data.line, row._row.data.column, true);
+                                   editor.focus();
                                }
                             }
                         });

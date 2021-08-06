@@ -142,6 +142,7 @@ li.editing span.sha1,
 a.close-editor,
 a.exit-fullscreen,
 li a.fullscreen,
+html.zooming #errors_table,
 html.zooming li.editing a.close-editor,
 html.zooming li,
 html.zooming #drop-area,
@@ -328,7 +329,6 @@ ul.hide_hidden li.hidden.editing {
 }
 #errors_table {
   position: absolute;
-  /* left :32px; */
   width:53%;
   bottom: 0;
   height:80px;
