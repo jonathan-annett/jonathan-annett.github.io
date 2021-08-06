@@ -1341,30 +1341,46 @@ ml(`
                             ],
                             rowClick:function(e, row){
                                e.preventDefault();
-                               const filename = row._row.data.filename;
-                               const li = find_li(filename);
-                               if (li) {
-                                   if (li.dataset.editor_id) {
-                                       next(li.dataset.editor_id);
-                                   } else {
-                                       openInbuiltEditor ( filename,li, function(){
-                                           next(li.dataset.editor_id);
-                                       });
-                                   }
-                               }
+                               findError(
+                                   row._row.data.filename,
+                                   row._row.data.line,
+                                   row._row.data.column,
+                                   function(err){
+                                       if (err) console.log(err);
+                                });
                                
-                               function findError(editor_id) {
-                                   const ed = qs("#"+editor_id);
-                                   if (ed) {
-                                       const li_ed = ed.parentNode;
-                                       const editor = li_ed.editor;
-                                       editor.resize(true);
-                                       editor.scrollToLine(row._row.data.line, true, true, function () {});
-                                       editor.gotoLine(row._row.data.line, row._row.data.column, true);
-                                       editor.focus();
-                                       li_ed.scrollIntoView();
+                               function findError(filename,line,column,cb) {
+                                   const li = find_li(filename);
+                                   if (li) {
+                                       if (li.dataset.editor_id) {
+                                           doFindError(li.dataset.editor_id);
+                                       } else {
+                                           openInbuiltEditor ( filename,li, function(){
+                                               if (li.dataset.editor_id) {
+                                                  doFindError(li.dataset.editor_id);
+                                               } else {
+                                                  cb(new Error("can't open"+filename));
+                                               }
+                                           });
+                                       }
+                                   } else {
+                                       cb(new Error("can't find"+filename));
                                    }
-                               } 
+                                   
+                                   function doFindError(editor_id) {
+                                       const ed = qs("#"+editor_id);
+                                       if (ed) {
+                                           const li_ed = ed.parentNode;
+                                           const editor = li_ed.editor;
+                                           editor.resize(true);
+                                           editor.scrollToLine(line, true, true, function () {});
+                                           editor.gotoLine(line, column, true);
+                                           editor.focus();
+                                           li_ed.scrollIntoView();
+                                           cb();
+                                       }
+                                   } 
+                               }
                             }
                         });
                         destroyTableData(data);
