@@ -88,9 +88,17 @@ ml(`
         }
     }
 
-    function removeUpdatedURLContents(url,cb) {
+    function removeUpdatedURLContents(url,db,cb) {
+        if (typeof db === 'function' ) {
+            cb=db;
+            db=databases.updatedURLS;
+        } else {
+            if (typeof db==='string') {
+                db=databases[db];
+            }
+        }
         url = full_URL(location.origin,url);
-        databases.updatedURLS.removeItem(url,cb);
+        db.removeItem(url,cb);
     }
     
    

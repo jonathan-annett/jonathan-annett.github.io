@@ -161,22 +161,24 @@ ml(`
                     });
                 }
                 
-                function removeUpdatedURLContents(file_url,li,cb) {
+                function removeUpdatedURLContents(file_url,li,db,cb) {
      
                    return pwa.removeUpdatedURLContents(
                        file_url,
+                       db,
                        function(err,msg){
                           if (li) li.classList.remove('edited');
                           if(cb)cb(err,msg&&msg.url); 
                        });
                 }
                 
-                function updateURLContents(file_url,li,content,cb) {
+                function updateURLContents(file_url,li,content,db,cb) {
      
                     return pwa.updateURLContents(
                         file_url,
                         content,
                         true,
+                        db,
                         function(err,msg){
                             if (li) {
                                 li.classList.add('edited');
@@ -222,7 +224,7 @@ ml(`
                            } 
                            const url = join(dir.url,filename);
                            const li = find_li(filename);
-                           removeUpdatedURLContents(url,li,cb);
+                           removeUpdatedURLContents(url,li,"updatedURLS",cb);
                            
                     } else {
                         return cb(new Error("not found"));
@@ -285,7 +287,7 @@ ml(`
                     if (typeof ix==='number'){
                           // file exists - overwrite is possible
                           const file_url = join( dir.url, filename);
-                          updateURLContents (file_url,find_li(filename),buffer,function(err,hash) {
+                          updateURLContents (file_url,find_li(filename),buffer,"updatedURLS",function(err,hash) {
                               if (err) return cb(err);
                                  if (ix >=0 ) {
                                      // file no longer in zip - so force to negative index 
@@ -334,7 +336,7 @@ ml(`
                 
                 function writeFileAssociatedBuffer(filename,assoc,buffer,cb) {
                     const file_url = join(dir.url,filename,assoc);
-                    updateURLContents (file_url,undefined,buffer,function(err,hash) {
+                    updateURLContents (file_url,undefined,buffer,"updatedMetadata",function(err,hash) {
                         if (err) return cb(err);
                         return cb (undefined,file_url);
                     });
@@ -346,7 +348,7 @@ ml(`
                 
                 function readFileAssociatedBuffer(filename,assoc,cb) {
                       const file_url = join(dir.url,filename,assoc);
-                      fetchUpdatedURLContents(file_url,undefined,false,function(err,buffer){
+                      fetchUpdatedURLContents(file_url,undefined,false,"updatedMetadata",function(err,buffer){
                            if (err) return cb(err);
                            return cb (undefined,buffer,file_url);
                       });
@@ -361,7 +363,7 @@ ml(`
     
                 function removeFileAssociatedData (filename,assoc,cb) {
                     const file_url = join(dir.url,filename,assoc);
-                    removeUpdatedURLContents (file_url,undefined,function(err) {
+                    removeUpdatedURLContents (file_url,undefined,"updatedMetadata",function(err) {
                         if (err) return cb(err);
                         return cb (undefined,file_url);
                     });
@@ -936,7 +938,7 @@ ml(`
                                         console.log("window opened for",file_url)
                                         setTimeout(function(){
                                             
-                                            removeUpdatedURLContents(file_url,undefined,function(){
+                                            removeUpdatedURLContents(file_url,undefined,"updatedMetadata",function(){
                                                 console.log("removed temp file",file_url);
                                                 if (cb) {
                                                     cb("opened",file_url);

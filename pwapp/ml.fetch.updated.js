@@ -48,9 +48,17 @@ ml([],function(){ml(2,
         };
         
         
-        function fetchUpdatedURLContents(url,cb) {
+        function fetchUpdatedURLContents(url,db,cb) {
+            if(typeof db==='function') {
+                cb=db;
+                db = databases.updatedURLS;
+            } else {
+                if (typeof db==='string') {
+                     db = databases[db];
+                }
+            }
             url = full_URL(location.origin,url);
-            databases.updatedURLS.getItem(url,function(err,args){
+            db.getItem(url,function(err,args){
                 
                 if(err) {
                     return cb(err);

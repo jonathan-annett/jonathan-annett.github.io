@@ -36,7 +36,13 @@ ml(`
         return function (dbKeyPrefix) {
             
             
-             const databaseNames = ["updatedURLS","openZips","zipMetadata","cachedURLS","offsiteURLS","deletedZipURLs"];
+             const databaseNames = [
+                 "updatedURLS",
+                 "updatedMetadata",
+                 "openZips","zipMetadata",
+                 "cachedURLS",
+                 "offsiteURLS",
+                 "deletedZipURLs"];
              const databases     = ml.i.ml_db_Lib (databaseNames,getZipObject);
              
              

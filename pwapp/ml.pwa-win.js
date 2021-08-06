@@ -45,32 +45,49 @@ ml(`
                    },cb);
                },
 
-               removeUpdatedURLContents  : function (url,cb) {
+               removeUpdatedURLContents  : function (url,db,cb) {
+                   if (typeof db==='function') {
+                       cb = db;
+                       db = "updatedURLS";
+                   }
                   sendMessage('removeUpdatedURLContents',{
-                     url    : url,
+                     url     : url,
+                     db      : db
                   },cb);
                },
                
-               updateURLContents : function (url,content,hash,cb) {
+               updateURLContents : function (url,content,hash,db,cb) {
+                   if (typeof db==='function') {
+                       cb = db;
+                       db = "updatedURLS";
+                   }
                    if (typeof hash ==='function') {
-                       cb = hash;
-                       hash=false;
+                       cb   = hash;
+                       db   = "updatedURLS";
+                       hash = false;
                    }
                    sendMessage('updateURLContents',{
                        url     : url,
                        content : content,
-                       hash    : hash
+                       hash    : hash,
+                       db      : db
                    },cb);
                },
                
-               fetchUpdatedURLContents : function (url,hash,cb) {
+               fetchUpdatedURLContents : function (url,hash,db,cb) {
+                   if (typeof db==='function') {
+                       cb = db;
+                       db = "updatedURLS";
+                   }
                    if (typeof hash ==='function') {
                        cb = hash;
+                       db = "updatedURLS";
                        hash=false;
                    }
                    sendMessage('fetchUpdatedURLContents',{
-                       url    : url,
-                       hash   : hash
+                       url     : url,
+                       hash    : hash,
+                       db      : db
                    },cb);
                    
                },

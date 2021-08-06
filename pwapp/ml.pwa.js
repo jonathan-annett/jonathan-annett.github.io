@@ -216,7 +216,7 @@ ml(`
                     },
                     
                     fetchUpdatedURLContents : function (msg,cb) {
-                         zipFS.fetchUpdatedURLContents(msg.data.url,function(err,content, updated){
+                         zipFS.fetchUpdatedURLContents(msg.data.url,msg.data.db||"updatedURLS",function(err,content, updated){
                              if (err) return cb({error:err.message||err});
                              
                              if (msg.data.hash) {
@@ -230,7 +230,7 @@ ml(`
                     },
                     
                     removeUpdatedURLContents : function (msg,cb) {
-                        zipFS.removeUpdatedURLContents(msg.data.url,function(err){
+                        zipFS.removeUpdatedURLContents(msg.data.url,msg.data.db||"updatedURLS",function(err){
                             if (err) return cb({error:err.message||err});
                             cb({url:msg.data.url});
                         });
@@ -239,7 +239,7 @@ ml(`
                     
                     getUpdatedURLs : function (msg,cb) {
                        const regexTest = new RegExp (msg.regexTest,'');
-                       zipFS.getUpdatedURLs(regexTest,msg.data.db,function(err,urls){
+                       zipFS.getUpdatedURLs(regexTest,msg.data.db||"updatedURLS",function(err,urls){
                            if (err) return cb({error:err.message||err});
                             cb({urls:urls});
                        });
