@@ -52,10 +52,23 @@ ml(`
                 const available_css = [];
                 const available_scripts = [];
                 const edit_hooks = {};
-                const editorErrors = {};
-                const editorWarnings = {};
-                const ignoreErrors = {};
+                
+                const editorErrors = {
+                    /*
+                    { filename : [ {line,column,text} x n ] }
+                    */
+                };
+                const editorWarnings = {
+                    /*
+                    { filename : [ {line,column,text} x n ] }
+                    */
+                };
+                const ignoreErrors = {
+                    
+                };
                 let errorsTable;
+                
+                
                 function errorsExist () {
                     return Object.keys(editorErrors).some(function(filename){
                         return !ignoreErrors[filename];
@@ -478,7 +491,7 @@ ml(`
                     e.stopPropagation();
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
-                    openInbuiltEditor ( filename,li )
+                    openInbuiltEditor ( filename,li );
                 }
                 
                 function closeEditorBtnClick(e) {
@@ -1292,6 +1305,16 @@ ml(`
                    return data;
                 }
                 
+                function destroyTableData(data) {
+                    data.forEach(function(x){
+                        delete x.filename;
+                        delete x.line;
+                        delete x.column;
+                        delete x.text;
+                    })
+                    data.splice(0,data.length);
+                }
+                
                 function updateErrorsTable(cb) {
                     const data = errorTableData();
                     if (data.length === 0) {
@@ -1318,28 +1341,42 @@ ml(`
                             ],
                             rowClick:function(e, row){
                                e.preventDefault();
-                               const li = find_li(row._row.data.filename);
-                               //const file_url = join(dir.url,row._row.data.filename); 
-                               let editor_id = li.dataset.editor_id;
-                               if (editor_id) {
-                                   const ed = qs("#"+editor_id);
-                                   const li_ed = ed.parentNode;
-                                   const editor = li_ed.editor;
-                                   editor.resize(true);
-                                   editor.scrollToLine(row._row.data.line, true, true, function () {});
-                                   editor.gotoLine(row._row.data.line, row._row.data.column, true);
-                                   editor.focus();
-                                   li_ed.scrollIntoView();
+                               const filename = row._row.data.filename;
+                               const li = find_li(filename);
+                               if (li) {
+                                   if (li.dataset.editor_id) {
+                                       next(li.dataset.editor_id);
+                                   } else {
+                                       openInbuiltEditor ( filename,li, function(){
+                                           next(li.dataset.editor_id);
+                                       });
+                                   }
                                }
+                               
+                               function findError(editor_id) {
+                                   const ed = qs("#"+editor_id);
+                                   if (ed) {
+                                       const li_ed = ed.parentNode;
+                                       const editor = li_ed.editor;
+                                       editor.resize(true);
+                                       editor.scrollToLine(row._row.data.line, true, true, function () {});
+                                       editor.gotoLine(row._row.data.line, row._row.data.column, true);
+                                       editor.focus();
+                                       li_ed.scrollIntoView();
+                                   }
+                               } 
                             }
                         });
+                        destroyTableData(data);
                         cb(errorsTable);
                     } else {
                         errorsTable.clearData();
                         errorsTable.updateOrAddData (data).then(function(){
+                            destroyTableData(data);
                             cb(errorsTable);
                         });
                     }
+
                 }
                 
 
