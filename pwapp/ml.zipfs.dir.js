@@ -1485,6 +1485,15 @@ ml(`
                 
                 function updateErrorsTable(cb) {
                     const data = errorTableData();
+                    if (data.length === 0) {
+                        if (errorsTable) {
+                            errorsTable.clearData();
+                            qs("#errors_table").innerHTML="";
+                            errorsTable = undefined;
+                        }
+                        return;
+                    }
+                    
                     if(!errorsTable) {
                         errorsTable = new Tabulator("#errors_table", {
                             data:data,
@@ -1496,6 +1505,10 @@ ml(`
                                 {title:"Line",           field:"row"}, 
                                 {title:"Column",         field:"column"}, 
                             ],
+                            rowClick:function(e, row){
+                               e.preventDefault();
+                               console.log(row);
+                            }
                         });
                         cb(errorsTable);
                     } else {
