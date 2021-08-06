@@ -83,8 +83,10 @@ ml(`
                     
                     let editor = ace.edit(id,opts);
                     
-                    onChangeMode(undefined,editor.getSession());
-                    editor.session.on('changeMode', onChangeMode);
+                    if ("ace/mode/javascript" === mode) {
+                        onChangeMode(undefined,editor.getSession());
+                        editor.session.on('changeMode', onChangeMode);
+                    }
                     
                     function onChangeMode(e, session) {
                        if ("ace/mode/javascript" === session.getMode().$id) {
@@ -109,6 +111,7 @@ ml(`
                          }
                        } 
                     }
+                    
                     return editor;
                 }
 
@@ -2049,8 +2052,7 @@ ml(`
                                 const sha_el = qs(li,".sha1");
                                 if(sha_el && sha_el.textContent.trim()==='') {
                                     sha_el.textContent='--hashing---';
-                                    
-                                    
+                                
                                     readFileText(filename,function(err,buffer,updated,hash,text){
                                         
                                         if (fileIsEditable(filename)){
