@@ -165,7 +165,7 @@ ml(`
                 
                  
                
-                const fbufApi = fileBufferApi(dir);
+                const fbufApi = fileBufferApi(pwa,dir);
                 
                 const { removeUpdatedFile,readFileBuffer,writeFileBuffer,createFileBuffer, forceWriteFileBuffer } = fbufApi;
                 
