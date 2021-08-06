@@ -1455,8 +1455,6 @@ ml(`
                             if (err) return cb(err);
                             writeFileAssociatedText(filename,session_data,json,cb);
                         });
-                        
-                        
                     }
                 }
                 
@@ -1507,7 +1505,17 @@ ml(`
                             ],
                             rowClick:function(e, row){
                                e.preventDefault();
-                               console.log(row);
+                               const li = find_li(row.data.filename);
+                               const file_url = join(dir.url,row.data.filename); 
+                               let editor_id = li.dataset.editor_id;
+                               if (editor_id) {
+                                   const ed = qs("#"+editor_id);
+                                   const li_ed = ed.parentNode;
+                                   const editor = li_ed.editor;
+                                   editor.resize(true);
+                                   editor.scrollToLine(row.data.row, true, true, function () {});
+                                   editor.gotoLine(row.data.row, row.data.column, true);
+                               }
                             }
                         });
                         cb(errorsTable);

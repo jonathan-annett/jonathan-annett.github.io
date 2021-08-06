@@ -394,8 +394,7 @@ main {
   top: 20px;
   position: relative;
   margin-left:-32px;
-  /* height: 10px; */
-}
+  margin-bottom:24px;
 footer {
   min-height: 20px; 
 }
