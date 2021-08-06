@@ -1400,12 +1400,23 @@ ml(`
                 function transientEditorMetaResave(li_ed,delay,annot) {
                     if (li_ed.transient_timeout) clearTimeout(li_ed.transient_timeout);
                     
-                    let errors = false;
-                    let warnings = false;
+                    const errors = collectAnnotations(li_ed.filename,annot,function(errors){
+                        li_ed.transient_timeout = setTimeout(function(li_ed){
+                            delete li_ed.transient_timeout;
+                            saveEditorMeta(li_ed.filename,function(){
+                                 
+                            });
+                        },delay||(errors?15000:2000),li_ed);
+                    });
                     
+                    return errors===false;
+                }
+                
+                function collectAnnotations (filename,annot,cb) {
+                    let errors=false,warnings=false;
                     if (annot) {
-                        const error_list   = editorErrors [ li_ed.filename ]   || (editorErrors   [ li_ed.filename ] = [] );
-                        const warning_list = editorWarnings [ li_ed.filename ] || (editorWarnings [ li_ed.filename ] = [] );
+                        const error_list   = editorErrors [ filename ]   || (editorErrors   [ filename ] = [] );
+                        const warning_list = editorWarnings [ filename ] || (editorWarnings [ filename ] = [] );
                         error_list.splice(0,error_list.length);
                         warning_list.splice(0,warning_list.length);
                         const grab = function (l,x){
@@ -1425,14 +1436,14 @@ ml(`
                         }
                         
                         if (warning_list.length===0) {
-                            delete editorWarnings[ li_ed.filename ];
+                            delete editorWarnings[ filename ];
                         }
                         
                         if (error_list.length===0) {
-                            delete editorErrors[ li_ed.filename ];
+                            delete editorErrors[ filename ];
                         }
                         
-                        const li=find_li(li_ed.filename);
+                        const li=find_li( filename );
                         
                         li.classList[ error_list.length > 0 ? "add" : "remove" ]("errors");
                         
@@ -1442,22 +1453,12 @@ ml(`
                         qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
                         
                         updateErrorsTable(function(){
-                            
+                            cb(errors,warnings);
                         });
-                        
                     } else {
                         errors = null;
                     }
-                    
-                    
-    
-                    li_ed.transient_timeout = setTimeout(function(li_ed){
-                        delete li_ed.transient_timeout;
-                        saveEditorMeta(li_ed.filename,function(){
-                             
-                        });
-                    },delay||(errors?15000:2000),li_ed);
-                    return errors===false;
+                    return errors;
                 }
                 
                 
@@ -1894,13 +1895,13 @@ ml(`
                     
                 };
                 
-                function lintSource (hash,src,mode,cb) {
+                function lintSource (hash,src,mode,filename,cb) {
                     const lintr = linters[mode];
                     if (lintr) {
-                        return lintr.push(hash,src,cb);
+                        return lintr.push(hash,src,filename,cb);
                     }
                     linters[mode]=linter (mode);
-                    linters[mode].push(hash,src,cb);
+                    linters[mode].push(hash,src,filename,cb);
                 }
                 
                 
@@ -1952,11 +1953,11 @@ ml(`
                         }
                     }
                     
-                    function push (hash,src,cb) {
+                    function push (hash,src,filename,cb) {
                         if (history[hash]) {
                             return cb.apply(undefined,history[hash]);
                         }
-                        srcs[hash]={src,cb};
+                        srcs[hash]={src,filename,cb};
                         next();
                     }
                     
@@ -1969,38 +1970,23 @@ ml(`
                     }
                     
                     function onAnnotationChange(){
-                        
                         var annot = editor.getSession().getAnnotations();
-                        
                         if (annot) {
-                            
+
                             var src   = editor.getSession().getValue();
                             
                             sha1(new TextEncoder().encode(src),function(er,hash){
                                
                               const x = srcs[hash];
-                              if (x && x.src && x.cb) {
-                                    
-                               
-                                  let errors ;
-                                  let warnings;
-                                      
-                                  for (let key in annot){
-                                      if (annot.hasOwnProperty(key)) {
-                                          if  (annot[key].type === "warning") warnings = true;
-                                          if  (annot[key].type === "error") errors = true;
-                                          if (warnings && errors) break;
-                                      }
-                                  }
-    
-                                  history[hash]=[errors,warnings];
-                                  x.cb.apply(undefined,history[hash]);
-    
-                                  delete x.cb;
-                                  delete x.src;
-                                  delete srcs[hash];
-                                  
-                                  next();
+                              if (x && x.src && x.cb && x.filename) {
+                                  collectAnnotations (x.filename,annot,function(errors,warnings){
+                                        history[hash]=[errors,warnings];
+                                        x.cb.apply(undefined,history[hash]);
+                                        delete x.cb;
+                                        delete x.src;
+                                        delete srcs[hash];
+                                        next();
+                                  });
                               }
                             });
                           
@@ -2013,6 +1999,8 @@ ml(`
                    
                     
                 }
+                
+               
                
                 function zipPoller(index) {
                     //main purpose is to keep service worker awake. but while we are doing that, might as well hash each file and display it
