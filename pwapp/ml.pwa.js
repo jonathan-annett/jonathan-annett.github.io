@@ -191,7 +191,7 @@ ml(`
                          }
                      },
                      
-                     getPNGZipImage : function (msg,cb) {
+                    getPNGZipImage : function (msg,cb) {
                         const data = msg.data;
                         if (data.zip_url ) {
                             
@@ -308,7 +308,7 @@ ml(`
                         
                         zipFS.updateURLContents(
                             data.url,
-                            data.cacheDB||"updatedURLS",
+                            data.cacheDB||data.db||"updatedURLS",
                             contentBuffer,
                             function(err){
                                 if (err) return cb({error:err.message||err});
