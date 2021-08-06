@@ -70,7 +70,7 @@ ml([],function(){ml(2,
                     if (virtualDirDB.virtualDirUrls.indexOf(url)>=0) {
                         
                         const dirs  = virtualDirDB.virtualDirs[url];
-                        const base = virtualDirDB.virtualDirZipBase[url];
+                        const base  = virtualDirDB.virtualDirZipBase[url];
                         if (dirs&& base) {
                             const zip_root = base.root;
                             const trim = 0-base.root.length;
@@ -131,8 +131,10 @@ ml([],function(){ml(2,
                                      
                                      getZipFileUpdates(virtual_prefix+'/',function(err,edited_files){
                                         if (err) return cb(err);
+                                        const alias_root = zip_root.replace(/^\//,'')+'/';
                                         
                                         edited_files.forEach(function(file){
+                                            file = alias_root+file;
                                             const ix = listing[file];
                                             
                                             if (typeof ix==='number') {
