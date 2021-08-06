@@ -248,7 +248,7 @@ ml(`
                           const li = find_li(filename);
                           if (updated) {
                               // get updated content.
-                              fetchUpdatedURLContents(file_url,li,true,cb);
+                              fetchUpdatedURLContents(file_url,li,true,"updatedURLS",cb);
                               
                           } else {
                               // get file from zip.
