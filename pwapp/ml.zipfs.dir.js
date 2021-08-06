@@ -66,7 +66,7 @@ ml(`
                 const ignoreErrors = {
                     
                 };
-                let errorsTable;
+                let errorsTableData, errorsTable;
                 
                 
                 function errorsExist () {
@@ -1316,8 +1316,10 @@ ml(`
                 }
                 
                 function updateErrorsTable(cb) {
-                    const data = errorTableData();
-                    if (data.length === 0) {
+                    if (errorsTableData) destroyTableData(errorsTableData);
+                    errorsTableData = errorTableData();
+                    
+                    if (errorsTableData.length === 0) {
                         if (errorsTable) {
                             errorsTable.clearData();
                             const el  = qs("#errors_table");
@@ -1330,7 +1332,7 @@ ml(`
                     
                     if(!errorsTable) {
                         errorsTable = new Tabulator("#errors_table", {
-                            data:data,
+                            data:errorsTableData,
                             autoColumns:true,
                             autoColumnsDefinitions:[
                                 {title:"Error/Warning",  field:"type",}, 
@@ -1383,12 +1385,11 @@ ml(`
                                }
                             }
                         });
-                        destroyTableData(data);
+                       
                         cb(errorsTable);
                     } else {
                         errorsTable.clearData();
-                        errorsTable.updateOrAddData (data).then(function(){
-                            destroyTableData(data);
+                        errorsTable.updateOrAddData (errorsTableData).then(function(){
                             cb(errorsTable);
                         });
                     }
