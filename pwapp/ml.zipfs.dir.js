@@ -47,8 +47,6 @@ ml(`
                 editor_channel_name = window.parent ? "ch_"+editor_url.replace(/\/|\:|\.|\-/g,'') : false,
                 editor_channel      = editor_channel_name ? new BroadcastChannel(editor_channel_name) : false;
 
-                
-                                 
                 const resizers = ResizeWatcher();
                 const available_html = [];
                 const available_css = [];
@@ -169,7 +167,7 @@ ml(`
                
                 const fbufApi = fileBufferApi(dir);
                 
-                //const { removeUpdatedFile,readFileBuffer,writeFileBuffer,createFileBuffer, forceWriteFileBuffer } = fbufApi;
+                const { removeUpdatedFile,readFileBuffer,writeFileBuffer,createFileBuffer, forceWriteFileBuffer } = fbufApi;
                 
                 const ftextApi =  fileTextApi(fbufApi);
                 
