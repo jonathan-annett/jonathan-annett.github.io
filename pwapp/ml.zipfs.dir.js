@@ -2230,7 +2230,7 @@ ml(`
                 
                 function writeFileAssociatedBuffer(filename,assoc,buffer,cb) {
                     const file_url = join(filename,assoc);
-                    updateURLContents (file_url,undefined,buffer,"updatedMetadata",function(err,hash) {
+                    updateURLContents (file_url,buffer,"updatedMetadata",function(err,hash) {
                         if (err) return cb(err);
                         return cb (undefined,file_url);
                     });
@@ -2238,7 +2238,7 @@ ml(`
                 
                 function readFileAssociatedBuffer(filename,assoc,cb) {
                       const file_url = join(filename,assoc);
-                      fetchUpdatedURLContents(file_url,undefined,false,"updatedMetadata",function(err,buffer){
+                      fetchUpdatedURLContents(file_url,false,"updatedMetadata",function(err,buffer){
                            if (err) return cb(err);
                            return cb (undefined,buffer,file_url);
                       });
@@ -2258,7 +2258,7 @@ ml(`
     
                 function removeFileAssociatedData (filename,assoc,cb) {
                     const file_url = join(filename,assoc);
-                    removeUpdatedURLContents (file_url,undefined,"updatedMetadata",function(err) {
+                    removeUpdatedURLContents (file_url,"updatedMetadata",function(err) {
                         if (err) return cb(err);
                         return cb (undefined,file_url);
                     });
