@@ -88,9 +88,21 @@ ml(`
                        if ("ace/mode/javascript" === session.getMode().$id) {
                          if (!!session.$worker) {
                            session.$worker.send("setOptions", [{
-                             "-W095": false,
-                             "-W025": false,
-                             'maxerr':10000
+                               esnext: true,
+                               moz: true,
+                               devel: true,
+                               browser: true,
+                               node: true,
+                               laxcomma: true,
+                               laxbreak: true,
+                               lastsemic: true,
+                               onevar: false,
+                               passfail: false,
+                               maxerr: 10000,
+                               expr: true,
+                               multistr: true,
+                               globalstrict: true,
+                               evil:true
                            }]);
                          }
                        } 
