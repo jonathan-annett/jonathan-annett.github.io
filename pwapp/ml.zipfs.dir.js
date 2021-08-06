@@ -158,14 +158,11 @@ ml(`
                         if(cb)cb(err,msg);
                     });
                 }
-                
-                const {removeUpdatedURLContents,updateURLContents,fetchUpdatedURLContents} = updateURLApi ();
-                
-                
-                
-                 
+            
                
                 const fbufApi = fileBufferApi(pwa,dir);
+                
+                const {removeUpdatedURLContents,updateURLContents,fetchUpdatedURLContents} = fbufApi.urlAPI;
                 
                 const { removeUpdatedFile,readFileBuffer,writeFileBuffer,createFileBuffer, forceWriteFileBuffer } = fbufApi;
                 
@@ -2069,7 +2066,7 @@ ml(`
             function fileBufferApi(pwa,dir){
                 
                 const alias_root_fix  = new RegExp('^'+regexpEscape(dir.alias_root) ,'');
-                const urlAPI = updateURLApi ();
+                const urlAPI = updateURLApi (pwa);
                 const { removeUpdatedURLContents,updateURLContents,fetchUpdatedURLContents } = urlAPI;
                 
                 return { removeUpdatedFile,readFileBuffer,writeFileBuffer,createFileBuffer,forceWriteFileBuffer, urlAPI,dir,join} ;
