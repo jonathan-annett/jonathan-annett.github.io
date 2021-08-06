@@ -2104,7 +2104,7 @@ ml(`
                    window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
                 }
                 
-              setTiemout(zipPoller.1000,0);
+              setTimeout(zipPoller,1000,0);
                 
                 return lib;
                 
