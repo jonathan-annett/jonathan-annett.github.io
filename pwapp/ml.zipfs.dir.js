@@ -1522,6 +1522,7 @@ ml(`
                         });
                         cb(errorsTable);
                     } else {
+                        errorsTable.clearData();
                         errorsTable.updateOrAddData (data).then(function(){
                             cb(errorsTable);
                         });
