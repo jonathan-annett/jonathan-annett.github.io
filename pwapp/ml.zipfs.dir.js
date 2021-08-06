@@ -1940,6 +1940,7 @@ ml(`
                     }
                     linters[mode]=linter (mode);
                     linters[mode].push(hash,src,filename,cb);
+                    return linters[mode];
                 }
                 
                 
@@ -1954,9 +1955,17 @@ ml(`
                     div.style.display="none";
                     let timeout,hasWorker;
                     let editor = createEditor(pre.id,mode);
+                    
+                    const srcs = {};
+                    const history = {};
+                    
+                    const lintr = {
+                        push : push
+                    };
 
                      aceModeHasWorker(mode,function(answer){
-                        hasWorker = answer;
+                        hasWorker = lintr.hasWorker = answer;
+                        
                         if (hasWorker) {
                             editor.getSession().on("changeAnnotation",onAnnotationChange);
                         } else {
@@ -1967,12 +1976,9 @@ ml(`
                     
                    
                     
-                    const srcs = {};
-                    const history = {};
                     
-                    return {
-                        push : push
-                    };
+                    
+                    return lintr;
                     
                     function next() {
                         const hash = Object.keys(srcs)[0];
@@ -2060,12 +2066,14 @@ ml(`
                                             sha_el.textContent='--syntax scanning---';
                                             const mode = aceModeForFile(filename);
                                             if (mode) {
-                                                lintSource(hash,text,mode,filename,function(errors,warnings){
+                                                if (!lintSource(hash,text,mode,filename,function(errors,warnings){
                                                     li.classList[errors?"add":"remove"]("errors");
                                                     li.classList[warnings?"add":"remove"]("warnings");
                                                     sha_el.textContent = hash;
                                                     setTimeout(zipPoller,10,index+1);
-                                                }); 
+                                                }).hasWorker) {
+                                                     setTimeout(zipPoller,10,index+1);
+                                                }; 
                                                 
                                             } else {
                                                 sha_el.textContent=hash;
