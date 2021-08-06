@@ -2025,7 +2025,7 @@ ml(`
                                             sha_el.textContent='--syntax scanning---';
                                             const mode = aceModeForFile(filename);
                                             if (mode) {
-                                                lintSource(hash,text,mode,function(errors,warnings){
+                                                lintSource(hash,text,mode,filename,function(errors,warnings){
                                                     li.classList[errors?"add":"remove"]("errors");
                                                     li.classList[warnings?"add":"remove"]("warnings");
                                                     sha_el.textContent = hash;
