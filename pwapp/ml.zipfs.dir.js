@@ -1486,7 +1486,9 @@ ml(`
                     if (data.length === 0) {
                         if (errorsTable) {
                             errorsTable.clearData();
-                            qs("#errors_table").innerHTML="";
+                            const el  = qs("#errors_table");
+                            el.innerHTML="";
+                            el.classList.clear();
                             errorsTable = undefined;
                         }
                         return;
