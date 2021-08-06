@@ -1488,7 +1488,7 @@ ml(`
                             errorsTable.clearData();
                             const el  = qs("#errors_table");
                             el.innerHTML="";
-                            el.classList.clear();
+                            el.className= "";
                             errorsTable = undefined;
                         }
                         return;
