@@ -246,6 +246,7 @@ ml(`
                           if (updated) {
                               // get updated content.
                               fetchUpdatedURLContents(file_url,li,true,cb);
+                              
                           } else {
                               // get file from zip.
                               fetch (file_url).then(function(response){
@@ -255,7 +256,7 @@ ml(`
                                      sha1(buffer,function(err,hash){
                                          if (err) return cb(err);
                                          if (li) {
-                                             li.classList[updated?"add":"remove"]('edited');
+                                             li.classList.remove('edited');
                                              li.classList[!!li.dataset.editor_id ?"add":"remove"]('editing');
                                          }
                                          return cb(undefined,buffer,false,hash,file_url);
@@ -935,7 +936,7 @@ ml(`
                                         console.log("window opened for",file_url)
                                         setTimeout(function(){
                                             
-                                            removeUpdatedURLContents(file_url,find_li(filename),function(){
+                                            removeUpdatedURLContents(file_url,undefined,function(){
                                                 console.log("removed temp file",file_url);
                                                 if (cb) {
                                                     cb("opened",file_url);
