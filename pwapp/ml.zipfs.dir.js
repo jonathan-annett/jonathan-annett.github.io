@@ -189,10 +189,11 @@ ml(`
                     );
                 }
                 
-                function fetchUpdatedURLContents(file_url,li,hash,cb) {
+                function fetchUpdatedURLContents(file_url,li,hash,db,cb) {
                     return pwa.fetchUpdatedURLContents(
                         file_url,
                         hash,
+                        db,
                         function(err,msg){
                            if (err) return cb (err);
                            if (li) {
