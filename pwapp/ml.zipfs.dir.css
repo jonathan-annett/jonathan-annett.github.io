@@ -326,11 +326,15 @@ ul.hide_full_path span.alias_root { display : none; }
 ul.hide_hidden li.hidden.editing {
     display:block;
 }
+#errors_table {
+  left :32px;
+  width:50%;
+}
 
 #drop-area {
   border: 2px dashed #ccc;
   border-radius: 10px;
-  width: 80%;
+  width: 50%;
   font-family: sans-serif;
   margin: 40px auto;
   padding: 4px;
@@ -394,7 +398,3 @@ li.grab_bar {
     height:8px;
 }
 
-#errors_table {
-  left :32px;
-  margin-right:32px;
-}
