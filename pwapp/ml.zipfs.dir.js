@@ -2005,7 +2005,7 @@ ml(`
                            onAnnotationChange();
                            // next time don't wait, asthere is obviously no worker for this class.
                            linter.timeouts[mode]=1;
-                        },delay || 3000);
+                        },delay || 1000);
                     }
                     
                     function onAnnotationChange(){
