@@ -225,10 +225,10 @@ pre.fs_editor {
     margin: 0;
     position: absolute;
     top: 20px;
-    bottom: 20px;
+    bottom: 0;
     left: 0;
     right: 0;
-    height: calc(100% - 20px);
+    height: 100%;
     width: 100%;
  }
  
