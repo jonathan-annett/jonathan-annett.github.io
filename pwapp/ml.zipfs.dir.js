@@ -704,8 +704,10 @@ ml(`
                                                // note - opening an already open editor just returns the li_ed element
                                                
                                               removeFileAssociatedData(filename,session_data,function(){
-                                                  openInbuiltEditor (filename,li).reload();
-                                                  li.classList.remove("edited");
+                                                  openInbuiltEditor (filename,li,function(li_ed) {
+                                                      li_ed.reload();
+                                                      li.classList.remove("edited");
+                                                  });
                                               }); 
                                               
                                            }
@@ -715,15 +717,15 @@ ml(`
                                  
                                } else {
                                     removeFileAssociatedData(filename,session_data,function(){
-                                           if (zip_files.indexOf(filename)<0) {
-                                              // this was a new file.
-                                              li.parentElement.removeChild(li);
-                                              
-                                           } else {
-                                               // note - opening an already open editor just returns the li_ed element
-                                              li.classList.remove("edited");
-                                           }
-                                           
+                                       if (zip_files.indexOf(filename)<0) {
+                                          // this was a new file.
+                                          li.parentElement.removeChild(li);
+                                          
+                                       } else {
+                                           // note - opening an already open editor just returns the li_ed element
+                                          li.classList.remove("edited");
+                                       }
+                                       
                                     });
                                }
                            }
@@ -1677,17 +1679,14 @@ ml(`
                         li_ed.innerHTML = ['<pre id="','"></pre><div class="grab_bar" id="','_grab_bar"></div>'].join(editor_id); 
                         li_ed.filename= filename;
                         
-                         
                         li.parentNode.insertBefore(li_ed, li.nextSibling);
-                        
                         
                         li_ed.editor = createEditor(editor_id,aceModeForFile(filename),aceThemeForFile(filename));
 
-                       
                         li_ed.sizebar = dragSize("#"+editor_id,["#"+editor_id+"_grab_bar"]);
-                       
                         
-                          readFileText(filename,function(err,buffer,updated,hash,text){
+                        readFileText(filename,function(err,buffer,updated,hash,text){
+                            
                             const currentText = textContent || text;
                             
                             if (err) {
@@ -1723,8 +1722,6 @@ ml(`
                                         li_ed.editor.session.setValue(currentText);
                                         proceed();
                                     }
-                                   
-                                   
                                     function proceed () {
                                         
                                         li_ed.hashDisplay = qs(li,".sha1");
@@ -1812,10 +1809,6 @@ ml(`
                                         }
                                         li_ed.editor.getSession().on("changeAnnotation", li_ed.changeAnnotationFunc );
                                         
-                                       
-                                        
-                                         
-    
                                         startEditHelper(li,file_url,currentText,function(helper){
                                                 li_ed.edit_helper = helper;
                                                 li_ed.inbuiltEditorOnSessionChange = function () {
@@ -1897,13 +1890,8 @@ ml(`
                                                     cb(li_ed);
                                                 }
                                         });
-                                       
-                                        
                                     }     
                                     
-                                    
-                                    
-                                        
                                 }); 
                             }
 
