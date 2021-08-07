@@ -1965,6 +1965,7 @@ ml(`
                           let c=5,tmr = setInterval(function(){
                               if (!fs_li_ed || c<0) {
                                   clearTimeout(tmr);
+                                  find_li(zoom_filename).scrollIntoView();
                                   if (cb) cb();
                               } else {
                                   c--;
@@ -1978,6 +1979,8 @@ ml(`
                           let c=5,tmr = setInterval(function(){
                               if (!fs_li_ed || c<0 ) {
                                   clearTimeout(tmr);
+                                  ed_pre.scrollIntoView();
+                                  find_li(zoom_filename).scrollIntoView();
                                   if (cb) cb();
                               } else {
                                   c--;
