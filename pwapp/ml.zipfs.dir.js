@@ -292,18 +292,22 @@ ml(`
                                 
                                 available_css.splice(0,available_css.length);
                                 
+                                const url_trim_len = dir.url.replace(/\/$/,'').length+1; 
+                                
                                 available_css.push.apply(available_css,urls.map(function(u){
-                                    return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(dir.url.length+1);
+                                    return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(url_trim_len);
                                 }));
                                 
                                 //console.log({available_css});
+                                
+                                
                                 
                                 getScripts(editor_channel,dir.url,function(urls){
                                     
                                     available_scripts.splice(0,available_scripts.length);
                                     
                                     available_scripts.push.apply(available_scripts,urls.map(function(u){
-                                        return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(dir.url.length+1);
+                                        return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(url_trim_len);
                                     }));
                                     
                                     
@@ -312,7 +316,7 @@ ml(`
                                         available_html.splice(0,available_html.length);
                                         
                                         available_html.push.apply(available_html,html_urls.map(function(u){
-                                            return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(dir.url.length+1);
+                                            return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(url_trim_len);
                                         }));
                                         
                                         
@@ -338,7 +342,7 @@ ml(`
                                                         if (entry.fixup_url ) {
                                                            
                                                             if (entry.fixup_url.indexOf(dir.url)===0) { 
-                                                                const uri = (dir.alias_root ? dir.alias_root :'' ) +  entry.fixup_url.substr(dir.url.length+1);
+                                                                const uri = (dir.alias_root ? dir.alias_root :'' ) +  entry.fixup_url.substr(url_trim_len);
                                                                 const li = find_li(uri);
                                                                 if (li) {
                                                                     available_html[ix] = uri;
