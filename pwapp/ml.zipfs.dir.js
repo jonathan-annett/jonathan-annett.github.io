@@ -1895,31 +1895,29 @@ ml(`
                         
                        const ed_pre = qs("#"+zoomEl.dataset.editor_id);
                        if (addRemove==="add") {
-                          fs_li_ed=ed_pre.parentNode;
+                          fs_li_ed = ed_pre.parentNode;
                           fs_li_ed.classList.add("zoomingEditor");
                           qs("main").appendChild(ed_pre);
                           fs_li_ed.editor.focus();
-                          let c=5,tmr = setInterval(function(n){
-                              if (c<0) {
+                          let c=5,tmr = setInterval(function(){
+                              if (!fs_li_ed || c<0) {
                                   clearTimeout(tmr);
                               } else {
                                   c--;
                                   fs_li_ed.editor.resize();
                               }
-                              
                           },50);
                        } else {
                           fs_li_ed.classList.remove("zoomingEditor");
                           fs_li_ed.appendChild(ed_pre);
                           fs_li_ed.editor.focus(); 
-                          let c=5,tmr = setInterval(function(n){
-                              if (c<0) {
+                          let c=5,tmr = setInterval(function(){
+                              if (!fs_li_ed || c<0 ) {
                                   clearTimeout(tmr);
                               } else {
                                   c--;
                                   fs_li_ed.editor.resize();
                               }
-                              
                           },50);
                        }
                        
