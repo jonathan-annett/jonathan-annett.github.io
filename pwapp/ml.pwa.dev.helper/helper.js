@@ -8,12 +8,12 @@
        editor_channel = new BroadcastChannel(editor_channel_name),
        editor_win,
        open_stylesheets={},
-       open_iframes={};
+       open_iframes={},
        open_scripts={};
        
        if (sessionStorage.getItem(editor_channel_name)==='1') {
-           document.body.querySelector("#e").classList.add("editing");
-           editor_win = open_url (editor_url); 
+           //document.body.querySelector("#e").classList.add("editing");
+           //editor_win = open_url (editor_url); 
        }
 
        editor_channel.onmessage=function(event) {
@@ -179,15 +179,11 @@
                const url = event.data.close_script.url;
               
            }
+          
            
            
            
-           
-           
-           const js = open_iframes[url];
-           if (js) {
-               js.update(event.data.update_html.updatedHTML)
-           }
+      
        };
        
        document.body.querySelector("#r").onclick = function(){
@@ -313,7 +309,6 @@ function get_htmls (urlprefix) {
     });
    
 }
-
 
  
 function open_html(url,withHTML,replyId) {
