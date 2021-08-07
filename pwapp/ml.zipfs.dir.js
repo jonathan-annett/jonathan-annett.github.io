@@ -553,7 +553,9 @@ ml(`
                     e.stopPropagation();
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
-                    saveInbuiltEditorChanges ( filename,li);
+                    saveInbuiltEditorChanges ( filename,li,function(){
+                        
+                    });
                 }
                 
                 
@@ -1853,7 +1855,7 @@ ml(`
                     }
                 }
                 
-                function saveInbuiltEditorChanges(filename,li) {
+                function saveInbuiltEditorChanges(filename,li,cb) {
                      li=li||find_li (filename);
                      let editor_id = li.dataset.editor_id;
                      if (editor_id) {
@@ -1863,6 +1865,7 @@ ml(`
                              li.classList.remove("save-edits");
                              ignoreErrors[filename]=true;
                              qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
+                             closeInbuiltEditor(filename,li,cb) 
                          });
                      }
                 }
@@ -1994,7 +1997,7 @@ ml(`
                        timeout = setTimeout(function(){
                            timeout = undefined;
                            onAnnotationChange();
-                        },1000);
+                        },100);
                     }
                     
                     function onAnnotationChange(){
@@ -2080,7 +2083,7 @@ ml(`
                             setTimeout(zipPoller,10,index+1);
                         }
                     } else {
-                        setTimeout(zipPoller,500,0); 
+                        setTimeout(zipPoller,100,0); 
                     }
                 }
                 
@@ -2090,7 +2093,7 @@ ml(`
                    window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
                 }
                 
-              setTimeout(zipPoller,1000,0);
+              setTimeout(zipPoller,100,0);
                 
                 return lib;
                 

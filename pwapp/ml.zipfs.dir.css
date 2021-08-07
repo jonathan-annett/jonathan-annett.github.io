@@ -161,9 +161,9 @@ html.errors h1 span.errors,
 h1 a.exit-fullscreen,
 h1 a.fullscreen,
 li.editing a.fullscreen, 
-html.zooming li.editing a.exit-fullscreen, 
+html.zooming li.editing a.exit-fullscreen/*, 
 li span.warnings,
-li span.errors {
+li span.errors */{
     float: right;
     margin-right:6px;
 }
