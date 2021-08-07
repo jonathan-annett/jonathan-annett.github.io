@@ -520,10 +520,16 @@ ml(`
         }
         
         function aceModeHasWorker(mode,cb) {
-            const url = ml.c.app_root+'ace/worker-'+mode.replace(/^ace\/mode\//,'')+'.js';
-            ml.i.pwaWindow.virtualDirQuery(url,function(err,event){
-                return cb (!err&&event&&!!event.buffer);                
-            });
+            if (aceModeHasWorker.cache && typeof aceModeHasWorker.cache[mode]==='boolean') {
+                cb( aceModeHasWorker.cache[mode])
+            } else {
+                aceModeHasWorker.cache = aceModeHasWorker.cache||{}
+                const url = ml.c.app_root+'ace/worker-'+mode.replace(/^ace\/mode\//,'')+'.js';
+                ml.i.pwaWindow.virtualDirQuery(url,function(err,event){
+                    aceModeHasWorker.cache[mode] = !err&&event&&!!event.buffer;
+                    return cb (aceModeHasWorker.cache[mode]);                
+                });
+            }
         }
         
         function aceThemeForFile(fn ) {
