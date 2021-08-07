@@ -2038,7 +2038,7 @@ ml(`
                                                     
                                                     setTimeout(zipPoller,10,index+1);
                                                     
-                                                }
+                                                });
                                                 
                                             } else {
                                                 sha_el.textContent=hash;
