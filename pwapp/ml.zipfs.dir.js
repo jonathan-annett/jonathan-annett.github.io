@@ -695,29 +695,36 @@ ml(`
                                // if the editor is open an editor id will exist in the li element 
                                if (!!li.dataset.editor_id) {
                                    
-                                   if (zip_files.indexOf(filename)<0) {
-                                      // this was a new file.
-                                      closeInbuiltEditor(filename,li,function(){
-                                           li.parentElement.removeChild(li);
-                                      });
-                                     
-                                      
-                                   } else {
-                                       // note - opening an already open editor just returns the li_ed element
-                                      openInbuiltEditor (filename,li).reload();
-                                      li.classList.remove("edited");
-                                     
-                                   }
-                               } else {
                                    
-                                   if (zip_files.indexOf(filename)<0) {
-                                      // this was a new file.
-                                      li.parentElement.removeChild(li);
+                                      closeInbuiltEditor(filename,li,function(){
+                                           
+                                           if (zip_files.indexOf(filename)<0) {
+                                               li.parentElement.removeChild(li);
+                                           } else {
+                                               // note - opening an already open editor just returns the li_ed element
+                                               
+                                              removeFileAssociatedData(filename,session_data,function(){
+                                                  openInbuiltEditor (filename,li).reload();
+                                                  li.classList.remove("edited");
+                                              }); 
+                                              
+                                           }
+                                           
+                                      });
                                       
-                                   } else {
-                                       // note - opening an already open editor just returns the li_ed element
-                                      li.classList.remove("edited");
-                                   }
+                                 
+                               } else {
+                                    removeFileAssociatedData(filename,session_data,function(){
+                                           if (zip_files.indexOf(filename)<0) {
+                                              // this was a new file.
+                                              li.parentElement.removeChild(li);
+                                              
+                                           } else {
+                                               // note - opening an already open editor just returns the li_ed element
+                                              li.classList.remove("edited");
+                                           }
+                                           
+                                    });
                                }
                            }
                        });
