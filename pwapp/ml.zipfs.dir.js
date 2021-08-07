@@ -720,7 +720,31 @@ ml(`
                       const anchor = qs('li[data-filename="'+file.replace(/^\//,'')+'"]');
                       return anchor && anchor;
                 }
-    
+                
+                function find_li_ed (filename,exit_fs,cb) {
+                    
+                    if (fs_li_ed && fs_li_ed.filename === filename) {
+                        if (exit_fs) {
+                            toggleEditorZoom( filename );
+                        } else {
+                             if (cb) cb(fs_li_ed);
+                             return fs_li_ed;
+                        }
+                        
+                    }
+                    
+                    const li = find_li(filename);
+                    if (li) {
+                        let editor_id = li.dataset.editor_id;
+                        const ed = qs("#"+editor_id);
+                        if (ed) {
+                            const li_ed = ed.parentNode;
+                            if (cb) cb(li_ed);
+                            return li_ed;
+                        }
+                    }
+                    
+                }
                 function viewBtnClick(e){
                     e.stopPropagation();
                     const filename = findFilename(e.target);
@@ -1856,17 +1880,13 @@ ml(`
                 }
                 
                 function saveInbuiltEditorChanges(filename,li,cb) {
-                     li=li||find_li (filename);
-                     let editor_id = li.dataset.editor_id;
-                     if (editor_id) {
-                         const ed = qs("#"+editor_id);
-                         const li_ed = ed.parentNode;
-                         li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(true,function(){
-                             ignoreErrors[filename]=true;
-                             qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
-                             closeInbuiltEditor(filename,li,cb) 
-                         });
-                     }
+                    find_li_ed (filename,true,function(li_ed){
+                        li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(true,function(){
+                            ignoreErrors[filename]=true;
+                            qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
+                            closeInbuiltEditor(filename,li,cb);
+                        });
+                    });
                 }
                 
                 function toggleEditorZoom( filename ) {
