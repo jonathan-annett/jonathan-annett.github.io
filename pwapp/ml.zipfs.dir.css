@@ -335,6 +335,10 @@ ul.hide_hidden li.hidden.editing {
   height:80px;
 }
 
+li:hover {
+    outline: 2px dashed red;
+}
+
 #drop-area {
   border: 2px dashed #ccc;
   border-radius: 10px;
@@ -410,7 +414,6 @@ li.grab_bar {
     background-color:silver;
     height:8px;
 }
-
 
 div.progressBar {
   display: none;
