@@ -1884,7 +1884,7 @@ ml(`
                         li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(true,function(){
                             ignoreErrors[filename]=true;
                             qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
-                            closeInbuiltEditor(filename,li,cb);
+                            closeInbuiltEditor(filename,find_li(filename),cb);
                         });
                     });
                 }
