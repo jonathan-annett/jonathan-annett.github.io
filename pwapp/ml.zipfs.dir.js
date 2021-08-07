@@ -276,6 +276,9 @@ ml(`
                     [].forEach.call(document.querySelectorAll("li > a.undeletefile"),addUndeleteClick);
                     [].forEach.call(document.querySelectorAll("li > a.undo-edits"),addUndoEditsClick);
                     [].forEach.call(document.querySelectorAll("li > a.save-edits"),addSaveEditsClick);
+                    [].forEach.call(document.querySelectorAll("li > a.warnings"),addWarningsClick);
+                    [].forEach.call(document.querySelectorAll("li > a.errors"),addErrorsClick);
+                    
 
                     
                     setupDragAndDrop();
@@ -491,7 +494,17 @@ ml(`
                     }
                 }
                 
+                function addWarningsClick(el) {
+                    if (el) {
+                      el.addEventListener("click",warningsClick);
+                    }
+                }
                 
+                function addErrorsClick(el) {
+                    if (el) {
+                      el.addEventListener("click",errorsClick);
+                    }
+                }
                 
                 function addViewImageClick (el) {
                     if (el) {
@@ -558,6 +571,39 @@ ml(`
                     });
                 }
                 
+                
+                function errorWarningClick(e,errDb) {
+                    e.stopPropagation();
+                    const filename = findFilename(e.target);
+                    const li = find_li(filename);
+                    if (li) {
+                        const list = errDb[filename];
+                        if (list && list.length>0) {
+                            let index;
+                            if (li.dataset.warning) {
+                                index = Number.parseInt(li.dataset.warning) + 1;
+                            } else {
+                                index = 0;
+                            }
+                            
+                            if (index < list.length) {
+                                findError(filename,list[index].line,list[index].column,function(err){
+                                    if (err) {
+                                        console.log(err);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                function warningsClick(e) {
+                    errorWarningClick(e,editorWarnings); 
+                }
+                
+                function errorsClick(e) {
+                    errorWarningClick(e,editorErrors);
+                }
                 
                 function toggleEditorClick(e){
                     if (!e.shiftKey && zoomEl) {
@@ -1416,54 +1462,7 @@ ml(`
                                        if (err) console.log(err);
                                 });
                                
-                               function findError(filename,line,column,cb) {
-                                   if (tempErrorEditor && tempErrorEditor !== filename) {
-                                       const li = find_li(tempErrorEditor);
-                                       closeInbuiltEditor ( tempErrorEditor,li, function(){
-                                            doFindError1();
-                                       });
-                                   } else {
-                                       doFindError1();
-                                   }
-                                   
-                                   function doFindError1() {
-                                   
-                                       const li = find_li(filename);
-                                       if (li) {
-                                           if (li.dataset.editor_id) {
-                                               doFindError2(li.dataset.editor_id);
-                                           } else {
-                                               
-                                               openInbuiltEditor ( filename,li, function(){
-                                                   
-                                                   if (li.dataset.editor_id) {
-                                                      tempErrorEditor = filename;
-                                                      doFindError2(li.dataset.editor_id);
-                                                   } else {
-                                                      cb(new Error("can't open"+filename));
-                                                   }
-                                               });
-                                           }
-                                       } else {
-                                           cb(new Error("can't find"+filename));
-                                       }
-                                   }
-                                   
-                                   function doFindError2(editor_id) {
-                                       const ed = qs("#"+editor_id);
-                                       if (ed) {
-                                           const li_ed = ed.parentNode;
-                                           const editor = li_ed.editor;
-                                           editor.resize(true);
-                                           editor.scrollToLine(line, true, true, function () {});
-                                           editor.gotoLine(line, column, true);
-                                           editor.focus();
-                                           li_ed.scrollIntoView();
-                                           cb();
-                                       }
-                                        
-                                   } 
-                               }
+                              
                             }
                         });
                        
@@ -1475,6 +1474,56 @@ ml(`
                         });
                     }
 
+                }
+                
+                
+                function findError(filename,line,column,cb) {
+                    if (tempErrorEditor && tempErrorEditor !== filename) {
+                        const li = find_li(tempErrorEditor);
+                        closeInbuiltEditor ( tempErrorEditor,li, function(){
+                             doFindError1();
+                        });
+                    } else {
+                        doFindError1();
+                    }
+                    
+                    function doFindError1() {
+                    
+                        const li = find_li(filename);
+                        if (li) {
+                            if (li.dataset.editor_id) {
+                                doFindError2(li.dataset.editor_id);
+                            } else {
+                                
+                                openInbuiltEditor ( filename,li, function(){
+                                    
+                                    if (li.dataset.editor_id) {
+                                       tempErrorEditor = filename;
+                                       doFindError2(li.dataset.editor_id);
+                                    } else {
+                                       cb(new Error("can't open"+filename));
+                                    }
+                                });
+                            }
+                        } else {
+                            cb(new Error("can't find"+filename));
+                        }
+                    }
+                    
+                    function doFindError2(editor_id) {
+                        const ed = qs("#"+editor_id);
+                        if (ed) {
+                            const li_ed = ed.parentNode;
+                            const editor = li_ed.editor;
+                            editor.resize(true);
+                            editor.scrollToLine(line, true, true, function () {});
+                            editor.gotoLine(line, column, true);
+                            editor.focus();
+                            li_ed.scrollIntoView();
+                            cb();
+                        }
+                         
+                    } 
                 }
                 
 
