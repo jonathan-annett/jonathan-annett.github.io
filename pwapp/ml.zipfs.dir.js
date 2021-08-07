@@ -572,7 +572,7 @@ ml(`
                 }
                 
                 
-                function errorWarningClick(e,errDb) {
+                function errorWarningClick(e,x,errDb) {
                     e.stopPropagation();
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
@@ -580,8 +580,8 @@ ml(`
                         const list = errDb[filename];
                         if (list && list.length>0) {
                             let index;
-                            if (li.dataset.warning) {
-                                index = Number.parseInt(li.dataset.warning) + 1;
+                            if (li.dataset[x]) {
+                                index = Number.parseInt(li.dataset[x]) + 1;
                             } else {
                                 index = 0;
                             }
@@ -591,6 +591,7 @@ ml(`
                                     if (err) {
                                         console.log(err);
                                     }
+                                    li.dataset[x]=index.toString();
                                 });
                             }
                         }
@@ -598,11 +599,11 @@ ml(`
                 }
                 
                 function warningsClick(e) {
-                    errorWarningClick(e,editorWarnings); 
+                    errorWarningClick(e,"warning",editorWarnings); 
                 }
                 
                 function errorsClick(e) {
-                    errorWarningClick(e,editorErrors);
+                    errorWarningClick(e,"error",editorErrors);
                 }
                 
                 function toggleEditorClick(e){
