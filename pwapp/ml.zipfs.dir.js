@@ -1981,7 +1981,7 @@ ml(`
                             var src   = editor.getSession().getValue();
                             sha1(new TextEncoder().encode(src),function(er,hash){
                                   collectAnnotations (filename,annot,function(errors,warnings){
-                                        cb(errors,warnings,hash];
+                                        cb(errors,warnings,hash);
                                         const session = editor.getSession()
                                         if (hasWorker) {
                                             session.off("changeAnnotation",onAnnotationChange);
