@@ -24,6 +24,8 @@ ml(`
             const session_data = "hidden-json";
             const Tabulator    = ml.i.Tabulator;
             
+            const params = new URL(location).searchParams;
+            
             return ZipDirEditorLib;
             
             function ZipDirEditorLib(dir,parent_link) {
@@ -370,6 +372,18 @@ ml(`
                         event.returnValue = 'There are uncorrected errors in open editors. Sure you want to leave?';
                       }
                     });
+                    
+                    
+                    const auto_fn   = params.get('file');
+                    const auto_line = params.get('line') || 1;
+                    const auto_col  = params.get('col') || 0;
+                    
+                    if (auto_fn) {
+                        findError(auto_fn,auto_line,auto_col,function(){
+                            console.log("located");
+                        })
+                    }
+                    
                     
                   
                     
