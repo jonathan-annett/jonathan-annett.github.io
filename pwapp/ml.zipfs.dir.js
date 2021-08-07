@@ -689,11 +689,11 @@ ml(`
                         li.classList.add('shading'); 
                         dialogBox(
                             "Revert to original (can't undo this)", 
-                            "Confirm Undo Edits", "Ok",
-                            function(dlg) {
+                            "Confirm Undo Edits", 
+                            "Ok",
+                            function() {
                             removeUpdatedFile (filename,function(){
         
-                           
                                refreshStylesheeet(filename,function() {
                                    if (li) {
                                        // if the editor is open an editor id will exist in the li element 
@@ -737,7 +737,7 @@ ml(`
                                
                            
                             });
-                        }, function(dlg)  {
+                        }, function()  {
                             
                         });
 
