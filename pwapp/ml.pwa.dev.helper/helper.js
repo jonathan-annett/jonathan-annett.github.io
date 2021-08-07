@@ -131,8 +131,13 @@
                           && event.data.update_html.updatedHTML
                           && event.data.update_html.replyId ) {
                const url = event.data.update_html.url;
-               const html = open_iframes[url];
-               if (html) {
+               let html = open_iframes[url];
+               if (!html) {
+                   open_html( event.data.update_html.url,
+                                     event.data.update_html.updatedHTML,
+                                     event.data.update_html.replyId );
+                   return;
+               } else {
                    html.update(event.data.update_html.updatedHTML)
                }
            }
@@ -352,7 +357,6 @@ function open_html(url,withHTML,replyId) {
            },
        };
        
-
    } else {
    
        get_docs(window.top.location.origin,window.top).some(function(doc){
@@ -385,6 +389,7 @@ function open_html(url,withHTML,replyId) {
                return true;
            }
        });
+       
 
    }   
    
