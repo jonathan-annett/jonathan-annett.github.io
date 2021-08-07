@@ -1369,7 +1369,7 @@ ml(`
                             el.className= "";
                             errorsTable = undefined;
                         }
-                        return;
+                        return cb();
                     }
                     
                     if(!errorsTable) {
