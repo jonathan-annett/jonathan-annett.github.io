@@ -1,7 +1,7 @@
 /* global ace*/
 
 
-/* global ml,qs, self,BroadcastChannel,ResizeObserver,Dialog  */
+/* global ml,qs, self,BroadcastChannel,ResizeObserver  */
 ml(`
     
     pwaWindow@Window      | ${ml.c.app_root}ml.pwa-win.js
@@ -687,8 +687,10 @@ ml(`
                         const filename = findFilename(e.target);
                         const li = find_li(filename);
                         li.classList.add('shading'); 
-                        Dialog.confirm("Revert to original (can't undo this)", 'Question', (dlg) => {
-                             
+                        dialogBox(
+                            "Revert to original (can't undo this)", 
+                            "Confirm Undo Edits", "Ok",
+                            function(dlg) {
                             removeUpdatedFile (filename,function(){
         
                            
@@ -735,14 +737,44 @@ ml(`
                                
                            
                             });
-                            dlg.close();
-                        }, (dlg) => {
+                        }, function(dlg)  {
                             
-                            dlg.close();
                         });
 
                     
                     
+                }
+                
+                
+                function encodeHTML (rawStr)  {
+                   return rawStr.replace(/[\u00A0-\u9999<>\&]/g, function(i) {
+                       return '&#'+i.charCodeAt(0)+';';
+                    });
+                }
+                
+                function dialogBox(h1,p,okCap,okClick,cancelClick) {
+                    
+                    qs("#id01 h1").innerHTML = encodeHTML(h1);
+                    qs("#id01 p").innerHTML  = encodeHTML(p);
+                    
+                    if (okCap) {
+                        qs("#id01 button.okbtn").innerHTML  = encodeHTML(okCap);
+                    }
+                    
+                    qs("#id01 span.close").onclick = closeClick;
+                    qs("html").classList.add("dialog");
+                    qs("#id01 button.cancelbtn").onclick = closeClick;
+                    qs("#id01 button.okbtn").onclick = closeClick;
+                    
+                    function closeClick (e) {
+                       e.preventDefault();    
+                       qs("html").classList.remove("dialog");
+                       if (e.target.classList.contains("okbtn")) {
+                           okClick();
+                       } else {
+                           cancelClick();
+                       }
+                    }
                 }
                 
                 function editInZedClick (e) {

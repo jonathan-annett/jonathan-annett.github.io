@@ -70,11 +70,6 @@
                 "zips" : [ "https://jonathan-annett.github.io/pwapp/UglifyJS-online-master.zip" ]
                 
             },
-            
-            "https://jonathan-annett.github.io/pwapp/dialog": {
-                "alias_root" : "/dialog-master",
-                "zips" : [ "https://jonathan-annett.github.io/pwapp/dialog-master.zip" ]
-            },
 
             "https://jonathan-annett.github.io/pwapp": {
                 "alias_root" : "/js-keygen-master",
