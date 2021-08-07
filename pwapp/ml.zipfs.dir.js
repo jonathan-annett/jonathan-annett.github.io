@@ -1399,7 +1399,6 @@ ml(`
                                    if (tempErrorEditor && tempErrorEditor !== filename) {
                                        const li = find_li(tempErrorEditor);
                                        closeInbuiltEditor ( tempErrorEditor,li, function(){
-                                            tempErrorEditor = undefined;
                                             doFindError1();
                                        });
                                    } else {
@@ -1508,7 +1507,7 @@ ml(`
                         
                         li.classList[ error_list.length > 0 ? "add" : "remove" ]("errors");
                         
-                        li.classList[ error_list.length > 0 ? "add" : "remove" ]("warnings");
+                        li.classList[ warning_list.length > 0 ? "add" : "remove" ]("warnings");
                         
                             
                         qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
@@ -1788,6 +1787,8 @@ ml(`
                 function closeInbuiltEditor(filename,li,cb) {
                     li=li||find_li (filename);
                     let editor_id = li.dataset.editor_id;
+                    
+                                            
                     if (editor_id) {
                         li.classList.remove("editing");
                         
@@ -1837,7 +1838,9 @@ ml(`
                                 
                                 li_ed.parentNode.removeChild(li_ed);
                                 
-                                
+                                if (tempErrorEditor === filename) {
+                                    tempErrorEditor = undefined;
+                                }
                                 if (cb) cb();
                                 
                             
