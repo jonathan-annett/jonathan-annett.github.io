@@ -1981,6 +1981,7 @@ ml(`
                                   clearTimeout(tmr);
                                   ed_pre.scrollIntoView();
                                   find_li(zoom_filename).scrollIntoView();
+                                  qs("header").scrollIntoView();
                                   if (cb) cb();
                               } else {
                                   c--;
