@@ -1525,6 +1525,7 @@ ml(`
                             editor.gotoLine(line, column, true);
                             editor.focus();
                             li_ed.scrollIntoView();
+                            find_li(filename).scrollIntoView();
                             qs("header").scrollIntoView();
                             cb();
                         }
