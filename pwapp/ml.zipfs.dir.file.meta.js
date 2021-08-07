@@ -525,8 +525,8 @@ ml(`
             } else {
                 aceModeHasWorker.cache = aceModeHasWorker.cache||{}
                 const url = location.origin+ml.c.app_root+'ace/worker-'+mode.replace(/^ace\/mode\//,'')+'.js';
-                ml.i.pwaWindow.virtualDirQuery(url,function(err,event){
-                    aceModeHasWorker.cache[mode] = !err&&event&&!!event.buffer;
+                ml.i.pwaWindow.virtualDirQuery(url,function(err,msg){
+                    aceModeHasWorker.cache[mode] = !err&&msg&&msg.event&&!!msg.event.buffer;
                     return cb (aceModeHasWorker.cache[mode]);                
                 });
             }
