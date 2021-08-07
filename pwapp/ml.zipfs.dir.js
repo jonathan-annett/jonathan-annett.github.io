@@ -2026,6 +2026,15 @@ ml(`
                                         
                                         div.removeChild(pre);
                                         document.body.removeChild(div); 
+                                        
+                                        if (!hasWorker) {
+                                            if (timeout) {
+                                                // clearly a worker invoked this, since the timeout has not been set to undefined
+                                                // which would have happenned if the callback occrured as a result of
+                                                // onChange
+                                                aceModeHasWorker.cache[mode]=true;
+                                            }
+                                        }
                                   });
                               
                             });
