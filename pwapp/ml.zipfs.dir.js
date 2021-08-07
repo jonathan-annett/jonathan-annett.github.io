@@ -2100,7 +2100,7 @@ ml(`
                             setTimeout(zipPoller,10,index+1);
                         }
                     } else {
-                        setTimeout(zipPoller,1000,0); 
+                        setTimeout(zipPoller,100,0); 
                     }
                 }
                 
@@ -2110,7 +2110,7 @@ ml(`
                    window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
                 }
                 
-              setTimeout(zipPoller,1000,0);
+              setTimeout(zipPoller,100,0);
                 
                 return lib;
                 
