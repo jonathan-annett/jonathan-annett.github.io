@@ -1876,8 +1876,10 @@ ml(`
                 function saveInbuiltEditorChanges(filename,li,cb) {
                     find_li_ed (filename,function(li_ed){
                         if (li_ed===fs_li_ed) {
-                            toggleEditorZoom( filename);
-                            find_li_ed (filename,doSave);
+                            toggleEditorZoom( filename, function(){
+                                   find_li_ed (filename,doSave);
+                            });
+                         
                         } else {
                            doSave(li_ed); 
                         }
@@ -1895,7 +1897,7 @@ ml(`
                     }
                 }
                 
-                function toggleEditorZoom( filename ) {
+                function toggleEditorZoom( filename ,cb ) {
                     
                     const zoomClass=function(addRemove) {
                         
@@ -1908,6 +1910,7 @@ ml(`
                           let c=5,tmr = setInterval(function(){
                               if (!fs_li_ed || c<0) {
                                   clearTimeout(tmr);
+                                  if (cb) cb();
                               } else {
                                   c--;
                                   fs_li_ed.editor.resize();
@@ -1920,6 +1923,7 @@ ml(`
                           let c=5,tmr = setInterval(function(){
                               if (!fs_li_ed || c<0 ) {
                                   clearTimeout(tmr);
+                                  if (cb) cb();
                               } else {
                                   c--;
                                   fs_li_ed.editor.resize();
