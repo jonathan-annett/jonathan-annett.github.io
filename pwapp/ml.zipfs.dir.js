@@ -621,9 +621,20 @@ ml(`
                     e.stopPropagation();
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
-                    saveInbuiltEditorChanges ( filename,li,function(){
+                    
+                    dialogBox(
+                    "There are errors, save Anyway?", 
+                    "Confirm Save File", 
+                    "Ok",
+                    function() {
+                         saveInbuiltEditorChanges ( filename,li,function(){
+                        
+                        });
+                    },
+                    function(){
                         
                     });
+                   
                 }
                 
                 
@@ -746,7 +757,7 @@ ml(`
                 }
                 
                 
-                   function dialogBox(h1,p,okCap,okClick,cancelClick) {
+                function dialogBox(h1,p,okCap,okClick,cancelClick) {
                     
                     qs("#id01 h1").innerHTML = h1;
                     qs("#id01 p").innerHTML  = p;
@@ -760,14 +771,48 @@ ml(`
                     qs("#id01 button.cancelbtn").onclick = closeClick;
                     qs("#id01 button.okbtn").onclick = closeClick;
                     
+                    
+                    window.addEventListener('keyup',keyup);
+                    window.addEventListener('mousedown',mousedown);
+                    
+                    
                     function closeClick (e) {
                        e.preventDefault();    
+                       window.removeEventListener('keyup',keyup);
+                       window.removeEventListener('mousedown',mousedown);
                        qs("html").classList.remove("dialog");
                        if (e.target.classList.contains("okbtn")) {
                            okClick();
                        } else {
                            cancelClick();
                        }
+                    }
+                    
+                    function mousedown(e){
+                        if (event.target === qs("#id01")) {
+                            e.preventDefault();   
+                            cancelClick();
+                        }
+                    }
+                    
+                    
+                    function keyup(e){
+                        if (e.keyCode===27) {
+                            e.preventDefault();
+                            window.removeEventListener('keyup',keyup);
+                            window.removeEventListener('mousedown',mousedown);
+                            qs("html").classList.remove("dialog");
+                            cancelClick();
+                           
+                        } else {
+                            if (e.keyCode===13) {
+                                e.preventDefault();
+                                window.removeEventListener('keyup',keyup);
+                                window.removeEventListener('mousedown',mousedown);
+                                qs("html").classList.remove("dialog");
+                                okClick();
+                            } 
+                        }
                     }
                 }
                 
@@ -821,16 +866,29 @@ ml(`
                     e.stopPropagation();
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
+                    
+                   
     
                    if (li && !li.classList.contains("deleted")) {
-                       closeInbuiltEditor(filename,li,function(){
-                           toggleDeleteFile(filename,function(err,msg){
-                               if (err) return;
-                               li.classList[msg.deleted?"add":"remove"]('deleted');
-                               li.classList[msg.deleted?"add":"remove"]('hidden');
-                               li.classList.remove("editing");
-                           });
-                       });    
+                       dialogBox(
+                       "Delete This File (can't undo)", 
+                       "Confirm Delete File", 
+                       "Ok",
+                       function() {
+                           closeInbuiltEditor(filename,li,function(){
+                               toggleDeleteFile(filename,function(err,msg){
+                                   if (err) return;
+                                   li.classList[msg.deleted?"add":"remove"]('deleted');
+                                   li.classList[msg.deleted?"add":"remove"]('hidden');
+                                   li.classList.remove("editing");
+                               });
+                           });    
+                       },
+                       function() {
+                           
+                       });
+                       
+                       
                        
                    }
                 }
