@@ -330,6 +330,7 @@ ml(`
                                                     const li = find_li(livefile);
                                                     if (li) {
                                                         li.classList.add( livefile.slice(-4)==='.css' ? 'live-edit' : 'live-refresh' );
+                                                      
                                                     }
                                         });
                                         
@@ -347,6 +348,7 @@ ml(`
                                                                 if (li) {
                                                                     available_html[ix] = uri;
                                                                     li.classList.add( 'live-refresh' );
+                                                                    li.dataset.alt_url = u;
                                                                 }
                                                             }
                                                         }
@@ -1057,7 +1059,7 @@ ml(`
                             html : openHtmlHelper,
                             js   : openJSHelper
                             
-                        }[ext] || function(){ cb();})(editor_channel,url,withContent,cb);
+                        }[ext] || function(){ cb();})(editor_channel,li.dataset.alt_url || url,withContent,cb);
                     } else {
                         cb();
                     }
