@@ -414,8 +414,9 @@ li.grab_bar {
 
 div.progressBar {
   display:inline-block;
-  width: 180px;
+  width: 160px;
   background-color: #ddd;
+  float : right;
 }
 
 div.progressBar div {
