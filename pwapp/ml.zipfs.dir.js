@@ -15,6 +15,7 @@ ml(`
     dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
     devClassLib           | ${ml.c.app_root}ml.devclass.js
     Tabulator             | ${ml.c.app_root}tabulator/dist/js/tabulator.min.js
+    progressHandler       | ${ml.c.app_root}ml.progressHandler.js
     
     `,function(){ml(2,
 
@@ -25,6 +26,7 @@ ml(`
             const Tabulator    = ml.i.Tabulator;
             
             const params = new URL(location).searchParams;
+            const progressHandler = ml.i.progressHandler; 
             
             return ZipDirEditorLib;
             
@@ -460,6 +462,29 @@ ml(`
     
                         });
                     }
+                    
+                }
+                
+                
+                
+                function timeoutWithProgressBar (msec,id,showHide,cb) {
+                    
+                    const complete = Date.now();
+                    const total  = complete + msec;
+                    const handler = progressHandler(complete,total,id);
+                    const el = showHide ? qs("#"+id) : false;
+                    
+                    if (el) el.style.display="inline-block";
+                    const int = setInterval (function(){
+                        const complete = Date.now();
+                        if (complete>total) {
+                            clearInterval(int);
+                            if (el) el.style.display="none";
+                            cb();
+                        } else {
+                            handler.setComplete(complete);
+                        }
+                    },100);
                     
                 }
                 

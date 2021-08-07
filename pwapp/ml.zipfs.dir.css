@@ -411,3 +411,15 @@ li.grab_bar {
     height:8px;
 }
 
+
+div.progressBar {
+  display:inline-block;
+  width: 180px;
+  background-color: #ddd;
+}
+
+div.progressBar div {
+  width: 2px;
+  height: 10px;
+  background-color: #4CAF50;
+}

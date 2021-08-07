@@ -318,76 +318,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                  return localStorage.no_keyboard === '1' || runInBrowser;
              }
              
-            //*
-            function progressHandler(complete,total,id,idtxt,channelName) {
-               let expect_total = total;
-               let outer = qs("#"+id),inner = qs(outer,"div"),status = qs("#"+idtxt),maxWidth = outer.offsetWidth, barHeight=outer.offsetHeight;
-               updateBar();
-               if (status) {
-                  status.style= "position:relative;left:"+(maxWidth+2)+"px;top:-"+barHeight+"px;"; 
-               }
-               
-             
-              
-               
-               
-               
-               if (channelName) {
-                   const channel = new BroadcastChannel(channelName);
-                   channel.onmessage =function(e){
-                       const msg = e.data;
-                       if (msg && msg.setTotal) {
-                           setTotal(msg.setTotal);
-                       } 
-                       else if (msg && msg.setComplete) {
-                          setComplete(msg.setComplete);
-                       }
-                       else if (msg && msg.addToTotal) {
-                          addToTotal(msg.addToTotal);
-                          logFilenameInConsole(msg.filename||"(unknown file)");
-                       }
-                       else if (msg && msg.logComplete) {
-                          logComplete(msg.logComplete);
-                       }
-                   };
-               }
-               return {
-                   setTotal:setTotal,
-                   setComplete:setComplete,
-                   addToTotal:addToTotal,
-                   updateBar : updateBar,
-                   logComplete: logComplete
-               };
-              
-               function setTotal(n) {
-                   expect_total=n;
-               }
-              
-               function setComplete(n) {
-                   complete=n;
-               }
-              
-               function logComplete(n) {
-                  complete += n;
-                  updateBar();
-               }
-              
-               function addToTotal (n) {
-                   total+=n;
-                   updateBar();
-               }
-              
-               function updateBar (){
-                 
-                 inner.style.width = Math.floor(Math.min((complete/Math.max(total,expect_total)),1)*maxWidth)+"px";
-                 if (status) {
-                   status.textContent = complete+"/"+Math.max(total,expect_total);
-                 }
-               }
-            } 
-                        
-           //*/
-           
+
              function betaTesterApproval() {
                  
                  if (!window.crypto) {

@@ -10,7 +10,7 @@ ml(`
             
             return  function progressHandler(complete,total,id,idtxt,channelName) {
                       let expect_total = total;
-                      let outer = qs("#"+id),inner = qs(outer,"div"),status = qs("#"+idtxt),maxWidth = outer.offsetWidth, barHeight=outer.offsetHeight;
+                      let outer = typeof id==='string'?qs("#"+id):id,inner = qs(outer,"div"),status = qs("#"+idtxt),maxWidth = outer.offsetWidth, barHeight=outer.offsetHeight;
                       updateBar();
                       if (status) {
                          status.style= "position:relative;left:"+(maxWidth+2)+"px;top:-"+barHeight+"px;"; 
