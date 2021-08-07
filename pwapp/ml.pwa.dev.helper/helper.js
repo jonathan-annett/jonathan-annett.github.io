@@ -9,6 +9,7 @@
        editor_win,
        open_stylesheets={},
        open_iframes={};
+       open_scripts={};
        
        if (sessionStorage.getItem(editor_channel_name)==='1') {
            document.body.querySelector("#e").classList.add("editing");
@@ -130,14 +131,62 @@
                           && event.data.update_html.updatedHTML
                           && event.data.update_html.replyId ) {
                const url = event.data.update_html.url;
-               
+               const html = open_iframes[url];
+               if (html) {
+                   html.update(event.data.update_html.updatedHTML)
+               }
            }
            
            
            if (event.data && event.data.close_html
                           && event.data.close_html.url ) {
                const url = event.data.close_html.url;
+              
+           }
+           
+           
+           
+           
+           
+           if (event.data && event.data.open_script 
+                          && event.data.open_script.url
+                          && event.data.open_script.withHTML
+                          && event.data.open_script.replyId ) {
                
+               editor_channel.postMessage({
+                   replyId: event.data.open_script.replyId,
+                   result: open_html( event.data.open_script.url,
+                                            event.data.open_script.withJS,
+                                            event.data.open_script.replyId ) 
+               });
+               
+           } 
+           
+           if (event.data && event.data.update_script
+                          && event.data.update_script.url
+                          && event.data.update_script.updatedJS
+                          && event.data.update_script.replyId ) {
+               const url = event.data.update_script.url;
+               const script = open_iframes[url];
+               if (script) {
+                   script.update(event.data.update_script.updatedJS)
+               }
+           }
+           
+           
+           if (event.data && event.data.close_script
+                          && event.data.close_script.url ) {
+               const url = event.data.close_script.url;
+              
+           }
+           
+           
+           
+           
+           
+           const js = open_iframes[url];
+           if (js) {
+               js.update(event.data.update_html.updatedHTML)
            }
        };
        
