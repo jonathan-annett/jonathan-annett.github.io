@@ -1,7 +1,7 @@
 /* global ace*/
 
 
-/* global ml,qs, self,BroadcastChannel,ResizeObserver  */
+/* global ml,qs, self,BroadcastChannel,ResizeObserver,Dialog  */
 ml(`
     
     pwaWindow@Window      | ${ml.c.app_root}ml.pwa-win.js
@@ -680,61 +680,68 @@ ml(`
                     }
                 }
             
-                function undoEditsClick( e) {
+                function undoEditsClick( e ) {
                     e.stopPropagation();
-                    const filename = findFilename(e.target);
-                    const li = find_li(filename);
                     
-                    
-                    
-                    removeUpdatedFile (filename,function(){
-
-                   
-                       refreshStylesheeet(filename,function() {
-                           if (li) {
-                               // if the editor is open an editor id will exist in the li element 
-                               if (!!li.dataset.editor_id) {
-                                   
-                                   
-                                      closeInbuiltEditor(filename,li,function(){
+                        
+                        const filename = findFilename(e.target);
+                        const li = find_li(filename);
+                        li.classList.add('shading'); 
+                        Dialog.confirm("Revert to original (can't undo this)", 'Question', (dlg) => {
+                             
+                            removeUpdatedFile (filename,function(){
+        
+                           
+                               refreshStylesheeet(filename,function() {
+                                   if (li) {
+                                       // if the editor is open an editor id will exist in the li element 
+                                       if (!!li.dataset.editor_id) {
                                            
-                                           if (zip_files.indexOf(filename)<0) {
-                                               li.parentElement.removeChild(li);
-                                           } else {
-                                               // note - opening an already open editor just returns the li_ed element
-                                               
-                                              removeFileAssociatedData(filename,session_data,function(){
-                                                  openInbuiltEditor (filename,li,function(li_ed) {
-                                                      li_ed.reload();
-                                                      li.classList.remove("edited");
-                                                  });
-                                              }); 
+                                           
+                                              closeInbuiltEditor(filename,li,function(){
+                                                   
+                                                   if (zip_files.indexOf(filename)<0) {
+                                                       li.parentElement.removeChild(li);
+                                                   } else {
+                                                       // note - opening an already open editor just returns the li_ed element
+                                                       
+                                                      removeFileAssociatedData(filename,session_data,function(){
+                                                          openInbuiltEditor (filename,li,function(li_ed) {
+                                                              li_ed.reload();
+                                                              li.classList.remove("edited");
+                                                          });
+                                                      }); 
+                                                      
+                                                   }
+                                                   
+                                              });
                                               
-                                           }
-                                           
-                                      });
-                                      
-                                 
-                               } else {
-                                    removeFileAssociatedData(filename,session_data,function(){
-                                       if (zip_files.indexOf(filename)<0) {
-                                          // this was a new file.
-                                          li.parentElement.removeChild(li);
-                                          
+                                         
                                        } else {
-                                           // note - opening an already open editor just returns the li_ed element
-                                          li.classList.remove("edited");
+                                            removeFileAssociatedData(filename,session_data,function(){
+                                               if (zip_files.indexOf(filename)<0) {
+                                                  // this was a new file.
+                                                  li.parentElement.removeChild(li);
+                                                  
+                                               } else {
+                                                   // note - opening an already open editor just returns the li_ed element
+                                                  li.classList.remove("edited");
+                                               }
+                                               
+                                            });
                                        }
-                                       
-                                    });
-                               }
-                           }
-                       });
-                       
-                   
-                    });
-                   
-                      
+                                   }
+                               });
+                               
+                           
+                            });
+                            dlg.close();
+                        }, (dlg) => {
+                            
+                            dlg.close();
+                        });
+
+                    
                     
                 }
                 
