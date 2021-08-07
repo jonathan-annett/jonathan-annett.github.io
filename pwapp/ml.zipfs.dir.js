@@ -1374,7 +1374,7 @@ ml(`
                             obj.onchange(event.data.html_changed.url,event.data.html_changed.html);
                         }
                     }
-                     cb(); 
+                     
                 }
     
                 function openJSHelper(editor_channel,url,withJS,cb) {  
