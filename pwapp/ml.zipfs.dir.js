@@ -587,7 +587,7 @@ ml(`
                             }
                             
                             if (index < list.length) {
-                                findError(filename,list[index].line,list[index].column,function(err){
+                                findError(filename,list[index].row+1,list[index].column,function(err){
                                     if (err) {
                                         console.log(err);
                                     }
