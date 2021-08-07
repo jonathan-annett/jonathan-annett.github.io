@@ -746,19 +746,13 @@ ml(`
                 }
                 
                 
-                function encodeHTML (rawStr)  {
-                   return rawStr.replace(/[\u00A0-\u9999<>\&]/g, function(i) {
-                       return '&#'+i.charCodeAt(0)+';';
-                    });
-                }
-                
-                function dialogBox(h1,p,okCap,okClick,cancelClick) {
+                   function dialogBox(h1,p,okCap,okClick,cancelClick) {
                     
-                    qs("#id01 h1").innerHTML = encodeHTML(h1);
-                    qs("#id01 p").innerHTML  = encodeHTML(p);
+                    qs("#id01 h1").innerHTML = h1;
+                    qs("#id01 p").innerHTML  = p;
                     
                     if (okCap) {
-                        qs("#id01 button.okbtn").innerHTML  = encodeHTML(okCap);
+                        qs("#id01 button.okbtn").innerHTML  = okCap;
                     }
                     
                     qs("#id01 span.close").onclick = closeClick;
