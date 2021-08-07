@@ -1930,23 +1930,13 @@ ml(`
                 }
                 
                 
-                const linters = {
-                    
-                };
-                
+                  
                 function lintSource (hash,src,mode,filename,cb) {
-                    const lintr = linters[mode];
-                    if (lintr) {
-                        lintr.push(hash,src,filename,cb);
-                        return lintr;
-                    }
-                    linters[mode]=linter (mode);
-                    linters[mode].push(hash,src,filename,cb);
-                    return linters[mode];
+                    const lintr = linter (mode,hash,src,filename,cb);
                 }
                 
                 
-                function linter (mode) {
+                function linter (mode,hash,src,filename,cb) {
                     
                     let pre = document.createElement("pre");
                     pre.id = "lint_"+Math.random().toString(36).substr(-8);
@@ -1958,52 +1948,24 @@ ml(`
                     let timeout,hasWorker;
                     let editor = createEditor(pre.id,mode);
                     
-                    const srcs = {};
-                    const history = {};
-                    
                     const lintr = {
-                        push : push
+                
                     };
 
                      aceModeHasWorker(mode,function(answer){
                         hasWorker = lintr.hasWorker = answer;
-                        
+                        const session = editor.getSession()
                         if (hasWorker) {
-                            editor.getSession().on("changeAnnotation",onAnnotationChange);
+                            session.on("changeAnnotation",onAnnotationChange);
                         } else {
                            
-                            editor.getSession().on("change",onChange);
+                            session.on("change",onChange);
                         }
+                        session.setValue(src);
                     });
                     
-                   
-                    
-                    
-                    
+
                     return lintr;
-                    
-                    function next() {
-                        const hash = Object.keys(srcs)[0];
-                        if (hash) {
-                            const x = srcs[hash];
-                            if (x && x.src) {
-                                editor.getSession().setValue(x.src);
-                                sha1(new TextEncoder().encode(editor.getSession().getValue()),function(er,hash2){
-                                   if (hash2!==hash) {
-                                       throw new Error ("internal error - hash of getValue() does not match hash to setValue()");
-                                   } 
-                                });
-                            }
-                        }
-                    }
-                    
-                    function push (hash,src,filename,cb) {
-                        if (history[hash]) {
-                            return cb.apply(undefined,history[hash]);
-                        }
-                        srcs[hash]={src,filename,cb};
-                        next();
-                    }
                     
                     function onChange (){
                        if (timeout) clearTimeout(timeout);
@@ -2016,20 +1978,21 @@ ml(`
                     function onAnnotationChange(){
                         var annot = editor.getSession().getAnnotations();
                         if (annot) {
-
                             var src   = editor.getSession().getValue();
-                            
                             sha1(new TextEncoder().encode(src),function(er,hash){
-                               
-                              const x = srcs[hash];
-                              if (x && x.src && x.cb && x.filename) {
-                                  collectAnnotations (x.filename,annot,function(errors,warnings){
-                                        history[hash]=[errors,warnings];
-                                        x.cb.apply(undefined,history[hash]);
-                                        delete x.cb;
-                                        delete x.src;
-                                        delete srcs[hash];
-                                        next();
+                                  collectAnnotations (filename,annot,function(errors,warnings){
+                                        cb(errors,warnings,hash];
+                                        const session = editor.getSession()
+                                        if (hasWorker) {
+                                            session.off("changeAnnotation",onAnnotationChange);
+                                        } else {
+                                           
+                                            session.off("change",onChange);
+                                        }
+                                        editor.destroy();
+                                        
+                                        div.removeChild(pre);
+                                        document.body.removeChild(div); 
                                   });
                               }
                             });
@@ -2037,7 +2000,6 @@ ml(`
                         } else {
                             throw new Error("getAnnotations() returns "+typeof annot);
                         }
-    
                     }
                      
                    
@@ -2068,13 +2030,14 @@ ml(`
                                             sha_el.textContent='--syntax scanning---';
                                             const mode = aceModeForFile(filename);
                                             if (mode) {
-                                                if (!lintSource(hash,text,mode,filename,function(errors,warnings){
+                                                
+                                                lintSource(hash,text,mode,filename,function(errors,warnings){
                                                     li.classList[errors?"add":"remove"]("errors");
                                                     li.classList[warnings?"add":"remove"]("warnings");
                                                     sha_el.textContent = hash;
+                                                    
                                                     setTimeout(zipPoller,10,index+1);
-                                                }).hasWorker) {
-                                                     setTimeout(zipPoller,10,index+1);
+                                                    
                                                 }
                                                 
                                             } else {
