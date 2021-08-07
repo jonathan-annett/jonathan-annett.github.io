@@ -301,6 +301,7 @@ html.before_unload  div.ace_error {
 }
 
 li span.sha1 {
+    font-family:'Courier New';
     font-size: 0.5em;
     text-align: right;
     margin-left: 10px;
