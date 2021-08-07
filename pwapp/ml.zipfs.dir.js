@@ -1359,7 +1359,7 @@ ml(`
                     
                     editor_channel.addEventListener("message",onMsg);
                     
-                    return obj;
+                    return cb(obj);
                     
                     
                     function onMsg(event){
