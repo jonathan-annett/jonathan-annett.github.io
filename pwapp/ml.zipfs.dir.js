@@ -1821,16 +1821,15 @@ ml(`
                         const ed = qs("#"+editor_id);
                         
                         const li_ed = ed.parentNode;
+                        li_ed.editor.session.off('change',li_ed.inbuiltEditorOnSessionChange);
+                        li_ed.editor.session.off("changeAnnotation", li_ed.changeAnnotationFunc );
                         
                         saveEditorMeta(filename,li,editor_id,ed,li_ed,function(){
                         
                                 resizers.off(li_ed,editorResized);
     
                                 li.classList.remove("editing");
-                                
-                                li_ed.editor.session.off('change',li_ed.inbuiltEditorOnSessionChange);
-                                li_ed.editor.session.off("changeAnnotation", li_ed.changeAnnotationFunc );
-            
+
                                 delete li_ed.inbuiltEditorOnSessionChange;
                                 delete li_ed.changeAnnotationFunc ;
                                 
