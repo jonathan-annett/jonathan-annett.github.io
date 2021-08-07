@@ -582,9 +582,13 @@ ml(`
                             let index;
                             if (li.dataset[x]) {
                                 index = Number.parseInt(li.dataset[x]) + 1;
+                                if (index >= list.length) {
+                                    index =0;
+                                }
                             } else {
                                 index = 0;
                             }
+                           
                             
                             if (index < list.length) {
                                 findError(filename,list[index].row+1,list[index].column,function(err){
@@ -1521,6 +1525,7 @@ ml(`
                             editor.gotoLine(line, column, true);
                             editor.focus();
                             li_ed.scrollIntoView();
+                            qs("header").scrollIntoView();
                             cb();
                         }
                          
