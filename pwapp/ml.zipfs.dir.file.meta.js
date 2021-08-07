@@ -520,7 +520,7 @@ ml(`
         }
         
         function aceModeHasWorker(mode,cb) {
-            const url = 'ace/worker-'+mode.replace(/^ace\/mode\//,'')+'.js';
+            const url = ml.c.app_root+'ace/worker-'+mode.replace(/^ace\/mode\//,'')+'.js';
             ml.i.pwaWindow.virtualDirQuery(url,function(err,event){
                 return cb (!err&&event&&!!event.buffer);                
             });

@@ -1962,6 +1962,12 @@ ml(`
                 
                 function linter (mode,hash,src,filename,cb) {
                     
+                    if (!linter.timeouts) {
+                        linter.timeouts = {
+                            
+                        };
+                    }
+                    
                     let pre = document.createElement("pre");
                     pre.id = "lint_"+Math.random().toString(36).substr(-8);
                     let div = document.createElement("div");
@@ -1993,10 +1999,13 @@ ml(`
                     
                     function onChange (){
                        if (timeout) clearTimeout(timeout);
+                       const delay = linter.timeouts[mode];
                        timeout = setTimeout(function(){
                            timeout = undefined;
                            onAnnotationChange();
-                        },100);
+                           // next time don't wait, asthere is obviously no worker for this class.
+                           linter.timeouts[mode]=1;
+                        },delay || 3000);
                     }
                     
                     function onAnnotationChange(){
