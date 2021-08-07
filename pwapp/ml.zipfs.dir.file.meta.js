@@ -526,7 +526,7 @@ ml(`
                 aceModeHasWorker.cache = aceModeHasWorker.cache||{}
                 const url = location.origin+ml.c.app_root+'ace/worker-'+mode.replace(/^ace\/mode\//,'')+'.js';
                 ml.i.pwaWindow.virtualDirQuery(url,function(err,msg){
-                    aceModeHasWorker.cache[mode] = !err&&msg&&msg.event&&!!msg.event.buffer;
+                    aceModeHasWorker.cache[mode] = !err&&msg&&msg.entry&&!!msg.entry.buffer;
                     return cb (aceModeHasWorker.cache[mode]);                
                 });
             }
