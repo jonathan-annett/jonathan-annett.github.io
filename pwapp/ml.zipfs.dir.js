@@ -721,16 +721,11 @@ ml(`
                       return anchor && anchor;
                 }
                 
-                function find_li_ed (filename,exit_fs,cb) {
+                function find_li_ed (filename,cb) {
                     
                     if (fs_li_ed && fs_li_ed.filename === filename) {
-                        if (exit_fs) {
-                            toggleEditorZoom( filename );
-                        } else {
-                             if (cb) cb(fs_li_ed);
-                             return fs_li_ed;
-                        }
-                        
+                         if (cb) cb(fs_li_ed);
+                         return fs_li_ed;
                     }
                     
                     const li = find_li(filename);
@@ -1673,14 +1668,13 @@ ml(`
                                                                 return ;
                                                             }
                                                             li.classList.add("edited");
-                                                            if (li_ed.hashDisplay){
-                                                               li_ed.hashDisplay.textContent=hash;
-                                                               if (edit_hooks[file_url]) {
-                                                                   edit_hooks[file_url].forEach(function(fn){
-                                                                       fn("edited",file_url,textContent,buffer);
-                                                                   });
-                                                               }
-                                                            }   
+                                                            li_ed.hashDisplay.textContent=hash;
+                                                            if (edit_hooks[file_url]) {
+                                                                edit_hooks[file_url].forEach(function(fn){
+                                                                    fn("edited",file_url,textContent,buffer);
+                                                                });
+                                                            }
+                                                            
                                                             li.classList.remove("pending");
                                                             
                                                             if (typeof cb==='function') {
@@ -1880,13 +1874,25 @@ ml(`
                 }
                 
                 function saveInbuiltEditorChanges(filename,li,cb) {
-                    find_li_ed (filename,true,function(li_ed){
-                        li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(true,function(){
-                            ignoreErrors[filename]=true;
-                            qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
-                            closeInbuiltEditor(filename,find_li(filename),cb);
-                        });
+                    find_li_ed (filename,function(li_ed){
+                        if (li_ed===fs_li_ed) {
+                            toggleEditorZoom( filename);
+                            find_li_ed (filename,doSave);
+                        } else {
+                           doSave(li_ed); 
+                        }
                     });
+                    
+                    
+                    function doSave(li_ed) {
+                        if (li_ed) {
+                            li_ed.changeAnnotationFunc && li_ed.changeAnnotationFunc(true,function(){
+                                ignoreErrors[filename]=true;
+                                qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
+                                closeInbuiltEditor(filename,find_li(filename),cb);
+                            });
+                        }
+                    }
                 }
                 
                 function toggleEditorZoom( filename ) {
