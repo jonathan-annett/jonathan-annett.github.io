@@ -396,8 +396,14 @@ main {
   position: relative;
   margin-left:-32px;
   margin-bottom:24px;
+}
+
 footer {
   min-height: 20px; 
+}
+
+html.zooming main {
+  margin-bottom:2px;
 }
 
 li.grab_bar {
