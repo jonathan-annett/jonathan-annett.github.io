@@ -1842,11 +1842,6 @@ ml(`
                                                         const textContent = li_ed.editor.session.getValue();
                                                         if (li_ed.edit_helper) {
                                                             li_ed.edit_helper.update(textContent);
-                                                            if ( li.dataset.alt_url ) {
-                                                                timeoutWithProgressBar (li.filename,30*1000,function(){
-                                                                    
-                                                                }); 
-                                                            }
                                                         }
                                                         if (transientEditorMetaResave(li_ed)||li_ed.annotationsWorkerDetect===false) {
                                                            
