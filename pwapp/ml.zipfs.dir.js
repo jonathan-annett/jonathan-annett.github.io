@@ -403,7 +403,7 @@ ml(`
                     
                     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                       dropArea.addEventListener(eventName, preventDefaults, false);
-                      document.body.addEventListener(eventName, preventDefaults, false)
+                      document.body.addEventListener(eventName, preventDefaults, false);
                     });
                     
                     
@@ -413,7 +413,7 @@ ml(`
                     function addEvent(fn) {
                         return function (eventName) {
                             dropArea.addEventListener(eventName, fn, false);
-                        }
+                        };
                     }
                     
                     function highlight(e) {
@@ -427,14 +427,14 @@ ml(`
                    dropArea.addEventListener('drop', handleDrop, false);
                    
                    function handleDrop(e) {
-                     let dt = e.dataTransfer
-                     let files = dt.files
+                     let dt = e.dataTransfer;
+                     let files = dt.files;
                    
-                     handleFiles(files)
+                     handleFiles(files);
                    }
                    
                     function handleFiles(files) {
-                      ([...files]).forEach(uploadFile)
+                      ([...files]).forEach(uploadFile);
                     }
                     
                     
@@ -467,24 +467,34 @@ ml(`
                 
                 
                 
-                function timeoutWithProgressBar (msec,id,showHide,cb) {
-                    
+                function timeoutWithProgressBar (filename,msec,cb) {
+                    const li = find_li(filename);
+                    const el = li.querySelector ("div.progressBar");
                     const complete = Date.now();
                     const total  = complete + msec;
-                    const handler = progressHandler(complete,total,id);
-                    const el = showHide ? qs("#"+id) : false;
+                    const handler = progressHandler(complete,total,el);
+
+                    el.style.display="block";
                     
-                    if (el) el.style.display="inline-block";
                     const int = setInterval (function(){
+                        
                         const complete = Date.now();
-                        if (complete>total) {
+                        
+                        if (complete > total) {
                             clearInterval(int);
-                            if (el) el.style.display="none";
+                            el.style.display = "none";
                             cb();
                         } else {
                             handler.setComplete(complete);
                         }
+                        
                     },100);
+                    
+                    return {
+                        cancel : function () {
+                            clearInterval(int);
+                        }
+                    }
                     
                 }
                 
@@ -1832,6 +1842,11 @@ ml(`
                                                         const textContent = li_ed.editor.session.getValue();
                                                         if (li_ed.edit_helper) {
                                                             li_ed.edit_helper.update(textContent);
+                                                            if ( li.dataset.alt_url ) {
+                                                                timeoutWithProgressBar (li.filename,30*1000,function(){
+                                                                    
+                                                                }); 
+                                                            }
                                                         }
                                                         if (transientEditorMetaResave(li_ed)||li_ed.annotationsWorkerDetect===false) {
                                                            
@@ -2250,7 +2265,6 @@ ml(`
                
             }
             
-            
             function updateURLApi (pwa) {
                 
                 return {removeUpdatedURLContents,updateURLContents,fetchUpdatedURLContents};
@@ -2495,9 +2509,6 @@ ml(`
                 
             
             }
-            
-            
-            
             
         } 
     }, {
