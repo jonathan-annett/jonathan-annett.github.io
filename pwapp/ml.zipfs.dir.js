@@ -66,6 +66,8 @@ ml(`
                 const ignoreErrors = {
                     
                 };
+                
+                let tempErrorEditor;
                 let errorsTableData, errorsTable;
                 
                 
@@ -1394,24 +1396,40 @@ ml(`
                                 });
                                
                                function findError(filename,line,column,cb) {
-                                   const li = find_li(filename);
-                                   if (li) {
-                                       if (li.dataset.editor_id) {
-                                           doFindError(li.dataset.editor_id);
-                                       } else {
-                                           openInbuiltEditor ( filename,li, function(){
-                                               if (li.dataset.editor_id) {
-                                                  doFindError(li.dataset.editor_id);
-                                               } else {
-                                                  cb(new Error("can't open"+filename));
-                                               }
-                                           });
-                                       }
+                                   if (tempErrorEditor && tempErrorEditor !== filename) {
+                                       const li = find_li(tempErrorEditor);
+                                       closeInbuiltEditor ( tempErrorEditor,li, function(){
+                                            tempErrorEditor = undefined;
+                                            doFindError1();
+                                       });
                                    } else {
-                                       cb(new Error("can't find"+filename));
+                                       doFindError1();
                                    }
                                    
-                                   function doFindError(editor_id) {
+                                   function doFindError1() {
+                                   
+                                       const li = find_li(filename);
+                                       if (li) {
+                                           if (li.dataset.editor_id) {
+                                               doFindError2(li.dataset.editor_id);
+                                           } else {
+                                               
+                                               openInbuiltEditor ( filename,li, function(){
+                                                   
+                                                   if (li.dataset.editor_id) {
+                                                      tempErrorEditor = filename;
+                                                      doFindError2(li.dataset.editor_id);
+                                                   } else {
+                                                      cb(new Error("can't open"+filename));
+                                                   }
+                                               });
+                                           }
+                                       } else {
+                                           cb(new Error("can't find"+filename));
+                                       }
+                                   }
+                                   
+                                   function doFindError2(editor_id) {
                                        const ed = qs("#"+editor_id);
                                        if (ed) {
                                            const li_ed = ed.parentNode;
@@ -1423,6 +1441,7 @@ ml(`
                                            li_ed.scrollIntoView();
                                            cb();
                                        }
+                                        
                                    } 
                                }
                             }
