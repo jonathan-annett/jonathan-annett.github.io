@@ -276,8 +276,8 @@ ml(`
                     [].forEach.call(document.querySelectorAll("li > a.undeletefile"),addUndeleteClick);
                     [].forEach.call(document.querySelectorAll("li > a.undo-edits"),addUndoEditsClick);
                     [].forEach.call(document.querySelectorAll("li > a.save-edits"),addSaveEditsClick);
-                    [].forEach.call(document.querySelectorAll("li > a.warnings"),addWarningsClick);
-                    [].forEach.call(document.querySelectorAll("li > a.errors"),addErrorsClick);
+                    [].forEach.call(document.querySelectorAll("li > span.warnings"),addWarningsClick);
+                    [].forEach.call(document.querySelectorAll("li > span.errors"),addErrorsClick);
                     
 
                     
