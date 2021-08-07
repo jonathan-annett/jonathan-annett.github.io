@@ -1673,13 +1673,14 @@ ml(`
                                                                 return ;
                                                             }
                                                             li.classList.add("edited");
-                                                            li_ed.hashDisplay.textContent=hash;
-                                                            if (edit_hooks[file_url]) {
-                                                                edit_hooks[file_url].forEach(function(fn){
-                                                                    fn("edited",file_url,textContent,buffer);
-                                                                });
-                                                            }
-                                                            
+                                                            if (li_ed.hashDisplay){
+                                                               li_ed.hashDisplay.textContent=hash;
+                                                               if (edit_hooks[file_url]) {
+                                                                   edit_hooks[file_url].forEach(function(fn){
+                                                                       fn("edited",file_url,textContent,buffer);
+                                                                   });
+                                                               }
+                                                            }   
                                                             li.classList.remove("pending");
                                                             
                                                             if (typeof cb==='function') {
@@ -1821,8 +1822,8 @@ ml(`
                         const ed = qs("#"+editor_id);
                         
                         const li_ed = ed.parentNode;
-                        li_ed.editor.session.off('change',li_ed.inbuiltEditorOnSessionChange);
-                        li_ed.editor.session.off("changeAnnotation", li_ed.changeAnnotationFunc );
+                        li_ed.editor.session.off('change',            li_ed.inbuiltEditorOnSessionChange);
+                        li_ed.editor.session.off('changeAnnotation',  li_ed.changeAnnotationFunc );
                         
                         saveEditorMeta(filename,li,editor_id,ed,li_ed,function(){
                         
