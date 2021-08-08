@@ -1573,12 +1573,14 @@ ml(`
                         errorsTable = new Tabulator("#errors_table", {
                             data:errorsTableData,
                             autoColumns:true,
+                            layout:"fitColumns",
                             autoColumnsDefinitions:[
                                 {title:"Error/Warning",  field:"type",}, 
                                 {title:"Filename",       field:"filename",}, 
                                 {title:"Message",        field:"text",}, 
                                 {title:"Line",           field:"row"}, 
                                 {title:"Column",         field:"column"}, 
+                                {field:"id",visible:false}
                             ],
                             rowClick:function(e, row){
                                e.preventDefault();
