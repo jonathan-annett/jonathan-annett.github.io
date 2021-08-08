@@ -188,6 +188,11 @@ ml(`
                   // pwaApi : pwaApi
                 };
                 
+                const themePickerPickerHTML = (function(el){
+                     el.parentElement.removeChild(el);
+                     return el.innerHTML;
+                })(qs("select.theme-picker"));
+                
                 function regexpEscape(str) {
                     return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
                 }
@@ -565,9 +570,13 @@ ml(`
                 }
                 function addThemeSelectionClick (el) {
                     
-                    el.addEventListener("mousedown",preventDefaults);
-                    el.addEventListener("mouseip",preventDefaults);
                     
+                    el.addEventListener("mousedown",preventDefaults);
+                    el.addEventListener("mouseup",preventDefaults);
+                    qs(el,"div.dd-menu").innerHTML = themePickerPickerHTML;
+                    
+                    
+                    /*
                     loadDropdownCombo(
                         "theme", el,
                         
@@ -583,7 +592,7 @@ ml(`
                                 }
                             });
                         }
-                    );
+                    );*/
                 }
                 
                 function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
