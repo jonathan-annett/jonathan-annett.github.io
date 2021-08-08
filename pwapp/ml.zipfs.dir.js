@@ -1660,7 +1660,12 @@ ml(`
                             } else {
                                 const li = find_li(filename);
                                 openInbuiltEditor ( filename,li, function(){
-                                    find_li_ed (filename,doFindError2);
+                                    let editor_id = li.dataset.editor_id;
+                                    const ed = qs("#"+editor_id);
+                                    if (ed) {
+                                        const li_ed = ed.parentNode;
+                                        doFindError2(li_ed);
+                                    }
                                 });
                             }
                         });
