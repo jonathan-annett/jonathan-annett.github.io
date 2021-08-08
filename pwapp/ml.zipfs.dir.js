@@ -60,6 +60,11 @@ ml(`
                 
                 var footer_grab_bar;
                 
+                
+                const filesBeingEdited  = [
+                    
+                ];
+                
                 const editorErrors = {
                     /*
                     { filename : [ {line,column,text} x n ] }
@@ -1535,12 +1540,19 @@ ml(`
                 
                 function errorTableData() {
                    let data = [];
+                   const filtering = filesBeingEdited.length > 0;
                    Object.keys(editorErrors).forEach(function(filename){
+                       if (filtering && filesBeingEdited.indexOf(filename)<0) {
+                               return
+                       }
                        editorErrors[filename].forEach(function(err){
                            data.push({type:"Error",text:err.text,filename:filename,line:err.row+1,column:err.column});
                        });
                    });
                    Object.keys(editorWarnings).forEach(function(filename){
+                       if (filtering && filesBeingEdited.indexOf(filename)<0) {
+                               return
+                       }
                        editorWarnings[filename].forEach(function(err){
                            data.push({type:"Warning",text:err.text,filename:filename,line:err.row+1,column:err.column});
                        });
@@ -1967,9 +1979,8 @@ ml(`
                                                 
                                                 li_ed.editor.resize();
                                                 li.classList.remove("pending");
-                                                if (cb) {
-                                                    cb(li_ed);
-                                                }
+                                                
+                                                CB(li_ed);
                                         });
                                     }     
                                     
@@ -1983,11 +1994,20 @@ ml(`
                         const ed = qs("#"+editor_id);
                         const li_ed = ed.parentNode;
                        
+                        CB(li_ed);
+                  
+                        return li_ed;
+                    }
+                    
+                    
+                    
+                    function CB(li_ed) {
+                        if (filesBeingEdited.indexOf(filename)<0) {
+                            filesBeingEdited.push(filename);
+                        }
                         if (cb) {
                             cb(li_ed);
                         }
-                  
-                        return li_ed;
                     }
                 }
                 
@@ -2047,12 +2067,23 @@ ml(`
                                 if (tempErrorEditor === filename) {
                                     tempErrorEditor = undefined;
                                 }
-                                if (cb) cb();
                                 
-                            
+                                CB();
+                                
                         });
     
                     } else {
+                        CB()
+                    }
+                    
+                    
+                    
+                    function CB() {
+                        let ix = filesBeingEdited.indexOf(filename);
+                        while (ix>=0) {
+                            filesBeingEdited.splice(ix,1);
+                            ix = filesBeingEdited.indexOf(filename);
+                        }
                         if (cb) {
                             cb();
                         }
