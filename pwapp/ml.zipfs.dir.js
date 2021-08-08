@@ -574,7 +574,11 @@ ml(`
                     e.stopPropagation();
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
-                    openInbuiltEditor ( filename,li );
+                    openInbuiltEditor ( filename,li,function(){
+                        updateErrorsTable(function(){
+                            
+                        });
+                    } );
                 }
                 
                 function closeEditorBtnClick(e) {
