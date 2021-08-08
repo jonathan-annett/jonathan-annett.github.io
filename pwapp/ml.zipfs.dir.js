@@ -670,7 +670,7 @@ ml(`
                 }
                 
                 function toggleEditorClick(e){
-                    if (["DIV","A"].indexOf(e.target.tagName)<0){
+                    if (["DIV","A","LI"].indexOf(e.target.tagName)<0){
                        e.stopPropagation();
                        return;
                     }
