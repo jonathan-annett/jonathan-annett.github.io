@@ -84,12 +84,13 @@ li a.image,
 li a.undeletefile,
 li a.save-edits,
 li a.worker,
-span.errors,
-span.warnings,
+h1 span.errors,
+li a.errors,
+li a.warnings,
 li.editing a.deletefile,
 li.editing a.undeletefile,
 li.deleted a.deletefile,
-li.edited span.not-edited,
+li.edited a.not-edited,
 li a.undo-edits {
     display:none;
 }
@@ -102,8 +103,8 @@ li.image   a.image,
 li.worker  a.worker,
 li.errors.editing  a.save-edits,
 html.errors h1 span.errors,
-li.errors  span.errors,
-li.warnings span.warnings,
+li.errors  a.errors,
+li.warnings a.warnings,
 li.deleted a.undeletefile,
 li.edited  a.undo-edits {
     display:inline-block;
