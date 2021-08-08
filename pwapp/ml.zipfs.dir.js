@@ -291,7 +291,6 @@ ml(`
                     [].forEach.call(document.querySelectorAll("li > a.save-edits"),addSaveEditsClick);
                     [].forEach.call(document.querySelectorAll("li > a.warnings"),addWarningsClick);
                     [].forEach.call(document.querySelectorAll("li > a.errors"),addErrorsClick);
-                    
                     [].forEach.call(document.querySelectorAll("li > label.dropdown"),addThemeSelectionClick);
                     
                     
@@ -565,11 +564,21 @@ ml(`
                     el.addEventListener("click",openZipBtnClick);
                 }
                 function addThemeSelectionClick (el) {
-                    loadDropdownCombo("greetings", el,["chaos","cobalt"],
-                       function(opt,li,ix){
-                          console.log({opt,li,ix});
-                    });
+                    
+                    el.addEventListener("mousedown",preventDefaults);
+                    el.addEventListener("mouseip",preventDefaults);
+                    
+                    loadDropdownCombo(
+                        "greetings", el,
+                        
+                        ["chaos","cobalt"],
+                    
+                        function(opt,li,ix){
+                            console.log({opt,li,ix});
+                        }
+                    );
                 }
+                
                 function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
                
                 function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}

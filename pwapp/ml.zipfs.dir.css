@@ -585,34 +585,19 @@ html.dialog .clearfix::after {
 
 
 
-body {
-  color: #000000;
-  font-family: Sans-Serif;
-  padding: 30px;
-  background-color: #f6f6f6;
-}
-
-a {
-  text-decoration: none;
-  color: #000000;
-}
-
-a:hover {
-  color: #222222
-}
-
-/* Dropdown */
-
 .dropdown {
-  display: inline-block;
-  position: relative;
+  display: none;
+  float:right;
+  position:relative;
+}
+
+li.editing label.dropdown {
+  display:inline-block
 }
 
 .dd-button {
   display: inline-block;
-  border: 1px solid gray;
-  border-radius: 4px;
-  padding: 10px 30px 10px 20px;
+  padding: 0px 30px 0px 20px;
   background-color: #ffffff;
   cursor: pointer;
   white-space: nowrap;
@@ -658,6 +643,8 @@ a:hover {
 
 .dd-input:checked + .dd-menu {
   display: block;
+    z-index:999;
+
 } 
 
 .dd-menu li {
