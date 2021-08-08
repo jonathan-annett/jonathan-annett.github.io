@@ -180,7 +180,10 @@ ml(`
                   }
                 })()
                 
-                var zoomEl,fs_li_ed,pre_zoom_height,zoom_filename;    
+                var 
+                themePickerPickerHTML,
+                zoomEl,
+                fs_li_ed,pre_zoom_height,zoom_filename;    
                
                 const modified_files = {};
                 
@@ -188,11 +191,7 @@ ml(`
                   // pwaApi : pwaApi
                 };
                 
-                const themePickerPickerHTML = (function(el){
-                     el.parentElement.removeChild(el);
-                     return el.innerHTML;
-                })(qs("select.theme-picker"));
-                
+               
                 function regexpEscape(str) {
                     return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
                 }
@@ -296,6 +295,13 @@ ml(`
                     [].forEach.call(document.querySelectorAll("li > a.save-edits"),addSaveEditsClick);
                     [].forEach.call(document.querySelectorAll("li > a.warnings"),addWarningsClick);
                     [].forEach.call(document.querySelectorAll("li > a.errors"),addErrorsClick);
+                    
+                    themePickerPickerHTML = (function(el){
+                         el.parentElement.removeChild(el);
+                         return el.innerHTML;
+                    })(qs("select.theme-picker"));
+                    
+                    
                     [].forEach.call(document.querySelectorAll("li > label.dropdown"),addThemeSelectionClick);
                     
                     
