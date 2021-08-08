@@ -79,6 +79,8 @@ ml(`
                     
                 };
                 
+                let zipPollerIndex = -1;
+                const zipPollerInterval = 10;
                 let tempErrorEditor;
                 let errorsTableData, errorsTable;
                 
@@ -2119,7 +2121,11 @@ ml(`
                                 
                                 
                                 delete li_ed.editor;
+                                
                                 li_ed.hashDisplay.textContent='';
+                                
+                                zipPollerIndex = zip_files.indexOf(filename)-1;
+                                
                                 delete li_ed.hashDisplay;
                                 
                                 li_ed.sizebar.destroy();
@@ -2385,9 +2391,10 @@ ml(`
                     
                 }
                 
-                function zipPoller(index) {
+                function zipPoller() {
                     //main purpose is to keep service worker awake. but while we are doing that, might as well hash each file and display it
-                    index = index || 0;
+                    zipPollerIndex = (zipPollerIndex||-1)+1;
+                    let index = zipPollerIndex;
                     if (index < zip_files.length) {
                         const filename = zip_files[index];
                         const li = find_li (filename);
@@ -2395,7 +2402,7 @@ ml(`
                             let editor_id = li.dataset.editor_id;
                             if (editor_id) {
                                 // files open in the editor hash themselves
-                                setTimeout(zipPoller,10,index+1);
+                                setTimeout(zipPoller,zipPollerInterval);
                             } else {
                                 const sha_el = qs(li,".sha1");
                                 if(sha_el && sha_el.textContent.trim()==='') {
@@ -2417,29 +2424,30 @@ ml(`
                                                     li.classList[warnings?"add":"remove"]("warnings");
                                                     sha_el.textContent = hash;
                                                     
-                                                    setTimeout(zipPoller,10,index+1);
+                                                    setTimeout(zipPoller,zipPollerInterval);
                                                     
                                                 });
                                                 
                                             } else {
                                                 sha_el.textContent=hash;
-                                                setTimeout(zipPoller,10,index+1);
+                                                setTimeout(zipPoller,zipPollerInterval);
                                             }
                                         } else {
                                             sha_el.textContent=hash;
-                                            setTimeout(zipPoller,10,index+1);
+                                            setTimeout(zipPoller,zipPollerInterval);
                                         }
     
                                     });
                                 } else {
-                                    setTimeout(zipPoller,10,index+1);
+                                    setTimeout(zipPoller,zipPollerInterval);
                                 }
                             }
                         } else {
-                            setTimeout(zipPoller,10,index+1);
+                            setTimeout(zipPoller,zipPollerInterval);
                         }
                     } else {
-                        setTimeout(zipPoller,100,0); 
+                        zipPollerIndex=-1;
+                        setTimeout(zipPoller,zipPollerInterval); 
                     }
                 }
                 
@@ -2449,7 +2457,7 @@ ml(`
                    window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
                 }
                 
-              setTimeout(zipPoller,100,0);
+                setTimeout(zipPoller,zipPollerInterval);
                 
                 return lib;
                 
