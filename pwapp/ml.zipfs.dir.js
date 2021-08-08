@@ -279,10 +279,11 @@ ml(`
                     [].forEach.call(document.querySelectorAll("li > a.zipfile"),addOpenZipViewClick);
                     [].forEach.call(document.querySelectorAll("li > a.deletefile"),addDeleteClick);
                     [].forEach.call(document.querySelectorAll("li > a.undeletefile"),addUndeleteClick);
+                    [].forEach.call(document.querySelectorAll("li > a.not-edited"),addNotEditedClick);
                     [].forEach.call(document.querySelectorAll("li > a.undo-edits"),addUndoEditsClick);
                     [].forEach.call(document.querySelectorAll("li > a.save-edits"),addSaveEditsClick);
-                    [].forEach.call(document.querySelectorAll("li > span.warnings"),addWarningsClick);
-                    [].forEach.call(document.querySelectorAll("li > span.errors"),addErrorsClick);
+                    [].forEach.call(document.querySelectorAll("li > a.warnings"),addWarningsClick);
+                    [].forEach.call(document.querySelectorAll("li > a.errors"),addErrorsClick);
                     
 
                     
@@ -507,6 +508,10 @@ ml(`
                     el.addEventListener("click",undoEditsClick);
                 }
                 
+                function addNotEditedClick (el) {
+                    el.addEventListener("click",undoNotEditedClick);
+                }
+                
                 function addOpenEditorClick (el) {
                     el.addEventListener("click",openEditorClick);
                 }
@@ -644,6 +649,10 @@ ml(`
                     } else {
                         toggleInbuiltEditor ( filename,li );
                     }
+                }
+                
+                function undoNotEditedClick( e ) {
+                    e.stopPropagation();
                 }
             
                 function undoEditsClick( e ) {
