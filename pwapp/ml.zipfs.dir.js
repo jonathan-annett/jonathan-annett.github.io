@@ -1653,43 +1653,30 @@ ml(`
                     }
                     
                     function doFindError1() {
-                    
-                        const li = find_li(filename);
-                        if (li) {
-                            if (li.dataset.editor_id) {
-                                doFindError2(li.dataset.editor_id);
+                        
+                        find_li_ed (filename,function(li_ed){
+                            if (li_ed) {
+                                doFindError2(li_ed);
                             } else {
-                                
+                                const li = find_li(filename);
                                 openInbuiltEditor ( filename,li, function(){
-                                    
-                                    if (li.dataset.editor_id) {
-                                       tempErrorEditor = filename;
-                                       doFindError2(li.dataset.editor_id);
-                                    } else {
-                                       cb(new Error("can't open"+filename));
-                                    }
+                                    find_li_ed (filename,doFindError2);
                                 });
                             }
-                        } else {
-                            cb(new Error("can't find"+filename));
-                        }
+                        });
+
                     }
                     
-                    function doFindError2(editor_id) {
-                        const ed = qs("#"+editor_id);
-                        if (ed) {
-                            const li_ed = ed.parentNode;
-                            const editor = li_ed.editor;
-                            editor.resize(true);
-                            editor.scrollToLine(line, true, true, function () {});
-                            editor.gotoLine(line, column, true);
-                            editor.focus();
-                            li_ed.scrollIntoView();
-                            find_li(filename).scrollIntoView();
-                            qs("header").scrollIntoView();
-                            cb();
-                        }
-                         
+                    function doFindError2(li_ed) {
+                        const editor = li_ed.editor;
+                        editor.resize(true);
+                        editor.scrollToLine(line, true, true, function () {});
+                        editor.gotoLine(line, column, true);
+                        editor.focus();
+                        li_ed.scrollIntoView();
+                        find_li(filename).scrollIntoView();
+                        qs("header").scrollIntoView();
+                        cb();
                     } 
                 }
                 
