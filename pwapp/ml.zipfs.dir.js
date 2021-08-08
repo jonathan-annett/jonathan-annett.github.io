@@ -632,13 +632,13 @@ ml(`
                 }
                 
                 function toggleEditorClick(e){
+                    const filename = findFilename(e.target);
+                    const li = find_li(filename);
                     if (!e.shiftKey && zoomEl) {
-                        zoomBtnClick( e ) ;
+                        return zoomBtnClick( e ) ;
                     } else {
                        e.stopPropagation();
                     }
-                    const filename = findFilename(e.target);
-                    const li = find_li(filename);
                     if (e.shiftKey) {
                         open_file(filename);
                     } else {
@@ -825,7 +825,7 @@ ml(`
     
                    if (li && !li.classList.contains("deleted")) {
                        dialogBox(
-                       "Delete File ?", 
+                       "Delete File?", 
                        "Confirm Operation", 
                        "Ok",
                        function() {
