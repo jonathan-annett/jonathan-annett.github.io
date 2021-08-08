@@ -170,13 +170,11 @@ ml(`
                 
                 var zoomEl,fs_li_ed,pre_zoom_height,zoom_filename;    
                
-                
-                
                 const modified_files = {};
+                
                 const lib = {
                   // pwaApi : pwaApi
                 };
-                
                 
                 function regexpEscape(str) {
                     return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
@@ -219,7 +217,6 @@ ml(`
                     });
                 }
             
-               
                 const fbufApi = fileBufferApi(pwa,dir);
                 
                 const {removeUpdatedURLContents,updateURLContents,fetchUpdatedURLContents} = fbufApi.urlAPI;
@@ -231,9 +228,7 @@ ml(`
                 const { readFileText,writeFileText,createFileText,forceWriteFileText } = ftextApi;
                 
                 const { writeFileAssociatedText,readFileAssociatedText,removeFileAssociatedData } = fileAssocApi(fbufApi);
-                
-                
-                
+
                 function onDOMContentLoaded (){
                 
                     const showHidden=document.querySelector("h1 input.hidden_chk");
@@ -290,83 +285,76 @@ ml(`
                     
                  
                     if (editor_channel) {
-                    
-                            getStylesheets(editor_channel,dir.url,function(urls){
+                        getStylesheets(editor_channel,dir.url,function(urls){
+                            
+                            available_css.splice(0,available_css.length);
+                            
+                            const url_trim_len = dir.url.replace(/\/$/,'').length+1; 
+                            
+                            available_css.push.apply(available_css,urls.map(function(u){
+                                return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(url_trim_len);
+                            }));
+
+                            getScripts(editor_channel,dir.url,function(urls){
                                 
-                                available_css.splice(0,available_css.length);
+                                available_scripts.splice(0,available_scripts.length);
                                 
-                                const url_trim_len = dir.url.replace(/\/$/,'').length+1; 
-                                
-                                available_css.push.apply(available_css,urls.map(function(u){
+                                available_scripts.push.apply(available_scripts,urls.map(function(u){
                                     return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(url_trim_len);
                                 }));
                                 
-                                //console.log({available_css});
                                 
-                                
-                                
-                                getScripts(editor_channel,dir.url,function(urls){
+                                getHtmls(editor_channel,dir.url,function(html_urls){
                                     
-                                    available_scripts.splice(0,available_scripts.length);
+                                    available_html.splice(0,available_html.length);
                                     
-                                    available_scripts.push.apply(available_scripts,urls.map(function(u){
+                                    available_html.push.apply(available_html,html_urls.map(function(u){
                                         return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(url_trim_len);
                                     }));
                                     
                                     
-                                    getHtmls(editor_channel,dir.url,function(html_urls){
-                                        
-                                        available_html.splice(0,available_html.length);
-                                        
-                                        available_html.push.apply(available_html,html_urls.map(function(u){
-                                            return (dir.alias_root ? dir.alias_root :'' ) +  u.substr(url_trim_len);
-                                        }));
-                                        
-                                        
-                                        //console.log({available_html});
-                                        
-                                        available_css
-                                           .concat(
-                                              available_html.filter(function(h){return h.slice(-5)===".html"}),
-                                              available_scripts)
-                                                .forEach(function(livefile){
-                                                    const li = find_li(livefile);
-                                                    if (li) {
-                                                        li.classList.add( livefile.slice(-4)==='.css' ? 'live-edit' : 'live-refresh' );
-                                                      
-                                                    }
-                                        });
-                                        
-                                        
-                                        html_urls.forEach(function(u,ix){
-                                            if (u.slice(-5)!==".html") {
-                                                pwa.fixupUrl(u,function(err,entry){
-                                                    if (err) return;
-                                                    if (entry) {
-                                                        if (entry.fixup_url ) {
-                                                           
-                                                            if (entry.fixup_url.indexOf(dir.url)===0) { 
-                                                                const uri = (dir.alias_root ? dir.alias_root :'' ) +  entry.fixup_url.substr(url_trim_len);
-                                                                const li = find_li(uri);
-                                                                if (li) {
-                                                                    available_html[ix] = uri;
-                                                                    li.classList.add( 'live-refresh' );
-                                                                    li.dataset.alt_url = u;
-                                                                }
+                                    //console.log({available_html});
+                                    
+                                    available_css
+                                       .concat(
+                                          available_html.filter(function(h){return h.slice(-5)===".html"}),
+                                          available_scripts)
+                                            .forEach(function(livefile){
+                                                const li = find_li(livefile);
+                                                if (li) {
+                                                    li.classList.add( livefile.slice(-4)==='.css' ? 'live-edit' : 'live-refresh' );
+                                                  
+                                                }
+                                    });
+                                    
+                                    
+                                    html_urls.forEach(function(u,ix){
+                                        if (u.slice(-5)!==".html") {
+                                            pwa.fixupUrl(u,function(err,entry){
+                                                if (err) return;
+                                                if (entry) {
+                                                    if (entry.fixup_url ) {
+                                                       
+                                                        if (entry.fixup_url.indexOf(dir.url)===0) { 
+                                                            const uri = (dir.alias_root ? dir.alias_root :'' ) +  entry.fixup_url.substr(url_trim_len);
+                                                            const li = find_li(uri);
+                                                            if (li) {
+                                                                available_html[ix] = uri;
+                                                                li.classList.add( 'live-refresh' );
+                                                                li.dataset.alt_url = u;
                                                             }
                                                         }
                                                     }
-                                                });
-                                            }
-                                        });
-                                    
+                                                }
+                                            });
+                                        }
                                     });
                                 
                                 });
-                                
+                            
                             });
                             
-                            
+                        });
                     }
                     
                     
@@ -466,8 +454,6 @@ ml(`
                     
                 }
                 
-                
-                
                 function timeoutWithProgressBar (filename,msec,cb) {
                     const li = find_li(filename);
                     const el = li.querySelector ("div.progressBar");
@@ -505,98 +491,64 @@ ml(`
                 }
                 
                 function addDeleteClick (el) {
-                    if (el) {
-                      el.addEventListener("click",deleteClick);
-                    }
+                    el.addEventListener("click",deleteClick);
                 }
                 
                 function addUndeleteClick (el) {
-                    if (el) {
-                      el.addEventListener("click",undeleteClick);
-                    }
+                    el.addEventListener("click",undeleteClick);
                 }
                 
-    
                 function addUndoEditsClick (el) {
-                    if (el) {
-                      el.addEventListener("click",undoEditsClick);
-                    }
+                    el.addEventListener("click",undoEditsClick);
                 }
-                
-               
-                
                 
                 function addOpenEditorClick (el) {
-                    if (el) {
-                      el.addEventListener("click",openEditorClick);
-                    }
+                    el.addEventListener("click",openEditorClick);
                 }
                 
                 function addToggleEditorClick (el) {
-                    if (el) {
-                      el.addEventListener("click",toggleEditorClick);
-                    }
+                    el.addEventListener("click",toggleEditorClick);
                 }
                 
                 function addCloseEditorClick (el) {
-                    if (el) {
-                      qs(el,"a i").addEventListener("click",closeEditorBtnClick);
-                    }
+                    qs(el,"a i").addEventListener("click",closeEditorBtnClick);
                 }
                 
                 function addSaveEditsClick (el) {
-                    if (el) {
-                      el.addEventListener("click",saveEditsClick);
-                    }
+                    el.addEventListener("click",saveEditsClick);
                 }
                 
                 function addWarningsClick(el) {
-                    if (el) {
-                      el.addEventListener("click",warningsClick);
-                    }
+                    el.addEventListener("click",warningsClick);
                 }
                 
                 function addErrorsClick(el) {
-                    if (el) {
-                      el.addEventListener("click",errorsClick);
-                    }
+                    el.addEventListener("click",errorsClick);
                 }
                 
                 function addViewImageClick (el) {
-                    if (el) {
-                      el.addEventListener("click",viewImageBtnClick);
-                    }
+                    el.addEventListener("click",viewImageBtnClick);
                 }
                 
                 function addZoomClick (el) {
-                    if (el) {
-                      qs(el,"a i").addEventListener("click",zoomBtnClick);
-                    }
+                    qs(el,"a i").addEventListener("click",zoomBtnClick);
                 }
                 
                 function addViewClick (el) {
-                    if (el) {
-                        el.addEventListener("click",viewBtnClick);
-                       // el.parentElement.addEventListener("click",viewBtnClick);
-                    }
+                    el.addEventListener("click",viewBtnClick);
                 }
                 
                 function addOpenZipViewClick (el) {
-                    if (el) {
-                        el.addEventListener("click",openZipBtnClick);
-                       // el.parentElement.addEventListener("click",openZipBtnClick);
-                    }
+                    el.addEventListener("click",openZipBtnClick);
                 }
                 
                 function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
                
                 function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
                 
-                function  zoomBtnClick( e ) {
+                function zoomBtnClick( e ) {
                     e.stopPropagation();
-                    
                     toggleEditorZoom( findFilename(e.target) );
-                    
                 }
     
                 function openEditorClick(e){
@@ -615,7 +567,6 @@ ml(`
                     } else {
                         closeInbuiltEditor ( filename,li )
                     }
-                    
                 }
                 
                 function saveEditsClick(e) {
@@ -635,9 +586,7 @@ ml(`
                     function(){
                         
                     });
-                   
                 }
-                
                 
                 function errorWarningClick(e,x,errDb) {
                     e.stopPropagation();
@@ -756,7 +705,6 @@ ml(`
                     
                     
                 }
-                
                 
                 function dialogBox(h1,p,okCap,okClick,cancelClick) {
                     
@@ -1264,7 +1212,6 @@ ml(`
                     }
                 }
                 
-                
                 function refreshStylesheeet(filename,cb) {
                     if(available_css.indexOf(filename)<0||!editor_channel) {
                         return cb ();
@@ -1280,7 +1227,6 @@ ml(`
                     });
                 }
                 
-    
                 function ResizeWatcher () {
                     
                    const observer = new ResizeObserver(onResized);
@@ -1527,7 +1473,6 @@ ml(`
                     transientEditorMetaResave(li_ed,250);
                     
                 }
-                
                  
                 function saveEditorMeta(filename,li,editor_id,ed,li_ed,cb) {
                     if (typeof li==='function') {
@@ -1637,7 +1582,6 @@ ml(`
 
                 }
                 
-                
                 function findError(filename,line,column,cb) {
                     if (tempErrorEditor && tempErrorEditor !== filename) {
                         const li = find_li(tempErrorEditor);
@@ -1689,7 +1633,6 @@ ml(`
                     } 
                 }
                 
-
                 function transientEditorMetaResave(li_ed,delay,annot) {
                     if (li_ed.transient_timeout) clearTimeout(li_ed.transient_timeout);
                     
@@ -1754,8 +1697,6 @@ ml(`
                     return errors;
                 }
                 
-                
-    
                 function openInbuiltEditor (filename,li,cb,height,textContent) {
                     li=li||find_li (filename);
                     const file_url = join(dir.url,filename); 
@@ -1768,6 +1709,7 @@ ml(`
                         li.dataset.editor_id =  editor_id;
                         li.classList.add("editing");
                         const li_ed = document.createElement("li");
+                        li_ed.classList.add("editor");
                         li_ed.innerHTML = ['<pre id="','"></pre><div class="grab_bar" id="','_grab_bar"></div>'].join(editor_id); 
                         li_ed.filename= filename;
                         
@@ -2002,7 +1944,6 @@ ml(`
                     }
                 }
                 
-               
                 function closeInbuiltEditor(filename,li,cb) {
                     li=li||find_li (filename);
                     let editor_id = li.dataset.editor_id;
@@ -2173,7 +2114,6 @@ ml(`
                     
                 }
                 
-               
                 function toggleInbuiltEditor (filename,li) {
                     li=li||find_li (filename);
                     if (!!li.dataset.editor_id) {
@@ -2183,12 +2123,9 @@ ml(`
                     }
                 }
                 
-                
-                  
                 function lintSource (hash,src,mode,filename,cb) {
                     const lintr = linter (mode,hash,src,filename,cb);
                 }
-                
                 
                 function linter (mode,hash,src,filename,cb) {
                     
@@ -2278,8 +2215,6 @@ ml(`
                     
                 }
                 
-               
-               
                 function zipPoller(index) {
                     //main purpose is to keep service worker awake. but while we are doing that, might as well hash each file and display it
                     index = index || 0;

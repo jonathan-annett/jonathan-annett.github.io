@@ -262,6 +262,7 @@ h1 a.downloadfull {
 
 ul {
     list-style-type: none;
+    margin-right:16px;
 }
 
 li div.grab_bar {
@@ -337,6 +338,11 @@ ul.hide_hidden li.hidden.editing {
 
 li:hover {
     outline: 2px dashed red;
+}
+
+li.editor:hover,
+li.editing:hover {
+  outline:unset;
 }
 
 #drop-area {
