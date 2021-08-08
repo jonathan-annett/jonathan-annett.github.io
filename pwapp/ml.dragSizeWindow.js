@@ -114,15 +114,18 @@ ml([],function(){ml(2,
               
               function mousemove(e) {
                 if (!inSize) {return;}
+                
                 if (sizeMode.h) {
                     const newWidth = objInitWidth + e.pageX-dragStartX;
                     if (maxWidth) {
-                        if (newWidth>maxWidth) {
-                            return;
+                        if (newWidth<=maxWidth) {
+                            dragTarget.style.width   = newWidth + "px";
                         }
-                    } 
-                    dragTarget.style.width   = newWidth + "px";
+                    } else {
+                       dragTarget.style.width   = newWidth + "px";
+                    }
                 }
+                
                 if (sizeMode.v) {
                     const newHeight = objInitHeight + e.pageY-dragStartY;
                     if (maxHeight) {
