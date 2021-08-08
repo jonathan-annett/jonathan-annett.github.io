@@ -1017,22 +1017,20 @@ ml(`
                            }
                        }
                        zipFileMeta.files[file.name]={
-                           date:file.date,
-                           etag:zipFileMeta.etag+
-                                file.date ? file.date.getTime().toString(36) : Math.random().toString(36).substr(2)
+                           date:file.date
                        };
                        
                        if (file.name=== dir_meta_name) {
                            dir_meta_found=true;
                        }
                     } else {
-                        const slash=file.name.indexOf("/");
-                        if ((slash<0)||(slash===file.name.lastIndexOf("/"))) {
+                       // const slash=file.name.indexOf("/");
+                        //if ((slash<0)||(slash===file.name.lastIndexOf("/"))) {
                             const root = file.name.split("/")[0];
                             if (root_dirs.indexOf(root)<0) {
                                root_dirs.push(root);
                             }
-                        }
+                    //    }
                     }
                 });
                 if (root_dirs.length===1&&root_files.length===0 ) {
@@ -1048,8 +1046,7 @@ ml(`
                 
                 if (!dir_meta_found) {
                     zipFileMeta.files[dir_meta_name]={
-                        date:zipFileMeta.date,
-                        etag:zipFileMeta.etag+ Math.random().toString(36).substr(2)
+                        date:zipFileMeta.date
                     };
                 }
                 return zipFileMeta;
@@ -1453,26 +1450,7 @@ ml(`
                                     fileEntry.contentType    = mimeForFilename(file_path);
                                     fileEntry.contentLength  = buffer.byteLength;
                                     
-                                    if (zipFileMeta.updating) {
-                                        clearTimeout(zipFileMeta.updating);
-                                    }
-                                    //ml.c.l("updating zip entry",zip_url,file_path);
-                                    
-                                    zipFileMeta.updating = setTimeout(function(){
-                                        // in 10 seconds this and any other metadata changes to disk
-                                        delete zipFileMeta.updating;
-                                        const saveTools = zipFileMeta.tools; 
-                                        if (saveTools) {
-                                            delete zipFileMeta.tools;
-                                        }
-                                        databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
-                                            if (saveTools) {
-                                                zipFileMeta.tools = saveTools; 
-                                            }
-                                            //ml.c.l("updated zip entry",zip_url);
-                                        });
-                                        
-                                    },10*10000);
+                                     deferredUpdate(10*10000);
                                     
                                 }
                                 
@@ -1485,18 +1463,48 @@ ml(`
                                     return resolveZipListing_Script (zip_url+"/"+path_in_zip,buffer,virtual_prefix).then(resolve).catch(reject);
                                 }
                                 
-                                
-                               
-                                
+
                                 if (subzip) {
                                     return resolveSubzip(buffer,subzip_url ,subzip_filepath,ifNoneMatch,ifModifiedSince,virtual_prefix).then(resolve).catch(reject);
                                 }
                                 
+                                if (fileEntry.etag) {
+                                        return response200 (resolve,buffer,fileEntry);
+                                }
                                 
-                                return response200 (resolve,buffer,fileEntry);
+                                return sha1(buffer,function(err,hash){
+                                    fileEntry.etag = hash;
+                                    deferredUpdate(10*10000);
+                                    return response200 (resolve,buffer,fileEntry);
+                                })
                                 
                                 
                              });
+                             
+                             
+                             
+                             function deferredUpdate(msec) {
+                                 if (zipFileMeta.updating) {
+                                     clearTimeout(zipFileMeta.updating);
+                                 }
+                                 //ml.c.l("updating zip entry",zip_url,file_path);
+                                 
+                                 zipFileMeta.updating = setTimeout(function(){
+                                     // in 10 seconds this and any other metadata changes to disk
+                                     delete zipFileMeta.updating;
+                                     const saveTools = zipFileMeta.tools; 
+                                     if (saveTools) {
+                                         delete zipFileMeta.tools;
+                                     }
+                                     databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
+                                         if (saveTools) {
+                                             zipFileMeta.tools = saveTools; 
+                                         }
+                                         //ml.c.l("updated zip entry",zip_url);
+                                     });
+                                     
+                                 },msec);
+                             }
                              
                             
                          });
