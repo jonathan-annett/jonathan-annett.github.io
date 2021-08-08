@@ -842,7 +842,7 @@ ml(`
                    if (li && !li.classList.contains("deleted")) {
                        dialogBox(
                        "Delete File "+filename+" ?", 
-                       "The this removes any edits and prevents the service worker from serving the file", 
+                       "This prevents the service worker from serving the file", 
                        "Ok",
                        function() {
                            closeInbuiltEditor(filename,li,function(){
@@ -868,16 +868,30 @@ ml(`
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
                     
-                       
+
                        if (li && li.classList.contains("deleted")) {
-                           closeInbuiltEditor(filename,li,function(){
-                               toggleDeleteFile(filename,function(err,msg){
-                                   if (err) return;
-                                   li.classList[msg.deleted?"add":"remove"]('deleted');
-                                   li.classList[msg.deleted?"add":"remove"]('hidden');
-                                   li.classList.remove("editing");
-                               });
-                           });    
+                           
+                           
+                           dialogBox(
+                           "Undelete File "+filename+" ?", 
+                           "This allows the service worker to serve the file", 
+                           "Ok",
+                           function() {
+                               closeInbuiltEditor(filename,li,function(){
+                                   toggleDeleteFile(filename,function(err,msg){
+                                       if (err) return;
+                                       li.classList[msg.deleted?"add":"remove"]('deleted');
+                                       li.classList[msg.deleted?"add":"remove"]('hidden');
+                                       li.classList.remove("editing");
+                                   });
+                               });  
+                               
+                           },
+                           function(){
+                               
+                           });
+                           
+                             
                            
                        }
                 }
