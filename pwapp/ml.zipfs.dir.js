@@ -574,21 +574,47 @@ ml(`
                     el.addEventListener("click",function(e) {
                         preventDefaults(e);
                         qs(el,"div.dd-menu",function(m){
-                           m.innerHTML = themePickerPickerHTML;
                            const chk = m.parentElement.querySelector("input");
-                           chk.checked = true;
-                           [].forEach.call(m.querySelectorAll("option"),function(opt){
-                               opt.onclick=function(e){
-                                  preventDefaults(e);
-                                  find_li_ed(findFilename(e.target),function(li_ed){
-                                      if (li_ed && li_ed.editor) {
-                                         li_ed.editor.setOptions({theme:opt.value});
-                                         m.innerHTML = "";
-                                      }
-                                  });
-                                  chk.checked =false;
-                               };
-                           });
+                           chk.checked = !chk.checked;
+                           const opts = [];
+                           if (chk.checked) {
+                               m.innerHTML = themePickerPickerHTML;
+                               window.addEventListener("mousedown",clickElsewhere);
+                               
+                               [].forEach.call(m.querySelectorAll("option"),function(opt){
+                                   opts.push(opt);
+                                   opt.onclick=function(e){
+                                      preventDefaults(e);
+                                      find_li_ed(findFilename(e.target),function(li_ed){
+                                          if (li_ed && li_ed.editor) {
+                                             li_ed.editor.setOptions({theme:opt.value});
+                                             cleanup (); 
+                                          }
+                                      });
+                                   };
+                               });
+                           } else {
+                               m.innerHTML = "";
+                           }
+                           
+                           function clickElsewhere(e) {
+                              if (opts.indexOf(e.target)<0) {
+                                  cleanup (e); 
+                              }
+                           }
+                           
+                           function cleanup (e) {
+                               if (e) {
+                                   e.preventDefault();    
+                                   e.stopPropagation();
+                               }
+                               window.removeEventListener("mousedown",clickElsewhere);
+                               opts.splice(0,opts.length);
+                               chk.checked = false;
+                               m.innerHTML = "";
+                           }
+                         
+                           
                         });
                     });
                     
