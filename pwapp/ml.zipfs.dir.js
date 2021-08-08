@@ -569,30 +569,23 @@ ml(`
                     el.addEventListener("click",openZipBtnClick);
                 }
                 function addThemeSelectionClick (el) {
-                    
-                    
                     el.addEventListener("mousedown",preventDefaults);
                     el.addEventListener("mouseup",preventDefaults);
-                    qs(el,"div.dd-menu").innerHTML = themePickerPickerHTML;
+                    qs(el,"div.dd-menu",function(m){
+                       m.innerHTML = themePickerPickerHTML;
+                       [].forEach.call(m.querySelectorAll("option"),function(opt){
+                           opt.onclick=function(e){
+                              preventDefaults(e);
+                              find_li_ed(findFilename(e.target),function(li_ed){
+                                  if (li_ed && li_ed.editor) {
+                                     li_ed.editor.setOptions({theme:opt.value});
+                                  }
+                              });
+                             
+                           };
+                       });
+                    });
                     
-                    
-                    /*
-                    loadDropdownCombo(
-                        "theme", el,
-                        
-                        ["Chaos","Cobalt","Chrome","Dawn"],
-                        
-                    
-                        function(opt,li,ix){
-                            const theme = "ace/theme/"+opt.toLowerCase();
-                            const filename = findFilename(el);
-                            find_li_ed(filename,function(li_ed){
-                                if (li_ed&&li_ed.editor) {
-                                    li_ed.editor.setOptions({theme:theme});
-                                }
-                            });
-                        }
-                    );*/
                 }
                 
                 function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}

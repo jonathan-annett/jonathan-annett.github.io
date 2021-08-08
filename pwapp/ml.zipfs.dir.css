@@ -598,7 +598,8 @@ li.editing label.dropdown {
 .dd-button {
   display: inline-block;
   padding: 0px 30px 0px 20px;
-  background-color: #ffffff;
+  opacity:0.33;
+
   cursor: pointer;
   white-space: nowrap;
 }
@@ -617,7 +618,7 @@ li.editing label.dropdown {
 }
 
 .dd-button:hover {
-  background-color: #eeeeee;
+   opacity:1;
 }
 
 
@@ -642,8 +643,10 @@ li.editing label.dropdown {
 } 
 
 .dd-input:checked + .dd-menu {
-  display: block;
+    display: block;
     z-index:999;
+    height:300px;
+    overflow-y:auto;
 
 } 
 
