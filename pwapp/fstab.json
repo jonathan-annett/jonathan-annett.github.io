@@ -39,7 +39,7 @@
     {
         "virtualDirs": {
             "https://jonathan-annett.github.io/pwapp/ace": {
-                "alias_root" : "/ace-builds-master/src-noconflict",
+                "alias_root" : "/ace-builds-master/src-min-noconflict",
                 "zips" : [ "https://jonathan-annett.github.io/pwapp/ace-builds-master.zip" ]
             },
             
