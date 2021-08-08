@@ -891,8 +891,6 @@ ml(`
                                
                            });
                            
-                             
-                           
                        }
                 }
                
@@ -1590,7 +1588,15 @@ ml(`
                             layout:"fitColumns",
                             autoColumnsDefinitions:[
                                 {title:"Error/Warning",  field:"type",}, 
-                                {title:"Filename",       field:"filename",}, 
+                                {title:"Filename",       field:"filename",
+                                    formatter:function(cell, formatterParams, onRendered){
+                                        //cell - the cell component
+                                        //formatterParams - parameters set for the column
+                                        //onRendered - function to call when the formatter has been rendered
+                                        return cell.getValue().replace(alias_root_fix,'');
+                                    }
+                                    
+                                }, 
                                 {title:"Message",        field:"text",widthGrow:6}, 
                                 {title:"Line",           field:"row"}, 
                                 {title:"Column",         field:"column"}, 
