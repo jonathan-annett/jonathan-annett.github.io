@@ -261,13 +261,13 @@ ul {
     margin-right:16px;
 }
 
-li div.grab_bar {
+div.grab_bar {
     background-color:#73d073;
     cursor: ns-resize;
     height: 4px;
     width: 100%;
  }
-li div.grab_bar:hover {
+div.grab_bar:hover {
  animation: blinker 1s linear infinite;
 }
  
@@ -337,10 +337,9 @@ ul.hide_hidden li.hidden.editing {
     display:block;
 }
 #errors_table {
-  position: absolute;
-  width:53%;
-  bottom: 0;
-  height:80px;
+  width: 100%;
+  bottom: 16px;
+  display: inline-block;
 }
 
 li:hover {
@@ -360,14 +359,17 @@ li.editor:hover {
 #drop-area {
   border: 2px dashed #ccc;
   border-radius: 10px;
-  width: 42%;
+  /* width: 42%; */
   font-family: sans-serif;
-  left: 55%;
+  /* left: 55%; */
   padding: 4px;
-  position:relative;
-  
+  /* position:relative; */
   margin-bottom:16px;
-
+  margin-left: 8px;
+  text-align: center;
+  float: right;
+  margin-right: 10px;
+  margin-top: -16px;
 }
 #drop-area.highlight {
   border-color: purple;
@@ -421,7 +423,9 @@ main {
 }
 
 footer {
-  min-height: 20px; 
+  min-height: 20px;
+  display: flex;
+  height: 200px;
 }
 
 html.zooming main {
@@ -569,5 +573,9 @@ html.dialog .clearfix::after {
 }
 
 
-
+#footer_grab{
+  position:relative;
+  top: -16px;
+  height:6px;
+}
 

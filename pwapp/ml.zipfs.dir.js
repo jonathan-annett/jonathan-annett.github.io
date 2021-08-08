@@ -58,6 +58,8 @@ ml(`
                 const available_scripts = [];
                 const edit_hooks = {};
                 
+                var footer_grab_bar;
+                
                 const editorErrors = {
                     /*
                     { filename : [ {line,column,text} x n ] }
@@ -288,6 +290,8 @@ ml(`
 
                     
                     setupDragAndDrop();
+                    
+                    footer_grab_bar = dragSize("#footer_grab",["footer"]);
                     
                  
                     if (editor_channel) {
@@ -912,6 +916,7 @@ ml(`
                     }
                     
                 }
+                
                 function viewBtnClick(e){
                     e.stopPropagation();
                     const filename = findFilename(e.target);
