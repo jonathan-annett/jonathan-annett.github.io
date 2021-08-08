@@ -2666,6 +2666,7 @@ ml(`
                        e.preventDefault();    
                        e.stopPropagation();
                        fn(x[ix],li,ix);
+                       chkEl.checked = false;
                     };
                   });
                 } else {
