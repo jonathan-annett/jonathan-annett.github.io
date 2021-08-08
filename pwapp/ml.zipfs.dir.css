@@ -276,6 +276,15 @@ li.editing  {
   background-color: #a9d8eb;
 }
 
+li.editing a.code {
+   pointer-events:none;
+   cursor:auto;
+}
+li.editing a.not-edited:after {
+  display:none;
+}
+
+
 li.edited  {
   background-color: #ccb0b8;
 }
@@ -459,14 +468,14 @@ html.dialog button {
   width: 100%;
 }
 
-html.dialog h1 {
+html.dialog p {
   position :relative;
   top : 20px;
 }
 
-html.dialog p {
+html.dialog h1 {
   position :relative;
-  top : -10px;
+  top : -4px;
 }
 
 

@@ -584,10 +584,12 @@ ml(`
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
                     
-                    dialogBox(
-                    "There are errors, save Anyway?", 
-                    "Confirm Save File", 
-                    "Ok",
+                    dialogBox( 
+                        
+                    "Save File "+filename, 
+                    "There are errors detected, save them anyway?", 
+                   
+                    "Yes, Save With Errors",
                     function() {
                          saveInbuiltEditorChanges ( filename,li,function(){
                         
@@ -663,8 +665,9 @@ ml(`
                         const li = find_li(filename);
                         li.classList.add('shading'); 
                         dialogBox(
-                            "Revert to original?", 
-                            "Confirm Operation", 
+                            "Confirm Revert To Original", 
+                            "This will remove all edits and undo history", 
+                           
                             "Ok",
                             function() {
                             removeUpdatedFile (filename,function(){
@@ -835,7 +838,7 @@ ml(`
                    if (li && !li.classList.contains("deleted")) {
                        dialogBox(
                        "Delete File "+filename+" ?", 
-                       "Confirm Operation", 
+                       "The this removes any edits and prevents the service worker from serving the file", 
                        "Ok",
                        function() {
                            closeInbuiltEditor(filename,li,function(){
