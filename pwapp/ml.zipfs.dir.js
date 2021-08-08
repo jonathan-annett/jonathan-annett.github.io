@@ -569,12 +569,19 @@ ml(`
                     el.addEventListener("mouseip",preventDefaults);
                     
                     loadDropdownCombo(
-                        "greetings", el,
+                        "theme", el,
                         
-                        ["chaos","cobalt"],
+                        ["Chaos","Cobalt","Chrome","Dawn"],
+                        
                     
                         function(opt,li,ix){
-                            console.log({opt,li,ix});
+                            const theme = "ace/theme/"+opt.toLowerCase();
+                            const filename = findFilename(el);
+                            find_li_ed(filename,function(li_ed){
+                                if (li_ed&&li_ed.editor) {
+                                    li_ed.editor.setOptions({theme:theme});
+                                }
+                            });
                         }
                     );
                 }
