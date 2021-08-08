@@ -292,6 +292,10 @@ ml(`
                     [].forEach.call(document.querySelectorAll("li > a.warnings"),addWarningsClick);
                     [].forEach.call(document.querySelectorAll("li > a.errors"),addErrorsClick);
                     
+                    [].forEach.call(document.querySelectorAll("li > label.dropdown"),addThemeSelectionClick);
+                    
+                    
+                    
 
                     
                     setupDragAndDrop();
@@ -560,7 +564,12 @@ ml(`
                 function addOpenZipViewClick (el) {
                     el.addEventListener("click",openZipBtnClick);
                 }
-                
+                function addThemeSelectionClick (el) {
+                    loadDropdownCombo("greetings", el,["chaos","cobalt"],
+                       function(opt,li,ix){
+                          console.log({opt,li,ix});
+                    });
+                }
                 function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
                
                 function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
@@ -2605,6 +2614,38 @@ ml(`
                 
             
             }
+            
+            
+            
+            
+            function loadDropdownCombo(cap,el,x,fn) {
+            
+              const btnEl = el.querySelector("div.dd-button"); 
+              btnEl.innerHTML =cap;
+              const ulEl = el.querySelector("ul.dd-menu"); 
+              
+              const chkEl = el.querySelector("input.dd-input");  
+              chkEl.onchange=function(){
+                if (chkEl.checked) {
+                   ulEl.innerHTML =  x.map(function(e){
+                    return "<li>"+e+"</li>\n";
+                  });
+                  const lis = [].slice.call(ulEl.querySelectorAll("li"));
+                  lis.forEach(function(li,ix){
+                    li.onclick=function(e){
+                      e.stopPropagation();
+                      fn(x[ix],li,ix);
+                    };
+                  });
+                } else {
+                  ulEl.innerHTML = "";
+                }
+              };
+             
+            }
+             
+            
+           
             
         } 
     }, {
