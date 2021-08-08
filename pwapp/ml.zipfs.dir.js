@@ -1601,7 +1601,7 @@ ml(`
                         
                         ace_session_json.serialize(
                             li_ed.editor,
-                            ["theme"],{
+                            [],{
                                 height : ed.offsetHeight
                             },
                             
