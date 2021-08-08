@@ -834,7 +834,7 @@ ml(`
     
                    if (li && !li.classList.contains("deleted")) {
                        dialogBox(
-                       "Delete File?", 
+                       "Delete File "+filename+" ?", 
                        "Confirm Operation", 
                        "Ok",
                        function() {
