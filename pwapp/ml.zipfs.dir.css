@@ -578,5 +578,6 @@ html.dialog .clearfix::after {
   position:relative;
   top: -16px;
   height:6px;
+  width:calc(100% -  12px);
 }
 
