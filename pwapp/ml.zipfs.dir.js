@@ -2274,7 +2274,27 @@ ml(`
                 }
                 
                 function lintSource (hash,src,mode,filename,cb) {
-                    const lintr = linter (mode,hash,src,filename,cb);
+                    
+                    readFileAssociatedText(filename,"syntax",function(err,text){
+                        if (text) {
+                            try {
+                               const data = JSON.parse(text);
+                               if (data.hash===hash) {
+                                   return cb(data.errors,data.warnings);
+                               }  
+                            } catch (e) {
+                            }
+                        }
+                        
+                        linter (mode,hash,src,filename,function(errors,warnings){
+                            const json = JSON.stringify({errors,warnings,hash});
+                            writeFileAssociatedText(filename,"syntax",json,function(){
+                                return cb(errors,warnings);
+                            });
+                            
+                        });
+                    });
+                   
                 }
                 
                 function linter (mode,hash,src,filename,cb) {
@@ -2381,9 +2401,13 @@ ml(`
                                 if(sha_el && sha_el.textContent.trim()==='') {
                                     sha_el.textContent='--hashing---';
                                 
+                                    // read file text via service worker, which hashes it on the way 
                                     readFileText(filename,function(err,buffer,updated,hash,text){
                                         
+                                        
+                                        
                                         if (fileIsEditable(filename)){
+                                            
                                             sha_el.textContent='--syntax scanning---';
                                             const mode = aceModeForFile(filename);
                                             if (mode) {
