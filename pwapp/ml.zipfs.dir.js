@@ -575,6 +575,8 @@ ml(`
                         preventDefaults(e);
                         qs(el,"div.dd-menu",function(m){
                            m.innerHTML = themePickerPickerHTML;
+                           const chk = m.parentElement.querySelector("input");
+                           chk.checked = true;
                            [].forEach.call(m.querySelectorAll("option"),function(opt){
                                opt.onclick=function(e){
                                   preventDefaults(e);
@@ -584,7 +586,7 @@ ml(`
                                          m.innerHTML = "";
                                       }
                                   });
-                                 m.parentElement.querySelector("input").checked =false;
+                                  chk.checked =false;
                                };
                            });
                         });
