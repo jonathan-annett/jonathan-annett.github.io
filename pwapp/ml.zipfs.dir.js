@@ -190,7 +190,7 @@ ml(`
                 
                 const themePickerPickerHTML = (function(el){
                      el.parentElement.removeChild(el);
-                     return el.outerHTML;
+                     return el.innerHTML;
                 })(qs("select.theme-picker"));
                 
                 function regexpEscape(str) {
@@ -571,7 +571,7 @@ ml(`
                 function addThemeSelectionClick (el) {
                     el.addEventListener("mousedown",preventDefaults);
                     el.addEventListener("mouseup",preventDefaults);
-                    qs(el,"div.dd-menu",function(m){
+                    qs(el,"select.dd-menu",function(m){
                        m.innerHTML = themePickerPickerHTML;
                        [].forEach.call(m.querySelectorAll("option"),function(opt){
                            opt.onclick=function(e){
@@ -581,7 +581,7 @@ ml(`
                                      li_ed.editor.setOptions({theme:opt.value});
                                   }
                               });
-                             qs(m,"input.dd-input").checked=false;
+                             m.parentElement.querySelector("input").checked =false;
                            };
                        });
                     });
