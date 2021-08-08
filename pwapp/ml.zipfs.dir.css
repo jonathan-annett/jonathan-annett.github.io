@@ -647,7 +647,7 @@ li.editing label.dropdown {
     z-index:999;
     height:300px;
     overflow-y:auto;
-
+    right: -16px;
 } 
 
 .dd-menu li {

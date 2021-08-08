@@ -571,19 +571,23 @@ ml(`
                 function addThemeSelectionClick (el) {
                     el.addEventListener("mousedown",preventDefaults);
                     el.addEventListener("mouseup",preventDefaults);
-                    qs(el,"div.dd-menu",function(m){
-                       m.innerHTML = themePickerPickerHTML;
-                       [].forEach.call(m.querySelectorAll("option"),function(opt){
-                           opt.onclick=function(e){
-                              preventDefaults(e);
-                              find_li_ed(findFilename(e.target),function(li_ed){
-                                  if (li_ed && li_ed.editor) {
-                                     li_ed.editor.setOptions({theme:opt.value});
-                                  }
-                              });
-                             m.parentElement.querySelector("input").checked =false;
-                           };
-                       });
+                    el.addEventListener("click",function(e) {
+                        preventDefaults(e);
+                        qs(el,"div.dd-menu",function(m){
+                           m.innerHTML = themePickerPickerHTML;
+                           [].forEach.call(m.querySelectorAll("option"),function(opt){
+                               opt.onclick=function(e){
+                                  preventDefaults(e);
+                                  find_li_ed(findFilename(e.target),function(li_ed){
+                                      if (li_ed && li_ed.editor) {
+                                         li_ed.editor.setOptions({theme:opt.value});
+                                         m.innerHTML = "";
+                                      }
+                                  });
+                                 m.parentElement.querySelector("input").checked =false;
+                               };
+                           });
+                        });
                     });
                     
                 }
