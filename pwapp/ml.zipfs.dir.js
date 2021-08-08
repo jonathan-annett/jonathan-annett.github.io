@@ -2663,7 +2663,7 @@ ml(`
                     li.onclick=function(e){
                        lis.splice(0,lis.length);
                        window.removeEventListener("mousedown",clickElsewhere);
-                       e.preventDefaults();    
+                       e.preventDefault();    
                        e.stopPropagation();
                        fn(x[ix],li,ix);
                     };
