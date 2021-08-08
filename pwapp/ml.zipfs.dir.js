@@ -2395,7 +2395,7 @@ ml(`
                 
                 function zipPoller() {
                     //main purpose is to keep service worker awake. but while we are doing that, might as well hash each file and display it
-                    zipPollerIndex = (zipPollerIndex||-1)+1;
+                    zipPollerIndex = (zipPollerIndex===undefined?0:zipPollerIndex+1);
                     let index = zipPollerIndex;
                     if (index < zip_files.length) {
                         const filename = zip_files[index];
