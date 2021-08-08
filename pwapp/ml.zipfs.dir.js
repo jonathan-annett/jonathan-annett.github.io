@@ -581,7 +581,7 @@ ml(`
                                      li_ed.editor.setOptions({theme:opt.value});
                                   }
                               });
-                             
+                             qs(m,"input.dd-input").checked=false;
                            };
                        });
                     });
