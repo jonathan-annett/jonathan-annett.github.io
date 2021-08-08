@@ -103,8 +103,8 @@ ml([],function(){ml(2,
               
               function mousemove(e) {
                 if (!inSize) {return;}
-                if (sizeMode.h) dragTarget.style.width   = Math.max(dragTarget.offsetWidth,  (objInitWidth + e.pageX-dragStartX))  + "px";
-                if (sizeMode.v) dragTarget.style.height  = Math.max(dragTarget.offsetHeight, (objInitHeight + e.pageY-dragStartY)) + "px";
+                if (sizeMode.h) dragTarget.style.width   = Math.min(dragTarget.scrollWidth,  (objInitWidth + e.pageX-dragStartX))  + "px";
+                if (sizeMode.v) dragTarget.style.height  = Math.min(dragTarget.scrollHeight, (objInitHeight + e.pageY-dragStartY)) + "px";
               }
             } 
             
