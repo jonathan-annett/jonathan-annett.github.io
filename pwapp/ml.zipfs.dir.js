@@ -571,7 +571,7 @@ ml(`
                 function addThemeSelectionClick (el) {
                     el.addEventListener("mousedown",preventDefaults);
                     el.addEventListener("mouseup",preventDefaults);
-                    qs(el,"select.dd-menu",function(m){
+                    qs(el,"div.dd-menu",function(m){
                        m.innerHTML = themePickerPickerHTML;
                        [].forEach.call(m.querySelectorAll("option"),function(opt){
                            opt.onclick=function(e){
