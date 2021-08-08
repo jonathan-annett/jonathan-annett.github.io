@@ -412,6 +412,8 @@ ml(`
                         })
                     }
                     
+                    zipPollerIndex = -1;
+                    setTimeout(zipPoller,500);
                     
                   
                     
@@ -2457,7 +2459,7 @@ ml(`
                    window.addEventListener('DOMContentLoaded', onDOMContentLoaded);
                 }
                 
-                setTimeout(zipPoller,zipPollerInterval);
+                
                 
                 return lib;
                 
