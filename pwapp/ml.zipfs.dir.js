@@ -80,7 +80,7 @@ ml(`
                 };
                 
                 let zipPollerIndex = -1;
-                const zipPollerInterval = 10;
+                const zipPollerInterval = 100;
                 let tempErrorEditor;
                 let errorsTableData, errorsTable;
                 
