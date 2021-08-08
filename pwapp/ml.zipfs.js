@@ -1450,7 +1450,7 @@ ml(`
                                     fileEntry.contentType    = mimeForFilename(file_path);
                                     fileEntry.contentLength  = buffer.byteLength;
                                     
-                                     deferredUpdate(10*10000);
+                                    deferredMetadataUpdate(zip_url,zipFileMeta,10*1000);
                                     
                                 }
                                 
@@ -1474,7 +1474,7 @@ ml(`
                                 
                                 return sha1(buffer,function(err,hash){
                                     fileEntry.etag = hash;
-                                    deferredUpdate(10*10000);
+                                    deferredMetadataUpdate(zip_url,zipFileMeta,10*1000);
                                     return response200 (resolve,buffer,fileEntry);
                                 })
                                 
@@ -1596,26 +1596,7 @@ ml(`
                                          
                                          fileEntry.contentType    = mimeForFilename(file_path);
                                          fileEntry.contentLength  = buffer.byteLength;
-                                         
-                                         if (zipFileMeta.updating) {
-                                             clearTimeout(zipFileMeta.updating);
-                                         }
-                                         //ml.c.l("updating zip entry",zip_url,file_path);
-                                         
-                                         zipFileMeta.updating = setTimeout(function(){
-                                             // in 10 seconds this and any other metadata changes to disk
-                                             delete zipFileMeta.updating;
-                                             const saveTools = zipFileMeta.tools; 
-                                             if (saveTools) {
-                                                 delete zipFileMeta.tools;
-                                             }
-                                             databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
-                                                 zipFileMeta.tools = saveTools;
-                                                 //ml.c.l("updated zip entry",zip_url);
-                                             });
-                                             
-                                         },10*10000);
-                                         
+                                         deferredMetadataUpdate(zip_url,zipFileMeta,10*10000);
                                      }
                                      
                                      if (subzip) {
@@ -1631,14 +1612,52 @@ ml(`
                                      }
                                      
 
-                                     return response200 (resolve,buffer,fileEntry);
                                      
-                                  });
+                                     if (fileEntry.etag) {
+                                             return response200 (resolve,buffer,fileEntry);
+                                     }
+                                     
+                                     return sha1(buffer,function(err,hash){
+                                         fileEntry.etag = hash;
+                                         deferredMetadataUpdate(zip_url,zipFileMeta,10*10000);
+                                         return response200 (resolve,buffer,fileEntry);
+                                     })
+                                     
+                                     
+                              });
                                   
+                              
+                             
+                              
                          });
                      });
                  });
              }
+             
+             
+             
+             
+             function deferredMetadataUpdate(zip_url,zipFileMeta,msec) {
+                 if (zipFileMeta.updating) {
+                     clearTimeout(zipFileMeta.updating);
+                 }
+                 //ml.c.l("updating zip entry",zip_url,file_path);
+                 
+                 zipFileMeta.updating = setTimeout(function(){
+                     // in 10 seconds this and any other metadata changes to disk
+                     delete zipFileMeta.updating;
+                     const saveTools = zipFileMeta.tools; 
+                     if (saveTools) {
+                         delete zipFileMeta.tools;
+                     }
+                     databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
+                         zipFileMeta.tools = saveTools;
+                         //ml.c.l("updated zip entry",zip_url);
+                     });
+                     
+                 },msec);
+             }
+             
              
              function regexpEscape(str) {
                  return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
