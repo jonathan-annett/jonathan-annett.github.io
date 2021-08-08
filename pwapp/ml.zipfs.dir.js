@@ -23,7 +23,7 @@ ml(`
     {
         Window: function pwaZipDirListing(pwa,zipFSApiLib,sha1,MarkdownConverter ) {
             
-            const session_data = "hidden-json";
+            var session_data;
             const Tabulator    = ml.i.Tabulator;
             
             const params = new URL(location).searchParams;
