@@ -1702,16 +1702,18 @@ ml(`
                     const file_url = join(dir.url,filename); 
                     let editor_id = li.dataset.editor_id;
                     if (!editor_id) {
+                        
                         while (true) {
                            editor_id = 'ed_'+Math.random().toString(36).substr(-8);
                            if (!qs("#"+editor_id)) break;
                         }
+                        
                         li.dataset.editor_id =  editor_id;
                         li.classList.add("editing");
                         const li_ed = document.createElement("li");
                         li_ed.classList.add("editor");
                         li_ed.innerHTML = ['<pre id="','"></pre><div class="grab_bar" id="','_grab_bar"></div>'].join(editor_id); 
-                        li_ed.filename= filename;
+                        li_ed.filename = filename;
                         
                         li.parentNode.insertBefore(li_ed, li.nextSibling);
                         

@@ -266,12 +266,14 @@ ul {
 }
 
 li div.grab_bar {
-    background-color:lime;
+    background-color:#73d073;
     cursor: ns-resize;
     height: 4px;
     width: 100%;
+ }
+li div.grab_bar:hover {
+ animation: blinker 1s linear infinite;
 }
-
  
 
 li.editing  {
@@ -337,11 +339,16 @@ ul.hide_hidden li.hidden.editing {
 }
 
 li:hover {
-    outline: 2px dashed red;
+    outline: 2px dashed #c35da2;
 }
 
-li.editor:hover,
-li.editing:hover {
+
+li.editor {
+  position:relative;
+  top:2px;
+}
+ 
+li.editor:hover {
   outline:unset;
 }
 
@@ -416,10 +423,7 @@ html.zooming main {
   margin-bottom:2px;
 }
 
-li.grab_bar {
-    background-color:silver;
-    height:8px;
-}
+
 
 div.progressBar {
   display: none;
