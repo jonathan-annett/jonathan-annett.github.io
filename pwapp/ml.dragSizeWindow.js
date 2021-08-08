@@ -104,7 +104,12 @@ ml([],function(){ml(2,
               function mousemove(e) {
                 if (!inSize) {return;}
                 if (sizeMode.h) dragTarget.style.width   = Math.min(dragTarget.scrollWidth,  (objInitWidth + e.pageX-dragStartX))  + "px";
-                if (sizeMode.v) dragTarget.style.height  = Math.min(dragTarget.scrollHeight, (objInitHeight + e.pageY-dragStartY)) + "px";
+                if (sizeMode.v) {
+                    const newHeight = objInitHeight + e.pageY-dragStartY;
+                    if (newHeight < dragTarget.scrollHeight-dragTarget.scrollTop) {
+                        dragTarget.style.height  = newHeight + "px";
+                    }
+                }
               }
             } 
             
