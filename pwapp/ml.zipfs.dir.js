@@ -654,8 +654,8 @@ ml(`
                         const li = find_li(filename);
                         li.classList.add('shading'); 
                         dialogBox(
-                            "Revert to original (can't undo this)", 
-                            "Confirm Undo Edits", 
+                            "Revert to original?", 
+                            "Confirm Operation", 
                             "Ok",
                             function() {
                             removeUpdatedFile (filename,function(){
@@ -825,8 +825,8 @@ ml(`
     
                    if (li && !li.classList.contains("deleted")) {
                        dialogBox(
-                       "Delete This File (can't undo)", 
-                       "Confirm Delete File", 
+                       "Delete File ?", 
+                       "Confirm Operation", 
                        "Ok",
                        function() {
                            closeInbuiltEditor(filename,li,function(){

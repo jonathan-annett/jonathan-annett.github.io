@@ -211,6 +211,10 @@ html.zooming li.zooming {
 }
 
 
+html.zooming li.zooming a.undo-edits {
+    pointer-events:auto;
+    cursor:pointer;
+}
 pre.fs_editor {
     display : block;
     margin: 0;
@@ -486,7 +490,7 @@ html.dialog .cancelbtn {
 
 /* Add a color to the delete button */
 html.dialog .okbtn {
-  background-color: #f44336;
+  background-color: #119658;
 }
 
 /* Add padding and center-align text to the container */
@@ -499,7 +503,7 @@ html.dialog .container {
 html.dialog .modal {
   display: inline-block; /* Hidden by default */
   position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
+  z-index: 1000; /* Sit on top */
   left: 0;
   top: 0;
   width: 100%; /* Full width */
