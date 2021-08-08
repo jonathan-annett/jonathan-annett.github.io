@@ -1577,7 +1577,7 @@ ml(`
                             autoColumnsDefinitions:[
                                 {title:"Error/Warning",  field:"type",}, 
                                 {title:"Filename",       field:"filename",}, 
-                                {title:"Message",        field:"text",}, 
+                                {title:"Message",        field:"text",widthGrow:6}, 
                                 {title:"Line",           field:"row"}, 
                                 {title:"Column",         field:"column"}, 
                                 {field:"id",visible:false}
