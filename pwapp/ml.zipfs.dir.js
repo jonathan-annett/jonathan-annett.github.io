@@ -270,7 +270,7 @@ ml(`
                     });
                     
     
-                    [].forEach.call(document.querySelectorAll("li > a.code"),addToggleEditorClick);
+                    [].forEach.call(document.querySelectorAll("li"),addToggleEditorClick);
                     [].forEach.call(document.querySelectorAll("li > a.close-editor"),addCloseEditorClick);
                     [].forEach.call(document.querySelectorAll("li > a.image"),addViewImageClick);
                     [].forEach.call(document.querySelectorAll("li > a.fullscreen"),addZoomClick);
