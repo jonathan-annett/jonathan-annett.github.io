@@ -670,6 +670,10 @@ ml(`
                 }
                 
                 function toggleEditorClick(e){
+                    if (["DIV","A"].indexOf(e.target.tagName)<0){
+                       e.stopPropagation();
+                       return;
+                    }
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
                     if (!e.shiftKey && zoomEl) {
@@ -682,6 +686,8 @@ ml(`
                     } else {
                         toggleInbuiltEditor ( filename,li );
                     }
+                    
+                    
                 }
                 
                 function undoNotEditedClick( e ) {
