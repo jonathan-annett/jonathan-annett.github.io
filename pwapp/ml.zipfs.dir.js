@@ -82,6 +82,11 @@ ml(`
                     });
                 }
                 
+                function getEditorMaxSize () {
+                    const editor = this.parentElement.editor;
+                    return editor.$getVisibleRowCount() * editor.renderer.lineHeight ;
+                }
+                
                 function createEditor (id,mode,theme) {
                     const opts = {
                          mode: mode
@@ -1720,6 +1725,7 @@ ml(`
                         li_ed.editor = createEditor(editor_id,aceModeForFile(filename),aceThemeForFile(filename));
 
                         li_ed.sizebar = dragSize("#"+editor_id,["#"+editor_id+"_grab_bar"]);
+                        qs("#"+editor_id,function(e){ e.getMaxHeight = getEditorMaxSize.bind(e);});
                         
                         readFileText(filename,function(err,buffer,updated,hash,text){
                             

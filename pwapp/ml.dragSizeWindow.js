@@ -106,9 +106,13 @@ ml([],function(){ml(2,
                 if (sizeMode.h) dragTarget.style.width   = Math.min(dragTarget.scrollWidth,  (objInitWidth + e.pageX-dragStartX))  + "px";
                 if (sizeMode.v) {
                     const newHeight = objInitHeight + e.pageY-dragStartY;
-                    if (newHeight < dragTarget.scrollHeight-dragTarget.scrollTop) {
-                        dragTarget.style.height  = newHeight + "px";
-                    }
+                    if (dragTarget.getMaxHeight) {
+                        if (newHeight>=dragTarget.getMaxHeight()) {
+                            return;
+                        }
+                    } 
+                    dragTarget.style.height  = newHeight + "px";
+                    
                 }
               }
             } 
