@@ -928,13 +928,18 @@ ml(`
                     const li = find_li(filename);
                     if (li) {
                         let editor_id = li.dataset.editor_id;
-                        const ed = qs("#"+editor_id);
-                        if (ed) {
-                            const li_ed = ed.parentNode;
-                            if (cb) cb(li_ed);
-                            return li_ed;
+                        if (editor_id) {
+                            const ed = qs("#"+editor_id);
+                            if (ed) {
+                                const li_ed = ed.parentNode;
+                                if (cb) cb(li_ed);
+                                return li_ed;
+                            }
                         }
+                        
+                        if (cb) cb();
                     }
+                    
                     
                 }
                 
