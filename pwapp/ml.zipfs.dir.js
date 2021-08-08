@@ -190,7 +190,7 @@ ml(`
                 
                 const themePickerPickerHTML = (function(el){
                      el.parentElement.removeChild(el);
-                     return el.innerHTML;
+                     return el.outerHTML;
                 })(qs("select.theme-picker"));
                 
                 function regexpEscape(str) {
