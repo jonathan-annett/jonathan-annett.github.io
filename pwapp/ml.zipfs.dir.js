@@ -2674,7 +2674,7 @@ ml(`
                 
                  function clickElsewhere(e) {
                     if (lis.indexOf(e.target)<0) {
-                        e.preventDefaults();    
+                        e.preventDefault();    
                         e.stopPropagation();
                         window.removeEventListener("mousedown",clickElsewhere);
                         lis.splice(0,lis.length);
