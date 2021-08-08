@@ -291,7 +291,7 @@ ml(`
                     
                     setupDragAndDrop();
                     
-                    footer_grab_bar = dragSize("footer",["#footer_grab"]);
+                    footer_grab_bar = dragSize("footer",["#footer_grab"],undefined,0,-1);
                     
                  
                     if (editor_channel) {

@@ -58,7 +58,10 @@ ml([],function(){ml(2,
 
             } 
             
-            function size(el,vertHotzones,horzHotZones) {
+            function size(el,vertHotzones,horzHotZones,deltaX,deltaY) {
+              deltaX = deltaX || 1;
+              deltaY = deltaY || 1;
+              
               var dragStartX, dragStartY; var objInitWidth, objInitHeight;
               var inSize = false,sizeMode;
               var dragTarget = typeof el==='string'?qs(el):el;
@@ -116,7 +119,7 @@ ml([],function(){ml(2,
                 if (!inSize) {return;}
                 
                 if (sizeMode.h) {
-                    const newWidth = objInitWidth + e.pageX-dragStartX;
+                    const newWidth = objInitWidth + deltaX *(e.pageX-dragStartX);
                     if (maxWidth) {
                         if (newWidth<=maxWidth) {
                             dragTarget.style.width   = newWidth + "px";
@@ -127,7 +130,7 @@ ml([],function(){ml(2,
                 }
                 
                 if (sizeMode.v) {
-                    const newHeight = objInitHeight + e.pageY-dragStartY;
+                    const newHeight = objInitHeight + deltaY * (e.pageY-dragStartY);
                     if (maxHeight) {
                         if (newHeight>maxHeight) {
                             return;
