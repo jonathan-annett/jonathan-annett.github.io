@@ -84,7 +84,7 @@ ml(`
                 
                 function getEditorMaxSize () {
                     const editor = this.parentElement.editor;
-                    return editor.$getVisibleRowCount() * editor.renderer.lineHeight ;
+                    return editor.getSession().getLength() * editor.renderer.lineHeight ;
                 }
                 
                 function createEditor (id,mode,theme) {

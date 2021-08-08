@@ -62,7 +62,7 @@ ml([],function(){ml(2,
               var dragStartX, dragStartY; var objInitWidth, objInitHeight;
               var inSize = false,sizeMode;
               var dragTarget = typeof el==='string'?qs(el):el;
-              
+              var maxHeight,maxWidth;
               document.addEventListener("mousedown", mousedown);
               document.addEventListener("mousemove", mousemove);
               document.addEventListener("mouseup", mouseup);
@@ -93,7 +93,18 @@ ml([],function(){ml(2,
                 objInitWidth = Number.parseInt(compStyles.getPropertyValue('width') ); 
                 objInitHeight = Number.parseInt(compStyles.getPropertyValue('height') );
                 dragStartX = e.pageX; dragStartY = e.pageY;
-                sizeMode = {h:isHorz,v:isVert}
+                sizeMode = {h:isHorz,v:isVert};
+                
+                if (isHorz) {
+                    if (dragTarget.getMaxWidth) {
+                        maxWidth=dragTarget.getMaxWidth();
+                    } 
+                }
+                if (isVert) {
+                    if (dragTarget.getMaxHeight) {
+                        maxHeight=dragTarget.getMaxHeight();
+                    } 
+                }
               }
               
               function mouseup(e) {
@@ -103,16 +114,23 @@ ml([],function(){ml(2,
               
               function mousemove(e) {
                 if (!inSize) {return;}
-                if (sizeMode.h) dragTarget.style.width   = Math.min(dragTarget.scrollWidth,  (objInitWidth + e.pageX-dragStartX))  + "px";
+                if (sizeMode.h) {
+                    const newWidth = objInitWidth + e.pageX-dragStartX;
+                    if (maxWidth) {
+                        if (newWidth>maxWidth) {
+                            return;
+                        }
+                    } 
+                    dragTarget.style.width   = newWidth + "px";
+                }
                 if (sizeMode.v) {
                     const newHeight = objInitHeight + e.pageY-dragStartY;
-                    if (dragTarget.getMaxHeight) {
-                        if (newHeight>=dragTarget.getMaxHeight()) {
+                    if (maxHeight) {
+                        if (newHeight>maxHeight) {
                             return;
                         }
                     } 
                     dragTarget.style.height  = newHeight + "px";
-                    
                 }
               }
             } 
