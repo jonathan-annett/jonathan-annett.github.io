@@ -2647,21 +2647,41 @@ ml(`
               const ulEl = el.querySelector("ul.dd-menu"); 
               
               const chkEl = el.querySelector("input.dd-input");  
+             
               chkEl.onchange=function(){
+                  
+                let lis;  
                 if (chkEl.checked) {
+                    
+                    window.addEventListener("mousedown",clickElsewhere);
+                    
                    ulEl.innerHTML =  x.map(function(e){
                     return "<li>"+e+"</li>\n";
                   });
-                  const lis = [].slice.call(ulEl.querySelectorAll("li"));
+                  lis = [].slice.call(ulEl.querySelectorAll("li"));
                   lis.forEach(function(li,ix){
                     li.onclick=function(e){
-                      e.stopPropagation();
-                      fn(x[ix],li,ix);
+                       lis.splice(0,lis.length);
+                       window.removeEventListener("mousedown",clickElsewhere);
+                       e.preventDefaults();    
+                       e.stopPropagation();
+                       fn(x[ix],li,ix);
                     };
                   });
                 } else {
                   ulEl.innerHTML = "";
                 }
+                
+                 function clickElsewhere(e) {
+                    if (lis.indexOf(e.target)<0) {
+                        e.preventDefaults();    
+                        e.stopPropagation();
+                        window.removeEventListener("mousedown",clickElsewhere);
+                        lis.splice(0,lis.length);
+                        chkEl.checked = false;
+                    }
+                 }
+               
               };
              
             }
