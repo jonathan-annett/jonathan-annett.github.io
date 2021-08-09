@@ -426,8 +426,6 @@ ml(`
                  processFetchRequestInternal(fakeEvent,cb);
              }
              
-             
-             
              function fetchInternalBuffer(url,cb){
                   fetchInternal(url,function(err,response){
                         if(err) {
@@ -558,6 +556,7 @@ ml(`
                                   check(index+1);
                               });
                           }
+                          
                       }
                       
                      
@@ -647,7 +646,6 @@ ml(`
                   }
 
              }
-             
              
              function fixupUrlEventInternal(url,cb) {
                  const fakeEvent = {
@@ -1056,7 +1054,7 @@ ml(`
           
              function addFileMetaData(zip,zipFileMeta,zipurl,cb){
                  
-                const keep_in_meta_size_threshold = 1024 * 4;
+                //const keep_in_meta_size_threshold = 1024 * 4;
                 // if a file is less than 4 kb keep it uncompressed in the header, along with it's hash
                  
                 if (typeof zipFileMeta.files==='object') {
@@ -1092,9 +1090,9 @@ ml(`
                                sha1(buffer,function(err,hash){
                                    zipFileMeta.files[file.name].contentLength = buffer.byteLength;
                                    zipFileMeta.files[file.name].etag = hash;
-                                   if (buffer.byteLength<=keep_in_meta_size_threshold) {
-                                       zipFileMeta.files[file.name].buffer=buffer;
-                                   }
+                                   //if (buffer.byteLength<=keep_in_meta_size_threshold) {
+                                //       zipFileMeta.files[file.name].buffer=buffer;
+                                 //  }
                                    resolve();
                                });
                            });
@@ -1207,7 +1205,7 @@ ml(`
                  
              }
 
-            function getZipDirMetaToolsExternal(zip_url,cb) {
+             function getZipDirMetaToolsExternal(zip_url,cb) {
                 
                  getZipObject(zip_url,function(err,zip,zipFileMeta){
                      
@@ -1219,8 +1217,6 @@ ml(`
                  
              }
 
-  
-               
              function safeDate (d,def) {
                  const dt = new Date(d);
                  if (dt) return dt;
@@ -1339,7 +1335,7 @@ ml(`
                              isHidden : isHidden ,
                              
                              isDeleted : isDeleted,
-                             
+                                
                              filterFileList : function ( files ) {
                                 const deleted=meta.deleted||[];
                                 return files.filter(function(file){
@@ -1566,7 +1562,7 @@ ml(`
                                  cb({notificationId:notificationId}); 
                              },
 
-                            unregisterForNotifications : function (notificationId,cb) {
+                             unregisterForNotifications : function (notificationId,cb) {
                                  delete notifications[notificationId];
                                  notificationIds.splice.apply(notificationIds,[0,notificationIds.length].concat(Object.keys(notifications)));
                                  cb({}); 

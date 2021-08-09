@@ -317,7 +317,6 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                 
                  return localStorage.no_keyboard === '1' || runInBrowser;
              }
-             
 
              function betaTesterApproval() {
                  
