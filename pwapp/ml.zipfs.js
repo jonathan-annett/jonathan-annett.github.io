@@ -1096,7 +1096,7 @@ ml(`
                            zip.file(file.name).async("arraybuffer").then(function(buffer){
                                sha1(buffer,function(err,hash){
                                    zipFileMeta.files[file.name].contentLength = buffer.byteLength;
-                                   zipFileMeta.files[file.name].hash = hash;
+                                   zipFileMeta.files[file.name].etag = hash;
                                    if (buffer.byteLength<=keep_in_meta_size_threshold) {
                                        zipFileMeta.files[file.name].buffer=buffer;
                                    }
