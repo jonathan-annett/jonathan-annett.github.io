@@ -26,7 +26,8 @@
 /*jshint -W054 */
 
 ml(`
-zipFSResolveLib                        | ${ml.c.app_root}ml.zipfs.resolve.js 
+zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js 
+    
 `,function(){ml(2,
 
     {
@@ -46,7 +47,7 @@ zipFSResolveLib                        | ${ml.c.app_root}ml.zipfs.resolve.js
         const virtual_listing_re = /\/virtual\-listing\.json$/
         const virtual_index_re   = /\/virtual\-index\.json$/;
         
-        const { response200_JSON } =  ml.i.zipFSResolveLib;
+        const { response200_JSON } =  ml.i.zipFSResponseLib;
         
         const mwares = [
             
