@@ -185,7 +185,7 @@ ml(`
             const openZipFileCache = { };
              
              
-            const fixupLog =function(){};// console.info.bind(console); 
+            const fixupLog = console.info.bind(console); 
 
             
              const emptyBuffer = new ArrayBuffer();
