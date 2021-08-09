@@ -29,7 +29,8 @@ ml([],function(){ml(2,
             response304,
             response404,
             response200,
-            response500
+            response500,
+            response200_JSON,
         };
         return lib;
         
@@ -86,6 +87,19 @@ ml([],function(){ml(2,
                    
         }
 
+        function isJSON(j) {
+            return typeof j==='string' && j.test(/^[0-9|\"|\[|\{]|^true|^false|^null/);
+        }
+        function response200_JSON(resolve,json) {
+            json = isJSON(json) ? json : JSON.stringify(json,undefined,4); 
+            resolve(new Response(json, {
+              status: 200,
+              headers: new Headers({
+                'Content-Type'   : 'application/json',
+                'Content-Length' : json.length
+              })
+            }))
+        }
     
         
         

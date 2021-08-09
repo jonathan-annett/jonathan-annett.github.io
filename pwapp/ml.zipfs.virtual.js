@@ -105,6 +105,7 @@ ml([],function(){ml(2,
                                      zipData.forEach(function(data,ix){
                                          data.tools.allFiles(function(files){
                                              files.forEach(function(file){
+                                                 if (file.indexOf(zip_root_without_slash)!==0) return;
                                                  if (!listing[file]) {
                                                      // not already listed
                                                      

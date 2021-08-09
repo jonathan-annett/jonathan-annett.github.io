@@ -25,7 +25,9 @@
 
 /*jshint -W054 */
 
-ml([],function(){ml(2,
+ml(`
+zipFSResolveLib                        | ${ml.c.app_root}ml.zipfs.resolve.js 
+`,function(){ml(2,
 
     {
 
@@ -44,19 +46,14 @@ ml([],function(){ml(2,
         const virtual_listing_re = /\/virtual\-listing\.json$/
         const virtual_index_re   = /\/virtual\-index\.json$/;
         
+        const { response200_JSON } =  ml.i.zipFSResolveLib;
+        
         const mwares = [
             
              { 
                   re : virtual_json_re,
                   fn :function (event,middleware,resolve) {
-                      const json = JSON.stringify(middleware.virtualDirDB,undefined,4);
-                      resolve(new Response(json, {
-                        status: 200,
-                        headers: new Headers({
-                          'Content-Type'   : 'application/json',
-                          'Content-Length' : json.length
-                        })
-                      }));
+                      response200_JSON(resolve,middleware.virtualDirDB);
                       return true;
                   },
                   
@@ -74,14 +71,7 @@ ml([],function(){ml(2,
                                console.log(err);
                            } else {
                                if  (listingData) {
-                                   const json = JSON.stringify(listingData,undefined,4);
-                                   return resolve(new Response(json, {
-                                     status: 200,
-                                     headers: new Headers({
-                                       'Content-Type'   : 'application/json',
-                                       'Content-Length' : json.length
-                                     })
-                                   }));
+                                   return response200_JSON(resolve,listingData);
                                }
                            }
                            resolve();
@@ -111,14 +101,7 @@ ml([],function(){ml(2,
                                 nextVirtualDir(index+1);
                             });
                         } else  {
-                            const json = JSON.stringify(result,undefined,4);
-                            resolve(new Response(json, {
-                              status: 200,
-                              headers: new Headers({
-                                'Content-Type'   : 'application/json',
-                                'Content-Length' : json.length
-                              })
-                            }));
+                            return response200_JSON(resolve,result);
                         }
                     };
                     nextVirtualDir(0);
