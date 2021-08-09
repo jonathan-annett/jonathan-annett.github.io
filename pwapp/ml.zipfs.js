@@ -376,7 +376,7 @@ ml(`
                       const promise = handler(event);
                       let timeout;
                       if (promise) {
-                         timeout = setTimeout (handleResponseTimeout,5000);
+                         timeout = setTimeout (handleResponseTimeout,15000);
                          promise.then(waitForResponse).catch(handleResponseError);
 
                       } else {
@@ -402,11 +402,6 @@ ml(`
                              }
                              if (!response) return next(chain.shift()); 
                              
-                             if (typeof response==='object'&& response.constructor===Promise) {
-                                 timeout = setTimeout (handleResponseTimeout,5000);
-                                 return response.then(waitForResponse).catch(handleResponseError);
-                             }
-                                 
                              fixupLog(handler.name,"returned a response for",event.fixup_url,"from",event.request.referrer); 
                              chain.splice(0,chain.length);
                              cb(undefined,response);
