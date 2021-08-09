@@ -238,6 +238,9 @@ ml([],function(){ml(2,
                     
                    return new Promise(function(resolve){
                        
+                       
+                       
+                       
                        if (event.fixup_url.endsWith("/virtual.json")) {
                            const json = JSON.stringify(virtualDirDB,undefined,4);
                            return resolve(new Response(json, {
@@ -249,6 +252,8 @@ ml([],function(){ml(2,
                            }));
                        }
                        
+                       const resolver = lengthyPromiseResolver(resolve,4500);
+                       
                        virtualDirQuery (event.fixup_url).then(function(entry){
                            
                            if (entry&& entry.response) {
@@ -259,7 +264,7 @@ ml([],function(){ml(2,
                                delete entry.prefix;
                                delete entry.aliased_url;
                                delete entry.url;
-                               return resolve(response);
+                               return resolver.resolve(response);
                                
                            } else {
                                
@@ -283,7 +288,7 @@ ml([],function(){ml(2,
                                     delete entry.url;
                                } 
                                
-                               resolve();
+                               resolver.resolve();
                            }
                           
                        });
@@ -295,6 +300,31 @@ ml([],function(){ml(2,
                  
                 return lib;
             }            
+            
+            
+            
+            function lengthyPromiseResolver(resolve,maxMsec) {
+                let extendAt = Date.now()+maxMsec-500;
+                let timeout = setTimeout(onTimeout,maxMsec)
+                let triggered =false;
+                return {
+                    resolve : function (x){
+                        clearTimeout(timeout);
+                        if (triggered) return;
+                        resolve(x);
+                    }
+                };
+                
+                function onTimeout () {
+                   resolve(new Promise(function(res){
+                       resolve = res;
+                   }));
+                   const NOW = Date.now();
+                   extendAt = NOW+maxMsec-500;
+                   timeout = setTimeout(onTimeout,maxMsec);
+                }
+                
+            }
             
             
         } 
