@@ -360,36 +360,44 @@ ml(`
                       
                       fixupLog("trying",handler.name,"for",event.fixup_url,"from",event.request.referrer);
                       const promise = handler(event);
-                      
+                      let timeout;
                       if (promise) {
-                         let timeout = setTimeout (function () {
-                             timeout = undefined;
-                             response500 (function(response){
-                                 cb(undefined,response);
-                             },"middleware "+handler.name+" did not respond within 5 seconds");
-                             
-                         },5000);
-                         promise.then(function(response){
+                         timeout = setTimeout (handleResponseTimeout,5000);
+                         promise.then(waitForResponse).catch(handleResponseError);
+
+                      } else {
+                          next(chain.shift()); 
+                      }
+                      
+                      function handleResponseError(err) {
+                          chain.splice(0,chain.length);
+                          cb(err);
+                      }
+                      
+                      function handleResponseTimeout(){
+                          timeout = undefined;
+                          response500 (function(response){
+                              cb(undefined,response);
+                          },"middleware "+handler.name+" did not respond within 5 seconds");
+                          
+                      }
+                      function waitForResponse(response){
                              if (timeout) {
                                  clearTimeout(timeout);
                                  timeout = undefined;
                              }
                              if (!response) return next(chain.shift()); 
+                             
+                             if (typeof response==='object'&& response.constructor===Promise) {
+                                 timeout = setTimeout (handleResponseTimeout,5000);
+                                 return response.then(waitForResponse).catch(handleResponseError);
+                             }
                                  
                              fixupLog(handler.name,"returned a response for",event.fixup_url,"from",event.request.referrer); 
                              chain.splice(0,chain.length);
                              cb(undefined,response);
  
-                         }).catch (function(err){
-                             
-                             chain.splice(0,chain.length);
-                             cb(err);
-                         });
-                        
-                      } else {
-                          next(chain.shift()); 
-                      }
-                      
+                         }
                   };
                   
                   next(chain.shift()); 
