@@ -252,7 +252,7 @@ ml([],function(){ml(2,
                            }));
                        }
                        
-                       const resolver = lengthyPromiseResolver(resolve,4500);
+                       const resolver = lengthyPromiseResolver(resolve,3000);
                        
                        virtualDirQuery (event.fixup_url).then(function(entry){
                            
@@ -304,24 +304,20 @@ ml([],function(){ml(2,
             
             
             function lengthyPromiseResolver(resolve,maxMsec) {
-                let extendAt = Date.now()+maxMsec-500;
+                let finalize = resolve;
                 let timeout = setTimeout(onTimeout,maxMsec)
-                let triggered =false;
                 return {
                     resolve : function (x){
                         clearTimeout(timeout);
-                        if (triggered) return;
-                        resolve(x);
+                        finalize(x);
                     }
                 };
                 
                 function onTimeout () {
-                   resolve(new Promise(function(res){
-                       resolve = res;
+                   timeout = setTimeout(onTimeout,maxMsec); 
+                   finalize(new Promise(function(res){
+                       finalize = res;
                    }));
-                   const NOW = Date.now();
-                   extendAt = NOW+maxMsec-500;
-                   timeout = setTimeout(onTimeout,maxMsec);
                 }
                 
             }
