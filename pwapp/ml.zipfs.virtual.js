@@ -132,6 +132,8 @@ ml([],function(){ml(2,
                                         const alias_root = zip_root.replace(/^\//,'')+'/';
                                         
                                         edited_files.forEach(function(file){
+                                            if (file.indexOf(zip_root_without_slash)!==0) return;
+                                            
                                             file = alias_root+file;
                                             const ix = listing[file];
                                             

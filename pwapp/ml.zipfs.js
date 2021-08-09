@@ -117,7 +117,8 @@ ml(`
                 getZipDirMetaTools,
                 fileisEdited,
                 response200,
-                getUpdatedURLs
+                getUpdatedURLs,
+                virtualDirListing
             );
              
             const {
