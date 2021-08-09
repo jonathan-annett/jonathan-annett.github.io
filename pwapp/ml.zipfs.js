@@ -534,7 +534,7 @@ ml(`
                                        if (err||!zipFileMeta) return downloadZip(url);     
                                        return databases.openZips.getItem(url,function(err,buffer){
                                             if (err||!buffer) return downloadZip(url);        
-                                            checkurls(index+1);
+                                            check(index+1);
                                        });
                                   });
                               } else {
@@ -547,7 +547,7 @@ ml(`
                               console.log("precaching",url,"as part of virtual dir",db_url);
                               getZipObject(url,function(){
                                   console.log("precached",url,"as part of virtual dir",db_url)
-                                  checkurls(index+1);
+                                  check(index+1);
                               });
                           }
                       }
