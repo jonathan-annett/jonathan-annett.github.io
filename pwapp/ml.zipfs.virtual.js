@@ -222,7 +222,6 @@ ml([],function(){ml(2,
                                            );
                                            
                                        } else {
-                                           
                                            resolve(entry);
                                            
                                        }
@@ -266,7 +265,7 @@ ml([],function(){ml(2,
                            } else {
                                
                                if (entry ) {
-                                   
+                                       
                                     if (entry.aliased_url) {
                                        event.aliased_url = entry.aliased_url;
                                        delete entry.aliased_url;

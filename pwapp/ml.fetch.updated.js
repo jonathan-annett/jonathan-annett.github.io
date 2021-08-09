@@ -65,7 +65,8 @@ ml([],function(){ml(2,
                 }
                 if (args) {
                     const buffer = args[0];
-                    return cb (undefined,buffer,true);
+                    const hash   = args[1] && args[1].headers && args[1].headers.etag;
+                    return cb (undefined,buffer,true,hash);
                 }
                 if (url.indexOf('.zip/')<0) {
                    fetchInternalBuffer(url,cb);

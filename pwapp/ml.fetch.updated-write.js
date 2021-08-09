@@ -64,7 +64,10 @@ ml(`
         
         getPayload(function(payload){
             fixupKeys(payload[1].headers);
-            db.setItem(url,payload,cb);
+            db.setItem(url,payload,function(err){
+                if (err) return cb (err);
+                cb(undefined,payload[1].headers.etag);
+            });
         });
     
         function getPayload (cb) {

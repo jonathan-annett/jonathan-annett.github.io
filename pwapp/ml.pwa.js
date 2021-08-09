@@ -216,15 +216,15 @@ ml(`
                     },
                     
                     fetchUpdatedURLContents : function (msg,cb) {
-                         zipFS.fetchUpdatedURLContents(msg.data.url,msg.data.db||"updatedURLS",function(err,content, updated){
+                         zipFS.fetchUpdatedURLContents(msg.data.url,msg.data.db||"updatedURLS",function(err,content, updated, hash){
                              if (err) return cb({error:err.message||err});
                              
-                             if (msg.data.hash) {
+                             if (msg.data.hash && !hash) {
                                  sha1(content,function(err,hash){
                                      cb({hash:hash,content:content,updated:updated,url:msg.data.url});
                                  });
                              } else {
-                                cb({content:content,updated:updated,url:msg.data.url});
+                                cb({hash:hash,content:content,updated:updated,url:msg.data.url});
                              }
                          });
                     },
@@ -308,17 +308,20 @@ ml(`
                             data.url,
                             data.cacheDB||data.db||"updatedURLS",
                             contentBuffer,
-                            function(err){
+                            function(err,hash){
                                 if (err) return cb({error:err.message||err});
-                                if (data.hash) {
+                                if (data.hash ) {
+                                    if (hash) {
+                                        return cb({hash:hash,url:data.url});
+                                    }
                                     sha1(contentBuffer,function(err,hash){
                                         cb({hash:hash,url:data.url})
                                     });
                                 } else {
                                     cb({url:data.url});
                                 }
-                            });
-                        
+                            }
+                        );
                     },
 
                     newFixupRulesArray : function(msg,cb) {
