@@ -400,14 +400,15 @@ ml(`
                        
                        function resolveZipListing_HTML (url,buffer,virtual) {
                            
+                           
                            return new Promise(function (resolve){
                                
                                getZipObject(url,buffer,function(err,zip,zipFileMeta) {
                                    
                                    if (err || !zip || !zipFileMeta) {
-                                       
                                        return resolve ();
                                    }
+                                   
                                    zipFSDirHtml (function (err,dir_html){ 
                                        
                                        if (err) {
@@ -418,125 +419,140 @@ ml(`
                                        }
                                        
                                        
-                                       virtualDirListing(url,function(err,listingData){
-                                           
-                                           const all_files = Object.keys(listingData.files);
-                                           
-                                       });
-
-                                       getZipFileUpdates(virtual ? virtual :  url,function(err,additionalFiles){
-                                           
-                                           getZipDirMetaTools(url,zip,zipFileMeta,function(tools){
+                                       if (virtual) {
+                                           virtualDirListing(virtual,function(err,listingData){
                                                
-                                               const file_listing = Object.keys(zipFileMeta.files); 
-
-                                               const updated_prefix = (virtual ? virtual :  url).replace(/\/$/,'')+ "/" ;
-
-                                               const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
-                                               const uri= urify.exec(url)[2];
-                                               const uri_split = uri.split('.zip/').map(function (x,i,a){
-                                                   return i===a.length-1?'/'+x:'/'+x+'.zip';
-                                               });
+                                               const all_files = Object.keys(listingData.files).sort();
+                                               generateListing(all_files);
                                                
-                                               const top_uri_res = uri_split.map(function(uri){ 
-                                                   return new RegExp( regexpEscape(uri+"/"),'g');
-                                               });
-                                               
-                                               const htmlFileItemLibOpts = {
-                                                   uri,
-                                                   alias_root:zipFileMeta.alias_root,
-                                                   tools,
-                                                   file_listing,
-                                                   fileisEdited,
-                                                   updated_prefix,
-                                                   hidden_files_exist : false 
-                                               };
-                                               
-                                               const {
-                                                   get_html_file_item,
-                                                   boldit,
-                                                   linkit,
-                                                   fileIsEditable,
-                                                   replaceTextVars
-                                               } = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
-                                               
-                                               const html_file_func = get_html_file_item(dir_html);
-
-                                               const cleanup_links = function(str) {
-                                                   top_uri_res.forEach(function(re){
-                                                       str = str.replace(re,'/');
-                                                   });
-                                                   return str;
-                                               };
-                           
-                                               const uri_full_split = uri_split.map(function(x,i,a){
-                                                   return a.slice(0,i+1).join("");
-                                               });
-                                               
-                                               var parent_link="";
-
-                                               parent_link = uri_full_split.map(function(href,i,a){
-                                                   const parts = href.split('/.zip');
-                                                   const disp  = parts.length===1?undefined:parts.pop();
-                                                   const res   = (href.endsWith(uri)?boldit:linkit) (href,disp);
-                                                   return res;
-                                               }).join("");
-
-                                               parent_link = cleanup_links(parent_link);
-
-                                               htmlFileItemLibOpts.parent_link = parent_link;
-                                              
-                                               const all_files = file_listing.concat(
-                                                   
-                                                   additionalFiles.map(function(fn){
-                                                       return   zipFileMeta.alias_root ? zipFileMeta.alias_root + fn : fn;
-                                                   }).filter(function(fn){return file_listing.indexOf(fn)<0;})
-                                                   
-                                               ).sort();
-                                               
-                                               const html_details = all_files.map(html_file_func);
-                                               
-                                               
-                                               
-                                               
-                                               /*
-                                               function renderHtml (
-                                               htmlTemplate,tools,updated_prefix,uri,
-                                               virtual,alias_root,files, hidden_files_exist,
-                                               html_details,parent_link) {
-                                               */
-                           
-                                               const html = renderHtml (
-                                                   dir_html,
-                                                   replaceTextVars,
-                                                   tools,updated_prefix,uri,url,
-                                                   virtual,zipFileMeta.alias_root,
-                                                   all_files,
-                                                   htmlFileItemLibOpts.hidden_files_exist,
-                                                   html_details
-                                               );
-                           
-                                               return resolve( 
-                                                   
-                                                   new Response(
-                                                          html, {
-                                                                   status: 200,
-                                                                   statusText: 'Ok',
-                                                                   headers: new Headers({
-                                                                     'Content-Type'   : 'text/html',
-                                                                     'Content-Length' : html.length,
-                                                                     'ETag'           : zipFileMeta.etag,
-                                                                     'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                                                     'Last-Modified'  : zipFileMeta.date.toString() 
-                                                                   })
-                                                       })
-                                              );
-                                              
-                                         
                                            });
-                                       });
+                                       } else {
+    
+                                           getZipFileUpdates(url,function(err,additionalFiles){
+                                               
+                                               getZipDirMetaTools(url,zip,zipFileMeta,function(tools){
+                                                   
+
+                                                   const file_listing = Object.keys(zipFileMeta.files); 
+                                                   
+                                                   
+                                                   const all_files = file_listing.concat(
+                                                       
+                                                       additionalFiles.map(function(fn){
+                                                           return   zipFileMeta.alias_root ? zipFileMeta.alias_root + fn : fn;
+                                                       }).filter(function(fn){return file_listing.indexOf(fn)<0;})
+                                                       
+                                                   ).sort();
+                                                   
+                                                   generateListing(all_files);
+                                                  
+                                               });
+                                           });
+                                           
                                        
+                                       }
+                                       
+                                        function generateListing(all_files) {
+        
+                                                       const updated_prefix = (virtual ? virtual :  url).replace(/\/$/,'')+ "/" ;
+        
+                                                       const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
+                                                       const uri= urify.exec(url)[2];
+                                                       const uri_split = uri.split('.zip/').map(function (x,i,a){
+                                                           return i===a.length-1?'/'+x:'/'+x+'.zip';
+                                                       });
+                                                       
+                                                       const top_uri_res = uri_split.map(function(uri){ 
+                                                           return new RegExp( regexpEscape(uri+"/"),'g');
+                                                       });
+                                                       
+                                                       const htmlFileItemLibOpts = {
+                                                           uri,
+                                                           alias_root:zipFileMeta.alias_root,
+                                                           tools,
+                                                           file_listing,
+                                                           fileisEdited,
+                                                           updated_prefix,
+                                                           hidden_files_exist : false 
+                                                       };
+                                                       
+                                                       const {
+                                                           get_html_file_item,
+                                                           boldit,
+                                                           linkit,
+                                                           fileIsEditable,
+                                                           replaceTextVars
+                                                       } = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
+                                                       
+                                                       const html_file_func = get_html_file_item(dir_html);
+        
+                                                       const cleanup_links = function(str) {
+                                                           top_uri_res.forEach(function(re){
+                                                               str = str.replace(re,'/');
+                                                           });
+                                                           return str;
+                                                       };
+                                   
+                                                       const uri_full_split = uri_split.map(function(x,i,a){
+                                                           return a.slice(0,i+1).join("");
+                                                       });
+                                                       
+                                                       var parent_link="";
+        
+                                                       parent_link = uri_full_split.map(function(href,i,a){
+                                                           const parts = href.split('/.zip');
+                                                           const disp  = parts.length===1?undefined:parts.pop();
+                                                           const res   = (href.endsWith(uri)?boldit:linkit) (href,disp);
+                                                           return res;
+                                                       }).join("");
+        
+                                                       parent_link = cleanup_links(parent_link);
+        
+                                                       htmlFileItemLibOpts.parent_link = parent_link;
+                                                      
+                                                       const html_details = all_files.map(html_file_func);
+                                                       
+                                                       
+                                                       
+                                                       
+                                                       /*
+                                                       function renderHtml (
+                                                       htmlTemplate,tools,updated_prefix,uri,
+                                                       virtual,alias_root,files, hidden_files_exist,
+                                                       html_details,parent_link) {
+                                                       */
+                                   
+                                                       const html = renderHtml (
+                                                           dir_html,
+                                                           replaceTextVars,
+                                                           updated_prefix,
+                                                           uri,url,
+                                                           virtual,
+                                                           //zipFileMeta.alias_root,
+                                                           //all_files,
+                                                           htmlFileItemLibOpts.hidden_files_exist,
+                                                           html_details
+                                                       );
+                                   
+                                                       return resolve( 
+                                                           
+                                                           new Response(
+                                                                  html, {
+                                                                           status: 200,
+                                                                           statusText: 'Ok',
+                                                                           headers: new Headers({
+                                                                             'Content-Type'   : 'text/html',
+                                                                             'Content-Length' : html.length,
+                                                                             'ETag'           : zipFileMeta.etag,
+                                                                             'Cache-Control'  : 'max-age=3600, s-maxage=600',
+                                                                             'Last-Modified'  : zipFileMeta.date.toString() 
+                                                                           })
+                                                               })
+                                                      );
+                                                      
+                                               }
                                    });
+                                   
                                });
                                
                            });
@@ -549,11 +565,11 @@ ml(`
                             
                                 dir_html,
                                 replaceTextVars,
-                                tools,
+                               // tools,
                                 updated_prefix,uri,url,
                                 virtual,
-                                alias_root,
-                                files, 
+                                //alias_root,
+                                //files, 
                                 hidden_files_exist,
                                 html_details) {
                                 const origin = location.origin;
@@ -562,7 +578,7 @@ ml(`
                                           virtual.indexOf(origin)===0? virtual.substr(origin.length) : virtual 
                                           ) : '';
                                           
-                                return replaceTextVars( 
+                                return replaceTextVars(
                                    
                                             dir_html, 
                                             
