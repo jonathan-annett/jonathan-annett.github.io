@@ -252,9 +252,7 @@ ml([],function(){ml(2,
                            }));
                        }
                        
-                       const resolver = lengthyPromiseResolver(resolve,3000);
-                       
-                       virtualDirQuery (event.fixup_url).then(function(entry){
+                         virtualDirQuery (event.fixup_url).then(function(entry){
                            
                            if (entry&& entry.response) {
                                
@@ -264,7 +262,7 @@ ml([],function(){ml(2,
                                delete entry.prefix;
                                delete entry.aliased_url;
                                delete entry.url;
-                               return resolver.resolve(response);
+                               return resolve(response);
                                
                            } else {
                                
@@ -288,7 +286,7 @@ ml([],function(){ml(2,
                                     delete entry.url;
                                } 
                                
-                               resolver.resolve();
+                               resolve();
                            }
                           
                        });
