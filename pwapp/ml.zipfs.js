@@ -1104,14 +1104,15 @@ ml(`
                              // this also "invents" etags for each file inside
                              // we do this once, on first open.
             
-                             const saveTools = zipFileMeta.tools; 
-                             if (saveTools) {
-                                 delete zipFileMeta.tools;
-                             }
-                             
+                            
                              // add metadata for each file (if not already added)
                              // this includes buffers for smaller files.
                              addFileMetaData(zip,zipFileMeta,url,function(zipFileMeta){
+                                 
+                                 const saveTools = zipFileMeta.tools; 
+                                 if (saveTools) {
+                                     delete zipFileMeta.tools;
+                                 }
                                  
                                  databases.zipMetadata.setItem(url,zipFileMeta,function(err){
                                      
