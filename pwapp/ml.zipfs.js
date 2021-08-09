@@ -142,6 +142,7 @@ ml(`
                 dir_meta_empty,
                 dir_meta_empty_json
             } = ml.i.zipFSResolveLib(
+                databases,
                 getZipObject,
                 getZipDirMetaTools,
                 resolveZipListing, 
@@ -920,7 +921,7 @@ ml(`
                               }
                               // 
                              sha1(buffer,function(err,hash){
-                                setMetadataForBuffer(buffer,hash,undefined,cb);
+                                setMetadataForBuffer(url,buffer,hash,undefined,cb);
                              });
                               
                                
@@ -1001,6 +1002,7 @@ ml(`
                          sha1(buffer,function(err,hash){
 
                              setMetadataForBuffer(
+                                 url,
                                  buffer, 
                                  hash, 
                                  safeDate(response.headers.get('Last-Modified'),new Date()), 
@@ -1028,35 +1030,35 @@ ml(`
                  }
                  
                  
-            
-                 function setMetadataForBuffer(buffer,hash,date,cb/*function(err,buffer,zipFileMeta){}*/) {
-                     
-                       const zipFileMeta = {
-                           etag:hash,
-                           date:date||new Date()
-                       };
-                     
-                       // since we are saving the returned object into the database, 
-                       // we don't want to store the tools object, so temporarily remove it
-                       // (localforage would recurse into it otherwise, and we don't need to store it)
-                       const saveTools = zipFileMeta.tools; 
-                       if (saveTools) {
-                           delete zipFileMeta.tools;
-                       }
-                       databases.zipMetadata.setItem(url,zipFileMeta,function(err){
-                           
-                             if (err) return cb(err);
-                             
-                             if (saveTools) {
-                                 zipFileMeta.tools = saveTools;
-                             }
-                             cb(undefined,buffer,zipFileMeta);
-                             
-                       });
-                 }
-                 
+               
              }
-             
+         
+             function setMetadataForBuffer(url,buffer,hash,date,cb/*function(err,buffer,zipFileMeta){}*/) {
+                 
+                   const zipFileMeta = {
+                       etag:hash,
+                       date:date||new Date()
+                   };
+                 
+                   // since we are saving the returned object into the database, 
+                   // we don't want to store the tools object, so temporarily remove it
+                   // (localforage would recurse into it otherwise, and we don't need to store it)
+                   const saveTools = zipFileMeta.tools; 
+                   if (saveTools) {
+                       delete zipFileMeta.tools;
+                   }
+                   databases.zipMetadata.setItem(url,zipFileMeta,function(err){
+                       
+                         if (err) return cb(err);
+                         
+                         if (saveTools) {
+                             zipFileMeta.tools = saveTools;
+                         }
+                         cb(undefined,buffer,zipFileMeta);
+                         
+                   });
+             }
+          
              function addFileMetaData(zip,zipFileMeta,zipurl,cb){
                  
                 const keep_in_meta_size_threshold = 1024 * 4;
@@ -1210,11 +1212,16 @@ ml(`
                  
              }
 
-                function getZipDirMetaToolsExternal(zip_url,cb) {
+            function getZipDirMetaToolsExternal(zip_url,cb) {
+                
                  getZipObject(zip_url,function(err,zip,zipFileMeta){
+                     
                      if (err) return cb(err);
+                     
                      getZipDirMetaTools(zip_url,zip,zipFileMeta,cb);
+                     
                  });
+                 
              }
 
   
@@ -1244,11 +1251,14 @@ ml(`
                  }
                  const meta_url = url+'/'+dir_meta_name;
                  if (zipFileMeta.files[dir_meta_name]) {
-                     const meta = zip.file(dir_meta_name);
+                     
+                     const meta = zip && zip.file(dir_meta_name);
                      if (meta) {
+                         
                         meta.async('string').then(function(json){
                            cb (getTools(JSON.parse(json)),zip,zipFileMeta);
                         });
+                        
                      } else {
                          
                          toFetchUrl (databases.updatedURLS,meta_url,true,function(buffer){
