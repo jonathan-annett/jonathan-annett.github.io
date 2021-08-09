@@ -27,6 +27,7 @@ ml([],function(){ml(2,
     function zipFSResponseLib () {
         const lib = {
             response304,
+            response404,
             response200,
             response500
         };
@@ -43,6 +44,13 @@ ml([],function(){ml(2,
                           'Cache-Control'  : 'max-age=3600, s-maxage=600',
                           'Last-Modified'  : fileEntry.date.toString(),
                         })
+           }));
+        }
+        
+        function response404 (resolve) {
+            return resolve( new Response('', {
+                        status: 404,
+                        statusText: 'Not Found'
            }));
         }
         

@@ -19,7 +19,8 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                             getZipDirMetaTools,
                                             resolveZipListing, 
                                             resolveZipListing_HTML,
-                                            resolveZipListing_Script) {
+                                            resolveZipListing_Script
+                                            ) {
                        
                        const sha1 = ml.i.sha1Lib.cb;
                        
@@ -321,6 +322,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                                     status: 404,
                                                     statusText: 'Not found'
                                                 }));
+                                                
                                             }
                                             
                                         }

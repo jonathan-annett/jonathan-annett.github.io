@@ -21,9 +21,7 @@ ml([],function(){ml(2,
                     virtualDirDB      : virtualDirDB,
                     virtualDirListing : virtualDirListing
                 };
-                
-                
-                
+
                 function newVirtualDirs(newDirs) {
                      clearVirtualDirsCache();
             
@@ -49,10 +47,9 @@ ml([],function(){ml(2,
                          }
                      });
                      
+                     
                     function clearVirtualDirsCache() {
                         
-                       
-
                         if (virtualDirDB.virtualDirZipBase) {
                             Object.keys(virtualDirDB.virtualDirZipBase).forEach(function(prefix){
                                 delete virtualDirDB.virtualDirZipBase[prefix].zip;
@@ -211,6 +208,7 @@ ml([],function(){ml(2,
                                    const locateZipMetadata = function (i) {
                                        
                                        if (i<zipurlprefixes.length) {
+                                           
                                            getEmbeddedZipFileResponse(
                                                zipurlprefixes[i]+subpath,
                                                zipFileResponseOpts,
@@ -224,22 +222,26 @@ ml([],function(){ml(2,
                                            );
                                            
                                        } else {
+                                           entry.response = new Response('', {
+                                                                         status: 404,
+                                                                         statusText: 'Not Found'
+                                                            });
                                            resolve(entry);
+                                           
                                        }
                                    };
+                                   
                                    return locateZipMetadata(0);
                                });
                        }
                    }
+                   
                    return Promise.resolve();
                 }
                  
                 function virtualDirEvent (event) {
                     
                    return new Promise(function(resolve){
-                       
-                       
-                       
                        
                        if (event.fixup_url.endsWith("/virtual.json")) {
                            const json = JSON.stringify(virtualDirDB,undefined,4);
@@ -294,8 +296,7 @@ ml([],function(){ml(2,
                    });
     
                 }
-                
-                 
+
                 return lib;
             }            
             
