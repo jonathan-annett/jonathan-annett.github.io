@@ -119,6 +119,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                       
                                       if (fileEntry.buffer) {
                                           // this is a small file that is stored uncompressed in metadata entry
+                                          console.log("resolved",zip_url,path_in_zip,"to inline buffer");
                                           return response200 (resolve,fileEntry.buffer,fileEntry);
                                       }
                                       
@@ -160,7 +161,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                                  return resolveSubzip(buffer,subzip_url ,subzip_filepath,ifNoneMatch,ifModifiedSince,virtual_prefix).then(resolve).catch(reject);
                                              }
                                              
-                                            
+                                             console.log("resolved",zip_url,path_in_zip,"to compressed buffer in zip");
                                              return response200 (resolve,buffer,fileEntry);
                                              
                                              
@@ -339,6 +340,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                         
                                         if (fileEntry.buffer) {
                                             // this is a small file that is stored uncompressed in metadata entry
+                                            console.log("resolved",zip_url,file_path,"to inline buffer");
                                             return response200 (resolve,fileEntry.buffer,fileEntry);
                                         }
                                         
@@ -370,6 +372,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                                         return resolveZipListing_Script (zip_url+"/"+file_path,buffer,virtual_prefix).then(resolve).catch(reject);
                                                     }
                                                     
+                                                    console.log("resolved",zip_url,file_path,"to compressed buffer in zip");
                                                     return response200 (resolve,buffer,fileEntry);
                     
                                              });
@@ -476,10 +479,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                            });
                        }
                        
-                     
-                       
-                       
-                          
+
                        function safeDate (d,def) {
                            const dt = new Date(d);
                            if (dt) return dt;
