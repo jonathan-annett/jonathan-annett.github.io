@@ -61,10 +61,6 @@
                 "alias_root" : "/UglifyJS-aebc916215a16a2c4d2d8d2565f7824c349bf51f",
                 "zips" : [ "https://jonathan-annett.github.io/pwapp/UglifyJS-aebc916215a16a2c4d2d8d2565f7824c349bf51f.zip" ]
             },
-            "https://jonathan-annett.github.io/pwapp/uglify-online/uglify-badlink": {
-                "alias_root" : "/UglifyJS-aebc916215a16a2c4d2d8d2565f7824c349bf51f",
-                "zips" : [ "https://github.com/mishoo/UglifyJS/archive/aebc916215a16a2c4d2d8d2565f7824c349bf51f.zip" ]
-            },
             "https://jonathan-annett.github.io/pwapp/uglify-online": {
                 "alias_root" : "/UglifyJS-online-master",
                 "zips" : [ "https://jonathan-annett.github.io/pwapp/UglifyJS-online-master.zip" ]
