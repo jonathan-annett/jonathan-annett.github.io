@@ -494,13 +494,67 @@ ml(`
                            newFixupRulesArray(arr);
                            
                            fixupLog("downloaded and parsed fstab.json",performance.now()-stamp,"ms");
-                      
+                            
+                           
                            fixupUrlEvent(event);
-                           resolve();
+                           
+                           
+                           checkVirtualZipCache(0,resolve);
                            
                          });
                       
                   });
+                  
+                  function checkVirtualZipCache(index,cb) {
+                      
+                      return checkVirt(0);
+                     
+                      function checkVirt(index) {
+                         if (index < virtualDirDB.virtualDirUrls.length) {
+                             const db_url = virtualDirDB.virtualDirUrls[index];
+                             checkurls(db_url,virtualDirDB.virtualDirs[db_url],function(){
+                                 checkVirt(index+1);
+                             });
+                            
+                         } else {
+                             console.log("all zips for all virtual dirs are now cached");
+                             cb();
+                         }
+                         
+                      }
+                      
+                      function checkurls(db_url,urls,cb) {
+                          
+                          return check(0);
+                          
+                          function check(index) {
+                              if (index<urls.length) {
+                                  const url = urls[index];
+                                  return databases.zipMetadata.getItem(url,function(err,zipFileMeta){
+                                       if (err||!zipFileMeta) return downloadZip(url);     
+                                       return databases.openZips.getItem(url,function(err,buffer){
+                                            if (err||!buffer) return downloadZip(url);        
+                                            checkurls(index+1);
+                                       });
+                                  });
+                              } else {
+                                  console.log("all zips for virtual dir",db_url,"are cached");
+                                  cb();
+                              }
+                          }
+                          
+                          function downloadZip(url){
+                              console.log("precaching",url,"as part of virtual dir",db_url);
+                              getZipObject(url,function(){
+                                  console.log("precached",url,"as part of virtual dir",db_url)
+                                  checkurls(index+1);
+                              });
+                          }
+                      }
+                      
+                     
+                      
+                  }
                   
                   function addEvents() {
                       if (event.use_no_cors) {
