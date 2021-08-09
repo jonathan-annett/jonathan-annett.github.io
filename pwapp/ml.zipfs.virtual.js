@@ -222,10 +222,7 @@ ml([],function(){ml(2,
                                            );
                                            
                                        } else {
-                                           entry.response = new Response('', {
-                                                                         status: 404,
-                                                                         statusText: 'Not Found'
-                                                            });
+                                           
                                            resolve(entry);
                                            
                                        }
