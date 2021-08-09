@@ -149,7 +149,7 @@ function ml(x,L, o, a, d, s){
             //c.k = Object.keys();
             k:(o)=>Object.keys(o),
             //quasi setImmediate (can be swapped out by replacing ml.c.i)
-            i:(f,a,b,c)=>setTimeout(f,0,a,b,c),
+            i:(f,a,b,c)=>setTimeout(f,1,a,b,c),
             K:{},
             // c.n = process named import into self 
             n:(N,f)=>{
