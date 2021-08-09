@@ -67,7 +67,11 @@ ml([],function(){ml(2,
                     const buffer = args[0];
                     return cb (undefined,buffer,true);
                 }
-                fetchInternalBuffer(url,cb);
+                if (url.indexOf('.zip/')<0) {
+                   fetchInternalBuffer(url,cb);
+                } else {
+                    cb(new Error("not found"));
+                }
             });
         }
         
