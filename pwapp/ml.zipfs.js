@@ -1008,7 +1008,7 @@ ml(`
                        }
                        zipFileMeta.files[file.name]={
                            date:file.date,
-                           contentType : mimeForFilename(file.path)
+                           contentType : mimeForFilename(file.name)
                        };
                        
                        if (file.name=== dir_meta_name) {
