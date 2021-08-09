@@ -529,7 +529,7 @@ ml(`
                           
                           function check(index) {
                               if (index<urls.length) {
-                                  const url = urls[index];
+                                  const url = urls[index].replace(/\.zip\/.*$/,'.zip');
                                   return databases.zipMetadata.getItem(url,function(err,zipFileMeta){
                                        if (err||!zipFileMeta) return downloadZip(url);     
                                        return databases.openZips.getItem(url,function(err,buffer){
