@@ -12,6 +12,9 @@ ml(`
     pwaMiddlewares                         | ${ml.c.app_root}ml.zipfs.middleware/index.js
     editInZed@ServiceWorkerGlobalScope     | ${ml.c.app_root}ml.zedhook.js
     fsTable                                | ${ml.c.app_root}fstab.json
+    htmlFileMetaLib                        | ${ml.c.app_root}ml.zipfs.dir.file.meta.js 
+    zipFSPaths                             | ${ml.c.app_root}ml.zipfs.paths.js 
+   
 
     `,function(){ml(2,
 
@@ -64,6 +67,16 @@ ml(`
                  getZipFileUpdates
              );
              
+             const {
+                 
+                 splitZipPaths,
+                 testPathIsZip,
+                 testPathIsZipMeta,
+             
+             }   = ml.i.zipFSPaths;
+             
+             
+             const {  mimeForFilename } =  ml.i.htmlFileMetaLib;
             
              const {   // import these items...
                        updateURLContents,        fetchUpdatedURLContents,
@@ -714,8 +727,7 @@ ml(`
              function newFixupRulesArray(arr) {
                  
                   fixupUrlEventClearCached();
-                  //clearVirtualDirsCache(); // happens in newVirtualDirs() now
-                 
+
                   // extract virtualdirs and remove comments from source array
                   const source = removeComments(arr).filter(function(x){
                      
@@ -763,22 +775,6 @@ ml(`
                      }
                  }
                  
-                 function clearVirtualDirsCache() {
-                     if (virtualDirDB.cache) {
-                         Object.keys (virtualDirDB.cache).forEach(function(u){
-                             const previous = virtualDirDB.cache[u];
-                             delete virtualDirDB.cache[previous.url];
-                             delete virtualDirDB.cache[previous.fixup_url];
-                             delete previous.response;
-                             delete previous.url;
-                             delete previous.fixup_url;
-
-                         });
-                         
-                         delete virtualDirDB.cache;
-                     }
-                     
-                 }
              }
              
              function fixupUrlEventClearCached() {
@@ -848,8 +844,8 @@ ml(`
                                  return cb(undefined,buffer,zipFileMeta);
                               }
                               // 
-                             sha1(buffer,function(err,etag){
-                                setMetadataForBuffer(buffer,etag,undefined,cb);
+                             sha1(buffer,function(err,hash){
+                                setMetadataForBuffer(buffer,hash,undefined,cb);
                              });
                               
                                
@@ -859,15 +855,48 @@ ml(`
                  
                  databases.openZips.getItem(url,function(err,buffer){
                      
-                     if (err || ! buffer) return download();                    
-                     
+                     if (err || ! buffer) {
+                         // the url is not mentioned in the openZips database, so this must be the first time
+                         // so download it...
+                         return download();                    
+                     }
+                     // retreive the stored metadata for this zip
                      databases.zipMetadata.getItem(url,function(err,zipFileMeta){
-                         if (err || ! zipFileMeta) return download();                    
+                         if (err || ! zipFileMeta) {
+                             // ok so there is not metadata stored, start over and download the file again
+                             return download();
+                         }
                          cb(undefined,buffer,zipFileMeta);
                      });
                      
                  });
                  
+                 
+                
+                 
+                 function download() {
+                     
+                     const real_url = getRealUrl(url);
+                     
+                     if (real_url===url) {
+                         
+                         fetch(url)
+                           .then(getBuffer)
+                           .catch(function (){
+                               downloadNoCors(url);
+                            }).catch(cb);
+                       
+                     } else {
+                         downloadNoCors(real_url);
+                     }
+
+                 }
+                 
+                 
+                 function downloadNoCors(url) {
+                     
+                     return fetch(url,{mode:'no-cors'}).then(getBuffer).catch(cb);
+                 }
                  
                  function getRealUrl(url) {
                      const prefix = 'https://';
@@ -885,109 +914,62 @@ ml(`
                      return url;
                  }
                  
-                 function download() {
-                     
-                     const real_url = getRealUrl(url);
-                     
-                     if (real_url===url) {
-                         fetch(url)
-                         
-                            .then(getBuffer)
-                               .catch(function (){
-                                   
-                                   downloadNoCors(url);
-                                   
-                                   /*
-                                   return fetch(real_url,{mode:'no-cors'})
-                                      .then(getBuffer)
-                                          .catch(function(err){
-                                              
-                                               fetch(real_url+"?r="+Math.random().toString(36).substr(-8),{
-                                                   mode:'no-cors' ,
-                                                   headers: {
-                                                        'if-none-match':Math.random().toString(36).substr(-8),
-                                                        'if-modified-since':new Date( Date.now() - ( 5 * 365 * 24 * 60 * 60 * 1000) ).toString()
-                                                   } 
-                                                   
-                                               },'')
-                                               
-                                                  .then(getBuffer)
-                                                  
-                                                     .catch(cb);
-                                                  
-                                                  
-                                          });
-                                          
-                                          
-                                          */
-                                }).catch(cb);
-                       
-                     } else {
-                         
-                         downloadNoCors(real_url);
-                         
-                    }
-                       
-                       
-                       
-                 }
-                 
-                 
-                 function downloadNoCors(url) {
-                     
-                     return fetch(url,{mode:'no-cors'}).then(getBuffer).catch(cb);
-                 }
-                 
                  function getBuffer(response) {
-                     
-                     
-                   if (!response.ok) {
-                     return cb (new Error("HTTP error, status = " + response.status));
-                   }
-                   
-                   response.arrayBuffer().then(function(buffer) {
-                       
-                       createETagForResponse(response,buffer,function(err,etag){
-                           
-                           setMetadataForBuffer(buffer,etag,safeDate(response.headers.get('Last-Modified'),new Date()),function(err,buffer,zipFileMeta){
-                               if (err) return cb(err);
-                               databases.openZips.setItem(url,buffer,function(err){
-                                   
-                                 if (err) return cb(err);
-                                 cb(undefined,buffer,zipFileMeta);
+
+
+                     if (!response.ok) {
+                         return cb(new Error("HTTP error, status = " + response.status));
+                     }
+
+                     response.arrayBuffer().then(function(buffer) {
+
+                         sha1(buffer,function(err,hash){
+
+                             setMetadataForBuffer(
+                                 buffer, 
+                                 hash, 
+                                 safeDate(response.headers.get('Last-Modified'),new Date()), 
+                                 function(err, buffer, zipFileMeta) {
                                  
-                               });
-                           });
-                          
-                          
-                       });
-            
-                   }).catch(cb); 
-                   
-                   
+                                     if (err) return cb(err);
+                                     
+                                     databases.openZips.setItem(url, buffer, function(err) {
+    
+                                         if (err) return cb(err);
+                                         
+                                         cb(undefined, buffer, zipFileMeta);
+    
+                                     });
+                                 
+                                }
+                            );
+
+
+                         });
+
+                     }).catch(cb);
+
+
                  }
                  
-                 function createETagForResponse(response,buffer,cb/*function(err,etag){}*/) {
-                     const actualEtag = response.headers.get('Etag');
-                     if (typeof actualEtag==='string' && actualEtag.length>0) {
-                         return cb(undefined,actualEtag.replace(/(^W)|([\/-_\s\\])/g,''));
-                     }
-                     sha1(buffer,cb);
-                 }
+                 
             
-                 function setMetadataForBuffer(buffer,etag,date,cb/*function(err,buffer,zipFileMeta){}*/) {
+                 function setMetadataForBuffer(buffer,hash,date,cb/*function(err,buffer,zipFileMeta){}*/) {
                      
-                       if (!etag) etag = Math.random().toString(36).substr(-8)+Date.now().toString(36).substr(-6);
                        const zipFileMeta = {
-                           etag,
+                           etag:hash,
                            date:date||new Date()
                        };
                      
+                       // since we are saving the returned object into the database, 
+                       // we don't want to store the tools object, so temporarily remove it
+                       // (localforage would recurse into it otherwise, and we don't need to store it)
                        const saveTools = zipFileMeta.tools; 
                        if (saveTools) {
                            delete zipFileMeta.tools;
                        }
                        databases.zipMetadata.setItem(url,zipFileMeta,function(err){
+                           
                              if (err) return cb(err);
                              
                              if (saveTools) {
@@ -1000,12 +982,20 @@ ml(`
                  
              }
              
-             function addFileMetaData(zip,zipFileMeta,zipurl){
+             function addFileMetaData(zip,zipFileMeta,zipurl,cb){
+                 
+                const keep_in_meta_size_threshold = 1024 * 4;
+                // if a file is less than 4 kb keep it uncompressed in the header, along with it's hash
+                 
                 if (typeof zipFileMeta.files==='object') {
-                    return zipFileMeta;
+                    // this zip already has the per-file meta data object
+                    return cb(zipFileMeta);
                 }
+                
+                
                 zipFileMeta.files={};
-                const root_dirs = [],root_files=[];
+                
+                const root_dirs = [],root_files=[],promises = [/*holds promises to decompress/hash/preload each file*/];
                 
                 let dir_meta_found =false;
                 zip.folder("").forEach(function(relativePath, file){
@@ -1017,12 +1007,27 @@ ml(`
                            }
                        }
                        zipFileMeta.files[file.name]={
-                           date:file.date
+                           date:file.date,
+                           contentType : mimeForFilename(file.path)
                        };
                        
                        if (file.name=== dir_meta_name) {
                            dir_meta_found=true;
                        }
+                       
+                       promises.push(new Promise(function(resolve){
+                           zip.file(file.name).async("arraybuffer").then(function(buffer){
+                               sha1(buffer,function(err,hash){
+                                   zipFileMeta.files[file.name].contentLength = buffer.byteLength;
+                                   zipFileMeta.files[file.name].hash = hash;
+                                   if (buffer.byteLength<=keep_in_meta_size_threshold) {
+                                       zipFileMeta.files[file.name].buffer=buffer;
+                                   }
+                                   resolve();
+                               });
+                           });
+                       }));
+                       
                     } else {
                        // const slash=file.name.indexOf("/");
                         //if ((slash<0)||(slash===file.name.lastIndexOf("/"))) {
@@ -1049,7 +1054,12 @@ ml(`
                         date:zipFileMeta.date
                     };
                 }
-                return zipFileMeta;
+                
+                Promise.all(promises).then(function(results){
+                   results.splice(0,results.length);
+                   promises.splice(0,promises.length);
+                   cb(zipFileMeta);
+                });
             }
 
              function getZipObject(url,buffer,cache,cb/*function(err,zip,zipFileMeta){})*/) {
@@ -1098,15 +1108,22 @@ ml(`
                              if (saveTools) {
                                  delete zipFileMeta.tools;
                              }
-                             databases.zipMetadata.setItem(url,addFileMetaData(zip,zipFileMeta,url),function(err){
+                             
+                             // add metadata for each file (if not already added)
+                             // this includes buffers for smaller files.
+                             addFileMetaData(zip,zipFileMeta,url,function(zipFileMeta){
                                  
-                                if (err) return cb(err);
-            
-                                if (saveTools) {
-                                    zipFileMeta.tools= saveTools;
-                                }
-                                return cb (undefined,zip,zipFileMeta);
-                                
+                                 databases.zipMetadata.setItem(url,zipFileMeta,function(err){
+                                     
+                                    if (err) return cb(err);
+                
+                                    if (saveTools) {
+                                        zipFileMeta.tools= saveTools;
+                                    }
+                                    return cb (undefined,zip,zipFileMeta);
+                                    
+                                 });
+                                 
                              });
             
                          });
@@ -1117,132 +1134,7 @@ ml(`
                  
              }
 
-             function mimeForFilename(filename) {
-                 //lsauer.com , lo sauer 2013
-                 //JavaScript List of selected MIME types
-                 //A comprehensive MIME List is available here: https://gist.github.com/lsauer/2838503
-                 const lastDot = filename.lastIndexOf('.');
-                 return (lastDot<0) ? false : {
-                   'a'      : 'application/octet-stream',
-                   'ai'     : 'application/postscript',
-                   'aif'    : 'audio/x-aiff',
-                   'aifc'   : 'audio/x-aiff',
-                   'aiff'   : 'audio/x-aiff',
-                   'au'     : 'audio/basic',
-                   'avi'    : 'video/x-msvideo',
-                   'bat'    : 'text/plain',
-                   'bin'    : 'application/octet-stream',
-                   'bmp'    : 'image/x-ms-bmp',
-                   'c'      : 'text/plain',
-                   'cdf'    : 'application/x-cdf',
-                   'csh'    : 'application/x-csh',
-                   'css'    : 'text/css',
-                   'dll'    : 'application/octet-stream',
-                   'doc'    : 'application/msword',
-                   'dot'    : 'application/msword',
-                   'dvi'    : 'application/x-dvi',
-                   'eml'    : 'message/rfc822',
-                   'eps'    : 'application/postscript',
-                   'etx'    : 'text/x-setext',
-                   'exe'    : 'application/octet-stream',
-                   'gif'    : 'image/gif',
-                   'gtar'   : 'application/x-gtar',
-                   'h'      : 'text/plain',
-                   'hdf'    : 'application/x-hdf',
-                   'htm'    : 'text/html',
-                   'html'   : 'text/html',
-                   'jpe'    : 'image/jpeg',
-                   'jpeg'   : 'image/jpeg',
-                   'jpg'    : 'image/jpeg',
-                   'js'     : 'application/x-javascript',
-                   'json'   : 'application/json',
-                   'ksh'    : 'text/plain',
-                   'latex'  : 'application/x-latex',
-                   'm1v'    : 'video/mpeg',
-                   'man'    : 'application/x-troff-man',
-                   'me'     : 'application/x-troff-me',
-                   'mht'    : 'message/rfc822',
-                   'mhtml'  : 'message/rfc822',
-                   'mif'    : 'application/x-mif',
-                   'mov'    : 'video/quicktime',
-                   'movie'  : 'video/x-sgi-movie',
-                   'mp2'    : 'audio/mpeg',
-                   'mp3'    : 'audio/mpeg',
-                   'mp4'    : 'video/mp4',
-                   'mpa'    : 'video/mpeg',
-                   'mpe'    : 'video/mpeg',
-                   'mpeg'   : 'video/mpeg',
-                   'mpg'    : 'video/mpeg',
-                   'md'     : 'text/markdown',
-                   'ms'     : 'application/x-troff-ms',
-                   'nc'     : 'application/x-netcdf',
-                   'nws'    : 'message/rfc822',
-                   'o'      : 'application/octet-stream',
-                   'obj'    : 'application/octet-stream',
-                   'oda'    : 'application/oda',
-                   'pbm'    : 'image/x-portable-bitmap',
-                   'pdf'    : 'application/pdf',
-                   'pfx'    : 'application/x-pkcs12',
-                   'pgm'    : 'image/x-portable-graymap',
-                   'png'    : 'image/png',
-                   'pnm'    : 'image/x-portable-anymap',
-                   'pot'    : 'application/vnd.ms-powerpoint',
-                   'ppa'    : 'application/vnd.ms-powerpoint',
-                   'ppm'    : 'image/x-portable-pixmap',
-                   'pps'    : 'application/vnd.ms-powerpoint',
-                   'ppt'    : 'application/vnd.ms-powerpoint',
-                   'pptx'    : 'application/vnd.ms-powerpoint',
-                   'ps'     : 'application/postscript',
-                   'pwz'    : 'application/vnd.ms-powerpoint',
-                   'py'     : 'text/x-python',
-                   'pyc'    : 'application/x-python-code',
-                   'pyo'    : 'application/x-python-code',
-                   'qt'     : 'video/quicktime',
-                   'ra'     : 'audio/x-pn-realaudio',
-                   'ram'    : 'application/x-pn-realaudio',
-                   'ras'    : 'image/x-cmu-raster',
-                   'rdf'    : 'application/xml',
-                   'rgb'    : 'image/x-rgb',
-                   'roff'   : 'application/x-troff',
-                   'rtx'    : 'text/richtext',
-                   'sgm'    : 'text/x-sgml',
-                   'sgml'   : 'text/x-sgml',
-                   'sh'     : 'application/x-sh',
-                   'shar'   : 'application/x-shar',
-                   'snd'    : 'audio/basic',
-                   'so'     : 'application/octet-stream',
-                   'src'    : 'application/x-wais-source',
-                   'swf'    : 'application/x-shockwave-flash',
-                   't'      : 'application/x-troff',
-                   'tar'    : 'application/x-tar',
-                   'tcl'    : 'application/x-tcl',
-                   'tex'    : 'application/x-tex',
-                   'texi'   : 'application/x-texinfo',
-                   'texinfo': 'application/x-texinfo',
-                   'tif'    : 'image/tiff',
-                   'tiff'   : 'image/tiff',
-                   'tr'     : 'application/x-troff',
-                   'tsv'    : 'text/tab-separated-values',
-                   'txt'    : 'text/plain',
-                   'ustar'  : 'application/x-ustar',
-                   'vcf'    : 'text/x-vcard',
-                   'wav'    : 'audio/x-wav',
-                   'wiz'    : 'application/msword',
-                   'wsdl'   : 'application/xml',
-                   'xbm'    : 'image/x-xbitmap',
-                   'xlb'    : 'application/vnd.ms-excel',
-                   'xls'    : 'application/vnd.ms-excel',
-                   'xlsx'    : 'application/vnd.ms-excel',
-                   'xml'    : 'text/xml',
-                   'xpdl'   : 'application/xml',
-                   'xpm'    : 'image/x-xpixmap',
-                   'xsl'    : 'application/xml',
-                   'xwd'    : 'image/x-xwindowdump',
-                   'zip'    : 'application/zip'
-                   
-                 }[filename.substr(lastDot+1)];
-             }
-             
+            
              function response304 (resolve,fileEntry) {
                  //ml.c.l("returning 304",fileEntry);
                  return resolve( new Response('', {
@@ -1298,72 +1190,7 @@ ml(`
                  });
              }
 
-             function inclusiveSplit(str,split,replaceText,splitAfter) {
-                 if (!replaceText) replaceText = split;
-                 return splitAfter ? str.split(split).map(function(e,i,a){
-                    return i > 0 ? replaceText+e : e;
-                 }): str.split(split).map(function(e,i,a){
-                     return i < a.length-1 ? e+replaceText : e;
-                 });
-             }
 
-             function multiSplit(str,splits,replaces) {
-                  /*
-            
-            multiSplit(
-               "https://blah/file.zip/dir/file.zip/dir/js-keygen-master-3a1f4c1f1d4ffce91e4b7a65c5b3b4402cc82866.png/dir/file.zip",
-               [ ".zip/", /(?<=\-[a-f0-9]{40})\.png\// ],
-               [".zip",".png"])
-            
-            returns 
-            
-            ["https://blah/file.zip", "dir/file.zip", "dir/js-keygen-master-3a1f4c1f1d4ffce91e4b7a65c5b3b4402cc82866.png", "dir/file.zip"]
-            
-            */
-                 
-                const use_splits = splits.slice();
-                const use_replaces = replaces.slice();
-                const splitFirst = function () {
-                    const split   = use_splits.shift();
-                    const replace = use_replaces.shift();
-                    return function (str) {
-                       return inclusiveSplit(str,split,replace);
-                    }
-                };
-                const result = splitFirst()(str);
-                const collate = function(arr){
-                   result.push.apply(result,arr);
-                   arr.splice(0,arr.length);
-                };
-                while (use_splits.length>0) {
-                    const temp = result.map (splitFirst());
-                    result.splice(0,result.length);
-                    temp.forEach(collate);
-                    temp.splice(0,temp.length);
-                }
-                return result; 
-             }
-             
-             function splitZipPaths (str) {
-                
-                const splitters = [ /(?<=\-[a-f0-9]{40})\.png\// , /\.zip\// ];
-                const joiners   = [                     '.png',     '.zip'   ];
-                
-                return multiSplit(str,splitters,joiners);
-            }
-            
-             function testPathIsZip (path) {
-                return /\.zip$/.test(path);
-            }
-            
-            function testPathIsZipMeta (path) {
-                return /\.zip\.meta\.js$/.test(path);
-            }
-            
-             function testPathIsPngZip (path) {
-                return /(?<=\-[a-f0-9]{40})\.png$/.test(path);
-            }
-            
              function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince,virtual_prefix) {
                  //ml.c.l({resolveSubzip:{ifNoneMatch,ifModifiedSince,zip_url,path_in_zip,virtual_prefix}});
                  const parts           = splitZipPaths(path_in_zip);//path_in_zip.split('.zip/');     
@@ -1407,12 +1234,8 @@ ml(`
                              
                              fileEntry.name = file_path;
                             
-                             const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
-                            
-                             
-                            
-                             if (   !update_needed      && 
-                                    !subzip             &&
+
+                             if (   !subzip             &&
                                      (
                                          (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag)) ||
                                          (ifModifiedSince &&  (safeDate(ifModifiedSince,fileEntry.date) <  fileEntry.date) )
@@ -1422,6 +1245,11 @@ ml(`
                                      
                                  return response304 (resolve,fileEntry);
                                  
+                             }
+                             
+                             if (fileEntry.buffer) {
+                                 // this is a small file that is stored uncompressed in metadata entry
+                                 return response200 (resolve,fileEntry.buffer,fileEntry);
                              }
                              
                              const zip_fileobj = zip.file(file_path);
@@ -1442,18 +1270,7 @@ ml(`
                              }
                              
                              zip_fileobj.async('arraybuffer').then(function(buffer){
-                                if (update_needed) {
-                                    // first request for this file, so we need to save 
-                                    // contentLength and type in buffer
-                                    // (they are needed for later 304 responses)
-                                    
-                                    fileEntry.contentType    = mimeForFilename(file_path);
-                                    fileEntry.contentLength  = buffer.byteLength;
-                                    
-                                    deferredMetadataUpdate(zip_url,zipFileMeta,10*1000);
-                                    
-                                }
-                                
+
                                 if (  testPathIsZip(path_in_zip)  ) {
                                     return resolveZipListing (zip_url+"/"+path_in_zip,buffer,virtual_prefix).then(resolve).catch(reject);
                                 }
@@ -1468,55 +1285,20 @@ ml(`
                                     return resolveSubzip(buffer,subzip_url ,subzip_filepath,ifNoneMatch,ifModifiedSince,virtual_prefix).then(resolve).catch(reject);
                                 }
                                 
-                                if (fileEntry.etag) {
-                                        return response200 (resolve,buffer,fileEntry);
-                                }
-                                
-                                return sha1(buffer,function(err,hash){
-                                    fileEntry.etag = hash;
-                                    deferredMetadataUpdate(zip_url,zipFileMeta,10*1000);
-                                    return response200 (resolve,buffer,fileEntry);
-                                })
+                               
+                                return response200 (resolve,buffer,fileEntry);
                                 
                                 
                              });
                              
-                             
-                             
-                             function deferredUpdate(msec) {
-                                 if (zipFileMeta.updating) {
-                                     clearTimeout(zipFileMeta.updating);
-                                 }
-                                 //ml.c.l("updating zip entry",zip_url,file_path);
-                                 
-                                 zipFileMeta.updating = setTimeout(function(){
-                                     // in 10 seconds this and any other metadata changes to disk
-                                     delete zipFileMeta.updating;
-                                     const saveTools = zipFileMeta.tools; 
-                                     if (saveTools) {
-                                         delete zipFileMeta.tools;
-                                     }
-                                     databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
-                                         if (saveTools) {
-                                             zipFileMeta.tools = saveTools; 
-                                         }
-                                         //ml.c.l("updated zip entry",zip_url);
-                                     });
-                                     
-                                 },msec);
-                             }
-                             
+                            
                             
                          });
                      });
                  });
              }
              
-             function safeDate (d,def) {
-                 const dt = new Date(d);
-                 if (dt) return dt;
-                 return def;
-             }
+             
              
              function resolveZip (parts,ifNoneMatch,ifModifiedSince,virtual_prefix) {
                  //console.log({resolveZip:{ifNoneMatch,ifModifiedSince,parts,virtual_prefix}});
@@ -1530,6 +1312,8 @@ ml(`
                      
                      getZipObject(zip_url,function(err,zip,zipFileMeta) {
                           if (err)  throw err;
+                          
+                          
                          getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
                              
                              if (tools.isDeleted(file_path)) {
@@ -1560,14 +1344,10 @@ ml(`
                              }
                              
                              
-                             
                              fileEntry.name = file_path;
                             
                              
-                             const update_needed = fileEntry.contentType==='undefined' || typeof fileEntry.contentLength==='undefined';
-    
-                             if (   !update_needed      && 
-                                    !subzip             &&
+                             if (   !subzip             &&
                                      (
                                          (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag)) ||
                                          (ifModifiedSince &&  (safeDate(ifModifiedSince,fileEntry.date) <  fileEntry.date) )
@@ -1576,6 +1356,10 @@ ml(`
                                  return response304 (resolve,fileEntry);
                              }
                              
+                             if (fileEntry.buffer) {
+                                 // this is a small file that is stored uncompressed in metadata entry
+                                 return response200 (resolve,fileEntry.buffer,fileEntry);
+                             }
                              
                              const zip_fileobj = zip.file(file_path);
                              
@@ -1588,17 +1372,7 @@ ml(`
                              }
                              
                              zip_fileobj.async('arraybuffer').then(function(buffer){
-                                     
-                                     if (update_needed) {
-                                         // first request for this file, so we need to save 
-                                         // contentLength and type in buffer
-                                         // (they are needed for later 304 responses)
-                                         
-                                         fileEntry.contentType    = mimeForFilename(file_path);
-                                         fileEntry.contentLength  = buffer.byteLength;
-                                         deferredMetadataUpdate(zip_url,zipFileMeta,10*10000);
-                                     }
-                                     
+
                                      if (subzip) {
                                          return resolveSubzip(buffer,subzip_url,subzip_filepath,ifNoneMatch,ifModifiedSince,virtual_prefix).then(resolve).catch(reject);
                                      }
@@ -1611,19 +1385,8 @@ ml(`
                                          return resolveZipListing_Script (zip_url+"/"+file_path,buffer,virtual_prefix).then(resolve).catch(reject);
                                      }
                                      
+                                     return response200 (resolve,buffer,fileEntry);
 
-                                     
-                                     if (fileEntry.etag) {
-                                             return response200 (resolve,buffer,fileEntry);
-                                     }
-                                     
-                                     return sha1(buffer,function(err,hash){
-                                         fileEntry.etag = hash;
-                                         deferredMetadataUpdate(zip_url,zipFileMeta,10*10000);
-                                         return response200 (resolve,buffer,fileEntry);
-                                     })
-                                     
-                                     
                               });
                                   
                               
@@ -1635,29 +1398,12 @@ ml(`
              }
              
              
-             
-             
-             function deferredMetadataUpdate(zip_url,zipFileMeta,msec) {
-                 if (zipFileMeta.updating) {
-                     clearTimeout(zipFileMeta.updating);
-                 }
-                 //ml.c.l("updating zip entry",zip_url,file_path);
-                 
-                 zipFileMeta.updating = setTimeout(function(){
-                     // in 10 seconds this and any other metadata changes to disk
-                     delete zipFileMeta.updating;
-                     const saveTools = zipFileMeta.tools; 
-                     if (saveTools) {
-                         delete zipFileMeta.tools;
-                     }
-                     databases.zipMetadata.setItem(zip_url,zipFileMeta,function(){
-                         zipFileMeta.tools = saveTools;
-                         //ml.c.l("updated zip entry",zip_url);
-                     });
-                     
-                 },msec);
+               
+             function safeDate (d,def) {
+                 const dt = new Date(d);
+                 if (dt) return dt;
+                 return def;
              }
-             
              
              function regexpEscape(str) {
                  return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
