@@ -315,6 +315,7 @@ ml(`
                }       
 
              function processFetchRequestInternal(event,cb) {
+                  event.startedAt = Date.now();
                   const querySplit  = event.request.url.indexOf('?');
                   event.fixup_url   = querySplit < 0 ? event.request.url : event.request.url.substr(0,querySplit);
                   event.fixup_query = querySplit < 0 ? '' : event.request.url.substr(querySplit);

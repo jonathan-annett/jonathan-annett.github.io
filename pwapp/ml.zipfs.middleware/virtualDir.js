@@ -144,7 +144,7 @@ ml([],function(){ml(2,
                    middleware.virtualDirQuery (event.fixup_url).then(function(entry){
                        
                        if (entry&& entry.response) {
-                           
+                           console.log("resolved virtualDirQuery in middleware for",event.fixup_url,"after",Date.now()-event.startedAt,"msec");
                            const response = entry.response;
                            delete entry.fixup_url;
                            delete entry.response;
