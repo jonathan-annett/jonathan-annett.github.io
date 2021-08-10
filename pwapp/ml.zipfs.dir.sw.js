@@ -222,6 +222,8 @@ ml(`
                        
                        function resolveZipListing_HTML (url,buffer,virtual) {
                            
+                           
+                           
                            return new Promise(function (resolve){
                                
                                getZipObject(url,buffer,function(err,zip,zipFileMeta) {
@@ -259,10 +261,11 @@ ml(`
                                                
                                                const htmlFileItemLibOpts = {
                                                    uri,
-                                                   alias_root:zipFileMeta.alias_root,
-                                                   tools,
-                                                   file_listing,
-                                                   fileisEdited,
+                                                   alias_root    : zipFileMeta.alias_root,
+                                                   fileIsHidden  : tools.isHidden,
+                                                   fileIsDeleted : tools.isDeleted,
+                                                   fileisEdited  ,
+                                                   file_listing  ,
                                                    updated_prefix,
                                                    hidden_files_exist : false 
                                                };
@@ -311,16 +314,6 @@ ml(`
                                                
                                                const html_details = all_files.map(html_file_func);
                                                
-                                               
-                                               
-                                               
-                                               /*
-                                               function renderHtml (
-                                               htmlTemplate,tools,updated_prefix,uri,
-                                               virtual,alias_root,files, hidden_files_exist,
-                                               html_details,parent_link) {
-                                               */
-                           
                                                const html = renderHtml (
                                                    dir_html,
                                                    replaceTextVars,
@@ -341,9 +334,9 @@ ml(`
                                                                    headers: new Headers({
                                                                      'Content-Type'   : 'text/html',
                                                                      'Content-Length' : html.length,
-                                                                     'ETag'           : zipFileMeta.etag,
-                                                                     'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                                                     'Last-Modified'  : zipFileMeta.date.toString() 
+                                                                    // 'ETag'           : zipFileMeta.etag,
+                                                                    // 'Cache-Control'  : 'max-age=3600, s-maxage=600',
+                                                                    // 'Last-Modified'  : zipFileMeta.date.toString() 
                                                                    })
                                                        })
                                               );
@@ -377,19 +370,18 @@ ml(`
                                           virtual.indexOf(origin)===0? virtual.substr(origin.length) : virtual 
                                           ) : '';
                                           
-                                return replaceTextVars( 
+                                return replaceTextVars(
                                    
-                                            dir_html, 
-                                            
-                                            {
-                                               uri:uri,
-                                               app_root:ml.c.app_root,
-                                               script_uri:'/'+uri+'.meta.js' + virtual_prefix ,
-                                               head_script:'',
-                                               hidden_files_class:hidden_files_exist?' hidden_files_exist':'',
-                                               designer:'',
-                                               html_details : html_details.join("\n")
-                                           }
+                                    dir_html,
+                                    {
+                                       uri                : uri,
+                                       app_root           : ml.c.app_root,
+                                       script_uri         : '/'+uri+'.meta.js' + virtual_prefix ,
+                                       head_script        : '',
+                                       hidden_files_class : hidden_files_exist?' hidden_files_exist':'',
+                                       designer           : '',
+                                       html_details       : html_details.join("\n")
+                                   }
 
                                 );
                                

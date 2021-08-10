@@ -38,7 +38,7 @@ ml(`
         const console_log = ()=>{}
 
         
-        return function (dbKeyPrefix) {
+        return function () {
             
             
              const databaseNames = [

@@ -29,9 +29,9 @@ ml(`
     
     const hidden_js_regex = /\.hidden\-js(on)?$/;
 
-    function htmlFileItemLib (options) {
+    function htmlFileItemLib (dirInfo) {
         
-        const {uri,alias_root,tools,file_listing,fileisEdited,updated_prefix} = options;
+        const alias_root = dirInfo.alias_root;
         
         return {
             get_html_file_item,
@@ -77,7 +77,7 @@ ml(`
             
             const [prefix,suffix] = extractWrapperTags(tag);
             const prefix_len = prefix.length, suffix_len = suffix.length;
-            const output  = options.keep_comments ? prefix+withText+suffix : withText ;
+            const output  = dirInfo.keep_comments ? prefix+withText+suffix : withText ;
             return rep(text);
             
             function rep (text) {
@@ -170,17 +170,17 @@ ml(`
                
                if ( hidden_js_regex.test(filename)) return "";   
              
-                const full_uri = "/"+uri+"/"+filename,
+                const full_uri = "/"+dirInfo.uri+"/"+filename,
                 basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
                 
                 const test_name    = alias_root && filename.indexOf(alias_root)===0 ? filename.substr(alias_root.length) : filename;
-                const is_hidden    = tools.isHidden(test_name);//  tools.isHidden(basename) || alt_name && tools.isHidden(alt_name) ;
-                const is_in_zip    = file_listing.indexOf(filename)>=0;
-                const is_deleted   = is_hidden && tools.isDeleted(test_name)  ;//( tools.isDeleted(basename) || alt_name && tools.isDeleted(alt_name) );
+                const is_hidden    = dirInfo.fileIsHidden(test_name);//  tools.isHidden(basename) || alt_name && tools.isHidden(alt_name) ;
+                const is_in_zip    = dirInfo.file_listing.indexOf(filename)>=0;
+                const is_deleted   = is_hidden && dirInfo.fileIsDeleted(test_name)  ;//( tools.isDeleted(basename) || alt_name && tools.isDeleted(alt_name) );
                 const is_editable  = fileIsEditable(filename);
                 const is_image     = fileIsImage(filename);
                 const is_zip       = filename.endsWith(".zip");
-                const is_edited    = fileisEdited( updated_prefix+test_name );
+                const is_edited    = dirInfo.fileisEdited( dirInfo.updated_prefix+test_name );
                 
                 //const sha1span     = '<span class="sha1"></span>';
                 
@@ -201,7 +201,7 @@ ml(`
                    li_class     : li_class,
                    basename     : basename,
                    is_in_zip    : is_in_zip?'1':'0',
-                   parent_link  : options.parent_link,
+                   parent_link  : dirInfo.parent_link,
                    link_it_path : full_uri,
                    link_it_filename:filename,
                    sha1:'',
