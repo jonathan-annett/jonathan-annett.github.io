@@ -117,15 +117,17 @@ ml(`
             
             return function htmlDirLib (api) {
                        
-               const  {
-                   getZipObject,
-                   zipFSDirHtml,
-                   getZipFileUpdates,
-                   getZipDirMetaTools,
-                   virtualDirListing,
-                   addSyntaxInfo,
-                   fileisEdited,
-               } = api;
+               const {
+                     databases,
+                     getZipObject,
+                     zipFSDirHtml,
+                     getZipFileUpdates,
+                     getZipDirMetaTools,
+                     virtualDirListing,
+                     addSyntaxInfo,
+                     fileisEdited
+                     
+                 } = api;
                
                return {
                    resolveZipListing_HTML,
