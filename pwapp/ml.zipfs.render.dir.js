@@ -54,7 +54,7 @@ ml(`
             
             return new Promise(function (resolve){
                 
-                (url,buffer,function(err,zip,zipFileMeta) {
+                getZipObject(url,buffer,function(err,zip,zipFileMeta) {
                     
                     if (err || !zip || !zipFileMeta) {
                         
