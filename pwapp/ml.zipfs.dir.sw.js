@@ -324,9 +324,10 @@ ml(`
                                                const html = renderHtml (
                                                    dir_html,
                                                    replaceTextVars,
-                                                   tools,updated_prefix,uri,url,
-                                                   virtual,zipFileMeta.alias_root,
-                                                   all_files,
+                                                   uri,
+                                                   url,
+                                                   virtual,
+                                                   zipFileMeta.alias_root,
                                                    htmlFileItemLibOpts.hidden_files_exist,
                                                    html_details
                                                );
@@ -364,11 +365,10 @@ ml(`
                             
                                 dir_html,
                                 replaceTextVars,
-                                tools,
-                                updated_prefix,uri,url,
+                                uri,
+                                url,
                                 virtual,
                                 alias_root,
-                                files, 
                                 hidden_files_exist,
                                 html_details) {
                                 const origin = location.origin;
