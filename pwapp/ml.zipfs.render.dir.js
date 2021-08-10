@@ -46,8 +46,6 @@ ml(`
             resolveZipListing_Script
         };
         
-        
-           
         function resolveZipListing_HTML (url,buffer,virtual) {
             
             
@@ -98,15 +96,16 @@ ml(`
                                     hidden_files_exist : false 
                                 };
                                 
+                                const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
                                 const {
                                     get_html_file_item,
                                     boldit,
                                     linkit,
                                     fileIsEditable,
                                     replaceTextVars
-                                } = ml.i.htmlFileItemLib (htmlFileItemLibOpts);
+                                } = renderFileLib;
                                 
-                                const html_file_func = get_html_file_item(dir_html);
+                                
 
                                 const cleanup_links = function(str) {
                                     top_uri_res.forEach(function(re){
@@ -132,7 +131,7 @@ ml(`
 
                                 htmlFileItemLibOpts.parent_link = parent_link;
                                
-                                const all_files = file_listing.concat(
+                                htmlFileItemLibOpts.all_files = file_listing.concat(
                                     
                                     additionalFiles.map(function(fn){
                                         return   zipFileMeta.alias_root ? zipFileMeta.alias_root + fn : fn;
@@ -140,6 +139,12 @@ ml(`
                                     
                                 ).sort();
                                 
+                                
+                                
+                                const html = renderDirPage(url,virtual,dir_html, htmlFileItemLibOpts,renderFileLib );
+                                
+                                /*
+                                const html_file_func = get_html_file_item(dir_html);
                                 const html_details = all_files.map(html_file_func);
                                 
                                 const html = renderHtml (
@@ -152,6 +157,8 @@ ml(`
                                     htmlFileItemLibOpts.hidden_files_exist,
                                     html_details
                                 );
+                                
+                               */
             
                                 return resolve( 
                                     
@@ -218,6 +225,33 @@ ml(`
         }
         
         
+        function renderDirPage(url,virtual,dir_html, renderOpts,renderLib ){
+            
+            const html_file_func = renderLib.get_html_file_item(dir_html);
+            const html_details = renderOpts.all_files.map(html_file_func);
+            const origin = location.origin;
+                 
+            const virtual_prefix =  virtual ?  '?virtual_prefix='+encodeURIComponent(
+                       virtual.indexOf(origin)===0? virtual.substr(origin.length) : virtual 
+                       ) : '';
+                       
+             return renderLib.replaceTextVars(
+                
+                 dir_html,
+                 {
+                    uri                : renderOpts.uri,
+                    app_root           : ml.c.app_root,
+                    script_uri         : '/'+renderOpts.uri+'.meta.js' + virtual_prefix ,
+                    head_script        : '',
+                    hidden_files_class : renderOpts.hidden_files_exist?' hidden_files_exist':'',
+                    designer           : '',
+                    html_details       : html_details.join("\n")
+                }
+
+             );
+                
+        }
+
         function resolveZipListing_HTML_1 (url,buffer,virtual) {
             
             
@@ -417,8 +451,7 @@ ml(`
             }
 
         }
-        
-        
+
         function resolveZipListing_Script (zip_meta_js_url,buffer,virtual) {
             
             const url = zip_meta_js_url.replace(/\.zip\.meta\.js$/,'.zip');
@@ -599,10 +632,6 @@ ml(`
             }
 
         }
-        
-
-      
-        
 
     }
     
