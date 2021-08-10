@@ -52,8 +52,6 @@ ml(`
                      
                       function setTotal(n) {
                           expect_total=n;
-                          console.log("expect_total",expect_total);
-                          
                       }
                      
                       function setComplete(n,filename) {
@@ -72,7 +70,9 @@ ml(`
                       function addToTotal (n,filename) {
                           total+=n;
                           updateBar();
-                          console.log("total",total);
+                          if (total>expect_total) {
+                             console.log("total",total);
+                          }
                           if (filename && api.onfilename) {
                               api.onfilename(filename);
                           }
