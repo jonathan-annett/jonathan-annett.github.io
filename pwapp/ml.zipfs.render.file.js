@@ -29,6 +29,14 @@ ml(`
     const  { fileIsEditable,fileIsImage,aceModeForFile,aceThemeForFile } =  ml.i.htmlFileMetaLib; 
     
     const hidden_js_regex = /\.hidden\-js(on)?$/;
+    
+    htmlFileItemLib.regexpEscape = regexpEscape;
+    htmlFileItemLib.boldit = boldit;
+    htmlFileItemLib.linkit = linkit;
+    htmlFileItemLib.replaceVarText = replaceVarText;
+    htmlFileItemLib.extractWrapperText = extractWrapperText;
+    htmlFileItemLib.extractWrapperTags = extractWrapperTags;
+    htmlFileItemLib.replaceVarWrapperTags = replaceVarWrapperTags;
 
     function htmlFileItemLib (dirInfo) {
         
@@ -42,38 +50,11 @@ ml(`
             replaceWrapperText,
             replaceVarText,
             replaceTextVars,
-            hidden_js_regex
+            hidden_js_regex,
+            regexpEscape
         };
         
-        
-       
-        function extractWrapperTags(tag) {
-            return [ '<!--'+tag+'>-->', '<!--<'+tag+'-->'];
-        }
 
-        function replaceVarWrapperTags(tag) {
-           return [ '${'+tag+'}', '<!--'+tag+'-->'];
-        }
-        
-        function replaceVarText(text,key,value) {
-            replaceVarWrapperTags(key).forEach(function(search){
-                text = text.split(search).join(value);
-            });
-            return text;
-        }
-
-
-        function extractWrapperText(text,tag) {
-           const [prefix,suffix] = extractWrapperTags(tag);
-           const start = text.indexOf(prefix);
-           if (start<0) return false;
-           text = text.substr(start+prefix.length);
-           const end = text.indexOf(suffix);
-           if (end<0) return false;
-           return text.substr(0,end);
-        }
-        
-         
         function replaceWrapperText(text,tag,withText) {
             
             const [prefix,suffix] = extractWrapperTags(tag);
@@ -106,18 +87,22 @@ ml(`
             
             return text;
         }
-        
-        function regexpEscape(str) {
-            return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
-        }
-        
+
         function html_file_template(dir_html) {
                 
-                const html_details_html = extractWrapperText(dir_html,'html_details');
-                if (!html_details_html) return false;
+                // extract the area of the html template text that 
+                const file_entry_html = extractWrapperText(dir_html,'file_entry');
+                if (!file_entry_html) return false;
                 
-                const link_it_html    = extractWrapperText(html_details_html,'link_it');
+                const link_it_html    = extractWrapperText(file_entry_html,'link_it');
+                
+                // in order to hide the alias_root directory when "show full path" is unchecked
+                // we need a way to wrap every instance of it in a span with the class "alias_root"
+                // to do this, we use a global regexp replace, which picks up a carefully placed comment inside the template,
+                // which appears before the full uri, which follows the parent link.
+                
                 const fixup_re =  new RegExp(regexpEscape('<!--alias_root=-->'+alias_root),'g');
+                
                 return file_template;
                 
                 
@@ -125,7 +110,7 @@ ml(`
                 function file_template(vars) {
                     const html = replaceTextVars(
                         replaceWrapperText(
-                            html_details_html,
+                            file_entry_html,
                             "link_it",
                             linkit(
                                 vars.link_it_path, 
@@ -159,8 +144,7 @@ ml(`
                
 
         }
-        
-        
+
         function get_html_file_item (dir_html){
             
            const template = html_file_template(dir_html);   
@@ -213,29 +197,52 @@ ml(`
             
         }
         
-        
-         
-        function boldit(uri,disp){
-            const split=(disp||uri).split("/");
-            if (split.length===1) return '<b>'+(disp||uri)+'</b>';
-            const last = split.pop();
-            if (split.length===1) return split[0]+'/<b>'+last+'</b>';
-            return split.join("/")+'/<b>'+last+'</b>';
-        }
-        
-        function linkit(uri,disp,a_wrap){ 
-            a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
-            const split=(disp||uri).split("/");
-            if (split.length===1) return a_wrap.join(disp||uri);
-            const last = split.pop();
-            if (split.length===1) return split[0]+'/'+ a_wrap.join(last);
-            return split.join("/")+'/'+ a_wrap.join(last);
-        }
-     
-         
     }
     
+    function boldit(uri,disp){
+        const split=(disp||uri).split("/");
+        if (split.length===1) return '<b>'+(disp||uri)+'</b>';
+        const last = split.pop();
+        if (split.length===1) return split[0]+'/<b>'+last+'</b>';
+        return split.join("/")+'/<b>'+last+'</b>';
+    }
     
+    function linkit(uri,disp,a_wrap){ 
+        a_wrap=a_wrap||['<a href="'+uri+'">','</a>'];
+        const split=(disp||uri).split("/");
+        if (split.length===1) return a_wrap.join(disp||uri);
+        const last = split.pop();
+        if (split.length===1) return split[0]+'/'+ a_wrap.join(last);
+        return split.join("/")+'/'+ a_wrap.join(last);
+    }
+ 
+    function extractWrapperText(text,tag) {
+       const [prefix,suffix] = extractWrapperTags(tag);
+       const start = text.indexOf(prefix);
+       if (start<0) return false;
+       text = text.substr(start+prefix.length);
+       const end = text.indexOf(suffix);
+       if (end<0) return false;
+       return text.substr(0,end);
+    }
     
+    function replaceVarText(text,key,value) {
+        replaceVarWrapperTags(key).forEach(function(search){
+            text = text.split(search).join(value);
+        });
+        return text;
+    }
+    
+    function regexpEscape(str) {
+        return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
+    }
+    
+    function extractWrapperTags(tag) {
+        return [ '<!--'+tag+'>-->', '<!--<'+tag+'-->'];
+    }
+
+    function replaceVarWrapperTags(tag) {
+       return [ '${'+tag+'}', '<!--'+tag+'-->'];
+    }
 
 });

@@ -196,7 +196,7 @@ ml(`
                                    zips        : [ url ],
                                    alias_root  : zipFileMeta.alias_root,
                                    files       : { },
-                                   syntax      : { }
+                                   editor      : { }
                                };
                                
                                file_listing.forEach(function(file){
@@ -232,8 +232,23 @@ ml(`
                }
                
                function getVirtualDirOpts(dirData) {
+                   const file_listing = Object.keys(dirData.editor);
+                   Object.keys(dirData.files).forEach(function(file){
+                       if (!dirData.editor[file]) {
+                           file_listing[file].push(file);
+                       }
+                   });
                    
-                   
+                   const htmlFileItemLibOpts = {
+                       uri,
+                       alias_root    : dirData.alias_root,
+                       fileIsHidden  : function(fn){ return /^\./.test(fn); },
+                       fileIsDeleted : function(){   return false;},
+                       fileisEdited  : function(fn){ return dirData.files[fn]<0; },
+                       file_listing,
+                       updated_prefix,
+                       hidden_files_exist : false 
+                   };
                    
                }
        
@@ -460,7 +475,7 @@ ml(`
     function renderDirPage (url,virtual,dir_html,renderOpts,renderLib) {
         
         const html_file_func = renderLib.get_html_file_item(dir_html);
-        const html_details = renderOpts.all_files.map(html_file_func);
+        const file_entry = renderOpts.all_files.map(html_file_func);
         const origin = location.origin;
              
         const virtual_prefix =  virtual ?  '?virtual_prefix='+encodeURIComponent(
@@ -475,7 +490,7 @@ ml(`
                 head_script        : '',
                 hidden_files_class : renderOpts.hidden_files_exist?' hidden_files_exist':'',
                 designer           : '',
-                html_details       : html_details.join("\n")
+                file_entry         : file_entry.join("\n")
             }
          );
             
@@ -595,7 +610,7 @@ ml(`
 
                                     htmlFileItemLibOpts.parent_link = parent_link;
                                    
-                                    const html_details = all_files.map(html_file_func);
+                                    const file_entry = all_files.map(html_file_func);
                                     
                                     
                                     
@@ -604,7 +619,7 @@ ml(`
                                     function renderHtml (
                                     htmlTemplate,tools,updated_prefix,uri,
                                     virtual,alias_root,files, hidden_files_exist,
-                                    html_details,parent_link) {
+                                    file_entry,parent_link) {
                                     */
                 
                                     const html = renderHtml (
@@ -616,7 +631,7 @@ ml(`
                                         //zipFileMeta.alias_root,
                                         //all_files,
                                         htmlFileItemLibOpts.hidden_files_exist,
-                                        html_details
+                                        file_entry
                                     );
                 
                                     return resolve( 
@@ -652,7 +667,7 @@ ml(`
              //alias_root,
              //files, 
              hidden_files_exist,
-             html_details) {
+             file_entry) {
              const origin = location.origin;
              
              const virtual_prefix =  virtual ?  '?virtual_prefix='+encodeURIComponent(
@@ -670,7 +685,7 @@ ml(`
                             head_script:'',
                             hidden_files_class:hidden_files_exist?' hidden_files_exist':'',
                             designer:'',
-                            html_details : html_details.join("\n")
+                            file_entry : file_entry.join("\n")
                         }
 
              );
