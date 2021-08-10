@@ -61,7 +61,7 @@ ml(`
                  virtualDirQuery,
                  newVirtualDirs,
                  virtualDirListing,
-                 addSyntaxInfo
+                 addEditorInfo
                  // from ...
              } = ml.i.virtualDirLib( 
                  // which needs these items...
@@ -121,7 +121,7 @@ ml(`
                 response200,
                 getUpdatedURLs,
                 virtualDirListing,
-                addSyntaxInfo
+                addEditorInfo
             });
              
             const {
@@ -225,7 +225,7 @@ ml(`
                                          updateURLContents,
                                          defaultMiddlewareChain,
                                          virtualDirListing,
-                                         addSyntaxInfo                       
+                                         addEditorInfo                       
                  
                  
              };

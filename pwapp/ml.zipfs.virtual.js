@@ -34,7 +34,7 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                     newVirtualDirs    : newVirtualDirs,
                     virtualDirDB      : virtualDirDB,
                     virtualDirListing : virtualDirListing,
-                    addSyntaxInfo     : addSyntaxInfo
+                    addEditorInfo     : addEditorInfo
                 };
 
                 function newVirtualDirs(newDirs) {
@@ -115,7 +115,7 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                      // giving priority to those more recent zips (more recent zips have lower index) 
                                      // does not include files in older zips that have been deleted in newer zips.
                                      const listing = {};   
-                                     const syntax  = {};
+                                     const editor  = {};
                                      
                                      zipData.forEach(function(data,ix){
                                          data.tools.allFiles(function(files){
@@ -163,7 +163,7 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                         });
                                         
                                         
-                                        addSyntaxInfo(
+                                        addEditorInfo(
                                             
                                             databases.updatedMetadata,{
                                                url        : virtual_prefix+'/',
@@ -196,12 +196,12 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                     
                 }
                 
-                function addSyntaxInfo(db,dirData,cb) {
+                function addEditorInfo(db,dirData,cb) {
                     const trim0 = dirData.alias_root.length;
-                    dirData.syntax = dirData.syntax || {};
-                    const syntaxPromises=[];
+                    dirData.editor = dirData.editor || {};
+                    const editorPromises=[];
                     const getSyntax = function(file){
-                        syntaxPromises.push( new Promise(function(resolve){
+                        editorPromises.push( new Promise(function(resolve){
                             db.getItem( dirData.url.replace(/\/$/,'') + "/"+ file.substr(trim0)+"." + syntax_json_ext,function(err,x){
                                 if (err||!x) return resolve();
                                 const info = JSON.parse(new TextDecoder().decode(x[0].buffer));
@@ -211,14 +211,14 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                         }));
                     };
                     Object.keys(dirData.files).forEach(getSyntax);
-                    Promise.all(syntaxPromises).then(function(results){
+                    Promise.all(editorPromises).then(function(results){
                        results.forEach(function(info){
                            if (info){
-                             dirData.syntax[  info.file ] = info;
+                             dirData.editor[  info.file ] = info;
                              delete info.file;
                            }
                        });
-                       syntaxPromises.splice(0,syntaxPromises.length);
+                       editorPromises.splice(0,editorPromises.length);
                        results.splice(0,results.length);
                        cb(dirData);
                    });

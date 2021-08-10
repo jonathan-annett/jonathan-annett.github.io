@@ -21,7 +21,14 @@ ml(`
                 
                const {
                    databases,
-                   getZipObject,fetchUpdatedURLContents,getZipFileUpdates,getZipDirMetaTools,fileisEdited,response200,getUpdatedURLs,virtualDirListing,addSyntaxInfo 
+                   getZipObject,
+                   fetchUpdatedURLContents,
+                   getZipFileUpdates,
+                   getZipDirMetaTools,
+                   fileisEdited,
+                   response200,getUpdatedURLs,
+                   virtualDirListing,
+                   addEditorInfo 
                } = opts;   
                        
                const sha1Lib     = ml.i.sha1Lib;
@@ -35,16 +42,18 @@ ml(`
                
                
                const { resolveZipListing_HTML,
-                       resolveZipListing_Script } = htmlDirLib({
-                                                      databases,
-                                                      getZipObject,
-                                                      zipFSDirHtml,
-                                                      getZipFileUpdates,
-                                                      getZipDirMetaTools,
-                                                      virtualDirListing,
-                                                      addSyntaxInfo,
-                                                      fileisEdited
-                                                  });
+                       resolveZipListing_Script 
+                     } = htmlDirLib ({
+                    databases,
+                    getZipObject,
+                    zipFSDirHtml,
+                    getZipFileUpdates,
+                    getZipDirMetaTools,
+                    virtualDirListing,
+                    addEditorInfo,
+                    fileisEdited
+               });
+                
                return  {
                    
                   resolveZipListing_Script : resolveZipListing_Script,
@@ -79,6 +88,7 @@ ml(`
                                };
                                response200(resolve,buffer,fileEntry);
                            });
+                           
                        }); 
                    
                    });
@@ -221,13 +231,11 @@ ml(`
                
                */
                
-           };    
-       
+           };   
 
         }
 
     },  {
-    
     
             ServiceWorkerGlobalScope: [ ()=> ml.i.JSZip ]
             
