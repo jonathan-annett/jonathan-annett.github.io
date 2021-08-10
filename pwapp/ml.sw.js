@@ -1,7 +1,5 @@
 /* global self,importScripts,BroadcastChannel */
 
-
-
 function ml(x,L, o, a, d, s){
     let c,t,T=(G)=>typeof G,l=location,O=l.origin,A=[].slice.call(arguments),W=A.map(T);
     if (!ml.h){
