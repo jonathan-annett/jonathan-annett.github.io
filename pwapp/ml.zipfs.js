@@ -110,8 +110,9 @@ ml(`
                 getUpdatedZipFile,
                 getZipFileUpdatedFiles
                 // from
-            }  =  ml.i.zipFSListingLib( 
+            }  =  ml.i.zipFSListingLib( {
                 // whch needs these items...
+                databases,
                 getZipObject,
                 fetchUpdatedURLContents,
                 getZipFileUpdates,
@@ -121,7 +122,7 @@ ml(`
                 getUpdatedURLs,
                 virtualDirListing,
                 addSyntaxInfo
-            );
+            });
              
             const {
                     //import these items ...  

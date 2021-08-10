@@ -17,7 +17,12 @@ ml(`
     {   
         ServiceWorkerGlobalScope: function zipFSListingLib (  JSZip ) {
             
-            return function listingLib(getZipObject,fetchUpdatedURLContents,getZipFileUpdates,getZipDirMetaTools,fileisEdited,response200,getUpdatedURLs,virtualDirListing,addSyntaxInfo) {
+            return function listingLib(opts) {
+                
+               const {
+                   databases,
+                   getZipObject,fetchUpdatedURLContents,getZipFileUpdates,getZipDirMetaTools,fileisEdited,response200,getUpdatedURLs,virtualDirListing,addSyntaxInfo 
+               } = opts;   
                        
                const sha1Lib     = ml.i.sha1Lib;
                const sha1        = sha1Lib.cb;
@@ -31,6 +36,7 @@ ml(`
                
                const { resolveZipListing_HTML,
                        resolveZipListing_Script } = htmlDirLib({
+                                                      databases,
                                                       getZipObject,
                                                       zipFSDirHtml,
                                                       getZipFileUpdates,

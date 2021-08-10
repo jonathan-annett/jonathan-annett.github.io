@@ -12,6 +12,7 @@ ml(`
             return function htmlDirLib (api) {
                 
                 const  {
+                    databases,
                     getZipObject,
                     zipFSDirHtml,
                     getZipFileUpdates,
@@ -141,7 +142,7 @@ ml(`
                                const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
                                const html = renderDirPage(url,virtual,dir_html, htmlFileItemLibOpts,renderFileLib );
                                setParentLink(renderFileLib,htmlFileItemLibOpts,url);
-                               addSyntaxInfo(dirData,function(){
+                               addSyntaxInfo(databases.updatedMetadata,dirData,function(){
                                    console.log(dirData);
                                    return response200_HTML (resolve,html);
                                });
