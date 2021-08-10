@@ -84,7 +84,8 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                         const base  = virtualDirDB.virtualDirZipBase[url];
                         if (dirs&& base) {
                             const zip_root = base.root;
-                            const trim = 0-base.root.length;
+                            const trim0=base.root.length;
+                            const trim = 0-trim0;
                             const dirs_trimmed =  dirs.map(function(u){
                                 return u.slice(0,trim);
                             });
@@ -119,7 +120,7 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                      const syntaxPromises=[];
                                      const getSyntax = function(file){
                                          syntaxPromises.push( new Promise(function(resolve){
-                                             databases.updatedMetadata.getItem( virtual_prefix + file+"." + syntax_json_ext,function(err,x){
+                                             databases.updatedMetadata.getItem( virtual_prefix + file.substr(trim0)+"." + syntax_json_ext,function(err,x){
                                                  if (err||!x) return resolve();
                                                  const info = JSON.parse(x[0]);
                                                  
