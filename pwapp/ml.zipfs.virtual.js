@@ -115,6 +115,21 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                      // giving priority to those more recent zips (more recent zips have lower index) 
                                      // does not include files in older zips that have been deleted in newer zips.
                                      const listing = {};   
+                                     const syntax  = {};
+                                     const syntaxPromises=[];
+                                     const getSyntax = function(file){
+                                         syntaxPromises.push( new Promise(function(resolve){
+                                             databases.updatedMetadata.getItem( virtual_prefix + file+"." + syntax_json_ext,function(err,x){
+                                                 if (err) return resolve();
+                                                 const info = JSON.parse(x[0]);
+                                                 
+                                                 info.file = file;
+                                                 info.hash = x[1].headers.etag;
+                                                 resolve(info);
+                                             });
+                                         }));
+                                     };
+                                     
                                      zipData.forEach(function(data,ix){
                                          data.tools.allFiles(function(files){
                                              files.forEach(function(file){
@@ -134,6 +149,7 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                                              !!data.tools.meta.deleted[file];
                                                      })){
                                                          listing[file]=dirs_trimmed.indexOf(data.zip_url );
+                                                         getSyntax(file);
                                                      }
                                                  }
                                              });
@@ -143,7 +159,7 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                      getZipFileUpdates(virtual_prefix+'/',function(err,edited_files){
                                         if (err) return cb(err);
                                         const alias_root = zip_root.replace(/^\//,'')+'/';
-                                        const promises=[];
+                                        
                                         edited_files.forEach(function(file){
                                             if (file.indexOf(zip_root_without_slash)!==0) return;
                                             
@@ -158,38 +174,26 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                                 // file not in any zip
                                                 listing[file] = -1;
                                             }
-                                            
-                                            promises.push( new Promise(function(resolve){
-                                                databases.updatedMetadata.getItem( virtual_prefix + file+"." + syntax_json_ext,function(err,x){
-                                                    if (err) return resolve();
-                                                    const info = JSON.parse(x[0]);
-                                                    
-                                                    info.file = file;
-                                                    info.hash = x[1].headers.etag;
-                                                    resolve(info);
-                                                });
-                                            }));
-                                            
-                                            
+                                            getSyntax(file);
+
                                         });
                                         
-                                        Promise.all(promises).then(function(results){
-                                            const payload = {
-                                                url        : virtual_prefix+'/',
-                                                zips       : dirs_trimmed,
-                                                alias_root : zip_root.replace(/^\//,'').replace(/\/$/,'') + '/',
-                                                files      : listing,
-                                                syntax     : {}
-                                            }
+                                        Promise.all(syntaxPromises).then(function(results){
                                             results.forEach(function(info){
                                                 if (info){
-                                                  payload.syntax[  info.file ] = info;
+                                                  syntax[  info.file ] = info;
                                                   delete info.file;
                                                 }
                                             });
-                                            promises.splice(0,promises.length);
+                                            syntaxPromises.splice(0,syntaxPromises.length);
                                             results.splice(0,results.length);
-                                            cb( undefined,payload);
+                                            cb( undefined,{
+                                               url        : virtual_prefix+'/',
+                                               zips       : dirs_trimmed,
+                                               alias_root : zip_root.replace(/^\//,'').replace(/\/$/,'') + '/',
+                                               files      : listing,
+                                               syntax     : syntax
+                                            });
                                         });
                                         
                                        
