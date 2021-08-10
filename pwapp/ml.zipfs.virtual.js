@@ -120,7 +120,7 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                      const getSyntax = function(file){
                                          syntaxPromises.push( new Promise(function(resolve){
                                              databases.updatedMetadata.getItem( virtual_prefix + file+"." + syntax_json_ext,function(err,x){
-                                                 if (err) return resolve();
+                                                 if (err||!x) return resolve();
                                                  const info = JSON.parse(x[0]);
                                                  
                                                  info.file = file;
