@@ -2,7 +2,9 @@
 
 
 /* global ml,self,caches, Response,Headers  */
-ml([],function(){ml(2,
+ml(`
+
+`,function(){ml(2,
 
     {
         ServiceWorkerGlobalScope: function zipFSResponseLib( lib ) {

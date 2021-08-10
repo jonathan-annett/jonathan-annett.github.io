@@ -1,11 +1,29 @@
 /* global ml,self,caches, Response,Headers  */
-ml([],function(){ml(2,
+ml(`
+
+htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js 
+   
+
+`,function(){ml(2,
 
     {
 
         ServiceWorkerGlobalScope: function virtualDirLib(  ) {
             
-            
+            const  { 
+                fileIsEditable,
+                fileIsImage,
+                aceModeForFile,
+                aceThemeForFile,
+                mimeForFilename,
+                aceModeHasWorker,
+                
+                editor_session_ext,
+                syntax_json_ext
+                
+                
+            } =  ml.i.htmlFileMetaLib; 
+
             
             return function  (getEmbeddedZipFileResponse,getZipDirMetaTools,getZipFileUpdates) {
 
@@ -131,7 +149,6 @@ ml([],function(){ml(2,
                                             
                                             file = alias_root+file;
                                             const ix = listing[file];
-                                            
                                             if (typeof ix==='number') {
                                                 if (ix >=0 ) {
                                                     // file is in zip, and has been updated.
@@ -142,18 +159,40 @@ ml([],function(){ml(2,
                                                 listing[file] = -1;
                                             }
                                             
-                                            databases.updatedMetadata.getItem()
+                                            promises.push( new Promise(function(resolve){
+                                                databases.updatedMetadata.getItem( virtual_prefix + file+"." + syntax_json_ext,function(err,x){
+                                                    if (err) return resolve();
+                                                    const info = JSON.parse(x[0]);
+                                                    
+                                                    info.file = file;
+                                                    info.hash = x[1].headers.etag;
+                                                    resolve(info);
+                                                });
+                                            }));
+                                            
                                             
                                         });
                                         
-                                        cb( undefined,
-                                            {
+                                        Promise.all(promises).then(function(results){
+                                            const payload = {
                                                 url        : virtual_prefix+'/',
                                                 zips       : dirs_trimmed,
                                                 alias_root : zip_root.replace(/^\//,'').replace(/\/$/,'') + '/',
-                                                files      : listing
+                                                files      : listing,
+                                                syntax     : {}
                                             }
-                                        );
+                                            results.forEach(function(info){
+                                                if (info){
+                                                  payload.syntax[  info.file ] = info;
+                                                  delete info.file;
+                                                }
+                                            });
+                                            promises.splice(0,promises.length);
+                                            results.splice(0,results.length);
+                                            cb( undefined,payload);
+                                        });
+                                        
+                                       
                                      });
                                      
                                 }
