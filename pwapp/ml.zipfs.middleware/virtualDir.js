@@ -67,7 +67,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                   fn :function (event,middleware,resolve) {
                       
                        const zip_url = event.fixup_url.replace(virtual_listing_re,'');
-                       middleware.virtualDirListing(zip_url,function(err,listingData){
+                       middleware.virtualDirListing(zip_url,middleware.databases,function(err,listingData){
                            if (err) {
                                console.log(err);
                            } else {
@@ -91,7 +91,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                         
                         if (index < result.virtualDirUrls.length) {
                             const virtualDirUrl = result.virtualDirUrls[index];
-                            middleware.virtualDirListing(virtualDirUrl,function(err,listingData){
+                            middleware.virtualDirListing(virtualDirUrl,middleware.databases,function(err,listingData){
                                 if (err) {
                                     console.log(err);
                                 } else {

@@ -1,4 +1,4 @@
-/* global ml  */
+/* global ml,Response,Headers  */
 /*
 
    middleware must either:
@@ -65,7 +65,7 @@ ml([],function(){ml(2,
               re : virtual_listing_re,
               fn :function (event,middleware,resolve) {
                    const zip_url = event.fixup_url.replace(virtual_listing_re,'');
-                   middleware.virtualDirListing(zip_url,function(err,listingData){
+                   middleware.virtualDirListing(zip_url,middleware.databases,function(err,listingData){
                        if (err) {
                            console.log(err);
                        } else {
@@ -98,7 +98,7 @@ ml([],function(){ml(2,
                     
                     if (index < result.virtualDirUrls.length) {
                         const virtualDirUrl = result.virtualDirUrls[index];
-                        middleware.virtualDirListing(virtualDirUrl,function(err,listingData){
+                        middleware.virtualDirListing(virtualDirUrl,middleware.databases,function(err,listingData){
                             if (err) {
                                 console.log(err);
                             } else {

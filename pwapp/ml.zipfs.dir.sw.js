@@ -39,7 +39,6 @@ ml(`
                                                       virtualDirListing,
                                                       fileisEdited
                                                   });
-           
                return  {
                    
                   resolveZipListing_Script : resolveZipListing_Script,
@@ -83,8 +82,8 @@ ml(`
                function getZipFileUpdatedFiles (zip_url,alias,db,cb) {
                    
                    if (typeof db==='function') {
-                       cb=db;
-                       db="updatedURLS";
+                       cb = db;
+                       db = "updatedURLS";
                    }
                    
                    if (typeof alias==='function') {

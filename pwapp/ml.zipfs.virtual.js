@@ -9,10 +9,7 @@ ml([],function(){ml(2,
             
             return function  (getEmbeddedZipFileResponse,getZipDirMetaTools,getZipFileUpdates) {
 
-                const virtualDirDB = {
-                
-                    
-                };
+                const virtualDirDB = { };
                 
                  const lib = {
                     virtualDirQuery   : virtualDirQuery,
@@ -47,7 +44,6 @@ ml([],function(){ml(2,
                          }
                      });
                      
-                     
                     function clearVirtualDirsCache() {
                         
                         if (virtualDirDB.virtualDirZipBase) {
@@ -61,8 +57,8 @@ ml([],function(){ml(2,
                     }
                 }
                 
-                // returns a stringlist of all files in the zip (includes hidden files, but not deleted files)
-                function virtualDirListing (url,cb) {
+                // returns an object repesenting all files in a virtual dir 
+                function virtualDirListing (url,databases,cb) {
                     
                     if (virtualDirDB.virtualDirUrls.indexOf(url)>=0) {
                         
@@ -85,8 +81,7 @@ ml([],function(){ml(2,
                             const virtual_prefix = zip_root &&  url_without_leading_slash.endsWith(zip_root_without_slash) ? 
                                                                 url_without_leading_slash.slice(0,0-zip_root_without_slash.length) : 
                                                                 url_without_leading_slash;
-                            
-                            
+
                             //asynchronously open all the zip files in this db
                             const getNextFileSet =  function (index) {
                                 if (index<zipData.length) {
@@ -130,7 +125,7 @@ ml([],function(){ml(2,
                                      getZipFileUpdates(virtual_prefix+'/',function(err,edited_files){
                                         if (err) return cb(err);
                                         const alias_root = zip_root.replace(/^\//,'')+'/';
-                                        
+                                        const promises=[];
                                         edited_files.forEach(function(file){
                                             if (file.indexOf(zip_root_without_slash)!==0) return;
                                             
@@ -146,6 +141,9 @@ ml([],function(){ml(2,
                                                 // file not in any zip
                                                 listing[file] = -1;
                                             }
+                                            
+                                            databases.updatedMetadata.getItem()
+                                            
                                         });
                                         
                                         cb( undefined,
@@ -157,7 +155,6 @@ ml([],function(){ml(2,
                                             }
                                         );
                                      });
-                                     
                                      
                                 }
                             };

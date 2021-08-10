@@ -24,7 +24,6 @@ ml(`
     {
         Window: function pwaZipDirListing(pwa,zipFSApiLib,sha1,MarkdownConverter ) {
             
-            var session_data;
             const Tabulator    = ml.i.Tabulator;
             
             const params = new URL(location).searchParams;
@@ -45,7 +44,7 @@ ml(`
                 
                 ace_session_json = ml.i.aceSessionLib,
                 
-                { fileIsEditable,fileIsImage,aceModeForFile,aceThemeForFile,aceModeHasWorker } =  ml.i.htmlFileMetaLib,
+                { fileIsEditable,fileIsImage,aceModeForFile,aceThemeForFile,aceModeHasWorker, syntax_json_ext,editor_session_ext  } =  ml.i.htmlFileMetaLib,
                 
                 { open_url   } = ml.i.openWindowLib,
                 
@@ -774,7 +773,7 @@ ml(`
                                                    } else {
                                                        // note - opening an already open editor just returns the li_ed element
                                                        
-                                                      removeFileAssociatedData(filename,session_data,function(){
+                                                      removeFileAssociatedData(filename,editor_session_ext,function(){
                                                           openInbuiltEditor (filename,li,function(li_ed) {
                                                               li_ed.reload();
                                                               li.classList.remove("edited");
@@ -787,7 +786,7 @@ ml(`
                                               
                                          
                                        } else {
-                                            removeFileAssociatedData(filename,session_data,function(){
+                                            removeFileAssociatedData(filename,editor_session_ext,function(){
                                                if (zip_files.indexOf(filename)<0) {
                                                   // this was a new file.
                                                   li.parentElement.removeChild(li);
@@ -1618,7 +1617,7 @@ ml(`
                             
                         function(err,json){
                             if (err) return cb(err);
-                            writeFileAssociatedText(filename,session_data,json,cb);
+                            writeFileAssociatedText(filename,editor_session_ext,json,cb);
                         });
                     }
                 }
@@ -1863,7 +1862,7 @@ ml(`
                                 li_ed.editor.session.setValue("error:"+err.message||err);
                             } else {
                                 
-                                readFileAssociatedText(filename,session_data,function(err,sess_json){
+                                readFileAssociatedText(filename,editor_session_ext,function(err,sess_json){
                                          
                                     if (sess_json) {
                                         
@@ -2284,7 +2283,7 @@ ml(`
                 
                 function lintSource (hash,src,mode,filename,cb) {
                     
-                    readFileAssociatedText(filename,"syntax",function(err,text){
+                    readFileAssociatedText(filename,syntax_json_ext,function(err,text){
                         if (text) {
                             try {
                                const data = JSON.parse(text);
@@ -2297,7 +2296,7 @@ ml(`
                         
                         linter (mode,hash,src,filename,function(errors,warnings){
                             const json = JSON.stringify({errors,warnings,hash});
-                            writeFileAssociatedText(filename,"syntax",json,function(){
+                            writeFileAssociatedText(filename,syntax_json_ext,json,function(){
                                 return cb(errors,warnings);
                             });
                             
