@@ -144,6 +144,7 @@ ml(`
                                const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
                                const html = renderDirPage(url,virtual,dir_html, htmlFileItemLibOpts,renderFileLib );
                                setParentLink(renderFileLib,htmlFileItemLibOpts,url);
+                               const trim0 = 0;
                                addSyntaxInfo(databases.updatedMetadata,dirData,function(){
                                    console.log(dirData);
                                    return response200_HTML (resolve,html);

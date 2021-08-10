@@ -172,7 +172,7 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                                files      : listing,
                                             },
                                             
-                                            base.root.length,
+                                            //base.root.length,
                                             
                                             function(dirData){
                                                 
@@ -196,7 +196,8 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                     
                 }
                 
-                function addSyntaxInfo(db,dirData,trim0,cb) {
+                function addSyntaxInfo(db,dirData,cb) {
+                    const trim0 = dirData.alias_root.length;
                     dirData.syntax = dirData.syntax || {};
                     const syntaxPromises=[];
                     const getSyntax = function(file){
