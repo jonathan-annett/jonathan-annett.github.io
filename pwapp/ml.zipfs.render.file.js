@@ -1,6 +1,7 @@
 /* global ml */
 
 ml(`
+
   htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
   
 `,function(){ml(2,
@@ -100,7 +101,7 @@ ml(`
             Object.keys(vars).forEach(function(key){
                 const value = vars[key];
                 text = replaceWrapperText(text,key,value);
-                text = replaceVarText(text,key,value)
+                text = replaceVarText(text,key,value);
             });
             
             return text;

@@ -7,7 +7,7 @@ ml(`
     pwaWindow@Window      | ${ml.c.app_root}ml.pwa-win.js
     editInZed             | ${ml.c.app_root}ml.zedhook.js
     sha1Lib               | ${ml.c.app_root}sha1.js
-    htmlFileItemLib       | ${ml.c.app_root}ml.zipfs.dir.file.js
+    htmlFileItemLib       | ${ml.c.app_root}ml.zipfs.render.file.js
     htmlFileMetaLib       | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
     showdown              | https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.js
     aceSessionLib         | ${ml.c.app_root}ml.ace-session.js

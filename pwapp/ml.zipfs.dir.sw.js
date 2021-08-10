@@ -8,7 +8,8 @@ ml(`
     
     sha1Lib              | ${ml.c.app_root}sha1.js
     JSZip                | ${ml.c.app_root}jszip.min.js
-    htmlFileItemLib      | ${ml.c.app_root}ml.zipfs.dir.file.js
+    htmlFileItemLib      | ${ml.c.app_root}ml.zipfs.render.file.js
+    htmlDirLib           | ${ml.c.app_root}ml.zipfs.render.dir.js
     htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js 
     zipFSDirHtml         | ${ml.c.app_root}ml.zipfs.dir.html
 
