@@ -122,10 +122,8 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                          syntaxPromises.push( new Promise(function(resolve){
                                              databases.updatedMetadata.getItem( virtual_prefix + "/"+ file.substr(trim0)+"." + syntax_json_ext,function(err,x){
                                                  if (err||!x) return resolve();
-                                                 const info = JSON.parse(x[0]);
-                                                 
+                                                 const info = JSON.parse(new TextDecoder().decode(x[0].buffer));
                                                  info.file = file;
-                                                 info.hash = x[1].headers.etag;
                                                  resolve(info);
                                              });
                                          }));
