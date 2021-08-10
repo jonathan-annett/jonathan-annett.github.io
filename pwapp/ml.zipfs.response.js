@@ -33,6 +33,7 @@ ml(`
             response200,
             response500,
             response200_JSON,
+            response200_HTML
         };
         return lib;
         
@@ -102,8 +103,22 @@ ml(`
               })
             }))
         }
-    
         
+        function response200_HTML(resolve,html) {
+            return resolve(
+                 
+                 new Response(
+                        html, {
+                                 status: 200,
+                                 statusText: 'Ok',
+                                 headers: new Headers({
+                                   'Content-Type'   : 'text/html',
+                                   'Content-Length' : html.length,
+                                 })
+                              }
+                  )
+            );
+        }
         
       
     }

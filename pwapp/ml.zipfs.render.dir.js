@@ -3,6 +3,7 @@
 ml(`
 
   htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
+  zipFSResponseLib     | ${ml.c.app_root}ml.zipfs.response.js 
   
 `,function(){ml(2,
 
@@ -109,6 +110,9 @@ ml(`
         },
 
         ServiceWorkerGlobalScope: function htmlDirLib(  ) {
+            
+            const response200_HTML = ml.i.zipFSResponseLib.response200_HTML;
+            
             return function htmlDirLib (api) {
                        
                const  {
@@ -181,20 +185,8 @@ ml(`
                                        
                                        const html = renderDirPage(url,virtual,dir_html, htmlFileItemLibOpts,renderFileLib );
                                       
-                                       return resolve(
-                                           
-                                           new Response(
-                                                  html, {
-                                                           status: 200,
-                                                           statusText: 'Ok',
-                                                           headers: new Headers({
-                                                             'Content-Type'   : 'text/html',
-                                                             'Content-Length' : html.length,
-                                                           })
-                                               })
-                                      );
-                                      
-                                 
+                                       return response200_HTML (resolve,html);
+
                                    });
                                    
                                });
