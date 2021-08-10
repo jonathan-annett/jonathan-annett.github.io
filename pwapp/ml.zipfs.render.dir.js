@@ -181,8 +181,8 @@ ml(`
                                
                                
                                const htmlFileItemLibOpts = {
-                                   uri,
                                    alias_root    : zipFileMeta.alias_root,
+                                   fileFullUri   : function(filename) { return "/"+uri+"/"+filename;},
                                    fileIsHidden  : tools.isHidden,
                                    fileIsDeleted : tools.isDeleted,
                                    fileisEdited  ,
@@ -240,13 +240,19 @@ ml(`
                    });
                    
                    const htmlFileItemLibOpts = {
-                       uri,
+                       
+                       fileFullUri   : function(fn){ 
+                           const ix = dirData.files[fn];
+                           const prefix = typeof ix==='number'&& ix >= 0 ? dirData.zips[ ix ] : dirData.url;
+                           return (prefix.replace(/^https\:\/\//,'')+fn).replace(/^.*\//,'/');
+                       },
                        alias_root    : dirData.alias_root,
                        fileIsHidden  : function(fn){ return /^\./.test(fn); },
                        fileIsDeleted : function(){   return false;},
                        fileisEdited  : function(fn){ return dirData.files[fn]<0; },
+                       file_sha1     : function(fn){ return dirData.editor[fn] ? dirData.editor[fn].hash : '';},
                        file_listing,
-                       updated_prefix,
+                       updated_prefix : dirData.url,
                        hidden_files_exist : false 
                    };
                    

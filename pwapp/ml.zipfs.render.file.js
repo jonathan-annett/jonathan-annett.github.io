@@ -155,7 +155,7 @@ ml(`
                
                if ( hidden_js_regex.test(filename)) return "";   
              
-                const full_uri = "/"+dirInfo.uri+"/"+filename,
+                const full_uri     =  dirInfo.fileFullUri(filename),
                 basename=full_uri.substr(full_uri.lastIndexOf("/")+1);
                 
                 const test_name    = alias_root && filename.indexOf(alias_root)===0 ? filename.substr(alias_root.length) : filename;
@@ -164,6 +164,7 @@ ml(`
                 const is_deleted   = is_hidden && dirInfo.fileIsDeleted(test_name)  ;//( tools.isDeleted(basename) || alt_name && tools.isDeleted(alt_name) );
                 const is_editable  = fileIsEditable(filename);
                 const is_image     = fileIsImage(filename);
+                const file_sha1    = dirInfo.file_sha1 ? dirInfo.file_sha1(filename) : '';
                 const is_zip       = filename.endsWith(".zip");
                 const is_edited    = dirInfo.fileisEdited( dirInfo.updated_prefix+test_name );
                 
@@ -187,9 +188,9 @@ ml(`
                    basename     : basename,
                    is_in_zip    : is_in_zip?'1':'0',
                    parent_link  : dirInfo.parent_link,
+                   sha1         : file_sha1,
                    link_it_path : full_uri,
                    link_it_filename:filename,
-                   sha1:'',
                    designer:''
                });
                
