@@ -17,6 +17,7 @@ ml(`
                     getZipFileUpdates,
                     getZipDirMetaTools,
                     virtualDirListing,
+                    addSyntaxInfo,
                     fileisEdited
                     
                 } = api;
@@ -121,7 +122,8 @@ ml(`
                    getZipFileUpdates,
                    getZipDirMetaTools,
                    virtualDirListing,
-                   fileisEdited
+                   addSyntaxInfo,
+                   fileisEdited,
                } = api;
                
                return {
@@ -139,9 +141,11 @@ ml(`
                                const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
                                const html = renderDirPage(url,virtual,dir_html, htmlFileItemLibOpts,renderFileLib );
                                setParentLink(renderFileLib,htmlFileItemLibOpts,url);
+                               addSyntaxInfo(dirData,function(){
+                                   console.log(dirData);
+                                   return response200_HTML (resolve,html);
+                               });
                                
-                               console.log(dirData);
-                               return response200_HTML (resolve,html);
                            });
                        });
                        /*

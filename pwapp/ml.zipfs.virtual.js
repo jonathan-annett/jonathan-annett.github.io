@@ -33,7 +33,8 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                     virtualDirEvent   : virtualDirEvent,
                     newVirtualDirs    : newVirtualDirs,
                     virtualDirDB      : virtualDirDB,
-                    virtualDirListing : virtualDirListing
+                    virtualDirListing : virtualDirListing,
+                    addSyntaxInfo     : addSyntaxInfo
                 };
 
                 function newVirtualDirs(newDirs) {
