@@ -35,7 +35,7 @@ ml(`
         ServiceWorkerGlobalScope: function swResponseZipLib (sha1,fnSrc) {
         
         
-        
+        const console_log = ()=>{}
 
         
         return function (dbKeyPrefix) {
@@ -545,7 +545,7 @@ ml(`
                                        });
                                   });
                               } else {
-                                  console.log("all zips for virtual dir",db_url,"are cached");
+                                  console_log("all zips for virtual dir",db_url,"are cached");
                                   cb();
                               }
                           }
@@ -553,7 +553,7 @@ ml(`
                           function downloadZip(url){
                               console.log("precaching",url,"as part of virtual dir",db_url);
                               getZipObject(url,function(){
-                                  console.log("precached",url,"as part of virtual dir",db_url)
+                                  console_log("precached",url,"as part of virtual dir",db_url)
                                   check(index+1);
                               });
                           }
