@@ -83,8 +83,7 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                         const base  = virtualDirDB.virtualDirZipBase[url];
                         if (dirs&& base) {
                             const zip_root = base.root;
-                            const trim0=base.root.length;
-                            const trim = 0-trim0;
+                            const trim = 0 - base.root.length;
                             const dirs_trimmed =  dirs.map(function(u){
                                 return u.slice(0,trim);
                             });
@@ -116,17 +115,6 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                      // does not include files in older zips that have been deleted in newer zips.
                                      const listing = {};   
                                      const syntax  = {};
-                                     const syntaxPromises=[];
-                                     const getSyntax = function(file){
-                                         syntaxPromises.push( new Promise(function(resolve){
-                                             databases.updatedMetadata.getItem( virtual_prefix + "/"+ file.substr(trim0)+"." + syntax_json_ext,function(err,x){
-                                                 if (err||!x) return resolve();
-                                                 const info = JSON.parse(new TextDecoder().decode(x[0].buffer));
-                                                 info.file = file;
-                                                 resolve(info);
-                                             });
-                                         }));
-                                     };
                                      
                                      zipData.forEach(function(data,ix){
                                          data.tools.allFiles(function(files){
@@ -147,7 +135,6 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                                              !!data.tools.meta.deleted[file];
                                                      })){
                                                          listing[file]=dirs_trimmed.indexOf(data.zip_url );
-                                                         getSyntax(file);
                                                      }
                                                  }
                                              });
@@ -172,29 +159,26 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                                 // file not in any zip
                                                 listing[file] = -1;
                                             }
-                                            getSyntax(file);
-
                                         });
                                         
-                                        Promise.all(syntaxPromises).then(function(results){
-                                            results.forEach(function(info){
-                                                if (info){
-                                                  syntax[  info.file ] = info;
-                                                  delete info.file;
-                                                }
-                                            });
-                                            syntaxPromises.splice(0,syntaxPromises.length);
-                                            results.splice(0,results.length);
-                                            cb( undefined,{
+                                        
+                                        addSyntaxInfo(
+                                            
+                                            databases.updatedMetadata,{
                                                url        : virtual_prefix+'/',
                                                zips       : dirs_trimmed,
                                                alias_root : zip_root.replace(/^\//,'').replace(/\/$/,'') + '/',
                                                files      : listing,
-                                               syntax     : syntax
+                                            },
+                                            
+                                            base.root.length,
+                                            
+                                            function(dirData){
+                                                
+                                                cb( undefined,dirData);
+                                                
                                             });
-                                        });
-                                        
-                                       
+
                                      });
                                      
                                 }
@@ -209,6 +193,33 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                     
                     cb(new Error (url+" is not a valid virtural directory"));
                     
+                }
+                
+                function addSyntaxInfo(db,dirData,trim0,cb) {
+                    dirData.syntax = dirData.syntax || {};
+                    const syntaxPromises=[];
+                    const getSyntax = function(file){
+                        syntaxPromises.push( new Promise(function(resolve){
+                            db.getItem( dirData.url + "/"+ file.substr(trim0)+"." + syntax_json_ext,function(err,x){
+                                if (err||!x) return resolve();
+                                const info = JSON.parse(new TextDecoder().decode(x[0].buffer));
+                                info.file = file;
+                                resolve(info);
+                            });
+                        }));
+                    };
+                    Object.keys(dirData.files).forEach(getSyntax);
+                    Promise.all(syntaxPromises).then(function(results){
+                       results.forEach(function(info){
+                           if (info){
+                             dirData.syntax[  info.file ] = info;
+                             delete info.file;
+                           }
+                       });
+                       syntaxPromises.splice(0,syntaxPromises.length);
+                       results.splice(0,results.length);
+                       cb(dirData);
+                   });
                 }
                 
                 function virtualDirQuery (url) {

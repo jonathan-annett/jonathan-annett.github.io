@@ -138,6 +138,8 @@ ml(`
                            zipFSDirHtml (function (err,dir_html){ 
                                const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
                                const html = renderDirPage(url,virtual,dir_html, htmlFileItemLibOpts,renderFileLib );
+                               setParentLink(renderFileLib,htmlFileItemLibOpts,url);
+                               
                                console.log(dirData);
                                return response200_HTML (resolve,html);
                            });
