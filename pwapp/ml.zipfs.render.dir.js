@@ -133,6 +133,16 @@ ml(`
                    
                    return new Promise(function (resolve){
                        
+                       
+                       getZipFilesOpts(url,buffer,virtual,function(htmlFileItemLibOpts,dirData){
+                           zipFSDirHtml (function (err,dir_html){ 
+                               const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
+                               const html = renderDirPage(url,virtual,dir_html, htmlFileItemLibOpts,renderFileLib );
+                               console.log(dirData);
+                               return response200_HTML (resolve,html);
+                           });
+                       });
+                       /*
                        getZipObject(url,buffer,function(err,zip,zipFileMeta) {
                            
                            if (err || !zip || !zipFileMeta) {
@@ -193,9 +203,77 @@ ml(`
                                
                            });
                        });
-                       
+                       */
                    });
                    
+               }
+               
+               
+               function getZipFilesOpts(url,buffer,virtual,cb) {
+                   
+                   getZipObject(url,buffer,function(err,zip,zipFileMeta) {
+                           
+                       getZipFileUpdates(virtual ? virtual :  url,function(err,additionalFiles){
+                           
+                           getZipDirMetaTools(url,zip,zipFileMeta,function(tools){
+                               
+                               const file_listing = Object.keys(zipFileMeta.files); 
+    
+                               const updated_prefix = (virtual ? virtual :  url).replace(/\/$/,'')+ "/" ;
+    
+                               const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
+                               const uri= urify.exec(url)[2];
+                               
+                               
+                               const htmlFileItemLibOpts = {
+                                   uri,
+                                   alias_root    : zipFileMeta.alias_root,
+                                   fileIsHidden  : tools.isHidden,
+                                   fileIsDeleted : tools.isDeleted,
+                                   fileisEdited  ,
+                                   file_listing  ,
+                                   updated_prefix,
+                                   hidden_files_exist : false 
+                               };
+                               
+                               const dirData = {
+                                   url         : virtual,
+                                   zips        : [ url ],
+                                   alias_root  : zipFileMeta.alias_root,
+                                   files       : { },
+                                   syntax      : { }
+                               };
+                               
+                               file_listing.forEach(function(file){
+                                  dirData.files[file]=0;
+                               });
+    
+                               
+                               htmlFileItemLibOpts.all_files = file_listing.concat(
+                                   
+                                   additionalFiles.map(function(fn){
+                                       return   zipFileMeta.alias_root + fn;
+                                   }).filter(function(fn){
+                                       const ix = file_listing.indexOf(fn);
+                                       if (ix<0) {
+                                           dirData.files[fn]=-1;
+                                           return true;
+                                       } else {
+                                           dirData.files[fn] = 0 - (2+ix);
+                                       }
+                                       return false;
+                                   })
+                                   
+                               ).sort();
+                               
+                               cb (htmlFileItemLibOpts,dirData);
+    
+                           });
+                           
+                       });
+                       
+                       
+                   });
                }
        
                function setParentLink(renderFileLib,htmlFileItemLibOpts,url) {
