@@ -220,7 +220,7 @@ ml(`
 
                        }
                        
-                       function resolveZipListing_HTML_0 (url,buffer,virtual) {
+                       function resolveZipListing_HTML (url,buffer,virtual) {
                            
                            return new Promise(function (resolve){
                                
@@ -398,7 +398,7 @@ ml(`
                        }
                        
                        
-                       function resolveZipListing_HTML (url,buffer,virtual) {
+                       function resolveZipListing_HTML_1 (url,buffer,virtual) {
                            
                            
                            return new Promise(function (resolve){
@@ -409,7 +409,7 @@ ml(`
                                        return resolve ();
                                    }
                                    
-                                   zipFSDirHtml (function (err,dir_html){ 
+                                   zipFSDirHtml (function (err,dir_html){
                                        
                                        if (err) {
                                            return resolve(new Response('', {
@@ -420,21 +420,21 @@ ml(`
                                        
                                        
                                        if (virtual) {
+                                           
                                            virtualDirListing(virtual,function(err,listingData){
                                                
                                                const all_files = Object.keys(listingData.files).sort();
                                                generateListing(all_files);
                                                
                                            });
+                                           
                                        } else {
     
                                            getZipFileUpdates(url,function(err,additionalFiles){
                                                
                                                getZipDirMetaTools(url,zip,zipFileMeta,function(tools){
-                                                   
 
                                                    const file_listing = Object.keys(zipFileMeta.files); 
-                                                   
                                                    
                                                    const all_files = file_listing.concat(
                                                        
@@ -469,8 +469,8 @@ ml(`
                                                        const htmlFileItemLibOpts = {
                                                            uri,
                                                            alias_root:zipFileMeta.alias_root,
-                                                           tools,
-                                                           file_listing,
+                                                           //tools,
+                                                           all_files,
                                                            fileisEdited,
                                                            updated_prefix,
                                                            hidden_files_exist : false 
