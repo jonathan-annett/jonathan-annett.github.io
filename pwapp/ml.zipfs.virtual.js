@@ -358,7 +358,7 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                    if (subpath === "/edit") {
                                       entry.fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip;
                                       entry.zip_filter  = virtualDirDB.virtualDirZipBase[prefix].root;
-                                      //entry.zip_filter = entry.zip_filter;//.replace(/^http(s)?\:\/\//,'').replace(/^.*\//,'')+'/';
+                                      entry.zip_filter = entry.zip_filter.replace(/^.*\//,'')+'/';
                                       
                                       return resolve (entry);
                                    }
