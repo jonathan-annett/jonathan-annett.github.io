@@ -2467,48 +2467,46 @@ ml(`
                                 setTimeout(zipPoller,zipPollerInterval);
                             } else {
                                 const sha_el = qs(li,".sha1");
-                                if(sha_el && sha_el.textContent.trim()==='') {
-                                    sha_el.textContent='--hashing---';
-                                
-                                    // read file text via service worker, which hashes it on the way 
-                                    // (or fetches stored hash from when it was last read/written)
+                                    // read file text via service worker, which either hashes it on the way 
+                                    // or fetches the stored hash from when it was last read/written)
                                     readFileText(filename,function(err,buffer,updated,hash,text){
-                                        
-                                        if (fileIsEditable(filename)){
-                                            
-                                            sha_el.textContent='--syntax scanning---';
-                                            const mode = aceModeForFile(filename);
-                                            if (mode) {
+                                        if(sha_el && sha_el.textContent.trim()!==hash) {
+                                            sha_el.textContent='--hashing---';
+    
+                                            if (fileIsEditable(filename)){
                                                 
-                                                lintSource(hash,text,mode,filename,function(errors,warnings){
+                                                sha_el.textContent='--syntax scanning---';
+                                                const mode = aceModeForFile(filename);
+                                                if (mode) {
                                                     
-                                                    li.classList[errors?"add":"remove"]("errors");
-                                                    li.classList[warnings?"add":"remove"]("warnings");
-                                                    sha_el.textContent = hash;
+                                                    lintSource(hash,text,mode,filename,function(errors,warnings){
+                                                        
+                                                        li.classList[errors?"add":"remove"]("errors");
+                                                        li.classList[warnings?"add":"remove"]("warnings");
+                                                        sha_el.textContent = hash;
+                                                        
+                                                        setTimeout(zipPoller,zipPollerInterval);
+                                                        
+                                                    });
                                                     
-                                                    setTimeout(zipPoller,zipPollerInterval);
+                                                } else {
+                                                    sha_el.textContent=hash;
                                                     
-                                                });
-                                                
+                                                    writeLintResults(filename,hash,false,false,function(){
+                                                        setTimeout(zipPoller,zipPollerInterval);
+                                                    });
+                                                }
                                             } else {
                                                 sha_el.textContent=hash;
-                                                
                                                 writeLintResults(filename,hash,false,false,function(){
                                                     setTimeout(zipPoller,zipPollerInterval);
                                                 });
                                             }
                                         } else {
-                                            sha_el.textContent=hash;
-                                            writeLintResults(filename,hash,false,false,function(){
-                                                setTimeout(zipPoller,zipPollerInterval);
-                                            });
+                                            setTimeout(zipPoller,zipPollerInterval);
                                         }
     
                                     });
-                                    
-                                } else {
-                                    setTimeout(zipPoller,zipPollerInterval);
-                                }
                             }
                         } else {
                             setTimeout(zipPoller,zipPollerInterval);
