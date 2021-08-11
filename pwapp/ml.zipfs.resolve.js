@@ -12,10 +12,18 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
     {
         ServiceWorkerGlobalScope: function zipFSResolveLib(  ) {
             
-           
+           const dir_meta_name  = 'dirmeta.hidden-json';
+           const dir_meta_empty = {"deleted":[],"hidden":["^\\.","/\\.hidden\\-json$/"]};
+           const dir_meta_empty_json = JSON.stringify(dir_meta_empty);
+         
+            zipFSResolveLib_.dir_meta_name       = dir_meta_name;
+            zipFSResolveLib_.dir_meta_empty_json = dir_meta_empty_json;
+            zipFSResolveLib_.dir_meta_empty      = dir_meta_empty;
             
             
-            return function zipFSResolveLib (
+            return zipFSResolveLib_;
+            
+            function zipFSResolveLib_ (
                                             databases,
                                             getZipObject,
                                             getZipDirMetaTools,
@@ -39,10 +47,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                        } = ml.i.zipFSResponseLib;
                        
                       
-                       const dir_meta_name  = 'dirmeta.hidden-json';
-                       const dir_meta_empty = {"deleted":[],"hidden":["^\\.","/\\.hidden\\-json$/"]};
-                       const dir_meta_empty_json = JSON.stringify(dir_meta_empty);
-                       const dir_meta_empty_resp = {
+                        const dir_meta_empty_resp = {
                            status: 200,
                            headers : {
                                'Content-Type'   : 'application/json',

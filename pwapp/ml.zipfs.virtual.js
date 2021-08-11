@@ -23,6 +23,8 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                 
             } =  ml.i.htmlFileMetaLib; 
 
+            const dir_meta_name  = ml.i.zipFSResolveLib.dir_meta_name;
+            
             
             return function  (getEmbeddedZipFileResponse,getZipDirMetaTools,getZipFileUpdates) {
 
@@ -126,12 +128,17 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                    });
                                    
                                    const url_split = url.split('/');
-                                   let alias_url = url;
+                                       let alias_url = url;
                                    if (url_split.length > 2) {
-                                       if (url_split[url_split.length-1] === url_split[url_split.length-2]+'.zip'){
-                                           url_split.pop();
+                                       const test = url_split.pop().replace(/\.zip$/,'/');
+                                       const count = listing.reduce(function(n,fn){
+                                           if (fn===dir_meta_name) return n+1;
+                                           return fn.indexOf(test)===0?n+1:n;
+                                       },0);
+                                       if (count===listing.length) {
                                            alias_url = url_split.join('/');
                                        }
+                                      
                                    }
                                    
                                    addEditorInfo(
