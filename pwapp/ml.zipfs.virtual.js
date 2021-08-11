@@ -130,6 +130,7 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                    
                                    const url_split = url.split('/');
                                        let alias_url = '';
+                                       let zip_url = url;
                                    if (url_split.length > 2) {
                                        const test = url_split.pop().replace(/\.zip$/,'/');
                                        const files = Object.keys(listing);
@@ -138,7 +139,8 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                            return fn.indexOf(test)===0?n+1:n;
                                        },0);
                                        if (count===files.length) {  
-                                           alias_url = url_split.join('/').replace(/^https\:\/\//,'').replace(/^.*\//,'')+'/'+test;
+                                           zip_url = url_split.join('/');
+                                           alias_url = zip_url.replace(/^https\:\/\//,'').replace(/^.*\//,'')+'/'+test;
                                        }
                                       
                                    }
@@ -146,7 +148,7 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                    addEditorInfo(
                                        
                                        databases.updatedMetadata,{
-                                          url        : url,
+                                          url        : zip_url,
                                           zips       : [ url ],
                                           alias_root : alias_url,
                                           files      : listing,
