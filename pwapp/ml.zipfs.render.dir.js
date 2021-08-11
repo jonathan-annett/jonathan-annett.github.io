@@ -491,12 +491,13 @@ ml(`
                    virtual.indexOf(origin)===0? virtual.substr(origin.length) : virtual 
                    ) : '';
                    
-        const uri = url.replace(/^https\:\/\//,'').replace(/.*\//,'/');
+        const app_root = ml.c.app_root;
+        const uri = url.replace(/^https\:\/\//,'').replace(/.*\//,app_root);
         
          return renderLib.replaceTextVars(
              dir_html, {
                 uri                : uri,
-                app_root           : ml.c.app_root,
+                app_root           : app_root,
                 script_uri         : uri  + '.meta.js' + virtual_prefix ,
                 head_script        : '',
                 hidden_files_class : renderOpts.hidden_files_exist?' hidden_files_exist':'',
