@@ -695,7 +695,11 @@ ml(`
                     if (e.shiftKey) {
                         open_file(filename);
                     } else {
-                        closeInbuiltEditor ( filename,li )
+                        closeInbuiltEditor ( filename,li , function(){
+                            updateErrorsTable(function(){
+                                
+                            });
+                        });
                     }
                 }
                 
