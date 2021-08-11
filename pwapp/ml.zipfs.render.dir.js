@@ -148,6 +148,11 @@ ml(`
                                zipFSDirHtml (function (err,dir_html){
                                    
                                    const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
+                                   if (dirData.editor) {
+                                       htmlFileItemLibOpts.file_sha1 = function(file){
+                                           return dirData.editor[file] && dirData.editor[file].hash ? dirData.editor[file].hash : '';
+                                       };
+                                   }
                                    const html = renderDirPage(url,virtual,dir_html, htmlFileItemLibOpts,renderFileLib );
                                    setParentLink(renderFileLib,htmlFileItemLibOpts,url);
                                    const trim0 = 0;
