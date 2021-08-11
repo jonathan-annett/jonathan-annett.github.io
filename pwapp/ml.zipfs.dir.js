@@ -2310,6 +2310,15 @@ ml(`
                     }
                 }
                 
+                
+                function writeLintResults(filename,hash,errors,warnings,cb) {
+                    const json = JSON.stringify({errors,warnings,hash});
+                        
+                    writeFileAssociatedText(filename,syntax_json_ext,json,function(){
+                        return cb(errors,warnings);
+                    });
+                }
+                
                 function lintSource (hash,src,mode,filename,cb) {
                     
                     readFileAssociatedText(filename,syntax_json_ext,function(err,text){
@@ -2326,18 +2335,11 @@ ml(`
                         linter (mode,hash,src,filename,function(errors,warnings,hash,json){
                             if (errors||warnings) {
                                 return writeFileAssociatedText(filename,errors_json_ext,json,function(){
-                                    exitWithResponse();
+                                    writeLintResults(filename,hash,errors,warnings,cb);
                                 });    
                             } else {
-                                exitWithResponse();
+                                writeLintResults(filename,hash,errors,warnings,cb);
                             }
-                            function exitWithResponse(){
-                                const json = JSON.stringify({errors,warnings,hash});
-                                writeFileAssociatedText(filename,syntax_json_ext,json,function(){
-                                    
-                                    return cb(errors,warnings);
-                                });
-                            }                            
                         });
                     });
                    
@@ -2468,7 +2470,10 @@ ml(`
                                                 
                                             } else {
                                                 sha_el.textContent=hash;
-                                                setTimeout(zipPoller,zipPollerInterval);
+                                                
+                                                writeLintResults(filename,hash,false,false,function(){
+                                                    setTimeout(zipPoller,zipPollerInterval);
+                                                });
                                             }
                                         } else {
                                             sha_el.textContent=hash;
@@ -2476,6 +2481,7 @@ ml(`
                                         }
     
                                     });
+                                    
                                 } else {
                                     setTimeout(zipPoller,zipPollerInterval);
                                 }
