@@ -2426,6 +2426,8 @@ ml(`
                 function zipPoller() {
                     
                     if (filesBeingEdited.length>0) {
+                        // only run the background worker when no files are being edited
+                        // this means the editor (which has it's own worker) is snappy on slower machines
                         return setTimeout(zipPoller,500); 
                     }
 
