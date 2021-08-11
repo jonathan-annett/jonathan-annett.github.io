@@ -33,7 +33,6 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                 
                  const lib = {
                     virtualDirQuery   : virtualDirQuery,
-                    virtualDirEvent   : virtualDirEvent,
                     newVirtualDirs    : newVirtualDirs,
                     virtualDirDB      : virtualDirDB,
                     virtualDirListing : virtualDirListing,
@@ -406,68 +405,6 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                    return Promise.resolve();
                 }
                  
-                function virtualDirEvent (event) {
-                    
-                   return new Promise(function(resolve){
-                       
-                       if (event.fixup_url.endsWith("/virtual.json")) {
-                           const json = JSON.stringify(virtualDirDB,undefined,4);
-                           return resolve(new Response(json, {
-                             status: 200,
-                             headers: new Headers({
-                               'Content-Type'   : 'application/json',
-                               'Content-Length' : json.length
-                             })
-                           }));
-                       }
-                       
-                         virtualDirQuery (event.fixup_url).then(function(entry){
-                           
-                           if (entry&& entry.response) {
-                               
-                               const response = entry.response;
-                               delete entry.fixup_url;
-                               delete entry.response;
-                               delete entry.prefix;
-                               delete entry.aliased_url;
-                               delete entry.url;
-                               return resolve(response);
-                               
-                           } else {
-                               
-                               if (entry ) {
-                                       
-                                    if (entry.aliased_url) {
-                                       event.aliased_url = entry.aliased_url;
-                                       delete entry.aliased_url;
-                                    }
-                                    
-                                    if (entry.fixup_url) {
-                                        event.fixup_url = entry.fixup_url;
-                                        delete entry.fixup_url;
-                                    }
-                                        
-                                    if (entry.prefix) {
-                                        event.virtual_prefix = entry.prefix;
-                                        delete entry.prefix;
-                                    }
-                                    
-                                    if (entry.zip_filter) {
-                                        event.zip_filter = entry.zip_filter;
-                                        delete entry.zip_filter;
-                                    }
-
-                                    delete entry.url;
-                               } 
-                               
-                               resolve();
-                           }
-                          
-                       });
-                       
-                   });
-    
-                }
 
                 return lib;
             }            

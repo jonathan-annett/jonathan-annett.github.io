@@ -156,6 +156,11 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                     delete entry.prefix;
                                 }
                                 
+                                if (entry.zip_filter) {
+                                    event.zip_filter = entry.zip_filter;
+                                    delete entry.zip_filter;
+                                }
+                                
                                 delete entry.url;
                            } 
                            
