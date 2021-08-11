@@ -359,6 +359,7 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                    const subpath = url.substr(prefix.length);
                                    if (subpath === "/edit") {
                                       entry.fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip;
+                                      entry.virtual_zip_filter = virtualDirDB.virtualDirZipBase[prefix].root;
                                       return resolve (entry);
                                    }
                                    
@@ -372,14 +373,14 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                    entry.aliased_url     = entry.prefix + 
                                                            virtualDirDB.virtualDirZipBase[prefix].root + 
                                                            url.substr(entry.prefix.length);
-                                   const zipFileResponseOpts = { virtual_prefix : entry.prefix };
+                                   const zipFileResponseOpts = { virtual_prefix : entry.prefix, virtual_zip_filter : entry.virtual_zip_filter };
                                    
                                    const locateZipMetadata = function (i) {
                                        
                                        if (i<zipurlprefixes.length) {
                                            
                                            getEmbeddedZipFileResponse(
-                                               zipurlprefixes[i]+subpath,
+                                            //   zipurlprefixes[i]+subpath,
                                                zipFileResponseOpts,
                                                function (err,response){
                                                    if (err||!response) return locateZipMetadata(i+1);
