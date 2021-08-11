@@ -304,9 +304,11 @@ ml(`
                         [].forEach.call(document.querySelectorAll(q),events[q]);
                     });
                     
-                    
+                    let timeout;
                     const ed_filter = qs("#filename_filter",function keyup(e){
-                        
+                        if (timeout) clearTimeout(timeout);
+                        timeout = setTimeout(function(){
+                        timeout=undefined;    
                         const filt_text = ed_filter.value.trim();
                         let func = function(el){el.hidden=false;};
                         let filtered;
@@ -321,7 +323,8 @@ ml(`
                         }
                         
                         [].forEach.call(document.querySelectorAll("li"),func);
-                        filtered.splice(0,filtered.length);    
+                        filtered.splice(0,filtered.length);  
+                        },500);
                     });
                     
                     themePickerPickerHTML = (function(el){
