@@ -2318,9 +2318,17 @@ ml(`
                 function toggleInbuiltEditor (filename,li) {
                     li=li||find_li (filename);
                     if (!!li.dataset.editor_id) {
-                       closeInbuiltEditor(filename,li);
+                       closeInbuiltEditor(filename,li,function(){
+                           updateErrorsTable(function(){
+                               
+                           });
+                       });
                     } else {
-                       openInbuiltEditor (filename,li);
+                       openInbuiltEditor (filename,li,function(){
+                           updateErrorsTable(function(){
+                               
+                           });
+                       });
                     }
                 }
                 
