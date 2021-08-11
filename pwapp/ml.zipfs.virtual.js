@@ -2,6 +2,7 @@
 ml(`
 
 htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js 
+zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js 
     
 `,function(){ml(2,
 
