@@ -4,7 +4,8 @@ ml(`
 
   htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
   zipFSResponseLib     | ${ml.c.app_root}ml.zipfs.response.js 
-  
+  zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js 
+
 `,function(){ml(2,
 
     {
