@@ -143,16 +143,10 @@ ml(`
                        
                        getZipFilesOpts(url,buffer,virtual,function(htmlFileItemLibOpts,dirData){
                            
-                           addEditorInfo(databases.updatedMetadata,dirData,function(){
-                               
-                               zipFSDirHtml (function (err,dir_html){
+                                zipFSDirHtml (function (err,dir_html){
                                    
                                    const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
-                                   if (dirData.editor) {
-                                       htmlFileItemLibOpts.file_sha1 = function(file){
-                                           return dirData.editor[file] && dirData.editor[file].hash ? dirData.editor[file].hash : '';
-                                       };
-                                   }
+                                  
                                    const html = renderDirPage(url,virtual,dir_html, htmlFileItemLibOpts,renderFileLib );
                                    setParentLink(renderFileLib,htmlFileItemLibOpts,url);
                                    const trim0 = 0;
@@ -161,7 +155,7 @@ ml(`
                                    return response200_HTML (resolve,html);
                                });
                                
-                           });
+                          
                            
                        });
                        
@@ -187,18 +181,6 @@ ml(`
                                const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
                                const uri= urify.exec(url)[2];
                                
-                               
-                               const htmlFileItemLibOpts = {
-                                   alias_root    : zipFileMeta.alias_root,
-                                   fileFullUri   : function(filename) { return "/"+uri+"/"+filename;},
-                                   fileIsHidden  : tools.isHidden,
-                                   fileIsDeleted : tools.isDeleted,
-                                   fileisEdited  ,
-                                   file_listing  ,
-                                   updated_prefix,
-                                   hidden_files_exist : false 
-                               };
-                               
                                const dirData = {
                                    url         : virtual,
                                    zips        : [ url ],
@@ -206,6 +188,27 @@ ml(`
                                    files       : { },
                                    editor      : { }
                                };
+                               
+                               const htmlFileItemLibOpts = {
+                                   alias_root    : zipFileMeta.alias_root,
+                                   fileFullUri   : function(filename) { return "/"+uri+"/"+filename;},
+                                   fileIsHidden  : tools.isHidden,
+                                   fileIsDeleted : tools.isDeleted,
+                                   file_sha1      : function(file){
+                                       return dirData.editor[file] && dirData.editor[file].hash ? dirData.editor[file].hash : '';
+                                   },
+                                   fileHasErrors : function(file) {
+                                        return dirData.editor[file] ? !!dirData.editor[file].errors : false;
+                                   },
+                                   fileHasWarnings : function(file) {
+                                        return dirData.editor[file] ? !!dirData.editor[file].warnings : false;
+                                   },
+                                   fileisEdited  ,
+                                   file_listing  ,
+                                   updated_prefix,
+                                   hidden_files_exist : false 
+                               };
+                               
                                
                                file_listing.forEach(function(file){
                                   dirData.files[file]=0;
@@ -229,7 +232,9 @@ ml(`
                                    
                                ).sort();
                                
-                               cb (htmlFileItemLibOpts,dirData);
+                               addEditorInfo(databases.updatedMetadata,dirData,function(){
+                                   cb (htmlFileItemLibOpts,dirData);
+                               });
     
                            });
                            
@@ -259,6 +264,12 @@ ml(`
                        fileIsDeleted : function(){   return false;},
                        fileisEdited  : function(fn){ return dirData.files[fn]<0; },
                        file_sha1     : function(fn){ return dirData.editor[fn] ? dirData.editor[fn].hash : '';},
+                       fileHasErrors : function(fn) {
+                            return dirData.editor[fn] ? !!dirData.editor[fn].errors : false;
+                       },
+                       fileHasWarnings : function(fn) {
+                            return dirData.editor[fn] ? !!dirData.editor[fn].warnings : false;
+                       },
                        file_listing,
                        updated_prefix : dirData.url,
                        hidden_files_exist : false 
