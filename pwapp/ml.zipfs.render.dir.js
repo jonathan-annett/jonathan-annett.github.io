@@ -209,7 +209,9 @@ ml(`
                                
                                
                                file_listing.forEach(function(file){
-                                  dirData.files[file]=0;
+                                   if (file.indexOf(zipFileMeta.alias_root)===0) {
+                                      dirData.files[file]=0;
+                                   }
                                });
     
                                
@@ -218,12 +220,14 @@ ml(`
                                    additionalFiles.map(function(fn){
                                        return   zipFileMeta.alias_root + fn;
                                    }).filter(function(fn){
-                                       const ix = file_listing.indexOf(fn);
-                                       if (ix<0) {
-                                           dirData.files[fn]=-1;
-                                           return true;
-                                       } else {
-                                           dirData.files[fn] = 0 - (2+ix);
+                                       if (fn.indexOf(zipFileMeta.alias_root)===0) {
+                                           const ix = file_listing.indexOf(fn);
+                                           if (ix<0) {
+                                               dirData.files[fn]=-1;
+                                               return true;
+                                           } else {
+                                               dirData.files[fn] = 0 - (2+ix);
+                                           }
                                        }
                                        return false;
                                    })
@@ -243,6 +247,7 @@ ml(`
                }
                
                function getVirtualDirOpts(dirData) {
+                   
                    const file_listing = Object.keys(dirData.editor);
                    Object.keys(dirData.files).forEach(function(file){
                        if (!dirData.editor[file]) {

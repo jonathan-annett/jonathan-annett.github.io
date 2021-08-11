@@ -208,27 +208,7 @@ ml(`
                    });
                }
                
-               /*
-               function getDirTemplateHtml (cb) {
-                   
-                 
-                   
-                   
-                   if (getDirTemplateHtml.cache) {
-                       return cb (undefined,getDirTemplateHtml.cache);
-                   }
-                   
-                   fetchUpdatedURLContents ('/pwapp/ml.zipfs.dir.html',function(err,buffer,updated) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        getDirTemplateHtml.cache = new TextDecoder().decode(buffer);
-                        return cb(undefined,getDirTemplateHtml.cache);
-                   });
-                   
-               }
                
-               */
                
            };   
 

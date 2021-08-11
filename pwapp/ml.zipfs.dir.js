@@ -282,39 +282,37 @@ ml(`
                         pwa.getPNGZipImage(dir.zips[0],"files",dir.url,qs("#show_dl_img"),qs("#img_dl_link2"),"download");
                     });
                     
-    
-                    [].forEach.call(document.querySelectorAll("li"),addToggleEditorClick);
-                    [].forEach.call(document.querySelectorAll("li > a.close-editor"),addCloseEditorClick);
-                    [].forEach.call(document.querySelectorAll("li > a.image"),addViewImageClick);
-                    [].forEach.call(document.querySelectorAll("li > a.fullscreen"),addZoomClick);
-                    [].forEach.call(document.querySelectorAll("li > a.exit-fullscreen"),addZoomClick);
-                    [].forEach.call(document.querySelectorAll("li > a.other"),addViewClick);
-                    [].forEach.call(document.querySelectorAll("li > a.zipfile"),addOpenZipViewClick);
-                    [].forEach.call(document.querySelectorAll("li > a.deletefile"),addDeleteClick);
-                    [].forEach.call(document.querySelectorAll("li > a.undeletefile"),addUndeleteClick);
-                    [].forEach.call(document.querySelectorAll("li > a.not-edited"),addNotEditedClick);
-                    [].forEach.call(document.querySelectorAll("li > a.undo-edits"),addUndoEditsClick);
-                    [].forEach.call(document.querySelectorAll("li > a.save-edits"),addSaveEditsClick);
-                    [].forEach.call(document.querySelectorAll("li > a.warnings"),addWarningsClick);
-                    [].forEach.call(document.querySelectorAll("li > a.errors"),addErrorsClick);
+                    
+                    const events = {
+                        "li"                     : addToggleEditorClick,
+                        "li > a.close-editor"    : addCloseEditorClick,
+                        "li > a.image"           : addViewImageClick,
+                        "li > a.fullscreen"      : addZoomClick,
+                        "li > a.exit-fullscreen" : addZoomClick,
+                        "li > a.other"           : addViewClick,
+                        "li > a.zipfile"         : addOpenZipViewClick,
+                        "li > a.deletefile"      : addDeleteClick,
+                        "li > a.undeletefile"    : addUndeleteClick,
+                        "li > a.not-edited"      : addNotEditedClick,
+                        "li > a.undo-edits"      : addUndoEditsClick,
+                        "li > a.save-edits"      : addSaveEditsClick,
+                        "li > a.warnings"        : addWarningsClick,
+                        "li > a.errors"          : addErrorsClick,
+                        "li > label.dropdown"    : addThemeSelectionClick,
+                    };
+                    Object.keys(events).forEach(function(q){
+                        [].forEach.call(document.querySelectorAll(q),events[q]);
+                    });
                     
                     themePickerPickerHTML = (function(el){
                          el.parentElement.removeChild(el);
                          return el.innerHTML;
                     })(qs("select.theme-picker"));
                     
-                    
-                    [].forEach.call(document.querySelectorAll("li > label.dropdown"),addThemeSelectionClick);
-                    
-                    
-                    
-
-                    
                     setupDragAndDrop();
                     
                     footer_grab_bar = dragSize("footer",["#footer_grab"],undefined,0,-1);
                     
-                 
                     if (editor_channel) {
                         getStylesheets(editor_channel,dir.url,function(urls){
                             
@@ -387,7 +385,6 @@ ml(`
                             
                         });
                     }
-                    
                     
                     window.addEventListener('beforeunload', function (event)  {
                       if ( errorsExist () ) {
@@ -661,9 +658,9 @@ ml(`
                     
                 }
                 
-                function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
+                function bufferFromText(x) { return new TextEncoder("utf-8").encode(x); }
                
-                function bufferToText(x) {return new TextDecoder("utf-8").decode(x);}
+                function bufferToText(x) { return new TextDecoder("utf-8").decode(x); }
                 
                 function zoomBtnClick( e ) {
                     e.stopPropagation();
@@ -678,7 +675,7 @@ ml(`
                         updateErrorsTable(function(){
                             
                         });
-                    } );
+                    });
                 }
                 
                 function closeEditorBtnClick(e) {
