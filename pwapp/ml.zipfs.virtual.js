@@ -281,9 +281,10 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                 }
                 
                 function addEditorInfo(db,dirData,cb) {
-                    const trim0 = dirData.alias_root.length;
-                    dirData.editor = dirData.editor || {};
-                    const editorPromises=[];
+                    
+                    const trim0          = dirData.alias_root.length;
+                    dirData.editor       = dirData.editor || {};
+                    const editorPromises = [];
                     const getSyntax = function(file){
                         editorPromises.push( new Promise(function(resolve){
                             db.getItem( dirData.url.replace(/\/$/,'') + "/"+ file.substr(trim0)+"." + syntax_json_ext,function(err,x){
@@ -294,7 +295,9 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                             });
                         }));
                     };
+                    
                     Object.keys(dirData.files).forEach(getSyntax);
+                    
                     Promise.all(editorPromises).then(function(results){
                        results.forEach(function(info){
                            if (info){
@@ -306,6 +309,7 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                        results.splice(0,results.length);
                        cb(dirData);
                    });
+                   
                 }
                 
                 function virtualDirQuery (url) {

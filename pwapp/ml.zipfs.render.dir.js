@@ -64,21 +64,18 @@ ml(`
                    
                    return new Promise(function (resolve){
                        
-                       
                        getZipFilesOpts(url,buffer,function(htmlFileItemLibOpts,dirData){
                            
-                                zipFSDirHtml (function (err,dir_html){
-                                   
-                                   const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
-                                  
-                                   const html = renderDirPage(url,undefined,dir_html, htmlFileItemLibOpts,renderFileLib );
-                                   setParentLink(renderFileLib,htmlFileItemLibOpts,url);
-                                  
-                                   return response200_HTML (resolve,html);
-                               });
+                            zipFSDirHtml (function (err,dir_html){
                                
-                          
-                           
+                               const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
+                              
+                               const html = renderDirPage(url,undefined,dir_html, htmlFileItemLibOpts,renderFileLib );
+                               setParentLink(renderFileLib,htmlFileItemLibOpts,url);
+                              
+                               return response200_HTML (resolve,html);
+                           });
+
                        });
                        
                    });
