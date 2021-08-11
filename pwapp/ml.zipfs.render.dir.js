@@ -36,6 +36,9 @@ ml(`
 
         ServiceWorkerGlobalScope: function htmlDirLib(  ) {
             
+            
+            const dir_meta_name  = ml.i.zipFSResolveLib.dir_meta_name;
+            
             const response200_HTML = ml.i.zipFSResponseLib.response200_HTML;
             
             return function htmlDirLib (api) {
@@ -151,6 +154,24 @@ ml(`
                                });
                                    
                                htmlFileItemLibOpts.all_files = Object.keys(dirData.files).sort();
+                               
+                               
+                               const url_split = url.split('/');
+                               dirData.alias_url   = '';
+                               
+                               if (url_split.length > 2) {
+                                   const test = url_split.pop().replace(/\.zip$/,'/');
+                                   const files = Object.keys(dirData.files);
+                                   const count = files.reduce(function(n,fn){
+                                       if (fn===dir_meta_name) return n+1;
+                                       return fn.indexOf(test)===0?n+1:n;
+                                   },0);
+                                   if (count===files.length) {  
+                                       dirData.url = url_split.join('/')+'/';
+                                       dirData.alias_url = test;
+                                   }
+                               }
+                               
                                
                                addEditorInfo(databases.updatedMetadata,dirData,function(){
                                    cb (htmlFileItemLibOpts,dirData);
