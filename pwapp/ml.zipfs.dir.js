@@ -2477,7 +2477,9 @@ ml(`
                                             }
                                         } else {
                                             sha_el.textContent=hash;
-                                            setTimeout(zipPoller,zipPollerInterval);
+                                            writeLintResults(filename,hash,false,false,function(){
+                                                setTimeout(zipPoller,zipPollerInterval);
+                                            });
                                         }
     
                                     });
