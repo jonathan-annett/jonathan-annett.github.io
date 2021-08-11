@@ -154,6 +154,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                           zip_fileobj.async('arraybuffer').then(function(buffer){
                   
                                              if (  testPathIsZip(path_in_zip)  ) {
+                                                 console.log("resolveSubzip:calling resolveZipListing_HTML", {zip_url ,virtual_prefix} );
                                                  return resolveZipListing_HTML (zip_url+"/"+path_in_zip,buffer).then(resolve).catch(reject);
                                              }
                                              
@@ -270,6 +271,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                                     }
                                                     
                                                     if ( testPathIsZip(file_path) ) {
+                                                        console.log("resolveZip:calling resolveZipListing_HTML", {zip_url ,virtual_prefix} );
                                                         return resolveZipListing_HTML (zip_url+"/"+file_path,buffer).then(resolve).catch(reject);
                                                     }
                                                     
@@ -291,96 +293,6 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                });
                                
                                
-                               /*
-                               
-                               getZipObject(zip_url,function(err,zip,zipFileMeta) {
-                                    if (err)  throw err;
-                                    
-                                    
-                                   getZipDirMetaTools(zip_url,zip,zipFileMeta,function(tools){
-                                       
-                                       if (tools.isDeleted(file_path)) {
-                                            return resolve(new Response('', {
-                                               status: 404,
-                                               statusText: 'Not found'
-                                            }));
-                                       }
-                                       
-                                       let fileEntry = zipFileMeta.files[file_path];
-                                       if (!fileEntry) {
-                                           if (zipFileMeta.alias_root) {
-                                               fileEntry = zipFileMeta.files[ zipFileMeta.alias_root+file_path ];
-                                               if (fileEntry) {
-                                                   file_path  = zipFileMeta.alias_root+file_path;
-                                                   subzip_url = zip_url + file_path;
-                                                   subzip_filepath = zipFileMeta.alias_root + subzip_filepath;
-                                               }
-                                           }
-                                           
-                                           if (!fileEntry) {
-                                               
-                                                return resolve(new Response('', {
-                                                   status: 404,
-                                                   statusText: 'Not found'
-                                               }));
-                                           }
-                                       }
-                                       
-                                       
-                                       fileEntry.name = file_path;
-                                      
-                                       
-                                       if (   !subzip             &&
-                                               (
-                                                   (ifNoneMatch     &&  (ifNoneMatch     === fileEntry.etag)) ||
-                                                   (ifModifiedSince &&  (safeDate(ifModifiedSince,fileEntry.date) <  fileEntry.date) )
-                                               )
-                                          ) {
-                                           return response304 (resolve,fileEntry);
-                                       }
-                                       
-                                       if (fileEntry.buffer) {
-                                           // this is a small file that is stored uncompressed in metadata entry
-                                           return response200 (resolve,fileEntry.buffer,fileEntry);
-                                       }
-                                       
-                                       const zip_fileobj = zip.file(file_path);
-                                       
-                                       if (!zip_fileobj) {
-                                           if (file_path===dir_meta_name) {
-                                               return resolve(new Response(dir_meta_empty_json,dir_meta_empty_resp));
-                                           } else {
-                                               throw new Error ('file not in zip!'); 
-                                           }
-                                       }
-                                       
-                                       zip_fileobj.async('arraybuffer').then(function(buffer){
-               
-                                               if (subzip) {
-                                                   return resolveSubzip(buffer,subzip_url,subzip_filepath,ifNoneMatch,ifModifiedSince,virtual_prefix).then(resolve).catch(reject);
-                                               }
-                                               
-                                               if ( testPathIsZip(file_path) ) {
-                                                   return resolveZipListing (zip_url+"/"+file_path,buffer,virtual_prefix).then(resolve).catch(reject);
-                                               }
-                                               
-                                               if ( testPathIsZipMeta(file_path) ) {
-                                                   return resolveZipListing_Script (zip_url+"/"+file_path,buffer,virtual_prefix).then(resolve).catch(reject);
-                                               }
-                                               
-                                               return response200 (resolve,buffer,fileEntry);
-               
-                                        });
-                                            
-                                        
-                                       
-                                        
-                                   });
-                               });
-                               
-                               
-                               */
-                               
                            });
                        }
                        
@@ -392,7 +304,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                        }
                        
                      
-                   };
+                   }
                
         } 
     }, {

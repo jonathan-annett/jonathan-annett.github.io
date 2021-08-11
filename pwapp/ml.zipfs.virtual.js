@@ -19,7 +19,7 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                 aceModeHasWorker,
                 
                 editor_session_ext,
-                syntax_json_ext
+                syntax_json_ext,
                 
                 
             } =  ml.i.htmlFileMetaLib; 
@@ -79,6 +79,30 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                 }
                 
                 
+                function isolateSingleZipUrls(url,listing) {
+                    const url_split = url.split('/');
+                    let alias_url   = '';
+                    let zip_url     = url;
+                    
+                    if (url_split.length > 2) {
+                        const test = url_split.pop().replace(/\.zip$/,'/');
+                        const files = Object.keys(listing);
+                        const count = files.reduce(function(n,fn){
+                            if (fn===dir_meta_name) return n+1;
+                            return fn.indexOf(test)===0?n+1:n;
+                        },0);
+                        if (count===files.length) {  
+                            zip_url = url_split.join('/')+'/';
+                            alias_url = test;
+                        }
+                    }
+                    return {
+                        alias_url,
+                        zip_url
+                    };
+                }
+                
+                // returns an object representing all files in a zip
                 function singleZipListing (url,databases,cb) {
                     
                     const url_without_leading_slash = url.replace(/^\//,'');
@@ -128,23 +152,8 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                        }
                                    });
                                    
-                                   const url_split = url.split('/');
-                                   let alias_url   = '';
-                                   let zip_url     = url;
-                                   
-                                   if (url_split.length > 2) {
-                                       const test = url_split.pop().replace(/\.zip$/,'/');
-                                       const files = Object.keys(listing);
-                                       const count = files.reduce(function(n,fn){
-                                           if (fn===dir_meta_name) return n+1;
-                                           return fn.indexOf(test)===0?n+1:n;
-                                       },0);
-                                       if (count===files.length) {  
-                                           zip_url = url_split.join('/')+'/';
-                                           alias_url = test;
-                                       }
-                                   }
-                                   
+                                   const {alias_url , zip_url } = isolateSingleZipUrls(url,listing);
+
                                    addEditorInfo(
                                        
                                        databases.updatedMetadata,{
@@ -181,7 +190,9 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                     if (virtualDirDB.virtualDirUrls.indexOf(url)>=0) {
                         
                         const dirs  = virtualDirDB.virtualDirs[url];
+                        
                         const base  = virtualDirDB.virtualDirZipBase[url];
+                        
                         if (dirs&& base) {
                             const zip_root = base.root;
                             const trim = 0 - base.root.length;
@@ -291,10 +302,7 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                         }
                         
                     }
-                    
-                    
-                    
-                    
+
                     cb(new Error (url+" is not a valid virtural directory"));
                     
                 }
@@ -457,28 +465,7 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                 return lib;
             }            
             
-            
-            
-            function lengthyPromiseResolver(resolve,maxMsec) {
-                let finalize = resolve;
-                let timeout = setTimeout(onTimeout,maxMsec)
-                return {
-                    resolve : function (x){
-                        clearTimeout(timeout);
-                        finalize(x);
-                    }
-                };
-                
-                function onTimeout () {
-                   timeout = setTimeout(onTimeout,maxMsec); 
-                   finalize(new Promise(function(res){
-                       finalize = res;
-                   }));
-                }
-                
-            }
-            
-            
+
         } 
     }, {
         ServiceWorkerGlobalScope: [

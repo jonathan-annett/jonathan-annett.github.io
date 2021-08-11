@@ -59,6 +59,7 @@ ml(`
                return {
                    
                    resolveZipListing_HTML,
+                   resolveVirtualDirListing_HTML,
                    
                    resolveZipListing_Script
                    
@@ -184,6 +185,31 @@ ml(`
                        
                        
                    });
+               }
+               
+               
+               
+               
+               function resolveVirtualDirListing_HTML (url,buffer) {
+                   
+                   return new Promise(function (resolve){
+                       
+                       getZipFilesOpts(url,buffer,function(htmlFileItemLibOpts,dirData){
+                           
+                            zipFSDirHtml (function (err,dir_html){
+                               
+                               const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
+                               setParentLink(renderFileLib,htmlFileItemLibOpts,url);
+                              
+                               const html = renderDirPage(url,undefined,dir_html, htmlFileItemLibOpts,renderFileLib );
+                               
+                               return response200_HTML (resolve,html);
+                           });
+
+                       });
+                       
+                   });
+                   
                }
                
                function getVirtualDirOpts(dirData) {

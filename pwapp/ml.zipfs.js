@@ -493,77 +493,8 @@ ml(`
                       fixupLog("defined url rulesmap: ",url_in,"-->",event.fixup_url,"details:",cache,performance.now()-stamp,"ms");
                       return addEvents() ;
 
-                  }
-                  
-                  return new Promise (function (resolve,reject){
-                         fixupLog("downloading fstab.json");
-                         ml.i.fsTable(function(err,arr) {
-                             
-                           if (err) return reject(err);
-                           newFixupRulesArray(arr);
-                           
-                           fixupLog("downloaded and parsed fstab.json",performance.now()-stamp,"ms");
-                            
-                           
-                           fixupUrlEvent(event);
-                           
-                           
-                           checkVirtualZipCache(0,resolve);
-                           
-                         });
-                      
-                  });
-                  
-                  function checkVirtualZipCache(index,cb) {
-                      
-                      return checkVirt(0);
-                     
-                      function checkVirt(index) {
-                         if (index < virtualDirDB.virtualDirUrls.length) {
-                             const db_url = virtualDirDB.virtualDirUrls[index];
-                             checkurls(db_url,virtualDirDB.virtualDirs[db_url],function(){
-                                 checkVirt(index+1);
-                             });
-                            
-                         } else {
-                             console.log("all zips for all virtual dirs are now cached");
-                             cb();
-                         }
-                         
-                      }
-                      
-                      function checkurls(db_url,urls,cb) {
-                          
-                          return check(0);
-                          
-                          function check(index) {
-                              if (index<urls.length) {
-                                  const url = urls[index].replace(/\.zip\/.*$/,'.zip');
-                                  return databases.zipMetadata.getItem(url,function(err,zipFileMeta){
-                                       if (err||!zipFileMeta) return downloadZip(url);     
-                                       return databases.openZips.getItem(url,function(err,buffer){
-                                            if (err||!buffer) return downloadZip(url);        
-                                            check(index+1);
-                                       });
-                                  });
-                              } else {
-                                  console_log("all zips for virtual dir",db_url,"are cached");
-                                  cb();
-                              }
-                          }
-                          
-                          function downloadZip(url){
-                              console.log("precaching",url,"as part of virtual dir",db_url);
-                              getZipObject(url,function(){
-                                  console_log("precached",url,"as part of virtual dir",db_url)
-                                  check(index+1);
-                              });
-                          }
-                          
-                      }
-                      
-                     
-                      
+                  } else {
+                      return createRules();
                   }
                   
                   function addEvents() {
@@ -647,8 +578,86 @@ ml(`
                          }
                      }
                   }
+                  
+                  function createRules() {
+                      return new Promise (function (resolve,reject){
+                             fixupLog("downloading fstab.json");
+                             ml.i.fsTable(function(err,arr) {
+                                 
+                               if (err) return reject(err);
+                               newFixupRulesArray(arr);
+                               
+                               fixupLog("downloaded and parsed fstab.json",performance.now()-stamp,"ms");
+                                
+                               
+                               fixupUrlEvent(event);
+                               
+                               
+                               checkVirtualZipCache(0,resolve);
+                               
+                             });
+                          
+                      });
+                      
+                      function checkVirtualZipCache(index,cb) {
+                          
+                          return checkVirt(0);
+                         
+                          function checkVirt(index) {
+                             if (index < virtualDirDB.virtualDirUrls.length) {
+                                 const db_url = virtualDirDB.virtualDirUrls[index];
+                                 checkurls(db_url,virtualDirDB.virtualDirs[db_url],function(){
+                                     checkVirt(index+1);
+                                 });
+                                
+                             } else {
+                                 console.log("all zips for all virtual dirs are now cached");
+                                 cb();
+                             }
+                             
+                          }
+                          
+                          function checkurls(db_url,urls,cb) {
+                              
+                              return check(0);
+                              
+                              function check(index) {
+                                  if (index<urls.length) {
+                                      const url = urls[index].replace(/\.zip\/.*$/,'.zip');
+                                      return databases.zipMetadata.getItem(url,function(err,zipFileMeta){
+                                           if (err||!zipFileMeta) return downloadZip(url);     
+                                           return databases.openZips.getItem(url,function(err,buffer){
+                                                if (err||!buffer) return downloadZip(url);        
+                                                check(index+1);
+                                           });
+                                      });
+                                  } else {
+                                      console_log("all zips for virtual dir",db_url,"are cached");
+                                      cb();
+                                  }
+                              }
+                              
+                              function downloadZip(url){
+                                  console.log("precaching",url,"as part of virtual dir",db_url);
+                                  getZipObject(url,function(){
+                                      console_log("precached",url,"as part of virtual dir",db_url)
+                                      check(index+1);
+                                  });
+                              }
+                              
+                          }
+                          
+                         
+                          
+                      }
+                      
+                     
+                      
+                  }
 
              }
+             
+            
              
              function fixupUrlEventInternal(url,cb) {
                  const fakeEvent = {
@@ -1240,9 +1249,11 @@ ml(`
              }
              
              function getZipDirMetaTools(url,zip,zipFileMeta,cb) {
+                 
                  if (zipFileMeta.tools) {
                      return cb(zipFileMeta.tools,zip,zipFileMeta);
                  }
+                 
                  const meta_url = url+'/'+dir_meta_name;
                  if (zipFileMeta.files[dir_meta_name]) {
                      
@@ -1273,12 +1284,17 @@ ml(`
                  }
                  
                  function getTools(meta) {
+                     
                      if (!meta) {
                          meta = JSON.parse(dir_meta_empty_json);
                      }
+                     
                      const notifications = {};
+                     
                      const notificationIds = [];
+                     
                      const regexps = (meta && meta.hidden ? meta : dir_meta_empty).hidden.map(function(src){return new RegExp(src);});
+                     
                      zipFileMeta.tools = {
                          
                              meta : meta,
@@ -1596,6 +1612,7 @@ ml(`
                             return re.test(file_name);
                         });
                      }
+                     
                  }
                  
                  function bufferFromText(x) {return new TextEncoder("utf-8").encode(x);}
@@ -1724,26 +1741,6 @@ ml(`
                         
                      }
                  }
-                 
-             }
-
-             function internalErrorEvent (event) {
-                 event.respondWith( Promise.resolve(new Response('', {
-                                                    status: 500,
-                                                    statusText: 'Internal Error. WTF did you do?',
-                                                    headers: new Headers({
-                                                      'Content-Length' : 0
-                                                    })}))); 
-             }
-             
-             function toReturnAnError (resolve) {
-                 
-                 resolve(new Response('', {
-                 status: 500,
-                 statusText: 'Internal Error. WTF did you do?',
-                 headers: new Headers({
-                   'Content-Length' : 0
-                 })}));
                  
              }
 
