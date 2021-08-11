@@ -164,6 +164,9 @@ ml(`
                    
                }
                
+               // when an explicit zip is being edited, this function is called to
+               // get options to pass into htmlFileItemLib()
+               
                function getZipFilesOpts (url,buffer,virtual,cb) {
                    
                    getZipObject(url,buffer,function(err,zip,zipFileMeta) {
@@ -492,7 +495,7 @@ ml(`
              dir_html, {
                 uri                : renderOpts.uri,
                 app_root           : ml.c.app_root,
-                script_uri         : '/'+renderOpts.uri+'.meta.js' + virtual_prefix ,
+                script_uri         : url.replace(/^https\:\/\//,'').replace(/.*\//,'/')  + '.meta.js' + virtual_prefix ,
                 head_script        : '',
                 hidden_files_class : renderOpts.hidden_files_exist?' hidden_files_exist':'',
                 designer           : '',
