@@ -63,7 +63,7 @@ ml(`
                    
                };
                
-               function resolveZipListing_HTML (url,buffer,zip_filter) {
+               function resolveZipListing_HTML (url,buffer,zip_prefix,zip_filter) {
                    
                    return new Promise(function (resolve){
                        
