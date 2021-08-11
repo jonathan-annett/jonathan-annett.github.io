@@ -146,9 +146,9 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                    addEditorInfo(
                                        
                                        databases.updatedMetadata,{
-                                          url        : alias_url,
+                                          url        : url,
                                           zips       : [ url ],
-                                          alias_root : '',
+                                          alias_root : alias_url,
                                           files      : listing,
                                        },
                                        
