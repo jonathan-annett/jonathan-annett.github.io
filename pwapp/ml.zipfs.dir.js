@@ -1912,182 +1912,15 @@ ml(`
                                                       li_ed.editor.resize();
                                                   }
                                               }
-                                              proceed();
+                                              continueOpeningFile(li_ed,hash,buffer,currentText);
                                          });
                                         
     
                                     } else {
                                         li_ed.editor.session.setValue(currentText);
-                                        proceed();
+                                        continueOpeningFile(li_ed,hash,buffer,currentText);
                                     }
-                                    function proceed () {
-                                        
-                                        li_ed.hashDisplay = qs(li,".sha1");
-                                        li_ed.hashDisplay.textContent=hash;
-                                        li_ed.setText = function (text) {
-                                            li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
-                                            li_ed.editor.setValue(text);
-                                            li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
-                                            if (li_ed.edit_helper) {
-                                                li_ed.edit_helper.update(text);
-                                            }
-                                            if (edit_hooks[file_url]) {
-                                                const buffer = new TextEncoder().encode(text);
-                                                edit_hooks[file_url].forEach(function(fn){
-                                                    fn("setText",file_url,text,buffer);
-                                                });
-                                            }
-                                            li.classList.remove("pending");
-                                        };
-                                        
-                                        li_ed.reload = function () {
-                                            readFileText(filename,function(err,buffer,updated,hash,text){
-                                                li_ed.setText(text);
-                                                if (li_ed.edit_helper) {
-                                                    li_ed.edit_helper.update(text);
-                                                }
-                                                if (edit_hooks[file_url]) {
-                                                    edit_hooks[file_url].forEach(function(fn){
-                                                        fn("reload",file_url,text,buffer);
-                                                    });
-                                                }
-                                                li.classList.remove("pending");
-                                            });
-                                        };
-
-                                        li_ed.changeAnnotationFunc = function (force,cb){
-                                                
-                                            // to ignore callback after destruction, the li_ed.changeAnnotationFunc
-                                            // is deleted before calling editor.destroy();
-                                            // so we test li_ed.changeAnnotationFunc is definedl before continuing
-                                            if (li_ed.changeAnnotationFunc) {
-                                                
-                                                if (typeof li_ed.annotationsWorkerDetect === 'number') {
-                                                    // if it's a number, it's because the annotation change beat the time out
-                                                    // so kill the timeout, which will otherwise end up setting annotationsWorkerDetect to false
-                                                    clearTimeout(li_ed.annotationsWorkerDetect);
-                                                    li_ed.annotationsWorkerDetect=true;
-                                                }
-                                                li.classList.remove("worker");
-                                                if (transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations())||force===true) {
-                                                   
-
-                                                    if (li_ed.text_changed||force===true) {
-                                                        
-                                                       li_ed.text_changed=false;
-                                                       const  textContent = li_ed.editor.session.getValue();
-                                                       writeFileText(filename,textContent,function(err,hash){
-                                                            if (err) {
-                                                                return ;
-                                                            }
-                                                            li.classList.add("edited");
-                                                            li_ed.hashDisplay.textContent=hash;
-                                                            if (edit_hooks[file_url]) {
-                                                                edit_hooks[file_url].forEach(function(fn){
-                                                                    fn("edited",file_url,textContent,buffer);
-                                                                });
-                                                            }
-                                                            
-                                                            li.classList.remove("pending");
-                                                            
-                                                            if (typeof cb==='function') {
-                                                                cb();
-                                                            }
-
-                                                        });
-                                                    }
-                                                } else {
-                                                    delete ignoreErrors[filename];
-                                                    qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
-                                                }
-                                                
-                                                
-                                            }
-                                            
-                                        }
-                                        li_ed.editor.getSession().on("changeAnnotation", li_ed.changeAnnotationFunc );
-                                        
-                                        startEditHelper(li,file_url,currentText,function(helper){
-                                                li_ed.edit_helper = helper;
-                                                li_ed.inbuiltEditorOnSessionChange = function () {
-                                                    
-                                                    // to ignore callback after destruction, the li_ed.inbuiltEditorOnSessionChange
-                                                    // is deleted before calling editor.destroy();
-                                                    // so we test li_ed.inbuiltEditorOnSessionChange is defined before continuing
-                                                    li.classList.add("pending");
-                                                    qs('html').classList.remove("before_unload"); 
-                                                    
-                                                    li.classList[li_ed.annotationsWorkerDetect===false?"remove":"add"]("worker");
-                                                    
-                                                    
-                                                    if (li_ed.inbuiltEditorOnSessionChange ) {
-                                                       
-                                                    
-                                                        if (li_ed.annotationsWorkerDetect===undefined) {
-                                                                // this is either the first change, or a change
-                                                                // after an annotations worker callback
-                                                                li_ed.annotationsWorkerDetect = setTimeout(
-                                                                  function(){
-                                                                      li_ed.annotationsWorkerDetect=false;
-                                                                      setTimeout (li_ed.inbuiltEditorOnSessionChange,10);
-                                                                  },
-                                                                  annotationsWorkerDetectDelay
-                                                                );
-                                                           
-                                                        }
-                                                    
-                                                        // delta.start, delta.end, delta.lines, delta.action
-                                                        const textContent = li_ed.editor.session.getValue();
-                                                        if (li_ed.edit_helper) {
-                                                            li_ed.edit_helper.update(textContent);
-                                                        }
-                                                        if (transientEditorMetaResave(li_ed)||li_ed.annotationsWorkerDetect===false) {
-                                                           
-                                                            writeFileText(filename,textContent,function(err,hash){
-                                                                if (err) {
-                                                                    return ;
-                                                                }
-                                                                // since we are saving the text, we can clear the li_ed.text_changed flag
-                                                                li_ed.text_changed=false;
-                                                                li.classList.add("edited");
-                                                                li_ed.hashDisplay.textContent=hash;
-                                                                if (edit_hooks[file_url]) {
-                                                                    const buffer = new TextEncoder().encode(textContent);
-                                                                    edit_hooks[file_url].forEach(function(fn){
-                                                                        fn("edited",file_url,textContent,buffer);
-                                                                    });
-                                                                }
-                                                                
-                                                                li.classList.remove("pending");
-                                                                delete ignoreErrors[filename];
-                                                                qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
-                                                            });
-                                                        } else {
-                                                            // since the text has changed, bit has errors, we need to flag it
-                                                            // so evnentually it gets saved once errors are corrected
-                                                            li_ed.text_changed=true;
-                                                        }
-                                                        
-                                                        
-                                                        
-                                                        
-                                                    
-                                                    }
-                                               };
-                                               
-                                               
-                                                li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
-                                                li_ed.editor.focus();
-                                                resizers.on(li_ed,10,editorResized);
-                                                
-                                                
-                                                
-                                                li_ed.editor.resize();
-                                                li.classList.remove("pending");
-                                                
-                                                CB(li_ed);
-                                        });
-                                    }     
+                                       
                                     
                                 }); 
                             }
@@ -2104,7 +1937,174 @@ ml(`
                         return li_ed;
                     }
                     
-                    
+                    function continueOpeningFile (li_ed,hash,buffer,currentText) {
+                        
+                        li_ed.hashDisplay = qs(li,".sha1");
+                        li_ed.hashDisplay.textContent=hash;
+                        li_ed.setText = function (text) {
+                            li_ed.editor.session.off('change', li_ed.inbuiltEditorOnSessionChange);
+                            li_ed.editor.setValue(text);
+                            li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                            if (li_ed.edit_helper) {
+                                li_ed.edit_helper.update(text);
+                            }
+                            if (edit_hooks[file_url]) {
+                                const buffer = new TextEncoder().encode(text);
+                                edit_hooks[file_url].forEach(function(fn){
+                                    fn("setText",file_url,text,buffer);
+                                });
+                            }
+                            li.classList.remove("pending");
+                        };
+                        
+                        li_ed.reload = function () {
+                            readFileText(filename,function(err,buffer,updated,hash,text){
+                                li_ed.setText(text);
+                                if (li_ed.edit_helper) {
+                                    li_ed.edit_helper.update(text);
+                                }
+                                if (edit_hooks[file_url]) {
+                                    edit_hooks[file_url].forEach(function(fn){
+                                        fn("reload",file_url,text,buffer);
+                                    });
+                                }
+                                li.classList.remove("pending");
+                            });
+                        };
+
+                        li_ed.changeAnnotationFunc = function (force,cb){
+                                
+                            // to ignore callback after destruction, the li_ed.changeAnnotationFunc
+                            // is deleted before calling editor.destroy();
+                            // so we test li_ed.changeAnnotationFunc is definedl before continuing
+                            if (li_ed.changeAnnotationFunc) {
+                                
+                                if (typeof li_ed.annotationsWorkerDetect === 'number') {
+                                    // if it's a number, it's because the annotation change beat the time out
+                                    // so kill the timeout, which will otherwise end up setting annotationsWorkerDetect to false
+                                    clearTimeout(li_ed.annotationsWorkerDetect);
+                                    li_ed.annotationsWorkerDetect=true;
+                                }
+                                li.classList.remove("worker");
+                                if (transientEditorMetaResave(li_ed,5000,li_ed.editor.getSession().getAnnotations())||force===true) {
+                                   
+
+                                    if (li_ed.text_changed||force===true) {
+                                        
+                                       li_ed.text_changed=false;
+                                       const  textContent = li_ed.editor.session.getValue();
+                                       writeFileText(filename,textContent,function(err,hash){
+                                            if (err) {
+                                                return ;
+                                            }
+                                            li.classList.add("edited");
+                                            li_ed.hashDisplay.textContent=hash;
+                                            if (edit_hooks[file_url]) {
+                                                edit_hooks[file_url].forEach(function(fn){
+                                                    fn("edited",file_url,textContent,buffer);
+                                                });
+                                            }
+                                            
+                                            li.classList.remove("pending");
+                                            
+                                            if (typeof cb==='function') {
+                                                cb();
+                                            }
+
+                                        });
+                                    }
+                                } else {
+                                    delete ignoreErrors[filename];
+                                    qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
+                                }
+                                
+                                
+                            }
+                            
+                        }
+                        li_ed.editor.getSession().on("changeAnnotation", li_ed.changeAnnotationFunc );
+                        
+                        startEditHelper(li,file_url,currentText,function(helper){
+                                li_ed.edit_helper = helper;
+                                li_ed.inbuiltEditorOnSessionChange = function () {
+                                    
+                                    // to ignore callback after destruction, the li_ed.inbuiltEditorOnSessionChange
+                                    // is deleted before calling editor.destroy();
+                                    // so we test li_ed.inbuiltEditorOnSessionChange is defined before continuing
+                                    li.classList.add("pending");
+                                    qs('html').classList.remove("before_unload"); 
+                                    
+                                    li.classList[li_ed.annotationsWorkerDetect===false?"remove":"add"]("worker");
+                                    
+                                    
+                                    if (li_ed.inbuiltEditorOnSessionChange ) {
+                                       
+                                    
+                                        if (li_ed.annotationsWorkerDetect===undefined) {
+                                                // this is either the first change, or a change
+                                                // after an annotations worker callback
+                                                li_ed.annotationsWorkerDetect = setTimeout(
+                                                  function(){
+                                                      li_ed.annotationsWorkerDetect=false;
+                                                      setTimeout (li_ed.inbuiltEditorOnSessionChange,10);
+                                                  },
+                                                  annotationsWorkerDetectDelay
+                                                );
+                                           
+                                        }
+                                    
+                                        // delta.start, delta.end, delta.lines, delta.action
+                                        const textContent = li_ed.editor.session.getValue();
+                                        if (li_ed.edit_helper) {
+                                            li_ed.edit_helper.update(textContent);
+                                        }
+                                        if (transientEditorMetaResave(li_ed)||li_ed.annotationsWorkerDetect===false) {
+                                           
+                                            writeFileText(filename,textContent,function(err,hash){
+                                                if (err) {
+                                                    return ;
+                                                }
+                                                // since we are saving the text, we can clear the li_ed.text_changed flag
+                                                li_ed.text_changed=false;
+                                                li.classList.add("edited");
+                                                li_ed.hashDisplay.textContent=hash;
+                                                if (edit_hooks[file_url]) {
+                                                    const buffer = new TextEncoder().encode(textContent);
+                                                    edit_hooks[file_url].forEach(function(fn){
+                                                        fn("edited",file_url,textContent,buffer);
+                                                    });
+                                                }
+                                                
+                                                li.classList.remove("pending");
+                                                delete ignoreErrors[filename];
+                                                qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
+                                            });
+                                        } else {
+                                            // since the text has changed, bit has errors, we need to flag it
+                                            // so evnentually it gets saved once errors are corrected
+                                            li_ed.text_changed=true;
+                                        }
+                                        
+                                        
+                                        
+                                        
+                                    
+                                    }
+                               };
+                               
+                               
+                                li_ed.editor.session.on('change', li_ed.inbuiltEditorOnSessionChange);
+                                li_ed.editor.focus();
+                                resizers.on(li_ed,10,editorResized);
+                                
+                                
+                                
+                                li_ed.editor.resize();
+                                li.classList.remove("pending");
+                                
+                                CB(li_ed);
+                        });
+                    }  
                     
                     function CB(li_ed) {
                         if (filesBeingEdited.indexOf(filename)<0) {
@@ -2451,6 +2451,7 @@ ml(`
                                             if (mode) {
                                                 
                                                 lintSource(hash,text,mode,filename,function(errors,warnings){
+                                                    
                                                     li.classList[errors?"add":"remove"]("errors");
                                                     li.classList[warnings?"add":"remove"]("warnings");
                                                     sha_el.textContent = hash;
@@ -2740,9 +2741,7 @@ ml(`
             
             }
             
-            
-            
-            
+
             function loadDropdownCombo(cap,el,x,fn) {
             
               const btnEl = el.querySelector("div.dd-button"); 
