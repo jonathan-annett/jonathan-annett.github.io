@@ -19,10 +19,8 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                             databases,
                                             getZipObject,
                                             getZipDirMetaTools,
-                                            resolveZipListing, 
                                             resolveZipListing_HTML,
-                                            resolveZipListing_Script
-                                            ) {
+                                            resolveZipListing_Script) {
                        
                        const sha1 = ml.i.sha1Lib.cb;
                        const console_log = ()=>{};
@@ -151,12 +149,12 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                           zip_fileobj.async('arraybuffer').then(function(buffer){
                   
                                              if (  testPathIsZip(path_in_zip)  ) {
-                                                 return resolveZipListing (zip_url+"/"+path_in_zip,buffer,virtual_prefix).then(resolve).catch(reject);
+                                                 return resolveZipListing_HTML (zip_url+"/"+path_in_zip,buffer).then(resolve).catch(reject);
                                              }
                                              
                                              
                                              if (  testPathIsZipMeta(path_in_zip)  ) {
-                                                 return resolveZipListing_Script (zip_url+"/"+path_in_zip,buffer,virtual_prefix).then(resolve).catch(reject);
+                                                 return resolveZipListing_Script (zip_url+"/"+path_in_zip,buffer).then(resolve).catch(reject);
                                              }
                                              
                   
@@ -267,11 +265,11 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                                     }
                                                     
                                                     if ( testPathIsZip(file_path) ) {
-                                                        return resolveZipListing (zip_url+"/"+file_path,buffer,virtual_prefix).then(resolve).catch(reject);
+                                                        return resolveZipListing_HTML (zip_url+"/"+file_path,buffer).then(resolve).catch(reject);
                                                     }
                                                     
                                                     if ( testPathIsZipMeta(file_path) ) {
-                                                        return resolveZipListing_Script (zip_url+"/"+file_path,buffer,virtual_prefix).then(resolve).catch(reject);
+                                                        return resolveZipListing_Script (zip_url+"/"+file_path,buffer).then(resolve).catch(reject);
                                                     }
                                                     
                                                     console_log("resolved",zip_url,file_path,"to compressed buffer in zip");
