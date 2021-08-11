@@ -2424,7 +2424,11 @@ ml(`
                 }
                 
                 function zipPoller() {
-                    //main purpose is to keep service worker awake. but while we are doing that, might as well hash each file and display it
+                    
+                    if (filesBeingEdited.length>0) {
+                        return setTimeout(zipPoller,500); 
+                    }
+
                     zipPollerIndex = (zipPollerIndex===undefined?0:zipPollerIndex+1);
                     let index = zipPollerIndex;
                     if (index < zip_files.length) {
