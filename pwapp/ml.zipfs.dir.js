@@ -412,11 +412,42 @@ ml(`
                         })
                     }
                     
-                    zipPollerIndex = -1;
-                    setTimeout(zipPoller,500);
+                    loadErrors(function(){
+                        updateErrorsTable(function(){
+                            zipPollerIndex = -1;
+                            setTimeout(zipPoller,500);
+                        });
+                    });
                     
-                  
+                }
+                
+                
+                function loadErrors(cb) {
                     
+                   const files = Object.keys(dir.editor);  
+                   const promises = [];
+                   
+                   files.forEach(function(filename){
+                       if (dir.editor[filename].warnings||dir.editor[filename].errors){
+                           promises.push(new Promise(function(resolve){
+                               readFileAssociatedText(filename,errors_json_ext,function(err,json){
+                                   if (!err&&json) {
+                                       const payload = JSON.parse(json);
+                                       editorErrors[filename]=payload.errors;
+                                       editorWarnings[filename]=payload.warnings;
+                                   }
+                                   resolve();
+                               });  
+                           }));
+                       }
+                   });
+                   
+                   Promise.all(promises).then(function(results){
+                       results.splice(0,results.length);
+                       promises.splice(0,promises.length);
+                       files.splice(0,files.length);
+                       cb();
+                   });
                 }
                 
                 function setupDragAndDrop() {

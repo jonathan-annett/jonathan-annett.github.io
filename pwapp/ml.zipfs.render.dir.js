@@ -149,9 +149,7 @@ ml(`
                                   
                                    const html = renderDirPage(url,virtual,dir_html, htmlFileItemLibOpts,renderFileLib );
                                    setParentLink(renderFileLib,htmlFileItemLibOpts,url);
-                                   const trim0 = 0;
-                               
-                                   console.log(dirData);
+                                  
                                    return response200_HTML (resolve,html);
                                });
                                
@@ -415,10 +413,7 @@ ml(`
                                                            statusText: 'Ok',
                                                            headers: new Headers({
                                                              'Content-Type'   : 'application/javascript',
-                                                             'Content-Length' : script.length,
-                                                             'ETag'           : zipFileMeta.etag,
-                                                             'Cache-Control'  : 'max-age=3600, s-maxage=600',
-                                                             'Last-Modified'  : zipFileMeta.date.toString() } )
+                                                             'Content-Length' : script.length } )
                                                })
                                       );
                                       
@@ -460,7 +455,7 @@ ml(`
                           '            if (e) {',
                           '               console.log(e);',
                           '            } else {',
-                          '               ml.i.pwaZipDirListing(dir,'+JSON.stringify(parent_link)+');',
+                          '               ml.i.pwaZipDirListing(dir,'+JSON.stringify( parent_link )+');',
                           '            }',
                           '         });',
                           '         ',
