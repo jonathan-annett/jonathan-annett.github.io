@@ -304,28 +304,45 @@ ml(`
                         [].forEach.call(document.querySelectorAll(q),events[q]);
                     });
                     
-                    let timeout;
-                    const ed_filter = qs("#filename_filter",function keyup(e){
-                        if (timeout) clearTimeout(timeout);
-                        timeout = setTimeout(function(){
-                        timeout=undefined;    
-                        const filt_text = ed_filter.value.trim();
-                        let func = function(el){el.hidden=false;};
-                        let filtered;
-                        if (filt_text.length>0) {
-                            const filt = new RegExp( regexpEscape(filt_text),'i');
-                            filtered = zip_files.filter(function(x){
-                                return filt.test(x);     
-                            });
-                            func = function (el){
-                               el.hidden =  !el.dataset.filename || filtered.indexOf(el.dataset.filename)<0; 
-                           };
+                    qs("#filename_filter",function (ed_filter){
+                        let timeout,value = ed_filter.value.trim();
+                        
+                        ["input","change","keyup"].forEach(function(e){
+                           ed_filter.addEventListener(e,filterTextChanged);
+                        });
+                        
+                        function filterTextChanged(){
+                            if (timeout) clearTimeout(timeout);
+                            timeout = setTimeout(filterTextDelayed,500);
+
                         }
                         
-                        [].forEach.call(document.querySelectorAll("li"),func);
-                        filtered.splice(0,filtered.length);  
-                        },500);
+                        function filterTextDelayed(){
+                            timeout=undefined; 
+                            const filt_text = ed_filter.value.trim();
+                            if ( filt_text === value ) return;
+                            value = filt_text;
+                            
+                            let func = function(el){el.hidden=false;};
+                            let filtered;
+                            if (filt_text.length>0) {
+                                const filt = new RegExp( regexpEscape(filt_text),'i');
+                                filtered = zip_files.filter(function(x){
+                                    return filt.test(x);     
+                                });
+                                func = function (el){
+                                   el.hidden =  !el.dataset.filename || filtered.indexOf(el.dataset.filename)<0; 
+                               };
+                            }
+                            
+                            [].forEach.call(document.querySelectorAll("li"),func);
+                            filtered.splice(0,filtered.length);  
+                        }
+                        
                     });
+                     
+               
+                    
                     
                     themePickerPickerHTML = (function(el){
                          el.parentElement.removeChild(el);
