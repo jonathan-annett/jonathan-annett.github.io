@@ -102,7 +102,6 @@ ml(`
 
             const {
                 // import these items...
-                resolveZipListing, 
                 resolveZipListing_HTML,
                 resolveZipListing_Script,
                 
@@ -149,7 +148,6 @@ ml(`
                 databases,
                 getZipObject,
                 getZipDirMetaTools,
-                resolveZipListing, 
                 resolveZipListing_HTML,
                 resolveZipListing_Script);
                       
@@ -1639,7 +1637,7 @@ ml(`
                          // this is a url pointing to a possibly existing zip file
                          // we don't let you download the zip. we do however give you the file list when you ask for a zip
                          // which provides links to each file inside
-                         return resolveZipListing ( url,undefined,virtual_prefix )
+                         return resolveZipListing_HTML ( url,undefined,virtual_prefix )
                          
                                   .then(function(response){
                                          if (response && response.status===200) {
@@ -1706,7 +1704,7 @@ ml(`
                          if (params.download) {
                              return resolveZipDownload( url, params.download, virtual_prefix  );
                          }
-                         return resolveZipListing ( url,undefined,virtual_prefix  ) ; 
+                         return resolveZipListing_HTML ( url,undefined,virtual_prefix  ) ; 
                      }
                      
                      if ( testPathIsZipMeta(url) ) {
