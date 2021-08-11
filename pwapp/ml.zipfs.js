@@ -564,7 +564,6 @@ ml(`
                   }
                   
                   
-                  
                   function createRules() {
                       return new Promise (function (resolve,reject){
                              fixupLog("downloading fstab.json");
@@ -638,7 +637,21 @@ ml(`
                       }
                       
                      
-                      
+                      function enforceRule (x){
+                         if (x.replace&&x.replace.test(url_out)) { 
+                             const before = url_out;
+                             url_out = url_out.replace(x.replace,x.with);
+                             fixupLog(before,">>>==replace[",x.replace,"]/with[",x.with,"]==>>>",url_out);
+                             return true;
+                         } else {
+                             if (x.match && x.addPrefix && x.match.test(url_out)) { 
+                                 const before = url_out;
+                                 url_out = x.addPrefix + url_out;
+                                 fixupLog(before,">>>==match[",x.match,"]/addPrefix[",x.addPrefix,"]==>>>",url_out);
+                                 return true;
+                             }
+                         }
+                      }
                   }
 
              }
