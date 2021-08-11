@@ -215,24 +215,21 @@ ml(`
                                });
     
                                
-                               htmlFileItemLibOpts.all_files = file_listing.concat(
                                    
-                                   additionalFiles.map(function(fn){
-                                       return   zipFileMeta.alias_root + fn;
-                                   }).filter(function(fn){
-                                       if (fn.indexOf(zipFileMeta.alias_root)===0) {
-                                           const ix = file_listing.indexOf(fn);
-                                           if (ix<0) {
-                                               dirData.files[fn]=-1;
-                                               return true;
-                                           } else {
-                                               dirData.files[fn] = 0 - (2+ix);
-                                           }
+                               additionalFiles.map(function(fn){
+                                   return   zipFileMeta.alias_root + fn;
+                               }).forEach(function(fn){
+                                   if (fn.indexOf(zipFileMeta.alias_root)===0) {
+                                       const ix = file_listing.indexOf(fn);
+                                       if (ix<0) {
+                                           dirData.files[fn]=-1;
+                                       } else {
+                                           dirData.files[fn] = 0 - (2+ix);
                                        }
-                                       return false;
-                                   })
+                                   }
+                               });
                                    
-                               ).sort();
+                               htmlFileItemLibOpts.all_files = Object.keys(dirData.files).sort();
                                
                                addEditorInfo(databases.updatedMetadata,dirData,function(){
                                    cb (htmlFileItemLibOpts,dirData);
