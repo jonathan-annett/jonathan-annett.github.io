@@ -102,7 +102,7 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                     };
                 }
                 
-                // returns an object representing all files in a zip
+                //
                 function singleZipListing (url,databases,cb) {
                     
                     const url_without_leading_slash = url.replace(/^\//,'');
@@ -192,7 +192,6 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                         const dirs  = virtualDirDB.virtualDirs[url];
                         
                         const base  = virtualDirDB.virtualDirZipBase[url];
-                        
                         if (dirs&& base) {
                             const zip_root = base.root;
                             const trim = 0 - base.root.length;
@@ -359,7 +358,6 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                    const subpath = url.substr(prefix.length);
                                    if (subpath === "/edit") {
                                       entry.fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip;
-                                      entry.virtual_zip_filter = virtualDirDB.virtualDirZipBase[prefix].root;
                                       return resolve (entry);
                                    }
                                    
@@ -373,14 +371,14 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                    entry.aliased_url     = entry.prefix + 
                                                            virtualDirDB.virtualDirZipBase[prefix].root + 
                                                            url.substr(entry.prefix.length);
-                                   const zipFileResponseOpts = { virtual_prefix : entry.prefix, virtual_zip_filter : entry.virtual_zip_filter };
+                                   const zipFileResponseOpts = { virtual_prefix : entry.prefix };
                                    
                                    const locateZipMetadata = function (i) {
                                        
                                        if (i<zipurlprefixes.length) {
                                            
                                            getEmbeddedZipFileResponse(
-                                            //   zipurlprefixes[i]+subpath,
+                                               zipurlprefixes[i]+subpath,
                                                zipFileResponseOpts,
                                                function (err,response){
                                                    if (err||!response) return locateZipMetadata(i+1);

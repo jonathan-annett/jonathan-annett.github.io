@@ -69,7 +69,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                        return lib;
                        
                        
-                       function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince,virtual_prefix,virtual_zip_root) {
+                       function resolveSubzip(buffer,zip_url,path_in_zip,ifNoneMatch,ifModifiedSince,virtual_prefix) {
                            //ml.c.l({resolveSubzip:{ifNoneMatch,ifModifiedSince,zip_url,path_in_zip,virtual_prefix}});
                            const parts           = splitZipPaths(path_in_zip);//path_in_zip.split('.zip/');     
                            const subzip          = parts.length>1;
@@ -154,12 +154,13 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                           zip_fileobj.async('arraybuffer').then(function(buffer){
                   
                                              if (  testPathIsZip(path_in_zip)  ) {
-                                                 return resolveZipListing_HTML (zip_url+"/"+path_in_zip,buffer,virtual_zip_root).then(resolve).catch(reject);
+                                                 console.log("resolveSubzip:calling resolveZipListing_HTML", {zip_url ,virtual_prefix} );
+                                                 return resolveZipListing_HTML (zip_url+"/"+path_in_zip,buffer).then(resolve).catch(reject);
                                              }
                                              
                                              
                                              if (  testPathIsZipMeta(path_in_zip)  ) {
-                                                 return resolveZipListing_Script (zip_url+"/"+path_in_zip,buffer,virtual_zip_root).then(resolve).catch(reject);
+                                                 return resolveZipListing_Script (zip_url+"/"+path_in_zip,buffer).then(resolve).catch(reject);
                                              }
                                              
                   
@@ -186,7 +187,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                        
                        
                        
-                       function resolveZip (parts,ifNoneMatch,ifModifiedSince,virtual_prefix,virtual_zip_root) {
+                       function resolveZip (parts,ifNoneMatch,ifModifiedSince,virtual_prefix) {
                            const zip_url           = parts[0],//parts[0]+'.zip', 
                                  subzip            = parts.length>2; 
                            let   file_path         = parts[1],                                           //subzip ? parts[1]+'.zip' : parts[1],
@@ -270,7 +271,8 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                                     }
                                                     
                                                     if ( testPathIsZip(file_path) ) {
-                                                        return resolveZipListing_HTML (zip_url+"/"+file_path,buffer,virtual_zip_root).then(resolve).catch(reject);
+                                                        console.log("resolveSubzip:calling resolveZipListing_HTML", {zip_url ,virtual_prefix} );
+                                                 return resolveZipListing_HTML (zip_url+"/"+file_path,buffer).then(resolve).catch(reject);
                                                     }
                                                     
                                                     if ( testPathIsZipMeta(file_path) ) {
