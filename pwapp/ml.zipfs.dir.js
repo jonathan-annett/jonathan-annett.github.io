@@ -304,6 +304,26 @@ ml(`
                         [].forEach.call(document.querySelectorAll(q),events[q]);
                     });
                     
+                    
+                    const ed_filter = qs("#filename_filter",function change(e){
+                        
+                        const filt_text = ed_filter.value.trim();
+                        let func = function(el){el.hidden=false;};
+                        let filtered;
+                        if (filt_text.length>0) {
+                            const filt = new RegExp( regexpEscape(filt_text),'i');
+                            filtered = zip_files.filter(function(x){
+                                return filt.test(x);     
+                            });
+                            func = function (el){
+                               el.hidden =  !el.dataset.filename || filtered.indexOf(el.dataset.filename)<0; 
+                           };
+                        }
+                        
+                        [].forEach.call(document.querySelectorAll("li"),func);
+                        filtered.splice(0,filtered.length);    
+                    });
+                    
                     themePickerPickerHTML = (function(el){
                          el.parentElement.removeChild(el);
                          return el.innerHTML;
