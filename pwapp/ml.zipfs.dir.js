@@ -44,7 +44,7 @@ ml(`
                 
                 ace_session_json = ml.i.aceSessionLib,
                 
-                { fileIsEditable,fileIsImage,aceModeForFile,aceThemeForFile,aceModeHasWorker, syntax_json_ext,editor_session_ext  } =  ml.i.htmlFileMetaLib,
+                { fileIsEditable,fileIsImage,aceModeForFile,aceThemeForFile,aceModeHasWorker, syntax_json_ext, errors_json_ext, editor_session_ext  } =  ml.i.htmlFileMetaLib,
                 
                 { open_url   } = ml.i.openWindowLib,
                 
@@ -1821,7 +1821,8 @@ ml(`
                         qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
                         
                         updateErrorsTable(function(){
-                            cb(errors,warnings);
+                            const json = errors||warnings?JSON.stringify({errors:error_list,warnings:warning_list}):false;
+                            cb(errors,warnings,json);
                         });
                     } else {
                         errors = null;
@@ -2294,12 +2295,21 @@ ml(`
                             }
                         }
                         
-                        linter (mode,hash,src,filename,function(errors,warnings){
-                            const json = JSON.stringify({errors,warnings,hash});
-                            writeFileAssociatedText(filename,syntax_json_ext,json,function(){
-                                return cb(errors,warnings);
-                            });
-                            
+                        linter (mode,hash,src,filename,function(errors,warnings,hash,json){
+                            if (errors||warnings) {
+                                return writeFileAssociatedText(filename,errors_json_ext,json,function(){
+                                    exitWithResponse();
+                                });    
+                            } else {
+                                exitWithResponse();
+                            }
+                            function exitWithResponse(){
+                                const json = JSON.stringify({errors,warnings,hash});
+                                writeFileAssociatedText(filename,syntax_json_ext,json,function(){
+                                    
+                                    return cb(errors,warnings);
+                                });
+                            }                            
                         });
                     });
                    
@@ -2323,13 +2333,10 @@ ml(`
                     let timeout,hasWorker;
                     let editor = createEditor(pre.id,mode);
                     
-                    const lintr = {
-                
-                    };
-
+                   
                      aceModeHasWorker(mode,function(answer){
-                        hasWorker = lintr.hasWorker = answer;
-                        const session = editor.getSession()
+                        hasWorker = answer;
+                        const session = editor.getSession();
                         if (hasWorker) {
                             session.on("changeAnnotation",onAnnotationChange);
                         } else {
@@ -2338,9 +2345,6 @@ ml(`
                         }
                         session.setValue(src);
                     });
-                    
-
-                    return lintr;
                     
                     function onChange (){
                        if (timeout) clearTimeout(timeout);
@@ -2358,8 +2362,8 @@ ml(`
                         if (annot) {
                             var src   = editor.getSession().getValue();
                             sha1(new TextEncoder().encode(src),function(er,hash){
-                                  collectAnnotations (filename,annot,function(errors,warnings){
-                                        cb(errors,warnings,hash);
+                                  collectAnnotations (filename,annot,function(errors,warnings,json){
+                                        cb(errors,warnings,hash,json);
                                         const session = editor.getSession()
                                         if (hasWorker) {
                                             session.off("changeAnnotation",onAnnotationChange);
@@ -2388,8 +2392,6 @@ ml(`
                             throw new Error("getAnnotations() returns "+typeof annot);
                         }
                     }
-                     
-                   
                     
                 }
                 
@@ -2411,9 +2413,8 @@ ml(`
                                     sha_el.textContent='--hashing---';
                                 
                                     // read file text via service worker, which hashes it on the way 
+                                    // (or fetches stored hash from when it was last read/written)
                                     readFileText(filename,function(err,buffer,updated,hash,text){
-                                        
-                                        
                                         
                                         if (fileIsEditable(filename)){
                                             

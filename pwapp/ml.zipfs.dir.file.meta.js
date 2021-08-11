@@ -38,7 +38,8 @@ ml(`
             aceModeHasWorker,
             
             editor_session_ext: undefined,
-            syntax_json_ext : "editor"
+            syntax_json_ext : "editor.json",
+            errors_json_ext : "errors.json"
         };
 
         function fileIsEditable (filename) {
