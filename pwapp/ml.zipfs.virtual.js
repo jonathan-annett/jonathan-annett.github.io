@@ -132,11 +132,12 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                        let alias_url = url;
                                    if (url_split.length > 2) {
                                        const test = url_split.pop().replace(/\.zip$/,'/');
-                                       const count = Object.keys(listing).reduce(function(n,fn){
+                                       const files = Object.keys(listing);
+                                       const count = files.reduce(function(n,fn){
                                            if (fn===dir_meta_name) return n+1;
                                            return fn.indexOf(test)===0?n+1:n;
                                        },0);
-                                       if (count===listing.length) {
+                                       if (count===files.length) {
                                            alias_url = url_split.join('/');
                                        }
                                       
