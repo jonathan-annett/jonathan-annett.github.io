@@ -358,6 +358,8 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                    const subpath = url.substr(prefix.length);
                                    if (subpath === "/edit") {
                                       entry.fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip;
+                                      entry.zip_filter  = virtualDirDB.virtualDirZipBase[prefix].root;
+                                      
                                       return resolve (entry);
                                    }
                                    
@@ -449,6 +451,11 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                         delete entry.prefix;
                                     }
                                     
+                                    if (entry.zip_filter) {
+                                        event.zip_filter = entry.zip_filter;
+                                        delete entry.zip_filter;
+                                    }
+
                                     delete entry.url;
                                } 
                                

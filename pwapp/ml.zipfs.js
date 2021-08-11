@@ -691,7 +691,7 @@ ml(`
                  if (params.virtual_prefix) {
                      event.virtual_prefix = params.virtual_prefix;
                  }
-                 return  doFetchZipUrl(event.request,event.fixup_url,params,event.virtual_prefix,event.virtual_zip_filter);
+                 return  doFetchZipUrl(event.request,event.fixup_url,params,event.virtual_prefix,event.zip_filter);
              }
 
              function fetchFileFromCacheEvent(event) {

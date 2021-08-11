@@ -63,11 +63,11 @@ ml(`
                    
                };
                
-               function resolveZipListing_HTML (url,buffer) {
+               function resolveZipListing_HTML (url,buffer,zip_filter) {
                    
                    return new Promise(function (resolve){
                        
-                       getZipFilesOpts(url,buffer,function(htmlFileItemLibOpts,dirData){
+                       getZipFilesOpts(url,buffer,zip_filter,function(htmlFileItemLibOpts,dirDat){
                            
                             zipFSDirHtml (function (err,dir_html){
                                
@@ -88,9 +88,12 @@ ml(`
                // when an explicit zip is being edited, this function is called to
                // get options to pass into htmlFileItemLib()
                
-               function getZipFilesOpts (url,buffer,cb) {
+               function getZipFilesOpts (url,buffer,zip_filter,cb) {
                    
                    getZipObject(url,buffer,function(err,zip,zipFileMeta) {
+                       
+                       
+                       zip_filter = zip_filter || zipFileMeta.alias_root; 
                            
                        getZipFileUpdates(url,function(err,additionalFiles){
                            
@@ -133,7 +136,7 @@ ml(`
                                
                                
                                file_listing.forEach(function(file){
-                                   if (file.indexOf(zipFileMeta.alias_root)===0) {
+                                   if (file.indexOf(zip_filter)===0) {
                                       dirData.files[file]=0;
                                    }
                                });
@@ -143,7 +146,7 @@ ml(`
                                additionalFiles.map(function(fn){
                                    return   zipFileMeta.alias_root + fn;
                                }).forEach(function(fn){
-                                   if (fn.indexOf(zipFileMeta.alias_root)===0) {
+                                   if (fn.indexOf(zip_filter)===0) {
                                        const ix = file_listing.indexOf(fn);
                                        if (ix<0) {
                                            dirData.files[fn]=-1;
@@ -188,62 +191,7 @@ ml(`
                
                
                
-               function resolveVirtualDirListing_HTML (url,buffer) {
-                   
-                   return new Promise(function (resolve){
-                       
-                       getZipFilesOpts(url,buffer,function(htmlFileItemLibOpts,dirData){
-                           
-                            zipFSDirHtml (function (err,dir_html){
-                               
-                               const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
-                               setParentLink(renderFileLib,htmlFileItemLibOpts,url);
-                              
-                               const html = renderDirPage(url,undefined,dir_html, htmlFileItemLibOpts,renderFileLib );
-                               
-                               return response200_HTML (resolve,html);
-                           });
-
-                       });
-                       
-                   });
-                   
-               }
-               
-               function getVirtualDirOpts(dirData) {
-                   
-                   const file_listing = Object.keys(dirData.editor);
-                   Object.keys(dirData.files).forEach(function(file){
-                       if (!dirData.editor[file]) {
-                           file_listing[file].push(file);
-                       }
-                   });
-                   
-                   const htmlFileItemLibOpts = {
-                       
-                       fileFullUri   : function(fn){ 
-                           const ix = dirData.files[fn];
-                           const prefix = typeof ix==='number'&& ix >= 0 ? dirData.zips[ ix ] : dirData.url;
-                           return (prefix.replace(/^https\:\/\//,'')+fn).replace(/^.*\//,'/');
-                       },
-                       alias_root    : dirData.alias_root,
-                       fileIsHidden  : function(fn){ return /^\./.test(fn); },
-                       fileIsDeleted : function(){   return false;},
-                       fileisEdited  : function(fn){ return dirData.files[fn]<0; },
-                       file_sha1     : function(fn){ return dirData.editor[fn] ? dirData.editor[fn].hash : '';},
-                       fileHasErrors : function(fn) {
-                            return dirData.editor[fn] ? !!dirData.editor[fn].errors : false;
-                       },
-                       fileHasWarnings : function(fn) {
-                            return dirData.editor[fn] ? !!dirData.editor[fn].warnings : false;
-                       },
-                       file_listing,
-                       updated_prefix : dirData.url,
-                       hidden_files_exist : false 
-                   };
-                   
-               }
-       
+           
                function setParentLink (renderFileLib,htmlFileItemLibOpts,url) {
                    
                    const urify = /^(https?:\/\/[^\/]+)\/?([^?\n]*)(\?[^\/]*|)$/;
