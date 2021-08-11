@@ -430,8 +430,17 @@ ml(`
                                readFileAssociatedText(filename,errors_json_ext,function(err,json){
                                    if (!err&&json) {
                                        const payload = JSON.parse(json);
-                                       editorErrors[filename]=payload.errors;
-                                       editorWarnings[filename]=payload.warnings;
+                                       if (payload.errors.length===0) {
+                                           delete editorErrors[filename];
+                                       } else {
+                                          editorErrors[filename]=payload.errors;
+                                       }
+                                       
+                                       if ( payload.warnings.length===0) {
+                                           delete editorWarnings[filename];
+                                       } else {
+                                           editorWarnings[filename]=payload.warnings;
+                                       }
                                    }
                                    resolve();
                                });  
@@ -445,6 +454,7 @@ ml(`
                        files.splice(0,files.length);
                        cb();
                    });
+                   
                 }
                 
                 function setupDragAndDrop() {
