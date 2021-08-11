@@ -75,8 +75,90 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                     }
                 }
                 
+                
+                function singleZipListing (url,databases,cb) {
+                    
+                    const url_without_leading_slash = url.replace(/^\//,'');
+                    const zip_root_without_slash =  '';
+                   
+                                      
+                    const listing = {};   
+                   
+                    getZipDirMetaTools(url,function(tools,zip,zipFileMeta){
+                            tools.allFiles(function(files){
+                                files.forEach(function(file){
+                                    if (file.indexOf(zip_root_without_slash)!==0) return;
+                                    if (!listing[file]) {
+                                        // not already listed
+                                        
+                                        // scan more recent zips for deleted entries, and omit this file if a newer zip
+                                        // has deleted this file by placing it's name in the deleted entry in 
+                                        // the dirmeta.hidden-json file
+                                        
+                                        if (!zipData.some(function(data,i){
+                                            return i <= ix && 
+                                                data.tools && 
+                                                data.tools.meta &&
+                                                data.tools.meta.deleted && 
+                                                !!data.tools.meta.deleted[file];
+                                        })){
+                                            listing[file]=dirs_trimmed.indexOf(data.zip_url );
+                                        }
+                                    }
+                                });
+                                
+                                
+                                getZipFileUpdates('/',function(err,edited_files){
+                                   if (err) return cb(err);
+                                   
+                                   edited_files.forEach(function(file){
+                                       if (file.indexOf(zip_root_without_slash)!==0) return;
+                                       
+                                       const ix = listing[file];
+                                       if (typeof ix==='number') {
+                                           if (ix >=0 ) {
+                                               // file is in zip, and has been updated.
+                                               listing[file] = 0 - (2 + ix);
+                                           }
+                                       } else {
+                                           // file not in any zip
+                                           listing[file] = -1;
+                                       }
+                                   });
+                                   
+                                   
+                                   addEditorInfo(
+                                       
+                                       databases.updatedMetadata,{
+                                          url        : url,
+                                          zips       : [ url ],
+                                          alias_root : '',
+                                          files      : listing,
+                                       },
+                                       
+                                       //base.root.length,
+                                       
+                                       function(dirData){
+                                           
+                                           cb( undefined,dirData);
+                                           
+                                       });
+
+                                });
+                            });
+
+                    });
+                                    
+                }                  
+                                     
+          
+                
                 // returns an object repesenting all files in a virtual dir 
                 function virtualDirListing (url,databases,cb) {
+                    
+                    if (/\.zip$/.test(url)) {
+                        return singleZipListing(url,databases,cb);
+                    }
                     
                     if (virtualDirDB.virtualDirUrls.indexOf(url)>=0) {
                         
@@ -191,6 +273,9 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                         }
                         
                     }
+                    
+                    
+                    
                     
                     cb(new Error (url+" is not a valid virtural directory"));
                     
