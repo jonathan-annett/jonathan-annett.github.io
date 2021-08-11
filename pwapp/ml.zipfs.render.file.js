@@ -167,16 +167,19 @@ ml(`
                 const file_sha1    = dirInfo.file_sha1 ? dirInfo.file_sha1(filename) : '';
                 const is_zip       = filename.endsWith(".zip");
                 const is_edited    = dirInfo.fileisEdited( dirInfo.updated_prefix+test_name );
+                const has_warnings = dirInfo.fileHasWarnings(filename);
+                const has_errors   = dirInfo.fileHasErrors(filename);
                 
                 //const sha1span     = '<span class="sha1"></span>';
                 
                 const cls = is_deleted ? ["deleted"] : [];
-                if (is_edited)   cls.push("edited");
-                if (is_hidden)   cls.push("hidden");
-                
-                if (is_zip)      cls.push("zipfile");
-                if (is_editable) cls.push("code");
-                if (is_image)    cls.push("image");
+                if (is_edited)    cls.push("edited");
+                if (is_hidden)    cls.push("hidden");
+                if (has_warnings) cls.push("warnings");
+                if (has_errors)   cls.push("errors");
+                if (is_zip)       cls.push("zipfile");
+                if (is_editable)  cls.push("code");
+                if (is_image)     cls.push("image");
                 if (!is_image && !is_editable && !is_zip) cls.push("other");
                 
                 const li_class     = cls.length===0 ? '' : cls.join(' ');
