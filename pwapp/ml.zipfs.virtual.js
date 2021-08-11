@@ -140,7 +140,7 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                        },0);
                                        if (count===files.length) {  
                                            zip_url = url_split.join('/')+'/';
-                                           alias_url = zip_url.replace(/^https\:\/\//,'').replace(/^.*\//,'')+'/'+test;
+                                           alias_url = test;
                                        }
                                       
                                    }
