@@ -86,6 +86,7 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                    
                     getZipDirMetaTools(url,function(tools,zip,zipFileMeta){
                             tools.allFiles(function(files){
+                                
                                 files.forEach(function(file){
                                     if (file.indexOf(zip_root_without_slash)!==0) return;
                                     if (!listing[file]) {
@@ -95,16 +96,14 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                         // has deleted this file by placing it's name in the deleted entry in 
                                         // the dirmeta.hidden-json file
                                         
-                                        if (!zipData.some(function(data,i){
-                                            return i <= ix && 
-                                                data.tools && 
-                                                data.tools.meta &&
-                                                data.tools.meta.deleted && 
-                                                !!data.tools.meta.deleted[file];
-                                        })){
-                                            listing[file]=dirs_trimmed.indexOf(data.zip_url );
+                                        if (    tools.meta &&
+                                                tools.meta.deleted && 
+                                                !!tools.meta.deleted[file]) {
+                                                    return ;
+                                                }
+                                            listing[file]=0;
                                         }
-                                    }
+                                    
                                 });
                                 
                                 
