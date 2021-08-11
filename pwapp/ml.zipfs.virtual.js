@@ -125,11 +125,19 @@ htmlFileMetaLib      | ${ml.c.app_root}ml.zipfs.dir.file.meta.js
                                        }
                                    });
                                    
+                                   const url_split = url.split('/');
+                                   let alias_url = url;
+                                   if (url_split.length > 2) {
+                                       if (url_split[url_split.length-1] === url_split[url_split.length-2]+'.zip'){
+                                           url_split.pop();
+                                           alias_url = url_split.join('/');
+                                       }
+                                   }
                                    
                                    addEditorInfo(
                                        
                                        databases.updatedMetadata,{
-                                          url        : url,
+                                          url        : alias_url,
                                           zips       : [ url ],
                                           alias_root : '',
                                           files      : listing,
