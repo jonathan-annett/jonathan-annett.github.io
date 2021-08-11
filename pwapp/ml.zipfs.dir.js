@@ -305,7 +305,7 @@ ml(`
                     });
                     
                     
-                    const ed_filter = qs("#filename_filter",function change(e){
+                    const ed_filter = qs("#filename_filter",function keyup(e){
                         
                         const filt_text = ed_filter.value.trim();
                         let func = function(el){el.hidden=false;};
