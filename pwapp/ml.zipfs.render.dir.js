@@ -69,10 +69,10 @@ ml(`
                             zipFSDirHtml (function (err,dir_html){
                                
                                const renderFileLib=ml.i.htmlFileItemLib (htmlFileItemLibOpts);
-                              
-                               const html = renderDirPage(url,undefined,dir_html, htmlFileItemLibOpts,renderFileLib );
                                setParentLink(renderFileLib,htmlFileItemLibOpts,url);
                               
+                               const html = renderDirPage(url,undefined,dir_html, htmlFileItemLibOpts,renderFileLib );
+                               
                                return response200_HTML (resolve,html);
                            });
 

@@ -129,8 +129,9 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                    });
                                    
                                    const url_split = url.split('/');
-                                       let alias_url = '';
-                                       let zip_url = url;
+                                   let alias_url   = '';
+                                   let zip_url     = url;
+                                   
                                    if (url_split.length > 2) {
                                        const test = url_split.pop().replace(/\.zip$/,'/');
                                        const files = Object.keys(listing);
@@ -142,7 +143,6 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                            zip_url = url_split.join('/')+'/';
                                            alias_url = test;
                                        }
-                                      
                                    }
                                    
                                    addEditorInfo(
