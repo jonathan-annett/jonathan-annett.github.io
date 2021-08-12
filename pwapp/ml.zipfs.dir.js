@@ -312,8 +312,8 @@ ml(`
                         [].forEach.call(document.querySelectorAll(q),events[q]);
                     });
                     
-                    qs("#filename_filter",addFilterEditorFunc);
-                    qs("#search_text",addSearchTermFunc);
+                    addFilterEditorFunc(qs("#filename_filter"));
+                    addSearchTermFunc(qs("#search_text"));
                      
                
                     
