@@ -3076,7 +3076,7 @@ ml(`
                                     
                                     const displayText    = lineText.substr(0-lineLength) + searchTerm + nextLine.substr(0,nextLineLength);
                                     
-                                    results.push({text: displayText, line:lines.length+1,column:lineText.length+1});
+                                    results.push({text: displayText, line:lines.length+1,column:lineText.length});
                                     
                                     lines.splice(0,lines.length);
                                     lower_text = lower_text.substr(0,ix) + termPad + lower_text.substr(ix+termLength);
