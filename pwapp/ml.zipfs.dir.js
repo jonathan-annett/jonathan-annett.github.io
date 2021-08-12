@@ -3025,7 +3025,6 @@ ml(`
                 let bgapi = inlineWorkerAPI();
                 let msg_cb = function(){};
                 let files = {};
-                 
                 
                 onmessage = function(e) {
                     
@@ -3136,14 +3135,15 @@ ml(`
                                      const ix = fs.search.indexOf(termLower);
                                      if (ix>=0){
                                          n++;
-                                         const beforeTerm = fs.search.substr(0,ix);
-                                         const lines      = beforeTerm.split("\n");
+                                         const lines      = fs.text.substr(0,ix).split("\n");
+                                         const lineText   = lines.pop();
+                                         const nextLine   = fs.text.substr(0,ix).replace(/\n.*/,'');
                                          fs.results=[{line:lines.length, column:lines.pop().length}];
-                                         postMessage({filename:fs.filename,results:fs.results});
+                                         postMessage({text:lineText+ searchTerm+nextLine,filename:fs.filename,results:fs.results});
                                          lines.splice(0,lines.length);
                                          fs.last = fs.search.lastIndexOf(termLower);
                                          if (ix < fs.last) {
-                                            fs.search = beforeTerm + termPad + fs.search.substr(ix+termLength);
+                                            fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
                                          } else {
                                              delete fs.search;
                                              delete fs.last;
@@ -3161,13 +3161,14 @@ ml(`
                                    if (fs.search) {
                                        const ix = fs.search.indexOf(termLower);
                                        n++;
-                                       const beforeTerm = fs.search.substr(0,ix);
-                                       const lines      = beforeTerm.split("\n");
-                                       fs.results.push({line:lines.length, column:lines.pop().length});
+                                       const lines      = fs.text.substr(0,ix).split("\n");
+                                       const lineText   = lines.pop();
+                                       const nextLine   = fs.text.substr(0,ix).replace(/\n.*/,'');
+                                       fs.results.push({text:lineText+ searchTerm+nextLine, line:lines.length+1, column:lineText.length});
                                        postMessage({filename:fs.filename,results:fs.results});
                                        lines.splice(0,lines.length);
                                        if (ix < fs.last) {
-                                          fs.search = beforeTerm + termPad + fs.search.substr(ix+termLength);
+                                          fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
                                        } else {
                                            delete fs.search;
                                            delete fs.last;
@@ -3242,41 +3243,38 @@ ml(`
                 }
                 
                 function startWorker (code,cb) {
-                  let src = functionSource(code) + "\n" + inlineWorkerAPI.toString();
-                  let blob = blobFromString(src, 'application/javascript');
-                  src = null;
-                  
-                  let url = URL.createObjectURL(blob);
-                  let worker = new Worker(url);
-                 
-                  
-                  [ "message",
-                    "messageerror",
-                    "rejectionhandled",
-                    "unhandledrejection" ].forEach(function(ev){
-                    worker.addEventListener(ev,function(e){
-                        cb(ev,e.data,worker);
-                    });
-                  });
-                   blob=null;
-                  URL.revokeObjectURL(url);
-                  url = null;
-                  workers.push(worker);
-                  const wrapped = {
-                      stop : function () {
-                          const ix = worker;
-                          if (ix<0) return;
-                          worker.terminate();
-                          workers.splice(ix,1);
-                          wrapped.stop = function(){};
-                          worker.postMessage = function(){};
-                      },
-                      postMessage : function (msg) {
-                          worker.postMessage(msg);
-                      }
-                  };
-                 
-                  return wrapped;
+                      let src = functionSource(code) + "\n" + inlineWorkerAPI.toString();
+                      let blob = blobFromString(src, 'application/javascript');
+                      src = null;
+                      
+                      let url = URL.createObjectURL(blob);
+                      let worker = new Worker(url);
+                     
+                      
+                      [ "message","messageerror","rejectionhandled","unhandledrejection" ].forEach(function(ev){
+                        worker.addEventListener(ev,function(e){
+                            cb(ev,e.data,worker);
+                        });
+                      });
+                      blob=null;
+                      URL.revokeObjectURL(url);
+                      url = null;
+                      workers.push(worker);
+                      const wrapped = {
+                          stop : function () {
+                              const ix = worker;
+                              if (ix<0) return;
+                              worker.terminate();
+                              workers.splice(ix,1);
+                              wrapped.stop = function(){};
+                              worker.postMessage = function(){};
+                          },
+                          postMessage : function (msg) {
+                              worker.postMessage(msg);
+                          }
+                      };
+                     
+                      return wrapped;
                 }
                 
                 function backgroundFunction(fn,data,cb) {
@@ -3301,9 +3299,13 @@ ml(`
                 }
                 
                 function stopAll () {
+                    
                     while (workers.length>0) {
+                        
                        workers.shift().terminate();   
+                       
                     }
+                    
                 }
                 
                 return {
