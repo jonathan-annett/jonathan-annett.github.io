@@ -492,29 +492,49 @@ ml(`
                 
                 
                 function searchForTerm(term,cb) {
-                    
-                    // terminate any existing background search workers.
-                    searchWorkers.stopAll();
-                    
-                    // and create a new worker for this term
-                    const worker = searchWorkers.startWorker(
-                        searchWorker,
-                        function(ev,data){
-                            if (ev==="message") {
-                                console.log(data);
+                   
+                   if (searchForTerm.worker) {
+                       
+                       searchForTerm.worker.postMessage();
+                       
+                   } else {
+                       
+                        searchForTerm.worker = searchWorkers.startWorker(
+                            searchWorker,
+                            function(ev,data){
+                                
+                                if (ev==="message") {
+                                    
+                                    if (data.getFile) {
+                                        
+                                       getFileForSearchWorker (data.getFile,function(err,text){
+                                           if (text) {
+                                               
+                                               searchForTerm.worker.postMessage( {
+                                                     filename : data.getFile,
+                                                     text     : text
+                                               });
+                                               
+                                           }
+                                       });
+                                       
+                                    } else {
+                                        console.log(data);
+                                    }
+                                    
+                                }
+                                
                             }
+                        );
+                            
+                        // and send the term 
+                        searchForTerm.worker.postMessage({
+                            files      : filteredFilesList,
+                            searchTerm : term
                         });
-                        
-                    // and send the term 
-                    worker.postMessage({
-                        files: filteredFilesList,
-                        searchTerm:term,
-                        getFile:getFileForSearchWorker
-                    });
-                    
-                    
-                    
-                    
+
+                   }
+                   
                 }
                 
                 function getFileForSearchWorker(filename,cb){
@@ -2948,50 +2968,93 @@ ml(`
             
             
             function searchWorker(onmessage,postMessage) {
+                let msg_cb = function(){};
+                let files = {};
                 
-                onmessage=function(e) {
-                    
-                    const { files, getFile, searchTerm } = e.data;
-                    const termLength = searchTerm.length;
-                    
-                    if (termLength===0) {
-                        return postMessage([]);
-                    }
-                    const termPad = new Array(termLength+1).join(String.fromCharCode(255));
-                    nextFile(0);
-                    
-                    function nextFile(index) {
-                        if (index<files.length) {
-                            
-                            getFile(files[index],function(err,text){
+                function processIncomingFile(e) {
+                   delete files[e.data.filename];
+                   files[e.data.filename] = e.data.text;
+                   delete e.data.filename;
+                   msg_cb(e.data.text);
+                   delete e.data.text;
+                }
+                
+                function doSearch(e) {
+                   const { files, searchTerm } = e.data;
+                   const termLength = searchTerm.length;
+                   
+                   if (termLength===0) {
+                       return postMessage({done:"search"});
+                   }
+                   const termPad = new Array(termLength+1).join(String.fromCharCode(255));
+                   nextFile(0);
+
+                   function nextFile(index) {
+                       if (index<files.length) {
+                           
+                           getFile(files[index],function(text){
+                               
+                                const results = [];
+                   
+                                let ix = text.indexOf(searchTerm);
+                                while (ix>=0){
+                                    const beforeTerm = text.substr(0,ix);
+                                    const afterTerm  = text.substr(ix+termLength);
+                                    const lines = beforeTerm.split("\n");
+                                    results.push({file:files[index],line:lines.length,column:lines.pop().length+1});
+                                    lines.splice(0,lines.length);
+                                    text = beforeTerm +termPad + afterTerm;
+                                    ix = text.indexOf(searchTerm);
+                                }
                                 
-                                 const results = [];
+                                if (results.length>0) { 
+                                    postMessage({results:results.splice(0,results.length)});
+                                }
+                                nextFile(index+1);
+                           });
+                           
+                       } else {
+                           files.splice(0,files.length);
+                           return postMessage({done:"search"});
+                       }
+                   }
+                   
+                }
+                
+                
+                function clearCache(e) {
+                    Object.keys(files).forEach(function(filename){
+                        delete files[filename].text;
+                        delete files[filename].filename;
+                        delete files[filename];
+                    });
+                    postMessage({done:"clearCache"});
+                }
+                
+                onmessage = function(e) {
                     
-                                 let ix = text.indexOf(searchTerm);
-                                 while (ix>=0){
-                                     const beforeTerm = text.substr(0,ix);
-                                     const afterTerm  = text.substr(ix+termLength);
-                                     const lines = beforeTerm.split("\n");
-                                     results.push({file:files[index],line:lines.length,column:lines.pop().length+1});
-                                     lines.splice(0,lines.length);
-                                     text = beforeTerm +termPad + afterTerm;
-                                     ix = text.indexOf(searchTerm);
-                                 }
-                                 
-                                 if (results.length>0) { 
-                                     postMessage(results.splice(0,results.length));
-                                 }
-                                 nextFile(index+1);
-                                 
-                            });
-                            
-                        } else {
-                            files.splice(0,files.length);
-                            postMessage([]);
-                        }
+                    if (e.data.filename && e.data.text) {
+                        return processIncomingFile(e);
                     }
                     
+                    if (e.files && e.searchTerm) {
+                        return doSearch(e);
+                    }
+                    
+                    if (e.clearCache) {
+                        return clearCache(e);
+                    }
+
                 };
+                
+                function getFile(filename,cb) {
+                    msg_cb = cb;
+                    if (files[filename]) return cb (files[filename]);
+                    
+                    postMessage({
+                        getFile:filename
+                    });
+                }
                 
             }
               
