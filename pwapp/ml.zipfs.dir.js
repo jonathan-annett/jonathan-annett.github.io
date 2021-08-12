@@ -499,12 +499,7 @@ ml(`
                 function searchForTerm(term,cb) {
                    
                    if (searchForTerm.worker) {
-                       
-                      searchForTerm.worker.postMessage({
-                          files      : filteredFilesList,
-                          searchTerm : term
-                      });
-                       
+                       startSearch();
                    } else {
                        
                         searchForTerm.worker = searchWorkers.startWorker(
@@ -551,12 +546,21 @@ ml(`
                             }
                         );
                             
-                        // and send the term 
-                        searchForTerm.worker.postMessage({
-                            files      : filteredFilesList,
-                            searchTerm : term
-                        });
-
+                        startSearch();
+                   }
+                   
+                   
+                   function startSearch() {
+                       Object.keys(searchResults).forEach(function(filename){
+                           searchResults[filename].text;
+                           searchResults[filename].line;
+                           searchResults[filename].column;
+                           delete searchResults[filename];
+                       });
+                       searchForTerm.worker.postMessage({
+                           files      : filteredFilesList,
+                           searchTerm : term
+                       });
                    }
                    
                 }
