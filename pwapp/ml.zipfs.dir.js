@@ -319,6 +319,8 @@ ml(`
                     
                     addFilterEditorFunc(qs("#filename_filter"));
                     addSearchTermFunc(qs("#search_text"));
+
+                    
                      
                
                     
@@ -488,7 +490,7 @@ ml(`
                 function addSearchTermFunc(ed_term) {
                     
                     addDelayedEditCallback(ed_term,function(value){
-                        searchForTerm(value,function(){
+                        searchForTerm(value,qs("#search_case").checked,function(){
                             
                         });
                     });
@@ -496,7 +498,7 @@ ml(`
                 }
                 
                 
-                function searchForTerm(term,cb) {
+                function searchForTerm(term,ignoreCase,cb) {
                    
                    if (searchForTerm.worker) {
                        startSearch();
@@ -559,7 +561,8 @@ ml(`
                        });
                        searchForTerm.worker.postMessage({
                            files      : filteredFilesList,
-                           searchTerm : term
+                           searchTerm : term,
+                           ignoreCase : ignoreCase
                        });
                    }
                    
@@ -3044,7 +3047,8 @@ ml(`
                 
                 function doSearch(d) {
                    const { files, searchTerm } = d;
-                   const termLower = searchTerm.toLowerCase();
+                   const prep = d.ignoreCase ? "toLowerCase" : "slice";
+                   const termLower = searchTerm[prep]();
                    const termLength = searchTerm.length;
                    
                    if (termLength===0) {
@@ -3059,7 +3063,8 @@ ml(`
                            getFile(files[index],function(text){
                                
                                 const results = [];
-                                let lower_text = text.toLowerCase();
+                                
+                                let lower_text = text[prep]();
                    
                                 let ix = lower_text.indexOf(termLower);
                                 while (ix>=0){
