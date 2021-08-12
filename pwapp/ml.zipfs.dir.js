@@ -2978,31 +2978,31 @@ ml(`
                 onmessage = function(e) {
                     
                     if (e.data.filename && e.data.text) {
-                        return processIncomingFile(e);
+                        return processIncomingFile(e.data);
                     }
                     
-                    if (e.files && e.searchTerm) {
-                        return doSearch(e);
+                    if (e.data.files && e.data.searchTerm) {
+                        return doSearch(e.data);
                     }
                     
-                    if (e.clearCache) {
-                        return clearCache(e);
+                    if (e.data.clearCache) {
+                        return clearCache(e.data);
                     }
 
                 };
                 
-                function processIncomingFile(e) {
-                   delete files[e.data.filename];
-                   console.log("received:",e.data.filename);
-                   files[e.data.filename] = e.data.text;
-                   delete e.data.filename;
-                   msg_cb(e.data.text);
-                   delete e.data.text;
+                function processIncomingFile(d) {
+                   delete files[d.filename];
+                   console.log("received:",d.filename);
+                   files[d.filename] = d.text;
+                   delete d.filename;
+                   msg_cb(d.text);
+                   delete d.text;
                    
                 }
                 
-                function doSearch(e) {
-                   const { files, searchTerm } = e.data;
+                function doSearch(d) {
+                   const { files, searchTerm } = d;
                    const termLength = searchTerm.length;
                    
                    if (termLength===0) {
@@ -3043,7 +3043,7 @@ ml(`
                    
                 }
                 
-                function clearCache(e) {
+                function clearCache(d) {
                     Object.keys(files).forEach(function(filename){
                         delete files[filename].text;
                         delete files[filename].filename;
