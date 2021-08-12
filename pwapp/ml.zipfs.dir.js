@@ -461,7 +461,7 @@ ml(`
                     
                     addDelayedEditCallback(ed_filter,function(value){
                         let func = function(el){el.hidden=false;};
-                        filteredFilesList.splice(0,filteredFilesList);
+                        filteredFilesList.splice(0,filteredFilesList.length);
                         if (value.length>0) {
                             const filt = new RegExp( regexpEscape(value),'i');
                             
