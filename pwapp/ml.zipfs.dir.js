@@ -535,7 +535,14 @@ ml(`
                                             delete data.results;
                                             delete data.filename;
                                         } else {
-                                           console.log(data);
+                                           
+                                           if (data.done==="search") {
+                                               updateErrorsTable(function(){
+                                                   
+                                               });
+                                           } else {
+                                               console.log(data);
+                                           }
                                         }
                                     }
                                     
