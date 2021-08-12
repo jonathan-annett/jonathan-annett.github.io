@@ -363,7 +363,7 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                       return resolve (entry);
                                    }
                                    
-                                   if (subpath === "/") {
+                                   if (["/","","/index.html","/view","/view/"].indexOf(subpath)>=0) {
                                       entry.fixup_url = virtualDirDB.virtualDirZipBase[prefix].zip+'/index.html';
                                       return resolve (entry);
                                    }
