@@ -81,6 +81,9 @@ ml(`
                 
                 let zipPollerIndex = -1;
                 const zipPollerInterval = 100;
+                const zipPollerInterval_busy = 10;
+                const zipPollerInterval_idle = 5000;
+                
                 let tempErrorEditor;
                 let errorsTableData, errorsTable;
                 
@@ -2492,7 +2495,7 @@ ml(`
                     if (filesBeingEdited.length>0) {
                         // only run the background worker when no files are being edited
                         // this means the editor (which has it's own worker) is snappy on slower machines
-                        return setTimeout(zipPoller,500); 
+                        return setTimeout(zipPoller,zipPollerInterval_idle); 
                     }
 
                     zipPollerIndex = (zipPollerIndex===undefined?0:zipPollerIndex+1);
@@ -2501,55 +2504,53 @@ ml(`
                         const filename = zip_files[index];
                         const li = find_li (filename);
                         if (li) {
-                            let editor_id = li.dataset.editor_id;
-                            if (editor_id) {
-                                // files open in the editor hash themselves
-                                setTimeout(zipPoller,zipPollerInterval);
-                            } else {
+                            // this is a valid file
+                            
                                 const sha_el = qs(li,".sha1");
-                                    // read file text via service worker, which either hashes it on the way 
-                                    // or fetches the stored hash from when it was last read/written)
-                                    readFileText(filename,function(err,buffer,updated,hash,text){
-                                        if(sha_el && sha_el.textContent.trim()!==hash) {
-                                            sha_el.textContent='--hashing---';
-    
-                                            if (fileIsEditable(filename)){
+                                // read file text via service worker, which either hashes it on the way 
+                                // or fetches the stored hash from when it was last read/written)
+                                readFileText(filename,function(err,buffer,updated,hash,text){
+                                    
+                                    if(sha_el && sha_el.textContent.trim()!==hash) {
+                                        sha_el.textContent='--hashing---';
+
+                                        if (fileIsEditable(filename)){
+                                            
+                                            sha_el.textContent='--syntax scanning---';
+                                            const mode = aceModeForFile(filename);
+                                            if (mode) {
                                                 
-                                                sha_el.textContent='--syntax scanning---';
-                                                const mode = aceModeForFile(filename);
-                                                if (mode) {
+                                                lintSource(hash,text,mode,filename,function(errors,warnings){
                                                     
-                                                    lintSource(hash,text,mode,filename,function(errors,warnings){
-                                                        
-                                                        li.classList[errors?"add":"remove"]("errors");
-                                                        li.classList[warnings?"add":"remove"]("warnings");
-                                                        sha_el.textContent = hash;
-                                                        
-                                                        setTimeout(zipPoller,zipPollerInterval);
-                                                        
-                                                    });
+                                                    li.classList[errors?"add":"remove"]("errors");
+                                                    li.classList[warnings?"add":"remove"]("warnings");
+                                                    sha_el.textContent = hash;
                                                     
-                                                } else {
-                                                    sha_el.textContent=hash;
+                                                    setTimeout(zipPoller,zipPollerInterval_busy);
                                                     
-                                                    writeLintResults(filename,hash,false,false,function(){
-                                                        setTimeout(zipPoller,zipPollerInterval);
-                                                    });
-                                                }
+                                                });
+                                                
                                             } else {
                                                 sha_el.textContent=hash;
+                                                
                                                 writeLintResults(filename,hash,false,false,function(){
-                                                    setTimeout(zipPoller,zipPollerInterval);
+                                                    setTimeout(zipPoller,zipPollerInterval_busy);
                                                 });
                                             }
                                         } else {
-                                            setTimeout(zipPoller,zipPollerInterval);
+                                            sha_el.textContent=hash;
+                                            writeLintResults(filename,hash,false,false,function(){
+                                                setTimeout(zipPoller,zipPollerInterval_busy);
+                                            });
                                         }
-    
-                                    });
-                            }
+                                    } else {
+                                        setTimeout(zipPoller,zipPollerInterval_idle);
+                                    }
+
+                                });
+                           
                         } else {
-                            setTimeout(zipPoller,zipPollerInterval);
+                            setTimeout(zipPoller,zipPollerInterval_idle);
                         }
                     } else {
                         zipPollerIndex=-1;
