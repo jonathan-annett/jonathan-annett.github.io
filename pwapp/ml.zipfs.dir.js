@@ -3138,7 +3138,7 @@ ml(`
                                          const lines      = fs.text.substr(0,ix).split("\n");
                                          const lineText   = lines.pop();
                                          const nextLine   = fs.text.substr(0,ix).replace(/\n.*/,'');
-                                         fs.results=[{line:lines.length, column:lines.pop().length}];
+                                         fs.results=[{line:lines.length+1, column:lineText.length}];
                                          postMessage({text:lineText+ searchTerm+nextLine,filename:fs.filename,results:fs.results});
                                          lines.splice(0,lines.length);
                                          fs.last = fs.search.lastIndexOf(termLower);
