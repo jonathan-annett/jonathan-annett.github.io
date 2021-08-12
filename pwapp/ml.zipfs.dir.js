@@ -3088,7 +3088,7 @@ ml(`
                             
                         } else {
                             
-                            cb(files);
+                            cb(results);
                             
                         }
                     }
