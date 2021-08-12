@@ -559,11 +559,15 @@ ml(`
                            searchResults[filename].column;
                            delete searchResults[filename];
                        });
-                       searchForTerm.worker.postMessage({
-                           files      : filteredFilesList,
-                           searchTerm : term,
-                           ignoreCase : ignoreCase
-                       });
+                       if (term.trim().length>0) {
+                           searchForTerm.worker.postMessage({
+                               files      : filteredFilesList,
+                               searchTerm : term,
+                               ignoreCase : ignoreCase
+                           });
+                       } else {
+                           cb();
+                       }
                    }
                    
                 }
@@ -1843,7 +1847,6 @@ ml(`
                 function errorTableData() {
                    let data = [];
                    const filtering = filesBeingEdited.length > 0;
-                   
                    
                    Object.keys(searchResults).forEach(function(filename){
                        if (filtering && filesBeingEdited.indexOf(filename)<0) {
