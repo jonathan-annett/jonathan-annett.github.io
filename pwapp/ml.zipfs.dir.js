@@ -2968,8 +2968,25 @@ ml(`
             
             
             function searchWorker(onmessage,postMessage) {
+                
                 let msg_cb = function(){};
                 let files = {};
+                
+                onmessage = function(e) {
+                    
+                    if (e.data.filename && e.data.text) {
+                        return processIncomingFile(e);
+                    }
+                    
+                    if (e.files && e.searchTerm) {
+                        return doSearch(e);
+                    }
+                    
+                    if (e.clearCache) {
+                        return clearCache(e);
+                    }
+
+                };
                 
                 function processIncomingFile(e) {
                    delete files[e.data.filename];
@@ -3023,7 +3040,6 @@ ml(`
                    
                 }
                 
-                
                 function clearCache(e) {
                     Object.keys(files).forEach(function(filename){
                         delete files[filename].text;
@@ -3032,22 +3048,6 @@ ml(`
                     });
                     postMessage({done:"clearCache"});
                 }
-                
-                onmessage = function(e) {
-                    
-                    if (e.data.filename && e.data.text) {
-                        return processIncomingFile(e);
-                    }
-                    
-                    if (e.files && e.searchTerm) {
-                        return doSearch(e);
-                    }
-                    
-                    if (e.clearCache) {
-                        return clearCache(e);
-                    }
-
-                };
                 
                 function getFile(filename,cb) {
                     
