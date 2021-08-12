@@ -3137,7 +3137,7 @@ ml(`
                                          n++;
                                          const lines      = fs.text.substr(0,ix).split("\n");
                                          const lineText   = lines.pop();
-                                         const nextLine   = fs.text.substr(0,ix).replace(/\n.*/,'');
+                                         const nextLine   = fs.text.substr(ix).replace(/\n.*/,'');
                                          fs.results=[{line:lines.length+1, column:lineText.length}];
                                          postMessage({text:lineText+ searchTerm+nextLine,filename:fs.filename,results:fs.results});
                                          lines.splice(0,lines.length);
@@ -3163,7 +3163,7 @@ ml(`
                                        n++;
                                        const lines      = fs.text.substr(0,ix).split("\n");
                                        const lineText   = lines.pop();
-                                       const nextLine   = fs.text.substr(0,ix).replace(/\n.*/,'');
+                                       const nextLine   = fs.text.substr(ix).replace(/\n.*/,'');
                                        fs.results.push({text:lineText+ searchTerm+nextLine, line:lines.length+1, column:lineText.length});
                                        postMessage({filename:fs.filename,results:fs.results});
                                        lines.splice(0,lines.length);
