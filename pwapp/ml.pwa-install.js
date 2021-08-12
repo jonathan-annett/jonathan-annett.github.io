@@ -481,7 +481,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                                  js_onError(request.response);
                              }
                          };
-                         
+                         data_js['subject']="Beta Signup";
                          data_js['text'] = [
                              "Beta Tester Application",
                              "Site URL:"+location.href,

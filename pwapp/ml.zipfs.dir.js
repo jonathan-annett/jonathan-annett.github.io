@@ -313,7 +313,7 @@ ml(`
                         
                         function filterTextChanged(){
                             if (timeout) clearTimeout(timeout);
-                            timeout = setTimeout(filterTextDelayed,500);
+                            timeout = setTimeout(filterTextDelayed,100);
 
                         }
                         
