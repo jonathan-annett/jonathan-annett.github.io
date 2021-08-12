@@ -249,7 +249,12 @@ ml(`
                 const { readFileText,writeFileText,createFileText,forceWriteFileText } = ftextApi;
                 
                 const { writeFileAssociatedText,readFileAssociatedText,removeFileAssociatedData } = fileAssocApi(fbufApi);
-
+                
+                
+                const searchWorkers = inlineWorkerAPI( ) ;
+                
+                const filteredFilesList = zip_files.slice();
+    
                 function onDOMContentLoaded (){
                 
                     const showHidden=document.querySelector("h1 input.hidden_chk");
@@ -307,42 +312,8 @@ ml(`
                         [].forEach.call(document.querySelectorAll(q),events[q]);
                     });
                     
-                    qs("#filename_filter",function (ed_filter){
-                        let timeout,value = ed_filter.value.trim();
-                        
-                        ["input","change","keyup"].forEach(function(e){
-                           ed_filter.addEventListener(e,filterTextChanged);
-                        });
-                        
-                        function filterTextChanged(){
-                            if (timeout) clearTimeout(timeout);
-                            timeout = setTimeout(filterTextDelayed,100);
-
-                        }
-                        
-                        function filterTextDelayed(){
-                            timeout=undefined; 
-                            const filt_text = ed_filter.value.trim();
-                            if ( filt_text === value ) return;
-                            value = filt_text;
-                            
-                            let func = function(el){el.hidden=false;};
-                            let filtered;
-                            if (filt_text.length>0) {
-                                const filt = new RegExp( regexpEscape(filt_text),'i');
-                                filtered = zip_files.filter(function(x){
-                                    return filt.test(x);     
-                                });
-                                func = function (el){
-                                   el.hidden =  !el.dataset.filename || filtered.indexOf(el.dataset.filename)<0; 
-                               };
-                            }
-                            
-                            [].forEach.call(document.querySelectorAll("li"),func);
-                            filtered.splice(0,filtered.length);  
-                        }
-                        
-                    });
+                    qs("#filename_filter",addFilterEditorFunc);
+                    qs("#search_text",addSearchTermFunc);
                      
                
                     
@@ -462,6 +433,117 @@ ml(`
                 }
                 
                 
+                
+                function addDelayedEditCallback (ed,cb){
+                    let timeout,value = ed.value.trim();
+                    
+                    ["input","change","keyup"].forEach(function(e){
+                       ed.addEventListener(e,filterTextChanged);
+                    });
+                    
+                    function filterTextChanged(){
+                        if (timeout) clearTimeout(timeout);
+                        timeout = setTimeout(filterTextDelayed,100);
+
+                    }
+                    
+                    function filterTextDelayed(){
+                        timeout=undefined; 
+                        const filt_text = ed.value.trim();
+                        if ( filt_text === value ) return;
+                        value = filt_text;
+                        cb (value,ed);
+                    }
+                    
+                }
+                
+                function addFilterEditorFunc (ed_filter){
+                    
+                    addDelayedEditCallback(ed_filter,function(value){
+                        let func = function(el){el.hidden=false;};
+                        filteredFilesList.splice(0,filteredFilesList);
+                        if (value.length>0) {
+                            const filt = new RegExp( regexpEscape(value),'i');
+                            
+                            filteredFilesList.push.apply(filteredFilesList,zip_files.filter(function(x){
+                                return filt.test(x);     
+                            }));
+                            func = function (el){
+                               el.hidden =  !el.dataset.filename || filteredFilesList.indexOf(el.dataset.filename)<0; 
+                           };
+                        } else {
+                            filteredFilesList.push.apply(filteredFilesList,zip_files);
+                        }
+                        
+                        [].forEach.call(document.querySelectorAll("li"),func);
+                    });
+                }
+                
+                
+                function addSearchTermFunc(ed_term) {
+                    
+                    addDelayedEditCallback(ed_term,function(value){
+                        searchForTerm(value,function(){
+                            
+                        });
+                    });
+                    
+                }
+                
+                
+                function searchForTerm(term,cb) {
+                    
+                    // terminate any existing background search workers.
+                    searchWorkers.stopAll();
+                    
+                    // and create a new worker for this term
+                    const worker = searchWorkers.startWorker(
+                        searchWorker,
+                        function(ev,data){
+                            if (ev==="message") {
+                                console.log(data);
+                            }
+                        });
+                        
+                    // and send the term 
+                    worker.postMessage({
+                        files: filteredFilesList,
+                        searchTerm:term,
+                        getFile:getFileForSearchWorker
+                    });
+                    
+                    
+                    
+                    
+                }
+                
+                function getFileForSearchWorker(filename,cb){
+                    
+                    // for files that are open in an editor, use that as the source of the search text
+                    
+                    const index = filesBeingEdited.indexOf(filename);
+                    if (index<0) {
+                        
+                          // otherwise dive into the zip/ edited store database
+                          
+                          readFileText(filename,function(err,buffer,updated,hash,text){
+                              
+                              cb(err,text);
+                              
+                          });
+                          
+                    } else {
+                        
+                        find_li_ed(filename,function(li_ed){
+                            if (li_ed && li_ed.editor) {
+                               return cb(undefined,li_ed.editor.getValue()); 
+                            }
+                            return cb(new Error("can't get editor text"));
+                        }); 
+                        
+                    }
+                }
+                    
                 function loadErrors(cb) {
                     
                    const files = Object.keys(dir.editor);  
@@ -2863,9 +2945,122 @@ ml(`
               };
              
             }
-             
             
+            
+            function searchWorker(onmessage,postMessage) {
+                
+                onmessage=function(e) {
+                    
+                    const { files, getFile, searchTerm } = e.data;
+                    const termLength = searchTerm.length;
+                    
+                    if (termLength===0) {
+                        return postMessage([]);
+                    }
+                    const termPad = new Array(termLength+1).join(String.fromCharCode(255));
+                    nextFile(0);
+                    
+                    function nextFile(index) {
+                        if (index<files.length) {
+                            
+                            getFile(files[index],function(err,text){
+                                
+                                 const results = [];
+                    
+                                 let ix = text.indexOf(searchTerm);
+                                 while (ix>=0){
+                                     const beforeTerm = text.substr(0,ix);
+                                     const afterTerm  = text.substr(ix+termLength);
+                                     const lines = beforeTerm.split("\n");
+                                     results.push({file:files[index],line:lines.length,column:lines.pop().length+1});
+                                     lines.splice(0,lines.length);
+                                     text = beforeTerm +termPad + afterTerm;
+                                     ix = text.indexOf(searchTerm);
+                                 }
+                                 
+                                 if (results.length>0) { 
+                                     postMessage(results.splice(0,results.length));
+                                 }
+                                 nextFile(index+1);
+                                 
+                            });
+                            
+                        } else {
+                            files.splice(0,files.length);
+                            postMessage([]);
+                        }
+                    }
+                    
+                };
+                
+            }
+              
            
+            function inlineWorkerAPI( ) {
+                
+                const workers = [];
+                
+                function functionSource(fn) {
+                  const src = fn.toString();
+                  return src.substring(src.indexOf("{")+1,src.lastIndexOf("}")-1).trim();
+                }
+                
+                function blobFromString(str,typ) {
+                  return new Blob([ str ], {type : typ});
+                }
+                
+                function startWorker (code,cb) {
+                  let src = functionSource(code);
+                  let blob = blobFromString(src, 'application/javascript');
+                  src = null;
+                  
+                  let url = URL.createObjectURL(blob);
+                  let worker = new Worker(url);
+                 
+                  
+                  [ "message",
+                    "messageerror",
+                    "rejectionhandled",
+                    "unhandledrejection" ].forEach(function(ev){
+                    worker.addEventListener(ev,function(e){
+                        cb(ev,e.data,worker);
+                    });
+                  });
+                   blob=null;
+                  URL.revokeObjectURL(url);
+                  url = null;
+                  workers.push(worker);
+                  const wrapped = {
+                      stop : function () {
+                          const ix = worker;
+                          if (ix<0) return;
+                          worker.terminate();
+                          workers.splice(ix,1);
+                          wrapped.stop = function(){};
+                          worker.postMessage = function(){};
+                      },
+                      postMessage : function (msg) {
+                          worker.postMessage(msg);
+                      }
+                  };
+                 
+                  return wrapped;
+                }
+                
+               
+                function stopAll () {
+                    while (workers.length>0) {
+                       workers.shift().terminate();   
+                    }
+                }
+                
+                return {
+                    startWorker,
+                    stopAll
+                };
+                
+                
+            }
             
         } 
     }, {
