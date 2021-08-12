@@ -2973,10 +2973,12 @@ ml(`
                 
                 function processIncomingFile(e) {
                    delete files[e.data.filename];
+                   console.log("received:",e.data.filename);
                    files[e.data.filename] = e.data.text;
                    delete e.data.filename;
                    msg_cb(e.data.text);
                    delete e.data.text;
+                   
                 }
                 
                 function doSearch(e) {
@@ -3048,9 +3050,12 @@ ml(`
                 };
                 
                 function getFile(filename,cb) {
+                    
                     msg_cb = cb;
                     if (files[filename]) return cb (files[filename]);
                     
+                    console.log("requesting:",filename);
+                   
                     postMessage({
                         getFile:filename
                     });
