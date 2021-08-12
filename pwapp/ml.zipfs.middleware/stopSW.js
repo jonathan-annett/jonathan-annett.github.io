@@ -55,8 +55,10 @@ ml([],function(){ml(2,
                         '<meta http-equiv="Refresh" content="0; URL='+park_url+'">',
                       "</head>",
                       
-                      "<body><script>",
-                      "location = "+JSON.stringify(park_url)+";",
+                      "<body>",
+                      "stopping service worker....",
+                      "<script>",
+                      "setTimeout(function(){ location = "+JSON.stringify(park_url)+";},1000);",
                       "</script></body></html>"                                
                        
                        
