@@ -3101,14 +3101,13 @@ ml(`
                    
                    const { files, searchTerm } = d;
                    const prep = d.ignoreCase ? "toLowerCase" : "slice";
-                   const termLower = searchTerm[prep]();
                    const termLength = searchTerm.length;
                    if (termLength===0) {
                        return postMessage({done:"search"});
                    }
                    
                    
-                   const termPad = new Array(termLength+1).join(String.fromCharCode(255));
+                  
                    
                    getFiles ( files, prep, function( fileset ) {
                        
@@ -3117,8 +3116,12 @@ ml(`
                        bgapi.backgroundFunction(
                            
                            
-                           function(fileset){
-                                 
+                           function(args){
+                               
+                               const { fileset,termLength,prep,searchTerm } = args;   
+                               const termPad = new Array(termLength+1).join(String.fromCharCode(255));
+                               const termLower = searchTerm[prep]();
+                   
                                if (fileset.reduce(pass1,0)>0) {
                                    
                                    while (fileset.reduce(pass2,0)>0) {
@@ -3178,7 +3181,7 @@ ml(`
                                
                             }, 
                             
-                           fileset,
+                            { fileset,termLength,prep,searchTerm},
                             
                             function(err,data,done){
                                    
