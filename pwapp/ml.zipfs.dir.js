@@ -1853,26 +1853,29 @@ ml(`
                            data.push({type:"Search Result",text:search.text,filename:filename,line:search.line,column:search.column});
                        });
                    });
+                   
+                   if (data.length===0) {
 
-                   Object.keys(editorErrors).forEach(function(filename){
-                       if (filtering && filesBeingEdited.indexOf(filename)<0) {
-                               return
-                       }
-                       editorErrors[filename].forEach(function(err){
-                           data.push({type:"Error",text:err.text,filename:filename,line:err.row+1,column:err.column});
+                       Object.keys(editorErrors).forEach(function(filename){
+                           if (filtering && filesBeingEdited.indexOf(filename)<0) {
+                                   return
+                           }
+                           editorErrors[filename].forEach(function(err){
+                               data.push({type:"Error",text:err.text,filename:filename,line:err.row+1,column:err.column});
+                           });
                        });
-                   });
-                   Object.keys(editorWarnings).forEach(function(filename){
-                       if (filtering && filesBeingEdited.indexOf(filename)<0) {
-                               return
-                       }
-                       editorWarnings[filename].forEach(function(err){
-                           data.push({type:"Warning",text:err.text,filename:filename,line:err.row+1,column:err.column});
+                       Object.keys(editorWarnings).forEach(function(filename){
+                           if (filtering && filesBeingEdited.indexOf(filename)<0) {
+                                   return
+                           }
+                           editorWarnings[filename].forEach(function(err){
+                               data.push({type:"Warning",text:err.text,filename:filename,line:err.row+1,column:err.column});
+                           });
                        });
-                   });
+                   }
                    data.sort(function(a,b){
                        if (a.filename===b.filename) {
-                           return a.row < b.row ? -1 : a.row > b.row ? 1 : 0;
+                           return a.line < b.line ? -1 : a.line > b.line ? 1 : 0;
                        } else {
                            return a.filename < b.filename ? -1 : 1;
                        }
