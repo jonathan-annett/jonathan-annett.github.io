@@ -3022,9 +3022,10 @@ ml(`
             
             
             function searchWorker(onmessage,postMessage) {
-                
+                let bgapi = inlineWorkerAPI();
                 let msg_cb = function(){};
                 let files = {};
+                 
                 
                 onmessage = function(e) {
                     
@@ -3044,68 +3045,161 @@ ml(`
                 
                 function processIncomingFile(d) {
                    delete files[d.filename];
-                   files[d.filename] = d.text;
-                   delete d.filename;
+                   files[d.filename] = d;
                    msg_cb(d.text);
-                   delete d.text;
-                   
+                }
+                
+                function getFiles(needed,prep,cb) {
+                    const results = [];
+                    loop(0);
+                    
+                    function loop(index) {
+                        
+                        if (index < needed.length) {
+                            
+                            const filename = needed[index];
+                            const prev = files [ filename ];
+                            if ( prev ) {
+                                
+                                if (prev.results) {
+                                    prev.results.forEach(function(x){
+                                        delete x.text;
+                                        delete x.line;
+                                        delete x.column;
+                                    });
+                                    prev.results.splice(0,prev.results.length);
+                                    delete prev.results;
+                                }
+                                delete prev.search;
+                                prev.search = prev.text[prep]();
+                                results.push(prev);
+                                loop(index+1);
+                                
+                            } else {
+                                
+                                getFile ( filename, function(){
+                                    const newfile = files [ filename ];
+                                    newfile.search = newfile.text[prep]();
+                                    results.push(newfile);
+                                    loop(index+1);
+                                } );
+                                
+                            }
+                            
+                        } else {
+                            
+                            cb(files);
+                            
+                        }
+                    }
+                    
                 }
                 
                 function doSearch(d) {
+                   
+                   bgapi.stopAll();
+                   
                    const { files, searchTerm } = d;
                    const prep = d.ignoreCase ? "toLowerCase" : "slice";
                    const termLower = searchTerm[prep]();
                    const termLength = searchTerm.length;
-                   
                    if (termLength===0) {
                        return postMessage({done:"search"});
                    }
+                   
+                   
                    const termPad = new Array(termLength+1).join(String.fromCharCode(255));
-                   nextFile(0);
+                   
+                   getFiles ( files, prep, function( fileset ) {
+                       
+                       files.splice( 0, files.length );
 
-                   function nextFile(index) {
-                       if (index<files.length) {
+                       bgapi.backgroundFunction(
                            
-                           getFile(files[index],function(text){
+                           
+                           function(fileset){
+                                 
+                               if (fileset.reduce(pass1,0)>0) {
+                                   
+                                   while (fileset.reduce(pass2,0)>0) {
+                                       
+                                   }
+                                   
+                               }
                                
-                                const results = [];
-                                
-                                let lower_text = text[prep]();
-                   
-                                let ix = lower_text.indexOf(termLower);
-                                while (ix>=0){
-                                    const beforeTerm = text.substr(0,ix);
-                                    const afterTerm  = text.substr(ix+termLength);
-                                    const lines      = beforeTerm.split("\n");
-                                    
-                                    const lineText = lines.pop();
-                                    
-                                    const lineLength     = lineText.length < 16 ? lineText.length : 16;
-                                    const nextLineCr     = afterTerm.indexOf("\n");
-                                    const nextLine       = nextLineCr < 0 ? afterTerm : afterTerm.substr(0,nextLineCr);
-                                    const nextLineLength = nextLine.length < 16 ? nextLine.length : 16;
-                                    
-                                    const displayText    = lineText.substr(0-lineLength) + searchTerm + nextLine.substr(0,nextLineLength);
-                                    
-                                    results.push({text: displayText, line:lines.length+1,column:lineText.length});
-                                    
-                                    lines.splice(0,lines.length);
-                                    lower_text = lower_text.substr(0,ix) + termPad + lower_text.substr(ix+termLength);
-                                    ix = lower_text.indexOf(termLower);
-                                }
-                                
-                                if (results.length>0) {
-                                    postMessage({filename:files[index],results:results.splice(0,results.length)});
-                                }
-                                nextFile(index+1);
-                           });
-                           
-                       } else {
-                           files.splice(0,files.length);
-                           return postMessage({done:"search"});
-                       }
-                   }
-                   
+                               return {done:"search"};
+                               
+                               function pass1(n,fs) {
+                                     const ix = fs.search.indexOf(termLower);
+                                     if (ix>=0){
+                                         n++;
+                                         const beforeTerm = fs.search.substr(0,ix);
+                                         const lines      = beforeTerm.split("\n");
+                                         fs.results=[{line:lines.length, column:lines.pop().length}];
+                                         postMessage({filename:fs.filename,results:fs.results});
+                                         lines.splice(0,lines.length);
+                                         fs.last = fs.search.lastIndexOf(termLower);
+                                         if (ix < fs.last) {
+                                            fs.search = beforeTerm + termPad + fs.search.substr(ix+termLength);
+                                         } else {
+                                             delete fs.search;
+                                             delete fs.last;
+                                             fs.results.splice(0,1);
+                                             delete fs.results;
+                                         }
+                                         
+                                     } else {
+                                         delete fs.search;
+                                     }
+                                     return n;
+                               }
+                               
+                               function pass2(n,fs) {
+                                   if (fs.search) {
+                                       const ix = fs.search.indexOf(termLower);
+                                       n++;
+                                       const beforeTerm = fs.search.substr(0,ix);
+                                       const lines      = beforeTerm.split("\n");
+                                       fs.results.push({line:lines.length, column:lines.pop().length});
+                                       postMessage({filename:fs.filename,results:fs.results});
+                                       lines.splice(0,lines.length);
+                                       if (ix < fs.last) {
+                                          fs.search = beforeTerm + termPad + fs.search.substr(ix+termLength);
+                                       } else {
+                                           delete fs.search;
+                                           delete fs.last;
+                                           fs.results.splice(0,fs.results.length);
+                                           delete fs.results;
+                                       }
+                                   }
+                                   return n;
+                               }
+                               
+                               
+                            }, 
+                            
+                           fileset,
+                            
+                            function(err,data,done){
+                                   
+                                   if (data) {
+                                      postMessage(data);
+                                   }
+                                   
+                                   if (err) {
+                                      console.log(err);
+                                   }
+        
+                                   if (done) {
+                                      bgapi.stopAll();
+                                   } 
+                                         
+                            } 
+                            
+                        );
+        
+                    });
+
                 }
                 
                 function clearCache(d) {
@@ -3120,7 +3214,7 @@ ml(`
                 function getFile(filename,cb) {
                     
                     msg_cb = cb;
-                    if (files[filename]) return cb (files[filename]);
+                    if (files[filename]) return cb (files[filename].text);
                     
                     postMessage({
                         getFile:filename
@@ -3135,6 +3229,7 @@ ml(`
                 const workers = [];
                 
                 function functionSource(fn) {
+                  if (typeof fn==='string') return fn;
                   const src = fn.toString();
                   return src.substring(src.indexOf("{")+1,src.lastIndexOf("}")-1).trim();
                 }
@@ -3144,7 +3239,7 @@ ml(`
                 }
                 
                 function startWorker (code,cb) {
-                  let src = functionSource(code);
+                  let src = functionSource(code) + "\n" + inlineWorkerAPI.toString();
                   let blob = blobFromString(src, 'application/javascript');
                   src = null;
                   
@@ -3181,7 +3276,27 @@ ml(`
                   return wrapped;
                 }
                 
-               
+                function backgroundFunction(fn,data,cb) {
+                    const worker = startWorker('onmessage=function(e){postMessage([('+fn.toString()+')(e.data)]);',function(ev,data){
+                        if (ev==='message') {
+                            if (Array.isArray(data)){
+                                worker.stop();
+                                return cb(undefined,data[0],true);
+                            }
+                            return cb(undefined,data,false);
+                        }
+                        if (ev==='messageerror') {
+                            worker.stop();
+                            return cb(new Error('message error'),undefined,true);
+                        }
+                        if (ev==='unhandledrejection') {
+                            worker.stop();
+                            return cb(new Error('unhandled rejection error'),undefined,true);
+                        }
+                    });
+                    worker.postMessage(data);
+                }
+                
                 function stopAll () {
                     while (workers.length>0) {
                        workers.shift().terminate();   
@@ -3190,6 +3305,7 @@ ml(`
                 
                 return {
                     startWorker,
+                    backgroundFunction,
                     stopAll
                 };
                 
