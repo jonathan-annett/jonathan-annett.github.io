@@ -495,7 +495,10 @@ ml(`
                    
                    if (searchForTerm.worker) {
                        
-                       searchForTerm.worker.postMessage();
+                      searchForTerm.worker.postMessage({
+                          files      : filteredFilesList,
+                          searchTerm : term
+                      });
                        
                    } else {
                        
