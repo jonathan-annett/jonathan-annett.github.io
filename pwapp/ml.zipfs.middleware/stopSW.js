@@ -56,9 +56,12 @@ ml([],function(){ml(2,
                       "</head>",
                       
                       "<body>",
-                      "stopping service worker....",
+                      "Stopping service worker....",
                       "<script>",
-                      "setTimeout(function(){ location = "+JSON.stringify(park_url)+";},1000);",
+                      "localStorage.removeItem('no_keyboard');",
+                      "sessionStorage.removeItem('running');",
+                      "sessionStorage.removeItem('reloading_service_worker');",
+                      "setTimeout(function(){ location = "+JSON.stringify(park_url)+";},2000);",
                       "</script></body></html>"                                
                        
                        
