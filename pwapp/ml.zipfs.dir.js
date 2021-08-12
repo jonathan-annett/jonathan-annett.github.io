@@ -3035,7 +3035,6 @@ ml(`
                 
                 function processIncomingFile(d) {
                    delete files[d.filename];
-                   console.log("received:",d.filename);
                    files[d.filename] = d.text;
                    delete d.filename;
                    msg_cb(d.text);
@@ -3077,7 +3076,7 @@ ml(`
                                     
                                     const displayText    = lineText.substr(0-lineLength) + searchTerm + nextLine.substr(0,nextLineLength);
                                     
-                                    results.push({text: displayText, line:lines.length,column:lineText.length+1});
+                                    results.push({text: displayText, line:lines.length+1,column:lineText.length+1});
                                     
                                     lines.splice(0,lines.length);
                                     lower_text = lower_text.substr(0,ix) + termPad + lower_text.substr(ix+termLength);
@@ -3112,8 +3111,6 @@ ml(`
                     msg_cb = cb;
                     if (files[filename]) return cb (files[filename]);
                     
-                    console.log("requesting:",filename);
-                   
                     postMessage({
                         getFile:filename
                     });
