@@ -3041,6 +3041,7 @@ ml(`
                 
                 function doSearch(d) {
                    const { files, searchTerm } = d;
+                   const termLower = searchTerm.toLowerCase();
                    const termLength = searchTerm.length;
                    
                    if (termLength===0) {
@@ -3055,12 +3056,13 @@ ml(`
                            getFile(files[index],function(text){
                                
                                 const results = [];
+                                let lower_text = text.toLowerCase();
                    
-                                let ix = text.indexOf(searchTerm);
+                                let ix = lower_text.indexOf(termLower);
                                 while (ix>=0){
                                     const beforeTerm = text.substr(0,ix);
                                     const afterTerm  = text.substr(ix+termLength);
-                                    const lines = beforeTerm.split("\n");
+                                    const lines      = beforeTerm.split("\n");
                                     
                                     const lineText = lines.pop();
                                     
@@ -3074,11 +3076,11 @@ ml(`
                                     results.push({text: displayText, line:lines.length,column:lineText.length+1});
                                     
                                     lines.splice(0,lines.length);
-                                    text = beforeTerm +termPad + afterTerm;
-                                    ix = text.indexOf(searchTerm);
+                                    lower_text = lower_text.substr(0,ix) + termPad + lower_text.substr(ix+termLength);
+                                    ix = lower_text.indexOf(termLower);
                                 }
                                 
-                                if (results.length>0) { 
+                                if (results.length>0) {
                                     postMessage({filename:files[index],results:results.splice(0,results.length)});
                                 }
                                 nextFile(index+1);
