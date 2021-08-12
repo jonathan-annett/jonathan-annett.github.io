@@ -65,6 +65,11 @@ ml(`
                     
                 ];
                 
+                
+                const searchResults = {
+                    
+                };
+                
                 const editorErrors = {
                     /*
                     { filename : [ {line,column,text} x n ] }
@@ -518,11 +523,20 @@ ml(`
                                                      text     : text
                                                });
                                                
+                                               delete data.getFile;
+                                               
                                            }
                                        });
                                        
                                     } else {
-                                        console.log(data);
+                                        if (data.filename && data.results) {
+                                            delete searchResults[data.filename];
+                                            searchResults[data.filename] = data.results;
+                                            delete data.results;
+                                            delete data.filename;
+                                        } else {
+                                           console.log(data);
+                                        }
                                     }
                                     
                                 }
@@ -1815,6 +1829,17 @@ ml(`
                 function errorTableData() {
                    let data = [];
                    const filtering = filesBeingEdited.length > 0;
+                   
+                   
+                   Object.keys(searchResults).forEach(function(filename){
+                       if (filtering && filesBeingEdited.indexOf(filename)<0) {
+                               return
+                       }
+                       searchResults[filename].forEach(function(search){
+                           data.push({type:"Search Result",text:search.text,filename:filename,line:search.line,column:search.column});
+                       });
+                   });
+
                    Object.keys(editorErrors).forEach(function(filename){
                        if (filtering && filesBeingEdited.indexOf(filename)<0) {
                                return
@@ -1853,7 +1878,10 @@ ml(`
                 }
                 
                 function updateErrorsTable(cb) {
-                    if (errorsTableData) destroyTableData(errorsTableData);
+                    
+                    if (errorsTableData) {
+                        destroyTableData(errorsTableData);
+                    }
                     errorsTableData = errorTableData();
                     
                     if (errorsTableData.length === 0) {
@@ -1868,6 +1896,7 @@ ml(`
                     }
                     
                     if(!errorsTable) {
+                        
                         errorsTable = new Tabulator("#errors_table", {
                             data:errorsTableData,
                             autoColumns:true,
@@ -1903,11 +1932,14 @@ ml(`
                         });
                        
                         cb(errorsTable);
+                        
                     } else {
+                        
                         errorsTable.clearData();
                         errorsTable.updateOrAddData (errorsTableData).then(function(){
                             cb(errorsTable);
                         });
+                        
                     }
 
                 }
@@ -2480,7 +2512,6 @@ ml(`
                     }
                 }
                 
-                
                 function writeLintResults(filename,hash,errors,warnings,cb) {
                     const json = JSON.stringify({errors,warnings,hash});
                         
@@ -3023,14 +3054,25 @@ ml(`
                                     const beforeTerm = text.substr(0,ix);
                                     const afterTerm  = text.substr(ix+termLength);
                                     const lines = beforeTerm.split("\n");
-                                    results.push({file:files[index],line:lines.length,column:lines.pop().length+1});
+                                    
+                                    const lineText = lines.pop();
+                                    
+                                    const lineLength     = lineText.length < 16 ? lineText.length : 16;
+                                    const nextLineCr     = afterTerm.indexOf("\n");
+                                    const nextLine       = nextLineCr < 0 ? afterTerm : afterTerm.substr(0,nextLineCr);
+                                    const nextLineLength = nextLine.length < 16 ? nextLine.length : 16;
+                                    
+                                    const displayText    = lineText.substr(0-lineLength) + searchTerm + nextLine.substr(0,nextLineLength);
+                                    
+                                    results.push({text: displayText, line:lines.length,column:lineText.length+1});
+                                    
                                     lines.splice(0,lines.length);
                                     text = beforeTerm +termPad + afterTerm;
                                     ix = text.indexOf(searchTerm);
                                 }
                                 
                                 if (results.length>0) { 
-                                    postMessage({results:results.splice(0,results.length)});
+                                    postMessage({filename:files[index],results:results.splice(0,results.length)});
                                 }
                                 nextFile(index+1);
                            });
