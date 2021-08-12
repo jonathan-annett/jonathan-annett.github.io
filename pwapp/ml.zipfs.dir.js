@@ -3277,7 +3277,7 @@ ml(`
                 }
                 
                 function backgroundFunction(fn,data,cb) {
-                    const worker = startWorker('onmessage=function(e){postMessage([('+fn.toString()+')(e.data)]);',function(ev,data){
+                    const worker = startWorker('onmessage=function(e){postMessage([('+fn.toString()+')(e.data)]);};',function(ev,data){
                         if (ev==='message') {
                             if (Array.isArray(data)){
                                 worker.stop();
