@@ -123,14 +123,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                           
                                       }
                                       
-                                      if (fileEntry.buffer) {
-                                          // this is a small file that is stored uncompressed in metadata entry
-                                          console_log("resolved",zip_url,path_in_zip,"to inline buffer");
-                                          return response200 (resolve,fileEntry.buffer,fileEntry);
-                                      }
-                                      
-                                      
-                                      
+                                     
                                       getZipObject(zip_url,buffer,function(err,zip,zipFileMeta){
                                           if (err)  throw err;
                                           
@@ -234,6 +227,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                         
                                         fileEntry.name = file_path;
                                        
+                                       
                                         
                                         if (   !subzip             &&
                                                 (
@@ -244,12 +238,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                             return response304 (resolve,fileEntry);
                                         }
                                         
-                                        if (fileEntry.buffer) {
-                                            // this is a small file that is stored uncompressed in metadata entry
-                                            console_log("resolved",zip_url,file_path,"to inline buffer");
-                                            return response200 (resolve,fileEntry.buffer,fileEntry);
-                                        }
-                                        
+                                       
                                         
                                         getZipObject(zip_url,function(err,zip,zipFileMeta) {
                                             if (err)  throw err;
@@ -272,7 +261,7 @@ zipFSResponseLib                       | ${ml.c.app_root}ml.zipfs.response.js
                                                     
                                                     if ( testPathIsZip(file_path) ) {
                                                         console.log("resolveSubzip:calling resolveZipListing_HTML", {zip_url ,virtual_prefix} );
-                                                 return resolveZipListing_HTML (zip_url+"/"+file_path,buffer).then(resolve).catch(reject);
+                                                        return resolveZipListing_HTML (zip_url+"/"+file_path,buffer).then(resolve).catch(reject);
                                                     }
                                                     
                                                     if ( testPathIsZipMeta(file_path) ) {

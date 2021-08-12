@@ -681,7 +681,7 @@ ml(`
               'xwd'    : 'image/x-xwindowdump',
               'zip'    : 'application/zip'
               
-            }[filename.substr(lastDot+1)];
+            }[filename.substr(lastDot+1)] || "text/plain";
         }
         
 
