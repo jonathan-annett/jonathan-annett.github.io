@@ -26,7 +26,9 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
             editor_channel = new BroadcastChannel(editor_channel_name);
 
             const refreshLimit = 10*1000;
-            const sinceLast = sessionStorage.reloading_service_worker ? Date.now()-Number.parseInt(sessionStorage.reloading_service_worker,36) : refreshLimit;
+            const last_str  = sessionStorage.getItem("reloading_service_worker");
+            const sinceLast = last_str ? Date.now()-Number.parseInt(last_str,36) : refreshLimit;
+            sessionStorage.removeItem("reloading_service_worker");
             delete sessionStorage.reloading_service_worker;
             if (sinceLast >= refreshLimit) {
                 if ('serviceWorker' in navigator) {
@@ -35,12 +37,12 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                         // if the serice worker doesnt respond within 2 seconds, it's not running
                         // set the abort flag, so if we start it later, this callback gets ignored
                         abort = true;
-                        delete sessionStorage.reloading_service_worker;
+                        sessionStorage.removeItem("reloading_service_worker");
                     },2000);
                     navigator.serviceWorker.ready.then(function(){
                         // if the service worker is running, reload the page, which will be replaced by the one in the zip
                         if (!abort) {
-                            sessionStorage.reloading_service_worker=Date.now().toString(36);
+                            sessionStorage.setItem("reloading_service_worker",Date.now().toString(36));
                             location.reload();
                         }
                     });
@@ -50,10 +52,10 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
            
             qs("#show_shell",function (el) {
                 
-                el.checked = localStorage.show_install_shell !== '0';
+                el.checked = localStorage.getItem("show_install_shell") !== '0';
                 el.onchange =  function change(e) {
                    qs("html").classList[ el.checked ?"add":"remove"]("show_shell");
-                   localStorage.show_install_shell = el.checked ? '1' : '0';
+                   localStorage.setItem("show_install_shell",el.checked ? '1' : '0');
                 };
                 
                 qs("html").classList[ el.checked ?"add":"remove"]("show_shell");
@@ -115,8 +117,8 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                          ); 
                        } else {
                            
-                           delete sessionStorage.running;
-            
+                           sessionStorage.removeItem("running");
+                           
                        }
                  });
              });
@@ -214,7 +216,8 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                   // we want the animation /progress bar on the screen for a least 5 seconds
                   const minTime = Date.now() + 5000  ;
                   
-                  sessionStorage.running=((1000*60*2) + Date.now()).toString();
+                  
+                  sessionStorage.setItem("running",((1000*60*2) + Date.now()).toString());
                   qs("#"+mode+"gif").style.display = "inline-block";
                   qs("html").classList.add("busy");
                   
@@ -227,7 +230,8 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                   
                   pwa.start(function(){
                       betaTesterApproval().then(function(config){
-                           const delay = sessionStorage.running? 1: qs("#show_shell").checked ? Math.max(minTime-Date.now()) : 1;
+                           const running_str = sessionStorage.getItem("running");
+                           const delay =  running_str ? 1: qs("#show_shell").checked ? Math.max(minTime - Date.now()) : 1;
                            qs("html").classList.add("remove");
                            cb(delay,config);
                       });
@@ -309,13 +313,14 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
              }
              
              function canRunInBrowser() {
-                 const runningTimeout = Number.parseInt(sessionStorage.running)||0;
+                 const running_str = sessionStorage.getItem("running");
+                 const runningTimeout = Number.parseInt(running_str)||0;
                  const runInBrowser   = (runningTimeout > 0) && (runningTimeout<Date.now());
-                 if (!!sessionStorage.running && !runInBrowser) {
-                     delete sessionStorage.running;
+                 if (!!running_str && !runInBrowser) {
+                     sessionStorage.removeItem("running");
                  }
                 
-                 return localStorage.no_keyboard === '1' || runInBrowser;
+                 return localStorage.getItem("no_keyboard") === '1' || runInBrowser;
              }
 
              function betaTesterApproval() {
@@ -332,7 +337,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                       getConfig().then(function(config){
                          
                          if (config && config.betaTesterKeys) {
-                             const keyAsHex = localStorage[localStorageKey];
+                             const keyAsHex = localStorage.getItem(localStorageKey);
                              if (keyAsHex) {
                                  const keyAsBuffer = bufferFromHex(keyAsHex);
                                  
@@ -345,7 +350,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                                        
                                               if ( config.betaTesterKeys.indexOf(hashedKeyHex) < 0 ) {
                                                   
-                                                  if (localStorage.notbetapending==='1') {
+                                                  if (localStorage.getItem("notbetapending")==='1') {
                                                      
                                                       html.classList.add("notbetapending");
                                                       html.classList.remove("notbeta");
@@ -363,7 +368,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                                                   html.classList.remove("notbetapending");
                                                   html.classList.remove("notbeta");
                                                   config.testerKey = keyAsHex;
-                                                  delete localStorage.notbetapending;
+                                                  localStorage.removeItem("notbetapending");
                                                   resolve(config);
                                               }
                                               
@@ -377,11 +382,11 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                                  return window.crypto.subtle.digest(hashAlgo,seed).then(function(unhashedKey) {
                                      const unhashedKeyHex = bufferToHex(unhashedKey);
                                      return window.crypto.subtle.digest(hashAlgo,unhashedKey).then(function(hashedKey) {
-                                          localStorage[localStorageKey] = unhashedKeyHex;
+                                          localStorage.setItem(localStorageKey,unhashedKeyHex);
                                           html.classList.add("notbeta");
                                           html.classList.remove("notbetapending");
                                           html.classList.remove("beta");
-                                          delete localStorage.notbetapending;
+                                          localStorage.removeItem("notbetapending");
                                           doRegister(bufferToHex(hashedKey));
                                           reject();
                                      });        
@@ -397,7 +402,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                                  if (!err) {
                                      html.classList.add("notbetapending");
                                      html.classList.remove("notbeta");
-                                     localStorage.notbetapending='1'
+                                     localStorage.setItem("notbetapending",'1');
                                  }
                                  
                                  pendingPoller ();
@@ -457,7 +462,7 @@ dragSizeWindowLib     | ${ml.c.app_root}ml.dragSizeWindow.js
                          
                          if (elapsed > msecs) {
                                 clearInterval(timeout);
-                                localStorage.no_keyboard = '1';
+                                localStorage.setItem("no_keyboard",'1');
                                 window.location.replace("https://qr.1mb.site?code="+encodeURIComponent("https://tinyurl.com/munryyev?body="+encodeURIComponent("Id:"+hashedKeyHex)+
                                 "&subject="+encodeURIComponent("Beta Signup")));
                          } else {
