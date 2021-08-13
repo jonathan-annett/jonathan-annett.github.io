@@ -61,7 +61,7 @@ ml([],function(){ml(2,
             function size(el,vertHotzones,horzHotZones,deltaX,deltaY) {
               deltaX = deltaX || 1;
               deltaY = deltaY || 1;
-              
+              var paused = false;
               var dragStartX, dragStartY; var objInitWidth, objInitHeight;
               var inSize = false,sizeMode;
               var dragTarget = typeof el==='string'?qs(el):el;
@@ -71,10 +71,19 @@ ml([],function(){ml(2,
               document.addEventListener("mouseup", mouseup);
               
               const api = {
-                  destroy : destroy
-                  
+                  destroy : destroy,
+                  pause   : pause,
+                  resume  : resume
               };
               return api;
+              
+              function pause () {
+                  paused = true;
+              }
+              
+              function resume () {
+                  paused = false;
+              }
               
               function destroy() {
                   document.removeEventListener("mousedown", mousedown);
@@ -87,6 +96,7 @@ ml([],function(){ml(2,
               }
               
               function mousedown(e) {
+                if (paused) return;
                 const isVert  = vertHotzones && vertHotzones.map(qs).indexOf(e.target)>=0;
                 const isHorz  = horzHotZones && horzHotZones.map(qs).indexOf(e.target)>=0;
                 if (!isHorz && !isVert) return;
@@ -111,11 +121,13 @@ ml([],function(){ml(2,
               }
               
               function mouseup(e) {
+                  if (paused) return;
                   inSize = false;
                   
               }
               
               function mousemove(e) {
+                if (paused) return;  
                 if (!inSize) {return;}
                 
                 if (sizeMode.h) {
