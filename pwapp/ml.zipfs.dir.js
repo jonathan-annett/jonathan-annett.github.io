@@ -60,11 +60,9 @@ ml(`
                 
                 var footer_grab_bar;
                 
-                
                 const filesBeingEdited  = [
                     
                 ];
-                
                 
                 const searchResults = {
                     
@@ -75,11 +73,13 @@ ml(`
                     { filename : [ {line,column,text} x n ] }
                     */
                 };
+                
                 const editorWarnings = {
                     /*
                     { filename : [ {line,column,text} x n ] }
                     */
                 };
+                
                 const ignoreErrors = {
                     
                 };
@@ -503,58 +503,10 @@ ml(`
                    if (searchForTerm.worker) {
                        startSearch();
                    } else {
-                       
-                        searchForTerm.worker = searchWorkers.startWorker(
-                            searchWorker,
-                            function(ev,data){
-                                
-                                if (ev==="message") {
-                                    
-                                    if (data.getFile) {
-                                        
-                                       getFileForSearchWorker (data.getFile,function(err,text){
-                                           if (text) {
-                                               
-                                               searchForTerm.worker.postMessage( {
-                                                     filename : data.getFile,
-                                                     text     : text
-                                               });
-                                               
-                                               delete data.getFile;
-                                               
-                                           }
-                                       });
-                                       
-                                    } else {
-                                        if (data.filename && data.results) {
-                                            delete searchResults[data.filename];
-                                            searchResults[data.filename] = data.results;
-                                            delete data.results;
-                                            delete data.filename;
-                                            updateErrorsTable(function(){
-                                                
-                                            });
-                                        } else {
-                                           
-                                           if (data.done==="search") {
-                                               updateErrorsTable(function(){
-                                                   
-                                               });
-                                           } else {
-                                               console.log(data);
-                                           }
-                                        }
-                                    }
-                                    
-                                }
-                                
-                            }
-                        );
-                            
+                        searchForTerm.worker = searchWorkers.startWorker(searchWorker,searchForTermWorkerCallback);
                         startSearch();
                    }
-                   
-                   
+
                    function startSearch() {
                        Object.keys(searchResults).forEach(function(filename){
                            searchResults[filename].text;
@@ -575,30 +527,73 @@ ml(`
                    
                 }
                 
+                function searchForTermWorkerCallback(ev,data){
+                    
+                    if (ev==="message") {
+                        
+                        if (data.getFile) {
+                            
+                           getFileForSearchWorker (data.getFile,function(err,text,isOpen){
+                               if (text) {
+                                   searchForTerm.worker.postMessage( {
+                                         filename : data.getFile,
+                                         text     : text,
+                                         isOpen   : !!isOpen
+                                   });
+                                   
+                                   delete data.getFile;
+                                   
+                               }
+                           });
+                           
+                        } else {
+                            
+                            if (data.filename && data.results) {
+                                delete searchResults[data.filename];
+                                searchResults[data.filename] = data.results;
+                                delete data.results;
+                                delete data.filename;
+                            } else {
+                               
+                               if (data.done==="search") {
+                                   updateErrorsTable(function(){
+                                       
+                                   });
+                               } else {
+                                   console.log(data);
+                               }
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
                 function getFileForSearchWorker(filename,cb){
                     
-                    // for files that are open in an editor, use that as the source of the search text
-                    
                     const index = filesBeingEdited.indexOf(filename);
-                    if (index<0) {
+                    if (index >= 0) {
+                        
+                        // for files that are open in an editor, use that as the source of the search text
+                        
+                        find_li_ed(filename,function(li_ed){
+                            if (li_ed && li_ed.editor) {
+                               return cb(undefined,li_ed.editor.getValue(),true); 
+                            }
+                            return cb(new Error("can't get editor text"));
+                        }); 
+                        
+                    } else {
                         
                           // otherwise dive into the zip/ edited store database
                           
                           readFileText(filename,function(err,buffer,updated,hash,text){
                               
-                              cb(err,text);
+                              cb(err,text,false);
                               
                           });
-                          
-                    } else {
-                        
-                        find_li_ed(filename,function(li_ed){
-                            if (li_ed && li_ed.editor) {
-                               return cb(undefined,li_ed.editor.getValue()); 
-                            }
-                            return cb(new Error("can't get editor text"));
-                        }); 
-                        
+
                     }
                 }
                     
@@ -3080,10 +3075,12 @@ ml(`
                             } else {
                                 
                                 getFile ( filename, function(){
+                                    
                                     const newfile = files [ filename ];
                                     newfile.search = newfile.text[matchClause]();
                                     results.push(newfile);
                                     loop(index+1);
+                                    
                                 } );
                                 
                             }
@@ -3215,7 +3212,7 @@ ml(`
                 function getFile(filename,cb) {
                     
                     msg_cb = cb;
-                    if (files[filename]) return cb (files[filename].text);
+                    if (files[filename] && !files[filename].isOpen) return cb (files[filename].text);
                     
                     postMessage({
                         getFile:filename
@@ -3224,11 +3221,6 @@ ml(`
                 
             }
             
-            
-            function sw2(){
-                
-            }
-              
            
             function inlineWorkerAPI( ) {
                 
