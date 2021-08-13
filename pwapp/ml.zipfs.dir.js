@@ -491,15 +491,14 @@ ml(`
                     
                     addDelayedEditCallback(ed_term,function(value){
                         searchForTerm(value,qs("#search_case").checked,function(data){
-                            console.log({data}); 
-                            if (data.filename && data.results) {
+                            if (data && data.filename && data.results) {
                                 delete searchResults[data.filename];
                                 searchResults[data.filename] = data.results;
                                 delete data.results;
                                 delete data.filename;
                             } else {
                                
-                               if (data.done==="search") {
+                               if (!data) {
                                    updateErrorsTable(function(){
                                        
                                    });
@@ -632,10 +631,8 @@ ml(`
                         });
                         if (term.trim().length>0) {
                             searchForTerm.func(
-                                filteredFilesList,
-                                term,
-                                ignoreCase,
-                                cb
+                                filteredFilesList,term,
+                                ignoreCase,cb
                             );
                         } else {
                             cb();
