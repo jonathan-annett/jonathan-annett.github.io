@@ -2495,6 +2495,21 @@ ml(`
                                   ed_pre.scrollIntoView();
                                   find_li(zoom_filename).scrollIntoView();
                                   qs("header").scrollIntoView();
+                                  
+                                  find_li_ed (filename,function(li_ed){
+                                     if (li_ed && li_ed.editor) {
+                                         let compStyles = window.getComputedStyle(li_ed.editor);
+                                         const ed_top = Number.parseInt(compStyles.getPropertyValue('top') ); 
+                                         
+                                         footer_grab_bar.attach(function(){
+                                              let compStyles = window.getComputedStyle(footer_grab_bar);
+                                              const grab_top = Number.parseInt(compStyles.getPropertyValue('top') ); 
+                                              li_ed.editor.style.height = (grab_top -  ed_top).toString()+"px";
+                                         });
+                                     }
+                                  });
+                                      
+                                  
                                   if (cb) cb();
                               } else {
                                   c--;
@@ -2519,7 +2534,7 @@ ml(`
                              openInbuiltEditor ( zoom_filename,zoomEl, function(){
                              },pre_zoom_height,textContent);
                              fs_li_ed= undefined;
-                             zoomEl=undefined;
+                             zoomEl= undefined;
                              pre_zoom_height=undefined;
                         });
                         
