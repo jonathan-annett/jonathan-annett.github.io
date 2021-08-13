@@ -2503,7 +2503,7 @@ ml(`
                                       if (cb) cb();
                                   });
                                   
-                              } else {.
+                              } else {
                                   c--;
                                   fs_li_ed.editor.resize();
                               }
