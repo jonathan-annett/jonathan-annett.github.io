@@ -3023,6 +3023,74 @@ ml(`
                 let bgapi = inlineWorkerAPI();
                 let msg_cb = function(){};
                 let files = {};
+                // create the background function, so it's ready to be called once the files are assembled
+                const bgfn = bgapi.backgroundFunction(
+                    function(args,postMessage){
+                       const { fileset,termLength,matchClause,searchTerm } = args;   
+                       const termPad   = new Array(termLength+1).join(String.fromCharCode(255));
+                       const matchTerm = searchTerm[matchClause]();
+           
+                       if (fileset.reduce(pass1,0)>0) {
+                           
+                           while (fileset.reduce(pass2,0)>0) {
+                               
+                           }
+                           
+                       }
+                       
+                       return {done:"search"};
+                       
+                       function pass1(n,fs) {
+                             const ix = fs.search.indexOf(matchTerm);
+                             if (ix>=0){
+                                 n++;
+                                 const lines      = fs.text.substr(0,ix).split("\n");
+                                 const lineText   = lines.pop();
+                                 const nextLine   = fs.text.substr(ix+termLength).replace(/\n.*/,'');
+                                 fs.results=[{text:lineText+ searchTerm+nextLine,line:lines.length+1, column:lineText.length}];
+                                 postMessage({filename:fs.filename,results:fs.results});
+                                 lines.splice(0,lines.length);
+                                 fs.last = fs.search.lastIndexOf(matchTerm);
+                                 if (ix < fs.last) {
+                                    fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
+                                 } else {
+                                     delete fs.search;
+                                     delete fs.last;
+                                     fs.results.splice(0,1);
+                                     delete fs.results;
+                                 }
+                                 
+                             } else {
+                                 delete fs.search;
+                             }
+                             return n;
+                       }
+                       
+                       function pass2(n,fs) {
+                           if (fs.search) {
+                               const ix = fs.search.indexOf(matchTerm);
+                               n++;
+                               const lines      = fs.text.substr(0,ix).split("\n");
+                               const lineText   = lines.pop();
+                               const nextLine   = fs.text.substr(ix+termLength).replace(/\n.*/,'');
+                               fs.results.push({text:lineText+ searchTerm+nextLine, line:lines.length+1, column:lineText.length});
+                               postMessage({filename:fs.filename,results:fs.results});
+                               lines.splice(0,lines.length);
+                               if (ix < fs.last) {
+                                  fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
+                               } else {
+                                   delete fs.search;
+                                   delete fs.last;
+                                   fs.results.splice(0,fs.results.length);
+                                   delete fs.results;
+                               }
+                           }
+                           return n;
+                       }
+                       
+                       
+                    }
+                );
                 
                 onmessage = function(e) {
                     
@@ -3096,7 +3164,7 @@ ml(`
                 
                 function doSearch(d) {
                    
-                   bgapi.stopAll();
+                   //bgapi.stopAll();
                    
                    const { files, searchTerm } = d;
                    const matchClause = d.ignoreCase ? "toLowerCase" : "slice";
@@ -3104,76 +3172,6 @@ ml(`
                    if (termLength===0) {
                        return postMessage({done:"search"});
                    }
-                   
-                   // create the background function, so it's ready to be called once the files are assembled
-                   const bgfn = bgapi.backgroundFunction(
-                       function(args,postMessage){
-                          const { fileset,termLength,matchClause,searchTerm } = args;   
-                          const termPad   = new Array(termLength+1).join(String.fromCharCode(255));
-                          const matchTerm = searchTerm[matchClause]();
-              
-                          if (fileset.reduce(pass1,0)>0) {
-                              
-                              while (fileset.reduce(pass2,0)>0) {
-                                  
-                              }
-                              
-                          }
-                          
-                          return {done:"search"};
-                          
-                          function pass1(n,fs) {
-                                const ix = fs.search.indexOf(matchTerm);
-                                if (ix>=0){
-                                    n++;
-                                    const lines      = fs.text.substr(0,ix).split("\n");
-                                    const lineText   = lines.pop();
-                                    const nextLine   = fs.text.substr(ix+termLength).replace(/\n.*/,'');
-                                    fs.results=[{text:lineText+ searchTerm+nextLine,line:lines.length+1, column:lineText.length}];
-                                    postMessage({filename:fs.filename,results:fs.results});
-                                    lines.splice(0,lines.length);
-                                    fs.last = fs.search.lastIndexOf(matchTerm);
-                                    if (ix < fs.last) {
-                                       fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
-                                    } else {
-                                        delete fs.search;
-                                        delete fs.last;
-                                        fs.results.splice(0,1);
-                                        delete fs.results;
-                                    }
-                                    
-                                } else {
-                                    delete fs.search;
-                                }
-                                return n;
-                          }
-                          
-                          function pass2(n,fs) {
-                              if (fs.search) {
-                                  const ix = fs.search.indexOf(matchTerm);
-                                  n++;
-                                  const lines      = fs.text.substr(0,ix).split("\n");
-                                  const lineText   = lines.pop();
-                                  const nextLine   = fs.text.substr(ix+termLength).replace(/\n.*/,'');
-                                  fs.results.push({text:lineText+ searchTerm+nextLine, line:lines.length+1, column:lineText.length});
-                                  postMessage({filename:fs.filename,results:fs.results});
-                                  lines.splice(0,lines.length);
-                                  if (ix < fs.last) {
-                                     fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
-                                  } else {
-                                      delete fs.search;
-                                      delete fs.last;
-                                      fs.results.splice(0,fs.results.length);
-                                      delete fs.results;
-                                  }
-                              }
-                              return n;
-                          }
-                          
-                          
-                       }
-                   );
-                  
                    
                    getSearchText ( files, matchClause, function( fileset ) {
                        
@@ -3194,7 +3192,7 @@ ml(`
                                 bgapi.stopAll();
                              } 
                                    
-                      } );
+                       });
         
                     });
 
