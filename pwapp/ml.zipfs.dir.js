@@ -3186,7 +3186,7 @@ ml(`
                         // we don't need the contents of the filenames array anymore
                         files.splice( 0, files.length );
 
-                        bgfn(
+                        bgfn.restart(
                             
                             { fileset,termLength,matchClause,searchTerm},
                             
@@ -3247,39 +3247,68 @@ ml(`
                   return new Blob([ str ], {type : typ});
                 }
                 
-                function startWorker (code,cb) {
+                function startWorker (code,msg,cb) {
+                      if (typeof msg==='function') {
+                         cb=msg;
+                         msg=undefined;
+                      }
                       let src  = functionSource(code) + "\n" + inlineWorkerAPI.toString();
                       let blob = blobFromString(src, 'application/javascript');
                       src = null;
                       
-                      let url = URL.createObjectURL(blob);
-                      let worker = new Worker(url);
-                     
+                      let url    = URL.createObjectURL(blob);
+                      let worker = createWorker();
                       
-                      [ "message","messageerror","rejectionhandled","unhandledrejection" ].forEach(function(ev){
-                        worker.addEventListener(ev,function(e){
-                            cb(ev,e.data,worker);
-                        });
-                      });
-                      blob=null;
-                      URL.revokeObjectURL(url);
-                      url = null;
-                      workers.push(worker);
                       const wrapped = {
-                          stop : function () {
-                              const ix = worker;
-                              if (ix<0) return;
-                              worker.terminate();
-                              workers.splice(ix,1);
-                              wrapped.stop = function(){};
-                              worker.postMessage = function(){};
+                          // terminate the worker, and ditch the url & blob that holds the script
+                          dispose : function () {
+                              if (worker) {
+                                worker.terminate();
+                              }
+                              const ix = workers.indexOf(worker);
+                              if (ix>=0) {
+                                workers.splice(ix,1);
+                              }
+                              wrapped.dispose       = function(){throw new Error("background function removed")};
+                              worker.postMessage = wrapped.dispose;
+                              wrapped.restart    = wrapped.dispose;
+                              // ditch the memory associated with the blob & url
+                              blob=null;
+                              URL.revokeObjectURL(url);
+                              url = null;
                           },
+                          // send a new message to the worker thread
                           postMessage : function (msg) {
                               worker.postMessage(msg);
+                          },
+                          // restart terminates the worker and restarts it, optionally with message data
+                          restart : function(msg) {
+                              if (worker) {
+                                worker.terminate();
+                              }
+                              const ix = workers.indexOf(worker);
+                              if (ix>=0) {
+                                workers.splice(ix,1);
+                              }
+                              worker = createWorker();
+                              if (msg) worker.postMessage(msg);
                           }
                       };
                      
+                      if (msg) worker.postMessage(msg);
                       return wrapped;
+                      
+                      function createWorker() {
+                          const worker = new Worker(url);
+    
+                          [ "message","messageerror","rejectionhandled","unhandledrejection" ].forEach(function(ev){
+                            worker.addEventListener(ev,function(e){
+                                cb(ev,e.data,worker);
+                            });
+                          });
+                          workers.push(worker);
+                          return worker;
+                      }
                 }
                 
                 function backgroundFunction(fn) {
@@ -3305,25 +3334,31 @@ ml(`
                           'postMessage([id,('+fn.toString()+')(e.data,pm)]);'+
                         '};',workerFunc);
                     const cbs = {};
-                    let nextId=1;
+                    let nextId= 1;
                     exec.stop = stop;
+                    exec.restart = restart;
                     
                     return exec;
                     
                     function stop () {
-                         if (worker) worker.stop();
+                         if (worker) worker.dispose();
                          Object.keys(cbs).forEach(function(id){ delete cbs[ id ] ;});
                          worker=undefined;
                     }
                    
                     function exec(data,cb) {
                         if (worker) {
-                            const id = data.__id = (++nextId).toString(36);
+                            const id = data.__id = (nextId++).toString(36);
                             cbs[ id ] = cb;
                             worker.postMessage(data);
-                            return {
-                                stop : stop
-                            }
+                        }
+                    }
+                    
+                    function restart(data,cb) {
+                        if (worker) {
+                            const id = data.__id = (nextId++).toString(36);
+                            cbs[ id ] = cb;
+                            worker.restart(data);
                         }
                     }
                    
