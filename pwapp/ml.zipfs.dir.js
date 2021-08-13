@@ -3530,8 +3530,6 @@ ml(`
 
                    getSearchText ( files, args.matchClause, function( fileset ) {
                        
-                        // we don't need the contents of the filenames array anymore
-                        files.splice( 0, files.length );
                         args.fileset = fileset;
                         
                         searcher(
