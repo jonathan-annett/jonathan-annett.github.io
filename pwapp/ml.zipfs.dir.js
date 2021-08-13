@@ -2479,11 +2479,18 @@ ml(`
                               if (!fs_li_ed || c<0) {
                                   clearTimeout(tmr);
                                   find_li(zoom_filename).scrollIntoView();
-                                  fs_li_ed.editor.focus(); 
-                                  if (cb) cb();
+                                  find_li_ed(zoom_filename,function(li_ed){
+                                      if (li_ed && li_ed.editor) 
+                                          li_ed.editor.focus();
+                                       if (cb) cb();
+                                  });
+                                  
                               } else {
                                   c--;
-                                  fs_li_ed.editor.resize();
+                                  find_li_ed(zoom_filename,function(li_ed){
+                                      if (li_ed && li_ed.editor) 
+                                          li_ed.editor.resize();
+                                  });
                               }
                           },50);
                        } else {
@@ -2505,7 +2512,10 @@ ml(`
                                   
                               } else {
                                   c--;
-                                  fs_li_ed.editor.resize();
+                                  find_li_ed(zoom_filename,function(li_ed){
+                                      if (li_ed && li_ed.editor) 
+                                          li_ed.editor.resize();
+                                  });
                               }
                           },50);
                        }
