@@ -3290,11 +3290,11 @@ ml(`
                         'onmessage=function(e){'+
                           'const id=e.data.__id;'+
                           'delete e.data.__id;'+
-                          'function pm(d){'+
-                             'id.__id=id;'+
+                          'function pm(data){'+
+                             'data.__id=id;'+
                              //inline postMessages get tagged with id of instance
-                             'postMessage(d);'+
-                          '};'+
+                             'postMessage(data);'+
+                          '}'+
                           // whatever gets returned from the function gets wrapped in an array and sent via postMessage to caller
                           'postMessage([id,('+fn.toString()+')(e.data,pm)]);'+
                         '};',workerFunc);
