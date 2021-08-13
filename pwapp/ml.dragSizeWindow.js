@@ -62,6 +62,7 @@ ml([],function(){ml(2,
               deltaX = deltaX || 1;
               deltaY = deltaY || 1;
               var paused = false;
+              var attached;
               var dragStartX, dragStartY; var objInitWidth, objInitHeight;
               var inSize = false,sizeMode;
               var dragTarget = typeof el==='string'?qs(el):el;
@@ -73,9 +74,23 @@ ml([],function(){ml(2,
               const api = {
                   destroy : destroy,
                   pause   : pause,
-                  resume  : resume
+                  resume  : resume,
+                  attach  : attach,
+                  detach  : detach
               };
               return api;
+              
+              function attach(fn) {
+                  if (typeof fn==='function') {
+                      attached = fn;
+                  } else {
+                      attached = undefined;
+                  }
+              }
+              
+              function detach() {
+                  attached = undefined;
+              }
               
               function pause () {
                   paused = true;
@@ -137,6 +152,7 @@ ml([],function(){ml(2,
                             dragTarget.style.width   = newWidth + "px";
                         }
                     } else {
+                       if (attached) attached(newWidth)
                        dragTarget.style.width   = newWidth + "px";
                     }
                 }
@@ -148,6 +164,7 @@ ml([],function(){ml(2,
                             return;
                         }
                     } 
+                    if (attached) attached(undefined,newHeight);
                     dragTarget.style.height  = newHeight + "px";
                 }
               }
