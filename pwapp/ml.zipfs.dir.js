@@ -3067,23 +3067,31 @@ ml(`
                        }
                        
                        function pass2(n,fs) {
-                           if (fs.search) {
+                           let count = 5;
+                           // queue up to 5 results per file..
+                           while (fs.search && (count > 0)) {
                                const ix = fs.search.indexOf(matchTerm);
                                n++;
+                               count--;
                                const lines      = fs.text.substr(0,ix).split("\n");
                                const lineText   = lines.pop();
                                const nextLine   = fs.text.substr(ix+termLength).replace(/\n.*/,'');
                                fs.results.push({text:lineText+ searchTerm+nextLine, line:lines.length+1, column:lineText.length});
-                               postMessage({filename:fs.filename,results:fs.results});
                                lines.splice(0,lines.length);
                                if (ix < fs.last) {
                                   fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
                                } else {
+                                   postMessage({filename:fs.filename,results:fs.results});
                                    delete fs.search;
                                    delete fs.last;
                                    fs.results.splice(0,fs.results.length);
                                    delete fs.results;
                                }
+                           }
+                           
+                           if (fs.results) {
+                              // if we didn't already do so,send the results for this file
+                              postMessage({filename:fs.filename,results:fs.results});
                            }
                            return n;
                        }
@@ -3178,21 +3186,26 @@ ml(`
                         // we don't need the contents of the filenames array anymore
                         files.splice( 0, files.length );
 
-                        bgfn({ fileset,termLength,matchClause,searchTerm},function(err,data,done){
+                        bgfn(
+                            
+                            { fileset,termLength,matchClause,searchTerm},
+                            
+                            function(err,data,done){
                              
-                             if (data) {
-                                postMessage(data);
-                             }
-                             
-                             if (err) {
-                                console.log(err);
-                             }
-  
-                             if (done) {
-                                bgapi.stopAll();
-                             } 
+                                 if (data) {
+                                    postMessage(data);
+                                 }
+                                 
+                                 if (err) {
+                                    console.log(err);
+                                 }
+      
+                                 if (done) {
+                                    //bgapi.stopAll();
+                                 } 
                                    
-                       });
+                            }
+                        );
         
                     });
 
