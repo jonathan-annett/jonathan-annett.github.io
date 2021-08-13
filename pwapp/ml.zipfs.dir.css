@@ -194,10 +194,7 @@ html.zooming main {
     top : 0px;
 }
 
-html.zooming  main{
-  overflow-y:hidden;
-}
-
+ 
 html.zooming body {
   margin :0;
 }
@@ -212,6 +209,11 @@ html.zooming li.zooming {
    right:0;
    top:0;
    display : block;
+}
+
+html.zooming #footer_grab,
+html.zooming footer {
+  z-index:9999;
 }
 
 
@@ -581,7 +583,7 @@ html.dialog .clearfix::after {
   position:relative;
   top: -16px;
   height:6px;
-  width:calc(100% -  12px);
+  width:calc(100% -  17px);
 }
 
 
