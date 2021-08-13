@@ -531,6 +531,9 @@ ml(`
                                             searchResults[data.filename] = data.results;
                                             delete data.results;
                                             delete data.filename;
+                                            updateErrorsTable(function(){
+                                                
+                                            });
                                         } else {
                                            
                                            if (data.done==="search") {
