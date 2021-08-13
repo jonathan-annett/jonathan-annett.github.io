@@ -2527,19 +2527,27 @@ ml(`
                     };
                     
                     if (zoomEl) {
-                        //move editor to non zoomed ssate 
+                        //move editor to non zoomed state 
                         zoomClass("remove");
                         // transfer text content full screen editor
-                        const textContent = fs_li_ed.editor.getValue();
-                        // save session state and restore height
-                        return closeInbuiltEditor ( zoom_filename,zoomEl, function(){
-                             openInbuiltEditor ( zoom_filename,zoomEl, function(){
-                                 footer_grab_bar.detach();
-                             },pre_zoom_height,textContent);
-                             fs_li_ed= undefined;
-                             zoomEl=undefined;
-                             pre_zoom_height=undefined;
+                        
+                        find_li_ed(zoom_filename,function(li_ed){
+                            if (li_ed && li_ed.editor) {
+                                const textContent = li_ed.editor.getValue();
+                                // save session state and restore height
+                                return closeInbuiltEditor ( zoom_filename,zoomEl, function(){
+                                     openInbuiltEditor ( zoom_filename,zoomEl, function(){
+                                         footer_grab_bar.detach();
+                                     },pre_zoom_height,textContent);
+                                     fs_li_ed= undefined;
+                                     zoomEl=undefined;
+                                     pre_zoom_height=undefined;
+                                });
+                                
+                            }
                         });
+                        
+                        
                         
                     } else {
                         zoom_filename = filename;
