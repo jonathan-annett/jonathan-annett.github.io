@@ -490,8 +490,23 @@ ml(`
                 function addSearchTermFunc(ed_term) {
                     
                     addDelayedEditCallback(ed_term,function(value){
-                        searchForTerm(value,qs("#search_case").checked,function(){
-                            
+                        searchForTerm(value,qs("#search_case").checked,function(data){
+                            console.log({data}); 
+                            if (data.filename && data.results) {
+                                delete searchResults[data.filename];
+                                searchResults[data.filename] = data.results;
+                                delete data.results;
+                                delete data.filename;
+                            } else {
+                               
+                               if (data.done==="search") {
+                                   updateErrorsTable(function(){
+                                       
+                                   });
+                               } else {
+                                   console.log(data);
+                               }
+                            }
                         });
                     });
                     
