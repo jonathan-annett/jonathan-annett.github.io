@@ -610,11 +610,13 @@ ml(`
                     function watchFile(filename,cb) {
                         const file_url = join(dir.url,filename); 
                         addEditHook (file_url,cb);
+                        console.log("watching",filename,"via",file_url);
                         return file_url;
                     }
                     
                     function unwatchFile(filename,cb) {
                         const file_url = join(dir.url,filename); 
+                        console.log("no longer watching",filename);
                         removeEditHook (file_url,cb);
                         return file_url;
                     }
@@ -3080,6 +3082,9 @@ ml(`
                                 }
                                 delete prev.search;
                                 prev.search = prev.text[matchClause]();
+                                if (!prev.url) {
+                                    prev.url = watchFile(filename,onWatchedFile);
+                                }
                                 results.push(prev);
                                 loop(index+1);
                                 
@@ -3089,6 +3094,7 @@ ml(`
                                     
                                     const newfile = files [ filename ];
                                     newfile.search = newfile.text[matchClause]();
+                                    newfile.url = watchFile(filename,onWatchedFile);
                                     results.push(newfile);
                                     loop(index+1);
                                     
@@ -3097,9 +3103,7 @@ ml(`
                             }
                             
                         } else {
-                            
                             cb(results);
-                            
                         }
                     }
                     
@@ -3152,7 +3156,6 @@ ml(`
                     });
                 }
                 
-                
                 function onWatchedFile(cmd,file_url,text) {
                     const filename = watched[file_url];
                     if (filename && files [ filename ]) {
@@ -3172,15 +3175,11 @@ ml(`
                             text     : text
                         };
                         
-                        if (isOpen) {
-                            console.log("watching:",filename);
-                            watched[ watchFile(filename,onWatchedFile) ] = filename;
-                        } 
+                        
                         cb();
                     });
                     
                 }
-                
                 
                 function searchWorkerBGFunc (args,send) {
     
