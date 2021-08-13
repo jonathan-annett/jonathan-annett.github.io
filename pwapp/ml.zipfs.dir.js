@@ -2517,7 +2517,7 @@ ml(`
                         // save session state and restore height
                         return closeInbuiltEditor ( zoom_filename,zoomEl, function(){
                              openInbuiltEditor ( zoom_filename,zoomEl, function(){
-                                 footer_grab_bar.detach();
+                                 //footer_grab_bar.detach();
                              },pre_zoom_height,textContent);
                              fs_li_ed= undefined;
                              zoomEl=undefined;
@@ -2537,6 +2537,7 @@ ml(`
                              openInbuiltEditor ( zoom_filename,li, function(){
                                  zoomEl = li;
                                  zoomClass("add");
+                                 /*
                                  let compStyles = window.getComputedStyle(fs_li_ed.editor);
                                  const ed_top = Number.parseInt( compStyles.getPropertyValue('top') ); 
                                  
@@ -2545,7 +2546,7 @@ ml(`
                                      const grab_top = Number.parseInt( compStyles.getPropertyValue('top') ); 
                                      
                                      fs_li_ed.editor.style.height =  (grab_top-ed_top).toString()+"px";
-                                 });
+                                 });*/
                              },"skip",textContent);
                         });
                         
