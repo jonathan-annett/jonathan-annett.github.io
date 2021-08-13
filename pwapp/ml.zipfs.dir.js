@@ -2474,11 +2474,12 @@ ml(`
                           fs_li_ed = ed_pre.parentNode;
                           fs_li_ed.classList.add("zoomingEditor");
                           qs("main").appendChild(ed_pre);
-                          fs_li_ed.editor.focus();
+                         
                           let c=5,tmr = setInterval(function(){
                               if (!fs_li_ed || c<0) {
                                   clearTimeout(tmr);
                                   find_li(zoom_filename).scrollIntoView();
+                                  fs_li_ed.editor.focus(); 
                                   if (cb) cb();
                               } else {
                                   c--;
@@ -2488,15 +2489,21 @@ ml(`
                        } else {
                           fs_li_ed.classList.remove("zoomingEditor");
                           fs_li_ed.appendChild(ed_pre);
-                          fs_li_ed.editor.focus(); 
+                          
                           let c=5,tmr = setInterval(function(){
                               if (!fs_li_ed || c<0 ) {
                                   clearTimeout(tmr);
                                   ed_pre.scrollIntoView();
                                   find_li(zoom_filename).scrollIntoView();
                                   qs("header").scrollIntoView();
-                                  if (cb) cb();
-                              } else {
+                                  find_li_ed(zoom_filename,function(li_ed){
+                                      if (li_ed && li_ed.editor) {
+                                        li_ed.editor.focus();
+                                      }
+                                      if (cb) cb();
+                                  });
+                                  
+                              } else {.
                                   c--;
                                   fs_li_ed.editor.resize();
                               }
