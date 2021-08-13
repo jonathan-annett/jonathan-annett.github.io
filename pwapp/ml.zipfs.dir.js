@@ -498,7 +498,7 @@ ml(`
                 }
                 
                 
-                function searchForTerm(term,ignoreCase,cb) {
+                function searchForTerm_0(term,ignoreCase,cb) {
                    
                    if (searchForTerm.worker) {
                        startSearch();
@@ -595,6 +595,40 @@ ml(`
                           });
 
                     }
+                }
+                
+                
+                
+                function searchForTerm(term,ignoreCase,cb) {
+                
+                    if (searchForTerm.func) {
+                        startSearch();
+                    } else {
+                         searchForTerm.func = searchWorkerFGFunction(getFileForSearchWorker);
+                         startSearch();
+                    }
+ 
+                    function startSearch() {
+                        Object.keys(searchResults).forEach(function(filename){
+                            searchResults[filename].text;
+                            searchResults[filename].line;
+                            searchResults[filename].column;
+                            delete searchResults[filename];
+                        });
+                        if (term.trim().length>0) {
+                            searchForTerm.func(
+                                filteredFilesList,
+                                term,
+                                ignoreCase,
+                                cb
+                            );
+                        } else {
+                            cb();
+                        }
+                    }
+                
+                    
+                
                 }
                     
                 function loadErrors(cb) {
@@ -3026,13 +3060,16 @@ ml(`
                 // create the background function, so it's ready to be called once the files are assembled
                 const bgfn = bgapi.backgroundFunction(
                     function(args,postMessage){
-                       const { fileset,termLength,matchClause,searchTerm } = args;   
+                       
+                       const { termLength, matchClause, searchTerm } = args;   
+                       
                        const termPad   = new Array(termLength+1).join(String.fromCharCode(255));
                        const matchTerm = searchTerm[matchClause]();
-           
-                       if (fileset.reduce(pass1,0)>0) {
+                       args.found=0;
+                       if (!args.fileset.some(pass1) && args.found>0) {
                            
-                           while (fileset.reduce(pass2,0)>0) {
+                           args.found=0;
+                           while (!args.fileset.some(pass2) && args.found>0) {
                                
                            }
                            
@@ -3040,10 +3077,9 @@ ml(`
                        
                        return {done:"search"};
                        
-                       function pass1(n,fs) {
+                       function pass1(fs) {
                              const ix = fs.search.indexOf(matchTerm);
                              if (ix>=0){
-                                 n++;
                                  const lines      = fs.text.substr(0,ix).split("\n");
                                  const lineText   = lines.pop();
                                  const nextLine   = fs.text.substr(ix+termLength).replace(/\n.*/,'');
@@ -3051,6 +3087,7 @@ ml(`
                                  postMessage({filename:fs.filename,results:fs.results});
                                  lines.splice(0,lines.length);
                                  fs.last = fs.search.lastIndexOf(matchTerm);
+                                 args.found++;
                                  if (ix < fs.last) {
                                     fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
                                  } else {
@@ -3063,21 +3100,21 @@ ml(`
                              } else {
                                  delete fs.search;
                              }
-                             return n;
+                             return !!args.terminated;
                        }
                        
-                       function pass2(n,fs) {
+                       function pass2(fs) {
                            let count = 5;
                            // queue up to 5 results per file..
                            while (fs.search && (count > 0)) {
                                const ix = fs.search.indexOf(matchTerm);
-                               n++;
                                count--;
                                const lines      = fs.text.substr(0,ix).split("\n");
                                const lineText   = lines.pop();
                                const nextLine   = fs.text.substr(ix+termLength).replace(/\n.*/,'');
                                fs.results.push({text:lineText+ searchTerm+nextLine, line:lines.length+1, column:lineText.length});
                                lines.splice(0,lines.length);
+                               args.found++;
                                if (ix < fs.last) {
                                   fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
                                } else {
@@ -3093,12 +3130,16 @@ ml(`
                               // if we didn't already do so,send the results for this file
                               postMessage({filename:fs.filename,results:fs.results});
                            }
-                           return n;
+                           return !!args.terminated;
                        }
                        
                        
                     }
                 );
+                const args = { 
+                    
+                };
+                
                 
                 onmessage = function(e) {
                     
@@ -3123,6 +3164,7 @@ ml(`
                 }
                 
                 function getSearchText(needed,matchClause,cb) {
+                    
                     const results = [];
                     loop(0);
                     
@@ -3175,21 +3217,20 @@ ml(`
                    //bgapi.stopAll();
                    
                    const { files, searchTerm } = d;
-                   const matchClause = d.ignoreCase ? "toLowerCase" : "slice";
-                   const termLength = searchTerm.length;
-                   if (termLength===0) {
+                   args.matchClause = d.ignoreCase ? "toLowerCase" : "slice";
+                   args.searchTerm  = searchTerm;
+                   args.termLength  = searchTerm.length;
+                   if (args.termLength===0) {
                        return postMessage({done:"search"});
                    }
-                   
-                   getSearchText ( files, matchClause, function( fileset ) {
+
+                   getSearchText ( files, args.matchClause, function( fileset ) {
                        
                         // we don't need the contents of the filenames array anymore
                         files.splice( 0, files.length );
-
+                        args.fileset = fileset;
                         bgfn.restart(
-                            
-                            { fileset,termLength,matchClause,searchTerm},
-                            
+                            args,
                             function(err,data,done){
                              
                                  if (data) {
@@ -3405,6 +3446,363 @@ ml(`
                 
                 
             }
+            
+            
+            
+            
+            function searchWorkerFGFunction(getSearchFile) {
+                
+                const searcher = createBGFunction(searchWorkerBGFunc,250);
+                let files = {};
+                const args = {  };
+                
+                return doSearch;
+              
+                function getSearchText(needed,matchClause,cb) {
+                    
+                    const results = [];
+                    loop(0);
+                    
+                    function loop(index) {
+                        
+                        if (index < needed.length) {
+                            
+                            const filename = needed[index];
+                            const prev = files [ filename ];
+                            if ( prev ) {
+                                
+                                if (prev.results) {
+                                    prev.results.forEach(function(x){
+                                        delete x.text;
+                                        delete x.line;
+                                        delete x.column;
+                                    });
+                                    prev.results.splice(0,prev.results.length);
+                                    delete prev.results;
+                                }
+                                delete prev.search;
+                                prev.search = prev.text[matchClause]();
+                                results.push(prev);
+                                loop(index+1);
+                                
+                            } else {
+                                
+                                getFile ( filename, function(){
+                                    
+                                    const newfile = files [ filename ];
+                                    newfile.search = newfile.text[matchClause]();
+                                    results.push(newfile);
+                                    loop(index+1);
+                                    
+                                } );
+                                
+                            }
+                            
+                        } else {
+                            
+                            cb(results);
+                            
+                        }
+                    }
+                    
+                }
+                
+                function doSearch(files,searchTerm,ignoreCase,cb) {
+                    
+                   args.matchClause = ignoreCase ? "toLowerCase" : "slice";
+                   args.searchTerm  = searchTerm;
+                   args.termLength  = searchTerm.length;
+                   if (args.termLength===0) {
+                       return cb({done:"search"});
+                   }
+
+                   getSearchText ( files, args.matchClause, function( fileset ) {
+                       
+                        // we don't need the contents of the filenames array anymore
+                        files.splice( 0, files.length );
+                        args.fileset = fileset;
+                        
+                        searcher(
+                            args,
+                            cb
+                        );
+        
+                    });
+
+                }
+                
+                function clearCache(d) {
+                    Object.keys(files).forEach(function(filename){
+                        delete files[filename].text;
+                        delete files[filename].filename;
+                        delete files[filename];
+                    });
+                }
+                
+                function getFile(filename,cb) {
+                    
+                    if (files[filename] && !files[filename].isOpen) return cb ();
+                    
+                    getSearchFile(filename,function(err,text,isOpen){
+                        if (err) return;
+                        
+                        files [ filename ] = {
+                            filename : filename,
+                            text     : text,
+                            isOpen   : isOpen
+                        };
+                        cb();
+                    });
+                    
+                }
+
+            }
+            
+           
+            
+            function searchWorkerBGFunc (args,send) {
+
+                   const { termLength, matchClause, searchTerm } = args;   
+                   
+                   const termPad   = new Array(termLength+1).join(String.fromCharCode(255));
+                   const matchTerm = searchTerm[matchClause]();
+                   args.found=0;
+                   pass1(0,function(){
+                       send();
+                   });
+                   
+                   
+                   return true;
+                   
+                   function pass1(index,cb) {
+                       if (index<args.fileset.length) {
+                         const fs = args.fileset[index];
+                         const ix = fs.search.indexOf(matchTerm);
+                         if (ix>=0){
+                             const lines      = fs.text.substr(0,ix).split("\n");
+                             const lineText   = lines.pop();
+                             const nextLine   = fs.text.substr(ix+termLength).replace(/\n.*/,'');
+                             fs.results=[{text:lineText+ searchTerm+nextLine,line:lines.length+1, column:lineText.length}];
+                             send({filename:fs.filename,results:fs.results});
+                             lines.splice(0,lines.length);
+                             fs.last = fs.search.lastIndexOf(matchTerm);
+                             args.found++;
+                             if (ix < fs.last) {
+                                fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
+                             } else {
+                                 delete fs.search;
+                                 delete fs.last;
+                                 fs.results.splice(0,1);
+                                 delete fs.results;
+                             }
+                             
+                         } else {
+                             delete fs.search;
+                         }
+                         if (args.terminated) {
+                             return setTimeout(cb,1);
+                         }
+                         setTimeout(pass1,2,index+1,cb);
+                       } else {
+                           if (args.terminated) {
+                               return setTimeout(cb,1);
+                           }
+                           if (args.found===0) {
+                              setTimeout(cb,10); 
+                           } else {
+                              args.found=0; 
+                              setTimeout(pass2,10,0,cb);
+                           }
+                       }
+                   }
+                   
+                   function pass2(index,cb) {
+                       if (index<args.fileset.length) {
+                           const fs = args.fileset[index];
+                           let count = 5;
+                           // queue up to 5 results per file..
+                           while (fs.search && (count > 0)) {
+                               const ix = fs.search.indexOf(matchTerm);
+                               count--;
+                               const lines      = fs.text.substr(0,ix).split("\n");
+                               const lineText   = lines.pop();
+                               const nextLine   = fs.text.substr(ix+termLength).replace(/\n.*/,'');
+                               fs.results.push({text:lineText+ searchTerm+nextLine, line:lines.length+1, column:lineText.length});
+                               lines.splice(0,lines.length);
+                               args.found++;
+                               if (ix < fs.last) {
+                                  fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
+                               } else {
+                                   send({filename:fs.filename,results:fs.results});
+                                   delete fs.search;
+                                   delete fs.last;
+                                   fs.results.splice(0,fs.results.length);
+                                   delete fs.results;
+                               }
+                           }
+                           
+                           if (fs.results) {
+                              // if we didn't already do so,send the results for this file
+                              send({filename:fs.filename,results:fs.results});
+                           }
+                           if (args.terminated) {
+                               return setTimeout(cb,1);
+                           }
+                           setTimeout(pass2,2,index+1,cb);
+                       } else {
+                           if (args.terminated) {
+                               return setTimeout(cb,1);
+                           }
+                           if (args.count===0) {
+                              setTimeout(cb,10);
+                           } else {
+                              args.count=0; 
+                              setTimeout(pass2,10,0,cb);
+                           } 
+                       }
+                   }
+
+            }
+            
+            
+            
+            
+            function createBGFunction(code, hysteresis) {
+
+                let src = "var args;"+
+                          "function handler(){\n"+
+                              "return (" + code.toString() +")"+
+                                "(args,function(msg){"+
+                                  "postMessage({cb:msg||'stop'});"+
+                                  "if (!msg) close();"+
+                                "});"+
+                          "};"+
+                          "onmessage=" + onmessage_src() + ";";
+                             
+                let blob = blobFromString(src, 'application/javascript');
+                src = null;
+
+                let url = URL.createObjectURL(blob);
+
+                let worker = false; // after the first call, this will be set to the worker object
+
+                let delay;
+
+                return hysteresis ? hfn : fn;
+
+                function hfn(data, cb) {
+                    if (delay) {
+                        clearTimeout(delay);
+                    }
+                    if (worker) {
+                        worker.postMessage({terminated:true});
+                    }
+                    delay = setTimeout(fn, hysteresis, data, cb);
+                }
+
+                function fn(data, cb) {
+                    delay = undefined;
+                    if (data === null && cb === undefined) {
+                        return cleanup();
+                    }
+
+                    if (worker) {
+                        // this is a restart request, since the worker still exists
+                        // so terminate the object and fall through
+                        console.log("terminating worker");
+
+                        worker.removeEventListener("message", messageHandler);
+                        worker.removeEventListener("messageerror", abortWorker);
+                        worker.removeEventListener("rejectionhandled", abortWorker);
+                        worker.removeEventListener("unhandledrejection", abortWorker);
+                        worker.terminate();
+
+                    }
+
+                    // create a (new ) Worker object
+                    worker = new Worker(url);
+                    worker.cb = cb;
+
+                    worker.addEventListener("message", messageHandler);
+
+                    worker.addEventListener("messageerror", abortWorker);
+
+                    worker.addEventListener("rejectionhandled", abortWorker);
+
+                    worker.addEventListener("unhandledrejection", abortWorker);
+
+                    console.log("posting", data);
+
+                    worker.postMessage(data);
+
+                }
+
+                function abortWorker(e) {
+                    worker = undefined;
+                }
+
+                function functionSource(fn) {
+                    const src = fn.toString();
+                    return src.substring(src.indexOf("{") + 1, src.lastIndexOf("}") - 1).trim();
+                }
+
+                function blobFromString(str, typ) {
+                    return new Blob([str], {
+                        type: typ
+                    });
+                }
+
+                function messageHandler(e) {
+                    if (worker) {
+                        if (e.data.cb === 'stop') {
+                            worker.cb(undefined, true);
+                            worker = undefined;
+                        } else {
+                            if (e.data.cb) {
+                                worker.cb(e.data.cb, false);
+                            }
+                        }
+                    }
+                }
+
+                function cleanup() {
+                    if (blob && url) {
+                        blob = null;
+                        URL.revokeObjectURL(url);
+                        url = null;
+                    }
+                }
+
+                function onmessage_src(args,handler,postMessage){
+                    // this function (onmsg) is declared purely to obtain it's source
+                    // it is not called in this context, but instead in the worker context
+                    return (function (e) {
+                        if (args) {
+                            // this is an additional message, (eg to set terminated)
+                            // merge the keys into the args object
+                            Object.keys(e.data).forEach(function(k) {
+                                console.log("setting", k);
+                                args[k] = e.data[k];
+                            });
+                            return;
+    
+                        } else {
+                            // this is the first message, which kicks off the background function
+                            // by calling handler ()
+                            args = e.data;
+                        }
+    
+                        const looping = handler();
+    
+                        postMessage({
+                            looping: looping
+                        });
+                        if (!looping) close();
+                    }).toString();
+                }
+
+            }
+            
             
         } 
     }, {
