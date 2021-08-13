@@ -256,8 +256,6 @@ ml(`
                 const { writeFileAssociatedText,readFileAssociatedText,removeFileAssociatedData } = fileAssocApi(fbufApi);
                 
                 
-                const searchWorkers = inlineWorkerAPI( ) ;
-                
                 const filteredFilesList = zip_files.slice();
     
                 function onDOMContentLoaded (){
