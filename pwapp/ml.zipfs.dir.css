@@ -146,11 +146,11 @@ li a.fullscreen,
 /*
 html.zooming #footer_grab,
 html.zooming #errors_table, 
+html.zooming #drop-area,
 html.zooming footer,
 */
 html.zooming li.editing a.close-editor,
 html.zooming li,
-html.zooming #drop-area,
 html.zooming h1 {
     display : none;
 }
@@ -211,8 +211,8 @@ html.zooming li.zooming {
    display : block;
 }
 
-html.zooming #footer_grab,
-html.zooming footer {
+#footer_grab,
+footer {
   z-index:9999;
 }
 
