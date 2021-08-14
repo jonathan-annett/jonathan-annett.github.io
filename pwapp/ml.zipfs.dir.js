@@ -3375,12 +3375,12 @@ ml(`
                                  delete fs.search;
                              }
                              if (args.terminated) {
-                                 return setTimeout(cb,1);
+                                 return setTimeout(cb,10);
                              }
-                             setTimeout(pass1,2,index+1,cb);
+                             setTimeout(pass1,10,index+1,cb);
                            } else {
                                if (args.terminated) {
-                                   return setTimeout(cb,1);
+                                   return setTimeout(cb,10);
                                }
                                if (args.found===0) {
                                   setTimeout(cb,10); 
@@ -3394,8 +3394,8 @@ ml(`
                        function pass2(index,cb) {
                            if (index<args.fileset.length) {
                                const fs = args.fileset[index];
-                               let count = 5;
-                               // queue up to 5 results per file..
+                               let count = 10;
+                               // queue up to 10 results per file..
                                while (fs.search && (count > 0)) {
                                    const ix = fs.search.indexOf(matchTerm);
                                    count--;
@@ -3421,12 +3421,12 @@ ml(`
                                   send({filename:fs.filename,results:fs.results});
                                }
                                if (args.terminated) {
-                                   return setTimeout(cb,1);
+                                   return setTimeout(cb,10);
                                }
-                               setTimeout(pass2,2,index+1,cb);
+                               setTimeout(pass2,10,index+1,cb);
                            } else {
                                if (args.terminated) {
-                                   return setTimeout(cb,1);
+                                   return setTimeout(cb,10);
                                }
                                if (args.count===0) {
                                   setTimeout(cb,10);
