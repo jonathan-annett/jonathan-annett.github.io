@@ -687,7 +687,7 @@ li.editing label.dropdown {
   }
   .tabs {
     position: relative;
-    margin: 3rem 0;
+    /* margin: 3rem 0; */
     background: #f0f0f0;
     height: 14.75rem;
   }
@@ -724,11 +724,12 @@ li.editing label.dropdown {
   }
   .tab-content {
     height: 12rem;
+    width: 100%;
     position: absolute;
     z-index: 1;
     top: 2.75em;
     left: 0;
-    padding: 1.618rem;
+    padding: 0;
     background: #fff;
     color: #2c3e50;
     border-bottom: 0.25rem solid #bdc3c7;

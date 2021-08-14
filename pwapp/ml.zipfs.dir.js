@@ -90,9 +90,10 @@ ml(`
                 const zipPollerInterval_idle = 5000;
                 
                 let tempErrorEditor;
-                let errorsTableData, errorsTable;
-                
-                
+                let errorsTableData,   errorsTable;
+                let warningsTableData, warningsTable;
+                let searchTableData,   searchTable;
+
                 function errorsExist () {
                     return Object.keys(editorErrors).some(function(filename){
                         return !ignoreErrors[filename];
@@ -429,7 +430,7 @@ ml(`
                     }
                     
                     loadErrors(function(){
-                        updateErrorsTable(function(){
+                        updateSelectedTable(function(){
                             zipPollerIndex = -1;
                             setTimeout(zipPoller,500);
                         });
@@ -488,16 +489,20 @@ ml(`
                 function addSearchTermFunc(ed_term) {
                     
                     addDelayedEditCallback(ed_term,function(value){
+                        qs("#tab-3").checked=true;
                         searchForTerm(value,qs("#search_case").checked,function(data){
                             if (data && data.filename && data.results) {
                                 delete searchResults[data.filename];
                                 searchResults[data.filename] = data.results;
                                 delete data.results;
                                 delete data.filename;
+                                updateSelectedTable(function(){
+                                    
+                                });
                             } else {
                                
                                if (!data) {
-                                   updateErrorsTable(function(){
+                                   updateSelectedTable(function(){
                                        
                                    });
                                } else {
@@ -1871,7 +1876,49 @@ ml(`
                     }
                 }
                 
+                function sortTableData(data) {
+                    data.sort(function(a,b){
+                        if (a.filename===b.filename) {
+                            return a.line < b.line ? -1 : a.line > b.line ? 1 : 0;
+                        } else {
+                            return a.filename < b.filename ? -1 : 1;
+                        }
+                    });
+                    data.forEach(function(x,ix){x,x.id=ix+1;});
+                    return data;
+                }
+                
                 function errorTableData() {
+                   let data = [];
+                   const filtering = filesBeingEdited.length > 0;
+
+                   Object.keys(editorErrors).forEach(function(filename){
+                       if (filtering && filesBeingEdited.indexOf(filename)<0) {
+                           return;
+                       }
+                       editorErrors[filename].forEach(function(err){
+                           data.push({type:"Error",text:err.text,filename:filename,line:err.row+1,column:err.column});
+                       });
+                   });
+                   return sortTableData(data);
+                }
+                
+                function warningTableData() {
+                   let data = [];
+                   const filtering = filesBeingEdited.length > 0;
+                   
+                   Object.keys(editorWarnings).forEach(function(filename){
+                       if (filtering && filesBeingEdited.indexOf(filename)<0) {
+                           return;
+                       }
+                       editorWarnings[filename].forEach(function(err){
+                           data.push({type:"Warning",text:err.text,filename:filename,line:err.row+1,column:err.column});
+                       });
+                   });
+                   return sortTableData(data);
+                }
+                
+                function searchTableData() {
                    let data = [];
                    const filtering = filesBeingEdited.length > 0;
                    
@@ -1883,35 +1930,7 @@ ml(`
                            data.push({type:"Search Result",text:search.text,filename:filename,line:search.line,column:search.column});
                        });
                    });
-                   
-                   if (data.length===0) {
-
-                       Object.keys(editorErrors).forEach(function(filename){
-                           if (filtering && filesBeingEdited.indexOf(filename)<0) {
-                                   return
-                           }
-                           editorErrors[filename].forEach(function(err){
-                               data.push({type:"Error",text:err.text,filename:filename,line:err.row+1,column:err.column});
-                           });
-                       });
-                       Object.keys(editorWarnings).forEach(function(filename){
-                           if (filtering && filesBeingEdited.indexOf(filename)<0) {
-                                   return
-                           }
-                           editorWarnings[filename].forEach(function(err){
-                               data.push({type:"Warning",text:err.text,filename:filename,line:err.row+1,column:err.column});
-                           });
-                       });
-                   }
-                   data.sort(function(a,b){
-                       if (a.filename===b.filename) {
-                           return a.line < b.line ? -1 : a.line > b.line ? 1 : 0;
-                       } else {
-                           return a.filename < b.filename ? -1 : 1;
-                       }
-                   });
-                   data.forEach(function(x,ix){x,x.id=ix+1;});
-                   return data;
+                   return sortTableData(data);
                 }
                 
                 function destroyTableData(data) {
@@ -1929,13 +1948,14 @@ ml(`
                     if (errorsTableData) {
                         destroyTableData(errorsTableData);
                     }
+                    
                     errorsTableData = errorTableData();
                     
                     if (errorsTableData.length === 0) {
                         if (errorsTable) {
                             errorsTable.clearData();
                             const el  = qs("#errors_table");
-                            el.innerHTML="";
+                            el.innerHTML= "";
                             el.className= "";
                             errorsTable = undefined;
                         }
@@ -1949,7 +1969,7 @@ ml(`
                             autoColumns:true,
                             layout:"fitColumns",
                             autoColumnsDefinitions:[
-                                {title:"Error/Warning",  field:"type",}, 
+                                {field:"type",visible:false},
                                 {title:"Filename",       field:"filename",
                                     formatter:function(cell, formatterParams, onRendered){
                                         //cell - the cell component
@@ -1990,6 +2010,143 @@ ml(`
                     }
 
                 }
+                
+                function updateWarningsTable(cb) {
+                    
+                    if (warningsTableData) {
+                        destroyTableData(warningsTableData);
+                    }
+                    
+                    warningsTableData = warningTableData();
+                    
+                    if (warningsTableData.length === 0) {
+                        if (warningsTable) {
+                            warningsTable.clearData();
+                            const el  = qs("#warnings_table");
+                            el.innerHTML= "";
+                            el.className= "";
+                            warningsTable = undefined;
+                        }
+                        return cb();
+                    }
+                    
+                    if(!warningsTable) {
+                        
+                        warningsTable = new Tabulator("#warnings_table", {
+                            data:warningsTableData,
+                            autoColumns:true,
+                            layout:"fitColumns",
+                            autoColumnsDefinitions:[
+                                {field:"type",visible:false},
+                                {title:"Filename",       field:"filename",
+                                    formatter:function(cell, formatterParams, onRendered){
+                                        //cell - the cell component
+                                        //formatterParams - parameters set for the column
+                                        //onRendered - function to call when the formatter has been rendered
+                                        return cell.getValue().replace(alias_root_fix,'');
+                                    }
+                                    
+                                }, 
+                                {title:"Message",        field:"text",widthGrow:6}, 
+                                {title:"Line",           field:"row"}, 
+                                {title:"Column",         field:"column"}, 
+                                {field:"id",visible:false}
+                            ],
+                            rowClick:function(e, row){
+                               e.preventDefault();
+                               findError(
+                                   row._row.data.filename,
+                                   row._row.data.line,
+                                   row._row.data.column,
+                                   function(err){
+                                       if (err) console.log(err);
+                                });
+                               
+                              
+                            }
+                        });
+                       
+                        cb(warningsTable);
+                        
+                    } else {
+                        
+                        warningsTable.clearData();
+                        warningsTable.updateOrAddData (warningsTableData).then(function(){
+                            cb(warningsTable);
+                        });
+                        
+                    }
+
+                }
+                
+                function updateSearchTable(cb) {
+                    
+                    if (searchTableData) {
+                        destroyTableData(searchTableData);
+                    }
+                    
+                    searchTableData = searchTableData();
+                    
+                    if (searchTableData.length === 0) {
+                        if (searchTable) {
+                            searchTable.clearData();
+                            const el  = qs("#search_table");
+                            el.innerHTML= "";
+                            el.className= "";
+                            searchTable = undefined;
+                        }
+                        return cb();
+                    }
+                    
+                    if(!searchTable) {
+                        
+                        searchTable = new Tabulator("#search_table", {
+                            data:searchTableData,
+                            autoColumns:true,
+                            layout:"fitColumns",
+                            autoColumnsDefinitions:[
+                                {title:"Error/Warning",  field:"type",}, 
+                                {title:"Filename",       field:"filename",
+                                    formatter:function(cell, formatterParams, onRendered){
+                                        //cell - the cell component
+                                        //formatterParams - parameters set for the column
+                                        //onRendered - function to call when the formatter has been rendered
+                                        return cell.getValue().replace(alias_root_fix,'');
+                                    }
+                                    
+                                }, 
+                                {title:"Message",        field:"text",widthGrow:6}, 
+                                {title:"Line",           field:"row"}, 
+                                {title:"Column",         field:"column"}, 
+                                {field:"id",visible:false}
+                            ],
+                            rowClick:function(e, row){
+                               e.preventDefault();
+                               findError(
+                                   row._row.data.filename,
+                                   row._row.data.line,
+                                   row._row.data.column,
+                                   function(err){
+                                       if (err) console.log(err);
+                                });
+                               
+                              
+                            }
+                        });
+                       
+                        cb(searchTable);
+                        
+                    } else {
+                        
+                        searchTable.clearData();
+                        searchTable.updateOrAddData (searchTableData).then(function(){
+                            cb(searchTable);
+                        });
+                        
+                    }
+
+                }
+                
                 
                 function findError(filename,line,column,cb) {
                     if (tempErrorEditor && tempErrorEditor !== filename) {
@@ -2049,6 +2206,10 @@ ml(`
                     return errors===false;
                 }
                 
+                function currentTab() {
+                   qs('input[type="radio"][name="footer-tabs"]:checked').dataset.table;
+                }
+                
                 function collectAnnotations (filename,annot,cb) {
                     let errors=false,warnings=false;
                     if (annot) {
@@ -2089,10 +2250,16 @@ ml(`
                             
                         qs("html").classList[  errorsExist () ?"add":"remove"]("errors");
                         
-                        updateErrorsTable(function(){
+                        const updateTable = {
+                               errors   : updateErrorsTable,
+                               warnings : updateWarningsTable,
+                        }[currentTab()] || function(cb){cb();};
+                        
+                        updateTable(function(){
                             const json = errors||warnings?JSON.stringify({errors:error_list,warnings:warning_list}):false;
                             cb(errors,warnings,json);
                         });
+                        
                     } else {
                         errors = null;
                     }
@@ -2542,17 +2709,27 @@ ml(`
                     
                 }
                 
+                function updateSelectedTable(cb){
+                    const updateTable = {
+                           errors   : updateErrorsTable,
+                           warnings : updateWarningsTable,
+                           search   : updateSearchTable
+                    }[currentTab()]||function(cb){cb();};
+                    updateTable(cb);
+                }
+                
                 function toggleInbuiltEditor (filename,li) {
                     li=li||find_li (filename);
+                    
                     if (!!li.dataset.editor_id) {
                        closeInbuiltEditor(filename,li,function(){
-                           updateErrorsTable(function(){
+                           updateSelectedTable(function(){
                                
                            });
                        });
                     } else {
                        openInbuiltEditor (filename,li,function(){
-                           updateErrorsTable(function(){
+                           updateSelectedTable(function(){
                                
                            });
                        });
