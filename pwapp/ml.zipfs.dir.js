@@ -1921,24 +1921,24 @@ ml(`
                        if (filtering && filesBeingEdited.indexOf(filename)<0) {
                            return;
                        }
-                       searchResults[filename].forEach(function(err){
+                       searchResults[filename].forEach(function(res){
                            
                            if (index < searchResultsTableData.length) {
                                 const row = searchResultsTableData[index];
-                                if (row.text!==err.text) {
-                                    row.text = err.text;
+                                if (row.text!==res.text) {
+                                    row.text = res.text;
                                 }
-                                if (row.filename!==err.filename) {
-                                    row.filename = err.filename;
+                                if (row.filename!==res.filename) {
+                                    row.filename = res.filename;
                                 }
-                                if (row.line!==err.row+1) {
-                                    row.line = err.row+1;
+                                if (row.line!==res.line) {
+                                    row.line = res.line;
                                 }
-                                if (row.column!==err.column) {
-                                    row.column = err.column;
+                                if (row.column!==res.column) {
+                                    row.column = res.column;
                                 }
                            } else {
-                                searchResultsTableData.push({text:err.text,filename:filename,line:err.row+1,column:err.column});
+                                searchResultsTableData.push({text:res.text,filename:filename,line:res.line,column:res.column});
                            }
                            index++;
                        });
@@ -2078,13 +2078,10 @@ ml(`
                                    function(err){
                                        if (err) console.log(err);
                                 });
-                               
-                              
                             }
                         });
                        
                         cb(searchResultsTable);
-                        
 
                     }
 
