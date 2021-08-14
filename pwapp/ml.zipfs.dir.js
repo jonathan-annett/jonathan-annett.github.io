@@ -515,49 +515,6 @@ ml(`
                 }
                 
                 
-                function searchForTermWorkerCallback(ev,data){
-                    
-                    if (ev==="message") {
-                        
-                        if (data.getFile) {
-                            
-                           getFileForSearchWorker (data.getFile,function(err,text,isOpen){
-                               if (text) {
-                                   searchForTerm.worker.postMessage( {
-                                         filename : data.getFile,
-                                         text     : text,
-                                         isOpen   : !!isOpen
-                                   });
-                                   
-                                   delete data.getFile;
-                                   
-                               }
-                           });
-                           
-                        } else {
-                            
-                            if (data.filename && data.results) {
-                                delete searchResults[data.filename];
-                                searchResults[data.filename] = data.results;
-                                delete data.results;
-                                delete data.filename;
-                            } else {
-                               
-                               if (data.done==="search") {
-                                   updateErrorsTable(function(){
-                                       
-                                   });
-                               } else {
-                                   console.log(data);
-                               }
-                            }
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
                 function getFileForSearchWorker(filename,cb){
                     
                     const index = filesBeingEdited.indexOf(filename);
@@ -894,7 +851,7 @@ ml(`
                     const filename = findFilename(e.target);
                     const li = find_li(filename);
                     openInbuiltEditor ( filename,li,function(){
-                        updateErrorsTable(function(){
+                        updateSelectedTable(function(){
                             
                         });
                     });
@@ -908,7 +865,7 @@ ml(`
                         open_file(filename);
                     } else {
                         closeInbuiltEditor ( filename,li , function(){
-                            updateErrorsTable(function(){
+                            updateSelectedTable(function(){
                                 
                             });
                         });
