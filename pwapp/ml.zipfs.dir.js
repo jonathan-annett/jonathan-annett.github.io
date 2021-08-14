@@ -90,9 +90,10 @@ ml(`
                 const zipPollerInterval_idle = 5000;
                 
                 let tempErrorEditor;
-                let errorsTableData,   errorsTable;
-                let warningsTableData, warningsTable;
-                let searchTableData,   searchTable;
+                
+                let errorsTableData,        errorsTable;
+                let warningsTableData,      warningsTable;
+                let searchResultsTableData, searchResultsTable;
 
                 function errorsExist () {
                     return Object.keys(editorErrors).some(function(filename){
@@ -1845,7 +1846,7 @@ ml(`
                     return data;
                 }
                 
-                function errorTableData() {
+                function getErrorTableData() {
                    let data = [];
                    const filtering = filesBeingEdited.length > 0;
 
@@ -1860,7 +1861,7 @@ ml(`
                    return sortTableData(data);
                 }
                 
-                function warningTableData() {
+                function getWarningsTableData() {
                    let data = [];
                    const filtering = filesBeingEdited.length > 0;
                    
@@ -1875,7 +1876,7 @@ ml(`
                    return sortTableData(data);
                 }
                 
-                function searchTableData() {
+                function getSearchResultsTableData() {
                    let data = [];
                    const filtering = filesBeingEdited.length > 0;
                    
@@ -1906,7 +1907,7 @@ ml(`
                         destroyTableData(errorsTableData);
                     }
                     
-                    errorsTableData = errorTableData();
+                    errorsTableData = getErrorTableData();
                     
                     if (errorsTableData.length === 0) {
                         if (errorsTable) {
@@ -1974,7 +1975,7 @@ ml(`
                         destroyTableData(warningsTableData);
                     }
                     
-                    warningsTableData = warningTableData();
+                    warningsTableData = getWarningsTableData();
                     
                     if (warningsTableData.length === 0) {
                         if (warningsTable) {
@@ -2038,27 +2039,27 @@ ml(`
                 
                 function updateSearchTable(cb) {
                     
-                    if (searchTableData) {
-                        destroyTableData(searchTableData);
+                    if (searchResultsTableData) {
+                        destroyTableData(searchResultsTableData);
                     }
                     
-                    searchTableData = searchTableData();
+                    searchResultsTableData = getSearchResultsTableData();
                     
-                    if (searchTableData.length === 0) {
-                        if (searchTable) {
-                            searchTable.clearData();
+                    if (searchResultsTableData.length === 0) {
+                        if (searchResultsTable) {
+                            searchResultsTable.clearData();
                             const el  = qs("#search_table");
                             el.innerHTML= "";
                             el.className= "";
-                            searchTable = undefined;
+                            searchResultsTable = undefined;
                         }
                         return cb();
                     }
                     
-                    if(!searchTable) {
+                    if(!searchResultsTable) {
                         
-                        searchTable = new Tabulator("#search_table", {
-                            data:searchTableData,
+                        searchResultsTable = new Tabulator("#search_table", {
+                            data:searchResultsTableData,
                             autoColumns:true,
                             layout:"fitColumns",
                             autoColumnsDefinitions:[
@@ -2091,13 +2092,13 @@ ml(`
                             }
                         });
                        
-                        cb(searchTable);
+                        cb(searchResultsTable);
                         
                     } else {
                         
-                        searchTable.clearData();
-                        searchTable.updateOrAddData (searchTableData).then(function(){
-                            cb(searchTable);
+                        searchResultsTable.clearData();
+                        searchResultsTable.updateOrAddData (searchResultsTableData).then(function(){
+                            cb(searchResultsTable);
                         });
                         
                     }
