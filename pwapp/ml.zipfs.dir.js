@@ -431,7 +431,7 @@ ml(`
                     }
                     
                     loadErrors(function(){
-                        updateSelectedTable(function(){
+                            updateSelectedTable(function(){
                             zipPollerIndex = -1;
                             setTimeout(zipPoller,500);
                         });
@@ -2165,7 +2165,7 @@ ml(`
                 }
                 
                 function currentTab() {
-                   qs('input[type="radio"][name="footer-tabs"]:checked').dataset.table;
+                   return qs('input[type="radio"][name="footer-tabs"]:checked').dataset.table;
                 }
                 
                 function collectAnnotations (filename,annot,cb) {
