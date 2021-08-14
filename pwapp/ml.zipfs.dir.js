@@ -64,10 +64,6 @@ ml(`
                     
                 ];
                 
-                const searchResults = {
-                    
-                };
-                
                 const editorErrors = {
                     /*
                     { filename : [ {line,column,text} x n ] }
@@ -498,25 +494,13 @@ ml(`
                     
                     function seachTextChanged(value){
                         qs("#tab-3").checked=true;
-                        searchForTerm(value,ignoreCase.checked,function(data){
-                            if (data && data.filename && data.results) {
-                                delete searchResults[data.filename];
-                                searchResults[data.filename] = data.results;
-                                delete data.results;
-                                delete data.filename;
-                                updateSelectedTable(function(){
-                                    
-                                });
-                            } else {
-                               
-                               if (!data) {
-                                   updateSelectedTable(function(){
+                        searchForTerm(value,ignoreCase.checked,function(results){
+                               if (results) {
+                                   updateSearchTable(results,function(){
                                        
                                    });
-                               } else {
-                                   console.log(data);
                                }
-                            }
+                            
                         });
                     }
                     
@@ -559,12 +543,6 @@ ml(`
                     }
  
                     function startSearch() {
-                        Object.keys(searchResults).forEach(function(filename){
-                            searchResults[filename].text;
-                            searchResults[filename].line;
-                            searchResults[filename].column;
-                            delete searchResults[filename];
-                        });
                         if (term.trim().length>3) {
                             searchForTerm.func(
                                 filteredFilesList,term,
@@ -1913,7 +1891,7 @@ ml(`
                    }
                 }
                 
-                function getSearchResultsTableData() {
+                function getSearchResultsTableData(data) {
                    let index = 0;
                    
                    const filtering = false;//filesBeingEdited.length > 0;
@@ -2047,11 +2025,15 @@ ml(`
                         
                 }
                 
-                function updateSearchTable(cb) {
+                function updateSearchTable(data,cb) {
                     
-                    getSearchResultsTableData();
+                    if (typeof data==='function') {
+                        cb=data;
+                        data=[];
+                    }
                     
-                   
+                    getSearchResultsTableData(data);
+
                     if(!searchResultsTable) {
                         
                         if (searchResultsTableData.length>0) {
@@ -2076,7 +2058,7 @@ ml(`
                                     {title:"Column",         field:"column"}, 
                                     {field:"id",visible:false}
                                 ],
-                                rowClick:function(e, row){
+                                rowClick:function(e,row){
                                    e.preventDefault();
                                    findError(
                                        row._row.data.filename,
@@ -2084,17 +2066,17 @@ ml(`
                                        row._row.data.column,
                                        function(err){
                                            if (err) console.log(err);
-                                    });
+                                       }
+                                   );
                                 }
                             });
-                       
-                        }                       
-
+                        }
                     }
+                    
                     cb();
+                    
                 }
-                
-                
+
                 function findError(filename,line,column,cb) {
                     if (tempErrorEditor && tempErrorEditor !== filename) {
                         const li = find_li(tempErrorEditor);
