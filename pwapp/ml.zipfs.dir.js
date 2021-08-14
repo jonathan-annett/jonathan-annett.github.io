@@ -322,6 +322,7 @@ ml(`
                         addSearchTermFunc(edit);
                         edit.onfocus=function(){
                            qs("#tab-3").checked=true;  
+                           edit.select();
                         };
                     });
                     
@@ -487,10 +488,17 @@ ml(`
                 }
 
                 function addSearchTermFunc(ed_term) {
+                    const ignoreCase = qs("#search_case");
                     
-                    addDelayedEditCallback(ed_term,function(value){
+                    addDelayedEditCallback(ed_term,seachTextChanged,0);
+                    
+                    ignoreCase.onclick = function(){
+                        seachTextChanged(ed_term.value);
+                    };
+                    
+                    function seachTextChanged(value){
                         qs("#tab-3").checked=true;
-                        searchForTerm(value,qs("#search_case").checked,function(data){
+                        searchForTerm(value,ignoreCase.checked,function(data){
                             if (data && data.filename && data.results) {
                                 delete searchResults[data.filename];
                                 searchResults[data.filename] = data.results;
@@ -510,7 +518,7 @@ ml(`
                                }
                             }
                         });
-                    },0);
+                    }
                     
                 }
 
