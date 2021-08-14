@@ -1843,7 +1843,7 @@ ml(`
                 function getErrorTableData() {
                    let index = 0;
                    
-                   const filtering = filesBeingEdited.length > 0;
+                   const filtering = false;//filesBeingEdited.length > 0;
 
                    Object.keys(editorErrors).forEach(function(filename){
                        if (filtering && filesBeingEdited.indexOf(filename)<0) {
@@ -1879,7 +1879,7 @@ ml(`
                 function getWarningsTableData() {
                    let index = 0;
                    
-                   const filtering = filesBeingEdited.length > 0;
+                   const filtering = false;//filesBeingEdited.length > 0;
 
                    Object.keys(editorWarnings).forEach(function(filename){
                        if (filtering && filesBeingEdited.indexOf(filename)<0) {
@@ -1915,7 +1915,7 @@ ml(`
                 function getSearchResultsTableData() {
                    let index = 0;
                    
-                   const filtering = filesBeingEdited.length > 0;
+                   const filtering = false;//filesBeingEdited.length > 0;
 
                    Object.keys(searchResults).forEach(function(filename){
                        if (filtering && filesBeingEdited.indexOf(filename)<0) {
