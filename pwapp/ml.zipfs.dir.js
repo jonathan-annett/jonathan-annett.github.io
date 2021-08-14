@@ -1955,91 +1955,95 @@ ml(`
                     
                     if(!errorsTable) {
                         
-                        errorsTable = new Tabulator("#errors_table", {
-                            data:errorsTableData,
-                            autoColumns:true,
-                            reactiveData:true,
-                            layout:"fitColumns",
-                            autoColumnsDefinitions:[
-                                {title:"Filename",       field:"filename",
-                                    formatter:function(cell, formatterParams, onRendered){
-                                        //cell - the cell component
-                                        //formatterParams - parameters set for the column
-                                        //onRendered - function to call when the formatter has been rendered
-                                        return cell.getValue().replace(alias_root_fix,'');
-                                    }
-                                    
-                                }, 
-                                {title:"Message",        field:"text",widthGrow:5}, 
-                                {title:"Line",           field:"row"}, 
-                                {title:"Column",         field:"column"}, 
-                                {field:"id",visible:false}
-                            ],
-                            rowClick:function(e, row){
-                               e.preventDefault();
-                               findError(
-                                   row._row.data.filename,
-                                   row._row.data.line,
-                                   row._row.data.column,
-                                   function(err){
-                                       if (err) console.log(err);
-                                   }
-                               );
-                            }
-                        });
-                       
-                        cb(errorsTable);
-
+                        if ( errorsTableData.length > 0 ) {
+                            
+                            errorsTable = new Tabulator("#errors_table", {
+                                data:errorsTableData,
+                                autoColumns:true,
+                                reactiveData:true,
+                                layout:"fitColumns",
+                                autoColumnsDefinitions:[
+                                    {title:"Filename",       field:"filename",
+                                        formatter:function(cell, formatterParams, onRendered){
+                                            //cell - the cell component
+                                            //formatterParams - parameters set for the column
+                                            //onRendered - function to call when the formatter has been rendered
+                                            return cell.getValue().replace(alias_root_fix,'');
+                                        }
+                                        
+                                    }, 
+                                    {title:"Message",        field:"text",widthGrow:5}, 
+                                    {title:"Line",           field:"row"}, 
+                                    {title:"Column",         field:"column"}, 
+                                    {field:"id",visible:false}
+                                ],
+                                rowClick:function(e, row){
+                                   e.preventDefault();
+                                   findError(
+                                       row._row.data.filename,
+                                       row._row.data.line,
+                                       row._row.data.column,
+                                       function(err){
+                                           if (err) console.log(err);
+                                       }
+                                   );
+                                }
+                            });
+                           
+                            
+    
+                        }
                     }
-
+                    cb();
                 }
                 
                 function updateWarningsTable(cb) {
                     
                     getWarningsTableData();
                     
-                    
                     if(!warningsTable) {
                         
-                        warningsTable = new Tabulator("#warnings_table", {
-                            data:warningsTableData,
-                            reactiveData:true,
-                            autoColumns:true,
-                            layout:"fitColumns",
-                            autoColumnsDefinitions:[
-                                {field:"type",visible:false},
-                                {title:"Filename",       field:"filename",
-                                    formatter:function(cell, formatterParams, onRendered){
-                                        //cell - the cell component
-                                        //formatterParams - parameters set for the column
-                                        //onRendered - function to call when the formatter has been rendered
-                                        return cell.getValue().replace(alias_root_fix,'');
-                                    }
-                                    
-                                }, 
-                                {title:"Message",        field:"text",widthGrow:5}, 
-                                {title:"Line",           field:"row"}, 
-                                {title:"Column",         field:"column"}, 
-                                {field:"id",visible:false}
-                            ],
-                            rowClick:function(e, row){
-                               e.preventDefault();
-                               findError(
-                                   row._row.data.filename,
-                                   row._row.data.line,
-                                   row._row.data.column,
-                                   function(err){
-                                       if (err) console.log(err);
-                                   }
-                               );
-                            }
-                        });
-                       
-                        cb(warningsTable);
-                        
+                        if (warningsTableData.length>0) {
+                            
+                            warningsTable = new Tabulator("#warnings_table", {
+                                data:warningsTableData,
+                                reactiveData:true,
+                                autoColumns:true,
+                                layout:"fitColumns",
+                                autoColumnsDefinitions:[
+                                    {field:"type",visible:false},
+                                    {title:"Filename",       field:"filename",
+                                        formatter:function(cell, formatterParams, onRendered){
+                                            //cell - the cell component
+                                            //formatterParams - parameters set for the column
+                                            //onRendered - function to call when the formatter has been rendered
+                                            return cell.getValue().replace(alias_root_fix,'');
+                                        }
+                                        
+                                    }, 
+                                    {title:"Message",        field:"text",widthGrow:5}, 
+                                    {title:"Line",           field:"row"}, 
+                                    {title:"Column",         field:"column"}, 
+                                    {field:"id",visible:false}
+                                ],
+                                rowClick:function(e, row){
+                                   e.preventDefault();
+                                   findError(
+                                       row._row.data.filename,
+                                       row._row.data.line,
+                                       row._row.data.column,
+                                       function(err){
+                                           if (err) console.log(err);
+                                       }
+                                   );
+                                }
+                            });
+                           
+                        }
                    
                     }
-
+                    cb();
+                        
                 }
                 
                 function updateSearchTable(cb) {
@@ -2049,42 +2053,44 @@ ml(`
                    
                     if(!searchResultsTable) {
                         
-                        searchResultsTable = new Tabulator("#search_table", {
-                            data:searchResultsTableData,
-                            reactiveData:true,
-                            autoColumns:true,
-                            layout:"fitColumns",
-                            autoColumnsDefinitions:[
-                                {title:"Filename",       field:"filename",
-                                    formatter:function(cell, formatterParams, onRendered){
-                                        //cell - the cell component
-                                        //formatterParams - parameters set for the column
-                                        //onRendered - function to call when the formatter has been rendered
-                                        return cell.getValue().replace(alias_root_fix,'');
-                                    }
-                                    
-                                }, 
-                                {title:"Message",        field:"text",widthGrow:5}, 
-                                {title:"Line",           field:"row"}, 
-                                {title:"Column",         field:"column"}, 
-                                {field:"id",visible:false}
-                            ],
-                            rowClick:function(e, row){
-                               e.preventDefault();
-                               findError(
-                                   row._row.data.filename,
-                                   row._row.data.line,
-                                   row._row.data.column,
-                                   function(err){
-                                       if (err) console.log(err);
-                                });
-                            }
-                        });
+                        if (searchResultsTableData.length>0) {
+
+                            searchResultsTable = new Tabulator("#search_table", {
+                                data:searchResultsTableData,
+                                reactiveData:true,
+                                autoColumns:true,
+                                layout:"fitColumns",
+                                autoColumnsDefinitions:[
+                                    {title:"Filename",       field:"filename",
+                                        formatter:function(cell, formatterParams, onRendered){
+                                            //cell - the cell component
+                                            //formatterParams - parameters set for the column
+                                            //onRendered - function to call when the formatter has been rendered
+                                            return cell.getValue().replace(alias_root_fix,'');
+                                        }
+                                        
+                                    }, 
+                                    {title:"Message",        field:"text",widthGrow:5}, 
+                                    {title:"Line",           field:"row"}, 
+                                    {title:"Column",         field:"column"}, 
+                                    {field:"id",visible:false}
+                                ],
+                                rowClick:function(e, row){
+                                   e.preventDefault();
+                                   findError(
+                                       row._row.data.filename,
+                                       row._row.data.line,
+                                       row._row.data.column,
+                                       function(err){
+                                           if (err) console.log(err);
+                                    });
+                                }
+                            });
                        
-                        cb(searchResultsTable);
+                        }                       
 
                     }
-
+                    cb();
                 }
                 
                 
