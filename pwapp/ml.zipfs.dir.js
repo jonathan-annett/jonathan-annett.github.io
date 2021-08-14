@@ -257,7 +257,6 @@ ml(`
                 
                 const { writeFileAssociatedText,readFileAssociatedText,removeFileAssociatedData } = fileAssocApi(fbufApi);
                 
-                
                 const filteredFilesList = zip_files.slice();
     
                 function onDOMContentLoaded (){
@@ -325,12 +324,6 @@ ml(`
                            qs("#tab-3").checked=true;  
                         };
                     });
-                    
-
-                    
-                     
-               
-                    
                     
                     themePickerPickerHTML = (function(el){
                          el.parentElement.removeChild(el);
@@ -434,7 +427,7 @@ ml(`
                     if (auto_fn) {
                         findError(auto_fn,auto_line,auto_col,function(){
                             console.log("located");
-                        })
+                        });
                     }
                     
                     loadErrors(function(){
@@ -445,10 +438,9 @@ ml(`
                     });
                     
                 }
-                
-                
-                
-                function addDelayedEditCallback (ed,cb){
+
+                function addDelayedEditCallback (ed,cb,delay){
+                    delay = delay===undefined?100:delay;
                     let timeout,value = ed.value.trim();
                     
                     ["input","change","keyup"].forEach(function(e){
@@ -456,8 +448,9 @@ ml(`
                     });
                     
                     function filterTextChanged(){
+                        if (delay===0) return filterTextDelayed();
                         if (timeout) clearTimeout(timeout);
-                        timeout = setTimeout(filterTextDelayed,100);
+                        timeout = setTimeout(filterTextDelayed,delay);
 
                     }
                     
@@ -492,8 +485,7 @@ ml(`
                         [].forEach.call(document.querySelectorAll("li"),func);
                     });
                 }
-                
-                
+
                 function addSearchTermFunc(ed_term) {
                     
                     addDelayedEditCallback(ed_term,function(value){
@@ -518,11 +510,10 @@ ml(`
                                }
                             }
                         });
-                    });
+                    },0);
                     
                 }
-                
-                
+
                 function getFileForSearchWorker(filename,cb){
                     
                     const index = filesBeingEdited.indexOf(filename);
