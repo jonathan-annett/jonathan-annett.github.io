@@ -1868,6 +1868,7 @@ ml(`
                            } else {
                                 errorsTableData.push({text:err.text,filename:filename,line:err.row+1,column:err.column});
                            }
+                           index++;
                        });
                    });
                    if (errorsTableData.length>index ) {
@@ -1903,6 +1904,7 @@ ml(`
                            } else {
                                 warningsTableData.push({text:err.text,filename:filename,line:err.row+1,column:err.column});
                            }
+                           index++;
                        });
                    });
                    if (warningsTableData.length>index ) {
@@ -1938,6 +1940,7 @@ ml(`
                            } else {
                                 searchResultsTableData.push({text:err.text,filename:filename,line:err.row+1,column:err.column});
                            }
+                           index++;
                        });
                    });
                    if (searchResultsTableData.length>index ) {
