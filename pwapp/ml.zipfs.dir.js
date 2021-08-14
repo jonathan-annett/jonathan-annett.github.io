@@ -91,9 +91,9 @@ ml(`
                 
                 let tempErrorEditor;
                 
-                let errorsTableData,        errorsTable;
-                let warningsTableData,      warningsTable;
-                let searchResultsTableData, searchResultsTable;
+                const  errorsTableData = [], warningsTableData = [], searchResultsTableData = [];
+                
+                let errorsTable, warningsTable, searchResultsTable;
 
                 function errorsExist () {
                     return Object.keys(editorErrors).some(function(filename){
@@ -1840,20 +1840,9 @@ ml(`
                     }
                 }
                 
-                function sortTableData(data) {
-                    data.sort(function(a,b){
-                        if (a.filename===b.filename) {
-                            return a.line < b.line ? -1 : a.line > b.line ? 1 : 0;
-                        } else {
-                            return a.filename < b.filename ? -1 : 1;
-                        }
-                    });
-                    data.forEach(function(x,ix){x,x.id=ix+1;});
-                    return data;
-                }
-                
                 function getErrorTableData() {
-                   let data = [];
+                   let index = 0;
+                   
                    const filtering = filesBeingEdited.length > 0;
 
                    Object.keys(editorErrors).forEach(function(filename){
@@ -1861,59 +1850,105 @@ ml(`
                            return;
                        }
                        editorErrors[filename].forEach(function(err){
-                           data.push({type:"Error",text:err.text,filename:filename,line:err.row+1,column:err.column});
+                           
+                           if (index < errorsTableData.length) {
+                                const row = errorsTableData[index];
+                                if (row.text!==err.text) {
+                                    row.text = err.text;
+                                }
+                                if (row.filename!==err.filename) {
+                                    row.filename = err.filename;
+                                }
+                                if (row.line!==err.row+1) {
+                                    row.line = err.row+1;
+                                }
+                                if (row.column!==err.column) {
+                                    row.column = err.column;
+                                }
+                           } else {
+                                errorsTableData.push({text:err.text,filename:filename,line:err.row+1,column:err.column});
+                           }
                        });
                    });
-                   return sortTableData(data);
+                   if (errorsTableData.length>index ) {
+                       errorsTableData.splice(index,errorsTableData.length);
+                   }
                 }
                 
                 function getWarningsTableData() {
-                   let data = [];
-                   const filtering = filesBeingEdited.length > 0;
+                   let index = 0;
                    
+                   const filtering = filesBeingEdited.length > 0;
+
                    Object.keys(editorWarnings).forEach(function(filename){
                        if (filtering && filesBeingEdited.indexOf(filename)<0) {
                            return;
                        }
                        editorWarnings[filename].forEach(function(err){
-                           data.push({type:"Warning",text:err.text,filename:filename,line:err.row+1,column:err.column});
+                           
+                           if (index < warningsTableData.length) {
+                                const row = warningsTableData[index];
+                                if (row.text!==err.text) {
+                                    row.text = err.text;
+                                }
+                                if (row.filename!==err.filename) {
+                                    row.filename = err.filename;
+                                }
+                                if (row.line!==err.row+1) {
+                                    row.line = err.row+1;
+                                }
+                                if (row.column!==err.column) {
+                                    row.column = err.column;
+                                }
+                           } else {
+                                warningsTableData.push({text:err.text,filename:filename,line:err.row+1,column:err.column});
+                           }
                        });
                    });
-                   return sortTableData(data);
+                   if (warningsTableData.length>index ) {
+                       warningsTableData.splice(index,warningsTableData.length);
+                   }
                 }
                 
                 function getSearchResultsTableData() {
-                   let data = [];
-                   const filtering = filesBeingEdited.length > 0;
+                   let index = 0;
                    
+                   const filtering = filesBeingEdited.length > 0;
+
                    Object.keys(searchResults).forEach(function(filename){
                        if (filtering && filesBeingEdited.indexOf(filename)<0) {
-                               return
+                           return;
                        }
-                       searchResults[filename].forEach(function(search){
-                           data.push({type:"Search Result",text:search.text,filename:filename,line:search.line,column:search.column});
+                       searchResults[filename].forEach(function(err){
+                           
+                           if (index < searchResultsTableData.length) {
+                                const row = searchResultsTableData[index];
+                                if (row.text!==err.text) {
+                                    row.text = err.text;
+                                }
+                                if (row.filename!==err.filename) {
+                                    row.filename = err.filename;
+                                }
+                                if (row.line!==err.row+1) {
+                                    row.line = err.row+1;
+                                }
+                                if (row.column!==err.column) {
+                                    row.column = err.column;
+                                }
+                           } else {
+                                searchResultsTableData.push({text:err.text,filename:filename,line:err.row+1,column:err.column});
+                           }
                        });
                    });
-                   return sortTableData(data);
+                   if (searchResultsTableData.length>index ) {
+                       searchResultsTableData.splice(index,searchResultsTableData.length);
+                   }
                 }
                 
-                function destroyTableData(data) {
-                    data.forEach(function(x){
-                        delete x.filename;
-                        delete x.line;
-                        delete x.column;
-                        delete x.text;
-                    })
-                    data.splice(0,data.length);
-                }
-                
+               
                 function updateErrorsTable(cb) {
                     
-                    if (errorsTableData) {
-                        destroyTableData(errorsTableData);
-                    }
-                    
-                    errorsTableData = getErrorTableData();
+                    getErrorTableData();
                     
                     if (errorsTableData.length === 0) {
                         if (errorsTable) {
@@ -1931,9 +1966,9 @@ ml(`
                         errorsTable = new Tabulator("#errors_table", {
                             data:errorsTableData,
                             autoColumns:true,
+                            reactiveData:true,
                             layout:"fitColumns",
                             autoColumnsDefinitions:[
-                                {field:"type",visible:false},
                                 {title:"Filename",       field:"filename",
                                     formatter:function(cell, formatterParams, onRendered){
                                         //cell - the cell component
@@ -1943,7 +1978,7 @@ ml(`
                                     }
                                     
                                 }, 
-                                {title:"Message",        field:"text",widthGrow:6}, 
+                                {title:"Message",        field:"text",widthGrow:5}, 
                                 {title:"Line",           field:"row"}, 
                                 {title:"Column",         field:"column"}, 
                                 {field:"id",visible:false}
@@ -1964,24 +1999,14 @@ ml(`
                        
                         cb(errorsTable);
                         
-                    } else {
-                        
-                        errorsTable.clearData();
-                        errorsTable.updateOrAddData (errorsTableData).then(function(){
-                            cb(errorsTable);
-                        });
-                        
+                                
                     }
 
                 }
                 
                 function updateWarningsTable(cb) {
                     
-                    if (warningsTableData) {
-                        destroyTableData(warningsTableData);
-                    }
-                    
-                    warningsTableData = getWarningsTableData();
+                    getWarningsTableData();
                     
                     if (warningsTableData.length === 0) {
                         if (warningsTable) {
@@ -1998,6 +2023,7 @@ ml(`
                         
                         warningsTable = new Tabulator("#warnings_table", {
                             data:warningsTableData,
+                            reactiveData:true,
                             autoColumns:true,
                             layout:"fitColumns",
                             autoColumnsDefinitions:[
@@ -2011,7 +2037,7 @@ ml(`
                                     }
                                     
                                 }, 
-                                {title:"Message",        field:"text",widthGrow:6}, 
+                                {title:"Message",        field:"text",widthGrow:5}, 
                                 {title:"Line",           field:"row"}, 
                                 {title:"Column",         field:"column"}, 
                                 {field:"id",visible:false}
@@ -2032,44 +2058,24 @@ ml(`
                        
                         cb(warningsTable);
                         
-                    } else {
-                        
-                        warningsTable.clearData();
-                        warningsTable.updateOrAddData (warningsTableData).then(function(){
-                            cb(warningsTable);
-                        });
-                        
+                   
                     }
 
                 }
                 
                 function updateSearchTable(cb) {
                     
-                    if (searchResultsTableData) {
-                        destroyTableData(searchResultsTableData);
-                    }
+                    getSearchResultsTableData();
                     
-                    searchResultsTableData = getSearchResultsTableData();
-                    
-                    if (searchResultsTableData.length === 0) {
-                        if (searchResultsTable) {
-                            searchResultsTable.clearData();
-                            const el  = qs("#search_table");
-                            el.innerHTML= "";
-                            el.className= "";
-                            searchResultsTable = undefined;
-                        }
-                        return cb();
-                    }
-                    
+                   
                     if(!searchResultsTable) {
                         
                         searchResultsTable = new Tabulator("#search_table", {
                             data:searchResultsTableData,
+                            reactiveData:true,
                             autoColumns:true,
                             layout:"fitColumns",
                             autoColumnsDefinitions:[
-                                {title:"Error/Warning",  field:"type",}, 
                                 {title:"Filename",       field:"filename",
                                     formatter:function(cell, formatterParams, onRendered){
                                         //cell - the cell component
@@ -2079,7 +2085,7 @@ ml(`
                                     }
                                     
                                 }, 
-                                {title:"Message",        field:"text",widthGrow:6}, 
+                                {title:"Message",        field:"text",widthGrow:5}, 
                                 {title:"Line",           field:"row"}, 
                                 {title:"Column",         field:"column"}, 
                                 {field:"id",visible:false}
@@ -2100,13 +2106,7 @@ ml(`
                        
                         cb(searchResultsTable);
                         
-                    } else {
-                        
-                        searchResultsTable.clearData();
-                        searchResultsTable.updateOrAddData (searchResultsTableData).then(function(){
-                            cb(searchResultsTable);
-                        });
-                        
+
                     }
 
                 }
