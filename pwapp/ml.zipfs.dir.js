@@ -3185,7 +3185,7 @@ ml(`
                     const ends = offset + file.text.length;
                     if (index >=offset && index<ends) {
                         index -=offset; 
-                        const lines = file.text.substr(0,index);
+                        const lines = file.text.substr(0,index).split("\n");
                         const line = lines.length;
                         const column = lines.pop().length+1;
                         lines.splice(0,lines.length);
