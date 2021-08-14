@@ -3232,7 +3232,6 @@ ml(`
                             const prev = files [ filename ];
                             if ( prev ) {
                                 
-                                  prev.search = prev.text[matchClause]();
                                 if (!prev.url) {
                                     prev.url = watchFile(filename,onWatchedFile);
                                 }
@@ -3243,7 +3242,6 @@ ml(`
                                 getFile ( filename, function() {
                                     
                                     const newfile  = files [ filename ];
-                                    newfile.search = newfile.text[matchClause]();
                                     newfile.url = watchFile(filename,onWatchedFile);
                                     changed = true;
                                     loop(index+1);
