@@ -49,8 +49,8 @@
             },
             
             "https://jonathan-annett.github.io/pwapp/tabulator" : {
-                "alias_root" : "/tabulator-4.9.3",
-                "zips" : [ "https://github.com/olifolkerd/tabulator/archive/refs/tags/4.9.3.zip" ]
+                "alias_root" : "/tabulator-master",
+                "zips" : [ "https://jonathan-annett.github.io/pwapp/tabulator-master.zip" ]
             },
 
             "https://jonathan-annett.github.io/pwapp/fontawesome" : {
