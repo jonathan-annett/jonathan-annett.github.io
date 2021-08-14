@@ -566,7 +566,7 @@ ml(`
                             searchResults[filename].column;
                             delete searchResults[filename];
                         });
-                        if (term.trim().length>0) {
+                        if (term.trim().length>3) {
                             searchForTerm.func(
                                 filteredFilesList,term,
                                 ignoreCase,cb
