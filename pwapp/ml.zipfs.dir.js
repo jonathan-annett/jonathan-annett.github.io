@@ -1892,23 +1892,17 @@ ml(`
                 }
                 
                 function getSearchResultsTableData(data) {
-                   let index = 0;
-                   
-                   const filtering = false;//filesBeingEdited.length > 0;
-
-                   Object.keys(searchResults).forEach(function(filename){
-                       if (filtering && filesBeingEdited.indexOf(filename)<0) {
-                           return;
-                       }
-                       searchResults[filename].forEach(function(res){
+                  if (data) { 
+                      
+                      data.forEach(function(res,index){
                            
                            if (index < searchResultsTableData.length) {
                                 const row = searchResultsTableData[index];
                                 if (row.text!==res.text) {
                                     row.text = res.text;
                                 }
-                                if (row.filename!== filename) {
-                                    row.filename =  filename;
+                                if (row.filename!== res.filename) {
+                                    row.filename =  res.filename;
                                 }
                                 if (row.line!==res.line) {
                                     row.line = res.line;
@@ -1917,14 +1911,21 @@ ml(`
                                     row.column = res.column;
                                 }
                            } else {
-                                searchResultsTableData.push({text:res.text,filename:filename,line:res.line,column:res.column});
+                                searchResultsTableData.push({text:res.text,filename:res.filename,line:res.line,column:res.column});
                            }
-                           index++;
-                       });
-                   });
-                   if (searchResultsTableData.length>index ) {
-                       searchResultsTableData.splice(index,searchResultsTableData.length);
-                   }
+                           delete res.text;
+                           delete res.filename;
+                           delete res.line;
+                           delete res.column;
+                     });
+                   
+                      if (searchResultsTableData.length>data.length ) {
+                          searchResultsTableData.splice(data.length,searchResultsTableData.length);
+                      }
+                      
+                      data.splice(0,data.length);
+                      
+                  }
                 }
                 
                
