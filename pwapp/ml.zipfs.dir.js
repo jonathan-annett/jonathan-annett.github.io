@@ -3175,7 +3175,7 @@ ml(`
                         lines.splice(0,lines.length);
                         return {
                             filename : file.filename,
-                            text     : text.substr(-64) + file.text(index,64),
+                            text     : text.substr(-64) + file.text.substr(index,64),
                             index    : index,
                             line     : line,
                             column   : column
