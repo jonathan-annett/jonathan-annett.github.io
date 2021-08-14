@@ -3170,10 +3170,12 @@ ml(`
                         index -=offset; 
                         const lines = file.text.substr(0,index).split("\n");
                         const line = lines.length;
-                        const column = lines.pop().length+1;
+                        const text = lines.pop();
+                        const column = text.length+1;
                         lines.splice(0,lines.length);
                         return {
                             filename : file.filename,
+                            text     : text.substr(-64) + file.text(index,64),
                             index    : index,
                             line     : line,
                             column   : column
