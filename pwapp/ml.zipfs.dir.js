@@ -3338,8 +3338,12 @@ ml(`
                     
                     let running = setInterval(looper,100);
                     
+                    
+                    return true;
+                    
                     function looper(){
                         if (data.terminated) {
+                            console.log("terminated");
                             clearInterval(running);
                             str = null;
                             running = undefined;
@@ -3352,19 +3356,15 @@ ml(`
                         }
                         
                         if (data.term) {
-                            clearInterval(running);
-                            running = undefined;
+                            console.log("searching for:",data.term);
                             cb(bigStringSearch(str,data.term));
                             delete data.term;
-                            if (!data.terminated) {
-                                running = setInterval(looper,100);
-                            }
                         }
                     }
                     
-                    function bigStringSearch(str,term){
+                    function bigStringSearch(str,term) {
                         const termLength = term.length;
-                        const splits   = str.split(term) ;
+                        const splits   = str.split(term);
                         if (splits.length===1) {
                             splits.splice(0,splits.length);
                             return [];
@@ -3376,7 +3376,6 @@ ml(`
                     }
                     
                 }
-            
             
             }
             
