@@ -3174,7 +3174,7 @@ ml(`
             
             function getBigString(files){
                 const keys = Object.keys(files).sort();
-                return keys.map(function(k){ return files[k].text;});
+                return keys.map(function(k){ return files[k].text;}).join('');
             }
             
             function getFileFrom(files,index) {
@@ -3215,11 +3215,13 @@ ml(`
                 function getSearchText(needed,matchClause,cb) {
                     
                     Object.keys(files).forEach(function(filename){
+                        
                         if (needed.indexOf(filename)<0){
                             delete files[filename].text;
                             delete files[filename].filename;
                             delete files[filename];
                         }
+                        
                     });
                     
                     loop(0);
