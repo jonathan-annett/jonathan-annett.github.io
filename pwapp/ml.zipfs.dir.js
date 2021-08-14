@@ -486,7 +486,7 @@ ml(`
                 function addSearchTermFunc(ed_term) {
                     const ignoreCase = qs("#search_case");
                     
-                    addDelayedEditCallback(ed_term,seachTextChanged,0);
+                    addDelayedEditCallback(ed_term,seachTextChanged,250);
                     
                     ignoreCase.onclick = function(){
                         seachTextChanged(ed_term.value);
