@@ -3370,17 +3370,16 @@ ml(`
                         const termLength = term.length;
                         const splits   = str.split(term);
                         if (splits.length===1) {
-                            splits.splice(0,splits.length);
-                            return [];
+                            splits.splice(0,1);
+                            return splits;
                         }
-                        let offset = 0;
-                        const indexes = splits.map (function(str){ 
-                            let result = offset+str.length; 
-                            offset += termLength ;
-                            return result;
-                        });
-                        splits.splice(0,splits.length);
-                        return indexes;
+                        let offset = 0, len = splits.length, ix;
+                        for (ix = 0; ix < len ; ix ++) {
+                           let end = offset + splits[ix].length;
+                           splits[ix] = end;
+                           offset = end+termLength;
+                        }
+                        return splits;
                     }
                     
                 }
