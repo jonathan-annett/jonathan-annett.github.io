@@ -49,7 +49,7 @@
             },
             
             "https://jonathan-annett.github.io/pwapp/tabulator" : {
-                "alias_root" : "/tabulator-master",
+                "alias_root" : "/tabulator-4.9.3",
                 "zips" : [ "https://github.com/olifolkerd/tabulator/archive/refs/tags/4.9.3.zip" ]
             },
 
