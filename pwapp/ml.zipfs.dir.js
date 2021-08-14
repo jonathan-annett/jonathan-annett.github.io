@@ -554,7 +554,7 @@ ml(`
                     if (searchForTerm.func) {
                         startSearch();
                     } else {
-                         searchForTerm.func = searchWorkerFGFunction(getFileForSearchWorker,watchFile,unwatchFile);
+                         searchForTerm.func = /*searchWorkerFGFunction*/bigStringFGThread(getFileForSearchWorker,watchFile,unwatchFile);
                          startSearch();
                     }
  
@@ -792,6 +792,7 @@ ml(`
                 function addOpenZipViewClick (el) {
                     el.addEventListener("click",openZipBtnClick);
                 }
+                
                 function addThemeSelectionClick (el) {
                     el.addEventListener("mousedown",preventDefaults);
                     el.addEventListener("mouseup",preventDefaults);
@@ -3171,6 +3172,233 @@ ml(`
             }
             
             
+            function getBigString(files){
+                const keys = Object.keys(files).sort();
+                return keys.map(function(k){ return files[k].text;});
+            }
+            
+            function getFileFrom(files,index) {
+                const keys = Object.keys(files).sort();
+                let offset = 0;
+                for (var i = 0; i<files.length;i++) {
+                    const file = files[i];
+                    const ends = offset + files.text.length;
+                    if (index >=offset && index<ends) {
+                        index -=offset; 
+                        const lines = file.text.substr(0,index);
+                        const line = lines.length;
+                        const column = lines.pop().length+1;
+                        lines.splice(0,lines.length);
+                        return {
+                            filename : file.filename,
+                            index    : index,
+                            line     : line,
+                            column   : column
+                        };
+                    }
+                    offset = ends;
+                }
+            }
+            
+           
+            
+            function bigStringFGThread(getSearchFile,watchFile,unwatchFile) {
+                
+                const searcher = createBGFunction(bigStringBGThread);
+                let   searcherWrk;
+                let files = {},watched={};
+                let clearCacheTimeout;
+                let CB;
+                let changed = false;
+                return doSearch;
+              
+                function getSearchText(needed,matchClause,cb) {
+                    
+                    Object.keys(files).forEach(function(filename){
+                        if (needed.indexOf(filename)<0){
+                            delete files[filename].text;
+                            delete files[filename].filename;
+                            delete files[filename];
+                        }
+                    });
+                    
+                    loop(0);
+                    
+                    function loop(index) {
+                        
+                        if (index < needed.length) {
+                            
+                            const filename = needed[index];
+                            const prev = files [ filename ];
+                            if ( prev ) {
+                                
+                                  prev.search = prev.text[matchClause]();
+                                if (!prev.url) {
+                                    prev.url = watchFile(filename,onWatchedFile);
+                                }
+                                loop(index+1);
+                                
+                            } else {
+                                
+                                getFile ( filename, function() {
+                                    
+                                    const newfile  = files [ filename ];
+                                    newfile.search = newfile.text[matchClause]();
+                                    newfile.url = watchFile(filename,onWatchedFile);
+                                    changed = true;
+                                    loop(index+1);
+                                    
+                                } );
+                                
+                            }
+                            
+                        } else {
+                            cb();
+                        }
+                    }
+                    
+                }
+                
+                function doSearch(file_list,searchTerm,ignoreCase,cb) {
+                   if (clearCacheTimeout) {
+                       clearTimeout(clearCacheTimeout);
+                       clearCacheTimeout = undefined;
+                   }
+                   const args = {};
+                   args.term = ignoreCase ? searchTerm.toLowerCase() : searchTerm;
+
+                   getSearchText ( file_list, args.matchClause, function(  ) {
+
+                        CB=cb;
+                        
+                        if (searcherWrk) {
+                            
+                            if (changed) {
+                                const str = getBigString(files);
+                                args.str  = ignoreCase ? str.toLowerCase() : str;
+                            }
+                            
+                            searcherWrk.postMessage(args);
+                            
+                        } else {
+                            
+                            const str = getBigString(files);
+                            args.str  = ignoreCase ? str.toLowerCase() : str;
+                            
+                            searcherWrk = searcher(
+                                  args, 
+                                  function(results) {
+                                      
+                                      if (CB) {
+                                          CB(results.map(function(index){ return getFileFrom(files,index); }));
+                                          CB = null; 
+                                      }
+                                      changed = false;
+                                  }
+                            );
+                            
+                        }
+                        
+                        
+        
+                    });
+
+                }
+                
+                function clearCache() {
+                    Object.keys(watched).forEach(function(url){
+                       const filename = watched[url];
+                       console.log("unwatching",filename);
+                       unwatchFile(filename,onWatchedFile);
+                       delete watched[url];
+                    });
+                    Object.keys(files).forEach(function(filename){
+                        console.log("releasing cached:",filename);
+                        delete files[filename].text;
+                        delete files[filename].filename;
+                        delete files[filename];
+                    });
+                }
+                
+                function onWatchedFile(cmd,file_url,text) {
+                    const filename = watched[file_url];
+                    if (filename && files [ filename ]) {
+                        files [ filename ].text = text;
+                        changed = true;
+                    }
+                }
+                
+                function getFile(filename,cb) {
+                    
+                    if (files[filename] && !files[filename]) return cb ();
+                    
+                    getSearchFile(filename,function(err,text,isOpen){
+                        if (err) return;
+                        
+                        files [ filename ] = {
+                            filename : filename,
+                            text     : text
+                        };
+                        
+                        
+                        cb();
+                    });
+                    
+                }
+                
+                function bigStringBGThread(data,cb) {
+                    
+                    let str = data.str;
+                    delete data.str;
+                    cb(bigStringSearch(str,data.term));
+                    delete data.term;
+                    
+                    let running = setInterval(looper,100);
+                    
+                    function looper(){
+                        if (data.terminated) {
+                            clearInterval(running);
+                            str = null;
+                            running = undefined;
+                            return;
+                        }
+                        if (data.str) {
+                            str = null;
+                            str = data.str;
+                            delete data.str;
+                        }
+                        
+                        if (data.term) {
+                            clearInterval(running);
+                            running = undefined;
+                            cb(bigStringSearch(str,data.term));
+                            delete data.term;
+                            if (!data.terminated) {
+                                running = setInterval(looper,100);
+                            }
+                        }
+                    }
+                    
+                    
+                    function bigStringSearch(str,term){
+                        const termLength = term.length;
+                        const splits   = str.split(term) ;
+                        if (splits.length===1) {
+                            splits.splice(0,splits.length);
+                            return [];
+                        }
+                        let offset = 0;
+                        const indexes = splits.map (function(str){ const result = offset+str.length; offset += termLength ;return result;});
+                        splits.splice(0,splits.length);
+                        return indexes;
+                    }
+                }
+            
+            
+            }
+            
+            
+            
             function searchWorkerFGFunction(getSearchFile,watchFile,unwatchFile) {
                 
                 const searcher = createBGFunction(searchWorkerBGFunc,250);
@@ -3214,7 +3442,7 @@ ml(`
                                 
                                 getFile ( filename, function(){
                                     
-                                    const newfile = files [ filename ];
+                                    const newfile  = files [ filename ];
                                     newfile.search = newfile.text[matchClause]();
                                     newfile.url = watchFile(filename,onWatchedFile);
                                     results.push(newfile);
@@ -3491,6 +3719,8 @@ ml(`
                     console.log("posting", data);
 
                     worker.postMessage(data);
+                    
+                    return worker;
 
                 }
 
