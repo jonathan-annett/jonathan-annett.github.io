@@ -3374,7 +3374,11 @@ ml(`
                             return [];
                         }
                         let offset = 0;
-                        const indexes = splits.map (function(str){ const result = offset+str.length; offset += termLength ;return result;});
+                        const indexes = splits.map (function(str){ 
+                            let result = offset+str.length; 
+                            offset += termLength ;
+                            return result;
+                        });
                         splits.splice(0,splits.length);
                         return indexes;
                     }
