@@ -1856,8 +1856,8 @@ ml(`
                                 if (row.text!==err.text) {
                                     row.text = err.text;
                                 }
-                                if (row.filename!==err.filename) {
-                                    row.filename = err.filename;
+                                if (row.filename!==filename) {
+                                    row.filename = filename;
                                 }
                                 if (row.line!==err.row+1) {
                                     row.line = err.row+1;
@@ -1892,8 +1892,8 @@ ml(`
                                 if (row.text!==err.text) {
                                     row.text = err.text;
                                 }
-                                if (row.filename!==err.filename) {
-                                    row.filename = err.filename;
+                                if (row.filename!== filename) {
+                                    row.filename =  filename;
                                 }
                                 if (row.line!==err.row+1) {
                                     row.line = err.row+1;
@@ -1928,8 +1928,8 @@ ml(`
                                 if (row.text!==res.text) {
                                     row.text = res.text;
                                 }
-                                if (row.filename!==res.filename) {
-                                    row.filename = res.filename;
+                                if (row.filename!== filename) {
+                                    row.filename =  filename;
                                 }
                                 if (row.line!==res.line) {
                                     row.line = res.line;
