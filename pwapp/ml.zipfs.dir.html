@@ -186,7 +186,27 @@
   </main>
   <div class="grab_bar" id="footer_grab"></div>
   <footer>
-    <div id="errors_table"></div>  
+    <div class="tab-wrapper">
+      <div class="tabs">
+        <div class="tab">
+          <input type="radio" name="css-tabs" id="tab-1" checked class="tab-switch">
+          <label for="tab-1" class="tab-label">Errors</label>
+          <div id="errors_table"></div> 
+        </div>
+        <div class="tab">
+          <input type="radio" name="css-tabs" id="tab-2" class="tab-switch">
+          <label for="tab-2" class="tab-label">Warnings</label>
+          <div id="warnings_table"></div> 
+        </div>
+        <div class="tab">
+          <input type="radio" name="css-tabs" id="tab-3" class="tab-switch">
+          <label for="tab-3" class="tab-label">Search</label>
+          <div id="search_table"></div> 
+        </div>
+      </div>
+    </div>  
+      
+     
     <div id="drop-area">
       <form class="drop-file-form">
         <p>Add files by dropping them on the dashed region</p>
