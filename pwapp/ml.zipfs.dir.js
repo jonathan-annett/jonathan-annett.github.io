@@ -3277,7 +3277,8 @@ ml(`
                                   function(results) {
                                       
                                       if (CB) {
-                                          CB(results.map(function(index){ return getFileFrom(files,index); }));
+                                          const file_results = results.map(function(index){ return getFileFrom(files,index); });
+                                          CB(file_results);
                                           CB = null; 
                                       }
                                       changed = false;
