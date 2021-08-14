@@ -496,6 +496,7 @@ ml(`
                         qs("#tab-3").checked=true;
                         searchForTerm(value,ignoreCase.checked,function(results){
                                if (results) {
+                                   console.log(results);
                                    updateSearchTable(results,function(){
                                        
                                    });
@@ -544,10 +545,9 @@ ml(`
  
                     function startSearch() {
                         if (term.trim().length>3) {
-                            searchForTerm.func(
-                                filteredFilesList,term,
-                                ignoreCase,cb
-                            );
+                            
+                            searchForTerm.func( filteredFilesList,term,ignoreCase,cb);
+                            
                         } else {
                             cb();
                         }
@@ -3362,7 +3362,6 @@ ml(`
                         }
                     }
                     
-                    
                     function bigStringSearch(str,term){
                         const termLength = term.length;
                         const splits   = str.split(term) ;
@@ -3375,6 +3374,7 @@ ml(`
                         splits.splice(0,splits.length);
                         return indexes;
                     }
+                    
                 }
             
             
