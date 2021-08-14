@@ -50,7 +50,7 @@
             
             "https://jonathan-annett.github.io/pwapp/tabulator" : {
                 "alias_root" : "/tabulator-master",
-                "zips" : [ "https://jonathan-annett.github.io/pwapp/tabulator-master.zip" ]
+                "zips" : [ "https://github.com/olifolkerd/tabulator/archive/refs/tags/4.9.3.zip" ]
             },
 
             "https://jonathan-annett.github.io/pwapp/fontawesome" : {
