@@ -318,7 +318,14 @@ ml(`
                     });
                     
                     addFilterEditorFunc(qs("#filename_filter"));
-                    addSearchTermFunc(qs("#search_text"));
+                    
+                    qs("#search_text",function(edit){
+                        addSearchTermFunc(edit);
+                        edit.onfocus=function(){
+                           qs("#tab-3").checked=true;  
+                        };
+                    });
+                    
 
                     
                      
