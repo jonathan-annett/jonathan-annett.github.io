@@ -3380,6 +3380,7 @@ ml(`
                            splits[ix] = end;
                            offset = end+termLength;
                         }
+                        splits.pop();
                         return splits;
                     }
                     
