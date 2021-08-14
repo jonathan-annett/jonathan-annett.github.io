@@ -3343,8 +3343,21 @@ ml(`
                              if (ix>=0){
                                  const lines      = fs.text.substr(0,ix).split("\n");
                                  const lineText   = lines.pop();
-                                 const nextLine   = fs.text.substr(ix+termLength).replace(/\n.*/,'');
-                                 fs.results=[{text:lineText+ searchTerm+nextLine,line:lines.length+1, column:lineText.length}];
+                                 let context_start = ix < 64 ? 0 : ix-64;
+                                 let contextText =  fs.text.substr(context_start,128);
+                                 while (context_start>0 && !/^\s/.test(contextText) ) {
+                                     context_start--;
+                                     contextText =  fs.text.substr(context_start,128);
+                                 }
+                                 
+                                 let context_end = context_start+128 < fs.text.length ? context_start+128 : fs.text.length;
+                                 contextText = fs.text.substring(context_start,context_end);
+                                 while (context_end > ix + termLength && !/\s$/.test(contextText) ) {
+                                     context_end--;
+                                     contextText = fs.text.substring(context_start,context_end);
+                                 }
+                                 
+                                 fs.results=[{text:contextText,line:lines.length+1, column:lineText.length}];
                                  send({filename:fs.filename,results:fs.results});
                                  lines.splice(0,lines.length);
                                  fs.last = fs.search.lastIndexOf(matchTerm);
