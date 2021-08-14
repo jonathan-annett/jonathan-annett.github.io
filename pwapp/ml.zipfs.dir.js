@@ -495,13 +495,9 @@ ml(`
                     function seachTextChanged(value){
                         qs("#tab-3").checked=true;
                         searchForTerm(value,ignoreCase.checked,function(results){
-                               if (results) {
-                                   console.log(results);
-                                   updateSearchTable(results,function(){
-                                       
-                                   });
-                               }
-                            
+                           updateSearchTable(results||[],function(){
+                               
+                           });
                         });
                     }
                     
@@ -3342,7 +3338,6 @@ ml(`
                     delete data.term;
                     
                     let running = setInterval(looper,100);
-                    
                     
                     return true;
                     
