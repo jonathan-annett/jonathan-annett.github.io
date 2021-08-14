@@ -3180,9 +3180,9 @@ ml(`
             function getFileFrom(files,index) {
                 const keys = Object.keys(files).sort();
                 let offset = 0;
-                for (var i = 0; i<files.length;i++) {
-                    const file = files[i];
-                    const ends = offset + files.text.length;
+                for (var i = 0; i<keys.length;i++) {
+                    const file = files[ keys[i] ];
+                    const ends = offset + file.text.length;
                     if (index >=offset && index<ends) {
                         index -=offset; 
                         const lines = file.text.substr(0,index);
