@@ -1950,17 +1950,6 @@ ml(`
                     
                     getErrorTableData();
                     
-                    if (errorsTableData.length === 0) {
-                        if (errorsTable) {
-                            errorsTable.clearData();
-                            const el  = qs("#errors_table");
-                            el.innerHTML= "";
-                            el.className= "";
-                            errorsTable = undefined;
-                        }
-                        return cb();
-                    }
-                    
                     if(!errorsTable) {
                         
                         errorsTable = new Tabulator("#errors_table", {
@@ -1991,15 +1980,13 @@ ml(`
                                    row._row.data.column,
                                    function(err){
                                        if (err) console.log(err);
-                                });
-                               
-                              
+                                   }
+                               );
                             }
                         });
                        
                         cb(errorsTable);
-                        
-                                
+
                     }
 
                 }
@@ -2008,16 +1995,6 @@ ml(`
                     
                     getWarningsTableData();
                     
-                    if (warningsTableData.length === 0) {
-                        if (warningsTable) {
-                            warningsTable.clearData();
-                            const el  = qs("#warnings_table");
-                            el.innerHTML= "";
-                            el.className= "";
-                            warningsTable = undefined;
-                        }
-                        return cb();
-                    }
                     
                     if(!warningsTable) {
                         
@@ -2050,9 +2027,8 @@ ml(`
                                    row._row.data.column,
                                    function(err){
                                        if (err) console.log(err);
-                                });
-                               
-                              
+                                   }
+                               );
                             }
                         });
                        
