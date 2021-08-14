@@ -3156,21 +3156,23 @@ ml(`
             
             
             function getBigString(files){
-                const keys = Object.keys(files).sort();
+                const keys = Object.keys(files);
+                keys.sort();
                 return keys.map(function(k){ return files[k].text;}).join('');
             }
             
             function getFileFrom(files,index) {
-                const keys = Object.keys(files).sort();
+                const keys = Object.keys(files);
+                keys.sort();
                 let offset = 0;
                 for (var i = 0; i<keys.length;i++) {
-                    const file = files[ keys[i] ];
-                    const ends = offset + file.text.length;
-                    if (index >=offset && index<ends) {
+                    let file = files[ keys[i] ];
+                    let ends = offset + file.text.length;
+                    if ( (index >=offset) && (index<ends) ) {
                         index -=offset; 
-                        const lines = file.text.substr(0,index).split("\n");
-                        const line = lines.length;
-                        const text = lines.pop();
+                        const lines  = file.text.substr(0,index).split("\n");
+                        const line   = lines.length;
+                        const text   = lines.pop();
                         const column = text.length+1;
                         lines.splice(0,lines.length);
                         return {
@@ -3190,7 +3192,7 @@ ml(`
             function bigStringFGThread(getSearchFile,watchFile,unwatchFile) {
                 
                 const searcher = createBGFunction(bigStringBGThread);
-                let   searcherWrk;
+                let searcherWrk;
                 let files = {},watched={};
                 let clearCacheTimeout;
                 let CB;
