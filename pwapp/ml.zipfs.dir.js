@@ -527,7 +527,7 @@ ml(`
                         if (term.trim().length>3) {
                             searchForTerm.func( filteredFilesList,term,ignoreCase,cb);
                         } else {
-                            cb();
+                            cb([]);
                         }
                     }
                     
