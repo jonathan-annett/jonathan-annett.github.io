@@ -498,6 +498,10 @@ ml(`
                     function seachTextChanged(value){
                         qs("#tab-3").checked=true;
                         searchForTerm(value,ignoreCase.checked,function(results){
+                           console.log("got",results.length,"search results");
+                           if (results.length > 50) {
+                               results.splice(50,results.length);
+                           }
                            updateSearchTable(results||[],function(){
                                
                            });
