@@ -535,7 +535,7 @@ ml(`
                     if (searchForTerm.func) {
                         startSearch();
                     } else {
-                         searchForTerm.func = /*searchWorkerFGFunction*/bigStringFGThread(getFileForSearchWorker,watchFile,unwatchFile);
+                         searchForTerm.func = getSearchFunction(getFileForSearchWorker,watchFile,unwatchFile);
                          startSearch();
                     }
  
@@ -3151,41 +3151,13 @@ ml(`
             }
             
             
-            function getBigString(files){
-                const keys = Object.keys(files);
-                keys.sort();
-                return keys.map(function(k){ return files[k].text;}).join('');
-            }
-            
-            function getFileFrom(files,index) {
-                const keys = Object.keys(files);
-                keys.sort();
-                let offset = 0;
-                for (var i = 0; i<keys.length;i++) {
-                    let file = files[ keys[i] ];
-                    let ends = offset + file.text.length;
-                    if ( (index >=offset) && (index<ends) ) {
-                        index -=offset; 
-                        const lines  = file.text.substr(0,index).split("\n");
-                        const line   = lines.length;
-                        const text   = lines.pop();
-                        const column = text.length+1;
-                        lines.splice(0,lines.length);
-                        return {
-                            filename : file.filename,
-                            text     : text.substr(-64) + file.text.substr(index,64),
-                            index    : index,
-                            line     : line,
-                            column   : column
-                        };
-                    }
-                    offset = ends;
-                }
-            }
-            
            
-            
-            function bigStringFGThread(getSearchFile,watchFile,unwatchFile) {
+           
+            //getSearchFunction() returns a function to handle searching for freeform text 
+            // the function returned is:  function(file_list,searchTerm,ignoreCase,cb)
+            // where file_list is a list of filenames to search in
+            // and cb is a callback the accepts and array of search results
+            function getSearchFunction(getSearchFile,watchFile,unwatchFile) {
                 
                 const searcher = createBGFunction(bigStringBGThread);
                 let searcherWrk;
@@ -3195,7 +3167,8 @@ ml(`
                 let changed = false;
                 var started_at;
                 const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
-                 return doSearch;
+                 
+                return doSearch;
               
                 function getSearchText(needed,matchClause,cb) {
                     
@@ -3260,7 +3233,7 @@ ml(`
                         if (searcherWrk) {
                             
                             if (changed) {
-                                const str = getBigString(files);
+                                const str = getSearchStringContext(files);
                                 args.str  = ignoreCase ? str.toLowerCase() : str;
                             }
                             
@@ -3268,7 +3241,7 @@ ml(`
                             
                         } else {
                             
-                            const str = getBigString(files);
+                            const str = getSearchStringContext(files);
                             args.str  = ignoreCase ? str.toLowerCase() : str;
                             
                             searcherWrk = searcher(
@@ -3276,7 +3249,8 @@ ml(`
                                   function(results) {
                                       const arrived_at = getMsec();
                                       if (CB) {
-                                          const file_results = results.map(function(index){ return getFileFrom(files,index); });
+                                          const file_results = getFileResults(files,results);
+                                          //const file_results = results.map(function(index){ return resultFileEntry(files,index); });
                                           const mapped_at = getMsec();
                                           CB(file_results);
                                           const cbcomplete_at = getMsec();
@@ -3385,264 +3359,76 @@ ml(`
                     }
                     
                 }
-            
-            }
-            
-            
-            
-            function searchWorkerFGFunction(getSearchFile,watchFile,unwatchFile) {
                 
-                const searcher = createBGFunction(searchWorkerBGFunc,250);
-                let files = {},watched={};
-                const args = {  };
-                let clearCacheTimeout;
+                function getSearchStringContext(files){
+                    // returns a single string representing all files. yes really.
+                    const keys = Object.keys(files);
+                    keys.sort();
+                    const content = keys.map(function(k){ return files[k].text;});
+                    const result = content.join('');
+                    keys.splice(0,keys.splice);//expedite garbage collection
+                    content.splice(0,content.length);//expedite garbage collection
+                    return result;
+                }
                 
-                return doSearch;
-              
-                function getSearchText(needed,matchClause,cb) {
-                    
-                    const results = [];
-                    loop(0);
-                    
-                    function loop(index) {
-                        
-                        if (index < needed.length) {
-                            
-                            const filename = needed[index];
-                            const prev = files [ filename ];
-                            if ( prev ) {
-                                
-                                if (prev.results) {
-                                    prev.results.forEach(function(x){
-                                        delete x.text;
-                                        delete x.line;
-                                        delete x.column;
-                                    });
-                                    prev.results.splice(0,prev.results.length);
-                                    delete prev.results;
-                                }
-                                delete prev.search;
-                                prev.search = prev.text[matchClause]();
-                                if (!prev.url) {
-                                    prev.url = watchFile(filename,onWatchedFile);
-                                }
-                                results.push(prev);
-                                loop(index+1);
-                                
-                            } else {
-                                
-                                getFile ( filename, function(){
-                                    
-                                    const newfile  = files [ filename ];
-                                    newfile.search = newfile.text[matchClause]();
-                                    newfile.url = watchFile(filename,onWatchedFile);
-                                    results.push(newfile);
-                                    loop(index+1);
-                                    
-                                } );
-                                
-                            }
-                            
-                        } else {
-                            cb(results);
+                function resultFileEntry(files,index) {
+                    const keys = Object.keys(files);
+                    keys.sort();
+                    let offset = 0;
+                    for (var i = 0; i<keys.length;i++) {
+                        let file = files[ keys[i] ];
+                        let ends = offset + file.text.length;
+                        if ( (index >=offset) && (index<ends) ) {
+                            index -=offset; 
+                            const lines  = file.text.substr(0,index).split("\n");
+                            const line   = lines.length;
+                            const text   = lines.pop();
+                            const column = text.length+1;
+                            lines.splice(0,lines.length);
+                            keys.splice(0,keys.splice);//expedite garbage collection
+                            return {
+                                filename : file.filename,
+                                text     : text.substr(-64) + file.text.substr(index,64),
+                                line     : line,
+                                column   : column
+                            };
                         }
-                    }
-                    
-                }
-                
-                function doSearch(files,searchTerm,ignoreCase,cb) {
-                   if (clearCacheTimeout) {
-                       clearTimeout(clearCacheTimeout);
-                       clearCacheTimeout = undefined;
-                   }
-                   args.matchClause = ignoreCase ? "toLowerCase" : "slice";
-                   args.searchTerm  = searchTerm;
-                   args.termLength  = searchTerm.length;
-                   if (args.termLength===0) {
-                       clearCacheTimeout = setTimeout(clearCache,30*1000);
-                       return cb();
-                   }
-                   
-                   
-                   getSearchText ( files, args.matchClause, function( fileset ) {
-                       
-                        args.fileset = fileset;
-                        
-                        searcher(
-                            args,
-                            function(data) {
-                                if (!data) {
-                                    clearCacheTimeout = setTimeout(clearCache,30*1000);
-                                }
-                                cb(data);
-                            }
-                        );
-        
-                    });
-
-                }
-                
-                function clearCache() {
-                    Object.keys(watched).forEach(function(url){
-                       const filename = watched[url];
-                       console.log("unwatching",filename);
-                       unwatchFile(filename,onWatchedFile);
-                       delete watched[url];
-                    });
-                    Object.keys(files).forEach(function(filename){
-                        console.log("releasing cached:",filename);
-                        delete files[filename].text;
-                        delete files[filename].filename;
-                        delete files[filename];
-                    });
-                }
-                
-                function onWatchedFile(cmd,file_url,text) {
-                    const filename = watched[file_url];
-                    if (filename && files [ filename ]) {
-                        files [ filename ].text = text;
+                        offset = ends;
                     }
                 }
                 
-                function getFile(filename,cb) {
+                function getFileResults(files,indexes) {
+                    const keys = Object.keys(files);
+                    keys.sort();
+                    const file_array = keys.map(function(key){ return files[key]});
+                    keys.splice(0,keys.length);
                     
-                    if (files[filename] && !files[filename]) return cb ();
-                    
-                    getSearchFile(filename,function(err,text,isOpen){
-                        if (err) return;
-                        
-                        files [ filename ] = {
-                            filename : filename,
-                            text     : text
+                    let offset = 0;
+                    let file = file_array.shift();
+                    for (let i = 0; i < indexes.length ; i++) {
+                        while (offset+file.text.length<indexes[i]) {
+                            offset += file.text.length;
+                            file = file_array.shift();
+                        }
+                        const index  = indexes[i] - offset; 
+                        const lines  = file.text.substr(0,index).split("\n");
+                        const line   = lines.length;
+                        const text   = lines.pop();
+                        const column = text.length+1;
+                        lines.splice(0,lines.length);
+                        indexes[i] = {
+                            filename : file.filename,
+                            text     : text.substr(-64) + file.text.substr(indexes[i],64),
+                            line     : line,
+                            column   : column
                         };
-                        
-                        
-                        cb();
-                    });
-                    
+                    }
+                    return indexes;
                 }
-                
-                function searchWorkerBGFunc (args,send) {
-    
-                       const { termLength, matchClause, searchTerm } = args;   
-                       
-                       const termPad   = new Array(termLength+1).join(String.fromCharCode(255));
-                       const matchTerm = searchTerm[matchClause]();
-                       args.found=0;
-                       pass1(0,function(){
-                           send();
-                       });
-                       
-                       
-                       return true;
-                       
-                       function pass1(index,cb) {
-                           if (index<args.fileset.length) {
-                             const fs = args.fileset[index];
-                             const ix = fs.search.indexOf(matchTerm);
-                             if (ix>=0){
-                                 const lines      = fs.text.substr(0,ix).split("\n");
-                                 const lineText   = lines.pop();
-                                 let context_start = ix < 64 ? 0 : ix-64;
-                                 let contextText =  fs.text.substr(context_start,128);
-                                 while (context_start>0 && !/^\s/.test(contextText) ) {
-                                     context_start--;
-                                     contextText =  fs.text.substr(context_start,128);
-                                 }
-                                 
-                                 let context_end = context_start+128 < fs.text.length ? context_start+128 : fs.text.length;
-                                 contextText = fs.text.substring(context_start,context_end);
-                                 while (context_end > ix + termLength && !/\s$/.test(contextText) ) {
-                                     context_end--;
-                                     contextText = fs.text.substring(context_start,context_end);
-                                 }
-                                 
-                                 fs.results=[{text:contextText,line:lines.length+1, column:lineText.length}];
-                                 send({filename:fs.filename,results:fs.results});
-                                 lines.splice(0,lines.length);
-                                 fs.last = fs.search.lastIndexOf(matchTerm);
-                                 args.found++;
-                                 if (ix < fs.last) {
-                                    fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
-                                 } else {
-                                     delete fs.search;
-                                     delete fs.last;
-                                     fs.results.splice(0,1);
-                                     delete fs.results;
-                                 }
-                                 
-                             } else {
-                                 delete fs.search;
-                             }
-                             if (args.terminated) {
-                                 return setTimeout(cb,10);
-                             }
-                             setTimeout(pass1,10,index+1,cb);
-                           } else {
-                               if (args.terminated) {
-                                   return setTimeout(cb,10);
-                               }
-                               if (args.found===0) {
-                                  setTimeout(cb,10); 
-                               } else {
-                                  args.found=0; 
-                                  setTimeout(pass2,10,0,cb);
-                               }
-                           }
-                       }
-                       
-                       function pass2(index,cb) {
-                           if (index<args.fileset.length) {
-                               const fs = args.fileset[index];
-                               let count = 10;
-                               // queue up to 10 results per file..
-                               while (fs.search && (count > 0)) {
-                                   const ix = fs.search.indexOf(matchTerm);
-                                   count--;
-                                   const lines      = fs.text.substr(0,ix).split("\n");
-                                   const lineText   = lines.pop();
-                                   const nextLine   = fs.text.substr(ix+termLength).replace(/\n.*/,'');
-                                   fs.results.push({text:lineText+ searchTerm+nextLine, line:lines.length+1, column:lineText.length});
-                                   lines.splice(0,lines.length);
-                                   args.found++;
-                                   if (ix < fs.last) {
-                                      fs.search = fs.search.substr(0,ix) + termPad + fs.search.substr(ix+termLength);
-                                   } else {
-                                       send({filename:fs.filename,results:fs.results});
-                                       delete fs.search;
-                                       delete fs.last;
-                                       fs.results.splice(0,fs.results.length);
-                                       delete fs.results;
-                                   }
-                               }
-                               
-                               if (fs.results) {
-                                  // if we didn't already do so,send the results for this file
-                                  send({filename:fs.filename,results:fs.results});
-                               }
-                               if (args.terminated) {
-                                   return setTimeout(cb,10);
-                               }
-                               setTimeout(pass2,10,index+1,cb);
-                           } else {
-                               if (args.terminated) {
-                                   return setTimeout(cb,10);
-                               }
-                               if (args.count===0) {
-                                  setTimeout(cb,10);
-                               } else {
-                                  args.count=0; 
-                                  setTimeout(pass2,10,0,cb);
-                               } 
-                           }
-                       }
-    
-                }
-
+            
             }
-
-           
-
+            
+            
             function createBGFunction(code, hysteresis) {
 
                 let src = "var handler="+ code.toString() +",\n"+
