@@ -516,7 +516,8 @@ ml(`
                     if (searchForTerm.func) {
                         startSearch();
                     } else {
-                         searchForTerm.func = getSearchFunction(getFileForSearchWorker,watchFile,unwatchFile);
+                         //searchForTerm.func = getSearchFunction(getFileForSearchWorker,watchFile,unwatchFile);
+                         searchForTerm.func = getSearchFunction2(dir);
                          startSearch();
                     }
                     
@@ -3184,7 +3185,6 @@ ml(`
                 let progress_total = 1;
                 let progrss_handler = progressHandler(progress_complete,progress_total,el);
                 
-                
                 const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
                  
                 return doSearch;
@@ -3341,87 +3341,6 @@ ml(`
                     
                 }
                 
-                function bigStringBGThread(args,cb) {
-                    
-                    let str;
-                    
-                    let total_msec=0;
-                    const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
-                    onmsg(args);
-                    
-                    return onmsg;
-                    
-                    function onmsg(args) {
-                        const started=getMsec();                        
-                        if (args.str) {
-                            str = args.str;
-                            delete args.str;
-                        }
-                        cb(bigStringSearch(str,args.term));
-                        delete args.term;
-                        const elapsed = Math.max(0,getMsec() - started);
-                        total_msec+=elapsed;
-                        //console.log("onmsg took",elapsed,'msec',"of",total_msec,"total");
-                        
-                    }
-                    
-                    
-                    
-                     function regexpEscape(str) {
-                       return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
-                     }
-                    
-                    function makeRegExp(str) {
-                       const splits = str.split(/\s/g);
-                       if (splits.length===1) {
-                          return new RegExp(regexpEscape(str),''); 
-                       }
-                       return new RegExp(splits.map(regexpEscape).join('\\s*'),'')
-                    }
-                                    
-                    
-                    function bigStringSearchViaRegexp(str,regexp) {
-                       const result = [];
-                       if (typeof regexp==='string') regexp = makeRegExp(regexp);
-                       let find = regexp.exec(str);
-                       let offset = 0;
-                       while (find) { 
-                          const xlen = find[0].length,ix=find.index; 
-                          offset += ix;
-                          result.push(offset);
-                          offset += xlen;
-                          str = str.substr(ix+xlen);
-                          find = regexp.exec(str);
-                       }
-                       return result;  
-                    }
-                    
-                    function bigStringSearch(str,term) {
-                        if (
-                            
-                            (typeof term==='string'&&/\s/.test(term)) ||
-                            (typeof term==='object'&&term.constructor===RegExp)
-                            
-                          ) return bigStringSearchViaRegexp(str,term);
-                          
-                        
-                        const termLength = term.length;
-                        const splits   = str.split(term);
-                        if (splits.length===1) {
-                            splits.splice(0,1);
-                            return splits;
-                        }
-                        let offset = 0, len = splits.length, ix;
-                        for (ix = 0; ix < len ; ix ++) {
-                           let end = offset + splits[ix].length;
-                           splits[ix] = end;
-                           offset = end+termLength;
-                        }
-                        splits.pop();
-                        return splits;
-                    }
-                    
-                }
                 
                 function js_commentWhiteout(str) {
                     
@@ -3552,6 +3471,244 @@ ml(`
                 }
             
             }
+            
+            
+            function getSearchFunction2(dir) {
+                
+                const searcher = createBGFunction(bigStringBGThread);
+                let searcherWrk;
+                let files = {},watched={};
+                let clearCacheTimeout;
+                let CB;
+                let changed = false;
+                let lastCase;
+                var started_at;
+                  
+                const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
+                 
+                return doSearch;
+            
+                function doSearch(file_list,searchTerm,ignoreCase,cb) {
+                   if (clearCacheTimeout) {
+                       clearTimeout(clearCacheTimeout);
+                       clearCacheTimeout = undefined;
+                   }
+                   started_at = getMsec();
+                   var args = {};
+                   args.term = ignoreCase ? searchTerm.toLowerCase() : searchTerm;
+                   args.dir = {
+                       url   : dir.url,
+                       zips  : dir.zips,
+                       files : dir.files
+                   };
+                   args.files = file_list;
+                   CB=cb;
+                   if (searcherWrk) {
+                        searcherWrk.postMessage(args);
+                   } else {
+                        searcherWrk = searcher(
+                              args, 
+                              function(results) {
+                                  const arrived_at = getMsec();
+                                  if (CB) {
+                                      getFileResults(files,results);
+                                      const mapped_at = getMsec();
+                                      CB(results);
+                                      const cbcomplete_at = getMsec();
+                                      CB = null; 
+                                      console.log("search roundtrip:",  cbcomplete_at - started_at,"msec");
+                                      console.log("search thread took:",arrived_at - started_at,"msec");
+                                      console.log("mapping took:",      mapped_at     - arrived_at,"msec");
+                                      console.log("ui callback took :", cbcomplete_at - mapped_at,"msec");
+                                  } else {
+                                      console.log("search roundtrip:",arrived_at- started_at,"msec");
+                                  }
+                                  changed = false;
+                                  
+                              }
+                        );
+                   }
+                }
+
+                // converts array of indexes to array of entries detailing which file the index occurs in
+                // also includes +/- 64 bytes of context (ie 128 bytes of context)
+                function getFileResults(files,indexes) {
+                    const keys = Object.keys(files);
+                    keys.sort();
+                    const file_array = keys.map(function(key){ return files[key]});
+                    keys.splice(0,keys.length);
+                    
+                    let offset = 0;
+                    let file = file_array.shift();
+                    for (let i = 0; i < indexes.length ; i++) {
+                        while (offset+file.text.length<indexes[i]) {
+                            offset += file.text.length;
+                            file    = file_array.shift();
+                        }
+                        const index  = indexes[i] - offset; 
+                        const lines  = file.text.substr(0,index).split("\n");
+                        const line   = lines.length;
+                        const text   = lines.pop();
+                        const nextLine = file.text.substr(index,file.text.substr(index).indexOf("\n"));
+                        
+                        const context = 
+                            // if trimming the start of a line, don't start halfway through a token
+                            (text.length < 64 ? text :  text.substr(-64).replace(/^[A-z0-9\_\$]*\s*/,'') ) + 
+                            
+                            // if trimming the end of a line, don't end halfway through a token
+                            (nextLine.length < 64 ? nextLine : nextLine.replace(/\s*[A-z0-9\_\$]*$/,'') );
+                        
+                        const column = text.length;
+                        lines.splice(0,lines.length);
+                        indexes[i] = {
+                            filename : file.filename,
+                            text     : context,
+                            line     : line,
+                            column   : column
+                        };
+                    }
+                }
+            
+            }
+            
+            function bigStringBGThread(args,cb) {
+                
+                let str;
+                let files_db;
+                
+                let total_msec=0;
+                const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
+                onmsg(args);
+                
+                return onmsg;
+                
+                function onmsg(args) {
+                    if (args.str) {
+                        str = args.str;
+                        delete args.str;
+                    }
+                    
+                    if (args.files && args.dir) {
+                        
+                        loadFilesDb(args.dir,args.files,function(db){
+                            delete args.dir;
+                            delete args.files;
+                            files_db = db;
+                            str = getSearchStringContext(files_db);
+                            if (args.term) {
+                                cb(bigStringSearch(str,args.term));
+                                delete args.term;
+                            }
+                        }); 
+                        
+                    } else {
+                    
+                        if (args.term) {
+                           cb(bigStringSearch(str,args.term));
+                           delete args.term;
+                        }
+                    
+                    }
+
+                }
+                
+                
+                
+                 function regexpEscape(str) {
+                   return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
+                 }
+                
+                function makeRegExp(str) {
+                   const splits = str.split(/\s/g);
+                   if (splits.length===1) {
+                      return new RegExp(regexpEscape(str),''); 
+                   }
+                   return new RegExp(splits.map(regexpEscape).join('\\s*'),'')
+                }
+                                
+                
+                function bigStringSearchViaRegexp(str,regexp) {
+                   const result = [];
+                   if (typeof regexp==='string') regexp = makeRegExp(regexp);
+                   let find = regexp.exec(str);
+                   let offset = 0;
+                   while (find) { 
+                      const xlen = find[0].length,ix=find.index; 
+                      offset += ix;
+                      result.push(offset);
+                      offset += xlen;
+                      str = str.substr(ix+xlen);
+                      find = regexp.exec(str);
+                   }
+                   return result;  
+                }
+                
+                function bigStringSearch(str,term) {
+                    if (
+                        
+                        (typeof term==='string'&&/\s/.test(term)) ||
+                        (typeof term==='object'&&term.constructor===RegExp)
+                        
+                      ) return bigStringSearchViaRegexp(str,term);
+                      
+                    
+                    const termLength = term.length;
+                    const splits   = str.split(term);
+                    if (splits.length===1) {
+                        splits.splice(0,1);
+                        return splits;
+                    }
+                    let offset = 0, len = splits.length, ix;
+                    for (ix = 0; ix < len ; ix ++) {
+                       let end = offset + splits[ix].length;
+                       splits[ix] = end;
+                       offset = end+termLength;
+                    }
+                    splits.pop();
+                    return splits;
+                }
+                
+                function loadFilesDb(dir,files,cb) {
+                    
+                    const urls = files.map(function(fn){
+                        const ix = dir.files[fn];
+                        if (ix>=0) return dir.zips[ix]+"/"+fn;
+                        return dir.url+fn;
+                    });
+                    
+                    const promises = urls.map(function(url){
+                       return new Promise(function(resolve){
+                               fetch(url).then(function(response){
+                                   response.text().then(resolve);
+                               });
+                        });
+                    });
+                    
+                    
+                    Promise.all(promises).then(function(texts){
+                        const db = {};
+                        texts.forEach(function(text,ix){
+                            const file = files[ix];
+                            db[file]={filename:file,text:text}
+                        });
+                        cb(db);
+                    });
+                    
+                }
+                
+                function getSearchStringContext(files){
+                    // returns a single string representing all files. yes really.
+                    const keys = Object.keys(files);
+                    keys.sort();
+                    const content = keys.map(function(k){ return files[k].text;});
+                    const result = content.join('');
+                    keys.splice(0,keys.splice);//expedite garbage collection
+                    content.splice(0,content.length);//expedite garbage collection
+                    return result;
+                }
+                
+            }
+            
             
           
             
