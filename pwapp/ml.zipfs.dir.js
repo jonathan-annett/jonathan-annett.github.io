@@ -1,4 +1,4 @@
-/* global ace*/
+/* global ace,performance*/
 
 
 /* global ml,qs, self,BroadcastChannel,ResizeObserver  */
@@ -3330,36 +3330,27 @@ ml(`
                     
                 }
                 
-                function bigStringBGThread(data,cb) {
+                function bigStringBGThread(args,cb) {
                     
-                    let str = data.str;
-                    delete data.str;
-                    cb(bigStringSearch(str,data.term));
-                    delete data.term;
+                    let str;
+                    let total_msec=0;
+                    const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
+                    onmsg(args);
                     
-                    let running = setInterval(looper,100);
+                    return onmsg;
                     
-                    return true;
-                    
-                    function looper(){
-                        if (data.terminated) {
-                            console.log("terminated");
-                            clearInterval(running);
-                            str = null;
-                            running = undefined;
-                            return;
+                    function onmsg(args) {
+                        const started=getMsec();                        
+                        if (args.str) {
+                            str = args;
+                            delete args.str;
                         }
-                        if (data.str) {
-                            str = null;
-                            str = data.str;
-                            delete data.str;
-                        }
+                        cb(bigStringSearch(str,args.term));
+                        delete args.term;
+                        const elapsed = Math.min(0,getMsec() - started);
+                        total_msec+=elapsed;
+                        console.log("onmsg took",elapsed,'msec',"of",total_msec,"total");
                         
-                        if (data.term) {
-                            console.log("searching for:",data.term);
-                            cb(bigStringSearch(str,data.term));
-                            delete data.term;
-                        }
                     }
                     
                     function bigStringSearch(str,term) {
@@ -3746,31 +3737,52 @@ ml(`
                     }
                 }
 
+                // this function (onmessage_src) is declared to contain it's source
+                // it is not called in this context, but instead in the worker context
+                
                 function onmessage_src(args,handler,postMessage){
-                    // this function (onmsg) is declared purely to obtain it's source
-                    // it is not called in this context, but instead in the worker context
-                    return (function (e) {
-                        if (args) {
-                            // this is an additional message, (eg to set terminated)
+                    
+                      let on_msg;
+                      
+                      return (function (e) {
+                        
+                        if (!args) {
+                           // this is the first message, which kicks off the background function
+                           
+                           // save the args as a "global" (from the worker' perspective)
+                           args = e.data;
+                           
+                           // call the background handler, which returns something truthy if it is persistent
+                           const looping = handler();
+       
+                           postMessage({
+                               looping: !!looping   // coalesce looping to a boolean
+                           });
+                           
+                           if (!!looping) {
+                              if (typeof looping==='function') {
+                                  //save on_msg callback for future incoming messages
+                                  on_msg=looping;
+                              }
+                           } else {
+                              close();
+                           }
+                       } else {
+                            
+                            // this is an additional message, sent once the function has started
                             // merge the keys into the args object
                             Object.keys(e.data).forEach(function(k) {
                                 console.log("setting", k);
                                 args[k] = e.data[k];
                             });
-                            return;
+                            
+                            if (on_msg) {
+                                on_msg(args);
+                            }
+
+                        } 
     
-                        } else {
-                            // this is the first message, which kicks off the background function
-                            // by calling handler ()
-                            args = e.data;
-                        }
-    
-                        const looping = handler();
-    
-                        postMessage({
-                            looping: looping
-                        });
-                        if (!looping) close();
+                        
                     }).toString();
                 }
 
