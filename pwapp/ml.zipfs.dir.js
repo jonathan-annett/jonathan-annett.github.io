@@ -3193,6 +3193,7 @@ ml(`
                 let clearCacheTimeout;
                 let CB;
                 let changed = false;
+                var started_at;
                 const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
                  return doSearch;
               
@@ -3248,7 +3249,7 @@ ml(`
                        clearTimeout(clearCacheTimeout);
                        clearCacheTimeout = undefined;
                    }
-                   var started_at = getMsec();
+                   started_at = getMsec();
                    var args = {};
                    args.term = ignoreCase ? searchTerm.toLowerCase() : searchTerm;
 
