@@ -3287,12 +3287,10 @@ ml(`
                 function clearCache() {
                     Object.keys(watched).forEach(function(url){
                        const filename = watched[url];
-                       console.log("unwatching",filename);
                        unwatchFile(filename,onWatchedFile);
                        delete watched[url];
                     });
                     Object.keys(files).forEach(function(filename){
-                        console.log("releasing cached:",filename);
                         delete files[filename].text;
                         delete files[filename].filename;
                         delete files[filename];
