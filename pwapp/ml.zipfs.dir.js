@@ -3241,6 +3241,7 @@ ml(`
                             if (changed || lastCase!==ignoreCase) {
                                 const str = getSearchStringContext(files);
                                 args.str  = ignoreCase ? str.toLowerCase() : str;
+                                lastCase=ignoreCase;
                             }
                             
                             searcherWrk.postMessage(args);
@@ -3249,6 +3250,7 @@ ml(`
                             
                             const str = getSearchStringContext(files);
                             args.str  = ignoreCase ? str.toLowerCase() : str;
+                            lastCase=ignoreCase;
                             
                             searcherWrk = searcher(
                                   args, 
@@ -3270,7 +3272,7 @@ ml(`
                                       
                                       }
                                       changed = false;
-                                      lastCase=ignoreCase;
+                                      
                                   }
                             );
                             
