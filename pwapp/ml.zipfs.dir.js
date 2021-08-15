@@ -3249,7 +3249,7 @@ ml(`
                        clearCacheTimeout = undefined;
                    }
                    var started_at = getMsec();
-                   const args = {};
+                   var args = {};
                    args.term = ignoreCase ? searchTerm.toLowerCase() : searchTerm;
 
                    getSearchText ( file_list, args.matchClause, function(  ) {
