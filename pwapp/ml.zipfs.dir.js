@@ -16,6 +16,7 @@ ml(`
     devClassLib           | ${ml.c.app_root}ml.devclass.js
     Tabulator             | ${ml.c.app_root}tabulator/dist/js/tabulator.min.js
     progressHandler       | ${ml.c.app_root}ml.progressHandler.js
+    createBGFunction      | ${ml.c.app_root}ml.bgworkers.js 
    
     
     
@@ -25,6 +26,8 @@ ml(`
         Window: function pwaZipDirListing(pwa,zipFSApiLib,sha1,MarkdownConverter ) {
             
             const Tabulator    = ml.i.Tabulator;
+            
+            const createBGFunction = ml.i.createBGFunction;
             
             const params = new URL(location).searchParams;
             const progressHandler = ml.i.progressHandler; 
@@ -2037,7 +2040,7 @@ ml(`
 
                             searchResultsTable = new Tabulator("#search_table", {
                                 data:searchResultsTableData,
-                                reactiveData:true,
+                                //reactiveData:true,
                                 autoColumns:true,
                                 layout:"fitColumns",
                                 autoColumnsDefinitions:[
@@ -3359,6 +3362,83 @@ ml(`
                     
                 }
                 
+                function js_commentWhiteout(str) {
+                    
+                    const chars = str.split('');
+                    let inComment1,inComment2,inStr1,inStr2;
+                    let white = String.fromCharCode(255);
+                    for (let i = 0; i < str.length; i++) {
+
+                        if (inComment1) {
+
+                            if (chars[i] + chars[i + 1] === '*/') {
+                                chars[i] = white;
+                                i++;
+                                chars[i] = white;
+                                inComment1 = false;
+                            } else {
+                                chars[i] = white;
+                            }
+                        } else {
+
+                            if (inComment2) {
+                                if (chars[i] === "\n") {
+                                    inComment2 = false;
+                                } else {
+                                    chars[i] = white;
+                                }
+                                
+                            } else {
+                                if (inStr1) {
+                                    if (chars[i] === '"') {
+                                        inStr1 = false;
+                                    } else {
+                                        if (chars[i] === "\\") {
+                                            i++;
+                                        }
+                                    }
+                                } else {
+                                    if (inStr2) {
+                                        if (chars[i] === '"') {
+                                            inStr2 = false;
+                                        } else {
+                                            if (chars[i] === "\\") {
+                                                i++;
+                                            }
+                                        }
+                                    } else {
+                                        switch (chars[i]) {
+                                            case "'":
+                                                inStr1 = true;
+                                                break;
+                                            case '"':
+                                                inStr2 = true;
+                                                break;
+                                            case '/':
+                                                if (chars[i + 1] === '*') {
+                                                    inComment1 = true;
+                                                    i++;
+                                                    break;
+                                                }
+                                                if (chars[i + 1] === '/') {
+                                                    inComment2 = true;
+                                                    i++;
+                                                    break;
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                    const result = chars.join('');
+                    chars.splice(0,chars.length);
+                    return result;
+                }
+                
                 function getSearchStringContext(files){
                     // returns a single string representing all files. yes really.
                     const keys = Object.keys(files);
@@ -3369,7 +3449,6 @@ ml(`
                     content.splice(0,content.length);//expedite garbage collection
                     return result;
                 }
-                
                
                 
                 // converts array of indexes to array of entries detailing which file the index occurs in
@@ -3413,166 +3492,7 @@ ml(`
             
             }
             
-            
-            function createBGFunction(code, hysteresis) {
-
-                let src = "var handler="+ code.toString() +",\n"+
-                          "args,on_msg;\n\n"+
-                          "onmessage=" + onmessage_src() + ";\n";
-                             
-                let blob = blobFromString(src, 'application/javascript');
-                src = null;
-
-                let url = URL.createObjectURL(blob);
-
-                let worker = false; // after the first call, this will be set to the worker object
-
-                let delay;
-
-                return hysteresis ? hfn : fn;
-
-                function hfn(data, cb) {
-                    if (delay) {
-                        clearTimeout(delay);
-                    }
-                    if (worker) {
-                        worker.postMessage({terminated:true});
-                    }
-                    delay = setTimeout(fn, hysteresis, data, cb);
-                }
-
-                function fn(data, cb) {
-                    delay = undefined;
-                    if (data === null && cb === undefined) {
-                        return cleanup();
-                    }
-
-                    if (worker) {
-                        // this is a restart request, since the worker still exists
-                        // so terminate the object and fall through
-                        console.log("terminating worker");
-
-                        worker.removeEventListener("message", messageHandler);
-                        worker.removeEventListener("messageerror", abortWorker);
-                        worker.removeEventListener("rejectionhandled", abortWorker);
-                        worker.removeEventListener("unhandledrejection", abortWorker);
-                        worker.terminate();
-
-                    }
-
-                    // create a (new ) Worker object
-                    worker = new Worker(url);
-                    worker.cb = cb;
-
-                    worker.addEventListener("message", messageHandler);
-
-                    worker.addEventListener("messageerror", abortWorker);
-
-                    worker.addEventListener("rejectionhandled", abortWorker);
-
-                    worker.addEventListener("unhandledrejection", abortWorker);
-
-                    console.log("posting", data);
-
-                    worker.postMessage(data);
-                    
-                    return worker;
-
-                }
-
-                function abortWorker(e) {
-                    worker = undefined;
-                }
-
-                function functionSource(fn) {
-                    const src = fn.toString();
-                    return src.substring(src.indexOf("{") + 1, src.lastIndexOf("}") - 1).trim();
-                }
-
-                function blobFromString(str, typ) {
-                    return new Blob([str], {
-                        type: typ
-                    });
-                }
-
-                function messageHandler(e) {
-                    if (worker) {
-                        if (e.data.cb === 'stop') {
-                            worker.cb(undefined, true);
-                            worker = undefined;
-                        } else {
-                            if (e.data.cb) {
-                                worker.cb(e.data.cb, false);
-                            }
-                        }
-                    }
-                }
-
-                function cleanup() {
-                    if (blob && url) {
-                        blob = null;
-                        URL.revokeObjectURL(url);
-                        url = null;
-                    }
-                }
-
-                // this function (onmessage_src) is declared to contain it's source
-                // it is not called in this context, but instead in the worker context
-                
-                function onmessage_src(args,handler,postMessage,on_msg){
-                         return (
-function(e) {
-
-    if (!args) {
-        // this is the first message, which kicks off the background function
-
-        // save the args as a "global" (from the worker' perspective)
-        args = e.data;
-
-        // call the background handler, which returns something truthy if it is persistent
-        const looping = handler(args,postMsg);
-        postMessage({looping: !! looping});    // coalesce looping to a boolean
-        if ( !! looping) {
-            if (typeof looping === 'function') {
-                //save on_msg callback for future incoming messages
-                on_msg = looping;
-            }
-        } else {
-            close();
-        }
-    } else {
-
-        // this is an additional message, sent once the function has started
-        // merge the keys into the args object
-        Object.keys(e.data).forEach(function(k) {
-            console.log("setting", k);
-            args[k] = e.data[k];
-        });
-
-        if (on_msg) {
-            on_msg(args);
-        }
-
-    }
-    
-    
-    
-    
-    function postMsg(msg) {
-        postMessage({cb: msg || 'stop'});
-        if (!msg) close();
-    }
-
-}
-                
-).toString();
-                    
-                    
-                      
-                }
-
-            }
-            
+          
             
         } 
     }, {
