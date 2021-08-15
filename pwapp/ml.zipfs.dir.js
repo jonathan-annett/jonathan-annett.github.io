@@ -3613,7 +3613,7 @@ ml(`
                    const splits = str.split(/\s/g).map(function(x){return x.trim()}).filter(function(x){ return !!x;});
                    if (splits.length===1) {
                        if (words) {
-                          return new RegExp(regexpEscape('\\b'+str+'\\b'), ignoreCase ? 'i' : ''); 
+                          return new RegExp('\\b'+regexpEscape(str)+'\\b', ignoreCase ? 'i' : ''); 
                        } else {
                           return new RegExp(regexpEscape(str), ignoreCase ? 'i' : ''); 
                        }
