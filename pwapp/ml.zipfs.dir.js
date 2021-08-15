@@ -1937,9 +1937,8 @@ ml(`
                         if ( errorsTableData.length > 0 ) {
                             
                             errorsTable = new Tabulator("#errors_table", {
-                                data:errorsTableData,
                                 autoColumns:true,
-                                reactiveData:true,
+                                placeholder:"No Errors", 
                                 layout:"fitColumns",
                                 autoColumnsDefinitions:[
                                     {title:"Filename",       field:"filename",
@@ -1969,11 +1968,12 @@ ml(`
                                 }
                             });
                            
-                            
+                            errorsTable.setData(errorsTableData).then(cb);
     
                         }
+                    } else {
+                        errorsTable.replaceData(errorsTableData).then(cb);
                     }
-                    cb();
                 }
                 
                 function updateWarningsTable(cb) {
@@ -1985,10 +1985,9 @@ ml(`
                         if (warningsTableData.length>0) {
                             
                             warningsTable = new Tabulator("#warnings_table", {
-                                data:warningsTableData,
-                                reactiveData:true,
                                 autoColumns:true,
                                 layout:"fitColumns",
+                                placeholder:"No Warnings", 
                                 autoColumnsDefinitions:[
                                     {field:"type",visible:false},
                                     {title:"Filename",       field:"filename",
@@ -2017,12 +2016,13 @@ ml(`
                                    );
                                 }
                             });
-                           
+                            warningsTable.setData(warningsTableData).then(cb);
                         }
                    
+                    } else {
+                        warningsTable.replaceData(warningsTableData).then(cb);
                     }
-                    cb();
-                        
+
                 }
                 
                 function updateSearchTable(data,cb) {
@@ -2039,10 +2039,9 @@ ml(`
                         if (searchResultsTableData.length>0) {
 
                             searchResultsTable = new Tabulator("#search_table", {
-                                data:searchResultsTableData,
-                                //reactiveData:true,
                                 autoColumns:true,
                                 layout:"fitColumns",
+                                placeholder:"No Search Results", 
                                 autoColumnsDefinitions:[
                                     {title:"Filename",       field:"filename",
                                         formatter:function(cell, formatterParams, onRendered){
@@ -2070,11 +2069,14 @@ ml(`
                                    );
                                 }
                             });
+                            searchResultsTable.setData(searchResultsTableData).then(cb);
                         }
+                        
+                        
+                    } else {
+                        searchResultsTable.replaceData(searchResultsTableData).then(cb);
                     }
-                    
-                    cb();
-                    
+
                 }
 
                 function findError(filename,line,column,cb) {
