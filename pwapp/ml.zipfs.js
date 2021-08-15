@@ -499,8 +499,13 @@ ml(`
                   
                   function addEvents() {
                       if (event.use_no_cors) {
-                           event.fetchBuffer  = function(cb) { 
-                              return fetchBufferViaNoCors(event.request,event.fixup_url,cb);
+                           event.fetchBuffer  = function(hdrs,cb) { 
+                               if (typeof hdrs === 'function' ) {
+                                   cb = hdrs; 
+                                  return fetchBufferViaNoCors(event.request,event.fixup_url,cb);
+                               } else {
+                                  return fetchBufferViaNoCors(event.request,event.fixup_url,hdrs,cb);  
+                               }
                            };
                            event.toFetchUrl   = function(db) { 
                                return function (resolve) {
@@ -769,13 +774,23 @@ ml(`
                 }
              }
              
-             function fetchBufferViaNoCors(request,url,cb) {
+             function fetchBufferViaNoCors(request,url,hdrs,cb) {
+                
+                if (typeof hdrs==='function') {
+                    cb=hdrs;
+                    hdrs= false;
+                }
                  
-                fetch(request)
+                (hdrs?fetch(request,{headers:hdrs}):fetch(request))
                  .then(getBufferFromResponse(cb))
                   .catch(function(){
                       
-                      fetch(url,{mode:'no-cors',referrer:'about:client',referrerPolicy:'no-referrer'})
+                      const opts = {mode:'no-cors',referrer:'about:client',referrerPolicy:'no-referrer'};
+                      if (hdrs) {
+                          opts.headers=hdrs;
+                      }
+                      
+                      fetch(url,opts)
                         .then(getBufferFromResponse(cb))
                          .catch(cb);
                   
