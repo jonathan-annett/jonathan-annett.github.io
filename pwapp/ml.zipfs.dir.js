@@ -490,6 +490,16 @@ ml(`
                     const ignoreCase  = qs("#search_case");
                     const searchWords = qs("#search_words");
                     
+                    qs("#search_case_txt",function click(){
+                        ignoreCase.checked = !ignoreCase.checked;
+                        seachTextChanged(ed_term.value);
+                    });
+                    qs("#search_words_txt",function click(){
+                        searchWords.checked = !searchWords.checked;
+                        seachTextChanged(ed_term.value);
+                    });
+                    
+                    
                     addDelayedEditCallback(ed_term,seachTextChanged,250);
                     
                     ignoreCase.onclick = function(){
