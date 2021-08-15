@@ -487,7 +487,8 @@ ml(`
                 }
 
                 function addSearchTermFunc(ed_term) {
-                    const ignoreCase = qs("#search_case");
+                    const ignoreCase  = qs("#search_case");
+                    const searchWords = qs("#search_words");
                     
                     addDelayedEditCallback(ed_term,seachTextChanged,250);
                     
@@ -495,9 +496,14 @@ ml(`
                         seachTextChanged(ed_term.value);
                     };
                     
+                    searchWords.onclick =  function(){
+                        seachTextChanged(ed_term.value);
+                    };
+                    
+                    
                     function seachTextChanged(value){
                         qs("#tab-3").checked=true;
-                        searchForTerm(value,ignoreCase.checked,function(results){
+                        searchForTerm(value,ignoreCase.checked,searchWords.checked,function(results){
                            console.log("got",results.length,"search results");
                            if (results.length > 50) {
                                results.splice(50,results.length);
@@ -511,7 +517,7 @@ ml(`
                 }
 
 
-                function searchForTerm(term,ignoreCase,cb) {
+                function searchForTerm(term,ignoreCase,words,cb) {
                     
                     if (searchForTerm.func) {
                         startSearch();
@@ -525,7 +531,7 @@ ml(`
  
                     function startSearch() {
                         if (term.trim().length>3) {
-                            searchForTerm.func( filteredFilesList,term,ignoreCase,cb);
+                            searchForTerm.func( filteredFilesList,term,ignoreCase,words,cb);
                         } else {
                             cb([]);
                         }
@@ -3487,7 +3493,7 @@ ml(`
                  
                 return doSearch;
             
-                function doSearch(file_list,searchTerm,ignoreCase,cb) {
+                function doSearch(file_list,searchTerm,ignoreCase,words,cb) {
                    if (clearCacheTimeout) {
                        clearTimeout(clearCacheTimeout);
                        clearCacheTimeout = undefined;
@@ -3496,6 +3502,7 @@ ml(`
                    var args = {};
                    args.term = searchTerm;
                    args.ignoreCase = ignoreCase;
+                   args.words = words;
                    args.dir = {
                        url   : dir.url,
                        zips  : dir.zips,
@@ -3556,9 +3563,10 @@ ml(`
                             delete args.files;
                             str = getSearchStringContext(files_db);
                             if (args.term) {
-                               const indexes = bigStringSearch(str,args.term,args.ignoreCase);
+                               const indexes = bigStringSearch(str,args.term,args.ignoreCase,args.words);
                                delete args.term;
                                delete args.ignoreCase;
+                               delete args.words;
                                if (files_db) {
                                   getFileResults(files_db,indexes);
                                }  
@@ -3569,9 +3577,10 @@ ml(`
                     } else {
                     
                         if (args.term) {
-                           const indexes = bigStringSearch(str,args.term,args.ignoreCase);
+                           const indexes = bigStringSearch(str,args.term,args.ignoreCase,args.words);
                            delete args.term;
                            delete args.ignoreCase;
+                           delete args.words;
                            if (files_db) {
                               getFileResults(files_db,indexes);
                            }  
@@ -3590,18 +3599,31 @@ ml(`
                    return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
                  }
                 
-                function makeRegExp(str,ignoreCase) {
+                function makeRegExp(str,ignoreCase,words) {
                    const splits = str.split(/\s/g);
                    if (splits.length===1) {
-                      return new RegExp(regexpEscape(str), ignoreCase ? 'i' : ''); 
+                       if (words) {
+                          return new RegExp(regexpEscape('\\b'+str+'\\b'), ignoreCase ? 'i' : ''); 
+                       } else {
+                          return new RegExp(regexpEscape(str), ignoreCase ? 'i' : ''); 
+                       }
                    }
-                   return new RegExp(splits.map(regexpEscape).join('\\s*'),ignoreCase ? 'i' : '')
+                   
+                   if (words) {
+                       return new RegExp('\\b'+   splits.map(regexpEscape).join('\\b\\s+\\b') +'\\b'   ,ignoreCase ? 'i' : '');
+                   } else {
+                       return new RegExp(splits.map(regexpEscape).join('\\s*'),ignoreCase ? 'i' : '');
+                   }
+                   
+                   
                 }
                                 
                 
-                function bigStringSearchViaRegexp(str,regexp,ignoreCase) {
+                function bigStringSearchViaRegexp(str,regexp,ignoreCase,words) {
                    const result = [];
-                   if (typeof regexp==='string') regexp = makeRegExp(regexp,ignoreCase);
+                   if (typeof regexp==='string') {
+                         regexp = makeRegExp(regexp,ignoreCase,words);
+                   }
                    let find = regexp.exec(str);
                    let offset = 0;
                    while (find) { 
@@ -3615,13 +3637,13 @@ ml(`
                    return result;  
                 }
                 
-                function bigStringSearch(str,term,ignoreCase) {
+                function bigStringSearch(str,term,ignoreCase,words) {
                     if (
-                        ignoreCase || 
+                        ignoreCase || words ||
                         (typeof term==='string'&&/\s/.test(term)) ||
                         (typeof term==='object'&&term.constructor===RegExp)
                         
-                      ) return bigStringSearchViaRegexp(str,term,ignoreCase);
+                      ) return bigStringSearchViaRegexp(str,term,ignoreCase,words);
                       
                     
                     const termLength = term.length;
