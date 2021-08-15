@@ -3631,7 +3631,7 @@ ml(`
 
             function createBGFunction(code, hysteresis) {
 
-                let src = "var handler="+ code.toString() +";\n"+
+                let src = "var handler="+ code.toString() +",\n"+
                           "args,on_msg;\n\n"+
                           "onmessage=" + onmessage_src() + ";\n";
                              
