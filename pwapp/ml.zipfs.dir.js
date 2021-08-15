@@ -3406,10 +3406,9 @@ ml(`
                     let offset = 0;
                     let file = file_array.shift();
                     for (let i = 0; i < indexes.length ; i++) {
-                        const end = offset+file.text.length;
-                        while (end<indexes[i]) {
-                            offset = end;
-                            file = file_array.shift();
+                        while (offset+file.text.length<indexes[i]) {
+                            offset += file.text.length;
+                            file    = file_array.shift();
                         }
                         const index  = indexes[i] - offset; 
                         const lines  = file.text.substr(0,index).split("\n");
