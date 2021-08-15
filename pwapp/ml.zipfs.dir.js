@@ -3511,7 +3511,6 @@ ml(`
                               function(results) {
                                   const arrived_at = getMsec();
                                   if (CB) {
-                                      getFileResults(files,results);
                                       const mapped_at = getMsec();
                                       CB(results);
                                       const cbcomplete_at = getMsec();
