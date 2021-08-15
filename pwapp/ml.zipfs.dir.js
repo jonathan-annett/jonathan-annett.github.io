@@ -3631,15 +3631,15 @@ ml(`
 
             function createBGFunction(code, hysteresis) {
 
-                let src = "var args;"+
+                let src = "var args;\n"+
                           "function handler(){\n"+
-                              "return (" + code.toString() +")"+
-                                "(args,function(msg){"+
-                                  "postMessage({cb:msg||'stop'});"+
-                                  "if (!msg) close();"+
-                                "});"+
-                          "};"+
-                          "onmessage=(" + onmessage_src() + ")();";
+                              "return (" + code.toString() +")\n"+
+                                "(args,function(msg){\n"+
+                                  "postMessage({cb:msg||'stop'});\n"+
+                                  "if (!msg) close();\n"+
+                                "});\n"+
+                          "}\n\n"+
+                          "onmessage=(" + onmessage_src() + ")();\n";
                              
                 let blob = blobFromString(src, 'application/javascript');
                 src = null;
