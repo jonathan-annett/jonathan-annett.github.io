@@ -3391,13 +3391,20 @@ ml(`
                         const lines  = file.text.substr(0,index).split("\n");
                         const line   = lines.length;
                         const text   = lines.pop();
-                        const context = text.substr(-64) + file.text.substr(index,64);
+                        const nextLine = file.text.substr(index,file.text.substr(index).indexOf("\n"));
+                        
+                        const context = 
+                            // if trimming the start of a line, don't start halfway through a token
+                            (text.length < 64 ? text :  text.substr(-64).replace(/^[A-z0-9\_\$]*\s*/,'') ) + 
+                            
+                            // if trimming the end of a line, don't end halfway through a token
+                            (nextLine.length < 64 ? nextLine : nextLine.replace(/\s*[A-z0-9\_\$]*$/,'') );
                         
                         const column = text.length;
                         lines.splice(0,lines.length);
                         indexes[i] = {
                             filename : file.filename,
-                            text     : context.replace(/^[A-z0-9\_\$]*\s*/,'').replace(/\s*[A-z0-9\_\$]*$/,''),
+                            text     : context,
                             line     : line,
                             column   : column
                         };
