@@ -3600,7 +3600,7 @@ ml(`
                  }
                 
                 function makeRegExp(str,ignoreCase,words) {
-                   const splits = str.split(/\s/g);
+                   const splits = str.split(/\s/g).map(function(x){return x.trim()}).filter(function(x){ return !!x;});
                    if (splits.length===1) {
                        if (words) {
                           return new RegExp(regexpEscape('\\b'+str+'\\b'), ignoreCase ? 'i' : ''); 
