@@ -3631,15 +3631,9 @@ ml(`
 
             function createBGFunction(code, hysteresis) {
 
-                let src = "var args;\n"+
-                          "function handler(){\n"+
-                              "return (" + code.toString() +")\n"+
-                                "(args,function(msg){\n"+
-                                  "postMessage({cb:msg||'stop'});\n"+
-                                  "if (!msg) close();\n"+
-                                "});\n"+
-                          "}\n\n"+
-                          "onmessage=(" + onmessage_src() + ")();\n";
+                let src = "var handler="+ code.toString() +";\n"+
+                          "args,on_msg;\n\n"+
+                          "onmessage=" + onmessage_src() + ";\n";
                              
                 let blob = blobFromString(src, 'application/javascript');
                 src = null;
@@ -3740,52 +3734,57 @@ ml(`
                 // this function (onmessage_src) is declared to contain it's source
                 // it is not called in this context, but instead in the worker context
                 
-                function onmessage_src(args,handler,postMessage){
-                      return (function () {
-                        
-                        let on_msg;  
+                function onmessage_src(args,handler,postMessage,on_msg){
+                         return (
+function(e) {
 
-                        return function (e) {
-                            
-                            if (!args) {
-                               // this is the first message, which kicks off the background function
-                               
-                               // save the args as a "global" (from the worker' perspective)
-                               args = e.data;
-                               
-                               // call the background handler, which returns something truthy if it is persistent
-                               const looping = handler();
-           
-                               postMessage({
-                                   looping: !!looping   // coalesce looping to a boolean
-                               });
-                               
-                               if (!!looping) {
-                                  if (typeof looping==='function') {
-                                      //save on_msg callback for future incoming messages
-                                      on_msg=looping;
-                                  }
-                               } else {
-                                  close();
-                               }
-                           } else {
-                                
-                                // this is an additional message, sent once the function has started
-                                // merge the keys into the args object
-                                Object.keys(e.data).forEach(function(k) {
-                                    console.log("setting", k);
-                                    args[k] = e.data[k];
-                                });
-                                
-                                if (on_msg) {
-                                    on_msg(args);
-                                }
-    
-                            } 
-    
-                        };   
-                        
-                    }).toString();
+    if (!args) {
+        // this is the first message, which kicks off the background function
+
+        // save the args as a "global" (from the worker' perspective)
+        args = e.data;
+
+        // call the background handler, which returns something truthy if it is persistent
+        const looping = handler(
+        args,
+
+        function(msg) {
+            postMessage({
+                cb: msg || 'stop'
+            });
+            if (!msg) close();
+        });
+
+        postMessage({
+            looping: !! looping // coalesce looping to a boolean
+        });
+
+        if ( !! looping) {
+            if (typeof looping === 'function') {
+                //save on_msg callback for future incoming messages
+                on_msg = looping;
+            }
+        } else {
+            close();
+        }
+    } else {
+
+        // this is an additional message, sent once the function has started
+        // merge the keys into the args object
+        Object.keys(e.data).forEach(function(k) {
+            console.log("setting", k);
+            args[k] = e.data[k];
+        });
+
+        if (on_msg) {
+            on_msg(args);
+        }
+
+    }
+
+}
+                
+                ).toString();
                     
                     
                       
