@@ -3194,8 +3194,7 @@ ml(`
                 let CB;
                 let changed = false;
                 const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
-                    
-                return doSearch;
+                 return doSearch;
               
                 function getSearchText(needed,matchClause,cb) {
                     
@@ -3249,7 +3248,7 @@ ml(`
                        clearTimeout(clearCacheTimeout);
                        clearCacheTimeout = undefined;
                    }
-                   const started_at = getMsec();
+                   var started_at = getMsec();
                    const args = {};
                    args.term = ignoreCase ? searchTerm.toLowerCase() : searchTerm;
 
