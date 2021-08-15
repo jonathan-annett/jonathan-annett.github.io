@@ -3333,6 +3333,7 @@ ml(`
                 function bigStringBGThread(args,cb) {
                     
                     let str;
+                    
                     let total_msec=0;
                     const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
                     onmsg(args);
@@ -3342,7 +3343,7 @@ ml(`
                     function onmsg(args) {
                         const started=getMsec();                        
                         if (args.str) {
-                            str = args;
+                            str = args.str;
                             delete args.str;
                         }
                         cb(bigStringSearch(str,args.term));
@@ -3745,20 +3746,8 @@ function(e) {
         args = e.data;
 
         // call the background handler, which returns something truthy if it is persistent
-        const looping = handler(
-        args,
-
-        function(msg) {
-            postMessage({
-                cb: msg || 'stop'
-            });
-            if (!msg) close();
-        });
-
-        postMessage({
-            looping: !! looping // coalesce looping to a boolean
-        });
-
+        const looping = handler(args,postMsg);
+        postMessage({looping: !! looping});    // coalesce looping to a boolean
         if ( !! looping) {
             if (typeof looping === 'function') {
                 //save on_msg callback for future incoming messages
@@ -3781,10 +3770,18 @@ function(e) {
         }
 
     }
+    
+    
+    
+    
+    function postMsg(msg) {
+        postMessage({cb: msg || 'stop'});
+        if (!msg) close();
+    }
 
 }
                 
-                ).toString();
+).toString();
                     
                     
                       
