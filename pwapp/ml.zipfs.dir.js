@@ -510,47 +510,21 @@ ml(`
                     
                 }
 
-                function getFileForSearchWorker(filename,cb){
-                    
-                    const index = filesBeingEdited.indexOf(filename);
-                    if (index >= 0) {
-                        
-                        // for files that are open in an editor, use that as the source of the search text
-                        
-                        find_li_ed(filename,function(li_ed){
-                            if (li_ed && li_ed.editor) {
-                               return cb(undefined,li_ed.editor.getValue(),true); 
-                            }
-                            return cb(new Error("can't get editor text"));
-                        }); 
-                        
-                    } else {
-                        
-                          // otherwise dive into the zip/ edited store database
-                          
-                          readFileText(filename,function(err,buffer,updated,hash,text){
-                              
-                              cb(err,text,false);
-                              
-                          });
-
-                    }
-                }
 
                 function searchForTerm(term,ignoreCase,cb) {
-                
+                    
                     if (searchForTerm.func) {
                         startSearch();
                     } else {
                          searchForTerm.func = getSearchFunction(getFileForSearchWorker,watchFile,unwatchFile);
                          startSearch();
                     }
+                    
+                   
  
                     function startSearch() {
                         if (term.trim().length>3) {
-                            
                             searchForTerm.func( filteredFilesList,term,ignoreCase,cb);
-                            
                         } else {
                             cb();
                         }
@@ -560,15 +534,43 @@ ml(`
                     function watchFile(filename,cb) {
                         const file_url = join(dir.url,filename); 
                         addEditHook (file_url,cb);
-                        console.log("watching",filename,"via",file_url);
+                        //console.log("watching",filename,"via",file_url);
                         return file_url;
                     }
                     
                     function unwatchFile(filename,cb) {
                         const file_url = join(dir.url,filename); 
-                        console.log("no longer watching",filename);
+                        //console.log("no longer watching",filename);
                         removeEditHook (file_url,cb);
                         return file_url;
+                    }
+                    
+                    
+                    function getFileForSearchWorker(filename,cb){
+                        
+                        const index = filesBeingEdited.indexOf(filename);
+                        if (index >= 0) {
+                            
+                            // for files that are open in an editor, use that as the source of the search text
+                            
+                            find_li_ed(filename,function(li_ed){
+                                if (li_ed && li_ed.editor) {
+                                   return cb(undefined,li_ed.editor.getValue(),true); 
+                                }
+                                return cb(new Error("can't get editor text"));
+                            }); 
+                            
+                        } else {
+                            
+                              // otherwise dive into the zip/ edited store database
+                              
+                              readFileText(filename,function(err,buffer,updated,hash,text){
+                                  
+                                  cb(err,text,false);
+                                  
+                              });
+    
+                        }
                     }
                     
                 
@@ -3176,6 +3178,13 @@ ml(`
                 let changed = false;
                 let lastCase;
                 var started_at;
+                const el = qs ("#search_load");
+                
+                let progress_complete = 0;
+                let progress_total = 1;
+                let progrss_handler = progressHandler(progress_complete,progress_total,el);
+                
+                
                 const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
                  
                 return doSearch;
@@ -3191,10 +3200,14 @@ ml(`
                         }
                         
                     });
+                    progrss_handler.setTotal(needed.length);
+                    
+                   
                     
                     loop(0);
                     
                     function loop(index) {
+                        progrss_handler.setComplete(index);
                         
                         if (index < needed.length) {
                             
@@ -3221,6 +3234,7 @@ ml(`
                             }
                             
                         } else {
+                            progrss_handler.setComplete(needed.length);
                             cb();
                         }
                     }
