@@ -3348,7 +3348,7 @@ ml(`
                         }
                         cb(bigStringSearch(str,args.term));
                         delete args.term;
-                        const elapsed = Math.min(0,getMsec() - started);
+                        const elapsed = Math.max(0,getMsec() - started);
                         total_msec+=elapsed;
                         console.log("onmsg took",elapsed,'msec',"of",total_msec,"total");
                         
