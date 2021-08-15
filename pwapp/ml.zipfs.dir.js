@@ -3193,6 +3193,8 @@ ml(`
                 let clearCacheTimeout;
                 let CB;
                 let changed = false;
+                const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
+                    
                 return doSearch;
               
                 function getSearchText(needed,matchClause,cb) {
@@ -3247,6 +3249,7 @@ ml(`
                        clearTimeout(clearCacheTimeout);
                        clearCacheTimeout = undefined;
                    }
+                   const started_at = getMsec();
                    const args = {};
                    args.term = ignoreCase ? searchTerm.toLowerCase() : searchTerm;
 
@@ -3271,11 +3274,21 @@ ml(`
                             searcherWrk = searcher(
                                   args, 
                                   function(results) {
-                                      
+                                      const arrived_at = getMsec();
                                       if (CB) {
                                           const file_results = results.map(function(index){ return getFileFrom(files,index); });
+                                          const mapped_at = getMsec();
                                           CB(file_results);
+                                          const cbcomplete_at = getMsec();
                                           CB = null; 
+                                          console.log("search roundtrip:",  cbcomplete_at - started_at,"msec");
+                                          console.log("search thread took:",arrived_at - started_at,"msec");
+                                          console.log("mapping took:",      mapped_at     - arrived_at,"msec");
+                                          console.log("ui callback took :", cbcomplete_at - mapped_at,"msec");
+                                      
+                                      } else {
+                                          console.log("search roundtrip:",arrived_at- started_at,"msec");
+                                      
                                       }
                                       changed = false;
                                   }
@@ -3350,7 +3363,7 @@ ml(`
                         delete args.term;
                         const elapsed = Math.max(0,getMsec() - started);
                         total_msec+=elapsed;
-                        console.log("onmsg took",elapsed,'msec',"of",total_msec,"total");
+                        //console.log("onmsg took",elapsed,'msec',"of",total_msec,"total");
                         
                     }
                     
