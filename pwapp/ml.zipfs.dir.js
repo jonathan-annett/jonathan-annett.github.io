@@ -3170,6 +3170,7 @@ ml(`
                 let clearCacheTimeout;
                 let CB;
                 let changed = false;
+                let lastCase;
                 var started_at;
                 const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
                  
@@ -3237,7 +3238,7 @@ ml(`
                         
                         if (searcherWrk) {
                             
-                            if (changed) {
+                            if (changed || lastCase!==ignoreCase) {
                                 const str = getSearchStringContext(files);
                                 args.str  = ignoreCase ? str.toLowerCase() : str;
                             }
@@ -3269,6 +3270,7 @@ ml(`
                                       
                                       }
                                       changed = false;
+                                      lastCase=ignoreCase;
                                   }
                             );
                             
