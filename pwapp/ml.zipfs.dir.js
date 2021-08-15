@@ -3249,10 +3249,9 @@ ml(`
                                   function(results) {
                                       const arrived_at = getMsec();
                                       if (CB) {
-                                          const file_results = getFileResults(files,results);
-                                          //const file_results = results.map(function(index){ return resultFileEntry(files,index); });
+                                          getFileResults(files,results);
                                           const mapped_at = getMsec();
-                                          CB(file_results);
+                                          CB(results);
                                           const cbcomplete_at = getMsec();
                                           CB = null; 
                                           console.log("search roundtrip:",  cbcomplete_at - started_at,"msec");
@@ -3371,32 +3370,10 @@ ml(`
                     return result;
                 }
                 
-                function resultFileEntry(files,index) {
-                    const keys = Object.keys(files);
-                    keys.sort();
-                    let offset = 0;
-                    for (var i = 0; i<keys.length;i++) {
-                        let file = files[ keys[i] ];
-                        let ends = offset + file.text.length;
-                        if ( (index >=offset) && (index<ends) ) {
-                            index -=offset; 
-                            const lines  = file.text.substr(0,index).split("\n");
-                            const line   = lines.length;
-                            const text   = lines.pop();
-                            const column = text.length+1;
-                            lines.splice(0,lines.length);
-                            keys.splice(0,keys.splice);//expedite garbage collection
-                            return {
-                                filename : file.filename,
-                                text     : text.substr(-64) + file.text.substr(index,64),
-                                line     : line,
-                                column   : column
-                            };
-                        }
-                        offset = ends;
-                    }
-                }
+               
                 
+                // converts array of indexes to array of entries detailing which file the index occurs in
+                // also includes +/- 64 bytes of context (ie 128 bytes of context)
                 function getFileResults(files,indexes) {
                     const keys = Object.keys(files);
                     keys.sort();
@@ -3414,16 +3391,17 @@ ml(`
                         const lines  = file.text.substr(0,index).split("\n");
                         const line   = lines.length;
                         const text   = lines.pop();
-                        const column = text.length+1;
+                        const context = text.substr(-64) + file.text.substr(index,64).replace(/^[A-z0-9\_\$]*\s*/,'').replace(/\s*[A-z0-9\_\$]*$/,'');
+                        
+                        const column = text.length;
                         lines.splice(0,lines.length);
                         indexes[i] = {
                             filename : file.filename,
-                            text     : text.substr(-64) + file.text.substr(index,64),
+                            text     : context,
                             line     : line,
                             column   : column
                         };
                     }
-                    return indexes;
                 }
             
             }
