@@ -3163,8 +3163,6 @@ ml(`
             }
             
             
-           
-           
             //getSearchFunction() returns a function to handle searching for freeform text 
             // the function returned is:  function(file_list,searchTerm,ignoreCase,cb)
             // where file_list is a list of filenames to search in
@@ -3472,7 +3470,8 @@ ml(`
             
             }
             
-            
+            // iteration of getSearchFunction - moves more functionality to background worker function
+            // ( fetches text data directly from service worker in the background function, which speeds up UI considerably)
             function getSearchFunction2(dir) {
                 
                 const searcher = createBGFunction(bigStringBGThread);
@@ -3495,7 +3494,8 @@ ml(`
                    }
                    started_at = getMsec();
                    var args = {};
-                   args.term = ignoreCase ? searchTerm.toLowerCase() : searchTerm;
+                   args.term = searchTerm;
+                   args.ignoreCase = ignoreCase;
                    args.dir = {
                        url   : dir.url,
                        zips  : dir.zips,
@@ -3551,14 +3551,14 @@ ml(`
                     
                     if (args.files && args.dir) {
                         
-                        loadFilesDb(args.dir,args.files,function(db){
+                        loadFilesDb(args.dir,args.files,function(){
                             delete args.dir;
                             delete args.files;
-                            files_db = db;
                             str = getSearchStringContext(files_db);
                             if (args.term) {
-                               const indexes = bigStringSearch(str,args.term);
+                               const indexes = bigStringSearch(str,args.term,args.ignoreCase);
                                delete args.term;
+                               delete args.ignoreCase;
                                if (files_db) {
                                   getFileResults(files_db,indexes);
                                }  
@@ -3569,8 +3569,9 @@ ml(`
                     } else {
                     
                         if (args.term) {
-                           const indexes = bigStringSearch(str,args.term);
+                           const indexes = bigStringSearch(str,args.term,args.ignoreCase);
                            delete args.term;
+                           delete args.ignoreCase;
                            if (files_db) {
                               getFileResults(files_db,indexes);
                            }  
@@ -3589,18 +3590,18 @@ ml(`
                    return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
                  }
                 
-                function makeRegExp(str) {
+                function makeRegExp(str,ignoreCase) {
                    const splits = str.split(/\s/g);
                    if (splits.length===1) {
-                      return new RegExp(regexpEscape(str),''); 
+                      return new RegExp(regexpEscape(str), ignoreCase ? 'i' : ''); 
                    }
-                   return new RegExp(splits.map(regexpEscape).join('\\s*'),'')
+                   return new RegExp(splits.map(regexpEscape).join('\\s*'),ignoreCase ? 'i' : '')
                 }
                                 
                 
-                function bigStringSearchViaRegexp(str,regexp) {
+                function bigStringSearchViaRegexp(str,regexp,ignoreCase) {
                    const result = [];
-                   if (typeof regexp==='string') regexp = makeRegExp(regexp);
+                   if (typeof regexp==='string') regexp = makeRegExp(regexp,ignoreCase);
                    let find = regexp.exec(str);
                    let offset = 0;
                    while (find) { 
@@ -3614,13 +3615,13 @@ ml(`
                    return result;  
                 }
                 
-                function bigStringSearch(str,term) {
+                function bigStringSearch(str,term,ignoreCase) {
                     if (
-                        
+                        ignoreCase || 
                         (typeof term==='string'&&/\s/.test(term)) ||
                         (typeof term==='object'&&term.constructor===RegExp)
                         
-                      ) return bigStringSearchViaRegexp(str,term);
+                      ) return bigStringSearchViaRegexp(str,term,ignoreCase);
                       
                     
                     const termLength = term.length;
@@ -3640,31 +3641,30 @@ ml(`
                 }
                 
                 function loadFilesDb(dir,files,cb) {
+                    files_db = files_db || {};
                     
-                    const urls = files.map(function(fn){
-                        const ix = dir.files[fn];
-                        if (ix>=0) return dir.zips[ix]+"/"+fn;
-                        return dir.url+fn;
-                    });
-                    
-                    const promises = urls.map(function(url){
+                    Promise.all(files.map(function(filename){
+                        
+                       if (files_db[filename]) {
+                           // already loaded
+                           return Promise.resolve();
+                       }
+                       const ix = dir.files[filename];
+                       const url = ix>=0 ? dir.zips[ix]+"/"+filename : dir.url+filename;
+                       
                        return new Promise(function(resolve){
+                               
                                fetch(url).then(function(response){
-                                   response.text().then(resolve);
+                                   response.text().then(function(text){
+                                       const filename = files[ix];
+                                       files_db[filename]={filename:filename,text:text};
+                                       resolve();
+                                   });
                                });
                         });
-                    });
-                    
-                    
-                    Promise.all(promises).then(function(texts){
-                        const db = {};
-                        texts.forEach(function(text,ix){
-                            const file = files[ix];
-                            db[file]={filename:file,text:text}
-                        });
-                        cb(db);
-                    });
-                    
+                        
+                    })).then(cb);
+
                 }
                 
                 function getSearchStringContext(files){
