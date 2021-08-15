@@ -786,9 +786,6 @@ ml(`
                   .catch(function(){
                       
                       const opts = {mode:'no-cors',referrer:'about:client',referrerPolicy:'no-referrer'};
-                      if (hdrs) {
-                          opts.headers=hdrs;
-                      }
                       
                       fetch(url,opts)
                         .then(getBufferFromResponse(cb))
