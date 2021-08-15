@@ -3391,13 +3391,13 @@ ml(`
                         const lines  = file.text.substr(0,index).split("\n");
                         const line   = lines.length;
                         const text   = lines.pop();
-                        const context = text.substr(-64) + file.text.substr(index,64).replace(/^[A-z0-9\_\$]*\s*/,'').replace(/\s*[A-z0-9\_\$]*$/,'');
+                        const context = text.substr(-64) + file.text.substr(index,64);
                         
                         const column = text.length;
                         lines.splice(0,lines.length);
                         indexes[i] = {
                             filename : file.filename,
-                            text     : context,
+                            text     : context.replace(/^[A-z0-9\_\$]*\s*/,'').replace(/\s*[A-z0-9\_\$]*$/,''),
                             line     : line,
                             column   : column
                         };
