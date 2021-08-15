@@ -3406,8 +3406,9 @@ ml(`
                     let offset = 0;
                     let file = file_array.shift();
                     for (let i = 0; i < indexes.length ; i++) {
-                        while (offset+file.text.length<indexes[i]) {
-                            offset += file.text.length;
+                        const end = offset+file.text.length;
+                        while (end<indexes[i]) {
+                            offset = end;
                             file = file_array.shift();
                         }
                         const index  = indexes[i] - offset; 
@@ -3418,7 +3419,7 @@ ml(`
                         lines.splice(0,lines.length);
                         indexes[i] = {
                             filename : file.filename,
-                            text     : text.substr(-64) + file.text.substr(indexes[i],64),
+                            text     : text.substr(-64) + file.text.substr(index,64),
                             line     : line,
                             column   : column
                         };
