@@ -3345,7 +3345,46 @@ ml(`
                         
                     }
                     
+                    
+                    
+                     function regexpEscape(str) {
+                       return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
+                     }
+                    
+                    function makeRegExp(str) {
+                       const splits = str.split(/\s/g);
+                       if (splits.length===1) {
+                          return new RegExp(regexpEscape(str),''); 
+                       }
+                       return new RegExp(splits.map(regexpEscape).join('\\s*'),'')
+                    }
+                                    
+                    
+                    function bigStringSearchViaRegexp(str,regexp) {
+                       const result = [];
+                       if (typeof regexp==='string') regexp = makeRegExp(regexp);
+                       let find = regexp.exec(str);
+                       let offset = 0;
+                       while (find) { 
+                          const xlen = find[0].length,ix=find.index; 
+                          offset += ix;
+                          result.push(offset);
+                          offset += xlen;
+                          str = str.substr(ix+xlen);
+                          find = regexp.exec(str);
+                       }
+                       return result;  
+                    }
+                    
                     function bigStringSearch(str,term) {
+                        if (
+                            
+                            (typeof term==='string'&&/\s/.test(term)) ||
+                            (typeof term==='object'&&term.constructor===RegExp)
+                            
+                          ) return bigStringSearchViaRegexp(str,term);
+                          
+                        
                         const termLength = term.length;
                         const splits   = str.split(term);
                         if (splits.length===1) {
