@@ -3644,12 +3644,8 @@ ml(`
                     files_db = files_db || {};
                     
                     Promise.all(files.map(function(filename){
-                      return new Promise(function(resolve){
+                      return files_db[filename] ? Promise.resolve: new Promise(function(resolve){
                           
-                               if (files_db[filename]) {
-                                   // already loaded
-                                   return resolve();
-                               }
                                const ix = dir.files[filename];
                                const url = ix>=0 ? dir.zips[ix]+"/"+filename : dir.url+filename;
                                fetch(url).then(function(response){
