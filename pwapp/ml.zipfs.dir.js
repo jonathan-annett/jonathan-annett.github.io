@@ -3644,19 +3644,16 @@ ml(`
                     files_db = files_db || {};
                     
                     Promise.all(files.map(function(filename){
-                        
-                       if (files_db[filename]) {
-                           // already loaded
-                           return Promise.resolve();
-                       }
-                       const ix = dir.files[filename];
-                       const url = ix>=0 ? dir.zips[ix]+"/"+filename : dir.url+filename;
-                       
-                       return new Promise(function(resolve){
-                               
+                      return new Promise(function(resolve){
+                          
+                               if (files_db[filename]) {
+                                   // already loaded
+                                   return resolve();
+                               }
+                               const ix = dir.files[filename];
+                               const url = ix>=0 ? dir.zips[ix]+"/"+filename : dir.url+filename;
                                fetch(url).then(function(response){
                                    response.text().then(function(text){
-                                       const filename = files[ix];
                                        files_db[filename]={filename:filename,text:text};
                                        resolve();
                                    });
