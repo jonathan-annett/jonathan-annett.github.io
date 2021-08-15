@@ -527,8 +527,13 @@ ml(`
                                
                            };
                       } else {
-                           event.fetchBuffer = function(cb) { 
-                               return fetchBuffer(event.fixup_url,cb);
+                           event.fetchBuffer = function(hdrs,cb) { 
+                               if (typeof hdrs === 'function' ) {
+                                  cb = hdrs; 
+                                  return fetchBuffer(event.fixup_url,cb);
+                               } else {
+                                   return fetchBuffer(event.fixup_url,hdrs,cb);
+                               }
                            };
                            event.toFetchUrl   = function(db) { 
                                return function (resolve) {
@@ -750,11 +755,18 @@ ml(`
                    
              }
 
-             function fetchBuffer(url,cb) {
-                 
-                fetch(url)
-                 .then(getBufferFromResponse(cb))
-                   .catch(cb);
+             function fetchBuffer(url,headers,cb) {
+                if (typeof headers==='function')  {
+                    cb = headers;
+                    fetch(url)
+                     .then(getBufferFromResponse(cb))
+                       .catch(cb);
+                   
+                } else {
+                    fetch(url,{headers:headers})
+                      .then(getBufferFromResponse(cb))
+                         .catch(cb);
+                }
              }
              
              function fetchBufferViaNoCors(request,url,cb) {
@@ -1775,9 +1787,9 @@ ml(`
                               getHeaders['if-modified-since']= lastModified.toString();
                           }
                            
-                           bufferFetcher = bufferFetcher || function(cb) { return fetchBuffer(url,cb) ; };
+                           bufferFetcher = bufferFetcher || function(hdrs,cb) { return fetchBuffer(url,hdrs,cb) ; };
                            
-                           bufferFetcher(function(err,buffer,status,ok,headers,response){
+                           bufferFetcher(getHeaders,function(err,buffer,status,ok,headers,response){
                                 if (!err && response && response.status===200) {
                                    
                                     updateURLContents (url,db,buffer,{status:200,headers:headers},function(){

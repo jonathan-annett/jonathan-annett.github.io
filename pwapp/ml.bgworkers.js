@@ -11,7 +11,7 @@ ml([],function(){ml(2,
     
                     let src = "var handler="+ code.toString() +",\n"+
                               "args,on_msg;\n\n"+
-                              "onmessage=" + onmessage_src() + ";\n";
+                              "self.onmessage=" + onmessage_src() + ";\n";
                                  
                     let blob = blobFromString(src, 'application/javascript');
                     src = null;
@@ -75,11 +75,6 @@ ml([],function(){ml(2,
     
                     function abortWorker(e) {
                         worker = undefined;
-                    }
-    
-                    function functionSource(fn) {
-                        const src = fn.toString();
-                        return src.substring(src.indexOf("{") + 1, src.lastIndexOf("}") - 1).trim();
                     }
     
                     function blobFromString(str, typ) {
@@ -164,12 +159,11 @@ ml([],function(){ml(2,
                           
                     }
     
-                }
+                };
       
         }
     }, {
         Window: [ ]
-
     }
 
     );
