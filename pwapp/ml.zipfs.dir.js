@@ -345,7 +345,7 @@ ml(`
                     const footer_collapse_check = qs("#footer_collapse_check",function change(){
                         qs("html").classList[footer_collapse_check.checked?"add":"remove"]("footer_collapse");
                         if (footer_collapse_check.checked) {
-                            footer.style.height=undefined;
+                            footer.style.height='';
                         }
                     });
                     
