@@ -320,6 +320,7 @@ ml(`
                         "li > a.errors"          : addErrorsClick,
                         "li > label.dropdown"    : addThemeSelectionClick,
                     };
+                    
                     Object.keys(events).forEach(function(q){
                         [].forEach.call(document.querySelectorAll(q),events[q]);
                     });
@@ -346,10 +347,13 @@ ml(`
                         qs("html").classList[footer_collapse_check.checked?"add":"remove"]("footer_collapse");
                         if (footer_collapse_check.checked) {
                             footer.style.height='';
+                            if (fs_li_ed && fs_li_ed.editor) {
+                                fs_li_ed.editor.resize();
+                            }
                         }
                     });
                     
-                    footer.getMinHeight = function(){
+                    footer.getMinHeight = function() {
                         return footer_collapse_check.checked  ? getStyle(footer_collapse_check,"height",true) : 150;
                     };
                     footer_grab_bar = dragSize("footer",["#footer_grab"],undefined,0,-1);
@@ -428,6 +432,7 @@ ml(`
                     }
                     
                     window.addEventListener('beforeunload', function (event)  {
+                        
                       if ( errorsExist () ) {
                         qs('html').classList.add("before_unload"); 
                         setTimeout(function(){
@@ -437,6 +442,7 @@ ml(`
                         },10);
                         event.returnValue = 'There are uncorrected errors in open editors. Sure you want to leave?';
                       }
+                      
                     });
                     
                     const auto_fn   = params.get('file');
@@ -444,16 +450,20 @@ ml(`
                     const auto_col  = params.get('col')  || 0;
                     
                     if (auto_fn) {
+                        
                         findError(auto_fn,auto_line,auto_col,function(){
                             console.log("located");
                         });
+                        
                     }
 
                     loadErrors(function(){
-                            updateSelectedTable(function(){
+                        
+                        updateSelectedTable(function(){
                             zipPollerIndex = -1;
                             setTimeout(zipPoller,500);
                         });
+                        
                     });
                     
                 }
@@ -534,6 +544,7 @@ ml(`
                     
                     
                 }
+                
                 function seachTextChanged(value){
                         qs("#tab-3").checked=true;
                         const ignoreCase  = qs("#search_case");
@@ -568,51 +579,7 @@ ml(`
                     }
                     
                     
-                    function watchFile(filename,cb) {
-                        const file_url = join(dir.url,filename); 
-                        addEditHook (file_url,cb);
-                        //console.log("watching",filename,"via",file_url);
-                        return file_url;
-                    }
-                    
-                    function unwatchFile(filename,cb) {
-                        const file_url = join(dir.url,filename); 
-                        //console.log("no longer watching",filename);
-                        removeEditHook (file_url,cb);
-                        return file_url;
-                    }
-                    
-                    
-                    function getFileForSearchWorker(filename,cb){
-                        
-                        const index = filesBeingEdited.indexOf(filename);
-                        if (index >= 0) {
-                            
-                            // for files that are open in an editor, use that as the source of the search text
-                            
-                            find_li_ed(filename,function(li_ed){
-                                if (li_ed && li_ed.editor) {
-                                   return cb(undefined,li_ed.editor.getValue(),true); 
-                                }
-                                return cb(new Error("can't get editor text"));
-                            }); 
-                            
-                        } else {
-                            
-                              // otherwise dive into the zip/ edited store database
-                              
-                              readFileText(filename,function(err,buffer,updated,hash,text){
-                                  
-                                  cb(err,text,false);
-                                  
-                              });
-    
-                        }
-                    }
-                    
-                
-                    
-                
+                 
                 }
                     
                 function loadErrors(cb) {
