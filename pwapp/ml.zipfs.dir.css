@@ -344,6 +344,7 @@ ul.hide_hidden li.hidden.editing {
 
 div.tab-wrapper {
   width: 100%;
+  height: calc(100% - 64px);
   bottom: 16px;
   display: inline-block;
 }
@@ -684,12 +685,13 @@ li.editing label.dropdown {
 @media only screen /* tab visiblity */ {
   .tab-wrapper {
     width: 100%;
+    height:100%;
   }
   .tabs {
     position: relative;
     /* margin: 3rem 0; */
     background: #f0f0f0;
-    height: 14.75rem;
+    height: 100%;
   }
   .tabs::before,
   .tabs::after {
@@ -723,7 +725,7 @@ li.editing label.dropdown {
     transition: top 0.25s;
   }
   .tab-content {
-    height: 12rem;
+    height: 100%;
     width: 100%;
     position: absolute;
     z-index: 1;
