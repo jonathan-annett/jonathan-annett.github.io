@@ -346,7 +346,7 @@ ml(`
                     };
                     
                     const footer_collapse_check = qs("#footer_collapse_check",function change(){
-                        const els = [ "footer.tab-wrapper", "#drop-area"].map(qs);
+                        const els = [ "footer div.tab-wrapper", "#drop-area"].map(qs);
                         els.forEach(function(el){
                             el.style.display = footer_collapse_check.checked ?"none" : "block";
                         });
