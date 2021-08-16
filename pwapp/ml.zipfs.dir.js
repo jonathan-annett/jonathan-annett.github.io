@@ -3360,7 +3360,11 @@ ml(`
                 
                 function loadFilesDb(dir,files,cb) {
                     files_db = files_db || {};
-                    
+                    Object.keys(files_db).forEach(function(filename){
+                        if (files.indexOf(filename)<0) {
+                            delete files_db[filename];
+                        }
+                    });
                     Promise.all(files.map(function(filename){
                       return files_db[filename] ? Promise.resolve: new Promise(function(resolve){
                           
