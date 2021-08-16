@@ -165,6 +165,7 @@ html.zooming h1 {
 
 footer {
   background-color:#e8e8e8;
+  position:relative;
 }
 
 html.zooming div.tab-wrapper {
@@ -174,7 +175,6 @@ html.zooming div.tab-wrapper {
 
 html.zooming footer {
   top:-16px;
-  position:relative;
 }
 html.zooming #drop-area {
   top:20px;
@@ -783,10 +783,14 @@ li.editing label.dropdown {
 
 @media only screen /* collapse/show checkbox */ {
     
-    
+    .footer_collapse {
+      position:relative;
+      left:0;
+      top:0;
+    }
 
     .footer_collapse input[type="checkbox"],
-        .footer_collapse .checked {
+    .footer_collapse .checked {
         display: none;
     }
 
