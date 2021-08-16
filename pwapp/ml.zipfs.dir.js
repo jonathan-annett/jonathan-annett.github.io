@@ -343,7 +343,7 @@ ml(`
                     
                     qs("footer").getMinHeight = function(){
                         return 150;
-                    }
+                    };
                     
                     footer_grab_bar = dragSize("footer",["#footer_grab"],undefined,0,-1);
                     
@@ -432,10 +432,9 @@ ml(`
                       }
                     });
                     
-                    
                     const auto_fn   = params.get('file');
                     const auto_line = params.get('line') || 1;
-                    const auto_col  = params.get('col') || 0;
+                    const auto_col  = params.get('col')  || 0;
                     
                     if (auto_fn) {
                         findError(auto_fn,auto_line,auto_col,function(){
@@ -958,19 +957,24 @@ ml(`
                        e.stopPropagation();
                        return;
                     }
-                    const filename = findFilename(e.target);
-                    const li = find_li(filename);
-                    if (!e.shiftKey && zoomEl) {
-                        return zoomBtnClick( e ) ;
-                    } else {
-                       e.stopPropagation();
-                    }
-                    if (e.shiftKey) {
-                        open_file(filename);
-                    } else {
-                        toggleInbuiltEditor ( filename,li );
-                    }
                     
+                    if ( qs(e.target,"a.undo-edits").style.display==="none") {
+                    
+                        const filename = findFilename(e.target);
+                        const li = find_li(filename);
+                        if (!e.shiftKey && zoomEl) {
+                            return zoomBtnClick( e ) ;
+                        } else {
+                           e.stopPropagation();
+                        }
+                        if (e.shiftKey) {
+                            open_file(filename);
+                        } else {
+                            toggleInbuiltEditor ( filename,li );
+                        }
+                    
+                        
+                    }
                     
                 }
                 
