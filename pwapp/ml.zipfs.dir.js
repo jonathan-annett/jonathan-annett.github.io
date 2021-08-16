@@ -2194,7 +2194,14 @@ ml(`
                         editor.gotoLine(line, column, true);
                         if (is_full) {
                             toggleEditorZoom( filename, function(){
-                                 cb();  
+                                 find_li_ed (filename,function(li_ed){
+                                      const editor = li_ed.editor;
+                                      editor.focus();
+                                      li_ed.scrollIntoView();
+                                      find_li(filename).scrollIntoView();
+                                      qs("header").scrollIntoView();
+                                      cb(); 
+                                 });
                             });
                         } else {
                             editor.focus();
