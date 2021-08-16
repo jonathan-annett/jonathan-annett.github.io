@@ -962,7 +962,7 @@ ml(`
                           return;
                     }
                     
-                    if ( qs(el,"a.undo-edits").style.display==="none") {
+                    if (  getStyle(qs(el,"a.undo-edits"), "display" )==="none") {
                     
                         const filename = findFilename(el);
                         const li = find_li(filename);
@@ -1835,6 +1835,15 @@ ml(`
                     
                     transientEditorMetaResave(li_ed,250);
                     
+                }
+                
+                
+                function getStyle(el,style) {
+                    el = typeof el==='string' ? qs(el) : el;
+                    if (el) {
+                       let compStyles = window.getComputedStyle(el);
+                       return compStyles.getPropertyValue(style); 
+                    }
                 }
                  
                 function saveEditorMeta(filename,li,editor_id,ed,li_ed,cb) {
