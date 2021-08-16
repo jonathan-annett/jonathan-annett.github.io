@@ -17,6 +17,7 @@ ml(`
     Tabulator             | ${ml.c.app_root}tabulator/dist/js/tabulator.min.js
     progressHandler       | ${ml.c.app_root}ml.progressHandler.js
     createBGFunction      | ${ml.c.app_root}ml.bgworkers.js 
+    zedkeys               | ${ml.c.app_root}ml.zedkeys.js 
    
     
     
@@ -26,6 +27,8 @@ ml(`
         Window: function pwaZipDirListing(pwa,zipFSApiLib,sha1,MarkdownConverter ) {
             
             const Tabulator    = ml.i.Tabulator;
+            
+            const zedkeys      = ml.i.zedkeys;
             
             const createBGFunction = ml.i.createBGFunction;
             
@@ -561,7 +564,7 @@ ml(`
                            if (results.length > 50) {
                                results.splice(50,results.length);
                            }
-                           updateSearchTable(results||[],function(){
+                           updateSearchTable(results,function(){
                                
                            });
                         });
@@ -1946,13 +1949,19 @@ ml(`
                                 if (row.column!==res.column) {
                                     row.column = res.column;
                                 }
+                                
+                                if (row.length !== res.length) {
+                                    res.length = res.length;
+                                }
                            } else {
-                                searchResultsTableData.push({text:res.text,filename:res.filename,line:res.line,column:res.column});
+                                searchResultsTableData.push({text:res.text,filename:res.filename,line:res.line,column:res.column,length:res.length});
                            }
                            delete res.text;
                            delete res.filename;
                            delete res.line;
                            delete res.column;
+                           delete res.length;
+                           
                      });
                    
                       if (searchResultsTableData.length>data.length ) {
@@ -2282,6 +2291,7 @@ ml(`
                         li.parentNode.insertBefore(li_ed, li.nextSibling);
                         
                         li_ed.editor = createEditor(editor_id,aceModeForFile(filename),aceThemeForFile(filename));
+                        zedkeys.addTo(li_ed.editor);
 
                         li_ed.sizebar = dragSize("#"+editor_id,["#"+editor_id+"_grab_bar"]);
                         qs("#"+editor_id,function(e){ e.getMaxHeight = getEditorMaxSize.bind(e);});
@@ -3234,15 +3244,10 @@ ml(`
                 
                 let searcherWrk;
                 let CB;
-                let changed = false;
-                var started_at;
                   
-                const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
-                 
                 return doSearch;
             
                 function doSearch(file_list,searchTerm,ignoreCase,words,cb) {
-                   started_at = getMsec();
                    var args   = {};
                    args.term  = searchTerm;
                    args.ignoreCase = ignoreCase;
@@ -3260,21 +3265,11 @@ ml(`
                         searcherWrk = searcher(
                               args, 
                               function(results) {
-                                  const arrived_at = getMsec();
                                   if (CB) {
-                                      const mapped_at = getMsec();
                                       CB(results);
-                                      const cbcomplete_at = getMsec();
                                       CB = null; 
-                                      console.log("search roundtrip:",  cbcomplete_at - started_at,"msec");
-                                      console.log("search thread took:",arrived_at - started_at,"msec");
-                                      console.log("mapping took:",      mapped_at     - arrived_at,"msec");
-                                      console.log("ui callback took :", cbcomplete_at - mapped_at,"msec");
-                                  } else {
-                                      console.log("search roundtrip:",arrived_at- started_at,"msec");
-                                  }
-                                  changed = false;
                                   
+                                  }
                               }
                         );
                    }
