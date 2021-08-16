@@ -2193,7 +2193,7 @@ ml(`
                         editor.scrollToLine(line, true, true, function () {});
                         editor.gotoLine(line, column, true);
                         if (is_full) {
-                            toggleEditorZoom( filename, function(){
+                                toggleEditorZoom( filename, function(){
                                 cb(); 
                             });
                         } else {
@@ -2553,9 +2553,11 @@ ml(`
                         li_ed.editor.session.off('change',            li_ed.inbuiltEditorOnSessionChange);
                         li_ed.editor.session.off('changeAnnotation',  li_ed.changeAnnotationFunc );
                         
+                        resizers.off(li_ed,editorResized);
+                        
                         saveEditorMeta(filename,li,editor_id,ed,li_ed,function(){
                         
-                                resizers.off(li_ed,editorResized);
+                                
     
                                 li.classList.remove("editing");
 
