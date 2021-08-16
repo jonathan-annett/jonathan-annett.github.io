@@ -267,12 +267,21 @@ ml(`
                         };
                     }
                     
+                    qs("#show_hidden",function onclick(){
+                        showHidden.checked = !showHidden.checked;
+                        showHidden.onchange();
+                    });
+                    
                     const showPaths=qs("h1 input.fullpath_chk");
                     if (showPaths) {
                         showPaths.onchange = function() {
                            qs("ul").classList[showPaths.checked?"remove":"add"]("hide_full_path");
                         };
                     }
+                    qs("#show_fullpath",function onclick(){
+                        showPaths.checked = !showPaths.checked;
+                        showPaths.onchange();
+                    });
                     
                     
                     const fs_api = ml.i.devClassLib().fs_api;
