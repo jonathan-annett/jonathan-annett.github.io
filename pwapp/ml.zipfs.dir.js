@@ -2285,7 +2285,8 @@ ml(`
                     li=li||find_li (filename);
                     const file_url = join(dir.url,filename); 
                     let editor_id = li.dataset.editor_id;
-                    if (!editor_id) {
+                    const ed = editor_id && qs("#"+editor_id);
+                    if (!ed) {
                         
                         while (true) {
                            editor_id = 'ed_'+Math.random().toString(36).substr(-8);
@@ -2352,7 +2353,7 @@ ml(`
                         
                         return li_ed;
                     } else {
-                        const ed = qs("#"+editor_id);
+                        
                         const li_ed = ed.parentNode;
                        
                         CB(li_ed);
@@ -2548,7 +2549,10 @@ ml(`
                         li.classList.remove("editing");
                         
                         const ed = qs("#"+editor_id);
-                        
+                        if (!ed) {
+                            delete li.dataset.editor_id;
+                            return CB();
+                        }
                         const li_ed = ed.parentNode;
                         li_ed.editor.session.off('change',            li_ed.inbuiltEditorOnSessionChange);
                         li_ed.editor.session.off('changeAnnotation',  li_ed.changeAnnotationFunc );
