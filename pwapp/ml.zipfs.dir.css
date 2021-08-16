@@ -612,7 +612,7 @@ html.dialog .clearfix::after {
   position:relative;
   top: -16px;
   height:6px;
-  width:calc(100% -  17px);
+  width:100%;
   z-index:99999;
 }
 
@@ -819,7 +819,7 @@ li.editing label.dropdown {
       }
 
       html.footer_collapse footer > label{
-         top:10px;
+         top:0px;
       }
       
       html.footer_collapse.zooming footer > label{
