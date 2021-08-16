@@ -342,20 +342,8 @@ ml(`
                     setupDragAndDrop();
                     
                     const footer = qs("footer");
-                    const footer_toggle_divs = [ "footer div.tab-wrapper", "#drop-area","#footer_grab"].map(qs);
-                    
                     const footer_collapse_check = qs("#footer_collapse_check",function change(){
-                        footer_toggle_divs.forEach(function(el){
-                            el.style.display = footer_collapse_check.checked ? "none" : "block";
-                        });
-                        
-                        if (footer_collapse_check.checked) {
-                             footer.dataset.height = getStyle(footer,"height",true);
-                             footer.style.height = getStyle(footer_collapse_check,"height",true) +"px";
-                        } else {
-                             footer.style.height = (footer.dataset.height || footer.getMinHeight()) +"px";
-                        }
-                       
+                        qs("html").classList[footer_collapse_check.checked?"add":"remove"]("footer_collapse");
                     });
                     
                     footer.getMinHeight = function(){
