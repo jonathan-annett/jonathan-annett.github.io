@@ -14,6 +14,7 @@ ml([],function(){ml(2,
             // add / override window specific methods here
             
             function drag(el,Hotzones) {
+                
               var dragStartX, dragStartY; var objInitLeft, objInitTop;
               var inDrag = false;
               var dragTarget = typeof el==='string'?qs(el):el;
@@ -67,6 +68,7 @@ ml([],function(){ml(2,
               var inSize = false,sizeMode;
               var dragTarget = typeof el==='string'?qs(el):el;
               var maxHeight,maxWidth;
+              var minHeight,minWidth;
               document.addEventListener("mousedown", mousedown);
               document.addEventListener("mousemove", mousemove);
               document.addEventListener("mouseup", mouseup);
@@ -127,11 +129,17 @@ ml([],function(){ml(2,
                     if (dragTarget.getMaxWidth) {
                         maxWidth=dragTarget.getMaxWidth();
                     } 
+                    if (dragTarget.getMinWidth) {
+                        minWidth = dragTarget.getMinWidth();
+                    }
                 }
                 if (isVert) {
                     if (dragTarget.getMaxHeight) {
                         maxHeight=dragTarget.getMaxHeight();
                     } 
+                    if (dragTarget.getMinHeight) {
+                        minHeight = dragTarget.getMinHeight();
+                    }
                 }
               }
               
@@ -144,19 +152,26 @@ ml([],function(){ml(2,
               function mousemove(e) {
                 if (paused) return;  
                 if (!inSize) {return;}
+                let h_ok = sizeMode.h;
                 
-                if (sizeMode.h) {
+                if (h_ok) {
                     const newWidth = objInitWidth + deltaX *(e.pageX-dragStartX);
                     if (maxWidth) {
-                        if (newWidth<=maxWidth) {
-                            dragTarget.style.width   = newWidth + "px";
+                        if (newWidth>maxWidth) {
+                            h_ok=false;
                         }
-                    } else {
-                       if (attached) attached(newWidth)
-                       dragTarget.style.width   = newWidth + "px";
+                    }
+                    if (minWidth) {
+                        if (newWidth<minWidth) {
+                            h_ok=false;
+                        }
+                    }
+                    if (h_ok) {
+                        if (attached) attached(newWidth);
+                        dragTarget.style.width   = newWidth + "px";
                     }
                 }
-                
+
                 if (sizeMode.v) {
                     const newHeight = objInitHeight + deltaY * (e.pageY-dragStartY);
                     if (maxHeight) {
@@ -164,6 +179,11 @@ ml([],function(){ml(2,
                             return;
                         }
                     } 
+                    if (minHeight) {
+                        if (newHeight<minHeight) {
+                            return;
+                        }
+                    }
                     if (attached) attached(undefined,newHeight);
                     dragTarget.style.height  = newHeight + "px";
                 }

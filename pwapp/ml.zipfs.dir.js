@@ -341,6 +341,10 @@ ml(`
                     
                     setupDragAndDrop();
                     
+                    qs("footer").getMinHeight = function(){
+                        return 250;
+                    }
+                    
                     footer_grab_bar = dragSize("footer",["#footer_grab"],undefined,0,-1);
                     
                     if (editor_channel) {

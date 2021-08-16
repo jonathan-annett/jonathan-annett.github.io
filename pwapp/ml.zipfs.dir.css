@@ -716,7 +716,7 @@ li.editing label.dropdown {
   .tabs {
     position: relative;
     /* margin: 3rem 0; */
-    background: #f0f0f0;
+    background: #e8e8e8;
     height: 100%;
   }
   .tabs::before,
