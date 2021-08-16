@@ -342,7 +342,7 @@ ml(`
                     setupDragAndDrop();
                     
                     qs("footer").getMinHeight = function(){
-                        return 250;
+                        return 150;
                     }
                     
                     footer_grab_bar = dragSize("footer",["#footer_grab"],undefined,0,-1);
