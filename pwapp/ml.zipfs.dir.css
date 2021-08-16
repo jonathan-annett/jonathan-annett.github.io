@@ -459,6 +459,7 @@ footer {
   min-height: 20px;
   display: flex;
   height: 200px;
+  top:-16px;
 }
 
 html.zooming main {
@@ -612,6 +613,7 @@ html.dialog .clearfix::after {
   top: -16px;
   height:6px;
   width:calc(100% -  17px);
+  z-index:99999;
 }
 
 
