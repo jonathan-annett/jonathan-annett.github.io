@@ -784,20 +784,20 @@ li.editing label.dropdown {
 @media only screen /* collapse/show checkbox */ {
     
     
-    .footer_collapse  input[type='checkbox'] {
-        display:none;
+
+    .footer_collapse input[type="checkbox"],
+        .footer_collapse .checked {
+        display: none;
     }
-    
-    .footer_collapse   input[type='checkbox']+ label:before {
-        font-family: 'Font Awesome 5 Free';
-        content: "\f103";
-        font-size:1.5rem;
-        cursor:pointer;
-     
+
+    .footer_collapse input[type="checkbox"]:checked ~ .checked
+    {
+        display: inline-block;
     }
-     
-    .footer_collapse  input[type='checkbox']:checked + label:before {
-         content: "\f102";
+
+    .footer_collapse input[type="checkbox"]:checked ~ .unchecked
+    {
+        display: none;
     }
     
     
