@@ -28,7 +28,7 @@ ml(`
             
             const Tabulator    = ml.i.Tabulator;
             
-            const zedkeys      = ml.i.zedkeys;
+            const zedkeys      = ml.i.zedkeys();
             
             const createBGFunction = ml.i.createBGFunction;
             
