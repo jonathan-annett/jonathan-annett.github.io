@@ -341,17 +341,26 @@ ml(`
                     
                     setupDragAndDrop();
                     
-                    qs("footer").getMinHeight = function(){
-                        return 150;
-                    };
+                    const footer = qs("footer");
+                    const footer_toggle_divs = [ "footer div.tab-wrapper", "#drop-area"].map(qs);
                     
                     const footer_collapse_check = qs("#footer_collapse_check",function change(){
-                        const els = [ "footer div.tab-wrapper", "#drop-area"].map(qs);
-                        els.forEach(function(el){
-                            el.style.display = footer_collapse_check.checked ?"none" : "block";
+                        footer_toggle_divs.forEach(function(el){
+                            el.style.display = footer_collapse_check.checked ? "none" : "block";
                         });
+                        
+                        if (footer_collapse_check.checked) {
+                             footer.dataset.height = getStyle(footer,"height",true);
+                             footer.style.height = getStyle(footer_collapse_check,"height",true) +"px";
+                        } else {
+                             footer.style.height = (footer.dataset.height || footer.getMinHeight()) +"px";
+                        }
+                       
                     });
                     
+                    footer.getMinHeight = function(){
+                        return footer_collapse_check.checked  ? getStyle(footer_collapse_check,"height",true) : 150;
+                    };
                     footer_grab_bar = dragSize("footer",["#footer_grab"],undefined,0,-1);
                     
                     if (editor_channel) {
@@ -1845,14 +1854,18 @@ ml(`
                 }
                 
                 
-                function getStyle(el,style) {
+                function getStyle(el,style,num) {
                     el = typeof el==='string' ? qs(el) : el;
                     if (el) {
                        let compStyles = window.getComputedStyle(el);
-                       return compStyles.getPropertyValue(style); 
+                       const result = compStyles.getPropertyValue(style); 
+                       
+                       return num ? Number.parseInt(result) : result;
                     }
                 }
                  
+               
+                
                 function saveEditorMeta(filename,li,editor_id,ed,li_ed,cb) {
                     if (typeof li==='function') {
                         cb=li;
