@@ -448,7 +448,7 @@ ml(`
                             console.log("located");
                         });
                     }
-                    
+                    debugger;
                     loadErrors(function(){
                             updateSelectedTable(function(){
                             zipPollerIndex = -1;
