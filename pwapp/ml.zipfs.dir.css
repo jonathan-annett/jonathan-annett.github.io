@@ -8,7 +8,15 @@ h1 {
 h1 span i {
    font-size:2em;
 }
-h1 span{font-size: 0.5em;}
+h1 span{
+  font-size: 0.5em;
+  top:-1px;
+  position:relative;
+}
+h1 input[type="checkbox"] {
+  position:relative;
+  top:3px;
+}
 a,a:visited,a:link {
     color:navy;
     cursor:pointer;
