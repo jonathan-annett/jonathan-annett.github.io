@@ -342,7 +342,7 @@ ml(`
                     setupDragAndDrop();
                     
                     const footer = qs("footer");
-                    const footer_toggle_divs = [ "footer div.tab-wrapper", "#drop-area"].map(qs);
+                    const footer_toggle_divs = [ "footer div.tab-wrapper", "#drop-area","#footer_grab"].map(qs);
                     
                     const footer_collapse_check = qs("#footer_collapse_check",function change(){
                         footer_toggle_divs.forEach(function(el){
