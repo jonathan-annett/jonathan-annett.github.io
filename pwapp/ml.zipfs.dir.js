@@ -2147,7 +2147,7 @@ ml(`
                 }
 
                 function findError(filename,line,column,cb) {
-                    const is_full = !!fs_li_ed;
+                    const is_full = !!fs_li_ed && zoom_filename !==filename;
                     
                     const firstStep = is_full ? doFindError1 : doFindError2;
                     if (tempErrorEditor && tempErrorEditor !== filename) {
