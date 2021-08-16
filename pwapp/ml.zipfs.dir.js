@@ -1962,6 +1962,7 @@ ml(`
                             errorsTable = new Tabulator("#errors_table", {
                                 autoColumns:true,
                                 placeholder:"No Errors", 
+                                maxHeight:"100%",
                                 layout:"fitColumns",
                                 autoColumnsDefinitions:[
                                     {title:"Filename",       field:"filename",
@@ -2010,6 +2011,7 @@ ml(`
                             warningsTable = new Tabulator("#warnings_table", {
                                 autoColumns:true,
                                 layout:"fitColumns",
+                                maxHeight:"100%",
                                 placeholder:"No Warnings", 
                                 autoColumnsDefinitions:[
                                     {field:"type",visible:false},
@@ -2064,6 +2066,7 @@ ml(`
                             searchResultsTable = new Tabulator("#search_table", {
                                 autoColumns:true,
                                 layout:"fitColumns",
+                                maxHeight:"100%",
                                 placeholder:"No Search Results", 
                                 autoColumnsDefinitions:[
                                     {title:"Filename",       field:"filename",
