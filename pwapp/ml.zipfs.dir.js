@@ -483,6 +483,7 @@ ml(`
                         }
                         
                         [].forEach.call(document.querySelectorAll("li"),func);
+                        seachTextChanged(qs("#search_text").value);
                     });
                 }
 
@@ -511,8 +512,14 @@ ml(`
                     };
                     
                     
-                    function seachTextChanged(value){
+                    
+                    
+                }
+                function seachTextChanged(value){
                         qs("#tab-3").checked=true;
+                        const ignoreCase  = qs("#search_case");
+                        const searchWords = qs("#search_words");
+                        
                         searchForTerm(value,ignoreCase.checked,searchWords.checked,function(results){
                            console.log("got",results.length,"search results");
                            if (results.length > 50) {
@@ -522,22 +529,16 @@ ml(`
                                
                            });
                         });
-                    }
-                    
                 }
-
 
                 function searchForTerm(term,ignoreCase,words,cb) {
                     
                     if (searchForTerm.func) {
-                        startSearch();
+                         startSearch();
                     } else {
-                         //searchForTerm.func = getSearchFunction(getFileForSearchWorker,watchFile,unwatchFile);
-                         searchForTerm.func = getSearchFunction2(dir);
+                         searchForTerm.func = getSearchFunction(dir);
                          startSearch();
                     }
-                    
-                   
  
                     function startSearch() {
                         if (term.trim().length>3) {
@@ -1950,7 +1951,6 @@ ml(`
                   }
                 }
                 
-               
                 function updateErrorsTable(cb) {
                     
                     getErrorTableData();
@@ -2480,7 +2480,6 @@ ml(`
                         }
                     }
                 }
-                
                 
                 function closeInbuiltEditor(filename,li,cb) {
                     li=li||find_li (filename);
@@ -3182,324 +3181,13 @@ ml(`
             }
             
             
-            //getSearchFunction() returns a function to handle searching for freeform text 
-            // the function returned is:  function(file_list,searchTerm,ignoreCase,cb)
-            // where file_list is a list of filenames to search in
-            // and cb is a callback the accepts and array of search results
-            function getSearchFunction(getSearchFile,watchFile,unwatchFile) {
+            function getSearchFunction(dir) {
                 
-                const searcher = createBGFunction(bigStringBGThread);
+                const searcher = createBGFunction(searchWorkerFunc);
+                
                 let searcherWrk;
-                let files = {},watched={};
-                let clearCacheTimeout;
                 let CB;
                 let changed = false;
-                let lastCase;
-                var started_at;
-                const el = qs ("#search_load");
-                
-                let progress_complete = 0;
-                let progress_total = 1;
-                let progrss_handler = progressHandler(progress_complete,progress_total,el);
-                
-                const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
-                 
-                return doSearch;
-              
-                function getSearchText(needed,matchClause,cb) {
-                    
-                    Object.keys(files).forEach(function(filename){
-                        
-                        if (needed.indexOf(filename)<0){
-                            delete files[filename].text;
-                            delete files[filename].filename;
-                            delete files[filename];
-                        }
-                        
-                    });
-                    progrss_handler.setTotal(needed.length);
-                    
-                   
-                    
-                    loop(0);
-                    
-                    function loop(index) {
-                        progrss_handler.setComplete(index);
-                        
-                        if (index < needed.length) {
-                            
-                            const filename = needed[index];
-                            const prev = files [ filename ];
-                            if ( prev ) {
-                                
-                                if (!prev.url) {
-                                    prev.url = watchFile(filename,onWatchedFile);
-                                }
-                                loop(index+1);
-                                
-                            } else {
-                                
-                                getFile ( filename, function() {
-                                    
-                                    const newfile  = files [ filename ];
-                                    newfile.url = watchFile(filename,onWatchedFile);
-                                    changed = true;
-                                    loop(index+1);
-                                    
-                                } );
-                                
-                            }
-                            
-                        } else {
-                            progrss_handler.setComplete(needed.length);
-                            cb();
-                        }
-                    }
-                    
-                }
-                
-                function doSearch(file_list,searchTerm,ignoreCase,cb) {
-                   if (clearCacheTimeout) {
-                       clearTimeout(clearCacheTimeout);
-                       clearCacheTimeout = undefined;
-                   }
-                   started_at = getMsec();
-                   var args = {};
-                   args.term = ignoreCase ? searchTerm.toLowerCase() : searchTerm;
-
-                   getSearchText ( file_list, args.matchClause, function(  ) {
-
-                        CB=cb;
-                        
-                        if (searcherWrk) {
-                            
-                            if (changed || lastCase!==ignoreCase) {
-                                const str = getSearchStringContext(files);
-                                args.str  = ignoreCase ? str.toLowerCase() : str;
-                                lastCase=ignoreCase;
-                            }
-                            
-                            searcherWrk.postMessage(args);
-                            
-                        } else {
-                            
-                            const str = getSearchStringContext(files);
-                            args.str  = ignoreCase ? str.toLowerCase() : str;
-                            lastCase=ignoreCase;
-                            
-                            searcherWrk = searcher(
-                                  args, 
-                                  function(results) {
-                                      const arrived_at = getMsec();
-                                      if (CB) {
-                                          getFileResults(files,results);
-                                          const mapped_at = getMsec();
-                                          CB(results);
-                                          const cbcomplete_at = getMsec();
-                                          CB = null; 
-                                          console.log("search roundtrip:",  cbcomplete_at - started_at,"msec");
-                                          console.log("search thread took:",arrived_at - started_at,"msec");
-                                          console.log("mapping took:",      mapped_at     - arrived_at,"msec");
-                                          console.log("ui callback took :", cbcomplete_at - mapped_at,"msec");
-                                      
-                                      } else {
-                                          console.log("search roundtrip:",arrived_at- started_at,"msec");
-                                      
-                                      }
-                                      changed = false;
-                                      
-                                  }
-                            );
-                            
-                        }
-                        
-                        
-        
-                    });
-
-                }
-                
-                function clearCache() {
-                    Object.keys(watched).forEach(function(url){
-                       const filename = watched[url];
-                       unwatchFile(filename,onWatchedFile);
-                       delete watched[url];
-                    });
-                    Object.keys(files).forEach(function(filename){
-                        delete files[filename].text;
-                        delete files[filename].filename;
-                        delete files[filename];
-                    });
-                }
-                
-                function onWatchedFile(cmd,file_url,text) {
-                    const filename = watched[file_url];
-                    if (filename && files [ filename ]) {
-                        files [ filename ].text = text;
-                        changed = true;
-                    }
-                }
-                
-                function getFile(filename,cb) {
-                    
-                    if (files[filename] && !files[filename]) return cb ();
-                    
-                    getSearchFile(filename,function(err,text,isOpen){
-                        if (err) return;
-                        
-                        files [ filename ] = {
-                            filename : filename,
-                            text     : text
-                        };
-                        
-                        
-                        cb();
-                    });
-                    
-                }
-                
-                
-                function js_commentWhiteout(str) {
-                    
-                    const chars = str.split('');
-                    let inComment1,inComment2,inStr1,inStr2;
-                    let white = String.fromCharCode(255);
-                    for (let i = 0; i < str.length; i++) {
-
-                        if (inComment1) {
-
-                            if (chars[i] + chars[i + 1] === '*/') {
-                                chars[i] = white;
-                                i++;
-                                chars[i] = white;
-                                inComment1 = false;
-                            } else {
-                                chars[i] = white;
-                            }
-                        } else {
-
-                            if (inComment2) {
-                                if (chars[i] === "\n") {
-                                    inComment2 = false;
-                                } else {
-                                    chars[i] = white;
-                                }
-                                
-                            } else {
-                                if (inStr1) {
-                                    if (chars[i] === '"') {
-                                        inStr1 = false;
-                                    } else {
-                                        if (chars[i] === "\\") {
-                                            i++;
-                                        }
-                                    }
-                                } else {
-                                    if (inStr2) {
-                                        if (chars[i] === '"') {
-                                            inStr2 = false;
-                                        } else {
-                                            if (chars[i] === "\\") {
-                                                i++;
-                                            }
-                                        }
-                                    } else {
-                                        switch (chars[i]) {
-                                            case "'":
-                                                inStr1 = true;
-                                                break;
-                                            case '"':
-                                                inStr2 = true;
-                                                break;
-                                            case '/':
-                                                if (chars[i + 1] === '*') {
-                                                    inComment1 = true;
-                                                    i++;
-                                                    break;
-                                                }
-                                                if (chars[i + 1] === '/') {
-                                                    inComment2 = true;
-                                                    i++;
-                                                    break;
-                                                }
-                                        }
-                                    }
-                                }
-                            }
-                            
-                        }
-                        
-                    }
-                    
-                    const result = chars.join('');
-                    chars.splice(0,chars.length);
-                    return result;
-                }
-                
-                function getSearchStringContext(files){
-                    // returns a single string representing all files. yes really.
-                    const keys = Object.keys(files);
-                    keys.sort();
-                    const content = keys.map(function(k){ return files[k].text;});
-                    const result = content.join('');
-                    keys.splice(0,keys.splice);//expedite garbage collection
-                    content.splice(0,content.length);//expedite garbage collection
-                    return result;
-                }
-               
-                
-                // converts array of indexes to array of entries detailing which file the index occurs in
-                // also includes +/- 64 bytes of context (ie 128 bytes of context)
-                function getFileResults(files,indexes) {
-                    const keys = Object.keys(files);
-                    keys.sort();
-                    const file_array = keys.map(function(key){ return files[key]});
-                    keys.splice(0,keys.length);
-                    
-                    let offset = 0;
-                    let file = file_array.shift();
-                    for (let i = 0; i < indexes.length ; i++) {
-                        while (offset+file.text.length<indexes[i]) {
-                            offset += file.text.length;
-                            file    = file_array.shift();
-                        }
-                        const index  = indexes[i] - offset; 
-                        const lines  = file.text.substr(0,index).split("\n");
-                        const line   = lines.length;
-                        const text   = lines.pop();
-                        const nextLine = file.text.substr(index,file.text.substr(index).indexOf("\n"));
-                        
-                        const context = 
-                            // if trimming the start of a line, don't start halfway through a token
-                            (text.length < 64 ? text :  text.substr(-64).replace(/^[A-z0-9\_\$]*\s*/,'') ) + 
-                            
-                            // if trimming the end of a line, don't end halfway through a token
-                            (nextLine.length < 64 ? nextLine : nextLine.replace(/\s*[A-z0-9\_\$]*$/,'') );
-                        
-                        const column = text.length;
-                        lines.splice(0,lines.length);
-                        indexes[i] = {
-                            filename : file.filename,
-                            text     : context,
-                            line     : line,
-                            column   : column
-                        };
-                    }
-                }
-            
-            }
-            
-            // iteration of getSearchFunction - moves more functionality to background worker function
-            // ( fetches text data directly from service worker in the background function, which speeds up UI considerably)
-            function getSearchFunction2(dir) {
-                
-                const searcher = createBGFunction(bigStringBGThread);
-                let searcherWrk;
-                let files = {},watched={};
-                let clearCacheTimeout;
-                let CB;
-                let changed = false;
-                let lastCase;
                 var started_at;
                   
                 const getMsec = typeof performance !=='undefined' ? performance.now.bind(performance) : Date.now.bind(Date);
@@ -3507,13 +3195,9 @@ ml(`
                 return doSearch;
             
                 function doSearch(file_list,searchTerm,ignoreCase,words,cb) {
-                   if (clearCacheTimeout) {
-                       clearTimeout(clearCacheTimeout);
-                       clearCacheTimeout = undefined;
-                   }
                    started_at = getMsec();
-                   var args = {};
-                   args.term = searchTerm;
+                   var args   = {};
+                   args.term  = searchTerm;
                    args.ignoreCase = ignoreCase;
                    args.words = words;
                    args.dir = {
@@ -3522,7 +3206,7 @@ ml(`
                        files : dir.files
                    };
                    args.files = file_list;
-                   CB=cb;
+                   CB = cb;
                    if (searcherWrk) {
                         searcherWrk.postMessage(args);
                    } else {
@@ -3552,7 +3236,7 @@ ml(`
             
             }
             
-            function bigStringBGThread(args,cb) {
+            function searchWorkerFunc(args,cb) {
                 
                 let str;
                 let files_db;
@@ -3608,11 +3292,12 @@ ml(`
                 
                 
                 
-                 function regexpEscape(str) {
+                function regexpEscape(str) {
                    return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
-                 }
+                }
                 
                 function makeRegExp(str,ignoreCase,words) {
+                    
                    const splits = str.split(/\s/g).map(function(x){return x.trim()}).filter(function(x){ return !!x;});
                    if (splits.length===1) {
                        if (words) {
@@ -3628,9 +3313,7 @@ ml(`
                        return new RegExp(splits.map(regexpEscape).join('\\s*'),ignoreCase ? 'i' : '');
                    }
                    
-                   
                 }
-                                
                 
                 function bigStringSearchViaRegexp(str,regexp,ignoreCase,words) {
                    const result = [];
@@ -3705,7 +3388,6 @@ ml(`
                     content.splice(0,content.length);//expedite garbage collection
                     return result;
                 }
-                
                 
                 // converts array of indexes to array of entries detailing which file the index occurs in
                 // also includes +/- 64 bytes of context (ie 128 bytes of context)
