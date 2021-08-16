@@ -962,7 +962,7 @@ ml(`
                           return;
                     }
                     
-                    if (  getStyle(qs(el,"a.undo-edits"), "display" )==="none") {
+                    if (  getStyle(qs(el,"a.errors"), "display" )==="none") {
                     
                         const filename = findFilename(el);
                         const li = find_li(filename);
