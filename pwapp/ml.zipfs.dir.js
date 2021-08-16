@@ -2582,14 +2582,18 @@ ml(`
                                 
                                 delete li_ed.editor;
                                 
-                                li_ed.hashDisplay.textContent='';
+                                if (li_ed.hashDisplay) {
+                                    li_ed.hashDisplay.textContent='';
+                                    delete li_ed.hashDisplay;
+                                }
                                 
                                 zipPollerIndex = zip_files.indexOf(filename)-1;
-                                
-                                delete li_ed.hashDisplay;
-                                
-                                li_ed.sizebar.destroy();
-                                delete li_ed.sizebar;
+
+                                if (li_ed.sizebar) {
+                                    li_ed.sizebar.destroy();
+                                    delete li_ed.sizebar;
+                                }
+                               
                                 
                                 delete li_ed.setText;
                                 delete li_ed.reload;
