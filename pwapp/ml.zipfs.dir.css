@@ -855,8 +855,7 @@ li.editing label.dropdown {
 }
 
 
-
-.tabulator-table {
-   overflow-x: hidden;
-
+.tabulator-tableHolder {
+   overflow-x: hidden !important;
 }
+

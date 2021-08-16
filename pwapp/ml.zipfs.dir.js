@@ -3372,7 +3372,7 @@ ml(`
                    while (find) { 
                       const xlen = find[0].length,ix=find.index; 
                       offset += ix;
-                      result.push(offset);
+                      result.push({ix:offset,length:xlen});
                       offset += xlen;
                       str = str.substr(ix+xlen);
                       find = regexp.exec(str);
@@ -3398,7 +3398,7 @@ ml(`
                     let offset = 0, len = splits.length, ix;
                     for (ix = 0; ix < len ; ix ++) {
                        let end = offset + splits[ix].length;
-                       splits[ix] = end;
+                       splits[ix] = {ix:end,length:termLength};
                        offset = end+termLength;
                     }
                     splits.pop();
@@ -3440,7 +3440,7 @@ ml(`
                     return result;
                 }
                 
-                // converts array of indexes to array of entries detailing which file the index occurs in
+                // converts array of indexes/lengths to array of entries detailing which file the index occurs in
                 // also includes +/- 64 bytes of context (ie 128 bytes of context)
                 function getFileResults(files,indexes) {
                     const keys = Object.keys(files);
@@ -3451,11 +3451,12 @@ ml(`
                     let offset = 0;
                     let file = file_array.shift();
                     for (let i = 0; i < indexes.length ; i++) {
-                        while (offset+file.text.length<indexes[i]) {
+                        while (offset+file.text.length<indexes[i].ix) {
                             offset += file.text.length;
                             file    = file_array.shift();
                         }
-                        const index  = indexes[i] - offset; 
+                        const index  = indexes[i].ix - offset; 
+                        delete indexes[i].ix;
                         const lines  = file.text.substr(0,index).split("\n");
                         const line   = lines.length;
                         const text   = lines.pop();
@@ -3468,14 +3469,12 @@ ml(`
                             // if trimming the end of a line, don't end halfway through a token
                             (nextLine.length < 64 ? nextLine : nextLine.replace(/\s*[A-z0-9\_\$]*$/,'') );
                         
-                        const column = text.length;
                         lines.splice(0,lines.length);
-                        indexes[i] = {
-                            filename : file.filename,
-                            text     : context,
-                            line     : line,
-                            column   : column
-                        };
+                        indexes[i].filename = file.filename;
+                        indexes[i].text     = context;
+                        indexes[i].line     = line;
+                        indexes[i].column   = text.length;
+                        
                     }
                 }
                 
