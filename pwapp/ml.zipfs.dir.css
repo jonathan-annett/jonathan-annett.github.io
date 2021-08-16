@@ -254,7 +254,7 @@ pre.fs_editor {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 100%;
+    height: calc(100% - 36px);
     width: 100%;
  }
  
@@ -785,11 +785,43 @@ li.editing label.dropdown {
 
 @media only screen /* collapse/show checkbox */ {
     
-    .footer_collapse {
+    footer label.footer_collapse {
       position:absolute;
       right:0;
       top:0;
     }
+
+    html.footer_collapse #footer_grab,
+    html.footer_collapse footer > div {
+      display :none;
+    }
+
+      html.footer_collapse main {
+         margin-bottom: -26px;    
+      }
+
+     html.footer_collapse.zooming main {
+         margin-bottom: -26px;    
+      }
+
+     
+
+     html.footer_collapse footer {
+       height : 32px;
+       margin-bottom: -20px;
+       background-color:transparent;
+     }
+
+      footer label.footer_collapse {
+         top:2px;
+         right : 0px;
+         background-color:white;
+      }
+
+
+      html.footer_collapse footer > label{
+         top:10px;
+      }
 
     .footer_collapse input[type="checkbox"],
     .footer_collapse .checked {
