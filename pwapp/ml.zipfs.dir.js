@@ -267,7 +267,7 @@ ml(`
                         };
                     }
                     
-                    qs("#show_hidden",function onclick(){
+                    qs("#show_hidden",function click(){
                         showHidden.checked = !showHidden.checked;
                         showHidden.onchange();
                     });
@@ -278,7 +278,7 @@ ml(`
                            qs("ul").classList[showPaths.checked?"remove":"add"]("hide_full_path");
                         };
                     }
-                    qs("#show_fullpath",function onclick(){
+                    qs("#show_fullpath",function click(){
                         showPaths.checked = !showPaths.checked;
                         showPaths.onchange();
                     });
