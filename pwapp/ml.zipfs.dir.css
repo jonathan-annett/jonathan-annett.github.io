@@ -784,7 +784,7 @@ li.editing label.dropdown {
 @media only screen /* collapse/show checkbox */ {
     
     .footer_collapse {
-      position:relative;
+      position:absolute;
       left:0;
       top:0;
     }
@@ -804,5 +804,9 @@ li.editing label.dropdown {
         display: none;
     }
     
+    
+    footer div.footer_collapse input[type="checkbox"]:checked ~ footer > div {
+         display:none;
+    }
     
 }
