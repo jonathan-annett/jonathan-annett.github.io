@@ -61,6 +61,12 @@ ml(`
                 const available_scripts = [];
                 const edit_hooks = {};
                 
+                resizers.on(qs("main"),100,function(){
+                    if (fs_li_ed && fs_li_ed.editor) {
+                        fs_li_ed.editor.resize();
+                    }
+                })
+                
                 var footer_grab_bar;
                 
                 const filesBeingEdited  = [
