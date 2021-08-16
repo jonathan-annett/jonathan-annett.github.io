@@ -2125,6 +2125,7 @@ ml(`
                                 ],
                                 rowClick:function(e,row){
                                    e.preventDefault();
+                                   
                                    findError(
                                        row._row.data.filename,
                                        row._row.data.line,
@@ -2146,20 +2147,31 @@ ml(`
                 }
 
                 function findError(filename,line,column,cb) {
+                    const is_full = !!fs_li_ed;
+                    
+                    const firstStep = is_full ? doFindError1 : doFindError2;
                     if (tempErrorEditor && tempErrorEditor !== filename) {
                         const li = find_li(tempErrorEditor);
                         closeInbuiltEditor ( tempErrorEditor,li, function(){
-                             doFindError1();
+                            firstStep ();
                         });
                     } else {
-                        doFindError1();
+                        firstStep();
                     }
                     
-                    function doFindError1() {
+                    
+                    function doFindError1 () {
+                        toggleEditorZoom( zoom_filename, function(){
+                             doFindError2();  
+                        });
+                    }
+                    
+                    function doFindError2() {
                         
+                         
                         find_li_ed (filename,function(li_ed){
                             if (li_ed) {
-                                doFindError2(li_ed);
+                                doFindError3(li_ed);
                             } else {
                                 const li = find_li(filename);
                                 openInbuiltEditor ( filename,li, function(){
@@ -2167,7 +2179,7 @@ ml(`
                                     const ed = qs("#"+editor_id);
                                     if (ed) {
                                         const li_ed = ed.parentNode;
-                                        doFindError2(li_ed);
+                                        doFindError3(li_ed);
                                     }
                                 });
                             }
@@ -2175,16 +2187,22 @@ ml(`
 
                     }
                     
-                    function doFindError2(li_ed) {
+                    function doFindError3(li_ed) {
                         const editor = li_ed.editor;
                         editor.resize(true);
                         editor.scrollToLine(line, true, true, function () {});
                         editor.gotoLine(line, column, true);
-                        editor.focus();
-                        li_ed.scrollIntoView();
-                        find_li(filename).scrollIntoView();
-                        qs("header").scrollIntoView();
-                        cb();
+                        if (is_full) {
+                            toggleEditorZoom( filename, function(){
+                                 cb();  
+                            });
+                        } else {
+                            editor.focus();
+                            li_ed.scrollIntoView();
+                            find_li(filename).scrollIntoView();
+                            qs("header").scrollIntoView();
+                            cb();
+                        }
                     } 
                 }
                 
