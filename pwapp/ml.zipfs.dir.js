@@ -448,7 +448,7 @@ ml(`
                             console.log("located");
                         });
                     }
-                    debugger;
+
                     loadErrors(function(){
                             updateSelectedTable(function(){
                             zipPollerIndex = -1;
@@ -2034,6 +2034,8 @@ ml(`
                            
                             errorsTable.setData(errorsTableData).then(cb);
     
+                        } else {
+                            cb();
                         }
                     } else {
                         errorsTable.replaceData(errorsTableData).then(cb);
@@ -2082,6 +2084,8 @@ ml(`
                                 }
                             });
                             warningsTable.setData(warningsTableData).then(cb);
+                        } else {
+                            cb();
                         }
                    
                     } else {
@@ -2137,6 +2141,8 @@ ml(`
                                 }
                             });
                             searchResultsTable.setData(searchResultsTableData).then(cb);
+                        } else {
+                            cb();
                         }
                         
                         
