@@ -953,14 +953,18 @@ ml(`
                 }
                 
                 function toggleEditorClick(e){
-                    if (["A","LI"].indexOf(e.target.tagName)<0){
-                       e.stopPropagation();
-                       return;
+                    let el = e.target;
+                    switch(el.tagName) {
+                        case "A" : el = el.parentNode; break;
+                        case "LI": break;
+                        default:
+                          e.stopPropagation();
+                          return;
                     }
                     
-                    if ( qs(e.target,"a.undo-edits").style.display==="none") {
+                    if ( qs(el,"a.undo-edits").style.display==="none") {
                     
-                        const filename = findFilename(e.target);
+                        const filename = findFilename(el);
                         const li = find_li(filename);
                         if (!e.shiftKey && zoomEl) {
                             return zoomBtnClick( e ) ;
@@ -972,8 +976,7 @@ ml(`
                         } else {
                             toggleInbuiltEditor ( filename,li );
                         }
-                    
-                        
+
                     }
                     
                 }
