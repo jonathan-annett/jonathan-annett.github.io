@@ -345,6 +345,13 @@ ml(`
                         return 150;
                     };
                     
+                    const footer_collapse_check = qs("#footer_collapse_check",function change(){
+                        const els = [ "footer.tab-wrapper", "#drop-area"].map(qs);
+                        els.forEach(function(el){
+                            el.style.display = footer_collapse_check.checked ?"none" : "block";
+                        });
+                    });
+                    
                     footer_grab_bar = dragSize("footer",["#footer_grab"],undefined,0,-1);
                     
                     if (editor_channel) {
