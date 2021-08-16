@@ -779,3 +779,26 @@ li.editing label.dropdown {
     transition: all 0.35s;
   }
 }
+
+
+@media only screen /* collapse/show checkbox */ {
+    
+    
+    .footer_collapse  input[type='checkbox'] {
+        display:none;
+    }
+    
+    .footer_collapse   input[type='checkbox']+ label:before {
+        font-family: 'Font Awesome 5 Free';
+        content: "\f103";
+        font-size:1.5rem;
+        cursor:pointer;
+     
+    }
+     
+    .footer_collapse  input[type='checkbox']:checked + label:before {
+         content: "\f102";
+    }
+    
+    
+}
