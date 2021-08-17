@@ -2109,7 +2109,8 @@ ml(`
                                 maxHeight:"100%",
                                 placeholder:"No Search Results", 
                                 autoColumnsDefinitions:[
-                                    {title:"Filename",       field:"filename",
+                                    { title:"Filename",       
+                                      field:"filename",
                                         formatter:function(cell, formatterParams, onRendered){
                                             //cell - the cell component
                                             //formatterParams - parameters set for the column
@@ -2118,8 +2119,22 @@ ml(`
                                         }
                                         
                                     }, 
-                                    {title:"Message",        field:"text",widthGrow:5}, 
-                                    {title:"Line",           field:"row"}, 
+                                    { title:"Message",        field:"text", widthGrow:5 }, 
+                                    { title:"Line",           
+                                      field:"row",
+                                      formatter : function(cell, formatterParams, onRendered){
+                                          //cell - the cell component
+                                          //formatterParams - parameters set for the column
+                                          //onRendered - function to call when the formatter has been rendered
+                                          var row = cell.getRow();
+                                          return row._row.data.line.toString()+
+                                                 ":"+row._row.data.column.toString()+
+                                                 (
+                                                     row._row.data.length ? 
+                                                 "-" + ((row._row.data.colum+row._row.data.length)-1).toString()
+                                                 :"");
+                                      }
+                                    }, 
                                     {title:"Column",         field:"column",         visible:false}, 
                                     {field:"length",         visible:false},
                                     {field:"id",             visible:false}
