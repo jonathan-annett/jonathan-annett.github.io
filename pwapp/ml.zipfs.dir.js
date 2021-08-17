@@ -2134,12 +2134,10 @@ ml(`
                                           const line   = data.line;
                                           const column = data.column;
                                           const length = data.length;
-                                          return line.toString()+
-                                                 ":"+column.toString()+
-                                                 selectWords_checked ? 
-                                                 (
-                                                     length ? "-" + ((column+length)-1).toString() : ""
-                                                 ) : "";
+                                          const endCol = selectWords_checked ? "-"+ ((column+length)-1).toString() : "";
+                                          
+                                          return line.toString()+":"+column.toString() + endCol;
+                                          
                                       }
                                     }, 
                                     {title:"Column",         field:"column",         visible:false}, 
