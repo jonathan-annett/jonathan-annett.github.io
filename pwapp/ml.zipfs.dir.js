@@ -553,11 +553,11 @@ ml(`
                     };
                     
                     searchWords.onclick =  function(){
-                        selectWords_checked = selectWords.checked;
                         seachTextChanged(ed_term.value);
                     };
                     
                     selectWords.onclick = function() {
+                        selectWords_checked = selectWords.checked;
                         if (searchResultsTable) {
                            searchResultsTable.redraw();
                            const rows = searchResultsTable.getSelectedRows() ;
