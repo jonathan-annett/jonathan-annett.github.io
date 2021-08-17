@@ -710,8 +710,8 @@ ml(`
                             };
                             entry.url_read  = entry.url_write; 
                            
-                            writeFileBuffer(filename,buffer,function(err,hash){
-                                
+                            forceWriteFileBuffer(filename,buffer,function(err,hash){
+                                location.reload();
                                 
                             });
                                 
