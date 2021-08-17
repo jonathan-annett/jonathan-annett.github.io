@@ -2189,8 +2189,7 @@ ml(`
                         editor.gotoLine(line, column, true);
                         
                         if (length) {
-                            var Range = ace.require("ace/range").Range;
-                            var range = new Range(line,column,line,column+length);
+                            var range = new ace.Range(line-1,column,line-1,column+length);
                             editor.selection.setSelectionRange(range);
                         }
                         
