@@ -555,7 +555,7 @@ ml(`
                         seachTextChanged(ed_term.value);
                     };
                     
-                    ignoreCase.onclick = function() {
+                    selectWords.onclick = function() {
                         if (searchResultsTable) {
                            const rows = searchResultsTable.getSelectedRows() ;
                            if (rows.length===1) {
