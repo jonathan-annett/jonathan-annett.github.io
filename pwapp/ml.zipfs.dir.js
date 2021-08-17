@@ -559,7 +559,11 @@ ml(`
                     selectWords.onclick = function() {
                         selectWords_checked = selectWords.checked;
                         if (searchResultsTable) {
-                           searchResultsTable.redraw();
+                            
+                           searchResultsTable.getRows().forEach(function(r){
+                               r.reformat();
+                           });
+                            
                            const rows = searchResultsTable.getSelectedRows() ;
                            if (rows.length===1) {
                               searchResultsRowClick(undefined,rows[0]);
