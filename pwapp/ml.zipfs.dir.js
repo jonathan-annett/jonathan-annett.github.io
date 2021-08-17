@@ -557,7 +557,7 @@ ml(`
                     selectWords.checked = !selectWords.checked;
                     
                     if (searchResultsTable) {
-                       const rows = searchResultsTable.getSelectedData() ;
+                       const rows = searchResultsTable.getSelectedRows() ;
                        if (rows.length===1) {
                           searchResultsRowClick(undefined,rows[0]);
                        }
