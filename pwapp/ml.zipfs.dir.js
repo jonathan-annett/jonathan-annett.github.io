@@ -2116,6 +2116,7 @@ ml(`
                                        row._row.data.filename,
                                        row._row.data.line,
                                        row._row.data.column,
+                                       row._row.data.length,
                                        function(err){
                                            if (err) console.log(err);
                                        }
