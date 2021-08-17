@@ -529,7 +529,7 @@ ml(`
                 function addSearchTermFunc(ed_term) {
                     const ignoreCase  = qs("#search_case");
                     const searchWords = qs("#search_words");
-                    
+                    selectWords = qs("#select_words");
                     
                     qs("#search_case_txt",function click(){
                         ignoreCase.checked = !ignoreCase.checked;
@@ -538,6 +538,11 @@ ml(`
                     qs("#search_words_txt",function click(){
                         searchWords.checked = !searchWords.checked;
                         seachTextChanged(ed_term.value);
+                    });
+                    
+                    qs("#select_words_txt",function click(){
+                        selectWords.checked = !selectWords.checked;
+                        selectWords.onclick();
                     });
                   
                     addDelayedEditCallback(ed_term,seachTextChanged,250);
@@ -549,20 +554,18 @@ ml(`
                     searchWords.onclick =  function(){
                         seachTextChanged(ed_term.value);
                     };
-
-                }
-                
-                selectWords = qs("#select_words");
-                qs("#select_words_txt",function click(){
-                    selectWords.checked = !selectWords.checked;
                     
-                    if (searchResultsTable) {
-                       const rows = searchResultsTable.getSelectedRows() ;
-                       if (rows.length===1) {
-                          searchResultsRowClick(undefined,rows[0]);
+                    ignoreCase.onclick = function() {
+                        if (searchResultsTable) {
+                           const rows = searchResultsTable.getSelectedRows() ;
+                           if (rows.length===1) {
+                              searchResultsRowClick(undefined,rows[0]);
+                           }
                        }
                     }
-                });
+
+                }
+
                 
                 
                 function seachTextChanged(value){
