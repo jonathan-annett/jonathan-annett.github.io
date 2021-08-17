@@ -2121,7 +2121,7 @@ ml(`
                                     }, 
                                     { title:"Message",        field:"text", widthGrow:5 }, 
                                     { title:"Line",           
-                                      field:"row",
+                                      field:"line",
                                       formatter : function(cell, formatterParams, onRendered){
                                           //cell - the cell component
                                           //formatterParams - parameters set for the column
