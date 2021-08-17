@@ -2120,23 +2120,12 @@ ml(`
                                     }, 
                                     {title:"Message",        field:"text",widthGrow:5}, 
                                     {title:"Line",           field:"row"}, 
-                                    {title:"Column",         field:"column"}, 
-                                    {field:"id",visible:false}
+                                    {title:"Column",         field:"column",         visible:false}, 
+                                    {field:"length",         visible:false},
+                                    {field:"id",             visible:false}
                                 ],
                                 selectable:1,
-                                rowClick:function(e,row){
-                                   e.preventDefault();
-                                   
-                                   findError(
-                                       row._row.data.filename,
-                                       row._row.data.line,
-                                       row._row.data.column,
-                                       selectWords.checked ? row._row.data.length : false,
-                                       function(err){
-                                           if (err) console.log(err);
-                                       }
-                                   );
-                                }
+                                rowClick : searchResultsRowClick
                             });
                             searchResultsTable.setData(searchResultsTableData).then(cb);
                         } else {
