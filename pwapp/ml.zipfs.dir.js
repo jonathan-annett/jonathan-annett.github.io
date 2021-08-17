@@ -555,6 +555,13 @@ ml(`
                 selectWords = qs("#select_words");
                 qs("#select_words_txt",function click(){
                     selectWords.checked = !selectWords.checked;
+                    
+                    if (searchResultsTable) {
+                       const rows = searchResultsTable.getSelectedData() ;
+                       if (rows.length===1) {
+                          searchResultsRowClick(undefined,rows[0]);
+                       }
+                    }
                 });
                 
                 
@@ -2113,6 +2120,7 @@ ml(`
                                     {title:"Column",         field:"column"}, 
                                     {field:"id",visible:false}
                                 ],
+                                selectable:1,
                                 rowClick:function(e,row){
                                    e.preventDefault();
                                    
@@ -2137,6 +2145,20 @@ ml(`
                         searchResultsTable.replaceData(searchResultsTableData).then(cb);
                     }
 
+                }
+                
+                function searchResultsRowClick(e,row) {
+                    if (e) e.preventDefault();
+                    
+                    findError(
+                        row._row.data.filename,
+                        row._row.data.line,
+                        row._row.data.column,
+                        selectWords.checked ? row._row.data.length : false,
+                        function(err){
+                            if (err) console.log(err);
+                        }
+                    );
                 }
 
                 function findError(filename,line,column,length,cb) {
