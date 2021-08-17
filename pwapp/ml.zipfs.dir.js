@@ -2134,7 +2134,13 @@ ml(`
 
                 }
 
-                function findError(filename,line,column,cb) {
+                function findError(filename,line,column,length,cb) {
+                    
+                    if ( typeof length === 'function' ) {
+                        cb = length;
+                        length = undefined;
+                    }
+                        
                     const is_full = !!fs_li_ed && zoom_filename !==filename;
                     
                     const firstStep = is_full ? doFindError1 : doFindError2;
@@ -2180,6 +2186,13 @@ ml(`
                         editor.resize(true);
                         editor.scrollToLine(line, true, true, function () {});
                         editor.gotoLine(line, column, true);
+                        
+                        if (length) {
+                            var Range = ace.require("ace/range").Range;
+                            var range = new Range(line,column,line,column+length);
+                            editor.selection.setSelectionRange(range);
+                        }
+                        
                         if (is_full) {
                                 toggleEditorZoom( filename, function(){
                                 cb(); 
