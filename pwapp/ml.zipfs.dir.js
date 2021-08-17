@@ -528,6 +528,7 @@ ml(`
                 function addSearchTermFunc(ed_term) {
                     const ignoreCase  = qs("#search_case");
                     const searchWords = qs("#search_words");
+                    const selectWords = qs("#select_words");
                     
                     qs("#search_case_txt",function click(){
                         ignoreCase.checked = !ignoreCase.checked;
@@ -537,7 +538,9 @@ ml(`
                         searchWords.checked = !searchWords.checked;
                         seachTextChanged(ed_term.value);
                     });
-                    
+                    qs("#select_words_txt",function click(){
+                        selectWords.checked = !selectWords.checked;
+                    });
                     
                     addDelayedEditCallback(ed_term,seachTextChanged,250);
                     
@@ -2116,7 +2119,7 @@ ml(`
                                        row._row.data.filename,
                                        row._row.data.line,
                                        row._row.data.column,
-                                       row._row.data.length,
+                                       qs("#select_words").checked ? row._row.data.length : false,
                                        function(err){
                                            if (err) console.log(err);
                                        }

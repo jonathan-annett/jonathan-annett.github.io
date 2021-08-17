@@ -197,25 +197,26 @@
     <div class="tab-wrapper">
       <div class="tabs">
         <div class="tab">
-          <input type="radio" name="footer-tabs" id="tab-1" checked class="tab-switch" data-table="errors">
+          <input  id="tab-1" class="tab-switch"  name="footer-tabs" type="radio" checked data-table="errors">
           <label for="tab-1" class="tab-label">Errors</label>
           <div class="tab-content">
               <div id="errors_table"></div>
           </div> 
         </div>
         <div class="tab">
-          <input type="radio" name="footer-tabs" id="tab-2" class="tab-switch" data-table="warnings">
+          <input  id="tab-2" class="tab-switch" type="radio" name="footer-tabs" data-table="warnings">
           <label for="tab-2" class="tab-label">Warnings</label>
           <div class="tab-content">
               <div id="warnings_table"></div>
           </div> 
         </div>
         <div class="tab">
-          <input type="radio" name="footer-tabs" id="tab-3" class="tab-switch" data-table="search">
-          <label for="tab-3" class="tab-label">Search <input type="text" id="search_text" placeholder="...">
-          <input type="checkbox" id="search_case" checked><span id="search_case_txt">ignore case</span>
-          <input type="checkbox" id="search_words" checked><span id="search_words_txt" >whole words</span>
-          <div id="search_load" class="progressBar"><div></div></div>
+          <input id="tab-3"  class="tab-switch" type="radio" name="footer-tabs" data-table="search">
+          <label for="tab-3"  id="search_text" class="tab-label">Search <input type="text"placeholder="...">
+          <input id="search_case"  type="checkbox" checked><span id="search_case_txt">ignore case</span>
+          <input id="search_words" type="checkbox" checked><span id="search_words_txt" >whole words</span>
+          <input id="select_words" type="checkbox"><span id="select_words_txt" >select in editor</span>
+          <div  id="search_load" class="progressBar"><div></div></div>
           </label>
           <div class="tab-content">
               <div id="search_table"></div>
