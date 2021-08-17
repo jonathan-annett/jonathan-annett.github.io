@@ -133,7 +133,7 @@ zipFSResolveLib      | ${ml.c.app_root}ml.zipfs.resolve.js
                                 });
                                 
                                 
-                                getZipFileUpdates('/',function(err,edited_files){
+                                getZipFileUpdates(url,function(err,edited_files){
                                    if (err) return cb(err);
                                    
                                    edited_files.forEach(function(file){

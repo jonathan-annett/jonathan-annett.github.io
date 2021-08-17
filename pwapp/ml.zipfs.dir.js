@@ -3066,8 +3066,6 @@ ml(`
                     return str.replace(/[-[\]{}()\/*+?.,\\^$|#\s]/g, '\\$&');
                 }
                 
-                     
-                
                 function removeUpdatedFile (filename,cb) {
                     const ix = dir.files[filename];
                     if (typeof ix === 'number'){
