@@ -2126,13 +2126,16 @@ ml(`
                                           //cell - the cell component
                                           //formatterParams - parameters set for the column
                                           //onRendered - function to call when the formatter has been rendered
-                                          var row = cell.getRow();
-                                          return row._row.data.line.toString()+
-                                                 ":"+row._row.data.column.toString()+
+                                          const row    = cell.getRow();
+                                          const data   = row._row.data;
+                                          const line   = data.line;
+                                          const column = data.column;
+                                          const length = data.length;
+                                          return line.toString()+
+                                                 ":"+column.toString()+
                                                  (
-                                                     row._row.data.length ? 
-                                                 "-" + ((row._row.data.colum+row._row.data.length)-1).toString()
-                                                 :"");
+                                                     length ? "-" + ((column+length)-1).toString() : ""
+                                                 );
                                       }
                                     }, 
                                     {title:"Column",         field:"column",         visible:false}, 
