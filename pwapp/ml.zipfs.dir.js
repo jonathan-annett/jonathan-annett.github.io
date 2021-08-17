@@ -506,6 +506,10 @@ ml(`
                 
                 function addFilterEditorFunc (ed_filter){
                     
+                    ed_filter.onfocus = function() {
+                        ed_filter.select();
+                    };
+                    
                     addDelayedEditCallback(ed_filter,function(value){
                         let func = function(el){el.hidden=false;};
                         filteredFilesList.splice(0,filteredFilesList.length);
