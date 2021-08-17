@@ -202,6 +202,7 @@ ml(`
                 
                 var 
                 selectWords,
+                selectWords_checked,
                 themePickerPickerHTML,
                 zoomEl,
                 fs_li_ed,pre_zoom_height,zoom_filename;    
@@ -552,11 +553,13 @@ ml(`
                     };
                     
                     searchWords.onclick =  function(){
+                        selectWords_checked = selectWords.checked;
                         seachTextChanged(ed_term.value);
                     };
                     
                     selectWords.onclick = function() {
                         if (searchResultsTable) {
+                           searchResultsTable.redraw();
                            const rows = searchResultsTable.getSelectedRows() ;
                            if (rows.length===1) {
                               searchResultsRowClick(undefined,rows[0]);
@@ -2133,9 +2136,10 @@ ml(`
                                           const length = data.length;
                                           return line.toString()+
                                                  ":"+column.toString()+
+                                                 selectWords_checked ? 
                                                  (
                                                      length ? "-" + ((column+length)-1).toString() : ""
-                                                 );
+                                                 ) : "";
                                       }
                                     }, 
                                     {title:"Column",         field:"column",         visible:false}, 
