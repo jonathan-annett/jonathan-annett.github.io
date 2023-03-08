@@ -1,0 +1,81 @@
+<html>
+  <head>
+      <title>Presentation Timer</title>
+      <link rel="stylesheet" href="timer.css" id="style_1">
+  </head>
+  <body>
+      <script src="fsapi.js"></script>
+      <script src="timer.js" defer></script>
+      <div class="buttons">
+          <span>&nbsp;&nbsp;Presets</span>
+          <div class="btn" data-keys=" ,1,0, ">
+              10
+          </div>
+          <div class="btn" data-keys=" ,2,0, ">
+              20
+          </div>
+          <div class="btn" data-keys=" ,3,0, ">
+              30
+          </div>
+          <div class="btn" data-keys=" ,4,5, ">
+              45
+          </div>
+          <div class="btn" data-keys=" ,6,0, ">
+              60
+          </div>
+          <div class="btn" data-keys=" ,9,0, ">
+             90
+          </div>
+          <div class="btn" data-keys=" ,1,2,0, ">
+              2h
+          </div>
+          <div class="btn" data-keys=" ,1,8,0, ">
+              3h
+          </div>
+          <div class="btn" data-keys=" ,0, ">
+              Up
+          </div>
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Live Adjust</span>
+          
+          <div class="btn btn2" data-keys="ArrowDown,ArrowDown,ArrowDown,ArrowDown,ArrowDown,ArrowDown,ArrowDown,ArrowDown,ArrowDown,ArrowDown,ArrowDown,ArrowDown,ArrowDown,ArrowDown,ArrowDown,Control,Enter,!Control">
+              -15&nbsp;sec
+          </div>
+          <div class="btn btn2" data-keys="ArrowUp,ArrowUp,ArrowUp,ArrowUp,ArrowUp,ArrowUp,ArrowUp,ArrowUp,ArrowUp,ArrowUp,ArrowUp,ArrowUp,ArrowUp,ArrowUp,ArrowUp,Control,Enter,!Control">
+              +15&nbsp;sec
+          </div>
+          
+          <div class="btn btn2" data-keys="Control,ArrowDown,!Control">
+              -1&nbsp;min
+          </div>
+          <div class="btn btn2" data-keys="Control,ArrowUp,!Control">
+              +1&nbsp;min
+          </div>
+          
+      </div>
+      <div id="clock_main">
+          <div class="xfs_only" id="started_disp"></div>
+          <div class="xfs_only" id="elapsed_disp"></div>
+          <div id="messages_enabled">messages enabled</div>
+          <div id="last_minute">Wrap up - last minute</div>
+          <div id="custom_message"></div>
+          <div id="time_is_up">Time is Up</div>
+          <div id="remain_disp"></div>
+          <div class="xfs_only" id="duration_disp"></div>
+          <div class="xfs_only" id="ends_disp"></div>
+          <div class="xfs_only" id="now_disp"></div>
+      </div>
+       
+      <div class="xfs_only" id="disp_next_mins">mins</div>
+     
+      <div id="key_disp"></div>
+      <p id="link">open timer <a href="#" onclick="return openTimerWindow();">display</a> screen</p>
+    
+      <div class="media_query_detect"></div>
+       <div class="mainDiv">
+          <div class="progressDiv">
+             <div class="progress">
+             </div>
+           </div>
+       </div>
+  </body>    
+</html>    
