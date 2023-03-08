@@ -1,0 +1,523 @@
+/*
+
+  Advanced Style Editing:
+  
+  [ Control ] + [ S ]                brings up style editor
+  
+  [ Control ] + [ Shift ]  + [ S  ]  restores defaults
+
+*/
+
+body {
+    
+    background-color : #000000;
+    color:#a0a0a0;
+    font-size:2.5vh;
+    font-family: 'Lucida', sans-serif;
+    overflow: hidden; 
+    user-select: none;                
+}
+
+/* the main countdown (remaining) display takes up 40% of the available height, and is centered verticaly and horizontally */
+#remain_disp {
+    
+    color:white;
+    
+    font-size: 40vh;
+    position : absolute;
+     
+    left: 0;
+    top : 25%;
+    height : 50vh;
+    width : 100vw;
+   
+    text-align: center;  
+    
+    margin : auto;
+    
+}
+
+ 
+/*
+ the time of day (now) - activated by keystroke "T"
+*/
+
+#now_disp {
+  position : absolute;
+  right :0;
+  top :0;
+  font-size : 4vh;
+}
+
+/*
+ the time of day (now) - activated by keystroke "T" is slightly larger in the remote screen
+ and is prefixed with "Current Time:"
+*/
+ 
+html.reduced #now_disp {
+     height: 8vh;
+}
+
+html.reduced #now_disp:before {
+     content:"Current Time: "; 
+     
+     vertical-align: middle;
+     font-size : 2vh;
+     line-height: 8vh;
+     height: 8vh;
+     color  :  #606060;
+}
+
+
+/* various display elements for main screen */
+#ends_disp:before,
+#started_disp:before,
+#duration_disp:after,
+#elapsed_disp:before {
+      font-size:2vh;
+}
+
+ 
+
+#started_disp:before {
+     content:"started at "; 
+}
+
+html.future #started_disp:before {
+     content:"will start at "; 
+     color : lime;
+}
+
+
+#started_disp {
+  position : absolute;
+  left : 0;
+  top : calc( 80% + 40px);
+}
+
+/*
+html.reduced #started_disp {
+    display : block; 
+}
+*/
+
+#ends_disp:before {
+     content:"ends at "; 
+}
+
+#ends_disp {
+  position : absolute;
+  right :0;
+  top : calc( 80% + 40px);
+}
+
+/*
+html.reduced #ends_disp {
+    display : block; 
+}
+*/
+
+
+#elapsed_disp:before {
+    content:"elapsed "; 
+}
+
+html.future #elapsed_disp:before {
+    content:"standby ";
+    color : darkgray;
+    font-size : 4vh;
+}
+
+#elapsed_disp {
+  position : absolute;
+  left : 0;
+  top : calc( 80% + 0px);    
+}
+
+ 
+ 
+ html.future #elapsed_disp {
+  position : absolute;
+  left : 25vw;
+  width : 50vw;
+  text-align: center;
+  font-size : 4vh;
+  color : lime;
+  top : calc( 27% + 0px);
+}
+
+html.reduced.future #elapsed_disp {
+    display : block; 
+     color : lime;
+}
+
+ 
+ 
+
+#messages_enabled {
+    display : none; 
+    position:absolute;
+    top:48px;
+    right :0;
+    font-size:10pt;
+    color:yellow;
+}
+
+#custom_message,
+#last_minute,
+#time_is_up {
+    color : red;
+    display : none; 
+    position:absolute;
+    width:100vw;
+    left :0;
+    text-align:center;
+    top: 15%;
+    font-size:10vh;
+}
+
+#last_minute {
+    color:orange;
+}
+
+html.show_custom_message #custom_message,
+html.edit_custom_message #custom_message,
+html.reduced.show_custom_message #custom_message,
+
+html.showmessages #messages_enabled,
+html.showmessages.reduced.impending #last_minute,
+html.showmessages.impending #last_minute,
+html.showmessages.reduced.over #time_is_up,
+html.showmessages.over #time_is_up {
+    display:block;
+}
+
+html.over #remain_disp {
+    color:red;
+    
+}
+
+html.show_custom_message #custom_message {
+    color :white;
+}
+
+html.edit_custom_message #custom_message {
+    color :yellow;
+}
+
+html.impending #remain_disp {
+    color:orange;
+}
+
+
+#remain_disp.adjusting {
+    color:yellow;
+}
+
+#remain_disp.adjustingDown {
+    color:cyan;
+}
+
+html.reduced #remain_disp.adjusting   {
+     color:white;
+}
+
+html.reduced #remain_disp.adjustingDown  {
+     color:white;
+}
+
+html.reduced.over #remain_disp  {
+    color:red;
+}
+
+html.reduced.impending #remain_disp,
+html.reduced.future.impending #remain_disp, 
+html.future.impending #remain_disp {
+    color:orange;
+}
+
+
+html.future #remain_disp {
+    color:#202020;
+}
+
+html.reduced.future #remain_disp {
+    color:#202020;
+}
+
+
+
+#key_disp {
+  position : absolute;
+  left :0;
+  top :90%;
+  width :100%;
+  text-align: center;  
+}
+
+
+#duration_disp {
+  position : absolute;
+  right :0;
+  top : calc( 80% + 0px);
+}
+
+#duration_disp:after {
+     content:" total"; 
+}
+
+
+
+#disp_next_mins {
+  position : absolute;
+  right :0;
+  bottom :0;
+
+}
+
+html.editing #disp_next_mins {
+    
+    color:lime;
+}
+
+/* keyboard help text*/
+#disp_next_mins:before {
+    content:"[←],[→] = fix a late/early start (seconds), [↓],[↑] = Nudge end time (seconds), [Space] = start countdown using "; 
+    color:#a0a0a0;
+}
+
+
+/*keyboard help text displayed while control key is held down*/
+html.controlling #disp_next_mins:before {
+    content:"[←],[→] = fix a late/early start (minutes), [↓],[↑] = Nudge end time (minutes), [Space] = catchup to real time. "; 
+    color:#a0a0a0;
+}
+
+/*keyboard help text displayed while typing in a minutes value*/
+html.editing #disp_next_mins:before {
+    content:  "[Enter] = save default countdown... or  [Space] = start countdown using "; 
+    color:#a0f0a0;
+}
+
+/*keyboard help text displayed while shift key is held down*/
+html.shifting #disp_next_mins:before {
+    content:  "[←],[→] = fix a late/early start (seconds), [↓],[↑] = Nudge start time (seconds), [Space] = change current countdown to... "; 
+}
+
+
+/*keyboard help text displayed while control and shift keys are held down*/
+html.shifting.controlling #disp_next_mins:before {
+    content:  "[←],[→] = fix a late/early start (minutes), [↓],[↑] = Nudge start time (minutes), [Space] = catchup to real time. "; 
+}
+
+/*while editing the custom message, hide the minutes entry field by making it the same colour as the background*/
+html.edit_custom_message #disp_next_mins {
+    color:black;
+}
+
+/*keyboard help text displayed while editing the custom message text*/
+html.edit_custom_message #disp_next_mins:before {
+   content : "Editing custom message...          [Enter] = Show On Remote Display.  ";
+   color:lime;
+}
+
+/*the change the colour of minutes entry field while the custom message is displayed*/
+html.show_custom_message #disp_next_mins {
+    color:yellow;
+}
+
+
+html.controlling #disp_next_mins{
+    color : #000000;
+}
+
+.fs_only {
+   display : none;    
+} 
+
+body:fullscreen .fs_only  {
+    
+    display : block;  
+}
+
+ #link {
+     position :absolute;
+     bottom : 30px;
+     left : 0;
+ }
+
+
+#now_disp,
+.mainDiv ,
+html.twoplus #link,
+html.reduced #link,
+html.reduced body  div  {
+    display : none;
+    cursor:none;
+}
+
+html.reduced div.buttons, 
+html.showtimenow #now_disp,
+#fs_help,
+#clock_main,
+.showbar .mainDiv ,
+.showbar .mainDiv > .progressDiv ,
+.showbar .mainDiv > .progressDiv > .progress,
+#remain_disp  {
+    display : block ;
+    
+}
+
+html.reduced div.buttons div {
+    display : inline-block ;
+    
+}
+
+
+#fs_help {
+      position : absolute;
+      left :0;
+      bottom :0;
+}
+
+body:fullscreen #fs_help {
+    
+    display : none;  
+}
+
+
+*{
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+}
+
+
+.mainDiv{
+  position: absolute;
+  top:80%;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  width: 75vw;
+  max-width: 75%;
+  height: 200px;
+}
+
+
+.mainDiv > .progressDiv{
+  width: 100%;
+  height: 30px;
+  background: #34495e;
+}
+
+.mainDiv > .progressDiv > .progress{
+  width: 0%;
+  height: 30px;
+  background: #529f44f7;
+}
+
+
+html.impending .mainDiv > .progressDiv > .progress{
+  background: orange;
+}
+
+html.over .mainDiv > .progressDiv > .progress{
+    
+  background: red;
+    
+}
+
+
+.mainDiv > .progressDiv > .progress > .adjust{
+  position:relative;
+  top : -15px;
+  height: 15px;
+  background: yellow;
+  z-index:25;
+}
+
+
+.mainDiv > h2{
+  font-family: sans-serif;
+  color: #2c3e50;
+}
+
+div.buttons  {
+  position : absolute;
+  top:    0;
+  left:   0;
+  height: 100px;
+  right:  180px;
+  background-color:black;
+  opacity: 0.5;
+  z-index: 9999;
+}
+
+html.reduced div.buttons {
+    opacity:0;
+}
+
+html.reduced div.buttons:hover,
+div.buttons:hover  {
+  opacity:1;
+
+}
+
+div.buttons div.btn2, 
+div.buttons div.btn {
+   position:relative;
+   left :10px;
+   top:10px;
+   width:50px;
+   background-color: #008CBA;
+   border: none;
+   color: white;
+   padding: 13px 24px;
+   text-align: center;
+   text-decoration: none;
+   display: inline-block;
+   font-size: 16px;
+   margin: 4px 2px;
+   cursor: pointer;
+}
+div.buttons div.btn2 {
+    
+   width:80px;
+   background-color: #e7e7e7; color: black;
+   padding: 13px 12px;
+   
+    
+}
+
+
+
+div.buttons div.btn:hover {
+  background-color: lime;
+  color:black;
+}
+
+html.shifting div.buttons div.btn:hover {
+  background-color: purple;
+  color:black;
+}
+html.editing.shifting div.buttons div.btn:hover {
+  background-color: yellow;
+  color:black;
+}
+
+html #css_editor {
+    position : absolute;
+    top:60px;
+    left:40px;
+    right:40px;
+    bottom:40px;
+    z-index:9999;
+    font-size:16pt;
+}
+
+html.reduced #css_editor,
+html.reduced #css_editor div {
+    display : block;
+    cursor: text;
+}
+ 
