@@ -10,7 +10,7 @@
 
 body {
     
-    background-color : #000000;
+    background-color :#000000;
     color:#a0a0a0;
     font-size:2.5vh;
     font-family: 'Lucida', sans-serif;
@@ -347,16 +347,19 @@ body:fullscreen .fs_only  {
  }
 
 
+div.buttons, 
 #now_disp,
 .mainDiv ,
 html.twoplus #link,
 html.reduced #link,
+#drag_to_monitor,
 html.reduced body  div  {
     display : none;
     cursor:none;
 }
 
-html.reduced div.buttons, 
+
+html.showbuttons div.buttons, 
 html.showtimenow #now_disp,
 #fs_help,
 #clock_main,
@@ -374,12 +377,28 @@ html.reduced div.buttons div {
 }
 
 
+
 #fs_help {
       position : absolute;
       left :0;
       bottom :0;
 }
 
+
+html.reduced #drag_to_monitor {
+
+
+  display:block; 
+  position: absolute;
+  bottom : 10px;
+  width : 100vw;
+  text-align:center;
+  color : rgb(103, 110, 110);
+  font-size:3vh;
+}
+
+body.fullscreen #drag_to_monitor,
+body:fullscreen #drag_to_monitor,
 body:fullscreen #fs_help {
     
     display : none;  

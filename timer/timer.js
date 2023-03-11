@@ -132,7 +132,7 @@ custom_message.addEventListener('focus', function(){
        
        localStorage.setItem("remainDispClass",html.className);
   }
-  
+
   dispNextMins.textContent = secToStr( defaultDuration / oneSecond );
   
   setInterval(displayUpdate,100);
@@ -214,29 +214,29 @@ custom_message.addEventListener('focus', function(){
       }
 
       if (!fs_api.isFullscreen()) {
-                     if (runMode === "presenter") {
-                        if (tabCount===1) {
-                            document.title = "Presentation Timer - Single Window";
-            			 } else { 
-                                        document.title = "Presentation Timer - Remote Screen";
-            			}
-                     } else  {
-                         if (runMode==="controller" ) {
-                             document.title = "Presentation Timer - Control Screen";
-			 } else {
-   			     document.title = "Presentation Timer";
-			 }
-                     }
+            if (runMode === "presenter") {
+                if (tabCount===1) {
+                    document.title = "Presentation Timer - Single Window";
+                } else { 
+                    document.title = "Presentation Timer - Remote Screen";
+                }
+            } else  {
+                if (runMode==="controller" ) {
+                    document.title = "Presentation Timer - Control Screen";
+                } else {
+                   document.title = "Presentation Timer";
+                }
+            }
       } else {
              if (runMode === "presenter") {
                         document.title = "Presentation Timer - Remote Screen (Fullscreen)";
-                     } else  {
-			 if (runMode==="controller" ) {
-                             document.title = "Presentation Timer - Control Screen (Fullscreen)";
-			 } else {
-   			     document.title = "Presentation Timer (Fullscreen)";
-			 }
-                     }  
+             } else  {
+                    if (runMode==="controller" ) {
+                        document.title = "Presentation Timer - Control Screen (Fullscreen)";
+                    } else {
+                        document.title = "Presentation Timer (Fullscreen)";
+                    }
+            }  
       } 
       
       if (runMode==="controller" || tabCount=== 1 ) {
@@ -755,6 +755,17 @@ function onDocKeyDown(ev){
                 }
                 break;
             }
+
+
+            case "q":
+            case "Q":
+                if (controlling) {
+                    if (is_nwjs()) {
+                         require('nw.gui').App.quit();
+                    }
+                }
+
+                break;
             
             //case "+":
             case "ArrowUp" : {
@@ -872,7 +883,9 @@ function onDocKeyDown(ev){
                 if (window.location.search !== "?presenter" &&  tabCount === 1) {
                     html.classList.toggle("reduced");
                     runMode = html.classList.contains("reduced") ? "presenter":"controller";
+            
                 }
+                html.classList[ html.classList.contains("reduced") ? "remove" : "add"]("showbuttons");
                 break;
             case "s":
             case "S":
@@ -894,6 +907,7 @@ function onDocKeyDown(ev){
                 
                     if (window.location.search !== "?presenter" &&  tabCount === 1) {
                         html.classList.add("reduced");
+                        html.classList.add("showbuttons");
                         runMode = "presenter";
                         if (!fs_api.isFullscreen()) {
                           fs_api.enterFullscreen();  
@@ -1057,3 +1071,11 @@ function onDocKeyDown(ev){
      }
   }
   
+
+  function is_nwjs(){
+    try{
+        return (typeof require('nw.gui') !== "undefined");
+    } catch (e){
+        return false;
+    }
+}
