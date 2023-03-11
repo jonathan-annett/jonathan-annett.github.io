@@ -92,7 +92,7 @@ html.future #started_disp:before {
 #started_disp {
   position : absolute;
   left : 0;
-  top : calc( 80% + 40px);
+  top : calc( 80% + 40px );
 }
 
 /*
@@ -164,8 +164,7 @@ html.reduced.future #elapsed_disp {
 }
 
 #custom_message,
-#last_minute,
-#time_is_up {
+#remain_info_message {
     color : red;
     display : none; 
     position:absolute;
@@ -177,7 +176,8 @@ html.reduced.future #elapsed_disp {
 }
 
 
-#last_minute {
+html.showmessages.reduced.impending #remain_info_message,
+html.showmessages.impending #remain_info_message {
     color:orange;
 }
 
@@ -186,18 +186,15 @@ html.edit_custom_message #custom_message,
 html.reduced.show_custom_message #custom_message,
 
 html.showmessages #messages_enabled,
-html.showmessages.reduced.impending #last_minute,
-html.showmessages.impending #last_minute,
-html.showmessages.reduced.over #time_is_up,
-html.showmessages.over #time_is_up {
+html.showmessages.reduced.impending #remain_info_message,
+html.showmessages.impending #remain_info_message,
+html.showmessages.reduced.over #remain_info_message,
+html.showmessages.over #remain_info_message {
     display:block;
 }
 
-html.edit_custom_message.showmessages.impending #last_minute,
-html.edit_custom_message.showmessages.over #time_is_up,
-html.show_custom_message.showmessages.impending #last_minute,
-html.show_custom_message.showmessages.over #time_is_up
-{
+html.edit_custom_message.showmessages.impending #remain_info_message,
+html.edit_custom_message.showmessages.over #remain_info_message {
     top: 5%;
 }
 
@@ -288,6 +285,15 @@ html.reduced.future #remain_disp {
 html.editing #disp_next_mins {
     
     color:lime;
+}
+
+
+html.impending.showmessages #remain_info_message:before {
+    content : "Wrap up - last minute";
+}
+
+html.over.showmessages #remain_info_message:before {
+    content : "Time is Up";
 }
 
 /* keyboard help text*/
