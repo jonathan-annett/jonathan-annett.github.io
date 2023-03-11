@@ -176,6 +176,7 @@ html.reduced.future #elapsed_disp {
     font-size:10vh;
 }
 
+
 #last_minute {
     color:orange;
 }
@@ -191,6 +192,15 @@ html.showmessages.reduced.over #time_is_up,
 html.showmessages.over #time_is_up {
     display:block;
 }
+
+html.edit_custom_message.showmessages.impending #last_minute,
+html.edit_custom_message.showmessages.over #time_is_up,
+html.show_custom_message.showmessages.impending #last_minute,
+html.show_custom_message.showmessages.over #time_is_up
+{
+    top: 5%;
+}
+
 
 html.over #remain_disp {
     color:red;
