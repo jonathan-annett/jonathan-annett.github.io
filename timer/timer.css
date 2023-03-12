@@ -193,6 +193,11 @@ html.showmessages.over #remain_info_message {
     display:block;
 }
 
+html.reduced #messages_enabled {
+    display:none;
+    
+}
+
 html.edit_custom_message.showmessages.impending #remain_info_message,
 html.edit_custom_message.showmessages.over #remain_info_message {
     top: 5%;
