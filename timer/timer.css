@@ -305,7 +305,7 @@ html.over.showmessages #remain_info_message:before {
 
 /*keyboard help text displayed while control key is held down*/
 html.controlling #disp_next_mins:before {
-    content:"[←],[→] = fix a late/early start (minutes), [↓],[↑] = Nudge end time (minutes), [Space] = catchup to real time. "; 
+    content:"[←],[→] = fix a late/early start (minutes), [↓],[↑] = Nudge end time (minutes), [Enter] = catchup to real time. "; 
     color:#a0a0a0;
 }
 
@@ -323,7 +323,7 @@ html.shifting #disp_next_mins:before {
 
 /*keyboard help text displayed while control and shift keys are held down*/
 html.shifting.controlling #disp_next_mins:before {
-    content:  "[←],[→] = fix a late/early start (minutes), [↓],[↑] = Nudge start time (minutes), [Space] = catchup to real time. "; 
+    content:  "[←],[→] = fix a late/early start (minutes), [↓],[↑] = Nudge start time (minutes), [Enter] = catchup to real time. "; 
 }
 
 /*while editing the custom message, hide the minutes entry field by making it the same colour as the background*/
