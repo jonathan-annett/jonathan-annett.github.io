@@ -10,74 +10,74 @@
 
 body {
     
-    background-color :#000000;
-    color:#a0a0a0;
-    font-size:2.5vh;
-    font-family: 'Lucida', sans-serif;
-    overflow: hidden; 
-    user-select: none;                
+  background-color :#000000;
+  color:#a0a0a0;
+  font-size:2.5vh;
+  font-family: 'Lucida', sans-serif;
+  overflow: hidden; 
+  user-select: none;                
 }
 
 
-    .blink {
-        animation: blinker 1s infinite;
-    }
-      
-    @keyframes blinker {
-        from { opacity: 1.0; }
-        50% { opacity: 0.5; }
-        to { opacity: 1.0; }
-    }
+  .blink {
+      animation: blinker 1s infinite;
+  }
     
+  @keyframes blinker {
+      from { opacity: 1.0; }
+      50% { opacity: 0.5; }
+      to { opacity: 1.0; }
+  }
+  
 
 /* the main countdown (remaining) display takes up 40% of the available height, and is centered verticaly and horizontally */
 #remain_disp {
-    
-    color:white;
-    
-    font-size: 40vh;
-    position : absolute;
-     
-    left: 0;
-    top : 25%;
-    height : 50vh;
-    width : 100vw;
+  
+  color:white;
+  
+  font-size: 40vh;
+  position : absolute;
    
-    text-align: center;  
-    
-    margin : auto;
-    
+  left: 0;
+  top : 25%;
+  height : 50vh;
+  width : 100vw;
+ 
+  text-align: center;  
+  
+  margin : auto;
+  
 }
 
- 
+
 /*
- the time of day (now) - activated by keystroke "T"
+the time of day (now) - activated by keystroke "T"
 */
 
 #now_disp {
-  position : absolute;
-  right :0;
-  top :0;
-  font-size : 4vh;
+position : absolute;
+right :0;
+top :0;
+font-size : 4vh;
 }
 
 /*
- the time of day (now) - activated by keystroke "T" is slightly larger in the remote screen
- and is prefixed with "Current Time:"
+the time of day (now) - activated by keystroke "T" is slightly larger in the remote screen
+and is prefixed with "Current Time:"
 */
- 
+
 html.reduced #now_disp {
-     height: 8vh;
+   height: 8vh;
 }
 
 html.reduced #now_disp:before {
-     content:"Current Time: "; 
-     
-     vertical-align: middle;
-     font-size : 2vh;
-     line-height: 8vh;
-     height: 8vh;
-     color  :  #606060;
+   content:"Current Time: "; 
+   
+   vertical-align: middle;
+   font-size : 2vh;
+   line-height: 8vh;
+   height: 8vh;
+   color  :  #606060;
 }
 
 
@@ -87,111 +87,111 @@ html.reduced #now_disp:before {
 #duration_disp:after,
 #elapsed_disp:before,
 #extra_time_disp{
-      font-size:2vh;
+    font-size:2vh;
 }
 
- 
+
 
 #started_disp:before {
-     content:"started at "; 
+   content:"started at "; 
 }
 
 html.future #started_disp:before {
-     content:"will start at "; 
-     color : lime;
+   content:"will start at "; 
+   color : lime;
 }
 
 
 #started_disp {
-  position : absolute;
-  left : 0;
-  top : calc( 80% + 40px );
+position : absolute;
+left : 0;
+top : calc( 80% + 40px );
 }
 
 /*
 html.reduced #started_disp {
-    display : block; 
+  display : block; 
 }
 */
 
 #ends_disp:before {
-     content:"ends at "; 
+   content:"ends at "; 
 }
 
 #ends_disp {
-  position : absolute;
-  right :0;
-  top : calc( 80% + 40px);
+position : absolute;
+right :0;
+top : calc( 80% + 40px);
 }
 
 /*
 html.reduced #ends_disp {
-    display : block; 
+  display : block; 
 }
 */
 
 
 
 #elapsed_disp:before {
-    content:"elapsed "; 
+  content:"elapsed "; 
 }
 
 html.future #elapsed_disp:before {
-    content:"standby ";
-    color : darkgray;
-    font-size : 4vh;
+  content:"standby ";
+  color : darkgray;
+  font-size : 4vh;
 }
 
 #elapsed_disp {
-  position : absolute;
-  left : 0;
-  top : calc( 80% + 0px);    
+position : absolute;
+left : 0;
+top : calc( 80% + 0px);    
 }
 
- 
- 
- html.future #elapsed_disp {
-  position : absolute;
-  left : 25vw;
-  width : 50vw;
-  text-align: center;
-  font-size : 4vh;
-  color : lime;
-  top : calc( 27% + 0px);
+
+
+html.future #elapsed_disp {
+position : absolute;
+left : 25vw;
+width : 50vw;
+text-align: center;
+font-size : 4vh;
+color : lime;
+top : calc( 27% + 0px);
 }
 
 html.reduced.future #elapsed_disp {
-    display : block; 
-     color : lime;
+  display : block; 
+   color : lime;
 }
 
- 
- 
+
+
 
 #messages_enabled {
-    display : none; 
-    position:absolute;
-    top:48px;
-    right :0;
-    font-size:10pt;
-    color:yellow;
+  display : none; 
+  position:absolute;
+  top:48px;
+  right :0;
+  font-size:10pt;
+  color:yellow;
 }
 
 #custom_message,
 #remain_info_message {
-    color : red;
-    display : none; 
-    position:absolute;
-    width:100vw;
-    left :0;
-    text-align:center;
-    top: 15%;
-    font-size:10vh;
+  color : red;
+  display : none; 
+  position:absolute;
+  width:100vw;
+  left :0;
+  text-align:center;
+  top: 15%;
+  font-size:10vh;
 }
 
 html.showmessages.reduced.impending #remain_info_message,
 html.showmessages.impending #remain_info_message {
-    color:orange;
+  color:orange;
 }
 
 html.show_custom_message #custom_message,
@@ -204,224 +204,224 @@ html.showmessages.reduced.impending #remain_info_message,
 html.showmessages.impending #remain_info_message,
 html.showmessages.reduced.over #remain_info_message,
 html.showmessages.over #remain_info_message {
-    display:block;
+  display:block;
 }
 
 html.reduced #messages_enabled {
-    display:none;
-    
+  display:none;
+  
 }
 
 html.edit_custom_message.showmessages.impending #remain_info_message,
 html.edit_custom_message.showmessages.over #remain_info_message {
-    top: 5%;
+  top: 5%;
 }
 
 
 html.over #remain_disp {
-    color:red;
-    
+  color:red;
+  
 }
 
 html.show_custom_message #custom_message {
-    color :white;
+  color :white;
 }
 
 html.edit_custom_message #custom_message {
-    color :yellow;
+  color :yellow;
 }
 
 html.impending #remain_disp {
-    color:orange;
+  color:orange;
 }
 
 
 #remain_disp.adjusting {
-    color:yellow;
+  color:yellow;
 }
 
 #remain_disp.adjustingDown {
-    color:cyan;
+  color:cyan;
 }
 
 html.reduced #remain_disp.adjusting   {
-     color:white;
+   color:white;
 }
 
 html.reduced #remain_disp.adjustingDown  {
-     color:white;
+   color:white;
 }
 
 html.reduced.over #remain_disp  {
-    color:red;
+  color:red;
 }
 
 html.reduced.impending #remain_disp,
 html.reduced.future.impending #remain_disp, 
 html.future.impending #remain_disp {
-    color:orange;
+  color:orange;
 }
 
 
 html.future #remain_disp {
-    color:#202020;
+  color:#202020;
 }
 
 html.reduced.future #remain_disp {
-    color:#202020;
+  color:#202020;
 }
 
 
 
 #key_disp {
-  position : absolute;
-  left :0;
-  top :90%;
-  width :100%;
-  text-align: center;  
+position : absolute;
+left :0;
+top :90%;
+width :100%;
+text-align: center;  
 }
 
 
 #duration_disp {
-  position : absolute;
-  right :0;
-  top : calc( 80% + 0px);
+position : absolute;
+right :0;
+top : calc( 80% + 0px);
 }
 
 #duration_disp:after {
-     content:" total"; 
+   content:" total"; 
 }
 
 
 #extra_time_disp {
-  position : absolute;
-  right :0;
-  top : calc( 80% + 20px);
-    
+position : absolute;
+right :0;
+top : calc( 80% + 20px);
+  
 }
 
 
 
 
 #disp_next_mins {
-  position : absolute;
-  right :0;
-  bottom :0;
+position : absolute;
+right :0;
+bottom :0;
 
 }
 
 html.editing #disp_next_mins {
-    
-    color:lime;
+  
+  color:lime;
 }
 
 
 html.impending.showmessages #remain_info_message:before {
-    content : "Wrap up - last minute";
+  content : "Wrap up - last minute";
 }
 
 html.over.showmessages #remain_info_message:before {
-    content : "Time is Up";
+  content : "Time is Up";
 }
 
 html.paused #remain_info_message {
-    color:#202020;
-    display : block;
+  color:#202020;
+  display : block;
 }
 
 html.paused #remain_disp {
-    color : #a0a0a0;
+  color : #a0a0a0;
 }
 
 
 html.paused #ends_disp {
-    animation: blinker 1s infinite;
-    color : red;
-    
+  animation: blinker 1s infinite;
+  color : red;
+  
 }
 
 html.paused #remain_info_message:before {
-    content : "Paused (for ";
+  content : "Paused (for ";
 }
 
 html.paused #remain_info_message:after {
-    content : ")";
+  content : ")";
 }
 
 html.reduced.paused #remain_info_message:before {
-    content : "";
+  content : "";
 }
 
 html.reduced.paused #remain_info_message:after {
-    content : "";
+  content : "";
 }
 
 
 /* keyboard help text*/
 #disp_next_mins:before {
-    content:"[←],[→] = fix a late/early start (seconds), [↓],[↑] = Nudge end time (seconds), [Space] = start countdown using "; 
-    color:#a0a0a0;
+  content:"[←],[→] = fix a late/early start (seconds), [↓],[↑] = Nudge end time (seconds), [Space] = start countdown using "; 
+  color:#a0a0a0;
 }
 
 
 /*keyboard help text displayed while control key is held down*/
 html.controlling #disp_next_mins:before {
-    content:"[←],[→] = fix a late/early start (minutes), [↓],[↑] = Nudge end time (minutes), [Enter] = catchup to real time. "; 
-    color:#a0a0a0;
+  content:"[←],[→] = fix a late/early start (minutes), [↓],[↑] = Nudge end time (minutes), [Enter] = catchup to real time. "; 
+  color:#a0a0a0;
 }
 
 /*keyboard help text displayed while typing in a minutes value*/
 html.editing #disp_next_mins:before {
-    content:  "[Enter] = save default countdown... or  [Space] = start countdown using "; 
-    color:#a0f0a0;
+  content:  "[Enter] = save default countdown... or  [Space] = start countdown using "; 
+  color:#a0f0a0;
 }
 
 /*keyboard help text displayed while shift key is held down*/
 html.shifting #disp_next_mins:before {
-    content:  "[←],[→] = fix a late/early start (seconds), [↓],[↑] = Nudge start time (seconds), [Space] = change current countdown to... "; 
+  content:  "[←],[→] = fix a late/early start (seconds), [↓],[↑] = Nudge start time (seconds), [Space] = change current countdown to... "; 
 }
 
 
 /*keyboard help text displayed while control and shift keys are held down*/
 html.shifting.controlling #disp_next_mins:before {
-    content:  "[←],[→] = fix a late/early start (minutes), [↓],[↑] = Nudge start time (minutes), [Enter] = catchup to real time. "; 
+  content:  "[←],[→] = fix a late/early start (minutes), [↓],[↑] = Nudge start time (minutes), [Enter] = catchup to real time. "; 
 }
 
 /*while editing the custom message, hide the minutes entry field by making it the same colour as the background*/
 html.edit_custom_message #disp_next_mins {
-    color:black;
+  color:black;
 }
 
 /*keyboard help text displayed while editing the custom message text*/
 html.edit_custom_message #disp_next_mins:before {
-   content : "Editing custom message...          [Enter] = Show On Remote Display.  ";
-   color:lime;
+ content : "Editing custom message...          [Enter] = Show On Remote Display.  ";
+ color:lime;
 }
 
 /*the change the colour of minutes entry field while the custom message is displayed*/
 html.show_custom_message #disp_next_mins {
-    color:yellow;
+  color:yellow;
 }
 
 
 html.controlling #disp_next_mins{
-    color : #000000;
+  color : #000000;
 }
 
 .fs_only {
-   display : none;    
+ display : none;    
 } 
 
 body:fullscreen .fs_only  {
-    
-    display : block;  
+  
+  display : block;  
 }
 
- #link {
-     position :absolute;
-     bottom : 30px;
-     left : 0;
- }
+#link {
+   position :absolute;
+   bottom : 30px;
+   left : 0;
+}
 
 
 div.buttons, 
@@ -431,8 +431,8 @@ html.twoplus #link,
 html.reduced #link,
 #drag_to_monitor,
 html.reduced body  div  {
-    display : none;
-    cursor:none;
+  display : none;
+  cursor:none;
 }
 
 
@@ -444,191 +444,191 @@ html.showtimenow #now_disp,
 .showbar .mainDiv > .progressDiv ,
 .showbar .mainDiv > .progressDiv > .progress,
 #remain_disp  {
-    display : block ;
-    
+  display : block ;
+  
 }
 
 html.reduced div.buttons div {
-    display : inline-block ;
-    
+  display : inline-block ;
+  
 }
 
 
 
 #fs_help {
-      position : absolute;
-      left :0;
-      bottom :0;
+    position : absolute;
+    left :0;
+    bottom :0;
 }
 
 
 html.reduced #drag_to_monitor {
 
 
-  display:block; 
-  position: absolute;
-  bottom : 10px;
-  width : 100vw;
-  text-align:center;
-  color : rgb(103, 110, 110);
-  font-size:3vh;
+display:block; 
+position: absolute;
+bottom : 10px;
+width : 100vw;
+text-align:center;
+color : rgb(103, 110, 110);
+font-size:3vh;
 }
 
 body.fullscreen #drag_to_monitor,
 body:fullscreen #drag_to_monitor,
 body:fullscreen #fs_help {
-    
-    display : none;  
+  
+  display : none;  
 }
 
 
 *{
-  margin: 0px;
-  padding: 0px;
-  box-sizing: border-box;
+margin: 0px;
+padding: 0px;
+box-sizing: border-box;
 }
 
 
 .mainDiv{
-  position: absolute;
-  top:80%;
-  left: 50%;
-  transform: translate(-50%, 0%);
-  width: 75vw;
-  max-width: 75%;
-  height: 200px;
+position: absolute;
+top:80%;
+left: 50%;
+transform: translate(-50%, 0%);
+width: 75vw;
+max-width: 75%;
+height: 200px;
 }
 
 
 .mainDiv > .progressDiv{
-  width: 100%;
-  height: 30px;
-  background: #34495e;
+width: 100%;
+height: 30px;
+background: #34495e;
 }
 
 .mainDiv > .progressDiv > .progress{
-  width: 0%;
-  height: 30px;
-  background: #529f44f7;
+width: 0%;
+height: 30px;
+background: #529f44f7;
 }
 
 
 html.impending .mainDiv > .progressDiv > .progress{
-  background: orange;
+background: orange;
 }
 
 html.over .mainDiv > .progressDiv > .progress{
-    
-  background: red;
-    
+  
+background: red;
+  
 }
 
 
 .mainDiv > .progressDiv > .progress > .adjust{
-  position:relative;
-  top : -15px;
-  height: 15px;
-  background: yellow;
-  z-index:25;
+position:relative;
+top : -15px;
+height: 15px;
+background: yellow;
+z-index:25;
 }
 
 
 .mainDiv > h2{
-  font-family: sans-serif;
-  color: #2c3e50;
+font-family: sans-serif;
+color: #2c3e50;
 }
 
 div.buttons  {
-  position : absolute;
-  top:    0;
-  left:   0;
-  height: 100px;
-  right:  180px;
-  background-color:black;
-  opacity: 0.5;
-  z-index: 9999;
+position : absolute;
+top:    0;
+left:   0;
+height: 100px;
+right:  180px;
+background-color:black;
+opacity: 0.5;
+z-index: 9999;
 }
 
 html.reduced div.buttons {
-    opacity:0;
+  opacity:0;
 }
 
 html.reduced div.buttons:hover,
 div.buttons:hover  {
-  opacity:1;
+opacity:1;
 
 }
 
 div.buttons div.btn2, 
 div.buttons div.btn {
-   position:relative;
-   left :10px;
-   top:10px;
-   width:50px;
-   background-color: #008CBA;
-   border: none;
-   color: white;
-   padding: 13px 24px;
-   text-align: center;
-   text-decoration: none;
-   display: inline-block;
-   font-size: 16px;
-   margin: 4px 2px;
-   cursor: pointer;
+ position:relative;
+ left :10px;
+ top:10px;
+ width:50px;
+ background-color: #008CBA;
+ border: none;
+ color: white;
+ padding: 13px 24px;
+ text-align: center;
+ text-decoration: none;
+ display: inline-block;
+ font-size: 16px;
+ margin: 4px 2px;
+ cursor: pointer;
 }
 div.buttons div.btn2 {
-    
-   width:80px;
-   background-color: #e7e7e7; color: black;
-   padding: 13px 12px;
-   
-    
+  
+ width:80px;
+ background-color: #e7e7e7; color: black;
+ padding: 13px 12px;
+ 
+  
 }
 
 
 
 div.buttons div.btn:hover {
-  background-color: lime;
-  color:black;
+background-color: lime;
+color:black;
 }
 
 html.shifting div.buttons div.btn:hover {
-  background-color: purple;
-  color:black;
+background-color: purple;
+color:black;
 }
 html.editing.shifting div.buttons div.btn:hover {
-  background-color: yellow;
-  color:black;
+background-color: yellow;
+color:black;
 }
 
 #btnresume {
-     display:none;
+   display:none;
 }
 
 html.paused #btnresume {
-   display:inline-block;
-   animation: blinker 1s infinite;
+ display:inline-block;
+ animation: blinker 1s infinite;
 }
 
 html.paused #btnpause {
-   display:none;
+ display:none;
 }
 
 
 
 html #css_editor {
-    position : absolute;
-    top:60px;
-    left:40px;
-    right:40px;
-    bottom:40px;
-    z-index:9999;
-    font-size:16pt;
+  position : absolute;
+  top:60px;
+  left:40px;
+  right:40px;
+  bottom:40px;
+  z-index:9999;
+  font-size:16pt;
 }
 
 html.reduced #css_editor,
 html.reduced #css_editor div {
-    display : block;
-    cursor: text;
+  display : block;
+  cursor: text;
 }
- 
+

@@ -1,11 +1,27 @@
 <html class="showbuttons">
   <head>
       <title>Presentation Timer</title>
+      <link rel="stylesheet" href="keyhelp.css">
       <link rel="stylesheet" href="timer.css" id="style_1">
   </head>
   <body>
       <script src="fsapi.js"></script>
       <script src="timer.js" defer></script>
+
+      <div class="keyhelptext">
+        <div data-key="ArrowLeft" class='key__button'>&larr;</div>
+        <div data-key="ArrowRight" class='key__button'>&rarr;</div>
+
+        <span>= fix a late/early start (seconds),</span>
+        <div data-key="ArrowUp" class='key__button'>&uarr;</div>
+        <div data-key="ArrowDown" class='key__button'>&darr;</div>
+        <span>= Nudge end time (seconds),</span>
+        <div class='key__button'>Space</div>
+        <span>= start countdown using</span>
+
+    </div>
+
+
       <div class="buttons">
           <span>&nbsp;&nbsp;Presets</span>
           <div class="btn" data-keys=" ,1,0, ">
@@ -84,6 +100,8 @@
              </div>
            </div>
        </div>
+
+       
 
        <div id="drag_to_monitor">Drag window to appropriate monitor and press F to make it Fullscreen</div>
   </body>    
