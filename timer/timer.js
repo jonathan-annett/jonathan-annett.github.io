@@ -31,15 +31,25 @@ let remainDisp   = getEl("remain_disp");
 let startedDisp  = getEl("started_disp");
 let endsDisp     = getEl("ends_disp");
 
+let remainInfoDisp = getEl("remain_info_message");
+
+
 let custom_message  = getEl("custom_message");
 
 
 let durationDisp = getEl("duration_disp");
+let extraTimeDisp = getEl("extra_time_disp");
+
+
+ 
+
 let nowDisp      = getEl("now_disp");
 let keyDisp      = getEl("key_disp");
 let dispNextMins = getEl("disp_next_mins");
 let html         = qs("html");
 let progress     = qs('.progress');
+let pausedAt;
+let pauseAcum = 0;
   
 let runMode = "controller";
 
@@ -108,6 +118,18 @@ custom_message.addEventListener('focus', function(){
        startedDisp.textContent = new Date(startedAt).toLocaleTimeString();
        endsDisp.textContent    = new Date(endsAt).toLocaleTimeString();
        durationDisp.textContent = secToStr((endsAt-startedAt) / 1000);
+       
+       
+       pausedAt = readNumber("pausedAt",pausedAt);
+       pauseAcum = readNumber("pauseAcum",pauseAcum);
+       
+       
+       
+       if (pausedAt!==undefined) {
+           setHtmlClass("paused");
+       }
+    
+       
        displayUpdate();
        
        if ( readNumber("showbar",0)===1) {
@@ -240,6 +262,8 @@ custom_message.addEventListener('focus', function(){
       } 
       
       if (runMode==="controller" || tabCount=== 1 ) {
+         
+         let pausedMsec = pausedAt ? timeNow-pausedAt : 0;
           
          let actualRemain =  (seekEndsAt - timeNow) / oneSecond ;
          if (actualRemain>0) actualRemain++;
@@ -270,15 +294,34 @@ custom_message.addEventListener('focus', function(){
                   endsAt = seekEndsAt;
                   clearRemainClass("adjusting") ;
                   clearRemainClass("adjustingDown") ;
-                  keyDisp.textContent = tabCount === 1  ? "" : controllerCount > 1 ? "MULTIPLE CONTROLLERS TABS ARE OPEN. CLOSE ONE!" : "remote display active";
+                  keyDisp.textContent = tabCount === 1  ? "" : controllerCount > 1 ? "MULTIPLE CONTROLLERS TABS ARE OPEN. CLOSE ONE!" : pausedMsec === 0 ? "remote display active" : "countdown was paused at "+new Date(pausedAt).toLocaleTimeString();
                   writeNumber("endsAt",endsAt);
               }
          }
+         
           
-         let secondsRemain = (endsAt - timeNow) / oneSecond;
+         let secondsRemain = ((endsAt - timeNow) + pausedMsec) / oneSecond;
          let timeText,elapsedText;
+         
+         
+         if (pausedMsec!=0) {
+             remainInfoDisp.textContent = secToStr(pausedMsec / oneSecond);
+             endsDisp.textContent =  new Date(seekEndsAt+pausedMsec).toLocaleTimeString();
+             extraTimeDisp.textContent = "+ "+secToStr((pauseAcum+pausedMsec) / oneSecond)+" pauses";
+             
+         } else {
+             remainInfoDisp.textContent = "";
+             if (pauseAcum===0) {
+                 extraTimeDisp.textContent = "";
+             } else {
+                 extraTimeDisp.textContent = "+ "+secToStr(pauseAcum / oneSecond)+" pauses";
+             }
+         }
+         
+         
+         
         
-         let elapsedMSec = timeNow-startedAt;
+         let elapsedMSec = (timeNow-startedAt) - pausedMsec;
          if (elapsedMSec < 0) {
             setHtmlClass("future");
             if (elapsedMSec > -60000) {
@@ -467,17 +510,24 @@ custom_message.addEventListener('focus', function(){
     lastUpdateTick = 0;
     startedAt  = Date.now();  
     endsAt     = startedAt + defaultDuration;
+    pausedAt=undefined;
+    pauseAcum=0;
     thisDuration = defaultDuration;
     seekEndsAt = endsAt;
     startedDisp.textContent = new Date(startedAt).toLocaleTimeString();
     endsDisp.textContent    = new Date(endsAt).toLocaleTimeString();
     durationDisp.textContent = secToStr(defaultDuration / 1000);
+    extraTimeDisp.textContent = "";
+    
+    
+    writeNumber("pausedAt",pausedAt);
+    writeNumber("pauseAcum",pauseAcum);
     
     writeNumber("startedAt",startedAt);
     writeNumber("endsAt",endsAt);
     writeNumber("seekEndsAt",seekEndsAt);
     clearHtmlClass("countup-override");
-    
+    clearHtmlClass("paused");
     setBarPct(0);
   }
   
@@ -691,6 +741,48 @@ function onDocKeyDown(ev){
     } else {
         
         switch ( ev.key ) {
+            
+            
+            case '"':
+                
+                html.classList.toggle("paused");
+                if (html.classList.contains("paused")) {
+                    pausedAt = Date.now();
+                    writeNumber("pausedAt",pausedAt);
+                    endsAt = seekEndsAt;
+                    extraTimeDisp.textContent = "+ "+secToStr(pauseAcum / oneSecond)+" pauses";
+             
+                } else {
+                    let pausedMsec = pausedAt ? timeNow-pausedAt : 0;
+                    pausedAt = undefined;
+                    seekEndsAt += pausedMsec;
+                    pauseAcum += pausedMsec;
+                    writeNumber("pausedAt",pausedAt);
+                    writeNumber("pauseAcum",pauseAcum);
+    
+                    extraTimeDisp.textContent = "+ "+secToStr(pauseAcum / oneSecond)+" pauses";
+             
+                    endsAt = seekEndsAt;
+                    endsDisp.textContent =  new Date(seekEndsAt).toLocaleTimeString();
+                    
+                }
+                
+                
+                
+                break;
+                
+            case "'": 
+                
+                clearHtmlClass("paused");
+                pausedAt = undefined;
+                pauseAcum = 0;
+                extraTimeDisp.textContent = "";
+                
+                seekEndsAt = startedAt + thisDuration;
+                endsAt = seekEndsAt;
+                endsDisp.textContent =  new Date(seekEndsAt).toLocaleTimeString();
+                    
+                break;
             
             case ".":
                  if ( (enterTimeText !== "") && (enterTimeText.indexOf(".") <0 ) ) {
@@ -1010,7 +1102,11 @@ function onDocKeyDown(ev){
   }
   
   function writeNumber(nm,val) {
-      localStorage.setItem(nm,val.toString());
+      if (val===undefined) {
+          localStorage.removeItem(nm);
+      } else {
+          localStorage.setItem(nm,val.toString());
+      }
   }
 
     function secToStr(sec) {
