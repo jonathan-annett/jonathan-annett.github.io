@@ -300,7 +300,7 @@ custom_message.addEventListener('focus', function(){
          }
          
           
-         let secondsRemain = ((endsAt - timeNow) + pausedMsec) / oneSecond;
+         let secondsRemain = ((endsAt - timeNow) + (pausedMsec)) / oneSecond;
          let timeText,elapsedText;
          
          
@@ -375,7 +375,7 @@ custom_message.addEventListener('focus', function(){
                             }
                         }
                         
-                        setBar(timeNow-startedAt,endsAt-startedAt);
+                        setBar(elapsedMSec,thisDuration);
                      } else {
                         setHtmlClass("over");
                         clearHtmlClass("impending");
