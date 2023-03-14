@@ -305,7 +305,7 @@ custom_message.addEventListener('focus', function(){
          
          
          if (pausedMsec!=0) {
-             remainInfoDisp.textContent = secToStr(pausedMsec / oneSecond);
+             remainInfoDisp.textContent =  runMode === "presenter" ? "Paused" : secToStr(pausedMsec / oneSecond);
              endsDisp.textContent =  new Date(seekEndsAt+pausedMsec).toLocaleTimeString();
              extraTimeDisp.textContent = "+ "+secToStr((pauseAcum+pausedMsec) / oneSecond)+" pauses";
              
@@ -321,8 +321,9 @@ custom_message.addEventListener('focus', function(){
          
          
         
-         let elapsedMSec = (timeNow-startedAt) - pausedMsec;
+         let elapsedMSec = (timeNow-startedAt) - (pausedMsec+pauseAcum);
          if (elapsedMSec < 0) {
+             
             setHtmlClass("future");
             if (elapsedMSec > -60000) {
                 setHtmlClass("impending");
@@ -340,6 +341,7 @@ custom_message.addEventListener('focus', function(){
              
             
          } else {
+             
             clearHtmlClass("future");
             if (secondsRemain >= 0 ) {
                   timeText =  secToStr(secondsRemain+1);
