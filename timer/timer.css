@@ -18,6 +18,18 @@ body {
     user-select: none;                
 }
 
+
+    .blink {
+        animation: blinker 1s infinite;
+    }
+      
+    @keyframes blinker {
+        from { opacity: 1.0; }
+        50% { opacity: 0.5; }
+        to { opacity: 1.0; }
+    }
+    
+
 /* the main countdown (remaining) display takes up 40% of the available height, and is centered verticaly and horizontally */
 #remain_disp {
     
@@ -73,7 +85,8 @@ html.reduced #now_disp:before {
 #ends_disp:before,
 #started_disp:before,
 #duration_disp:after,
-#elapsed_disp:before {
+#elapsed_disp:before,
+#extra_time_disp{
       font-size:2vh;
 }
 
@@ -116,6 +129,7 @@ html.reduced #ends_disp {
     display : block; 
 }
 */
+
 
 
 #elapsed_disp:before {
@@ -175,7 +189,6 @@ html.reduced.future #elapsed_disp {
     font-size:10vh;
 }
 
-
 html.showmessages.reduced.impending #remain_info_message,
 html.showmessages.impending #remain_info_message {
     color:orange;
@@ -185,6 +198,7 @@ html.show_custom_message #custom_message,
 html.edit_custom_message #custom_message,
 html.reduced.show_custom_message #custom_message,
 
+html.showmessages #messages_enabled,
 html.showmessages #messages_enabled,
 html.showmessages.reduced.impending #remain_info_message,
 html.showmessages.impending #remain_info_message,
@@ -279,6 +293,15 @@ html.reduced.future #remain_disp {
 }
 
 
+#extra_time_disp {
+  position : absolute;
+  right :0;
+  top : calc( 80% + 20px);
+    
+}
+
+
+
 
 #disp_next_mins {
   position : absolute;
@@ -300,6 +323,36 @@ html.impending.showmessages #remain_info_message:before {
 html.over.showmessages #remain_info_message:before {
     content : "Time is Up";
 }
+
+html.paused #remain_info_message {
+    color:#202020;
+    display : block;
+}
+
+html.paused #remain_disp {
+    color : #a0a0a0;
+}
+
+
+html.paused #ends_disp {
+    animation: blinker 1s infinite;
+    color : red;
+    
+}
+
+html.paused #remain_info_message:before {
+    content : "Paused (for ";
+}
+html.paused #remain_info_message:after {
+    content : ")";
+}
+html.reduced.paused #remain_info_message:before {
+    content : "Paused";
+}
+html.reduced.paused #remain_info_message:after {
+    content : "";
+}
+
 
 /* keyboard help text*/
 #disp_next_mins:before {
@@ -544,6 +597,21 @@ html.editing.shifting div.buttons div.btn:hover {
   background-color: yellow;
   color:black;
 }
+
+#btnresume {
+     display:none;
+}
+
+html.paused #btnresume {
+   display:inline-block;
+   animation: blinker 1s infinite;
+}
+
+html.paused #btnpause {
+   display:none;
+}
+
+
 
 html #css_editor {
     position : absolute;
