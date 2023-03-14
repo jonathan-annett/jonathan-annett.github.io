@@ -343,12 +343,15 @@ html.paused #ends_disp {
 html.paused #remain_info_message:before {
     content : "Paused (for ";
 }
+
 html.paused #remain_info_message:after {
     content : ")";
 }
+
 html.reduced.paused #remain_info_message:before {
-    content : "Paused";
+    content : "";
 }
+
 html.reduced.paused #remain_info_message:after {
     content : "";
 }
