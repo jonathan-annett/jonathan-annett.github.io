@@ -1,4 +1,4 @@
-<html>
+<html class="showbuttons">
   <head>
       <title>Presentation Timer</title>
       <link rel="stylesheet" href="timer.css" id="style_1">
@@ -50,6 +50,12 @@
           <div class="btn btn2" data-keys="Control,ArrowUp,!Control">
               +1&nbsp;min
           </div>
+          <div id="btnpause" class="btn btn2" data-keys="&quot;">
+              pause
+          </div>
+          <div id="btnresume" class="btn btn2" data-keys="&quot;">
+              resume
+          </div>
           
       </div>
       <div id="clock_main">
@@ -58,15 +64,12 @@
           <div id="messages_enabled">messages enabled</div>
           
           <div id="remain_info_message"></div>
-          <!--
-          <div id="last_minute">Wrap up - last minute</div>
-          <div id="time_is_up">Time is Up</div>
-          -->
           <div id="custom_message"></div>
           <div id="remain_disp"></div>
-          <div class="xfs_only" id="duration_disp"></div>
-          <div class="xfs_only" id="ends_disp"></div>
-          <div class="xfs_only" id="now_disp"></div>
+          <div id="duration_disp"></div>
+          <div id="ends_disp"></div>
+          <div id="extra_time_disp"></div>
+          <div id="now_disp"></div>
       </div>
        
       <div class="xfs_only" id="disp_next_mins">mins</div>
