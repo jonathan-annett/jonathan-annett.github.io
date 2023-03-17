@@ -1,4 +1,12 @@
 # script to download timer app to openwrt router
+# assuming you have admin rights to the router (ie know it's root password)
+# from a linux box connected to the router - for example at 192.168.1.1
+# use:
+
+# curl https://jonathan-annett.github.io/timer/install.sh | ssh root@192.168.1.1
+
+# you will be asked for the router password
+
 mkdir -p /root/timer
 cd /root/timer
 wget  https://jonathan-annett.github.io/timer/timer.html  -O ./timer.html
