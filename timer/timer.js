@@ -476,7 +476,7 @@ custom_message.addEventListener('focus', function(){
                                     aceScript.setAttribute('integrity',"sha512-NSbvq6xPdfFIa2wwSh8vtsPL7AyYAYRAUWRDCqFH34kYIjQ4M7H2POiULf3CH11TRcq3Ww6FZDdLZ8msYhMxjg==");
                                     aceScript.setAttribute('crossorigin',"anonymous" );
                                     aceScript.setAttribute('referrerpolicy',"no-referrer");
-                                    aceScript.setAttribute('src',"https://cdnjs.cloudflare.com/ajax/libs/ace/1.15.2/ace.js");
+                                    aceScript.setAttribute('src',"ace.js");//"https://cdnjs.cloudflare.com/ajax/libs/ace/1.15.2/ace.js");
                                     document.body.appendChild(aceScript);
                                     
                                     let iv = setInterval(function(){
