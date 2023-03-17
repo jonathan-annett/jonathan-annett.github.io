@@ -473,7 +473,7 @@ custom_message.addEventListener('focus', function(){
                                 } else {
                                     
                                     aceScript = document.createElement("script");
-                                    aceScript.setAttribute('integrity',"sha512-NSbvq6xPdfFIa2wwSh8vtsPL7AyYAYRAUWRDCqFH34kYIjQ4M7H2POiULf3CH11TRcq3Ww6FZDdLZ8msYhMxjg==");
+                                    aceScript.setAttribute('integrity',"sha512-ccHRaolwYDPEgVPUVUyM3PppLOJHTa0sDgpzH0Q2VcS/WKDdgT3wosDUyf20H3N7fhedykwG8bBFv3IdJh3IOw==");//"sha512-NSbvq6xPdfFIa2wwSh8vtsPL7AyYAYRAUWRDCqFH34kYIjQ4M7H2POiULf3CH11TRcq3Ww6FZDdLZ8msYhMxjg==");
                                     aceScript.setAttribute('crossorigin',"anonymous" );
                                     aceScript.setAttribute('referrerpolicy',"no-referrer");
                                     aceScript.setAttribute('src',"ace.js");//"https://cdnjs.cloudflare.com/ajax/libs/ace/1.15.2/ace.js");
