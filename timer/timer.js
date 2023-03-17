@@ -417,9 +417,9 @@ custom_message.addEventListener('focus', function(){
                 let storedCss = localStorage.getItem("custom_css");
                 if (storedCss) {
                     sheet.innerHTML = storedCss;
+		    document.head.appendChild(sheet);
+		    el.parentNode.removeChild(el);
                 }
-                document.head.appendChild(sheet);
-                el.parentNode.removeChild(el);
                 if (cb) {
                     cb(Object.defineProperties({},{
                         sheet : {value: sheet},
