@@ -1,3 +1,4 @@
+# script to download timer app to openwrt router
 mkdir -p /root/timer
 cd /root/timer
 wget  https://jonathan-annett.github.io/timer/timer.html
