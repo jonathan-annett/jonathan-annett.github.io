@@ -1,0 +1,2 @@
+
+location.href="./timer.html";
