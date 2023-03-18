@@ -749,7 +749,7 @@ function onDocKeyDown(ev){
         switch ( ev.key ) {
             
             
-            case '"':
+            case  keyscodes.Pause :
                 
                 html.classList.toggle("paused");
                 if (html.classList.contains("paused")) {
@@ -777,7 +777,7 @@ function onDocKeyDown(ev){
                 
                 break;
                 
-            case "'": 
+            case keyscodes.UndoPause: 
                 
                 clearHtmlClass("paused");
                 pausedAt = undefined;
