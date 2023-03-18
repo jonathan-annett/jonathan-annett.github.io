@@ -1,4 +1,4 @@
-const keyscodes = {
+const keycodes = {
     "Space": " ",
     "Enter": "Enter",
     "Backspace": "Backspace",

@@ -2,7 +2,7 @@
 
 /*jshint maxerr: 10000 */
 
-/* global fs_api,ace*/
+/* global fs_api,ace,keycodes,keyNames*/
 
 const oneSecond        = 1000;
 const oneMinute        = 60 * oneSecond;
