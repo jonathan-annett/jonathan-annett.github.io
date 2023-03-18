@@ -749,7 +749,7 @@ function onDocKeyDown(ev){
         switch ( ev.key ) {
             
             
-            case  keyscodes.Pause :
+            case  keycodes.Pause :
                 
                 html.classList.toggle("paused");
                 if (html.classList.contains("paused")) {
@@ -777,7 +777,7 @@ function onDocKeyDown(ev){
                 
                 break;
                 
-            case keyscodes.UndoPause: 
+            case keycodes.UndoPause: 
                 
                 clearHtmlClass("paused");
                 pausedAt = undefined;
@@ -790,7 +790,7 @@ function onDocKeyDown(ev){
                     
                 break;
             
-            case keyscodes.Period :
+            case keycodes.Period :
                  if ( (enterTimeText !== "") && (enterTimeText.indexOf(".") <0 ) ) {
                      
                      enterTimeText = enterTimeText + ev.key;
@@ -800,7 +800,7 @@ function onDocKeyDown(ev){
                 }
                 break;
                 
-            case keyscodes.Colon:
+            case keycodes.Colon:
                 if (enterHoursText === "") {
                     enterHoursText = enterTimeText;
                     enterTimeText  = "";
@@ -808,7 +808,7 @@ function onDocKeyDown(ev){
                     dispNextMins.textContent = secToStr((Number(enterHoursText) * 3600) + (Number(enterTimeText) * 60));
                 }
                 break;
-            case keyscodes.Backspace :
+            case keycodes.Backspace :
                 if (enterTimeText !== "" ) {
                     enterTimeText = enterTimeText.substr(0,enterTimeText.length-1);
                     updateEnteredTimeText () ;
