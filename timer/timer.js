@@ -420,7 +420,7 @@ custom_message.addEventListener('focus', function(){
                 let storedCss = localStorage.getItem("custom_css");
                 if (storedCss) {
                     sheet.innerHTML = storedCss;
-		    document.head.appendChild(sheet);
+		    document.body.appendChild(sheet);
 		    el.parentNode.removeChild(el);
                 }
                 if (cb) {
