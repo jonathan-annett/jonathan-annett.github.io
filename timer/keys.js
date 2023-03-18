@@ -58,19 +58,19 @@ const keyscodes = {
 };
 
 const keyNames = {
-    "toggle fullscreen" : ["f","F"],
-    "toggle progress bar" : ["b","B"],
-    "toggle messages" : ["m","M"],
-    "pause/resume" : ["Pause"],
-    "undo pause" : ["UndoPause"],
-    "toggle current time display" : ["t","T"],
-    "toggle presenter screen mode" : ["p","P"],
-    "toggle single screen mode" : ["s","S"],
-    "restart timer": ["Space"],
-    "extend timer to default": ["x","X"],
-    "toggle/edit custom message": ["c","C"],
-    "confirm entered duration": ["Enter"],
-    "delete last entered character": ["Backspace"],
-    "open remote window": ["r","R"],
+    "Toggle Fullscreen Mode" : ["f","F"],
+    "Toggle Progress Bar Display" : ["b","B"],
+    "Toggle Standard Messages" : ["m","M"],
+    "Pause/resume the countdown" : ["Pause"],
+    "Undo pause (removes any added time)" : ["UndoPause"],
+    "Toggle current time display" : ["t","T"],
+    "Toggle presenter screen mode" : ["p","P"],
+    "Single screen mode" : ["s","S"],
+    "Restart timer": ["Space"],
+    "Extend timer to default": ["x","X"],
+    "Toggle/edit custom message": ["c","C"],
+    "Confirm entered duration": ["Enter"],
+    "Delete last entered character": ["Backspace"],
+    "Open remote window": ["r","R"]
+};
 
-}

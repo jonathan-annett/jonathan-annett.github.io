@@ -682,7 +682,7 @@ function onDocKeyDown(ev){
    
    if (html.classList.contains("edit_custom_message")) {
        
-        if  ( ev.key === "Enter") {
+        if  ( ev.key === keycodes.Enter) {
                custom_message.contentEditable=false;
                html.classList.remove("edit_custom_message");
                if (custom_message.textContent==="custom message") {
@@ -701,7 +701,7 @@ function onDocKeyDown(ev){
    } else {
        if (html.classList.contains("show_custom_message")) {
 
-            if  ( ev.key ==="c" || ev.key==="C") {
+            if  ( ev.key === keycodes.c || ev.key=== keycodes.C ) {
                html.classList.remove("edit_custom_message");
                html.classList.remove("show_custom_message");
                if (custom_msg_timeout) {
@@ -720,7 +720,7 @@ function onDocKeyDown(ev){
    
    if (stylesheet1_obj && stylesheet1_obj.editing && location.protocol==="https:") {
        
-       if ( (ev.key === "S" || ev.key === "s")  && ev.ctrlKey ) {
+       if ( (ev.key === keycodes.S || ev.key === keycodes.s)  && ev.ctrlKey ) {
             ev.preventDefault();
             stylesheet1_obj.editToggle();
             if (ev.shiftKey) {
@@ -790,7 +790,7 @@ function onDocKeyDown(ev){
                     
                 break;
             
-            case ".":
+            case keyscodes.Period :
                  if ( (enterTimeText !== "") && (enterTimeText.indexOf(".") <0 ) ) {
                      
                      enterTimeText = enterTimeText + ev.key;
@@ -800,7 +800,7 @@ function onDocKeyDown(ev){
                 }
                 break;
                 
-            case ":":
+            case keyscodes.Colon:
                 if (enterHoursText === "") {
                     enterHoursText = enterTimeText;
                     enterTimeText  = "";
@@ -808,7 +808,7 @@ function onDocKeyDown(ev){
                     dispNextMins.textContent = secToStr((Number(enterHoursText) * 3600) + (Number(enterTimeText) * 60));
                 }
                 break;
-            case "Backspace" :
+            case keyscodes.Backspace :
                 if (enterTimeText !== "" ) {
                     enterTimeText = enterTimeText.substr(0,enterTimeText.length-1);
                     updateEnteredTimeText () ;
@@ -818,7 +818,7 @@ function onDocKeyDown(ev){
                     
                 }
                 break;
-            case "Enter" : 
+            case keycodes.Enter : 
                 
                 if (controlling) {
                       lastUpdateTick = 0;
@@ -834,7 +834,7 @@ function onDocKeyDown(ev){
                 break;
                 
             //case "-":    
-            case "ArrowDown" : {
+            case keycodes.ArrowDown : {
                 
                 //if (controlling && ev.key==="-") break;
                 
@@ -855,8 +855,8 @@ function onDocKeyDown(ev){
             }
 
 
-            case "q":
-            case "Q":
+            case keycodes.q :
+            case keycodes.Q :
                 if (controlling) {
                     if (is_nwjs()) {
                          require('nw.gui').App.quit();
@@ -866,7 +866,7 @@ function onDocKeyDown(ev){
                 break;
             
             //case "+":
-            case "ArrowUp" : {
+            case keycodes.ArrowUp : {
                  //if (controlling && ev.key==="+") break;
                  
                  if (!html.classList.contains("editing") ) {
@@ -884,7 +884,7 @@ function onDocKeyDown(ev){
                 break;
             }
             
-            case "ArrowLeft": 
+            case keycodes.ArrowLeft: 
                 bumpStart(0-factor);
                 bumpEnd(0-seekEndDelta,0-endDelta);
                 
@@ -892,7 +892,7 @@ function onDocKeyDown(ev){
                 displayUpdate();
             
             break; 
-            case "ArrowRight": 
+            case keycodes.ArrowRight : 
                 bumpStart(factor);
                 bumpEnd(seekEndDelta,endDelta);
                 
@@ -913,14 +913,14 @@ function onDocKeyDown(ev){
                 setHtmlClass("controlling");
                 break ;
               
-            case "i":
-            case "I":
+            case keycodes.i:
+            case keycodes.I :
                 if (controlling && shifting) {
                     ev.preventDefault();
                 }
                 break;  
-            case "F":
-            case "f":  
+            case keycodes.F:
+            case keycodes.f:  
                 if (fs_api.isFullscreen()) {
                     fs_api.exitFullscreen();
                 } else {
@@ -928,14 +928,15 @@ function onDocKeyDown(ev){
                  } 
                   break;
                   
-            case "b":
-            case "B":
+            case keycodes.b:
+            case keycodes.B:
                 html.classList.toggle("showbar");
                 writeNumber("showbar",html.classList.contains("showbar") ? 1 : 0);
                 
                 break;
             
-            case " ":
+            case keycodes.Space:
+
                 const preserve_default = defaultDuration;
                 
                  if (controlling) {
@@ -963,20 +964,20 @@ function onDocKeyDown(ev){
                  }
                 break;
                 
-            case "m":
-            case "M":
+            case keycodes.m:
+            case keycodes.M:
                 html.classList.toggle("showmessages");
                 writeNumber("showmessages",html.classList.contains("showmessages") ? 1 : 0);
                 break;
                 
-            case "t":
-            case "T":
+            case keycodes.t:
+            case keycodes.T:
                 html.classList.toggle("showtimenow");
                 writeNumber("showtimenow",html.classList.contains("showtimenow") ? 1 : 0);
                 break;
                 
-            case "p":
-            case "P":
+            case keycodes.p:
+            case keycodes.P:
                 
                 if (window.location.search !== "?presenter" &&  tabCount === 1) {
                     html.classList.toggle("reduced");
@@ -985,8 +986,8 @@ function onDocKeyDown(ev){
                 }
                 html.classList[ html.classList.contains("reduced") ? "remove" : "add"]("showbuttons");
                 break;
-            case "s":
-            case "S":
+            case keycodes.s:
+            case keycodes.S:
                 
                 if (ev.ctrlKey) {
                     if (stylesheet1_obj) {
@@ -1014,13 +1015,13 @@ function onDocKeyDown(ev){
                 }
                 break;
                 
-            case "x":
-            case "X": // extend current timer to default time
+            case keycodes.x:
+            case keycodes.X: // extend current timer to default time
                extendDefaultToCurrentTimer();
                 break;
                 
-            case "c":
-            case "C":
+            case keycodes.c:
+            case keycodes.C:
                 
                     
                 html.classList.add("edit_custom_message");
@@ -1032,8 +1033,9 @@ function onDocKeyDown(ev){
                 
                 break;
 
-	    case "R":
-            case "r":
+	    case keycodes.R:
+        case keycodes.r:
+
               ev.preventDefault();
         	  openTimerWindow(tabCount>1);
               break;
