@@ -194,6 +194,9 @@ html.showmessages.impending #remain_info_message {
   color:orange;
 }
 
+
+#custom_key_edit,
+
 html.show_custom_message #custom_message,
 html.edit_custom_message #custom_message,
 html.reduced.show_custom_message #custom_message,

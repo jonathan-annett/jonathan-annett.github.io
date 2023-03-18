@@ -74,3 +74,6 @@ var keyNames = {
     "Open remote window": ["r","R"]
 };
 
+
+var keyNamesHtml = '<option>'+Object.keys(keyNames).sort().join("</option>\n<option>")+"</option>";
+

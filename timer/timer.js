@@ -2,7 +2,7 @@
 
 /*jshint maxerr: 10000 */
 
-/* global fs_api,ace,keycodes,keyNames*/
+/* global fs_api,ace,keycodes,keyNames,keyNamesHtml*/
 
 const oneSecond        = 1000;
 const oneMinute        = 60 * oneSecond;
@@ -39,6 +39,9 @@ let remainInfoDisp = getEl("remain_info_message");
 
 let custom_message  = getEl("custom_message");
 
+let keycodeSelect = document.querySelector("#custom_key_edit select");
+
+keycodeSelect.innerHTML = keyNamesHtml;
 
 let durationDisp = getEl("duration_disp");
 let extraTimeDisp = getEl("extra_time_disp");
