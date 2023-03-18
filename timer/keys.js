@@ -1,4 +1,4 @@
-const keycodes = {
+var keycodes = {
     "Space": " ",
     "Enter": "Enter",
     "Backspace": "Backspace",
@@ -57,7 +57,7 @@ const keycodes = {
 
 };
 
-const keyNames = {
+var keyNames = {
     "Toggle Fullscreen Mode" : ["f","F"],
     "Toggle Progress Bar Display" : ["b","B"],
     "Toggle Standard Messages" : ["m","M"],
