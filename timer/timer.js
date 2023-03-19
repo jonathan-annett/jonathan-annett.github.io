@@ -718,7 +718,7 @@ function onDocKeyDown(ev){
 
    if (html.classList.contains("custom_key_edit")) {
      ev.preventDefault();
-     if ( keycodes.EditKeycodes.indexOf(ev.key)>=0 ) {
+     if ( ev.key === keycodes.K  || ev.key === keycodes.k ) {
           // the
           html.classList.remove("custom_key_edit");
           return;
@@ -763,8 +763,8 @@ function onDocKeyDown(ev){
         switch ( ev.key ) {
             
             
-            case "k":
-            case "K": 
+            case keycodes.k:
+            case keycodes.K: 
 
                 html.classList.add("custom_key_edit");
                 

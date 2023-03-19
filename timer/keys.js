@@ -74,8 +74,8 @@ var keyNames = {
     "Confirm entered duration": ["Enter"],
     "Delete last entered character": ["Backspace"],
     "Open remote window": ["r","R"],
-    "EditKeycodes": ["k","K"],
-    
+    "Edit Key codes": ["k","K"],
+
 };
 
 var keynamesDefault = Object.assign({}, keyNames);
