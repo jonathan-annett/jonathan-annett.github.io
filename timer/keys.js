@@ -120,7 +120,7 @@ function updateKeycodesEdit(keycodesEdit) {
         let keyname = td.dataset.keyname;
 
         if (unconfigurableKeys.indexOf( keynamesDefault[keyname][0] )>=0 )  {
-            td.style.display="none";
+            td.parentElement.style.display="none";
             return;
         }
 
