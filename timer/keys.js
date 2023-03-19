@@ -60,7 +60,8 @@ var keycodes = {
 };
 
 const keyClasses = {
-    " " :   "key__space",
+    " " :   "key__button key__space",
+    "Enter" :   "key__button key__space",
  }
 
 const renameKeys = {
