@@ -97,7 +97,7 @@ var keynamesDefault = Object.assign({}, keyNames);
 
 
 function keyNamesHtml (){
-    return '<table class="keyhelptext">'+Object.keys(keyNames).sort().map(function(keyName){
+    return '<table>'+Object.keys(keyNames).sort().map(function(keyName){
         const key = keyNames[keyName][0]; // eg " " or "f"
         const defKey = keynamesDefault[keyName][0];
         const dispKey = renameKey(key);
