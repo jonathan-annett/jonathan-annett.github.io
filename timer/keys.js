@@ -83,7 +83,7 @@ var keynamesDefault = Object.assign({}, keyNames);
 
 function keyNamesHtml (){
     return '<table>'+Object.keys(keyNames).sort().map(function(keyName){
-        return "<tr><td>"+keyName+"</td><td>"+keyNames[keyName][0]+"</td></tr>";
+        return "<tr><td>"+keyName+'</td><td data-keyname="'+keyName+'">'+keyNames[keyName][0]+"</td></tr>";
     }).join("\n")+"</table>";
 }
 
@@ -95,8 +95,8 @@ function keyIsUsed (k) {
 
 function updateKeycodesEdit(keycodesEdit) {
     keycodesEdit.innerHTML = keyNamesHtml();
-    [].forEach.call(keycodesEdit.querySelectorAll("td"), function(td,ix){
-        let keyname = keyNames[ix];
+    [].forEach.call(keycodesEdit.querySelectorAll("td"), function(td){
+        let keyname = td.dataset.keyname;
         td.addEventListener("click", function(){
             // replace the inside of the faux-button wih an input box
             // this enables us to trap a keystroke so we can update the new keycode 
