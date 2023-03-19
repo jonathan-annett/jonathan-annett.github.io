@@ -73,8 +73,8 @@ var keyNames = {
     "Toggle Fullscreen Mode" : ["f","F"],
     "Toggle Progress Bar Display" : ["b","B"],
     "Toggle Standard Messages" : ["m","M"],
-    "Pause/resume the countdown" : ["Pause"],
-    "Undo pause (removes any added time)" : ["UndoPause"],
+    "Pause/resume the countdown" : ['"'],
+    "Undo pause (removes any added time)" : ["'"],
     "Toggle current time display" : ["t","T"],
     "Toggle presenter screen mode" : ["p","P"],
     "hours and minutes separator" : [":"],
@@ -108,62 +108,85 @@ function keyIsUsed (k) {
 
 function updateKeycodesEdit(keycodesEdit) {
     keycodesEdit.innerHTML = keyNamesHtml();
-    [].forEach.call(keycodesEdit.querySelectorAll("td"), function(td){
+    [].forEach.call(keycodesEdit.querySelectorAll("td"), function(td,ix){
         let keyname = td.dataset.keyname;
-        td.addEventListener("click", function(){
+        let customKeydown,customKeydownAssigned = false;
+        let customClick =  function(){
             // replace the inside of the faux-button wih an input box
             // this enables us to trap a keystroke so we can update the new keycode 
-            var input = document.createElement("input");
-            input.value = td.innerHTML;
-            input.style = "width: 100%; height: 100%; background-color:yellow;margin:0;padding:0;";
+            // for the given keyname
 
-            td.appendChild(input);
-            input.focus();
-            input.addEventListener("keydown", function(ev){
-                ev.preventDefault();
-                if (ev.key === "Shift" || ev.key === "Control" || ev.key === "Alt") {
-                    // ignore modifier keys
-                    return false;
-                }
-                // this event invoked when a key is pressed inside the input box
-                const k0 = ev.key, k1 = k0.toLowerCase(),k2 = k0.toUpperCase();
-                if (k0.length === 1 && k1 >= 'a' && k1 <= 'z') {
-                    // this is a letter key which may be upper or lower case
-                    // hence we need to store both
+            if (customKeydownAssigned) {
+                document.body.removeEventListener("keydown",customKeydown);
+                customKeydownAssigned =false;
+                td.style.backgroundColor = null;
+           } else {
+                document.body.addEventListener("keydown",customKeydown);
+                customKeydownAssigned = true;
+                td.style.backgroundColor = "yellow";
+            }
 
-                    if (keyIsUsed(k1) || keyIsUsed(k2)) {
-                        // the key is already used, so we can't use it
-                        // so we don't update the keycodes object
-                        input.style.backgroundColor = "red";
-                        input.value = k1;
-                        return false; 
-                    } else {
-                       keyNames[keyname] =  [ k1, k2 ];
-                    }
+
+        };
+
+        customKeydown = function (ev) {
+
+            ev.preventDefault();
+            if (ev.key === "Shift" || ev.key === "Control" || ev.key === "Alt") {
+                // ignore modifier keys
+                return false;
+            }
+            // this event invoked when a key is pressed inside the input box
+            const k0 = ev.key, k1 = k0.toLowerCase(),k2 = k0.toUpperCase();
+            if (k0.length === 1 && k1 >= 'a' && k1 <= 'z') {
+                // this is a letter key which may be upper or lower case
+                // hence we need to store both
+
+                if (keyIsUsed(k1) || keyIsUsed(k2)) {
+                    // the key is already used, so we can't use it
+                    // so we don't update the keycodes object
+                    td.style.backgroundColor = "red";
+                    td.innerHTML = k1;
+                    return false; 
                 } else {
-                    // this is a special key, or a number key, so only one keycode is needed
-                    if (keyIsUsed(k0)) {
-                        // the key is already used, so we can't use it
-                        // so we don't update the keycodes object
-                        input.style.backgroundColor = "red";
-                        input.value = keyDisplay(k0);
-                        return false; 
-
-                    } else {
-
-                        keyNames[keyname] = [ k0 ];
-                    }
+                   keyNames[keyname] =  [ k1, k2 ];
                 }
+            } else {
+                // this is a special key, or a number key, so only one keycode is needed
+                if (keyIsUsed(k0)) {
+                    // the key is already used, so we can't use it
+                    // so we don't update the keycodes object
+                    td.style.backgroundColor = "red";
+                    td.innerHTML = keyDisplay(k0);
+                    return false; 
 
-                // update the keycodes constant for the given keyname to reflect the new assignment 
-                keynamesDefault[keyname].forEach(function(codedKey,ix){
-                    keycodes[codedKey] = keyNames[keyname][ix];
-                });
+                } else {
 
+                    keyNames[keyname] = [ k0 ];
+                }
+            }
 
-                // this will overwrite innerHTML in keycodesEdit, and free up the temp object and calbacks etc
-                updateKeycodesEdit(keycodesEdit);
+            // update the keycodes constant for the given keyname to reflect the new assignment 
+            keynamesDefault[keyname].forEach(function(codedKey,ix){
+                keycodes[codedKey] = keyNames[keyname][ix];
             });
-        });
+
+
+            document.body.removeEventListener("keydown",customKeydown);
+            customKeydownAssigned =false;
+
+            // this will overwrite innerHTML in keycodesEdit, and free up the temp object and calbacks etc
+            updateKeycodesEdit(keycodesEdit);
+
+            keycodesEdit.querySelectorAll("td")[ix].style.backgroundColor = "green";
+
+        };
+
+
+        td.addEventListener("click",customClick);
+        
+
+
+        
     });
 }
