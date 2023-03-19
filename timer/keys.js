@@ -115,10 +115,7 @@ function updateKeycodesEdit(keycodesEdit) {
         let keyname = td.dataset.keyname;
         let customKeydown,customKeydownAssigned = false;
         let customClick =  function(){
-            // replace the inside of the faux-button wih an input box
-            // this enables us to trap a keystroke so we can update the new keycode 
-            // for the given keyname
-
+           
             if (customKeydownAssigned) {
                 document.body.removeEventListener("keydown",customKeydown);
                 customKeydownAssigned =false;
