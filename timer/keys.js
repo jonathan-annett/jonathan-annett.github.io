@@ -111,7 +111,7 @@ function keyIsUsed (k) {
 
 function updateKeycodesEdit(keycodesEdit) {
     keycodesEdit.innerHTML = keyNamesHtml();
-    [].forEach.call(keycodesEdit.querySelectorAll("td"), function(td,ix){
+    [].forEach.call(keycodesEdit.querySelectorAll("td:nth-of-type(2)"), function(td,ix){
         let keyname = td.dataset.keyname;
         let customKeydown,customKeydownAssigned = false;
         let customClick =  function(){
@@ -178,7 +178,7 @@ function updateKeycodesEdit(keycodesEdit) {
             // this will overwrite innerHTML in keycodesEdit, and free up the temp object and calbacks etc
             updateKeycodesEdit(keycodesEdit);
 
-            keycodesEdit.querySelectorAll("td")[ix].style.backgroundColor = "green";
+            keycodesEdit.querySelectorAll("td:nth-of-type(2)")[ix].style.backgroundColor = "green";
 
         };
 
