@@ -195,7 +195,9 @@ html.showmessages.impending #remain_info_message {
 }
 
 
-#custom_key_edit,
+#custom_key_edit {
+  display : none;
+}
 
 html.show_custom_message #custom_message,
 html.edit_custom_message #custom_message,
