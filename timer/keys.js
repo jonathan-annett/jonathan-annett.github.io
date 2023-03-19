@@ -145,7 +145,7 @@ function updateKeycodesEdit(keycodesEdit) {
                 if (keyIsUsed(k1) || keyIsUsed(k2)) {
                     // the key is already used, so we can't use it
                     // so we don't update the keycodes object
-                    td.style.backgroundColor = "red";
+                    td.style.backgroundColor = k1===keyNames[keyname][0] ? "yellow" :  "red";
                     td.innerHTML = k1;
                     return false; 
                 } else {
@@ -156,7 +156,7 @@ function updateKeycodesEdit(keycodesEdit) {
                 if (keyIsUsed(k0)) {
                     // the key is already used, so we can't use it
                     // so we don't update the keycodes object
-                    td.style.backgroundColor = "red";
+                    td.style.backgroundColor = k0===keyNames[keyname][0] ? "yellow" :  "red";
                     td.innerHTML = keyDisplay(k0);
                     return false; 
 
@@ -178,7 +178,12 @@ function updateKeycodesEdit(keycodesEdit) {
             // this will overwrite innerHTML in keycodesEdit, and free up the temp object and calbacks etc
             updateKeycodesEdit(keycodesEdit);
 
-            keycodesEdit.querySelectorAll("td:nth-of-type(2)")[ix].style.backgroundColor = "green";
+            let newtd=keycodesEdit.querySelectorAll("td:nth-of-type(2)")[ix];
+            newtd.style.backgroundColor = "green";
+
+            setTimeout(function(){
+                delete newtd.style.backgroundColor;
+            },1500);
 
         };
 
