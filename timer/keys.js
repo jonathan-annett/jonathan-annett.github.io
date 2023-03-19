@@ -60,8 +60,15 @@ var keycodes = {
 };
 
 const keyClasses = {
-    " " :   "key__button key__space",
-    "Enter" :   "key__button key__space"
+    " "     :   "key__button key__space",
+    "Enter" :   "key__button key__enter",
+    ":"     :   "key__button key__colon",
+    "."     :   "key__button key__period"
+ }
+
+ const keyStyleWidth = {
+    " "     :   100,
+    "Enter" :   100
  }
 
 const renameKeys = {
@@ -77,7 +84,7 @@ function renameKey(k) {
 } 
 
 function keyClass (k) {
-    return keyClasses[k] || "key__button";
+    return keyClasses[k] || "key__button key_"+k,toLowerCase();
 }
 
 var keyNames = {
@@ -109,8 +116,8 @@ function keyNamesHtml (){
         const defKey = keynamesDefault[keyName][0];
         const dispKey = renameKey(key);
         const dispDefKey = renameKey(defKey);
-        return "<tr><td>"+keyName+'</td><td class="'+keyClass (key)+'" data-keyname="'+keyName+'">'+dispKey+
-        '</td><td> Default : <Span class="'+keyClass (defKey)+'">'+dispDefKey+"</span></td></tr>"; 
+        return "<tr><td>"+keyName+'</td><td class="'+keyClass (key)+'" data-keyname="'+keyName+'">'+
+        '</td><td> Default : <Span class="'+keyClass (defKey)+'">'+"</span></td></tr>"; 
     }).join("\n")+"</table>";
 }
 
