@@ -83,7 +83,7 @@ var keynamesDefault = Object.assign({}, keyNames);
 
 function keyNamesHtml (){
     return '<table>'+Object.keys(keyNames).sort().map(function(keyName){
-        return "<tr><td>"+keyName+'</td><td data-keyname="'+keyName+'">'+keyNames[keyName][0]+"</td></tr>";
+        return "<tr><td>"+keyName+'</td><td data-keyname="'+keyName+'">'+ keycodes[ keyNames[keyName][0] ]+"</td></tr>";
     }).join("\n")+"</table>";
 }
 
@@ -102,12 +102,16 @@ function updateKeycodesEdit(keycodesEdit) {
             // this enables us to trap a keystroke so we can update the new keycode 
             var input = document.createElement("input");
             input.value = "press key";
-            input.style = "width: 100%; height: 100%; background-color:yellow;";
+            input.style = "width: 100%; height: 100%; background-color:yellow;margin:0;padding:0;";
 
             td.appendChild(input);
             input.focus();
             input.addEventListener("keydown", function(ev){
                 ev.preventDefault();
+                if (ev.key === "Shift" || ev.key === "Control" || ev.key === "Alt") {
+                    // ignore modifier keys
+                    return false;
+                }
                 // this event invoked when a key is pressed inside the input box
                 const k0 = ev.key, k1 = k0.toLowerCase(),k2 = k0.toUpperCase();
                 if (k0.length === 1 && k1 >= 'a' && k1 <= 'z') {
