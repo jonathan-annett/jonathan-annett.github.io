@@ -97,12 +97,12 @@ var keynamesDefault = Object.assign({}, keyNames);
 
 
 function keyNamesHtml (){
-    return '<table>'+Object.keys(keyNames).sort().map(function(keyName){
+    return '<table class="keyhelptext">'+Object.keys(keyNames).sort().map(function(keyName){
         const key = keyNames[keyName][0]; // eg " " or "f"
         const defKey = keynamesDefault[keyName][0];
         const dispKey = renameKey(key);
         const dispDefKey = renameKey(defKey);
-        return "<tr><td>"+keyName+'</td><td data-keyname="'+keyName+'">'+dispKey+
+        return "<tr><td>"+keyName+'</td><td class="key__button" data-keyname="'+keyName+'">'+dispKey+
         "</td><td> Default : "+dispDefKey+"</td></tr>";
     }).join("\n")+"</table>";
 }
