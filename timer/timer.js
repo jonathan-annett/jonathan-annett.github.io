@@ -717,9 +717,14 @@ function onDocKeyDown(ev){
    }
 
    if (html.classList.contains("custom_key_edit")) {
+     ev.preventDefault();
+     if ( keycodes.EditKeycodes.indexOf(ev.key)>=0 ) {
+          // the
+          html.classList.remove("custom_key_edit");
+          return;
+      }
     // when editing keycodes, ignore all other keys in this callback
-      ev.preventDefault();
-      return false;
+    return false;
     
    }
 
@@ -761,7 +766,7 @@ function onDocKeyDown(ev){
             case "k":
             case "K": 
 
-                html.classList.toggle("custom_key_edit");
+                html.classList.add("custom_key_edit");
                 
                 break;
 

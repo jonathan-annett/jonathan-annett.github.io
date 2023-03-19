@@ -54,6 +54,8 @@ var keycodes = {
     "r" : "r",
     "R" : "R",
 
+    "k" : "k",
+    "K" : "K"  
 
 };
 
@@ -71,7 +73,9 @@ var keyNames = {
     "Toggle/edit custom message": ["c","C"],
     "Confirm entered duration": ["Enter"],
     "Delete last entered character": ["Backspace"],
-    "Open remote window": ["r","R"]
+    "Open remote window": ["r","R"],
+    "EditKeycodes": ["k","K"],
+    
 };
 
 var keynamesDefault = Object.assign({}, keyNames);
