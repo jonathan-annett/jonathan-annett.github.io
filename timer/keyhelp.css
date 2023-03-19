@@ -54,12 +54,12 @@
     background:#e0e050;
   }
 
-  
+/*  
 .key__button:after  {
   position:relative;  
   left: -40px;
 }
-
+*/
 
 .key__space  {
   width: 100px;
@@ -67,7 +67,7 @@
 
 .key__space:after  {
   content : "Space";
-  left: -100px;
+  /*left: -100px;*/
 }
 
 .key__enter  {
@@ -76,7 +76,7 @@
 
 .key__enter:after  {
   content : "Enter";
-  left: -100px;
+  /*left: -100px;*/
 }
 
 .key__backspace  {
@@ -85,7 +85,7 @@
 
 .key__backspace:after  {
   content : "Backspace";
-  left: -100px;
+  /*left: -100px;*/
 }
 
 .key__period:after  {
