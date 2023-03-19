@@ -84,7 +84,7 @@ function renameKey(k) {
 } 
 
 function keyClass (k) {
-    return keyClasses[k] || "key__button key_"+k.toLowerCase();
+    return keyClasses[k] || "key__button key__"+k.toLowerCase();
 }
 
 var keyNames = {
