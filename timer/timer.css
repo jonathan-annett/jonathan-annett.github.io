@@ -232,7 +232,7 @@ html.showmessages.impending #remain_info_message {
 #custom_key_edit table tr td:nth-of-type(1) {
   width: 60vw;
 }
-
+/*
 #custom_key_edit table tr td:nth-of-type(2) {
   display: inline-block;
   padding: 6px 12px;
@@ -261,7 +261,7 @@ html.showmessages.impending #remain_info_message {
   width: 90px;
 
 }
-
+*/
 html.custom_key_edit #custom_key_edit  {
   overflow:scroll;
 }
