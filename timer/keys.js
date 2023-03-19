@@ -59,6 +59,16 @@ var keycodes = {
 
 };
 
+const renameKeys = {
+   " " : "Space",
+   "." : "Period",
+   ":" : "Colon",
+};
+
+function renameKey(k) {
+    return renameKeys[k] || k;
+} 
+
 var keyNames = {
     "Toggle Fullscreen Mode" : ["f","F"],
     "Toggle Progress Bar Display" : ["b","B"],
@@ -67,15 +77,16 @@ var keyNames = {
     "Undo pause (removes any added time)" : ["UndoPause"],
     "Toggle current time display" : ["t","T"],
     "Toggle presenter screen mode" : ["p","P"],
+    "hours and minutes separator" : [":"],
+    "decimal point for minutes" : ["."],
     "Single screen mode" : ["s","S"],
-    "Restart timer": ["Space"],
+    "Restart timer": [" "],
     "Extend timer to default": ["x","X"],
     "Toggle/edit custom message": ["c","C"],
     "Confirm entered duration": ["Enter"],
     "Delete last entered character": ["Backspace"],
     "Open remote window": ["r","R"],
-    "Edit Key codes": ["k","K"],
-
+    "Edit Key codes": ["k","K"]
 };
 
 var keynamesDefault = Object.assign({}, keyNames);
@@ -83,7 +94,9 @@ var keynamesDefault = Object.assign({}, keyNames);
 
 function keyNamesHtml (){
     return '<table>'+Object.keys(keyNames).sort().map(function(keyName){
-        return "<tr><td>"+keyName+'</td><td data-keyname="'+keyName+'">'+ keycodes[ keyNames[keyName][0] ]+"</td></tr>";
+        const key = keyNames[keyName][0]; // eg " " or "f"
+        const dispKey = renameKey(key);
+        return "<tr><td>"+keyName+'</td><td data-keyname="'+keyName+'">'+dispKey+"</td></tr>";
     }).join("\n")+"</table>";
 }
 
@@ -101,7 +114,7 @@ function updateKeycodesEdit(keycodesEdit) {
             // replace the inside of the faux-button wih an input box
             // this enables us to trap a keystroke so we can update the new keycode 
             var input = document.createElement("input");
-            input.value = "press key";
+            input.value = td.innerHTML;
             input.style = "width: 100%; height: 100%; background-color:yellow;margin:0;padding:0;";
 
             td.appendChild(input);
@@ -122,10 +135,10 @@ function updateKeycodesEdit(keycodesEdit) {
                         // the key is already used, so we can't use it
                         // so we don't update the keycodes object
                         input.style.backgroundColor = "red";
+                        input.value = k1;
                         return false; 
                     } else {
                        keyNames[keyname] =  [ k1, k2 ];
-                       td.innerHTML = k1;                
                     }
                 } else {
                     // this is a special key, or a number key, so only one keycode is needed
@@ -133,12 +146,12 @@ function updateKeycodesEdit(keycodesEdit) {
                         // the key is already used, so we can't use it
                         // so we don't update the keycodes object
                         input.style.backgroundColor = "red";
+                        input.value = keyDisplay(k0);
                         return false; 
 
                     } else {
 
                         keyNames[keyname] = [ k0 ];
-                        td.innerHTML = k0;                
                     }
                 }
 
