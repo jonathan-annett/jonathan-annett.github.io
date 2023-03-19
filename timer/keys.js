@@ -59,11 +59,13 @@ var keycodes = {
 
 };
 
+const keyClasses = {
+    " " :   "key__space",
+ }
+
 const renameKeys = {
-   " " : "Space",
-   "." : "Period",
-   ":" : "Colon",
-};
+   " " : "Space"
+ } ;
 
 const unconfigurableKeys = [
    "k","K","Backspace",".",":"
@@ -72,6 +74,10 @@ const unconfigurableKeys = [
 function renameKey(k) {
     return renameKeys[k] || k;
 } 
+
+function keyClass (k) {
+    return keyClasses[k] || "key__button";
+}
 
 var keyNames = {
     "Toggle Fullscreen Mode" : ["f","F"],
@@ -102,8 +108,8 @@ function keyNamesHtml (){
         const defKey = keynamesDefault[keyName][0];
         const dispKey = renameKey(key);
         const dispDefKey = renameKey(defKey);
-        return "<tr><td>"+keyName+'</td><td class="key__button" data-keyname="'+keyName+'">'+dispKey+
-        '</td><td> Default : <Span class="key__button">'+dispDefKey+"</span></td></tr>"; 
+        return "<tr><td>"+keyName+'</td><td class="'+keyClass (key)+'" data-keyname="'+keyName+'">'+dispKey+
+        '</td><td> Default : <Span class="'+keyClass (defKey)+'">'+dispDefKey+"</span></td></tr>"; 
     }).join("\n")+"</table>";
 }
 
