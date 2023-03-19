@@ -75,5 +75,9 @@ var keyNames = {
 };
 
 
-var keyNamesHtml = '<option>'+Object.keys(keyNames).sort().join("</option>\n<option>")+"</option>";
+function keyNamesHtml (){
+    return '<table>'+Object.keys(keyNames).sort().map(function(keyName){
+        return "<tr><td>"+keyName+"</td><td>"+keyNames[keyName][0]+"</td></tr>";
+    }).join("\n")+"</table>";
+}
 

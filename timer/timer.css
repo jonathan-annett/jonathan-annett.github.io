@@ -196,13 +196,15 @@ html.showmessages.impending #remain_info_message {
 
 
 #custom_key_edit {
+
   display : none;
+
 }
 
 html.show_custom_message #custom_message,
 html.edit_custom_message #custom_message,
 html.reduced.show_custom_message #custom_message,
-
+html.custom_key_edit #custom_key_edit,
 html.showmessages #messages_enabled,
 html.showmessages #messages_enabled,
 html.showmessages.reduced.impending #remain_info_message,

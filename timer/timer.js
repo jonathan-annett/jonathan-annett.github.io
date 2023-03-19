@@ -36,18 +36,14 @@ let endsDisp     = getEl("ends_disp");
 
 let remainInfoDisp = getEl("remain_info_message");
 
-
 let custom_message  = getEl("custom_message");
 
-let keycodeSelect = document.querySelector("#custom_key_edit select");
+let keycodeSelect = document.querySelector("#custom_key_edit div");
 
-keycodeSelect.innerHTML = keyNamesHtml;
+keycodeSelect.innerHTML = keyNamesHtml();
 
-let durationDisp = getEl("duration_disp");
+let durationDisp  = getEl("duration_disp");
 let extraTimeDisp = getEl("extra_time_disp");
-
-
- 
 
 let nowDisp      = getEl("now_disp");
 let keyDisp      = getEl("key_disp");
@@ -752,6 +748,13 @@ function onDocKeyDown(ev){
         switch ( ev.key ) {
             
             
+            case "k":
+            case "K": 
+
+                html.classList.toggle("custom_key_edit");
+                
+                break;
+
             case  keycodes.Pause :
                 
                 html.classList.toggle("paused");
