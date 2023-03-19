@@ -103,7 +103,7 @@ function keyNamesHtml (){
         const dispKey = renameKey(key);
         const dispDefKey = renameKey(defKey);
         return "<tr><td>"+keyName+'</td><td class="key__button" data-keyname="'+keyName+'">'+dispKey+
-        "</td><td> Default : "+dispDefKey+"</td></tr>";
+        '</td><td> Default : <Span class="key__button">'+dispDefKey+"</span></td></tr>"; 
     }).join("\n")+"</table>";
 }
 
