@@ -38,9 +38,9 @@ let remainInfoDisp = getEl("remain_info_message");
 
 let custom_message  = getEl("custom_message");
 
-let keycodeSelect = document.querySelector("#custom_key_edit div");
+let keycodesEdit = document.querySelector("#custom_key_edit div");
+updateKeycodesEdit(keycodesEdit);
 
-keycodeSelect.innerHTML = keyNamesHtml();
 
 let durationDisp  = getEl("duration_disp");
 let extraTimeDisp = getEl("extra_time_disp");
@@ -752,7 +752,7 @@ function onDocKeyDown(ev){
             case "K": 
 
                 html.classList.toggle("custom_key_edit");
-                
+
                 break;
 
             case  keycodes.Pause :
