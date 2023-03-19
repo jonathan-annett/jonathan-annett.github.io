@@ -218,6 +218,7 @@ html.showmessages.impending #remain_info_message {
   z-index: 9999;
 }
 
+
 #custom_key_edit table {
   color: black;
 }
@@ -229,7 +230,6 @@ html.showmessages.impending #remain_info_message {
 
 
 #custom_key_edit table tr td:nth-of-type(1) {
-
   width: 60vw;
 }
 
@@ -260,6 +260,10 @@ html.showmessages.impending #remain_info_message {
   border-color: #ccc;
   width: 90px;
 
+}
+
+html.custom_key_edit #custom_key_edit  {
+  overflow:scroll;
 }
 
 html.show_custom_message #custom_message,
