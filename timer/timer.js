@@ -715,6 +715,15 @@ function onDocKeyDown(ev){
 
        }
    }
+
+   if (html.classList.contains("custom_key_edit")) {
+    // when editing keycodes, ignore all other keys in this callback
+      ev.preventDefault();
+      return false;
+    
+   }
+
+
    
    
    if (stylesheet1_obj && stylesheet1_obj.editing && location.protocol==="https:") {
@@ -744,6 +753,7 @@ function onDocKeyDown(ev){
        setHtmlClass("editing");
        updateEnteredTimeText () ;
     } else {
+
         
         switch ( ev.key ) {
             
@@ -752,7 +762,7 @@ function onDocKeyDown(ev){
             case "K": 
 
                 html.classList.toggle("custom_key_edit");
-
+                
                 break;
 
             case  keycodes.Pause :
