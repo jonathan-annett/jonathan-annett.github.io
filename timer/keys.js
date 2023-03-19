@@ -61,7 +61,7 @@ var keycodes = {
 
 const keyClasses = {
     " " :   "key__button key__space",
-    "Enter" :   "key__button key__space",
+    "Enter" :   "key__button key__space"
  }
 
 const renameKeys = {
