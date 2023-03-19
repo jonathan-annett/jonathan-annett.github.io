@@ -1056,9 +1056,10 @@ function onDocKeyDown(ev){
 
 	    case keycodes.R:
         case keycodes.r:
-
-              ev.preventDefault();
+              if (!key.ctrlKey) {         
+`              ev.preventDefault();
         	  openTimerWindow(tabCount>1);
+`              }
               break;
 
       
