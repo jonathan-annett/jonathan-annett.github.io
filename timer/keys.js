@@ -65,6 +65,10 @@ const renameKeys = {
    ":" : "Colon",
 };
 
+const unconfigurableKeys = [
+   "k","K","Backspace",".",":"
+];
+
 function renameKey(k) {
     return renameKeys[k] || k;
 } 
@@ -112,7 +116,14 @@ function keyIsUsed (k) {
 function updateKeycodesEdit(keycodesEdit) {
     keycodesEdit.innerHTML = keyNamesHtml();
     [].forEach.call(keycodesEdit.querySelectorAll("td:nth-of-type(2)"), function(td,ix){
+
         let keyname = td.dataset.keyname;
+
+        if (unconfigurableKeys.indexOf( keynamesDefault[keyname][0] )>=0 )  {
+            td.style.display="none";
+            return;
+        }
+
         let customKeydown,customKeydownAssigned = false;
         let customClick =  function(){
            
@@ -182,7 +193,7 @@ function updateKeycodesEdit(keycodesEdit) {
             newtd.style.backgroundColor = "green";
 
             setTimeout(function(){
-                delete newtd.style.backgroundColor;
+                newtd.style.backgroundColor = null;
             },1500);
 
         };
