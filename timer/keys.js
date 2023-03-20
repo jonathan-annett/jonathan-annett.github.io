@@ -1,69 +1,71 @@
 var keycodes = {
-    "Space": " ",
-    "Enter": "Enter",
-    "Backspace": "Backspace",
-    "1": "1",
-    "2": "2",
-    "3": "3",
-    "4": "4",
-    "5": "5",
-    "6": "6",
-    "7": "7",
-    "8": "8",
-    "9": "9",
-    "0": "0",
+/*  logicalKey     event keycode*/
+    "Space"      : " ",
+    "Enter"      : "Enter",
+    "Backspace"  : "Backspace",
+
+    "1"          : "1",
+    "2"          : "2",
+    "3"          : "3",
+    "4"          : "4",
+    "5"          : "5",
+    "6"          : "6",
+    "7"          : "7",
+    "8"          : "8",
+    "9"          : "9",
+    "0"          : "0",
     
-    "Period": ".",
-    "Colon" : ":",
-    "Pause" : '"',
+    "Period"     : ".",
+    "Colon"      : ":",
 
-    "UndoPause" : "'",
+    "Pause"      : '"',
+    "UndoPause"  : "'",
 
-    "ArrowDown" : "ArrowDown",
-    "ArrowUp" : "ArrowUp",
-    "ArrowLeft" : "ArrowLeft",
+    "ArrowDown"  : "ArrowDown",
+    "ArrowUp"    : "ArrowUp",
+    "ArrowLeft"  : "ArrowLeft",
     "ArrowRight" : "ArrowRight",
 
-    "q" : "q",
-    "Q" : "Q",
+    "q"          : "q",
+    "Q"          : "Q",
     
-    "b"  :"b",
-    "B"  :"B",
+    "b"          : "b",
+    "B"          : "B",
     
-    "f"  : "f",
-    "F"  : "F",
+    "f"          : "f",
+    "F"          : "F",
 
-    "m" : "m",
-    "M" : "M",
+    "m"          : "m",
+    "M"          : "M",
 
-    "t" : "t",
-    "T" : "T",
+    "t"          : "t",
+    "T"          : "T",
 
-    "p":"p",
-    "P":"P",
+    "p"          : "p",
+    "P"          : "P",
 
-    "s":"s",
-    "S":"S",
+    "s"          : "s",
+    "S"          : "S",
 
-    "x":"x",
-    "X":"X",
+    "x"          : "x",
+    "X"          : "X",
 
-    "c" : "c",
-    "C" : "C",
+    "c"          : "c",
+    "C"          : "C",
 
-    "r" : "r",
-    "R" : "R",
+    "r"          : "r",
+    "R"          : "R",
 
-    "k" : "k",
-    "K" : "K"  
+    "k"          : "k",
+    "K"          : "K"  
 
 };
 
 
  const keyStyleWidth = {
-    "Space"     :   100,
-    "Enter"     :   100,
-    "Tab"       :   100
+    "Space"      :   100,
+    "Enter"      :   100,
+    "Tab"        :   100
  };
 
  const keyStyleContent = {
@@ -77,9 +79,7 @@ var keycodes = {
 
  
 const renameKeys = {
-   " " : "Space",
-   '"' : "Pause",
-   "'" : "UndoPause"
+   " "           : "Space"
  };
 
 const unconfigurableKeys = [
@@ -90,18 +90,24 @@ function renameKey(k) {
     return renameKeys[k] || k;
 } 
 
+const keyClasses = {
+    " " : "key__button key__space",
+    "'" : "key__button key__undopause",
+    '"' : "key__button key__pause",
+};
+
 function keyClass (k) {
-    return "key__button key__"+renameKey(k).toLowerCase();
+    return  keyClasses [k] || "key__button key__"+k.toLowerCase();
 }
 
 function keyStyleText (key) {
+    const keycode = renameKey ( keycodes[key] );
     const cls = "key__"+key.toLowerCase();
-    const wth = keyStyleWidth   [key] ? "."+cls+" { width : "+keyStyleWidth[key]+"px;}\n" : "";
+    const wth = keyStyleWidth   [keycode] ? "."+cls+" { width : "+keyStyleWidth[keycode]+"px;}\n" : "";
     const ctx = 
       'content : "' + (
-            keyStyleContent [key] || key
+            keyStyleContent [keycode] || keycode
       ) + '"; '
-
 
     return wth + "."+cls+":after { "+ctx+" }";
 }
