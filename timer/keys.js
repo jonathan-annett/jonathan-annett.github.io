@@ -77,7 +77,9 @@ var keycodes = {
 
  
 const renameKeys = {
-   " " : "Space"
+   " " : "Space",
+   '"' : "Pause",
+   "'" : "UndoPause"
  };
 
 const unconfigurableKeys = [
@@ -89,7 +91,7 @@ function renameKey(k) {
 } 
 
 function keyClass (k) {
-    return "key__button key__"+k.toLowerCase();
+    return "key__button key__"+renameKey(k).toLowerCase();
 }
 
 function keyStyleText (key) {
