@@ -41,7 +41,6 @@
   }
 
 
-
   .key__button:hover, .key__button:focus {
     box-shadow: 0 0 0.5px #888, 0 0.5px 0 #fff, 0 2px 0 #C0C0C0, 0 1px 17.5px rgba(68, 68, 68, 0.3), 1px 1px 2px rgba(68, 68, 68, 0.25), -1px 1px 2px rgba(68, 68, 68, 0.25), 0 3.5px 2px rgba(68, 68, 68, 0.1);
     transform: translateY(1px);
@@ -53,3 +52,14 @@
     transform: translateY(1px);
     background:#e0e050;
   }
+
+  .key__button.defining {
+      background-color: yellow;
+  }
+  .key__button.error {
+    background-color: red;
+}
+
+.key__button.redefined {
+  background-color: lime;
+}

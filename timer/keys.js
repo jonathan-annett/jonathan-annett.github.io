@@ -187,14 +187,16 @@ function updateKeycodesEdit(keycodesEdit) {
             if (customKeydownAssigned) {
                 document.body.removeEventListener("keydown",customKeydown);
                 customKeydownAssigned =false;
-                td.style.backgroundColor = null;
+                td.classList.remove("defining");
+                td.classList.remove("error");
+                td.classList["add"]("redefined");
+                    
+                    
            } else {
                 document.body.addEventListener("keydown",customKeydown);
                 customKeydownAssigned = true;
-                td.style.backgroundColor = "yellow";
+                td.classList.add("defining");
             }
-
-
         };
 
         customKeydown = function (ev) {
@@ -213,8 +215,7 @@ function updateKeycodesEdit(keycodesEdit) {
                 if (keyIsUsed(k1) || keyIsUsed(k2)) {
                     // the key is already used, so we can't use it
                     // so we don't update the keycodes object
-                    td.style.backgroundColor = k1===keyNames[keyname][0] ? "yellow" :  "red";
-                    td.innerHTML = k1;
+                    td.classList.add("error");
                     return false; 
                 } else {
                    keyNames[keyname] =  [ k1, k2 ];
@@ -224,13 +225,13 @@ function updateKeycodesEdit(keycodesEdit) {
                 if (keyIsUsed(k0)) {
                     // the key is already used, so we can't use it
                     // so we don't update the keycodes object
-                    td.style.backgroundColor = k0===keyNames[keyname][0] ? "yellow" :  "red";
-                    td.innerHTML = keyDisplay(k0);
+                    td.classList.add("error");
                     return false; 
 
                 } else {
 
                     keyNames[keyname] = [ k0 ];
+ 
                 }
             }
 
@@ -247,10 +248,12 @@ function updateKeycodesEdit(keycodesEdit) {
             updateKeycodesEdit(keycodesEdit);
 
             let newtd=keycodesEdit.querySelectorAll("td:nth-of-type(2)")[ix];
-            newtd.style.backgroundColor = "green";
+            newtd.classList.add("redefined");
+            newtd.classList.remove("defining");
+            newtd.classList.remove("error");
 
             setTimeout(function(){
-                newtd.style.backgroundColor = null;
+                newtd.classList.remove("redefined");
             },1500);
 
         };
