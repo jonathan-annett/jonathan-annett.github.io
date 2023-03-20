@@ -64,16 +64,26 @@ const keyClasses = {
     "Enter" :   "key__button key__enter",
     ":"     :   "key__button key__colon",
     "."     :   "key__button key__period"
- }
+ };
 
  const keyStyleWidth = {
     " "     :   100,
     "Enter" :   100
- }
+ };
 
+ const keyStyleContent = {
+    "LeftArrow"  :   "\2190",
+    "RightArrow" :   "\2192",
+    "DownArrow"  :   "\2193",
+    "UpArrow"    :   "\2191",
+    '"'          :   "\0022",
+    "'"          :   "\0027"
+ };
+
+ 
 const renameKeys = {
    " " : "Space"
- } ;
+ };
 
 const unconfigurableKeys = [
    "k","K","Backspace",".",":"
@@ -85,6 +95,37 @@ function renameKey(k) {
 
 function keyClass (k) {
     return keyClasses[k] || "key__button key__"+k.toLowerCase();
+}
+
+function keyStyleText (key) {
+
+    const k = key.toLowerCase(), K=key.toUpperCase();
+    const cls = keyClasses      [k] || "key__"+k;
+    const wth = keyStyleWidth   [k] ? "."+cls+" { width : "+keyStyleWidth[k]+"px;}\n" : "";
+    const ctx = 
+      'content : "' + (
+            keyStyleContent [key] ? keyStyleContent[key] : K
+      ) + '"; '
+
+
+    return wth + "."+cls+":after { "+ctx+" }";
+}
+
+function keyStyleTextAll () {
+    return Object.keys(keycodes).filter(function(k){
+        return k.length===1 && k===k.toLowerCase() || k.length>1;
+    }).map(keyStyleText).join("\n");
+}
+let keyStyleSheet;
+
+function updateKeyStyles() {
+    if (keyStyleSheet) {
+        keyStyleSheet.innerHTML = keyStyleTextAll();
+    } else {
+        keyStyleSheet = document.createElement("style");
+        keyStyleSheet.innerHTML = keyStyleTextAll();
+        document.head.appendChild(keyStyleSheet);
+    }
 }
 
 var keyNames = {
@@ -111,6 +152,7 @@ var keynamesDefault = Object.assign({}, keyNames);
 
 
 function keyNamesHtml (){
+    updateKeyStyles();
     return '<table>'+Object.keys(keyNames).sort().map(function(keyName){
         const key = keyNames[keyName][0]; // eg " " or "f"
         const defKey = keynamesDefault[keyName][0];
