@@ -113,11 +113,14 @@ function keyStyleText (key) {
 }
 
 function keyStyleTextAll (suffix) {
+    // filterFunc - only include keys that are single characters and uppercase, or longer than 1 character
     const filterFunc = function(k){
         return k.length===1 && k===k.toUpperCase() || k.length>1;
     };
+
     const mapper = suffix ? function(k){ 
-        return mapper(k)+suffix; 
+        return keyStyleText(k)+suffix; 
+
     } : keyStyleText;
 
     return Object.keys(keycodes).filter(filterFunc).map(mapper).join("\n");
