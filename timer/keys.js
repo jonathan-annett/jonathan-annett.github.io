@@ -61,7 +61,7 @@ var keycodes = {
 
 const keyClasses = {
     " "     :   "key__button key__space",
-    "enter" :   "key__button key__enter",
+    "Enter" :   "key__button key__enter",
     ":"     :   "key__button key__colon",
     "."     :   "key__button key__period"
  };
@@ -99,12 +99,11 @@ function keyClass (k) {
 
 function keyStyleText (key) {
 
-    const k = key.toLowerCase(), K=key.toUpperCase();
-    const cls = keyClasses      [k] || "key__"+k;
-    const wth = keyStyleWidth   [k] ? "."+cls+" { width : "+keyStyleWidth[k]+"px;}\n" : "";
+    const cls = keyClasses      [key] || "key__"+key.toLowerCase();
+    const wth = keyStyleWidth   [key] ? "."+cls+" { width : "+keyStyleWidth[key]+"px;}\n" : "";
     const ctx = 
       'content : "' + (
-            keyStyleContent [key] ? keyStyleContent[key] : K
+            keyStyleContent [key] || key.toUpperCase()
       ) + '"; '
 
 
