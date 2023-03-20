@@ -89,7 +89,7 @@ function renameKey(k) {
 } 
 
 function keyClass (k) {
-    return keyClasses[k] || "key__button key__"+k.toLowerCase();
+    return "key__button key__"+k.toLowerCase();
 }
 
 function keyStyleText (key) {
