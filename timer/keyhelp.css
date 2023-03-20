@@ -54,12 +54,12 @@
   }
 
   .key__button.defining {
-      background-color: yellow;
+      background: yellow;
   }
   .key__button.error {
-    background-color: red;
+    background: red;
 }
 
 .key__button.redefined {
-  background-color: lime;
+  background: lime;
 }
