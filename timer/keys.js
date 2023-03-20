@@ -61,7 +61,7 @@ var keycodes = {
 
 const keyClasses = {
     " "     :   "key__button key__space",
-    "Enter" :   "key__button key__enter",
+    "enter" :   "key__button key__enter",
     ":"     :   "key__button key__colon",
     "."     :   "key__button key__period"
  };
