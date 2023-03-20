@@ -112,20 +112,35 @@ function keyStyleText (key) {
     return wth + "."+cls+":after { "+ctx+" }";
 }
 
-function keyStyleTextAll () {
-    return Object.keys(keycodes).filter(function(k){
+function keyStyleTextAll (suffix) {
+    const filterFunc = function(k){
         return k.length===1 && k===k.toUpperCase() || k.length>1;
-    }).map(keyStyleText).join("\n");
+    };
+    const mapper = suffix ? function(k){ 
+        return mapper(k)+suffix; 
+    } : keyStyleText;
+
+    return Object.keys(keycodes).filter(filterFunc).map(mapper).join("\n");
 }
+
 let keyStyleSheet;
+let defKeyStyleSheet;
 
 function updateKeyStyles() {
     if (keyStyleSheet) {
+        // update the styleshet using current object values
         keyStyleSheet.innerHTML = keyStyleTextAll();
     } else {
+        // first time scenario - create the style sheets (and add them to the document)
         keyStyleSheet = document.createElement("style");
         keyStyleSheet.innerHTML = keyStyleTextAll();
         document.head.appendChild(keyStyleSheet);
+
+        defKeyStyleSheet = document.createElement("style");
+        defKeyStyleSheet.innerHTML = keyStyleTextAll("_def");// add _def as a suffix to the class names
+        document.head.appendChild(defKeyStyleSheet);
+        
+
     }
 }
 
@@ -159,8 +174,8 @@ function keyNamesHtml (){
         const defKey = keynamesDefault[keyName][0];
         const dispKey = renameKey(key);
         const dispDefKey = renameKey(defKey);
-        return "<tr><td>"+keyName+'</td><td class="'+keyClass (key)+'" data-keyname="'+keyName+'">'+
-        '</td><td> Default : <Span class="'+keyClass (defKey)+'">'+"</span></td></tr>"; 
+        return "<tr><td>"+keyName+'</td><td class="'+keyClass (defKey)+'" data-keyname="'+keyName+'">'+
+        '</td><td> Default : <Span class="'+keyClass (defKey)+'_def">'+"</span></td></tr>"; 
     }).join("\n")+"</table>";
 }
 
