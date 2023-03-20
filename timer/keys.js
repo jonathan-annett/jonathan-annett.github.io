@@ -100,9 +100,10 @@ function keyClass (k) {
     return  keyClasses [k] || "key__button key__"+k.toLowerCase();
 }
 
-function keyStyleText (key) {
+function keyStyleText (suffix,key) {
+    suffix=suffix||"";
     const keycode = renameKey ( keycodes[key] );
-    const cls = "key__"+key.toLowerCase();
+    const cls = "key__"+key.toLowerCase()+suffix;
     const wth = keyStyleWidth   [keycode] ? "."+cls+" { width : "+keyStyleWidth[keycode]+"px;}\n" : "";
     const ctx = 
       'content : "' + (
@@ -118,11 +119,8 @@ function keyStyleTextAll (suffix) {
         return k.length===1 && k===k.toUpperCase() || k.length>1;
     };
 
-    const mapper = suffix ? function(k){ 
-        return keyStyleText(k)+suffix; 
-
-    } : keyStyleText;
-
+    const mapper = keyStyleText.bind (this,suffix); 
+    
     return Object.keys(keycodes).filter(filterFunc).map(mapper).join("\n");
 }
 
