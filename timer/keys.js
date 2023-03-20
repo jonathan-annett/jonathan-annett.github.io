@@ -59,16 +59,11 @@ var keycodes = {
 
 };
 
-const keyClasses = {
-    " "     :   "key__button key__space",
-    "Enter" :   "key__button key__enter",
-    ":"     :   "key__button key__colon",
-    "."     :   "key__button key__period"
- };
 
  const keyStyleWidth = {
-    " "     :   100,
-    "Enter" :   100
+    "Space"     :   100,
+    "Enter"     :   100,
+    "Tab"       :   100
  };
 
  const keyStyleContent = {
@@ -98,12 +93,11 @@ function keyClass (k) {
 }
 
 function keyStyleText (key) {
-
-    const cls = keyClasses      [key] || "key__"+key.toLowerCase();
+    const cls = "key__"+key.toLowerCase();
     const wth = keyStyleWidth   [key] ? "."+cls+" { width : "+keyStyleWidth[key]+"px;}\n" : "";
     const ctx = 
       'content : "' + (
-            keyStyleContent [key] || key.toUpperCase()
+            keyStyleContent [key] || key
       ) + '"; '
 
 
@@ -112,7 +106,7 @@ function keyStyleText (key) {
 
 function keyStyleTextAll () {
     return Object.keys(keycodes).filter(function(k){
-        return k.length===1 && k===k.toLowerCase() || k.length>1;
+        return k.length===1 && k===k.toUpperCase() || k.length>1;
     }).map(keyStyleText).join("\n");
 }
 let keyStyleSheet;
