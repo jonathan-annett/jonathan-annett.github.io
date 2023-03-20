@@ -69,12 +69,12 @@ var keycodes = {
  };
 
  const keyStyleContent = {
-    "LeftArrow"  :   "\2190",
-    "RightArrow" :   "\2192",
-    "DownArrow"  :   "\2193",
-    "UpArrow"    :   "\2191",
-    '"'          :   "\0022",
-    "'"          :   "\0027"
+    "LeftArrow"  :   "\\2190",
+    "RightArrow" :   "\\2192",
+    "DownArrow"  :   "\\2193",
+    "UpArrow"    :   "\\2191",
+    '"'          :   "\\0022",
+    "'"          :   "\\0027"
  };
 
  
