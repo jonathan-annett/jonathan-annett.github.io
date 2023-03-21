@@ -104,7 +104,7 @@ function keyStyleText (suffix,key) {
     suffix=suffix||"";
     const keycode = renameKey ( keycodes[key] );
     const cls = "key__"+key.toLowerCase()+suffix;
-    const wth = keyStyleWidth   [keycode] ? "."+cls+" { width : "+keyStyleWidth[keycode]+"px;}\n" : "";
+    const wth = keyStyleWidth [keycode] ? "."+cls+" { width : "+keyStyleWidth [keycode]+"px;}\n" : "";
     const ctx = 
       'content : "' + (
             keyStyleContent [keycode] || keycode
@@ -251,10 +251,15 @@ function updateKeycodesEdit(keycodesEdit) {
                 }
             }
 
+            console.log("updating",keyname,"from",keynamesDefault[keyname]);
+
             // update the keycodes constant for the given keyname to reflect the new assignment 
             keynamesDefault[keyname].forEach(function(codedKey,ix){
                 keycodes[codedKey] = keyNames[keyname][ix];
+            
             });
+
+            console.log(keyname,"is now",keynamesDefault[keyname]);
 
 
             document.body.removeEventListener("keydown",customKeydown);
