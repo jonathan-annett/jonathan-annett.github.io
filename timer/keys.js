@@ -68,25 +68,67 @@ var keycodes = {
     "ToggleTimeOfDay"          : "t",
     "TOGGLETIMEOFDAY"          : "T",
 
-    "p"          : "p",
-    "P"          : "P",
+    "TogglePresenterScreen"          : "p",
+    "TOGGLEPRESENTERSCREEN"          : "P",
 
-    "s"          : "s",
-    "S"          : "S",
+    "SingleScreenMode"          : "s",
+    "SINGLESCREENMODE"          : "S",
 
-    "x"          : "x",
-    "X"          : "X",
+    "ExtendTimerToDefault"          : "x",
+    "EXTENDTIMERTODEFAULT"          : "X",
 
-    "c"          : "c",
-    "C"          : "C",
+    "ToggleCustomMessage"          : "c",
+    "TOGGLECUSTOMMESSAGE"          : "C",
 
-    "r"          : "r",
-    "R"          : "R",
+    "OpenRemoteWindow"          : "r",
+    "OPENREMOTEWINDOW"          : "R",
 
-    "k"          : "k",
-    "K"          : "K"  
+    "KeyCodeEditor"          : "k",
+    "KEYCODEEDITOR"          : "K"  
 
 };
+
+var keyNames = {
+
+    "getting started, with two monitors (the secondary monitor for the presenters countdown)" : [],
+    "Open remote (presenter) window":       [ "OpenRemoteWindow","OPENREMOTEWINDOW" ],
+    "after dragging a window to a particular monitor, use:" : [],
+ 
+    "Toggle Fullscreen Mode"              : [ "ToggleFullScreen","TOGGLEFULLSCREEN"],
+
+    "when using a single monitor, you can use the following keys to switch between various modes":[],
+    
+    "Toggle presenter screen mode" :        [ "TogglePresenterScreen","TOGGLEPRESENTERSCREEN"],
+    
+    "Single screen mode" :                  [ "SingleScreenMode","SINGLESCREENMODE"],
+    
+    "editing the duration in minutes... (use number keys, along with)" : [],
+    "hours and minutes separator" :         [ "Colon",   "COLON" ],
+    "decimal point for minutes" :           [ "Period",  "PERIOD" ],
+    
+    "after entering a duration, use one of ": [],
+    "Confirm entered duration":             [ "Enter", "ENTER" ],    
+    "Restart timer":                        [ "Space","SPACE" ],
+
+    "advanced features... (use the following keys)" : [],
+
+    "Pause/resume the countdown"          : [ "Pause", "PAUSE" ],
+    "Undo pause (removes any added time)" : [ "UndoPause", "UNDOPAUSE" ],
+    
+    "Toggle Progress Bar Display"         : [ "ToggleProgressBar","TOGGLEPROGRESSBAR"],
+    "Toggle Standard Messages"            : [ "ToggleMessagesMode","TOGGLEMESSAGESMODE"],
+        
+    "Toggle current time display" :         [ "ToggleTimeOfDay","TOGGLETIMEOFDAY"],
+    
+    
+    "Extend timer to default":              [ "ExtendTimerToDefault","EXTENDTIMERTODEFAULT" ],
+    "Toggle/edit custom message":           [ "ToggleCustomMessage","TOGGLECUSTOMMESSAGE"],
+    "Delete last entered character":        [ "Backspace", "BACKSPACE" ],
+     "Edit Key codes":                       [ "KeyCodeEditor","KEYCODEEDITOR" ]
+};
+
+var keynamesDefault = Object.assign({}, keyNames);
+
 
 
  const keyStyleWidth = {
@@ -183,33 +225,16 @@ function updateKeyStyles() {
     }
 }
 
-var keyNames = {
-    "Toggle Fullscreen Mode"              : [ "f","F"],
-    "Toggle Progress Bar Display"         : [ "b","B"],
-    "Toggle Standard Messages"            : [ "m","M"],
-    "Pause/resume the countdown"          : [ "Pause", "PAUSE" ],
-    "Undo pause (removes any added time)" : [ "UndoPause", "UNDOPAUSE" ],
-    "Toggle current time display" :         [ "t","T"],
-    "Toggle presenter screen mode" :        [ "p","P"],
-    "hours and minutes separator" :         [ "Colon",   "COLON" ],
-    "decimal point for minutes" :           [ "Period",  "PERIOD" ],
-    "Single screen mode" :                  [ "s","S"],
-    "Restart timer":                        [ "Space","SPACE" ],
-    "Extend timer to default":              [ "x","X" ],
-    "Toggle/edit custom message":           [ "c","C"],
-    "Confirm entered duration":             [ "Enter", "ENTER" ],
-    "Delete last entered character":        [ "Backspace", "BACKSPACE" ],
-    "Open remote window":                   [ "r","R" ],
-    "Edit Key codes":                       [ "k","K" ]
-};
-
-var keynamesDefault = Object.assign({}, keyNames);
 
 
 function keyNamesHtml (){
     updateKeyStyles();
-    return '<table>'+Object.keys(keyNames).sort().map(function(keyName){
-        const key = keyNames[keyName][0]; // eg " " or "f"
+    return '<table>'+Object.keys(keyNames).map(function(keyName){
+        const keylist = keyNames[keyName];
+        if (keylist.length===0) {
+            return '<tr><td class="header">'+keyName+'</td><td colspan="2"></td></tr>';
+        }
+        const key = keylist[0]; // eg " " or "f"
         const defKey = keynamesDefault[keyName][0];
         const dispKey = renameKey(key);
         const dispDefKey = renameKey(defKey);

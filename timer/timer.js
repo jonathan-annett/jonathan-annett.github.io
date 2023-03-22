@@ -736,14 +736,16 @@ function onDocKeyDown(ev){
    }
 
    if (html.classList.contains("custom_key_edit")) {
-     ev.preventDefault();
-     if ( ev.key === keycodes.K  || ev.key === keycodes.k ) {
-          // the
+      if (html.classList.contains("defining")) {
+        return false;
+      }
+      ev.preventDefault();
+      if ( keyWasPressed("KeyCodeEditor",ev)  ) {
           html.classList.remove("custom_key_edit");
           return;
       }
-    // when editing keycodes, ignore all other keys in this callback
-    return false;
+      // when editing keycodes, ignore all other keys in this callback
+      return false;
     
    }
 
@@ -781,7 +783,7 @@ function onDocKeyDown(ev){
         
         switch ( true ) {
             
-            case keyWasPressed("k",ev): {
+            case keyWasPressed("KeyCodeEditor",ev): {
  
                 html.classList.add("custom_key_edit");
                 
@@ -1029,7 +1031,7 @@ function onDocKeyDown(ev){
                 writeNumber("showtimenow",html.classList.contains("showtimenow") ? 1 : 0);
                 break;
             }
-            case keyWasPressed("p",ev): {
+            case keyWasPressed("TogglePresenterScreen",ev): {
                 
                 if (window.location.search !== "?presenter" &&  tabCount === 1) {
                     html.classList.toggle("reduced");
@@ -1040,7 +1042,7 @@ function onDocKeyDown(ev){
                 break;
             }
 
-            case keyWasPressed("s",ev): {
+            case keyWasPressed("SingleScreenMode",ev): {
                 
                 if (ev.ctrlKey) {
                     if (stylesheet1_obj) {
@@ -1069,13 +1071,13 @@ function onDocKeyDown(ev){
                 break;
             }
 
-            case keyWasPressed("x",ev): {
+            case keyWasPressed("ExtendTimerToDefault",ev): {
                 // extend current timer to default time
                 extendDefaultToCurrentTimer();
                 break;
             }
 
-            case keyWasPressed("c",ev): {
+            case keyWasPressed("ToggleCustomMessage",ev): {
                 
                     
                 html.classList.add("edit_custom_message");
@@ -1087,7 +1089,7 @@ function onDocKeyDown(ev){
                 
                 break;
             }
-	        case keyWasPressed("r",ev): {
+	        case keyWasPressed("OpenRemoteWindow",ev): {
               if (!key.ctrlKey) {         
 `              ev.preventDefault();
         	    openTimerWindow(tabCount>1);
