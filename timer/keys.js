@@ -249,7 +249,7 @@ function keyNamesHtml (){
 }
 
 function keyIsUsed (k) {
-    return Object.values(keyCodes).some(function(keycode){
+    return Object.values(keycodes).some(function(keycode){
         return keycodes[keycode]===k;
     });
 }
