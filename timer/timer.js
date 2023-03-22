@@ -1105,9 +1105,9 @@ function onDocKeyDown(ev){
 
         if ( keyWasPressed("OpenRemoteWindow",ev) ) {
                   
-`              ev.preventDefault();
-                openTimerWindow(tabCount>1);
-`           
+              ev.preventDefault();
+              openTimerWindow(tabCount>1);
+           
                 return ;
 
           }
