@@ -246,13 +246,10 @@ function updateKeycodesEdit(keycodesEdit) {
                 // ignore modifier keys
                 return false;
             }
-            // this event invoked when a key is pressed inside the input box
             const k0 = ev.key, k1 = k0.toLowerCase(),k2 = k0.toUpperCase();
             if (k0.length === 1 && k1 >= 'a' && k1 <= 'z') {
-                // this is a letter key which may be upper or lower case
-                // hence we need to store both
 
-                if (keyIsUsed(k1) || keyIsUsed(k2)) {
+                if ( keyIsUsed(k1) || keyIsUsed(k2)) {
                     // the key is already used, so we can't use it
                     // so we don't update the keycodes object
                     td.classList.add("error");
@@ -261,7 +258,7 @@ function updateKeycodesEdit(keycodesEdit) {
                    keyNames[keyname] =  [ k1, k2 ];
                 }
             } else {
-                if (keyIsUsed(k0)) {
+                if (keyIsUsed(k0) || keyIsUsed(k2)) {                
                     // the key is already used, so we can't use it
                     // so we don't update the keycodes object
                     td.classList.add("error");
@@ -269,7 +266,7 @@ function updateKeycodesEdit(keycodesEdit) {
 
                 } else {
 
-                    keyNames[keyname] = [ k0 ];
+                    keyNames[keyname] = [ k0, k2 ];
  
                 }
             }
