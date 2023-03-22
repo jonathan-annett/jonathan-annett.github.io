@@ -1,8 +1,13 @@
 var keycodes = {
 /*  logicalKey     event keycode*/
     "Space"      : " ",
+    "SPACE"      : " ",
+
     "Enter"      : "Enter",
+    "ENTER"      : "Enter",
+
     "Backspace"  : "Backspace",
+    "BACKSPACE"  : "Backspace",
 
     "1"          : "1",
     "2"          : "2",
@@ -19,12 +24,22 @@ var keycodes = {
     "Colon"      : ":",
 
     "Pause"      : '"',
+    "PAUSE"      : '"',
+    
     "UndoPause"  : "'",
+    "UNDOPAUSE"  : "'",
 
     "ArrowDown"  : "ArrowDown",
+    "ARROWDOWN"  : "ArrowDown",
+    
     "ArrowUp"    : "ArrowUp",
+    "ARROWUP"    : "ArrowUp",
+
     "ArrowLeft"  : "ArrowLeft",
+    "ARROWLEFT"  : "ArrowLeft",
+
     "ArrowRight" : "ArrowRight",
+    "ARROWRIGHT" : "ArrowRight",
 
     "q"          : "q",
     "Q"          : "Q",
@@ -201,6 +216,7 @@ function updateKeycodesEdit(keycodesEdit) {
         let customClick =  function(){
            
             if (customKeydownAssigned) {
+
                 document.body.removeEventListener("keydown",customKeydown);
                 customKeydownAssigned =false;
                 td.classList.remove("defining");
@@ -237,7 +253,6 @@ function updateKeycodesEdit(keycodesEdit) {
                    keyNames[keyname] =  [ k1, k2 ];
                 }
             } else {
-                // this is a special key, or a number key, so only one keycode is needed
                 if (keyIsUsed(k0)) {
                     // the key is already used, so we can't use it
                     // so we don't update the keycodes object
@@ -286,4 +301,23 @@ function updateKeycodesEdit(keycodesEdit) {
 
         
     });
+}
+
+
+function keyWasPressed (nm,ev) {
+
+  if (ev.key===keycodes[nm]) {
+     return true;
+  }
+
+  if (ev.key===keycodes[nm.toUpperCase()]) {
+    return true;
+  }
+  
+  if (ev.key===keycodes[nm+"_1"]) {
+    return true;
+  }
+
+  return (ev.key===keycodes[nm+"_2"]);
+
 }

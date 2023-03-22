@@ -170,9 +170,16 @@ custom_message.addEventListener('focus', function(){
               el.addEventListener('click',keyMacroClick);
           });
 
-          
- 
+    
+
           function keyMacroClick(e) {
+
+            // the keycodes used by the button are stored in the "keys" attribute
+            // and are encoded as a comma separated list of keycodes, using the default value
+            // when executed, they are converted to the current keymap, so macros don't need to 
+            // be redefined when the keymap changes.
+            // since keycodes are only ever numbers (which are not redifinable in the keymap, or Space and Enter, and a few sepecial keys like Control, Shift, etc),
+            // the only "encoding" that takes place when a macro is recorded is for Space and Enter
               let keys = this.dataset.keys.split(",").map(function(code){
                   
                   if (code.startsWith('!')) {
@@ -186,6 +193,8 @@ custom_message.addEventListener('focus', function(){
               if (e.shiftKey && keys[0].key===" ") {
                   
                   if (enterTimeText !== "") {
+                      // typed in a duration and pressed shift while clicking the button
+                      // this means "set this button to the duration I just typed"
                       this.dataset.keys = ' ,'+enterTimeText.split('').join(',')+', ';
                       this.innerHTML = enterTimeText;
                       clearHtmlClass("editing");
@@ -194,17 +203,27 @@ custom_message.addEventListener('focus', function(){
                       return;
 
                   } else {
+                      // pressed shift while clicking the button (no duration typed)
+                      // this means "use the duration of the click button as the new default duration"
                       keys = this.dataset.keys.split(",").map(function(code){
                           if (code===" ")  {
-                              return { key :"Enter" };
+                              return { key : "Enter" };// replace space with enter, which forces a set default command, rather than a start timer command
                           }
-                          return {key : code};  
+                          return {key : keycodes[code]||code};  
                       });
                     }
               }
               
-              keys.forEach(function(e){
-                  if (e.__up) { 
+              keys.forEach(function(e_encoded){
+                  // make a temp event object for the document key handler
+                  // the keycodes are converted to the current keymap
+                  // since we only inspect .key in the event object, we can just create a new object
+                  // with only the .key property
+                  let e = {
+                    key : keycodes[ e_encoded.key ]     || e_encoded.key
+                  };
+
+                  if (e_encoded.__up) { 
                     onDocKeyUp(e);
                   } else {
                     onDocKeyDown(e);
@@ -681,7 +700,7 @@ function onDocKeyDown(ev){
    
    if (html.classList.contains("edit_custom_message")) {
        
-        if  ( ev.key === keycodes.Enter) {
+        if  ( ev.key === keycodes.Enter || ev.key === keycodes.ENTER) {
                custom_message.contentEditable=false;
                html.classList.remove("edit_custom_message");
                if (custom_message.textContent==="custom message") {
@@ -760,17 +779,16 @@ function onDocKeyDown(ev){
     } else {
 
         
-        switch ( ev.key ) {
+        switch ( true ) {
             
-            
-            case keycodes.k:
-            case keycodes.K: 
-
+            case keyWasPressed("k",ev): {
+ 
                 html.classList.add("custom_key_edit");
                 
                 break;
+            }
 
-            case  keycodes.Pause :
+            case keyWasPressed("Pause",ev): {
                 
                 html.classList.toggle("paused");
                 if (html.classList.contains("paused")) {
@@ -797,8 +815,9 @@ function onDocKeyDown(ev){
                 
                 
                 break;
-                
-            case keycodes.UndoPause: 
+            }  
+
+            case keyWasPressed("UndoPause",ev): {
                 
                 clearHtmlClass("paused");
                 pausedAt = undefined;
@@ -811,7 +830,9 @@ function onDocKeyDown(ev){
                     
                 break;
             
-            case keycodes.Period :
+            }
+
+            case keyWasPressed("Period",ev): {   
                  if ( (enterTimeText !== "") && (enterTimeText.indexOf(".") <0 ) ) {
                      
                      enterTimeText = enterTimeText + ev.key;
@@ -820,8 +841,9 @@ function onDocKeyDown(ev){
                      
                 }
                 break;
-                
-            case keycodes.Colon:
+            }
+
+            case keyWasPressed("Colon",ev): {
                 if (enterHoursText === "") {
                     enterHoursText = enterTimeText;
                     enterTimeText  = "";
@@ -829,7 +851,10 @@ function onDocKeyDown(ev){
                     dispNextMins.textContent = secToStr((Number(enterHoursText) * 3600) + (Number(enterTimeText) * 60));
                 }
                 break;
-            case keycodes.Backspace :
+            }
+            
+            case keyWasPressed("Backspace",ev) :{
+
                 if (enterTimeText !== "" ) {
                     enterTimeText = enterTimeText.substr(0,enterTimeText.length-1);
                     updateEnteredTimeText () ;
@@ -839,7 +864,9 @@ function onDocKeyDown(ev){
                     
                 }
                 break;
-            case keycodes.Enter : 
+            }
+
+            case keyWasPressed("Enter",ev): {
                 
                 if (controlling) {
                       lastUpdateTick = 0;
@@ -851,11 +878,21 @@ function onDocKeyDown(ev){
                  } else {      
                     saveEditedTime();
                  }                
-                
                 break;
+            }    
                 
-            //case "-":    
-            case keycodes.ArrowDown : {
+            case keyWasPressed("q",ev): { 
+                    if (controlling) {
+                        if (is_nwjs()) {
+                                require('nw.gui').App.quit();
+                        }
+                    }
+    
+                    break;
+            }
+
+            case keyWasPressed("ArrowDown",ev): { 
+            
                 
                 //if (controlling && ev.key==="-") break;
                 
@@ -874,20 +911,8 @@ function onDocKeyDown(ev){
                 }
                 break;
             }
-
-
-            case keycodes.q :
-            case keycodes.Q :
-                if (controlling) {
-                    if (is_nwjs()) {
-                         require('nw.gui').App.quit();
-                    }
-                }
-
-                break;
             
-            //case "+":
-            case keycodes.ArrowUp : {
+            case keyWasPressed("ArrowUp",ev) : {
                  //if (controlling && ev.key==="+") break;
                  
                  if (!html.classList.contains("editing") ) {
@@ -905,7 +930,7 @@ function onDocKeyDown(ev){
                 break;
             }
             
-            case keycodes.ArrowLeft: 
+            case keyWasPressed("ArrowLeft",ev): { 
                 bumpStart(0-factor);
                 bumpEnd(0-seekEndDelta,0-endDelta);
                 
@@ -913,7 +938,9 @@ function onDocKeyDown(ev){
                 displayUpdate();
             
             break; 
-            case keycodes.ArrowRight : 
+            }
+
+            case keyWasPressed("ArrowRight",ev) : {
                 bumpStart(factor);
                 bumpEnd(seekEndDelta,endDelta);
                 
@@ -921,7 +948,9 @@ function onDocKeyDown(ev){
                 displayUpdate();
                 
             break;
-            case "Shift" : {
+            }
+
+            case ev.key==="Shift" : {
                 shifting = true; 
                 setHtmlClass("shifting");
                 
@@ -929,34 +958,39 @@ function onDocKeyDown(ev){
                 break;
             }
             
-            case "Control" : 
+            case ev.key==="Control" : {
                 controlling = true; 
                 setHtmlClass("controlling");
                 break ;
-              
-            case keycodes.i:
-            case keycodes.I :
+            }
+
+
+            case keyWasPressed("i",ev): {
                 if (controlling && shifting) {
                     ev.preventDefault();
                 }
                 break;  
-            case keycodes.F:
-            case keycodes.f:  
+            }
+
+            case keyWasPressed("f",ev): {
                 if (fs_api.isFullscreen()) {
                     fs_api.exitFullscreen();
                 } else {
                      fs_api.enterFullscreen();  
                  } 
                   break;
-                  
-            case keycodes.b:
-            case keycodes.B:
+                
+            }
+
+            case keyWasPressed("b",ev): {
                 html.classList.toggle("showbar");
                 writeNumber("showbar",html.classList.contains("showbar") ? 1 : 0);
                 
                 break;
+            }
             
-            case keycodes.Space:
+
+            case keyWasPressed("Space",ev): {
 
                 const preserve_default = defaultDuration;
                 
@@ -984,21 +1018,18 @@ function onDocKeyDown(ev){
                     
                  }
                 break;
-                
-            case keycodes.m:
-            case keycodes.M:
+            }
+            case keyWasPressed("m",ev): {
                 html.classList.toggle("showmessages");
                 writeNumber("showmessages",html.classList.contains("showmessages") ? 1 : 0);
                 break;
-                
-            case keycodes.t:
-            case keycodes.T:
+            }
+            case keyWasPressed("t",ev): {
                 html.classList.toggle("showtimenow");
                 writeNumber("showtimenow",html.classList.contains("showtimenow") ? 1 : 0);
                 break;
-                
-            case keycodes.p:
-            case keycodes.P:
+            }
+            case keyWasPressed("p",ev): {
                 
                 if (window.location.search !== "?presenter" &&  tabCount === 1) {
                     html.classList.toggle("reduced");
@@ -1007,8 +1038,9 @@ function onDocKeyDown(ev){
                 }
                 html.classList[ html.classList.contains("reduced") ? "remove" : "add"]("showbuttons");
                 break;
-            case keycodes.s:
-            case keycodes.S:
+            }
+
+            case keyWasPressed("s",ev): {
                 
                 if (ev.ctrlKey) {
                     if (stylesheet1_obj) {
@@ -1035,14 +1067,15 @@ function onDocKeyDown(ev){
                     }
                 }
                 break;
-                
-            case keycodes.x:
-            case keycodes.X: // extend current timer to default time
-               extendDefaultToCurrentTimer();
+            }
+
+            case keyWasPressed("x",ev): {
+                // extend current timer to default time
+                extendDefaultToCurrentTimer();
                 break;
-                
-            case keycodes.c:
-            case keycodes.C:
+            }
+
+            case keyWasPressed("c",ev): {
                 
                     
                 html.classList.add("edit_custom_message");
@@ -1053,16 +1086,15 @@ function onDocKeyDown(ev){
                 ev.preventDefault();
                 
                 break;
-
-	    case keycodes.R:
-        case keycodes.r:
+            }
+	        case keyWasPressed("r",ev): {
               if (!key.ctrlKey) {         
 `              ev.preventDefault();
-        	  openTimerWindow(tabCount>1);
+        	    openTimerWindow(tabCount>1);
 `              }
               break;
 
-      
+              }
     }}
 }
 
