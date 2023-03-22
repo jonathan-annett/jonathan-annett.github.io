@@ -138,7 +138,7 @@ function keyStyleText (suffix,key) {
 function keyStyleTextAll (suffix) {
     // filterFunc - only include keys that are single characters and uppercase, or longer than 1 character
     const filterFunc = function(k){
-        return k.length===1 && k===k.toUpperCase() || k.length>1;
+        return k===k.toUpperCase();
     };
 
     const mapper = keyStyleText.bind (this,suffix); 
@@ -175,14 +175,14 @@ var keyNames = {
     "Undo pause (removes any added time)" : [ "UndoPause", "UNDOPAUSE" ],
     "Toggle current time display" :         [ "t","T"],
     "Toggle presenter screen mode" :        [ "p","P"],
-    "hours and minutes separator" :         [ "Colon","COLON" ],
-    "decimal point for minutes" :           [ "." ],
+    "hours and minutes separator" :         [ "Colon",   "COLON" ],
+    "decimal point for minutes" :           [ "Period",  "PERIOD" ],
     "Single screen mode" :                  [ "s","S"],
     "Restart timer":                        [ "Space","SPACE" ],
     "Extend timer to default":              [ "x","X" ],
     "Toggle/edit custom message":           [ "c","C"],
-    "Confirm entered duration":             [ "Enter" ],
-    "Delete last entered character":        [ "Backspace" ],
+    "Confirm entered duration":             [ "Enter", "ENTER" ],
+    "Delete last entered character":        [ "Backspace", "BACKSPACE" ],
     "Open remote window":                   [ "r","R" ],
     "Edit Key codes":                       [ "k","K" ]
 };
@@ -274,7 +274,7 @@ function updateKeycodesEdit(keycodesEdit) {
                 }
             }
 
-            console.log("updating",keyname,"from",keynamesDefault[keyname]);
+            console.log("updating",keyname,"from",keyNames[keyname]);
 
             // update the keycodes constant for the given keyname to reflect the new assignment 
             keynamesDefault[keyname].forEach(function(codedKey,ix){
@@ -282,7 +282,7 @@ function updateKeycodesEdit(keycodesEdit) {
             
             });
 
-            console.log(keyname,"is now",keynamesDefault[keyname]);
+            console.log(keyname,"is now",keyNames[keyname],"default is",keynamesDefault[keyname]);
 
 
             document.body.removeEventListener("keydown",customKeydown);
