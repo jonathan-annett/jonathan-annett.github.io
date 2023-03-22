@@ -255,7 +255,7 @@ function updateKeycodesEdit(keycodesEdit) {
 
         let keyname = td.dataset.keyname;
 
-        if (keynamesDefault[keyname].length>0) {
+        if (keyname && keynamesDefault[keyname].length>0) {
 
             if (unconfigurableKeys.indexOf( keynamesDefault[keyname][0] )>=0 )  {
                 td.parentElement.style.display="none";
