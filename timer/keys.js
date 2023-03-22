@@ -2,15 +2,6 @@
 
 var keycodes = {
 /*  logicalKey     event keycode*/
-    "Space"      : " ",
-    "SPACE"      : " ",
-
-    "Enter"      : "Enter",
-    "ENTER"      : "Enter",
-
-    "Backspace"  : "Backspace",
-    "BACKSPACE"  : "Backspace",
-
     "1"          : "1",
     "2"          : "2",
     "3"          : "3",
@@ -21,9 +12,23 @@ var keycodes = {
     "8"          : "8",
     "9"          : "9",
     "0"          : "0",
+
+    "Space"      : " ",
+    "SPACE"      : " ",
+
+    "Enter"      : "Enter",
+    "ENTER"      : "Enter",
+
+    "Backspace"  : "Backspace",
+    "BACKSPACE"  : "Backspace",
+
+
     
     "Period"     : ".",
+    "PERIOD"     : ".",
+    
     "Colon"      : ":",
+    "COLON"      : ":",
 
     "Pause"      : '"',
     "PAUSE"      : '"',
@@ -163,23 +168,23 @@ function updateKeyStyles() {
 }
 
 var keyNames = {
-    "Toggle Fullscreen Mode" : ["f","F"],
-    "Toggle Progress Bar Display" : ["b","B"],
-    "Toggle Standard Messages" : ["m","M"],
-    "Pause/resume the countdown" : ['"'],
-    "Undo pause (removes any added time)" : ["'"],
-    "Toggle current time display" : ["t","T"],
-    "Toggle presenter screen mode" : ["p","P"],
-    "hours and minutes separator" : [":"],
-    "decimal point for minutes" : ["."],
-    "Single screen mode" : ["s","S"],
-    "Restart timer": [" "],
-    "Extend timer to default": ["x","X"],
-    "Toggle/edit custom message": ["c","C"],
-    "Confirm entered duration": ["Enter"],
-    "Delete last entered character": ["Backspace"],
-    "Open remote window": ["r","R"],
-    "Edit Key codes": ["k","K"]
+    "Toggle Fullscreen Mode"              : [ "f","F"],
+    "Toggle Progress Bar Display"         : [ "b","B"],
+    "Toggle Standard Messages"            : [ "m","M"],
+    "Pause/resume the countdown"          : [ "Pause", "PAUSE" ],
+    "Undo pause (removes any added time)" : [ "UndoPause", "UNDOPAUSE" ],
+    "Toggle current time display" :         [ "t","T"],
+    "Toggle presenter screen mode" :        [ "p","P"],
+    "hours and minutes separator" :         [ "Colon","COLON" ],
+    "decimal point for minutes" :           [ "." ],
+    "Single screen mode" :                  [ "s","S"],
+    "Restart timer":                        [ "Space","SPACE" ],
+    "Extend timer to default":              [ "x","X" ],
+    "Toggle/edit custom message":           [ "c","C"],
+    "Confirm entered duration":             [ "Enter" ],
+    "Delete last entered character":        [ "Backspace" ],
+    "Open remote window":                   [ "r","R" ],
+    "Edit Key codes":                       [ "k","K" ]
 };
 
 var keynamesDefault = Object.assign({}, keyNames);
