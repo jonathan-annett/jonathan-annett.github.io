@@ -218,6 +218,12 @@ html.showmessages.impending #remain_info_message {
   z-index: 9999;
 }
 
+#custom_key_edit > span {
+  color : yellow;
+  left : 10vw;
+  top : -10px;
+  position:absolute;
+}
 
 #custom_key_edit table {
   background-color: black; 

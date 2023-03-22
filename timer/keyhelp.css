@@ -1,80 +1,83 @@
 
 .keyhelptext {
-    width: 100vw;
-    display: none;
-   
-    line-height:50px;
-    font-size: 28px;
-  
-    user-select:none;
-    font-family: 'Lucida', sans-serif;
-   
-    position: absolute;
-    bottom: 4px;
-    right: 180px;
-  
-     text-align:right;
-  }
+  width: 100vw;
+  display: none;
+ 
+  line-height:50px;
+  font-size: 28px;
 
-  .keyhelptext td.header {
-    font-weight: normal;
-    text-align: left;
-    padding-right: 10px;
-    font-size: 16px;
+  user-select:none;
+  font-family: 'Lucida', sans-serif;
+ 
+  position: absolute;
+  bottom: 4px;
+  right: 180px;
+
+   text-align:right;
+}
+.keyhelptext td {
+
+  font-size:22px;
+}
+
+.keyhelptext td.header {
+  text-align: left;
+  font-size: 16px;
+  color: #9498b7;
+
+}
+
+.key__button {
+  box-sizing: border-box;
+  line-height: 40px;
+  font-family: "Lucida Console", "Courier New", monospace;
+  font-size: 24px;
+  text-align: center;
+  width: 40px;
+  color: #555;
+  cursor: pointer;
+  margin: 4px 4px;
+  height: 40px;
   
-  }
-
-  .key__button {
-    box-sizing: border-box;
-    line-height: 40px;
-    font-family: "Lucida Console", "Courier New", monospace;
-    font-size: 24px;
-    text-align: center;
-    width: 40px;
-    color: #555;
-    cursor: pointer;
-    margin: 4px 4px;
-    height: 40px;
-    
-    
-    border-color: #f2f2f2;
-    border-style: solid;
-    text-shadow: 0 0.25px 0.5px #777, 0 1px 3px #f2f2f2;
-    border-width: 2px;
-    border-radius: 5px;
-    background: -webkit-linear-gradient(top, #f9f9f9 0%, #D2D2D2 80%, #c0c0c0 100%);
-    display: inline-block;
-    transition: box-shadow 0.3s ease, transform 0.15s ease;
-    box-shadow: 0 0 0.5px #888, 0 0.5px 0 #fff, 0 3px 0 #C0C0C0, 0 4px 8.5px rgba(68, 68, 68, 0.4), 1px 0.5px 2px rgba(68, 68, 68, 0.25), -1px 0.5px 2px rgba(68, 68, 68, 0.25), 0 4.5px 8px rgba(68, 68, 68, 0.1);
-  }
-
-
-  .key__button:hover, .key__button:focus {
-    box-shadow: 0 0 0.5px #888, 0 0.5px 0 #fff, 0 2px 0 #C0C0C0, 0 1px 17.5px rgba(68, 68, 68, 0.3), 1px 1px 2px rgba(68, 68, 68, 0.25), -1px 1px 2px rgba(68, 68, 68, 0.25), 0 3.5px 2px rgba(68, 68, 68, 0.1);
-    transform: translateY(1px);
-  }
   
-  .key__button.simulate,
-  .key__button:active {
-    box-shadow: 0 0 0.5px #888, 0 0.5px 0 #fff, 0 0 0 #C0C0C0, 0 0px 15px rgba(68, 68, 68, 0.15), 1px 1px 2px rgba(68, 68, 68, 0.25), -1px 1px 2px rgba(68, 68, 68, 0.25), 0 0px 2px rgba(68, 68, 68, 0.25);
-    transform: translateY(1px);
-    background:#e0e050;
-  }
+  border-color: #f2f2f2;
+  border-style: solid;
+  text-shadow: 0 0.25px 0.5px #777, 0 1px 3px #f2f2f2;
+  border-width: 2px;
+  border-radius: 5px;
+  background: -webkit-linear-gradient(top, #f9f9f9 0%, #D2D2D2 80%, #c0c0c0 100%);
+  display: inline-block;
+  transition: box-shadow 0.3s ease, transform 0.15s ease;
+  box-shadow: 0 0 0.5px #888, 0 0.5px 0 #fff, 0 3px 0 #C0C0C0, 0 4px 8.5px rgba(68, 68, 68, 0.4), 1px 0.5px 2px rgba(68, 68, 68, 0.25), -1px 0.5px 2px rgba(68, 68, 68, 0.25), 0 4.5px 8px rgba(68, 68, 68, 0.1);
+}
+
+
+.key__button:hover, .key__button:focus {
+  box-shadow: 0 0 0.5px #888, 0 0.5px 0 #fff, 0 2px 0 #C0C0C0, 0 1px 17.5px rgba(68, 68, 68, 0.3), 1px 1px 2px rgba(68, 68, 68, 0.25), -1px 1px 2px rgba(68, 68, 68, 0.25), 0 3.5px 2px rgba(68, 68, 68, 0.1);
+  transform: translateY(1px);
+}
+
+.key__button.simulate,
+.key__button:active {
+  box-shadow: 0 0 0.5px #888, 0 0.5px 0 #fff, 0 0 0 #C0C0C0, 0 0px 15px rgba(68, 68, 68, 0.15), 1px 1px 2px rgba(68, 68, 68, 0.25), -1px 1px 2px rgba(68, 68, 68, 0.25), 0 0px 2px rgba(68, 68, 68, 0.25);
+  transform: translateY(1px);
+  background:#e0e050;
+}
 
 .key__button.error {
-    background: red;
+  background: red;
 }
 
 .key__button.redefined {
-  background: lime;
+background: lime;
 }
 
 html.defining .key__button.key__button {
-  background: #161515;
-  pointer-events: none;
+background: #161515;
+pointer-events: none;
 }
 
 html.defining .key__button.key__button.defining {
-  background: yellow;
-  pointer-events: auto;
+background: yellow;
+pointer-events: auto;
 }
