@@ -279,8 +279,7 @@ function updateKeycodesEdit(keycodesEdit) {
                 customKeydownAssigned =false;
                 td.classList.remove("defining");
                 td.classList.remove("error");
-                td.classList["add"]("redefined");
-                    
+                html.classList.remove("defining");    
                     
            } else {
                 document.body.addEventListener("keydown",customKeydown);
@@ -358,6 +357,58 @@ function updateKeycodesEdit(keycodesEdit) {
 
 
         
+    });
+
+    [].forEach.call(keycodesEdit.querySelectorAll("td:nth-of-type(3)"), function(td,ix){    
+        let keyname = td.dataset.keyname;
+
+        if (keyname && keynamesDefault[keyname].length>0) {
+            if (unconfigurableKeys.indexOf( keynamesDefault[keyname][0] )>=0 )  {
+                return;
+            }
+        } else {
+            return;
+        }
+
+        let customClick =  function(ev) {
+
+            if (ev.shiftKey) { 
+                keyNames = JSON.parse(JSON.stringify(keynamesDefault));
+            } else {
+                if (keynamesDefault[keyname][0] !== keyNames[keyname][0] ) {
+                    if (keynamesDefault[keyname].some(keyIsUsed)) {
+                        td.classList.remove("defining");
+                        td.classList.add("error");
+                        return;
+                    }
+                }
+                keyNames[keyname] =  JSON.parse(JSON.stringify(keynamesDefault[keyname]));
+            }
+
+            td.classList.remove("defining");
+            td.classList.remove("error");
+            html.classList.remove("defining"); 
+            
+             // this will overwrite innerHTML in keycodesEdit, and free up the temp object and calbacks etc
+             updateKeycodesEdit(keycodesEdit);
+
+             let newtd=keycodesEdit.querySelectorAll("td:nth-of-type(2)")[ix];
+             newtd.classList.add("redefined");
+             newtd.classList.remove("defining");
+             newtd.classList.remove("error");
+ 
+             html.classList.remove("defining");
+
+             if (!ev.shiftKey) {
+    
+                setTimeout(function(){
+                    newtd.classList.remove("redefined");
+                },1500);
+            }
+ 
+        };
+
+
     });
 
     let jsonPRE = document.querySelector("#custom_key_edit pre");
