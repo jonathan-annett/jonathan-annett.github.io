@@ -881,7 +881,7 @@ function onDocKeyDown(ev){
                 break;
             }    
                 
-            case keyWasPressed("q",ev): { 
+            case keyWasPressed("QuitApp",ev): { 
                     if (controlling) {
                         if (is_nwjs()) {
                                 require('nw.gui').App.quit();
@@ -972,7 +972,7 @@ function onDocKeyDown(ev){
                 break;  
             }
 
-            case keyWasPressed("f",ev): {
+            case keyWasPressed("ToggleFullScreen",ev): {
                 if (fs_api.isFullscreen()) {
                     fs_api.exitFullscreen();
                 } else {
@@ -982,7 +982,7 @@ function onDocKeyDown(ev){
                 
             }
 
-            case keyWasPressed("b",ev): {
+            case keyWasPressed("ToggleProgressBar",ev): {
                 html.classList.toggle("showbar");
                 writeNumber("showbar",html.classList.contains("showbar") ? 1 : 0);
                 
@@ -1019,12 +1019,12 @@ function onDocKeyDown(ev){
                  }
                 break;
             }
-            case keyWasPressed("m",ev): {
+            case keyWasPressed("ToggleMessagesMode",ev): {
                 html.classList.toggle("showmessages");
                 writeNumber("showmessages",html.classList.contains("showmessages") ? 1 : 0);
                 break;
             }
-            case keyWasPressed("t",ev): {
+            case keyWasPressed("ToggleTimeOfDay",ev): {
                 html.classList.toggle("showtimenow");
                 writeNumber("showtimenow",html.classList.contains("showtimenow") ? 1 : 0);
                 break;

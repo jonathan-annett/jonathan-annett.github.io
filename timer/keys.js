@@ -1,5 +1,10 @@
 /* global   html */
 
+
+// keycodes is a map of logical keys to event keycodes
+// the logical keys are the keys that are used in the code
+// the event keycodes are the keycodes that are returned by the event.key property
+
 var keycodes = {
 /*  logicalKey     event keycode*/
     "1"          : "1",
@@ -48,20 +53,20 @@ var keycodes = {
     "ArrowRight" : "ArrowRight",
     "ARROWRIGHT" : "ArrowRight",
 
-    "q"          : "q",
-    "Q"          : "Q",
+    "QuitApp"    : "q",
+    "QUITAPP"    : "Q",
     
-    "b"          : "b",
-    "B"          : "B",
+    "ToggleProgressBar"  : "b",
+    "TOGGLEPROGRESSBAR"  : "B",
     
-    "f"          : "f",
-    "F"          : "F",
+    "ToggleFullScreen"          : "f",
+    "TOGGLEFULLSCREEN"          : "F",
 
-    "m"          : "m",
-    "M"          : "M",
+    "ToggleMessagesMode"          : "m",
+    "TOGGLEMESSAGESMODE"          : "M",
 
-    "t"          : "t",
-    "T"          : "T",
+    "ToggleTimeOfDay"          : "t",
+    "TOGGLETIMEOFDAY"          : "T",
 
     "p"          : "p",
     "P"          : "P",
@@ -122,6 +127,9 @@ function keyClass (k) {
     return  keyClasses [k] || "key__button key__"+k.toLowerCase();
 }
 
+
+// keyStyleText () returns the CSS text for a single key    
+
 function keyStyleText (suffix,key) {
     suffix=suffix||"";
     const keycode = renameKey ( keycodes[key] );
@@ -138,6 +146,9 @@ function keyStyleText (suffix,key) {
     return wth + "."+cls+":after { "+ctx+" }";
 }
 
+
+// keyStyleTextAll () returns the CSS text for all keys
+
 function keyStyleTextAll (suffix) {
     // filterFunc - only include keys that are single characters and uppercase, or longer than 1 character
     const filterFunc = function(k){
@@ -149,9 +160,11 @@ function keyStyleTextAll (suffix) {
     return Object.keys(keycodes).filter(filterFunc).map(mapper).join("\n");
 }
 
+// keyStyleSheet and defKeyStyleSheet are the style sheets for the keys
 let keyStyleSheet;
 let defKeyStyleSheet;
 
+// updateKeyStyles () updates the key stylesheets
 function updateKeyStyles() {
     if (keyStyleSheet) {
         // update the styleshet using current object values
