@@ -129,7 +129,10 @@ function keyStyleText (suffix,key) {
     const wth = keyStyleWidth [keycode] ? "."+cls+" { width : "+keyStyleWidth [keycode]+"px;}\n" : "";
     const ctx = 
       'content : "' + (
-            keyStyleContent [keycode] || keycode
+            keyStyleContent [keycode] || (  keycode.length===1 ?  keycode.toUpperCase() : keycode ) // if the keycode is a single character, use the uppercase version
+            // this means codes like Tab and Enter will be left in their original case
+            // this is simulate the look and feel of an actual keyboard 
+            // although this does of course depend on the manufacturer of the keyboard
       ) + '"; '
 
     return wth + "."+cls+":after { "+ctx+" }";
@@ -138,7 +141,7 @@ function keyStyleText (suffix,key) {
 function keyStyleTextAll (suffix) {
     // filterFunc - only include keys that are single characters and uppercase, or longer than 1 character
     const filterFunc = function(k){
-        return k===k.toUpperCase();
+        return k!==k.toUpperCase();
     };
 
     const mapper = keyStyleText.bind (this,suffix); 
