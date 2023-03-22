@@ -89,3 +89,17 @@ html.defining .key__button.key__button.defining {
 background: yellow;
 pointer-events: auto;
 }
+
+html.defining .key__button.key__button.defining:after {
+   content : "Press new key";
+   position:  relative;
+   display:inline-block;
+  left : -50px;
+  width:140px;
+  top: -30px;
+  font-size:16px;
+  color : yellow;
+  background-color:red;
+  height:20px;
+  line-height:20px;
+}

@@ -192,7 +192,7 @@ function keyStyleText (suffix,key) {
             // although this does of course depend on the manufacturer of the keyboard
       ) + '"; '
 
-    return wth + "."+cls+":after { "+ctx+" }";
+    return wth + "."+cls+":before { "+ctx+" }";
 }
 
 
