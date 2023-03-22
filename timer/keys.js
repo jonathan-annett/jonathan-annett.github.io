@@ -227,8 +227,6 @@ function updateKeyStyles() {
         defKeyStyleSheet = document.createElement("style");
         defKeyStyleSheet.innerHTML = keyStyleTextAll("_def");// add _def as a suffix to the class names
         document.head.appendChild(defKeyStyleSheet);
-        
-
     }
 }
 
@@ -361,6 +359,19 @@ function updateKeycodesEdit(keycodesEdit) {
 
         
     });
+
+    let jsonPRE = document.querySelector("#custom_key_edit pre");
+
+    if (jsonPRE) {  
+        jsonPRE.innerHTML = JSON.stringify(keyNames,null,2);
+
+        jsonPRE.onclick = function(){
+            this.select();
+            document.execCommand("copy");
+        };
+   
+    }
+
 }
 
 
