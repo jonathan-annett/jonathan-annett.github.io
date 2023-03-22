@@ -249,9 +249,7 @@ function keyNamesHtml (){
 }
 
 function keyIsUsed (k) {
-    return Object.values(keyNames).some(function(keycodes){
-        return keycodes.indexOf(k)>=0;
-    });
+    return keycodes.indexOf(k)>=0;
 }
 
 function updateKeycodesEdit(keycodesEdit) {
