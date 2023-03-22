@@ -96,10 +96,24 @@ html.defining .key__button.key__button.defining:after {
    display:inline-block;
   left : -50px;
   width:140px;
-  top: -30px;
+  top: -70px;
   font-size:16px;
   color : yellow;
   background-color:red;
+  height:20px;
+  line-height:20px;
+}
+
+html .key__button.key__button.redefined:after {
+   content : "new key set";
+   position:  relative;
+   display:inline-block;
+   left : -50px;
+   width:140px;
+  top: -70px;
+  font-size:16px;
+  color : black;
+  background-color:lime;
   height:20px;
   line-height:20px;
 }
