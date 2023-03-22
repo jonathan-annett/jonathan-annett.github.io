@@ -781,330 +781,343 @@ function onDocKeyDown(ev){
        updateEnteredTimeText () ;
     } else {
 
-        
-        switch ( true ) {
-            
-            case keyWasPressed("KeyCodeEditor",ev): {
- 
-                html.classList.add("custom_key_edit");
-                
-                break;
-            }
 
-            case keyWasPressed("Pause",ev): {
+        if (keyWasPressed("Space",ev)) {
+
+            const preserve_default = defaultDuration;
+            
+             if (controlling) {
+                  lastUpdateTick = 0;
+                  endsAt = seekEndsAt;
+                  clearRemainClass("adjusting") ;
+                  clearRemainClass("adjustingDown") ;
+                  keyDisp.textContent = tabCount+" tabs open";
+                  writeNumber("endsAt",endsAt);
+             } else {      
+                saveEditedTime();
                 
-                html.classList.toggle("paused");
-                if (html.classList.contains("paused")) {
-                    pausedAt = Date.now();
-                    writeNumber("pausedAt",pausedAt);
-                    endsAt = seekEndsAt;
-                    extraTimeDisp.textContent = "+ "+secToStr(pauseAcum / oneSecond)+" pauses";
-             
-                } else {
-                    let pausedMsec = pausedAt ? timeNow-pausedAt : 0;
-                    pausedAt = undefined;
-                    seekEndsAt += pausedMsec;
-                    pauseAcum += pausedMsec;
-                    writeNumber("pausedAt",pausedAt);
-                    writeNumber("pauseAcum",pauseAcum);
-    
-                    extraTimeDisp.textContent = "+ "+secToStr(pauseAcum / oneSecond)+" pauses";
-             
-                    endsAt = seekEndsAt;
-                    endsDisp.textContent =  new Date(seekEndsAt).toLocaleTimeString();
-                    
+                if (shifting)  
+                   extendDefaultToCurrentTimer();
+                else
+                   restartTimer();
+                   
+                if (defaultDuration !== preserve_default) {
+                    defaultDuration = preserve_default;
+                    dispNextMins.textContent = secToStr(defaultDuration/1000);
+                    clearHtmlClass("editing");
+                    writeNumber("defaultDuration",defaultDuration);
                 }
                 
-                
-                
-                break;
-            }  
+             }
+            return;
+        }
 
-            case keyWasPressed("UndoPause",ev): {
+        if (keyWasPressed("KeyCodeEditor",ev)) { 
+            html.classList.add("custom_key_edit");            
+            return;
+        }
+
+        if ( keyWasPressed("Pause",ev) ) {
                 
-                clearHtmlClass("paused");
+            html.classList.toggle("paused");
+            if (html.classList.contains("paused")) {
+                pausedAt = Date.now();
+                writeNumber("pausedAt",pausedAt);
+                endsAt = seekEndsAt;
+                extraTimeDisp.textContent = "+ "+secToStr(pauseAcum / oneSecond)+" pauses";
+         
+            } else {
+                let pausedMsec = pausedAt ? timeNow-pausedAt : 0;
                 pausedAt = undefined;
-                pauseAcum = 0;
-                extraTimeDisp.textContent = "";
-                
-                seekEndsAt = startedAt + thisDuration;
+                seekEndsAt += pausedMsec;
+                pauseAcum += pausedMsec;
+                writeNumber("pausedAt",pausedAt);
+                writeNumber("pauseAcum",pauseAcum);
+
+                extraTimeDisp.textContent = "+ "+secToStr(pauseAcum / oneSecond)+" pauses";
+         
                 endsAt = seekEndsAt;
                 endsDisp.textContent =  new Date(seekEndsAt).toLocaleTimeString();
-                    
-                break;
-            
-            }
-
-            case keyWasPressed("Period",ev): {   
-                 if ( (enterTimeText !== "") && (enterTimeText.indexOf(".") <0 ) ) {
-                     
-                     enterTimeText = enterTimeText + ev.key;
-                     setHtmlClass("editing");
-                     updateEnteredTimeText () ;
-                     
-                }
-                break;
-            }
-
-            case keyWasPressed("Colon",ev): {
-                if (enterHoursText === "") {
-                    enterHoursText = enterTimeText;
-                    enterTimeText  = "";
-                    setHtmlClass("editing");
-                    dispNextMins.textContent = secToStr((Number(enterHoursText) * 3600) + (Number(enterTimeText) * 60));
-                }
-                break;
+                
             }
             
-            case keyWasPressed("Backspace",ev) :{
+            
+            
+            return;
+        }  
 
-                if (enterTimeText !== "" ) {
-                    enterTimeText = enterTimeText.substr(0,enterTimeText.length-1);
-                    updateEnteredTimeText () ;
-                } else {
-                    clearHtmlClass("editing");
-                    dispNextMins.textContent = secToStr(defaultDuration/1000);
-                    
-                }
-                break;
-            }
+        if ( keyWasPressed("UndoPause",ev) ) {
+                
+            clearHtmlClass("paused");
+            pausedAt = undefined;
+            pauseAcum = 0;
+            extraTimeDisp.textContent = "";
+            
+            seekEndsAt = startedAt + thisDuration;
+            endsAt = seekEndsAt;
+            endsDisp.textContent =  new Date(seekEndsAt).toLocaleTimeString();
+                
+            return;
+        
+        }
 
-            case keyWasPressed("Enter",ev): {
+        if ( keyWasPressed("Period",ev) ) {   
+            if ( (enterTimeText !== "") && (enterTimeText.indexOf(".") <0 ) ) {
                 
-                if (controlling) {
-                      lastUpdateTick = 0;
-                      endsAt = seekEndsAt;
-                      clearRemainClass("adjusting") ;
-                      clearRemainClass("adjustingDown") ;
-                      keyDisp.textContent = tabCount+" tabs open";
-                      writeNumber("endsAt",endsAt);
-                 } else {      
-                    saveEditedTime();
-                 }                
-                break;
-            }    
+                enterTimeText = enterTimeText + ev.key;
+                setHtmlClass("editing");
+                updateEnteredTimeText () ;
                 
-            case keyWasPressed("QuitApp",ev): { 
-                    if (controlling) {
-                        if (is_nwjs()) {
-                                require('nw.gui').App.quit();
-                        }
-                    }
+           }
+           return;
+       }
+
+
+       if ( keyWasPressed("Colon",ev) ) {
+        if (enterHoursText === "") {
+            enterHoursText = enterTimeText;
+            enterTimeText  = "";
+            setHtmlClass("editing");
+            dispNextMins.textContent = secToStr((Number(enterHoursText) * 3600) + (Number(enterTimeText) * 60));
+        }
+        return;
+        }
     
-                    break;
-            }
+        
+        if ( keyWasPressed("Backspace",ev) ) {
 
-            case keyWasPressed("ArrowDown",ev): { 
-            
+            if (enterTimeText !== "" ) {
+                enterTimeText = enterTimeText.substr(0,enterTimeText.length-1);
+                updateEnteredTimeText () ;
+            } else {
+                clearHtmlClass("editing");
+                dispNextMins.textContent = secToStr(defaultDuration/1000);
                 
-                //if (controlling && ev.key==="-") break;
+            }
+            return;
+        }
+
+        if ( keyWasPressed("Enter",ev) ) {
                 
-                if (!html.classList.contains("editing") ) {
-                    if (shifting) {
-                        bumpStart(factor);
-                    } else {
-                        bumpEnd(0-seekEndDelta,0-endDelta);
-                    }
-                    durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
-                    displayUpdate();
-                } 
-                else
-                {
-                       
+            if (controlling) {
+                  lastUpdateTick = 0;
+                  endsAt = seekEndsAt;
+                  clearRemainClass("adjusting") ;
+                  clearRemainClass("adjustingDown") ;
+                  keyDisp.textContent = tabCount+" tabs open";
+                  writeNumber("endsAt",endsAt);
+             } else {      
+                saveEditedTime();
+             }                
+            return;
+        }    
+           
+        if ( keyWasPressed("QuitApp",ev) ) { 
+            if (controlling) {
+                if (is_nwjs()) {
+                        require('nw.gui').App.quit();
                 }
-                break;
             }
+
+            return;
+        }
+
+
+        if ( keyWasPressed("ArrowDown",ev) ) { 
             
-            case keyWasPressed("ArrowUp",ev) : {
-                 //if (controlling && ev.key==="+") break;
-                 
-                 if (!html.classList.contains("editing") ) {
-                    if (shifting) {
-                       bumpStart(0-factor);
-                    } else {
-                       bumpEnd(seekEndDelta,endDelta);
-                    }
-                    durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
-                    displayUpdate();
-                 }
-                 else {
-                     
-                 }
-                break;
-            }
+                
+            //if (controlling && ev.key==="-") break;
             
-            case keyWasPressed("ArrowLeft",ev): { 
-                bumpStart(0-factor);
-                bumpEnd(0-seekEndDelta,0-endDelta);
-                
-                durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
-                displayUpdate();
-            
-            break; 
-            }
-
-            case keyWasPressed("ArrowRight",ev) : {
-                bumpStart(factor);
-                bumpEnd(seekEndDelta,endDelta);
-                
-                durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
-                displayUpdate();
-                
-            break;
-            }
-
-            case ev.key==="Shift" : {
-                shifting = true; 
-                setHtmlClass("shifting");
-                
-
-                break;
-            }
-            
-            case ev.key==="Control" : {
-                controlling = true; 
-                setHtmlClass("controlling");
-                break ;
-            }
-
-
-            case keyWasPressed("i",ev): {
-                if (controlling && shifting) {
-                    ev.preventDefault();
-                }
-                break;  
-            }
-
-            case keyWasPressed("ToggleFullScreen",ev): {
-                if (fs_api.isFullscreen()) {
-                    fs_api.exitFullscreen();
+            if (!html.classList.contains("editing") ) {
+                if (shifting) {
+                    bumpStart(factor);
                 } else {
-                     fs_api.enterFullscreen();  
-                 } 
-                  break;
-                
-            }
-
-            case keyWasPressed("ToggleProgressBar",ev): {
-                html.classList.toggle("showbar");
-                writeNumber("showbar",html.classList.contains("showbar") ? 1 : 0);
-                
-                break;
-            }
-            
-
-            case keyWasPressed("Space",ev): {
-
-                const preserve_default = defaultDuration;
-                
-                 if (controlling) {
-                      lastUpdateTick = 0;
-                      endsAt = seekEndsAt;
-                      clearRemainClass("adjusting") ;
-                      clearRemainClass("adjustingDown") ;
-                      keyDisp.textContent = tabCount+" tabs open";
-                      writeNumber("endsAt",endsAt);
-                 } else {      
-                    saveEditedTime();
-                    
-                    if (shifting)  
-                       extendDefaultToCurrentTimer();
-                    else
-                       restartTimer();
-                       
-                    if (defaultDuration !== preserve_default) {
-                        defaultDuration = preserve_default;
-                        dispNextMins.textContent = secToStr(defaultDuration/1000);
-                        clearHtmlClass("editing");
-                        writeNumber("defaultDuration",defaultDuration);
-                    }
-                    
-                 }
-                break;
-            }
-            case keyWasPressed("ToggleMessagesMode",ev): {
-                html.classList.toggle("showmessages");
-                writeNumber("showmessages",html.classList.contains("showmessages") ? 1 : 0);
-                break;
-            }
-            case keyWasPressed("ToggleTimeOfDay",ev): {
-                html.classList.toggle("showtimenow");
-                writeNumber("showtimenow",html.classList.contains("showtimenow") ? 1 : 0);
-                break;
-            }
-            case keyWasPressed("TogglePresenterScreen",ev): {
-                
-                if (window.location.search !== "?presenter" &&  tabCount === 1) {
-                    html.classList.toggle("reduced");
-                    runMode = html.classList.contains("reduced") ? "presenter":"controller";
-            
+                    bumpEnd(0-seekEndDelta,0-endDelta);
                 }
-                html.classList[ html.classList.contains("reduced") ? "remove" : "add"]("showbuttons");
-                break;
+                durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
+                displayUpdate();
+            } 
+            else
+            {
+                   
             }
+            return;
+        }
 
-            case keyWasPressed("SingleScreenMode",ev): {
+
+        if ( keyWasPressed("ArrowUp",ev) ) {
+            //if (controlling && ev.key==="+") break;
+            
+            if (!html.classList.contains("editing") ) {
+               if (shifting) {
+                  bumpStart(0-factor);
+               } else {
+                  bumpEnd(seekEndDelta,endDelta);
+               }
+               durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
+               displayUpdate();
+            }
+            else {
+                
+            }
+           return;
+       }
+       
+       if ( keyWasPressed("ArrowLeft",ev) ) { 
+           bumpStart(0-factor);
+           bumpEnd(0-seekEndDelta,0-endDelta);
+           
+           durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
+           displayUpdate();
+       
+            return; 
+       }
+
+       if ( keyWasPressed("ArrowRight",ev) ) {
+           bumpStart(factor);
+           bumpEnd(seekEndDelta,endDelta);
+           
+           durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
+           displayUpdate();
+           
+            return ;
+       }
+        
+       if (ev.key==="Shift" ) {
+            shifting = true; 
+            setHtmlClass("shifting");
+            return;
+        }
+
+        if (ev.key==="Control" ) {
+            controlling = true; 
+            setHtmlClass("controlling");
+            return ;
+        }
+
+
+
+        if (ev.key==="i" || ev.key==="I" ) {
+            if (controlling && shifting) {
+                ev.preventDefault();
+            }
+            return;  
+        }
+
+
+
+        if ( keyWasPressed("ToggleFullScreen",ev) ) {
+            if (fs_api.isFullscreen()) {
+                fs_api.exitFullscreen();
+            } else {
+                 fs_api.enterFullscreen();  
+             } 
+              return;
+            
+        }
+
+        if ( keyWasPressed("ToggleProgressBar",ev)) {
+            html.classList.toggle("showbar");
+            writeNumber("showbar",html.classList.contains("showbar") ? 1 : 0);
+            
+            return;
+        }
+
+
+        if ( keyWasPressed("ToggleMessagesMode",ev)) {
+            html.classList.toggle("showmessages");
+            writeNumber("showmessages",html.classList.contains("showmessages") ? 1 : 0);
+            return;
+        }
+
+        if ( keyWasPressed("ToggleTimeOfDay",ev)) {
+            html.classList.toggle("showtimenow");
+            writeNumber("showtimenow",html.classList.contains("showtimenow") ? 1 : 0);
+            return;
+        }
+
+        if ( keyWasPressed("TogglePresenterScreen",ev)) {
+            
+            if (window.location.search !== "?presenter" &&  tabCount === 1) {
+                html.classList.toggle("reduced");
+                runMode = html.classList.contains("reduced") ? "presenter":"controller";
+        
+            }
+            html.classList[ html.classList.contains("reduced") ? "remove" : "add"]("showbuttons");
+            return;
+        }
+
+
+
+        if ( keyWasPressed("SingleScreenMode",ev) ) {
                 
   
                 
-                if (window.location.search !== "?presenter" &&  tabCount === 1) {
-                    html.classList.add("reduced");
-                    html.classList.add("showbuttons");
-                    runMode = "presenter";
-                    if (!fs_api.isFullscreen()) {
-                        fs_api.enterFullscreen();  
-                        }
-                }
-            
-                break;
-            }
-
-
-            case keyWasPressed("StyleEditor",ev): {
-                if (ev.ctrlKey) {
-                    if (stylesheet1_obj) {
-                        if (ev.shiftKey) {
-                            stylesheet1_obj.reset();
-                            if (stylesheet1_obj.editing) {
-                               stylesheet1_obj.editToggle();
-                            }
-                        } else {
-                            stylesheet1_obj.editToggle();
-                        }
+            if (window.location.search !== "?presenter" &&  tabCount === 1) {
+                html.classList.add("reduced");
+                html.classList.add("showbuttons");
+                runMode = "presenter";
+                if (!fs_api.isFullscreen()) {
+                    fs_api.enterFullscreen();  
                     }
-                    ev.preventDefault();
-                
-                } 
-                break;
             }
+        
+            return;
+        }
 
-            case keyWasPressed("ExtendTimerToDefault",ev): {
-                // extend current timer to default time
-                extendDefaultToCurrentTimer();
-                break;
-            }
 
-            case keyWasPressed("ToggleCustomMessage",ev): {
-                
-                    
-                html.classList.add("edit_custom_message");
-                html.classList.remove("show_custom_message");
-                custom_message.innerText="custom message";
-                custom_message.contentEditable=true;
-                custom_message.focus();
+        if ( keyWasPressed("StyleEditor",ev)) {
+            if (ev.ctrlKey) {
+                if (stylesheet1_obj) {
+                    if (ev.shiftKey) {
+                        stylesheet1_obj.reset();
+                        if (stylesheet1_obj.editing) {
+                           stylesheet1_obj.editToggle();
+                        }
+                    } else {
+                        stylesheet1_obj.editToggle();
+                    }
+                }
                 ev.preventDefault();
-                
-                break;
-            }
-	        case keyWasPressed("OpenRemoteWindow",ev): {
-                      
-`              ev.preventDefault();
-        	   openTimerWindow(tabCount>1);
-`           
-               break;
+            
+            } 
+            return;
+        }
 
-              }
-    }}
+        if ( keyWasPressed("ExtendTimerToDefault",ev)) {
+            // extend current timer to default time
+            extendDefaultToCurrentTimer();
+            return ;
+        }
+
+        if ( keyWasPressed("ToggleCustomMessage",ev) ) {
+            
+                
+            html.classList.add("edit_custom_message");
+            html.classList.remove("show_custom_message");
+            custom_message.innerText="custom message";
+            custom_message.contentEditable=true;
+            custom_message.focus();
+            ev.preventDefault();
+            
+            return;
+        }
+
+        if ( keyWasPressed("OpenRemoteWindow",ev) ) {
+                  
+`              ev.preventDefault();
+                openTimerWindow(tabCount>1);
+`           
+                return ;
+
+          }
+
+        
+       
+
+
+    
+}
 }
 
 
