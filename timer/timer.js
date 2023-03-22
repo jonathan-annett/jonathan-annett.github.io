@@ -1097,11 +1097,11 @@ function onDocKeyDown(ev){
                 break;
             }
 	        case keyWasPressed("OpenRemoteWindow",ev): {
-              if (!key.ctrlKey) {         
+                      
 `              ev.preventDefault();
-        	    openTimerWindow(tabCount>1);
-`              }
-              break;
+        	   openTimerWindow(tabCount>1);
+`           
+               break;
 
               }
     }}
