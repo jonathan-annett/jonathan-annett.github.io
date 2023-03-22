@@ -363,7 +363,7 @@ function updateKeycodesEdit(keycodesEdit) {
     let jsonPRE = document.querySelector("#custom_key_edit pre");
 
     if (jsonPRE) {  
-        jsonPRE.innerHTML = JSON.stringify(keyNames,null,2);
+        jsonPRE.innerHTML = JSON.stringify(keycodes,null,2);
 
         jsonPRE.onclick = function(){
             this.select();

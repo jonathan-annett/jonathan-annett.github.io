@@ -27,6 +27,14 @@
 
 }
 
+
+.keyhelptext pre {
+  text-align: left;
+  font-size: 16px;
+  color: rgb(23, 99, 23);
+}
+
+
 .key__button {
   box-sizing: border-box;
   line-height: 40px;
