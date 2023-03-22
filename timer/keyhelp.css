@@ -53,13 +53,20 @@
     background:#e0e050;
   }
 
-  .key__button.defining {
-      background: yellow;
-  }
-  .key__button.error {
+.key__button.error {
     background: red;
 }
 
 .key__button.redefined {
   background: lime;
+}
+
+html.defining .key__button.key__button {
+  background: #161515;
+  pointer-events: none;
+}
+
+html.defining .key__button.key__button.defining {
+  background: yellow;
+  pointer-events: auto;
 }

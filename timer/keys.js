@@ -1,3 +1,5 @@
+/* global   html */
+
 var keycodes = {
 /*  logicalKey     event keycode*/
     "Space"      : " ",
@@ -228,6 +230,7 @@ function updateKeycodesEdit(keycodesEdit) {
                 document.body.addEventListener("keydown",customKeydown);
                 customKeydownAssigned = true;
                 td.classList.add("defining");
+                html.classList.add("defining");
             }
         };
 
@@ -288,6 +291,8 @@ function updateKeycodesEdit(keycodesEdit) {
             newtd.classList.remove("defining");
             newtd.classList.remove("error");
 
+            html.classList.remove("defining");
+
             setTimeout(function(){
                 newtd.classList.remove("redefined");
             },1500);
@@ -313,7 +318,7 @@ function keyWasPressed (nm,ev) {
   if (ev.key===keycodes[nm.toUpperCase()]) {
     return true;
   }
-  
+
   if (ev.key===keycodes[nm+"_1"]) {
     return true;
   }
