@@ -131,7 +131,7 @@ function keyStyleText (suffix,key) {
       'content : "' + (
             keyStyleContent [keycode] || (  keycode.length===1 ?  keycode.toUpperCase() : keycode ) // if the keycode is a single character, use the uppercase version
             // this means codes like Tab and Enter will be left in their original case
-            // this is simulate the look and feel of an actual keyboard 
+            // this is to simulate the look and feel of an actual keyboard 
             // although this does of course depend on the manufacturer of the keyboard
       ) + '"; '
 
