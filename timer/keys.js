@@ -244,7 +244,7 @@ function keyNamesHtml (){
         const dispKey = renameKey(key);
         const dispDefKey = renameKey(defKey);
         return "<tr><td>"+keyName+'</td><td class="'+keyClass (defKey)+'" data-keyname="'+keyName+'">'+
-        '</td><td> Default : <Span class="'+keyClass (defKey)+'_def">'+"</span></td></tr>"; 
+        '</td><td data-keyname="'+keyName+'"> Default : <Span class="'+keyClass (defKey)+'_def">'+"</span></td></tr>"; 
     }).join("\n")+"</table>";
 }
 
