@@ -84,7 +84,11 @@ var keycodes = {
     "OPENREMOTEWINDOW"          : "R",
 
     "KeyCodeEditor"          : "k",
-    "KEYCODEEDITOR"          : "K"  
+    "KEYCODEEDITOR"          : "K",
+    
+    "StyleEditor"          : "e",
+    "STYLEEDITOR"          : "E",
+
 
 };
 
@@ -124,7 +128,10 @@ var keyNames = {
     "Extend timer to default":              [ "ExtendTimerToDefault","EXTENDTIMERTODEFAULT" ],
     "Toggle/edit custom message":           [ "ToggleCustomMessage","TOGGLECUSTOMMESSAGE"],
     "Delete last entered character":        [ "Backspace", "BACKSPACE" ],
-     "Edit Key codes":                       [ "KeyCodeEditor","KEYCODEEDITOR" ]
+     "Edit Key codes":                       [ "KeyCodeEditor","KEYCODEEDITOR" ],
+    
+     "Edit Style":                           [ "StyleEditor","STYLEEDITOR" ],
+
 };
 
 var keynamesDefault = Object.assign({}, keyNames);

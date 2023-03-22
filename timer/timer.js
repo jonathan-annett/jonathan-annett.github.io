@@ -753,8 +753,9 @@ function onDocKeyDown(ev){
    
    
    if (stylesheet1_obj && stylesheet1_obj.editing && location.protocol==="https:") {
+
        
-       if ( (ev.key === keycodes.S || ev.key === keycodes.s)  && ev.ctrlKey ) {
+       if ( keyWasPressed("StyleEditor",ev)   && ev.ctrlKey ) {
             ev.preventDefault();
             stylesheet1_obj.editToggle();
             if (ev.shiftKey) {
@@ -1044,6 +1045,22 @@ function onDocKeyDown(ev){
 
             case keyWasPressed("SingleScreenMode",ev): {
                 
+  
+                
+                if (window.location.search !== "?presenter" &&  tabCount === 1) {
+                    html.classList.add("reduced");
+                    html.classList.add("showbuttons");
+                    runMode = "presenter";
+                    if (!fs_api.isFullscreen()) {
+                        fs_api.enterFullscreen();  
+                        }
+                }
+            
+                break;
+            }
+
+
+            case keyWasPressed("StyleEditor",ev): {
                 if (ev.ctrlKey) {
                     if (stylesheet1_obj) {
                         if (ev.shiftKey) {
@@ -1057,17 +1074,7 @@ function onDocKeyDown(ev){
                     }
                     ev.preventDefault();
                 
-                } else {
-                
-                    if (window.location.search !== "?presenter" &&  tabCount === 1) {
-                        html.classList.add("reduced");
-                        html.classList.add("showbuttons");
-                        runMode = "presenter";
-                        if (!fs_api.isFullscreen()) {
-                          fs_api.enterFullscreen();  
-                          }
-                    }
-                }
+                } 
                 break;
             }
 
