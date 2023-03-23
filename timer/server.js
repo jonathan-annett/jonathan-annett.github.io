@@ -13,6 +13,7 @@ var files = [
     "timer.html",
     "timer.js",
     "timer.css",
+    "keys.js",
     "fsapi.js",
     "keyhelp.js",
     "keyhelp.css"];
