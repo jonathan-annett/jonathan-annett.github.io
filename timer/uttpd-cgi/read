@@ -1,0 +1,28 @@
+#!/bin/sh
+
+ID=$1
+
+if [ -z "$ID" ]; then
+    echo "Content-type: application/json"
+    echo
+    echo "false"
+    exit 1
+fi
+
+if [ ! -f "/tmp/connections/$ID" ]; then
+    echo "Content-type: application/json"
+    echo
+    echo "false"
+    exit 1
+fi
+
+N=$(cat /tmp/connections/$ID | wc -c)
+if [ $N -eq 0 ]; then
+    echo "Content-type: application/json"
+    echo
+    echo "[]"
+else
+    echo "Content-type: application/json"
+    echo
+    echo "$(cat /tmp/connections/$ID)]"
+fi 

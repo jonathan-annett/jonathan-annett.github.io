@@ -1,0 +1,10 @@
+
+var cp = require('child_process');
+function exec(cmd, args, callback) {
+    var child = cp.spawn(cmd, args);
+    var resp = "";
+    child.stdin.write();
+    
+    child.stdout.on('data', function (buffer) { resp += buffer.toString() });
+    child.stdout.on('end', function () { callback (resp) });
+}

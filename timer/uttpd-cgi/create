@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# This script is called to create a connection
+
+mkdir -p /tmp/connections
+
+# generate a unique ID for this connection
+ID=$(dd if=/dev/urandom bs=1 count=16 2>/dev/null | hexdump -v -e '/1 "%02x"')
+while [ -f /tmp/connections/$ID ];
+do
+  # very unlikely this will ever loop, since 16 random bytes is a lot of entropy
+  ID=$(dd if=/dev/urandom bs=1 count=16 2>/dev/null | hexdump -v -e '/1 "%02x"')
+done
+
+# create an empty holding file for this connection
+touch /tmp/connections/$ID
+

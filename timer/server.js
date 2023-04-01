@@ -80,8 +80,8 @@ http.createServer(function (req, res) {
             // connecting browser will receive a connection id
             // which was shared with it by peer via qr code or other means (out of band)
 
-            var id = url.substring("api/connect/".length);
-            var conn = connections[id];
+            let id = url.substring("api/connect/".length);
+            let conn = connections[id];
             if (conn) {
                 if (conn.connected) {
                     // we don't allow multiple connections to the same id

@@ -1,0 +1,26 @@
+#!/bin/sh
+
+ID=$1
+POSTDATA=$(cat)
+POSTSIZE=$(echo -n  "$POSTDATA" | wc -c )
+
+# check that the connection exists and that the POST data is not too large
+if [ -z "$ID" ] || [$POSTSIZE -gt 16384 ] || [ ! -f "/tmp/connections/$ID" ]; then
+    echo "Content-type: application/json"
+    echo
+    echo "false"
+    exit 1
+fi
+
+# append the POST data to the connection file
+# if the file is empty, add the opening bracket, otherwise add a comma
+N=$(cat /tmp/connections/$ID | wc -c)
+if [ $N -eq 0 ]; then
+    echo -n "[ $POSTDATA" > /tmp/connections/$ID
+else
+    echo -n ", $POSTDATA" >> /tmp/connections/$ID
+fi
+
+echo "Content-type: application/json"
+echo
+echo "true"

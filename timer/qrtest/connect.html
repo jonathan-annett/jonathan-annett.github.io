@@ -1,0 +1,55 @@
+<html>
+  <head> 
+    <script src="device-id.js"></script>
+    <script src="qr-peer.js"></script>
+    <script src="qrcode.min.js"></script>
+    <script src="simplepeer.min.js"></script>
+    <script src="connect.js" defer></script>
+  </head>
+  <body>
+    
+    connect to peer
+    
+    <div>
+      <h1>
+        option 1 - use a phone with a camera to associate two devices via QR Codes
+      </h1>
+      <p>
+        for this to work, you need to have physical access to both devices, and a mobile phone with a camera.
+      </p>
+      <p>
+        once asscicated, the phone is no longer needed.
+      </p>
+      <p>
+        scan this  QR code, then the other screen's QR code, and the phone will send both random codes
+        to the server, where they will be informed of each other. the devices then negotiate a webrtc connection
+        which means they talk directly to each other.
+      </p>
+          <div id="qrcode">
+      
+          </div>
+
+    </div>
+    
+    <div>
+      <h1>
+        option 2 - send a url from one device to the other (via email or some other method)        
+      </h1>
+      <p>
+        for this to work, both devices need internet access, the devices will negotiate a webrtc connection
+        which means they talk directly to each other.
+        click <button id="shareBtn">here</button> to copy the url to share with the other browser.
+      </p>      
+    </div>
+    
+    
+    
+    
+    <div>
+    <a href="#" id="qrclick" target="_blank">click</a>
+    </div>
+        
+    <textarea id="loglines"></textarea>
+
+  </body>
+</html>
