@@ -4,7 +4,7 @@ var localDeviceId;
 function getDeviceId(cb) {
     
       var http = new XMLHttpRequest();
-      var url = 'localId';
+      var url = urlbase+'localId';
       var json = JSON.stringify({localDeviceId:localStorage.getItem("localDeviceId")});
       http.open('POST', url, true);
 
