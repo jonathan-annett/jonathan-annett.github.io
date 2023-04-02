@@ -24,6 +24,8 @@ let controlling = false;
 
 let stylesheet1= getEl ("style_1");
 let stylesheet1_obj;
+
+
 replaceStylesheet(stylesheet1,function(ev){
     stylesheet1_obj = ev;
 });
@@ -54,6 +56,8 @@ let pausedAt;
 let pauseAcum = 0;
   
 let runMode = "controller";
+
+let audioTrig;
 
   if (window.location.search.startsWith("?presenter")) {
 
