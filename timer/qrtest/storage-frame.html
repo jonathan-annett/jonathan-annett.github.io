@@ -1,0 +1,38 @@
+<html>
+  <head>
+    
+  </head>
+  
+  <body>
+    <select id="logbox" name="log" size="1" style="width:100%">
+      <option>one</option>
+    </select>
+    
+    <embed type="text/html" src="https://messy-aback-woodwind.glitch.me/storage-frame2.html" width="500" height="200">
+  
+    <script>
+      
+      function dumpStorage(){
+        
+        logbox.innerHTML="<option>storage for "+location.origin+"</option>";
+        
+        let keys = Object.keys(localStorage);
+        keys.forEach(function(key){
+          
+            logbox.innerHTML += "<option>"+key+"="+localStorage.getItem(key)+"</option>";
+
+        });
+        
+        logbox.size = keys.length+1;
+
+      }
+      
+      window.addEventListener('storage',dumpStorage);
+      
+      dumpStorage();
+      
+    </script>
+  </body>
+  
+  
+</html>
