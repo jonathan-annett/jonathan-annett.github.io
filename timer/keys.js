@@ -56,6 +56,9 @@ var keycodes = {
     "QuitApp"    : "q",
     "QUITAPP"    : "Q",
     
+    "ToggleAudio"    : "a",
+    "TOGGLEAUDIO"    : "A",
+
     "ToggleProgressBar"  : "b",
     "TOGGLEPROGRESSBAR"  : "B",
     
@@ -118,6 +121,8 @@ var keyNames = {
 
     "Pause/resume the countdown"          : [ "Pause", "PAUSE" ],
     "Undo pause (removes any added time)" : [ "UndoPause", "UNDOPAUSE" ],
+
+    "Toggle audio triggers" :   [ "ToggleAudio","TOGGLEAUDIO"],
     
     "Toggle Progress Bar Display"         : [ "ToggleProgressBar","TOGGLEPROGRESSBAR"],
     "Toggle Standard Messages"            : [ "ToggleMessagesMode","TOGGLEMESSAGESMODE"],
