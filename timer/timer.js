@@ -1114,7 +1114,9 @@ function onDocKeyDown(ev){
 
 
           if (keyWasPressed("ToggleAudio",ev)) {
+
               if (audioTrig) {
+
                 if (controlling) {
                     audioTrig.reset(function(){
                         onDocKeyDown({key : keycodes.Space});
@@ -1130,9 +1132,9 @@ function onDocKeyDown(ev){
                 audioTrig.reset();
               }
           }
+    }
+
 }
-
-
     function saveEditedTime(){
         if ( !  (  (enterTimeText === "" ) || (enterTimeText === "" ) ) ) {
             defaultDuration = ((Number(enterHoursText) * 3600) + (Number(enterTimeText) * 60) ) * 1000;
