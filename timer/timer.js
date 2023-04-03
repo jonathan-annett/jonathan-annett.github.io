@@ -705,7 +705,6 @@ let custom_msg_timeout;
 
 function onAudioTrigger () {
     onDocKeyDown({ key: keycodes.Space });
-    audioTrig.hide();
 }
 
 function onDocKeyDown(ev) {
@@ -1129,15 +1128,36 @@ function onDocKeyDown(ev) {
             if (audioTrig) {
 
                 if (controlling) {
-                    audioTrig.reset();
+                    if (shifting) {
+                        //ctrl-shift-a = stop monitoring audio and hide meter
+                        audioTrig.stop();
+                        audioTrig=null;
+                    } else {
+                       
+                       // ctrl-a = show meter wait for trigger
+                       audioTrig.show();
+                       audioTrig.reset();
+                    }
                 } else {
+                    // a = toggle display of audio meter
                     audioTrig.toggle();
                 }
 
             } else {
+                if (controlling && shifting) {
+                    //ctrl-shift-a = stop monitoring audio and hide meter
+                    // already stopped,and object does not exist
+
+                    return;
+                }
+
                 audioTrig = audioTriggers();
                 audioTrig.show();
-                audioTrig.reset();
+
+                if (controlling) {
+                    // ctrl-a = show meter wait for trigger
+                    audioTrig.reset();
+                }
             }
         }
     }
@@ -1386,6 +1406,7 @@ function audioTriggersLegacy() {
 function audioTriggers() {
 
     // Initialize variables
+    let running = true;
     const audioContext = new AudioContext();
     const analyserNode = audioContext.createAnalyser();
     analyserNode.fftSize = 2048;
@@ -1427,26 +1448,28 @@ function audioTriggers() {
 
     // Function to update the visualization
     function updateVisualization() {
-        requestAnimationFrame(updateVisualization);
-        analyserNode.getByteFrequencyData(dataArray);
-        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-        const average = dataArray.reduce((acc, val) => acc + val) / bufferLength;
-        const normalizedAverage = average / 255;
-        canvasCtx.fillStyle = 'white'
-        const y = canvas.height - (normalizedAverage * canvas.height);            
-        canvasCtx.fillRect(0, y, canvas.width, canvas.height);
-        
-        // Draw threshold line
-        canvasCtx.beginPath();
-        canvasCtx.moveTo(0, canvas.height - (threshold * canvas.height));
-        canvasCtx.lineTo(canvas.width, canvas.height - (threshold * canvas.height));
-        canvasCtx.strokeStyle = 'green';
-        canvasCtx.stroke();
+        if (running) {
+            requestAnimationFrame(updateVisualization);
+            analyserNode.getByteFrequencyData(dataArray);
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+            const average = dataArray.reduce((acc, val) => acc + val) / bufferLength;
+            const normalizedAverage = average / 255;
+            canvasCtx.fillStyle = 'white'
+            const y = canvas.height - (normalizedAverage * canvas.height);
+            canvasCtx.fillRect(0, y, canvas.width, canvas.height);
 
-        if (normalizedAverage >= threshold && !callbackTriggered) {  
-            const audioTriggerEvent = new Event('audio-trigger');
-            window.dispatchEvent(audioTriggerEvent);
-            callbackTriggered=true;
+            // Draw threshold line
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(0, canvas.height - (threshold * canvas.height));
+            canvasCtx.lineTo(canvas.width, canvas.height - (threshold * canvas.height));
+            canvasCtx.strokeStyle = 'green';
+            canvasCtx.stroke();
+
+            if (normalizedAverage >= threshold && !callbackTriggered) {
+                const audioTriggerEvent = new Event('audio-trigger');
+                window.dispatchEvent(audioTriggerEvent);
+                callbackTriggered = true;
+            }
         }
     }
 
@@ -1463,11 +1486,18 @@ function audioTriggers() {
         html.classList.remove("audio");
 
     }
+
+    function stop () {
+        running=false;
+        analyserNode.disconnectInput();
+    }
+
     return {
         reset: resetAudioTrigger,
         toggle: toggle,
         show: show,
-        hide: hide
+        hide: hide,
+        stop:stop
 
     };
 
