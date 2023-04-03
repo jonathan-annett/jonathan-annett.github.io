@@ -710,7 +710,7 @@ function onAudioTrigger() {
         // dispose of the audio monitor
         audioTrig.hide();
         audioTrig.stop();
-        writeNumber("audioTrig-Threshold", audioTrig.getThreshold());
+        writeNumber("audioThreshold", audioTrig.getThreshold());        
         audioTrig=null;
     }
 
@@ -1139,6 +1139,7 @@ function onDocKeyDown(ev) {
                 if (shifting) {
                     //shift-a = stop monitoring audio and hide meter
                     audioTrig.stop();
+                    writeNumber("audioThreshold", audioTrig.getThreshold());    
                     audioTrig=null;
                     return;
                 }
@@ -1161,7 +1162,7 @@ function onDocKeyDown(ev) {
                 }
 
                 audioTrig = audioTriggers();
-                audioTrig.setThreshold(readNumber("audioTrig-Threshold"),audioTrig.getThreshold());
+                audioTrig.setThreshold(readNumber("audioThreshold"),audioTrig.getThreshold());
                 audioTrig.show();
 
                 if (controlling) {
