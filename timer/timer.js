@@ -166,6 +166,7 @@ dispNextMins.textContent = secToStr(defaultDuration / oneSecond);
 setInterval(displayUpdate, 100);
 doc.addEventListener("keyup", onDocKeyUp);
 doc.addEventListener("keydown", onDocKeyDown);
+doc.addEventListener("audio-trigger",onAudioTrigger);
 
 doc.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 addEventListener('storage', onLocalStorage);
@@ -173,7 +174,6 @@ addEventListener('storage', onLocalStorage);
 [].forEach.call(document.querySelectorAll('div.buttons div.btn'), function (el) {
     el.addEventListener('click', keyMacroClick);
 });
-
 
 
 function keyMacroClick(e) {
@@ -703,6 +703,11 @@ function getTabCount(cont) {
 
 let custom_msg_timeout;
 
+function onAudioTrigger () {
+    onDocKeyDown({ key: keycodes.Space });
+    audioTrig.hide();
+}
+
 function onDocKeyDown(ev) {
 
     if (html.classList.contains("edit_custom_message")) {
@@ -1124,10 +1129,7 @@ function onDocKeyDown(ev) {
             if (audioTrig) {
 
                 if (controlling) {
-                    audioTrig.reset(function () {
-                        onDocKeyDown({ key: keycodes.Space });
-                        audioTrig.hide();
-                    });
+                    audioTrig.reset();
                 } else {
                     audioTrig.toggle();
                 }
