@@ -1161,7 +1161,7 @@ function onDocKeyDown(ev) {
                 }
 
                 audioTrig = audioTriggers();
-                audio.setThreshold(readNumber("audioTrig-Threshold"),audio.getThreshold());
+                audioTrig.setThreshold(readNumber("audioTrig-Threshold"),audioTrig.getThreshold());
                 audioTrig.show();
 
                 if (controlling) {
