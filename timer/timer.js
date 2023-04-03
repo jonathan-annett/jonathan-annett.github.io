@@ -1127,25 +1127,25 @@ function onDocKeyDown(ev) {
 
             if (audioTrig) {
 
+                if (shifting) {
+                    //shift-a = stop monitoring audio and hide meter
+                    audioTrig.stop();
+                    audioTrig=null;
+                    return;
+                }
+
                 if (controlling) {
-                    if (shifting) {
-                        //ctrl-shift-a = stop monitoring audio and hide meter
-                        audioTrig.stop();
-                        audioTrig=null;
-                    } else {
-                       
                        // ctrl-a = show meter wait for trigger
                        audioTrig.show();
                        audioTrig.reset();
-                    }
                 } else {
                     // a = toggle display of audio meter
                     audioTrig.toggle();
                 }
 
             } else {
-                if (controlling && shifting) {
-                    //ctrl-shift-a = stop monitoring audio and hide meter
+                if (shifting) {
+                    // shift-a = stop monitoring audio and hide meter
                     // already stopped,and object does not exist
 
                     return;
