@@ -38,6 +38,16 @@ body {
 }
 
 
+/* repositon the audio meter or change it's background color (size is hardcoded as 10x100 px*/
+#audio-meter {
+  position: fixed;
+  top: 50px;
+  left: 10px;
+  background-color: rgb(99, 92, 92);
+}
+
+
+
 /* the main countdown (remaining) display takes up 40% of the available height, and is centered verticaly and horizontally */
 #remain_disp {
 
@@ -713,13 +723,9 @@ html.reduced #css_editor div {
 }
 
 #audio-meter {
-  position: fixed;
-  top: 50px;
-  left: 10px;
+  display:none;
   height: 100px;
   width: 10px;
-  background-color: rgb(99, 92, 92);
-  display:none;
 }
 
 #audio-canvas {
