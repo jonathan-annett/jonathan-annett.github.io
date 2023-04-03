@@ -710,6 +710,7 @@ function onAudioTrigger() {
         // dispose of the audio monitor
         audioTrig.hide();
         audioTrig.stop();
+        writeNumber("audioTrig-Threshold", audioTrig.getThreshold());
         audioTrig=null;
     }
 
@@ -1160,6 +1161,7 @@ function onDocKeyDown(ev) {
                 }
 
                 audioTrig = audioTriggers();
+                audio.setThreshold(readNumber("audioTrig-Threshold"),audio.getThreshold());
                 audioTrig.show();
 
                 if (controlling) {
@@ -1417,7 +1419,13 @@ function audioTriggers() {
         toggle: toggle,
         show: show,
         hide: hide,
-        stop:stop
+        stop:stop,
+        setThreshold: function (val) {
+            threshold = val;
+        },
+        getThreshold: function () {
+            return threshold;
+        }
 
     };
 
