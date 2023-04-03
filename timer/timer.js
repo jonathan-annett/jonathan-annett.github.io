@@ -1359,9 +1359,10 @@ function audioTriggers() {
 
             // Draw threshold line
             canvasCtx.beginPath();
+            canvasCtx.lineWidth = 2;
             canvasCtx.moveTo(0, canvas.height - (threshold * canvas.height));
             canvasCtx.lineTo(canvas.width, canvas.height - (threshold * canvas.height));
-            canvasCtx.strokeStyle = 'green';
+            canvasCtx.strokeStyle =  'yellow';
             canvasCtx.stroke();
 
             if (normalizedAverage >= threshold && !callbackTriggered) {
