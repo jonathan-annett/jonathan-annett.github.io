@@ -1321,7 +1321,7 @@ function audioTriggers() {
     const dataArray = new Uint8Array(bufferLength);
     let threshold = 0.5;
 
-    let callbackTriggered=false;
+    let callbackTriggered=true;
 
     // Create canvas element
     const canvas = document.getElementById('audio-canvas');
@@ -1375,9 +1375,9 @@ function audioTriggers() {
             canvasCtx.stroke();
 
             if (normalizedAverage >= threshold && !callbackTriggered) {
+                callbackTriggered = true;
                 const audioTriggerEvent = new Event('audio-trigger');
                 document.dispatchEvent(audioTriggerEvent);
-                callbackTriggered = true;
             }
         }
     }
