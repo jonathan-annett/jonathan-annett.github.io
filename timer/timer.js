@@ -1396,8 +1396,8 @@ function audioTriggers() {
     // Create canvas element
     const canvas = document.getElementById('audio-canvas');
     const canvasCtx = canvas.getContext('2d');
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    canvas.width  = 10;//canvas.offsetWidth;
+    canvas.height = 100;//canvas.offsetHeight;
 
     // Create mouse event listener to set threshold
     canvas.addEventListener('mousedown', function (e) {
