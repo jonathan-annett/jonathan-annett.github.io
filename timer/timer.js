@@ -1391,7 +1391,11 @@ function audioTriggers() {
     function stop () {
         if (activeStream && analyserNode) {
             analyserNode.disconnect(activeStream);
-            activeStream.stop();
+            if (activeStream.getTracks) {
+                activeStream.getTracks().forEach(function(track) {
+                    track.stop();
+                });
+            }
             activeStream=null;
             analyserNode=null;
         }
