@@ -723,8 +723,8 @@ html.reduced #css_editor div {
 }
 
 #audio-canvas {
-  width:  100%;
-  height: 100%;
+  width:  10px;
+  height: 100px;
 }
 
 html.audio #audio-meter {
