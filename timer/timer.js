@@ -710,6 +710,7 @@ function onAudioTrigger() {
         // dispose of the audio monitor
         audioTrig.hide();
         audioTrig.stop();
+        audioTrig=null;
     }
 
 }
