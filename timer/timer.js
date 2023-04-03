@@ -1366,7 +1366,7 @@ function audioTriggers() {
 
             if (normalizedAverage >= threshold && !callbackTriggered) {
                 const audioTriggerEvent = new Event('audio-trigger');
-                window.dispatchEvent(audioTriggerEvent);
+                document.dispatchEvent(audioTriggerEvent);
                 callbackTriggered = true;
             }
         }
