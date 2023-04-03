@@ -1305,7 +1305,7 @@ function is_nwjs() {
 function audioTriggers() {
 
     // Initialize variables
-    let running = true;
+    let activeStream = null;
     const audioContext = new AudioContext();
     const analyserNode = audioContext.createAnalyser();
     analyserNode.fftSize = 2048;
@@ -1338,6 +1338,7 @@ function audioTriggers() {
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(function (stream) {
             const source = audioContext.createMediaStreamSource(stream);
+            activeStream = stream;
             source.connect(analyserNode);
             updateVisualization();
         })
@@ -1347,7 +1348,7 @@ function audioTriggers() {
 
     // Function to update the visualization
     function updateVisualization() {
-        if (running) {
+        if (!!activeStream) {
             requestAnimationFrame(updateVisualization);
             analyserNode.getByteFrequencyData(dataArray);
             canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1388,8 +1389,12 @@ function audioTriggers() {
     }
 
     function stop () {
-        running=false;
-        analyserNode.disconnect();
+        if (activeStream && analyserNode {
+            analyserNode.disconnect(activeStream);
+            activeStream.stop();
+            activeStream=null;
+            analyserNode=null;
+        }
     }
 
     return {
