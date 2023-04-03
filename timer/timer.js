@@ -1389,7 +1389,7 @@ function audioTriggers() {
     }
 
     function stop () {
-        if (activeStream && analyserNode {
+        if (activeStream && analyserNode) {
             analyserNode.disconnect(activeStream);
             activeStream.stop();
             activeStream=null;
