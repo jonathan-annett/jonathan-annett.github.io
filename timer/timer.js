@@ -1400,6 +1400,8 @@ function audioTriggers() {
             analyserNode=null;
             audioContext=null;
         }
+        html.classList.remove("audio");
+
     }
 
     return {
