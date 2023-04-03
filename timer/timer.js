@@ -1389,7 +1389,7 @@ function audioTriggers() {
 
     function stop () {
         running=false;
-        analyserNode.disconnectInput();
+        analyserNode.disconnect();
     }
 
     return {
