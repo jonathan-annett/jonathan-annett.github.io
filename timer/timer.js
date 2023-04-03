@@ -1306,8 +1306,8 @@ function audioTriggers() {
 
     // Initialize variables
     let activeStream = null;
-    const audioContext = new AudioContext();
-    const analyserNode = audioContext.createAnalyser();
+    let audioContext = new AudioContext();
+    let analyserNode = audioContext.createAnalyser();
     analyserNode.fftSize = 2048;
     const bufferLength = analyserNode.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
@@ -1398,6 +1398,7 @@ function audioTriggers() {
             }
             activeStream=null;
             analyserNode=null;
+            audioContext=null;
         }
     }
 
