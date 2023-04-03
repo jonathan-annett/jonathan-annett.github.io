@@ -703,8 +703,15 @@ function getTabCount(cont) {
 
 let custom_msg_timeout;
 
-function onAudioTrigger () {
+function onAudioTrigger() {
+    //start the timer
     onDocKeyDown({ key: keycodes.Space });
+    if (audioTrig) {
+        // dispose of the audio monitor
+        audioTrig.hide();
+        audioTrig.stop();
+    }
+
 }
 
 function onDocKeyDown(ev) {
