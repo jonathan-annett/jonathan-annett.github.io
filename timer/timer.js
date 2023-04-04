@@ -57,6 +57,8 @@ let pauseAcum = 0;
 
 let runMode = "controller";
 
+let timerStack = [];
+
 var audioTrig = null;
 
 if (window.location.search.startsWith("?presenter")) {
@@ -560,6 +562,78 @@ function restartTimer() {
     clearHtmlClass("countup-override");
     clearHtmlClass("paused");
     setBarPct(0);
+}
+
+function pushTimer (msec,msg) {
+     
+   let pushed = {
+            startedAt: startedAt,
+            endsAt: endsAt, 
+            pausedAt: pausedAt,
+            pauseAcum: pauseAcum,
+            thisDuration: thisDuration,
+            defaultDuration : defaultDuration,
+            custom_message : custom_message.textContent,
+            showing_custom_message : html.classList.contains("show_custom_message")
+   };
+
+   timerStack.push(pushed);
+   defaultDuration = msec;
+   restartTimer();
+   if (msg ) {
+        custom_message.textContent = msg;
+        html.classList.add("show_custom_message");
+   } else {
+        custom_message.textContent = "";
+        html.classList.remove("show_custom_message");                
+   }
+}
+
+function popTimer () {
+   let popped = timerStack.pop();
+   if (popped) {
+        startedAt = popped.startedAt;
+        endsAt = popped.endsAt;
+        pausedAt = popped.pausedAt;
+        pauseAcum = popped.pauseAcum;
+        thisDuration = popped.thisDuration;
+        defaultDuration = popped.defaultDuration;
+        custom_message.textContent = popped.custom_message;
+        if (popped.showing_custom_message) {
+            html.classList.add("show_custom_message");
+        } else {
+            html.classList.remove("show_custom_message");
+        }
+        displayUpdate();
+   }
+}
+
+function getAudioInput(cb) {
+    navigator.mediaDevices.enumerateDevices().then(function (devices) {
+        devices = devices.filter(function (d) {
+            return d.kind === 'audioinput';
+        });
+
+        if (devices.length>1) {
+        
+            let el = document.getElementById("audioInputSelect");
+            let first;
+            el.innerHTML =  devices.map(function(d){
+                if (!first) first = d.deviceId;
+                return "<option value='"+d.deviceId+"'>"+d.label+"</option>";
+            }).join("\n");
+
+            el.addEventListener("change",function(){
+                cb ( el.value );
+            });
+
+            cb(first);
+            
+        } else {
+            cb();
+        }
+            
+    });
 }
 
 function setPresenterMode() {
@@ -1161,14 +1235,24 @@ function onDocKeyDown(ev) {
                     return;
                 }
 
-                audioTrig = audioTriggers();
-                audioTrig.setThreshold(readNumber("audioThreshold"),audioTrig.getThreshold());
-                audioTrig.show();
+                getAudioInput(
 
-                if (controlling) {
-                    // ctrl-a = show meter wait for trigger
-                    audioTrig.reset();
-                }
+                    function (deviceId) {
+
+                        if(audioTrig) {
+                            audioTrig.stop();
+                            writeNumber("audioThreshold", audioTrig.getThreshold());
+                            audioTrig=null;
+                        }
+
+                        audioTrig = audioTriggers();
+                        audioTrig.setThreshold(readNumber("audioThreshold"),audioTrig.getThreshold());
+                        audioTrig.show();        
+                    }
+
+                );
+
+
             }
         }
     }
@@ -1313,7 +1397,7 @@ function is_nwjs() {
     }
 }
 
-function audioTriggers() {
+function audioTriggers(deviceId) {
 
     // Initialize variables
     let activeStream = null;
@@ -1346,8 +1430,11 @@ function audioTriggers() {
 
 
     // Connect analyser node to audio source and update visualization
-    navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(function (stream) {
+
+
+        navigator.mediaDevices.getUserMedia( 
+            deviceId ? {  audio:{deviceId: deviceId} } :  { audio: true }
+        ).then(function (stream) {
             const source = audioContext.createMediaStreamSource(stream);
             activeStream = stream;
             source.connect(analyserNode);
