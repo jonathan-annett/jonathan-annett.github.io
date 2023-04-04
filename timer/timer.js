@@ -1242,15 +1242,23 @@ function onDocKeyDown(ev) {
                         if(audioTrig) {
                             audioTrig.stop();
                             audioTrig=null;
+                            setTimeout(startAudio,500,deviceId);
+                        } else {
+                            startAudio(deviceId);
                         }
 
-                        audioTrig = audioTriggers(deviceId);
-                        audioTrig.setThreshold(readNumber("audioThreshold"),audioTrig.getThreshold());
-                        audioTrig.show(); 
-
+                    
                     }
 
                 );
+
+
+                function startAudio(deviceId){
+                    audioTrig = audioTriggers(deviceId);
+                    audioTrig.setThreshold(readNumber("audioThreshold"),audioTrig.getThreshold());
+                    audioTrig.show(); 
+
+                }
 
 
             }
