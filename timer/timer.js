@@ -177,7 +177,6 @@ addEventListener('storage', onLocalStorage);
     el.addEventListener('click', keyMacroClick);
 });
 
-
 function keyMacroClick(e) {
 
     // the keycodes used by the button are stored in the "keys" attribute
@@ -237,7 +236,6 @@ function keyMacroClick(e) {
     });
 }
 
-
 function openTimerWindow(close) {
     if (close === true) {
         if (timerWin) timerWin.close();
@@ -249,7 +247,6 @@ function openTimerWindow(close) {
     }
     return false;
 }
-
 
 function displayUpdate() {
 
@@ -428,7 +425,6 @@ function updateEnteredTimeText() {
     }
 }
 
-
 function replaceStylesheet(el, cb) {
 
     let src = el.href;
@@ -538,7 +534,6 @@ function replaceStylesheet(el, cb) {
 
 }
 
-
 function restartTimer() {
     lastUpdateTick = 0;
     startedAt = Date.now();
@@ -646,10 +641,6 @@ function setControllerMode() {
     runMode = "controller";
     html.classList.remove("reduced");
 }
-
-
-
-
 
 function extendDefaultToCurrentTimer() {
     lastUpdateTick = 0;
@@ -1375,7 +1366,6 @@ function toggleRemainClass(cls) {
     remainDisp.classList.toggle(cls);
 }
 
-
 function setHtmlClass(cls) {
     if (!html.classList.contains(cls)) html.classList.add(cls);
 }
@@ -1383,7 +1373,6 @@ function setHtmlClass(cls) {
 function clearHtmlClass(cls) {
     if (html.classList.contains(cls)) html.classList.remove(cls);
 }
-
 
 function onTimerWinUnload() {
     timerWin = undefined;
@@ -1395,7 +1384,6 @@ function onControlUnload() {
         timerWin = undefined;
     }
 }
-
 
 function is_nwjs() {
     try {
