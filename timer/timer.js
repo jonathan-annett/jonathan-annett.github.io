@@ -1241,13 +1241,13 @@ function onDocKeyDown(ev) {
 
                         if(audioTrig) {
                             audioTrig.stop();
-                            writeNumber("audioThreshold", audioTrig.getThreshold());
                             audioTrig=null;
                         }
 
-                        audioTrig = audioTriggers();
+                        audioTrig = audioTriggers(deviceId);
                         audioTrig.setThreshold(readNumber("audioThreshold"),audioTrig.getThreshold());
-                        audioTrig.show();        
+                        audioTrig.show(); 
+
                     }
 
                 );
