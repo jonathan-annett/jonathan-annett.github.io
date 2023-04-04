@@ -636,7 +636,7 @@ function getAudioInput(cb) {
 
                 let el = qs("#audio-setup div");
                 el.innerHTML = devices.map(function (d) {
-                    return "<button value='" + d.deviceId + "'>" + d.label + "</button>";
+                    return "<button value='" + d.deviceId + "'>" + d.label + "</button><br>";
                 }).join("\n");
 
                 el.querySelectorAll("button").forEach(function (b) {
