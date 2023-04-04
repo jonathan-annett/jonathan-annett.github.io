@@ -1257,7 +1257,8 @@ function onDocKeyDown(ev) {
 
                     return;
                 }
-
+                let doReset = controlling;
+            
                 getAudioInput(
 
                     function (deviceId) {
@@ -1265,9 +1266,9 @@ function onDocKeyDown(ev) {
                         if(audioTrig) {
                             audioTrig.stop();
                             audioTrig=null;
-                            setTimeout(startAudio,500,deviceId);
+                            setTimeout(startAudio,500,deviceId,doReset);
                         } else {
-                            startAudio(deviceId);
+                            startAudio(deviceId,doReset);
                         }
 
                     
@@ -1284,7 +1285,6 @@ function onDocKeyDown(ev) {
 
         if (keyWasPressed("Devices",ev)) {
             localStorage.removeItem("audioInput");  
-            let doReset = controlling;
             getAudioInput(
 
                 function (deviceId) {
@@ -1292,9 +1292,9 @@ function onDocKeyDown(ev) {
                     if(audioTrig) {
                         audioTrig.stop();
                         audioTrig=null;
-                        setTimeout(startAudio,500,deviceId,doReset);
+                        setTimeout(startAudio,500,deviceId);
                     } else {
-                        startAudio(deviceId,doReset);
+                        startAudio(deviceId);
                     }
 
                     
