@@ -614,14 +614,14 @@ function getAudioInput(cb) {
             case 0: {
                 localStorage.removeItem("audioInput");
                 clearHtmlClass("audio-setup");
-                    
+
                 return cb(undefined);
             }
 
-            case 1 : {
+            case 1: {
                 localStorage.removeItem("audioInput");
                 clearHtmlClass("audio-setup");
-                    
+
                 return cb(devices[0].deviceId);
             }
 
@@ -629,29 +629,29 @@ function getAudioInput(cb) {
                 let stored = localStorage.getItem("audioInput");
                 if (stored) {
                     clearHtmlClass("audio-setup");
-                    
+
                     return cb(stored);
                     break;
                 }
 
-            let el = qs("#audio-setup div");
-            el.innerHTML =  devices.map(function(d){
-                return "<button value='"+d.deviceId+"'>"+d.label+"</button>";
-            }).join("\n");
+                let el = qs("#audio-setup div");
+                el.innerHTML = devices.map(function (d) {
+                    return "<button value='" + d.deviceId + "'>" + d.label + "</button>";
+                }).join("\n");
 
-            el.querySelectorAll("button").forEach(function(b){
-                b.addEventListener("click",function(){
-                    let audioInput = b.value;
-                    localStorage.setItem("audioInput",audioInput);
-                    el.innerHTML="";
-                    clearHtmlClass("audio-setup");
-                    cb(b.value);
+                el.querySelectorAll("button").forEach(function (b) {
+                    b.addEventListener("click", function () {
+                        let audioInput = b.value;
+                        localStorage.setItem("audioInput", audioInput);
+                        el.innerHTML = "";
+                        clearHtmlClass("audio-setup");
+                        cb(b.value);
+                    });
                 });
-            });
-            setHtmlClass("audio-setup");
-            
+                setHtmlClass("audio-setup");
+
+            }
         }
-            
     });
 }
 
