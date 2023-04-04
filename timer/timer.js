@@ -1282,7 +1282,7 @@ function onDocKeyDown(ev) {
             }
         }
 
-        if (keyWasPressed("Devices")) {
+        if (keyWasPressed("Devices",ev)) {
             localStorage.removeItem("audioInput");  
 
             getAudioInput(
