@@ -749,7 +749,13 @@ function onLocalStorage(ev) {
 function getTabCount(cont) {
     let dead = [];
     let count = 1, tickNow = Date.now(), oldest = tickNow - 3000;
-
+    if (getTabCount.last) {
+        // use cached value if it's less than 500ms old
+        if (getTabCount.last > tickNow - 500) {
+            return getTabCount.count;
+        }
+    }
+   
     if (!cont) {
         writeNumber(tab_id, tickNow);
         if (runMode === "controller") {
@@ -787,6 +793,8 @@ function getTabCount(cont) {
     dead.forEach(function (key) {
         localStorage.removeItem(key);
     });
+    getTabCount.count = count;
+    getTabCount.last = tickNow;
     return count;
 }
 
