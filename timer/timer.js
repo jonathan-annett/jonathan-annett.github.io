@@ -1457,10 +1457,12 @@ function audioTriggers(deviceId) {
     // Initialize variables
     let activeStream = null;
     let audioContext = new AudioContext();
-    let analyserNode = audioContext.createAnalyser();
-    analyserNode.fftSize = 2048;
-    const bufferLength = analyserNode.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
+    //let analyserNode = audioContext.createAnalyser();
+    let analyserNode = createAudioMeter(audioContext);
+           
+    //analyserNode.fftSize = 2048;
+    //const bufferLength = analyserNode.frequencyBinCount;
+    //const dataArray = new Uint8Array(bufferLength);
     let threshold = 0.5;
 
     let callbackTriggered=true;
@@ -1503,10 +1505,10 @@ function audioTriggers(deviceId) {
     function updateVisualization() {
         if (!!activeStream) {
             requestAnimationFrame(updateVisualization);
-            analyserNode.getByteFrequencyData(dataArray);
+            //analyserNode.getByteFrequencyData(dataArray);
             canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-            const average = dataArray.reduce((acc, val) => acc + val) / bufferLength;
-            const normalizedAverage = average / 255;
+            //const average = dataArray.reduce((acc, val) => acc + val) / bufferLength;
+            const normalizedAverage = analyserNode.volume;// average / 255;
             canvasCtx.fillStyle = 'white'
             const y = canvas.height - (normalizedAverage * canvas.height);
             canvasCtx.fillRect(0, y, canvas.width, canvas.height);
