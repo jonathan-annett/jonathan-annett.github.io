@@ -48,25 +48,6 @@ body {
 
 
 
-#audio-setup {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 9999;
-  background-color: darkgray;
-  color: white;
-  font-size: 16pt;
-  text-align: center;
-  padding-top: 20%;
-  display: none;
-}
-
-
-html.audio-setup #audio-setup {
-  display: block;
-}
 
 /* the main countdown (remaining) display takes up 40% of the available height, and is centered verticaly and horizontally */
 #remain_disp {
@@ -757,3 +738,22 @@ html.audio #audio-meter {
   display: block;
 }
 
+#audio-setup {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background-color: darkgray;
+  color: white;
+  font-size: 16pt;
+  text-align: center;
+  padding-top: 20%;
+  display: none;
+}
+
+
+html.audio-setup #audio-setup {
+  display: block;
+}
