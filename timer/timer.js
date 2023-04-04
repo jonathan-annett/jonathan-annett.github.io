@@ -609,23 +609,47 @@ function getAudioInput(cb) {
             return d.kind === 'audioinput';
         });
 
-        if (devices.length>1) {
-        
-            let el = document.getElementById("audioInputSelect");
-            let first;
+        switch (devices.length) {
+
+            case 0: {
+                localStorage.removeItem("audioInput");
+                clearHtmlClass("audio-setup");
+                    
+                return cb(undefined);
+            }
+
+            case 1 : {
+                localStorage.removeItem("audioInput");
+                clearHtmlClass("audio-setup");
+                    
+                return cb(devices[0].deviceId);
+            }
+
+            default: {
+                let stored = localStorage.getItem("audioInput");
+                if (stored) {
+                    clearHtmlClass("audio-setup");
+                    
+                    return cb(stored);
+                    break;
+                }
+
+            let el = qs("#audio-setup div");
             el.innerHTML =  devices.map(function(d){
-                if (!first) first = d.deviceId;
-                return "<option value='"+d.deviceId+"'>"+d.label+"</option>";
+                return "<button value='"+d.deviceId+"'>"+d.label+"</button>";
             }).join("\n");
 
-            el.addEventListener("change",function(){
-                cb ( el.value );
+            el.querySelectorAll("button").forEach(function(b){
+                b.addEventListener("click",function(){
+                    let audioInput = b.value;
+                    localStorage.setItem("audioInput",audioInput);
+                    el.innerHTML="";
+                    clearHtmlClass("audio-setup");
+                    cb(b.value);
+                });
             });
-
-            cb(first);
+            setHtmlClass("audio-setup");
             
-        } else {
-            cb();
         }
             
     });
