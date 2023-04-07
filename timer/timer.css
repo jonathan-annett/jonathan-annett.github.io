@@ -42,9 +42,10 @@ body {
 #audio-meter {
   position: fixed;
   top: 50px;
-  left: 10px;
+  right: 10px;
   background-color: rgb(99, 92, 92);
 }
+
 
 
 
@@ -734,5 +735,25 @@ html.reduced #css_editor div {
 }
 
 html.audio #audio-meter {
+  display: block;
+}
+
+#audio-setup {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background-color: darkgray;
+  color: white;
+  font-size: 16pt;
+  text-align: center;
+  padding-top: 20%;
+  display: none;
+}
+
+
+html.audio-setup #audio-setup {
   display: block;
 }

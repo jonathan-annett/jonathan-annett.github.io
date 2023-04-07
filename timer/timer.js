@@ -609,25 +609,49 @@ function getAudioInput(cb) {
             return d.kind === 'audioinput';
         });
 
-        if (devices.length>1) {
-        
-            let el = document.getElementById("audioInputSelect");
-            let first;
-            el.innerHTML =  devices.map(function(d){
-                if (!first) first = d.deviceId;
-                return "<option value='"+d.deviceId+"'>"+d.label+"</option>";
-            }).join("\n");
+        switch (devices.length) {
 
-            el.addEventListener("change",function(){
-                cb ( el.value );
-            });
+            case 0: {
+                localStorage.removeItem("audioInput");
+                clearHtmlClass("audio-setup");
 
-            cb(first);
-            
-        } else {
-            cb();
+                return cb(undefined);
+            }
+
+            case 1: {
+                localStorage.removeItem("audioInput");
+                clearHtmlClass("audio-setup");
+
+                return cb(devices[0].deviceId);
+            }
+
+            default: {
+                let stored = localStorage.getItem("audioInput");
+                if (stored) {
+                    clearHtmlClass("audio-setup");
+
+                    return cb(stored);
+                    break;
+                }
+
+                let el = qs("#audio-setup div");
+                el.innerHTML = devices.map(function (d) {
+                    return "<button value='" + d.deviceId + "'>" + d.label + "</button><br>";
+                }).join("\n");
+
+                el.querySelectorAll("button").forEach(function (b) {
+                    b.addEventListener("click", function () {
+                        let audioInput = b.value;
+                        localStorage.setItem("audioInput", audioInput);
+                        el.innerHTML = "";
+                        clearHtmlClass("audio-setup");
+                        cb(b.value);
+                    });
+                });
+                setHtmlClass("audio-setup");
+
+            }
         }
-            
     });
 }
 
@@ -725,7 +749,13 @@ function onLocalStorage(ev) {
 function getTabCount(cont) {
     let dead = [];
     let count = 1, tickNow = Date.now(), oldest = tickNow - 3000;
-
+    if (getTabCount.last) {
+        // use cached value if it's less than 500ms old
+        if (getTabCount.last > tickNow - 500) {
+            return getTabCount.count;
+        }
+    }
+   
     if (!cont) {
         writeNumber(tab_id, tickNow);
         if (runMode === "controller") {
@@ -763,6 +793,8 @@ function getTabCount(cont) {
     dead.forEach(function (key) {
         localStorage.removeItem(key);
     });
+    getTabCount.count = count;
+    getTabCount.last = tickNow;
     return count;
 }
 
@@ -1225,7 +1257,8 @@ function onDocKeyDown(ev) {
 
                     return;
                 }
-
+                let doReset = controlling;
+            
                 getAudioInput(
 
                     function (deviceId) {
@@ -1233,9 +1266,9 @@ function onDocKeyDown(ev) {
                         if(audioTrig) {
                             audioTrig.stop();
                             audioTrig=null;
-                            setTimeout(startAudio,500,deviceId);
+                            setTimeout(startAudio,500,deviceId,doReset);
                         } else {
-                            startAudio(deviceId);
+                            startAudio(deviceId,doReset);
                         }
 
                     
@@ -1244,16 +1277,42 @@ function onDocKeyDown(ev) {
                 );
 
 
-                function startAudio(deviceId){
-                    audioTrig = audioTriggers(deviceId);
-                    audioTrig.setThreshold(readNumber("audioThreshold"),audioTrig.getThreshold());
-                    audioTrig.show(); 
-
-                }
+                
 
 
             }
         }
+
+        if (keyWasPressed("Devices",ev)) {
+            localStorage.removeItem("audioInput");  
+            getAudioInput(
+
+                function (deviceId) {
+
+                    if(audioTrig) {
+                        audioTrig.stop();
+                        audioTrig=null;
+                        setTimeout(startAudio,500,deviceId);
+                    } else {
+                        startAudio(deviceId);
+                    }
+
+                    
+                }
+
+            );
+
+        }
+    }
+
+    function startAudio(deviceId,doReset){
+        audioTrig = audioTriggers(deviceId);
+        audioTrig.setThreshold(readNumber("audioThreshold"),audioTrig.getThreshold());
+        audioTrig.show(); 
+        if (doReset) {
+            audioTrig.reset();
+        }
+
     }
 
 }
@@ -1398,10 +1457,12 @@ function audioTriggers(deviceId) {
     // Initialize variables
     let activeStream = null;
     let audioContext = new AudioContext();
-    let analyserNode = audioContext.createAnalyser();
-    analyserNode.fftSize = 2048;
-    const bufferLength = analyserNode.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
+    //let analyserNode = audioContext.createAnalyser();
+    let analyserNode = createAudioMeter(audioContext);
+           
+    //analyserNode.fftSize = 2048;
+    //const bufferLength = analyserNode.frequencyBinCount;
+    //const dataArray = new Uint8Array(bufferLength);
     let threshold = 0.5;
 
     let callbackTriggered=true;
@@ -1444,10 +1505,10 @@ function audioTriggers(deviceId) {
     function updateVisualization() {
         if (!!activeStream) {
             requestAnimationFrame(updateVisualization);
-            analyserNode.getByteFrequencyData(dataArray);
+            //analyserNode.getByteFrequencyData(dataArray);
             canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-            const average = dataArray.reduce((acc, val) => acc + val) / bufferLength;
-            const normalizedAverage = average / 255;
+            //const average = dataArray.reduce((acc, val) => acc + val) / bufferLength;
+            const normalizedAverage = analyserNode.volume;// average / 255;
             canvasCtx.fillStyle = 'white'
             const y = canvas.height - (normalizedAverage * canvas.height);
             canvasCtx.fillRect(0, y, canvas.width, canvas.height);

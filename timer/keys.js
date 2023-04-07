@@ -92,6 +92,9 @@ var keycodes = {
     "StyleEditor"          : "e",
     "STYLEEDITOR"          : "E",
 
+    "Devices"          : "d",
+    "DEVICES"          : "D",
+
 
 };
 
@@ -136,6 +139,8 @@ var keyNames = {
      "Edit Key codes":                       [ "KeyCodeEditor","KEYCODEEDITOR" ],
     
      "Edit Style":                           [ "StyleEditor","STYLEEDITOR" ],
+
+    "Choose Audio Input Device":             [ "Devices","DEVICES" ],
 
 };
 
