@@ -4,23 +4,46 @@
   </head>
   
   <body>
+    
     <select id="logbox" name="log" size="1" style="width:100%">
       <option>one</option>
     </select>
     
-    <embed type="text/html" src="https://messy-aback-woodwind.glitch.me/storage-frame2.html" width="500" height="200">
-  
+    <iframe id="link_api" src="https://messy-aback-woodwind.glitch.me/numkey.html" width="500" height="500"></iframe>
+      
+    <pre id="log"></pre>
+
     <script>
       
-      function dumpStorage(){
+      const logview  = document.querySelector("#log");
+      const link_api = document.querySelector("#link_api");
+      const target_origin = 'https://messy-aback-woodwind.glitch.me/';
+
+
+      function log() {
+        logview.innerHTML += [].map.call(arguments, function (a) {
+            return a ? a.toString() : "";
+          }).join(" ") + "<br>";
+      }
+
+      
+      function dumpStorage(e){
         
-        logbox.innerHTML="<option>storage for "+location.origin+"</option>";
+        if (e) {
+          
+          if (e.key) {
+             link_api.contentWindow.postMessage({send:{localStorage:{setItem:e.newValue}}},target_origin);
+          } else {
+             link_api.contentWindow.postMessage({send:{localStorage:{clear:1}}},target_origin);
+          }
+          
+        }
+        
+        logbox.innerHTML = "<option>storage for " + location.origin + "</option>";
         
         let keys = Object.keys(localStorage);
         keys.forEach(function(key){
-          
             logbox.innerHTML += "<option>"+key+"="+localStorage.getItem(key)+"</option>";
-
         });
         
         logbox.size = keys.length+1;
@@ -30,6 +53,26 @@
       window.addEventListener('storage',dumpStorage);
       
       dumpStorage();
+            
+      window.addEventListener('message',function(event){
+        log(JSON.stringify(event.data));
+        
+        if (event.data.connected) {
+          let keys = Object.keys(localStorage);
+          let s = {};
+          keys.forEach(function(key){
+             s[key]=localStorage.getItem(key);
+          });
+          link_api.contentWindow.postMessage({send:{localStorage:{keys:s}}},target_origin);
+        }
+      });
+          
+      document.body.onload=function(){    
+        link_api.contentWindow.postMessage({target_origin:location.origin},target_origin);
+      };
+    
+      
+      log('loaded');
       
     </script>
   </body>
