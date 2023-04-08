@@ -31,9 +31,6 @@ iframe {
     display:none;
 }
 
-html.peer-link iframe {
-    display:block;
-}
 
 .blink {
   animation: blinker 1s infinite;
@@ -731,6 +728,10 @@ html #css_editor {
   bottom: 40px;
   z-index: 9999;
   font-size: 16pt;
+}
+
+html.peer-link iframe {
+  display:block;
 }
 
 html.reduced #css_editor,
