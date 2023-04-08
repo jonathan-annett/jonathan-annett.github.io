@@ -62,6 +62,7 @@ function evenSimplerPeer() {
         iframe.contentWindow.postMessage(payload,target_origin);    
         
     };
+    
     document.body.appendChild(iframe);
          
     window.addEventListener('message',function(event){
@@ -95,12 +96,18 @@ function evenSimplerPeer() {
     function setPeerId(id) {
         iframe.contentWindow.postMessage({setPeerId:id},target_origin);      
     }
+      
+    function setTargetHref (href) {
+        iframe.contentWindow.postMessage({target_href:href},target_origin);      
+    }
     
     return {
       
       send :      sendToPeer,
       
       setPeerId : setPeerId,
+      
+      setTargetHref : setTargetHref, 
       
       on   : function (e,fn) {
          if (typeof e + typeof fn ==='stringfunction' && events[e]) {
@@ -114,7 +121,7 @@ function evenSimplerPeer() {
             const ix = events[e].indexOf(fn);
             if (ix>=0) events[e].splice(ix,1);
          }
-      },
+      }
       
     };
     

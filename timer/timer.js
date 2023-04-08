@@ -28,7 +28,8 @@ let stylesheet1_obj;
 let peerLink = evenSimplerPeer();
 
 peerLink.on('connected',function(){
-    document.querySelector("iframe").style.display = "none";
+    html.classList.remove("peer-show");
+    html.classList.add("peer-linked");
     console.log("connected");
 });
   
@@ -37,7 +38,7 @@ peerLink.on('message',function(msg){
 });
   
 peerLink.on('disconnected',function(){
-    document.querySelector("iframe").style.display = "block";
+    html.classList.remove("peer-linked");
     console.log("disconnected");
 });
 

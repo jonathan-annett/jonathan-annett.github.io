@@ -730,7 +730,7 @@ html #css_editor {
   font-size: 16pt;
 }
 
-html.peer-link iframe {
+html.peer-show iframe {
   display:block;
 }
 
