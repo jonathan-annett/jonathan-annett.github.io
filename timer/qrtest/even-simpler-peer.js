@@ -39,7 +39,7 @@ function evenSimplerPeer() {
     
     iframe.src = iframe_url;
     
-    iframe.setAttriute('allow','clipboard-read; clipboard-write');
+    iframe.setAttribute('allow','clipboard-read; clipboard-write');
     
     iframe.onload = function () {
       
