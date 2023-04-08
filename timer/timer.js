@@ -952,8 +952,7 @@ function onDocKeyDown(ev) {
         }
 
         if (keyWasPressed("LinkManager", ev)) {
-
-            html.classList.toggle("peer-link");
+            html.classList.toggle("peer-show");
             return;
         }
 
