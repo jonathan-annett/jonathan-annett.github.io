@@ -95,6 +95,9 @@ var keycodes = {
     "Devices"          : "d",
     "DEVICES"          : "D",
 
+    "LinkManager"          : "l",
+    "LINKMANAGER"          : "L",
+
 
 };
 
@@ -141,6 +144,9 @@ var keyNames = {
      "Edit Style":                           [ "StyleEditor","STYLEEDITOR" ],
 
     "Choose Audio Input Device":             [ "Devices","DEVICES" ],
+
+
+    "Link Manager":                         [ "LinkManager","LINKMANAGER" ],
 
 };
 
