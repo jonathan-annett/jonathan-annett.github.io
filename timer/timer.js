@@ -25,7 +25,10 @@ let controlling = false;
 let stylesheet1 = getEl("style_1");
 let stylesheet1_obj;
 
-let peerLink = evenSimplerPeer();
+let peerLink = evenSimplerPeer({
+    custom : "Streamdeck",
+    scan : false
+});
 
 peerLink.on('connected',function(){
     html.classList.remove("peer-show");
