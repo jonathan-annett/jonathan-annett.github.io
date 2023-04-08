@@ -19,6 +19,22 @@ body {
 }
 
 
+iframe {
+    position : absolute;
+    top      : 170px;
+    left     : 10px;
+    width    : calc(100vw - 20px);
+    height   : calc(100vh - 250px);
+ 
+    z-index:9999;
+    background-color:white;
+    display:none;
+}
+
+html.link-peer iframe {
+    display:block;
+}
+
 .blink {
   animation: blinker 1s infinite;
 }

@@ -25,7 +25,22 @@ let controlling = false;
 let stylesheet1 = getEl("style_1");
 let stylesheet1_obj;
 
-let peerLink;
+let peerLink = evenSimplerPeer();
+
+peerLink.on('connected',function(){
+    document.querySelector("iframe").style.display = "none";
+    console.log("connected");
+});
+  
+peerLink.on('message',function(msg){
+    console.log(msg);
+});
+  
+peerLink.on('disconnected',function(){
+    document.querySelector("iframe").style.display = "block";
+    console.log("disconnected");
+});
+
 
 replaceStylesheet(stylesheet1, function (ev) {
     stylesheet1_obj = ev;
@@ -936,25 +951,8 @@ function onDocKeyDown(ev) {
         }
 
         if (keyWasPressed("LinkManager", ev)) {
-            if (!peerLink) {
 
-                peerLink = evenSimplerPeer();
-
-                peerLink.on('connected',function(){
-                    document.querySelector("iframe").style.display = "none";
-                    console.log("connected");
-                  });
-                  
-                  peerLink.on('message',function(msg){
-                    console.log(msg);
-                });
-                  
-                  peerLink.on('disconnected',function(){
-                    document.querySelector("iframe").style.display = "block";
-                    console.log("disconnected");
-                  });
-
-            }
+            html.classList.toggle("peer-link");
             return;
         }
 
