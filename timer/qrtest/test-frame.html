@@ -1,0 +1,54 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      textarea {
+        position : absolute;
+        top      : 10px;
+        left     : 10px;
+        width    : calc(100vw - 20px);
+        height   : 150px;
+      }
+      
+      button {
+        position : absolute;
+        top      : 10px;
+        right     : 10px;
+        z-index  : 9999;
+      }
+      pre,
+      iframe {
+        position : absolute;
+        top      : 170px;
+        left     : 10px;
+        width    : calc(100vw - 20px);
+        height   : calc(100vh - 250px);
+      }
+      
+      iframe {
+        z-index:9999;
+        background-color:white;
+      }
+      
+      
+    </style>
+
+    <script src="even-simpler-peer.js"></script>    
+    <script src="test-frame.js" defer></script>
+  </head>
+  
+  <body>
+    <textarea>
+     {  "test"   : "message",
+        "number" : 12345 }
+    </textarea>
+    
+    <button>
+      send
+    </button>
+    <pre>
+    </pre>
+  </body>
+  
+  
+</html>
