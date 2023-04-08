@@ -1,3 +1,5 @@
+const { urlencoded } = require("express");
+
 /*
 MIT License
 
@@ -23,8 +25,15 @@ SOFTWARE.
 
 
 */
-function evenSimplerPeer() {
-  
+function evenSimplerPeer(options) {
+
+    options = options || {};
+    options.manual   = options.manual || true;
+    options.link     = options.link || true;
+    options.qr       = options.qr || true;
+    options.scan     = options.scan || true;
+    options.custom   = options.custom || false;
+
     const domain        = "even-simpler-peer.glitch.me";
     const iframe_url    = `https://${domain}/api`;
     const target_origin = `https://${domain}/`;
@@ -45,7 +54,8 @@ function evenSimplerPeer() {
       
         const payload = {
           target_origin : location.origin,
-          target_href   : location.href.replace(/\?.*/,'')
+          target_href   : location.href.replace(/\?.*/,''),
+          options       : options
         };
       
         let param_id = location.search.replace(/^\?/,'').replace(/\&.*/,'');
