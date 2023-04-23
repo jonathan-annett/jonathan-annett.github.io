@@ -14,6 +14,19 @@ if ( location.search.startsWith('?') && location.search.length===25) {
 
 const own_id = localStorage.getItem('own_id') || '';
 const peer_id = localStorage.getItem('peer_id') || '';
+let peer ;
+if (evenSimplerPeer.validateId (own_id)) {
+    if (evenSimplerPeer.validateId (peer_id)) {
+        peer =  evenSimplerWSPeer({ own_id, peer_id });
+        peer.on('rest',function(url){
+            console.log('rest',url);
+        });
+        peer.on('data',function(msg){
+            console.log('data',msg);
+        });
+
+    }
+}
 
 const own_id_    = document.querySelector('#own_id');
 const peer_id_   = document.querySelector('#peer_id');
