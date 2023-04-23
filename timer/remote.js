@@ -17,7 +17,7 @@ const peer_id = localStorage.getItem('peer_id') || '';
 
 const own_id_    = document.querySelector('#own_id');
 const peer_id_   = document.querySelector('#peer_id');
-const timer_btn_ = document.querySelector('#tier_btn');
+const timer_btn_ = document.querySelector('#timer_btn');
 const control_btn_ = document.querySelector('#control_btn');
 
 own_id_.innerHTML = own_id;
@@ -26,6 +26,10 @@ let timerWin, controlWin;
 
 timer_btn_.onclick = function(e) {
     openTimerWindow(!!timerWin);
+};
+
+control_btn_.onclick = function(e) {
+    openControlWindow(!!timerWin);
 };
 
 
@@ -45,7 +49,7 @@ function onTimerWinUnload() {
     timerWin = undefined;
 }
 
-function openControllerWindow(close) {
+function openControlWindow(close) {
     if (close === true) {
         if (controlWin) controlWin.close();
         controlWin = undefined;
