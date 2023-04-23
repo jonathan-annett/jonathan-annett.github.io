@@ -39,7 +39,7 @@ function openTimerWindow(close) {
         timerWin = undefined;
     } else {
         timerWin = open("timer.html?presenter", 'remote_timer_window', "location=0");
-        if (timerWin) timerWin.addEventListener("unload", onTimerWinUnload);
+        if (timerWin) timerWin.addEventListener("beforeunload", onTimerWinUnload);
 
     }
     return false;
@@ -55,7 +55,7 @@ function openControlWindow(close) {
         controlWin = undefined;
     } else {
         controlWin = open("timer.html", 'remote_control_window', "location=0");
-        if (controlWin) controlWin.addEventListener("unload", onControlWinUnload);
+        if (controlWin) controlWin.addEventListener("beforeunload", onControlWinUnload);
 
     }
     return false;
