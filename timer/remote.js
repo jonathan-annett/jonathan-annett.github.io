@@ -29,7 +29,7 @@ timer_btn_.onclick = function(e) {
 };
 
 control_btn_.onclick = function(e) {
-    openControlWindow(!!timerWin);
+    openControlWindow(!!controlWin);
 };
 
 
