@@ -18,18 +18,16 @@ this.addEventListener('install', function(event) {
         // use the "delete" functionality below and make 
         // this a 'v2' //(or whatever you wish to call it.
 
-        caches.open('v1').then(function(cache) {
+        caches.open('v2').then(function(cache) {
             return cache.addAll([
                 //  These are the files we want to cache so // we can access offline! For your project 
                 // you'll need to add your own. You can 
                 // include any file you wish here.
-                'index.html',
-                'page_script.js',
-                'style.css',
-                'index.html',
-                'images/set1.jpg',
-                'images/set2.jpg',
-                'images/set3.jpg'
+                '/swtest/',
+                '/swtest/index.html',
+                '/swtest/page_script.js',
+                '/swtest/style.css',
+                '/swtest/index.html'
             ]);
         })
     );
@@ -67,7 +65,7 @@ this.addEventListener('fetch', function(event) {
     // it's in offline mode, will break and not show the 
     // file. Bummer!
 
-        caches.open('v1').then(function(cache) {
+        caches.open('v2').then(function(cache) {
             return cache.match(event.request).then(function(response) {
                 console.log("cache request: " + event.request.url);
                 return response || fetch(event.request).then(function(response) {
