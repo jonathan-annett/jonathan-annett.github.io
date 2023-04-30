@@ -1,0 +1,55 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div id="controlsWrap">
+        <p>Memory Used:<span>Nothing Loaded</span></p>
+        <div>
+            <input class="inputfile" id="videoFileInput" type="file" accept="image/*;video/*" multiple="multiple" />
+            <label class="btn" for="videoFileInput">Add Files</label>
+            <button class="btn" id="playBtn">play</button>
+
+            <button class="btn" id="closeAllBtn">close All</button>
+
+            <button class="btn" id="listBtn">Refresh</button>
+
+            <button class="btn" id="floatBtn">Floating</button>
+            <button class="btn" id="fullscreenBtn">Fullscreen</button>
+            <button class="btn" id="grabFrame">Grab Frame</button>
+        </div>
+
+        <div id="previewImgDiv">
+
+        <img id="previewImg">
+        <progress id="previewProgress"></progress>
+        </div>
+        
+
+        <div>
+            <select id="videosList" size="10" >
+            </select>
+        </div>
+
+    <div id="imported-files-container"></div>
+
+    </div>
+
+
+    <br>
+    <video id="videoObj" width="480" height="320" src="black.mkv"></video>
+    <div id="opaqueMask"></div>
+    <div id="opaqueMaskMsg">move the remote window to another monitor </div>
+    <button id="opaqueMaskBtn">Enter Fullscreen</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://gpac.github.io/mp4box.js/dist/mp4box.all.js"></script>
+    <script src="openDb.js"></script>
+    <script src="uiEvents.js"></script>
+    <script src="../timer/fsapi.js"></script>
+   
+    <script src="index.js" defer></script>
+</body>
+
+</html>

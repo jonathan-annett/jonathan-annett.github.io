@@ -1,0 +1,344 @@
+ 
+select {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    outline: none;
+    font-size: 1.5em;
+}
+
+option {
+    background-color: #000;
+    color: #fff;
+}
+
+select.loading,
+option.loading {
+    color: orange;
+}
+
+select.loaded,
+option.loaded {
+    color: lime;
+}
+
+select.playing,
+option.playing {
+    color: #f00;
+}
+
+.inputfile {
+    /* visibility: hidden etc. wont work */
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.inputfile:focus+label {
+    /* keyboard navigation */
+    outline: 1px dotted #000;
+    outline: -webkit-focus-ring-color auto 5px;
+}
+
+.inputfile+label * {
+    pointer-events: none;
+}
+
+.btn {
+    -webkit-border-radius: 5;
+    -moz-border-radius: 5;
+    border-radius: 5px;
+    font-family: Arial;
+    color: #141214;
+    font-size: 16px;
+    padding: 8px;
+    background: #c7d0d6;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #3cb0fd;
+    text-decoration: none;
+}
+ 
+video::-webkit-media-controls {
+    display:none !important;
+}
+
+.file-id {
+      font-size: 10pt;
+ 
+}
+ 
+select option:checked {
+    background-color: blue;
+    color: white;
+}
+
+select option.loading:checked {
+    background-color: orange;
+    color: white;
+ }
+
+select option.loaded:checked {
+    background-color: lime;
+    color: black;
+ }
+
+
+
+ select option.playing:checked {
+    background-color: red;
+    color: white;
+ }
+
+ #videosList {
+    width : 80vw;
+    position: absolute;
+    left:4px;
+    top: 10vh;
+ }
+
+ #previewImgDiv {
+    width : 18vw;
+    height: auto;
+    position: absolute;
+    top: 10vh;
+    right:4px
+ }
+
+ #previewImg {
+    width : 100%;
+    height: auto;
+ }
+ 
+
+ #previewProgress {
+    width : 100%;
+    height: 20px;
+    display:none;
+ }
+
+ #previewProgress:before {
+    position: relative;
+    top : 16px;
+ }
+
+ #previewImgDiv.loading #previewProgress:before {
+    content :"pre loading media";
+ }
+
+ #previewImgDiv.downloading #previewProgress:before {
+    content :"downloading media";
+ }
+
+ #previewImgDiv.installing #previewProgress:before {
+    content :"installing local media";
+ }
+
+ #previewImgDiv.playing #previewProgress:before {
+    content :"playing media";
+ }
+
+ #videoObj {
+    width : 18vw;
+    height: auto;
+    position: absolute;
+    top: 10vh;
+    right:4px;
+  }
+
+ #opaqueMask {
+    width : 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left:0;
+    background-color: black;
+    opacity: 0.5;
+    z-index: 9000;
+    display: none;
+ }
+ #opaqueMaskMsg {
+    color : red;
+    font-size:3vw;
+    opacity: 1;
+    background-color: white;
+  
+    position: absolute;
+    left:33vw;
+    width : 33vw;
+    top : 33vh;
+    text-align: center;
+    padding:20px;
+    display: none;
+    z-index: 9001;
+   
+ }
+
+
+ #opaqueMaskBtn {
+    color : blue;
+    font-size:16pt;
+    opacity: 1;
+    background-color: white;
+  
+    position: absolute;
+    left:33vw;
+    width : 33vw;
+    top : 33vh;
+    text-align: center;
+    padding:50px;
+    z-index: 9002;
+    cursor: pointer;
+    display:none; 
+ }
+
+ body.positioning-remote #opaqueMaskBtn {
+    display: inline-block;   
+ }
+
+ body.positioning-remote #opaqueMaskMsg,
+ body.positioning-remote-fail #opaqueMaskBtn {
+     display:none; 
+ } 
+
+
+ body.positioning-remote-fail #opaqueMaskMsg ,
+ body.positioning-remote #opaqueMask {
+    display: block;    
+ }
+
+ #imported-files-container {
+   position: absolute;
+   bottom : 0;
+   left: 0;
+   width : 100vw;
+   height : 50vh;
+   overflow: scroll;
+   background-color: white;
+ }
+
+ #imported-files-container div span {
+   white-space: nowrap;
+   font-size : 1rem;
+   font-weight: normal;
+ }
+
+ #imported-files-container div.imported-file {
+   width : 18vw;
+   height: 260px;
+   position: relative;
+   padding : 10px 10px 0px 10px;
+   left : 10px;
+  
+   background-color:white;
+   float: left;
+}
+
+
+#imported-files-container div.selected {
+   background-color: yellow;
+ }
+
+#imported-files-container div {
+   background-color: wheat;
+   padding : 10px 10px 15px 10px;
+   height: 220px;
+}
+
+#imported-files-container div img {
+   width : 320px;
+   height: auto;
+}
+
+
+#imported-files-container div progress {
+   width : calc(100% - 8px);
+   left: 4px;
+   height: 20px;
+   position: relative;
+   top : -2px;
+   opacity: 0;
+}
+
+#imported-files-container div progress:before {
+   position: relative;
+   top : -20px;
+   color : white;    
+   mix-blend-mode: difference;
+}
+
+#imported-files-container div.loading {
+   background-color: deeppink;
+}
+
+#imported-files-container div.loading progress {
+   opacity: 1;
+}
+
+#imported-files-container div.loading progress:before {
+   content :"Pre loading media";
+}
+
+
+#imported-files-container div.loaded {
+   background-color:darkgreen;
+   color:white;
+}
+
+#imported-files-container div.loaded progress {
+   opacity: 1;
+   height : 1px;
+   width : 10px;
+   left : 0;
+   top : 2px;
+}
+#imported-files-container div.loaded progress:before {
+   content :"Loaded";
+   
+}
+#imported-files-container div.loaded progress:after {
+  display:none;
+}
+
+#imported-files-container div.downloading {
+   background-color: thistle;
+}
+
+#imported-files-container div.downloading progress {
+   opacity: 1;
+}
+
+#imported-files-container div.downloading progress:before {
+   content :"Downloading";
+}
+
+#imported-files-container div.importing {
+   background-color: springgreen;
+}
+
+#imported-files-container div.importing progress {
+   opacity: 1;
+}
+
+#imported-files-container div.importing progress:before {
+   content :"Importing local media";
+}
+
+
+#imported-files-container div.playing {
+   background-color: red;
+}
+
+#imported-files-container div.playing progress {
+   opacity: 1;
+}
+
+#imported-files-container div.playing progress:before {
+   content :"Playing";
+}
