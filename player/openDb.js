@@ -1,6 +1,6 @@
 
 function openDb(SELF,storageDB,cb) {
-    const version = 573;
+    const version = 576;
     const dbName = "Files",
           storeName = "FileStore";
 
@@ -495,8 +495,10 @@ function openDb(SELF,storageDB,cb) {
                             thumbNameText,
                             thumbnailImg,
                             importProgress: thumbnailProgress
-                        } = storageDB.createFileDiv(
-                            importedFilesContainer, { filenames: [blob.name], filenamesIndex: 0 }, 'importing')
+                        } = storageDB.createFileDiv (
+                            importedFilesContainer, { filenames: [{  displayName: blob.name, importFilename : blob.name } ], filenamesIndex: 0 }, 
+                            'importing'
+                        )
                     );
                 }
 

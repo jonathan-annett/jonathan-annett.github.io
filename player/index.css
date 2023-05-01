@@ -252,7 +252,9 @@ select option.loaded:checked {
 }
 
 #imported-files-container div img {
-   width : 320px;
+   max-width:320px;
+   max-height:200px;
+   width: auto;
    height: auto;
 }
 
