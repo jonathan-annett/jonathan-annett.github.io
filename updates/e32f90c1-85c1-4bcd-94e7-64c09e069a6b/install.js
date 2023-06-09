@@ -303,7 +303,7 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
 
             pending.push(new Promise(function(resolve){
 
-                originalDirContent.file(internalDir).arrayBuffer().then(function(ab){
+                zip.file(entry.name).arrayBuffer().then(function(ab){
                     zipFile.file(newFileDir, ab, { 
                         createFolders: true,
                         unixPermissions: entry.unixPermissions,
