@@ -38,9 +38,7 @@ const nwjs_versions = {
   }),
   
   zip = new JSZip();
- 
- 
- 
+  
   document.querySelector('table').innerHTML += Object.keys(nwjs_versions).map(function(filename){
     const ver = nwjs_versions [filename];
     let html = '<tr id="v'+ver.sha+'">\n';
@@ -65,6 +63,7 @@ available_versions.keys().then(function(filenames) {
        console.log('checking',fn,'in indexed db against current list');
        const ver =  nwjs_versions[fn];
        if (ver) {
+
            available_versions.getItem(fn).then(function(arrayBuffer) {
                getSha256SumForBuffer(arrayBuffer,function(err,hash){
                    const table_row = document.querySelector('#v'+hash);
@@ -206,7 +205,6 @@ function readFile() {
             
         const app_folder = zip.folder(version.ziproot);
         
-
         dlBtn.onclick = function(){
             
                 dlBtn.disabled = true;
@@ -251,7 +249,7 @@ function readFile() {
                     
                     // reload the zip fresh, in case the user toggles the package.nw folder/file setting
                     zip = new JSZip();
-                    zip.loadAsync(arrayBuffer,{createFolders: true}).then(function(zip){resetApp(version,zip);});
+                    zip.loadAsync(version.arrayBuffer,{createFolders: true}).then(function(zip){resetApp(version,zip);});
                     
                 }, function (err) {
                     alert(err);
