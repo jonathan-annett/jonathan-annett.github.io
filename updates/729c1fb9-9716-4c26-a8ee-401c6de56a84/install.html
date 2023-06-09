@@ -1,0 +1,219 @@
+<html>
+    <head>
+        
+        <style type="text/css" media="screen">
+        
+           #tophalf {
+                overflow-y:scroll;
+                position : absolute;
+                top : 40px;
+                left : 10px;
+                width : Calc( 100vw - 10px);
+                height  :  Calc( 40vh - 20px);
+                background-color: #f0f0f0;
+            }
+            
+        
+            #package_json_label,
+            #package_json { 
+                position: absolute;
+                top: 40vh;
+                right: 20vw;
+                bottom: 0;
+                left: 0;
+                font-size:14pt;
+            }
+            #index_html_label,
+            #index_html { 
+                position: absolute;
+                top: 40vh;
+                right: 50vw;
+                bottom: 0;
+                left: 20vw;
+                 font-size:14pt;
+            }
+            #index_js_label,
+            #index_js { 
+                position: absolute;
+                top: 40vh;
+                right: 0;
+                bottom: 0;
+                left: 50vw;
+                font-size:14pt;
+            }
+            #package_json_label,
+            #index_html_label,
+            #index_js_label {
+                font-weight: bold;
+                margin-left :0px;
+                
+                padding : 4px;
+                padding-left : 40px;
+                margin-top :-30px;
+                background-color: white;
+            }
+            
+            
+            #busy {
+                height : 50px;
+                width : auto;
+                position : relative;
+                top : 20px;
+                display :none;
+            }
+            #cachesExist span {
+                 background-color:aqua;
+             }       
+             
+            #cachesExist {
+                display : none;
+            }
+            
+            
+            #package_json_label button:nth-child(1) {
+                position:absolute;
+                left : Calc(20vw - 110px);
+            }
+                
+             #package_json_label button:nth-child(2) {
+                position:absolute;
+                left : Calc(20vw - 60px);
+            }
+  
+             #index_html_label button:nth-child(1) {
+                position:absolute;
+                 right :30px;
+            }
+                
+             #index_html_label button:nth-child(2) {
+                position:absolute;
+                right :0px;
+            }
+
+            #index_js_label button:nth-child(1) {
+                position:absolute;
+                right :50px;
+            }
+                
+             #index_js_label button:nth-child(2) {
+                position:absolute;
+                right : 20px;
+            }
+            
+            html.zoom-json #package_json_label button:nth-child(1) {
+                 left : Calc(100vw - 130px);
+                
+            }
+            html.zoom-json #package_json_label button:nth-child(2) {
+                left : Calc(100vw - 80px);
+                
+            }
+            
+            html.zoom-html #index_html_label button:nth-child(1) {
+                 right :40px;
+                
+            }
+            html.zoom-html #index_html_label button:nth-child(2) {
+    
+                right :10px;
+
+            }            
+                
+
+            
+            html.zoom-json #package_json,
+            html.zoom-html #index_html,
+            html.zoom-js   #index_js {
+                top    : 40px ;
+                left   : 0px  ;
+                right  : 0px  ;
+                bottom : 0px  ;
+             }
+            
+            
+            html.zoom-json #package_json_label,
+            html.zoom-html #index_html_label,
+            html.zoom-js #index_js_label {
+                font-weight: bold;
+                left :40px;
+                top :10px;
+                right : 0px;
+                margin-top:0;
+                margin-left:0;
+            }
+             
+            html.zoom-json h1,
+            html.zoom-html h1,
+            html.zoom-js h1,
+             
+             
+            html.zoom-json p,
+            html.zoom-html p,
+            html.zoom-js   p,
+            
+            html.zoom-json #index_html_label,
+            html.zoom-json #index_js_label,
+            html.zoom-json #index_html,
+            html.zoom-json #index_js,
+            
+            html.zoom-html #package_json,
+            html.zoom-html #index_js,
+            html.zoom-html #package_json_label,
+            html.zoom-html #index_js_label,
+            
+            html.zoom-js #index_json,
+            html.zoom-js #index_html,
+            html.zoom-js #index_json_label,
+            html.zoom-js #index_html_label {
+                display : none;
+            }
+            
+         
+   
+        </style>
+        
+        
+    </head>
+    
+    <body>
+        
+        
+        <h1>NWJS quick start template</h1>
+        <div id="tophalf">
+           <p>
+          Step 1: Download a nwjs flavour (links are from  <a href="https://nwjs.io/">https://nwjs.io/</a> 
+          <table>
+              <tr>
+                <th>Version / Flavour</th>     
+                <th>Download via nwjs.io</th>     
+                <th>Sha256 Integrity Hash</th>     
+              </tr>
+          </table>
+         </p>
+         
+         <p>
+        step 2: Load it into the browser:
+        <input id="fileInput" type="file" onchange="readFile(this)" value="select">
+        <span id="cachesExist">loaded zips are <span>cached</span> for next time <button id="clrCache">clear cache</button> </span>
+        </p>
+        
+
+        <p>
+        step 3: <button disabled id="dlBtn">download</button>  <img id="busy" src="https://drop.1mb.site/X4WJEQ6PF.gif">
+        
+        </p>
+        
+         <p>
+        step 4: unzip and run nw.exe, use your own editor to edit/or add new files in the package.nw folder (uncheck "store files in a package.nw" above before downloading) 
+        </p>
+          
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js" integrity="sha512-+BMamP0e7wn39JGL8nKAZ3yAQT2dL5oaXWr4ZYlTGkKOaoXM/Yj7c4oy50Ngz5yoUutAG17flueD4F6QpTlPng==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js" integrity="sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="install.js" defer></script>
+        
+    </body>
+    
+</html>
