@@ -1,0 +1,656 @@
+<html>
+    <head>
+        
+        <style type="text/css" media="screen">
+        
+           #tophalf {
+                overflow-y:scroll;
+                position : absolute;
+                top : 40px;
+                left : 10px;
+                width : Calc( 100vw - 10px);
+                height  :  Calc( 40vh - 20px);
+                background-color: #f0f0f0;
+            }
+            
+        
+            #package_json_label,
+            #package_json { 
+                position: absolute;
+                top: 40vh;
+                right: 20vw;
+                bottom: 0;
+                left: 0;
+                font-size:14pt;
+            }
+            #index_html_label,
+            #index_html { 
+                position: absolute;
+                top: 40vh;
+                right: 50vw;
+                bottom: 0;
+                left: 20vw;
+                 font-size:14pt;
+            }
+            #index_js_label,
+            #index_js { 
+                position: absolute;
+                top: 40vh;
+                right: 0;
+                bottom: 0;
+                left: 50vw;
+                font-size:14pt;
+            }
+            #package_json_label,
+            #index_html_label,
+            #index_js_label {
+                font-weight: bold;
+                margin-left :0px;
+                
+                padding : 4px;
+                padding-left : 40px;
+                margin-top :-30px;
+                background-color: white;
+            }
+            
+            
+            #busy {
+                height : 50px;
+                width : auto;
+                position : relative;
+                top : 20px;
+                display :none;
+            }
+            #cachesExist span {
+                 background-color:aqua;
+             }       
+             
+            #cachesExist {
+                display : none;
+            }
+            
+            
+            #package_json_label button:nth-child(1) {
+                position:absolute;
+                left : Calc(20vw - 110px);
+            }
+                
+             #package_json_label button:nth-child(2) {
+                position:absolute;
+                left : Calc(20vw - 60px);
+            }
+  
+             #index_html_label button:nth-child(1) {
+                position:absolute;
+                 right :30px;
+            }
+                
+             #index_html_label button:nth-child(2) {
+                position:absolute;
+                right :0px;
+            }
+
+            #index_js_label button:nth-child(1) {
+                position:absolute;
+                right :50px;
+            }
+                
+             #index_js_label button:nth-child(2) {
+                position:absolute;
+                right : 20px;
+            }
+            
+            html.zoom-json #package_json_label button:nth-child(1) {
+                 left : Calc(100vw - 130px);
+                
+            }
+            html.zoom-json #package_json_label button:nth-child(2) {
+                left : Calc(100vw - 80px);
+                
+            }
+            
+            html.zoom-html #index_html_label button:nth-child(1) {
+                 right :40px;
+                
+            }
+            html.zoom-html #index_html_label button:nth-child(2) {
+    
+                right :10px;
+
+            }            
+                
+
+            
+            html.zoom-json #package_json,
+            html.zoom-html #index_html,
+            html.zoom-js   #index_js {
+                top    : 40px ;
+                left   : 0px  ;
+                right  : 0px  ;
+                bottom : 0px  ;
+             }
+            
+            
+            html.zoom-json #package_json_label,
+            html.zoom-html #index_html_label,
+            html.zoom-js #index_js_label {
+                font-weight: bold;
+                left :40px;
+                top :10px;
+                right : 0px;
+                margin-top:0;
+                margin-left:0;
+            }
+             
+            html.zoom-json h1,
+            html.zoom-html h1,
+            html.zoom-js h1,
+             
+             
+            html.zoom-json p,
+            html.zoom-html p,
+            html.zoom-js   p,
+            
+            html.zoom-json #index_html_label,
+            html.zoom-json #index_js_label,
+            html.zoom-json #index_html,
+            html.zoom-json #index_js,
+            
+            html.zoom-html #package_json,
+            html.zoom-html #index_js,
+            html.zoom-html #package_json_label,
+            html.zoom-html #index_js_label,
+            
+            html.zoom-js #index_json,
+            html.zoom-js #index_html,
+            html.zoom-js #index_json_label,
+            html.zoom-js #index_html_label {
+                display : none;
+            }
+            
+         
+   
+        </style>
+        
+        
+    </head>
+    
+    <body>
+        
+        
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js" integrity="sha512-+BMamP0e7wn39JGL8nKAZ3yAQT2dL5oaXWr4ZYlTGkKOaoXM/Yj7c4oy50Ngz5yoUutAG17flueD4F6QpTlPng==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js" integrity="sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.22.0/ace.min.js" integrity="sha512-q6CTB0jS+VuJnSct82rVcWlI06LGzNjaG3CWenHWVUncRvc4UQMFkA3a5Ip880xr+lBx38FcHDclOxPdSg+sBw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+          <h1>NWJS quick start template</h1>
+        <div id="tophalf">
+           <p>
+          Step 1: Download a nwjs flavour (links are from  <a href="https://nwjs.io/">https://nwjs.io/</a> 
+          <table>
+              <tr>
+                <th>Version / Flavour</th>     
+                <th>Download via nwjs.io</th>     
+                <th>Sha256 Integrity Hash</th>     
+              </tr>
+          </table>
+         </p>
+         
+         <p>
+        step 2: Load it into the browser:
+        <input id="fileInput" type="file" onchange="readFile(this)" value="select">
+        <span id="cachesExist">loaded zips are <span>cached</span> for next time <button id="clrCache">clear cache</button> </span>
+        </p>
+        
+         <p>
+        step 3: optionally edit the default index.html and index.js files, and decide:  <input id="cmp" type="checkbox"><label for="cmp">store files in a package.nw file instead of a folder? only do this if your entire app is ready to go, fits in the files below, and you don't need to edit it offline</label> 
+        </p>
+        
+
+        <p>
+        step 4: <button disabled id="dlBtn">download</button>  your app <img id="busy" src="https://drop.1mb.site/X4WJEQ6PF.gif">
+        
+        </p>
+        
+         <p>
+        step 5: unzip and run nw.exe, use your own editor to edit/or add new files in the package.nw folder (uncheck "store files in a package.nw" above before downloading) 
+        </p>
+        <p>
+        note - the new zip file that this makes is not particularly well compressed - a limitation of compressing in the browser - but since it's designed to be immediately unzipped and deleted, this should not to much of an issue - the  browser doesn't use any network bandwidth to save it
+        
+        </p>
+        
+        </div>
+        
+        
+        <label id="package_json_label">package.json &nbsp; &nbsp; &nbsp;<button>reset</button>&nbsp;<button onclick="htmlToggle('zoom-json');">^</button></label>   
+        <div id="package_json"></div>
+    
+        
+        <label id="index_html_label">index.html &nbsp; &nbsp; &nbsp;<button>reset</button>&nbsp;<button onclick="htmlToggle('zoom-html');">^</button></label>    
+        <div id="index_html">
+        </div>
+
+        <label id="index_js_label">index.js &nbsp; &nbsp; &nbsp;<button>reset</button>&nbsp;<button onclick="htmlToggle('zoom-js');">^</button></label>    
+        <div id="index_js">
+        </div>
+     
+
+       
+        <script>
+        
+        var available_versions = localforage.createInstance({
+          name: "available_versions"
+        });
+        
+         var template_sourcecode = localforage.createInstance({
+          name: "template_sourcecode"
+        });
+
+
+         var zip = new JSZip();
+         
+         const nwjs_versions = {
+            
+             'nwjs-sdk-v0.76.1-win-x64.zip' : {
+                 version  : '0.76.1 (sdk)',
+                 url      : 'https://dl.nwjs.io/v0.76.1/nwjs-sdk-v0.76.1-win-x64.zip',
+                 ziproot  : 'nwjs-sdk-v0.76.1-win-x64',
+                 sha      : 'c786112b18287c30b2eae6b6d3992cc1a2374cd87dd750e7ed04eaee9818a379'
+               
+             },
+             
+             'nwjs-v0.76.1-win-x64.zip' : {
+                 version  : '0.76.1 (normal)',
+                 url      : 'https://dl.nwjs.io/v0.76.1/nwjs-v0.76.1-win-x64.zip',
+                 ziproot  : 'nwjs-v0.76.1-win-x64',
+                 sha      : 'efb20da6f1c6b72cc794634447ac5e69a907e80d3397bbb99689f6062c68c038'
+             }
+             
+         };
+         
+           document.querySelector('table').innerHTML += Object.keys(nwjs_versions).map(function(filename){
+            const ver = nwjs_versions [filename];
+            let html = '<tr id="v'+ver.sha+'">\n';
+            html += '<td>'+ver.version+'</td>\n';
+            html += '<td><a href="'+ver.url+'">'+filename+'</a></td>\n';
+            html += '<td>'+ver.sha+'</td>\n';
+            return html+'</tr>'
+         }).join('\n');
+         
+         
+         const html = document.querySelector('html');
+          
+         const dlBtn = document.getElementById('dlBtn');
+         const fileInput = document.getElementById('fileInput');
+         const busy= document.getElementById('busy');
+         
+         const clrCache =  document.getElementById('clrCache');
+         
+         const cachesExist =  document.getElementById('cachesExist');
+         
+         clrCache.onclick = function() {
+             available_versions.clear().then(function(){
+                 location.reload();
+             });
+         }
+         
+       
+             
+        available_versions.keys().then(function(filenames) {
+            // An array of all the key names.
+          
+                   
+            filenames.forEach(function(fn){
+               console.log('checking',fn,'in indexed db against current list');
+               const ver =  nwjs_versions[fn];
+               if (ver) {
+                   available_versions.getItem(fn).then(function(arrayBuffer) {
+                       getSha256SumForBuffer(arrayBuffer,function(err,hash){
+                           const table_row = document.querySelector('#v'+hash);
+                           if (ver.sha===hash) {
+                                ver.arrayBuffer=arrayBuffer;
+                                table_row.style.backgroundColor="aqua";
+                                table_row.onclick = table_row_click ;
+                                const a = document.querySelector('#v'+ver.sha+' a');
+                                a.parentElement.replaceChild( document.createTextNode(fn),a);
+                                cachesExist.style.display="inline-block";
+                           } else {
+                               console.log('removing',fn,'from indexed db - arrayBuffer has incorrect sha256 checksum');
+                   
+                               available_versions.removeItem(fn).then(function(){});
+                               table_row.style.backgroundColor=null;
+                               table_row.onclick=null;
+                           }
+                       }); 
+                       
+                    }).catch(function(err) {
+                        // This code runs if there were any errors
+                        console.log(err);
+                    });
+               } else {
+                   console.log('removing',fn,'from indexed db - not a valid filename');
+                   available_versions.removeItem(fn).then(function(){});
+               }
+            });
+            
+        }).catch(function(err) {
+            // This code runs if there were any errors
+            console.log(err);
+        });
+                 
+ 
+                  
+        var editor_json = ace.edit("package_json");
+        editor_json.setTheme("ace/theme/dracula");
+        editor_json.session.setMode("ace/mode/json");
+        
+        setupEditor("package.json",editor_json,document.querySelector("#package_json_label button"),{"name": "app","main": "./index.html"});
+        
+         
+        var editor_html = ace.edit("index_html");
+        editor_html.setTheme("ace/theme/cobalt");
+        editor_html.session.setMode("ace/mode/html");
+        
+        setupEditor("index.html",editor_html,document.querySelector("#index_html_label button"));
+                
+        var editor_js = ace.edit("index_js");
+        editor_js.setTheme("ace/theme/chaos");
+        editor_js.session.setMode("ace/mode/javascript");
+        
+        setupEditor("index.js",editor_js,document.querySelector("#index_js_label button"));
+        
+        function setupEditor(filename,editor,resetBtn,jsonValue) {
+            
+            
+            if (jsonValue) {
+                 const setInitialJson = function(pkg) {
+                    let session = editor.getSession();
+                    let rev = session.$undoManager.startNewGroup(); // start new undo group
+                             
+                    editor.setValue(JSON.stringify(pkg||jsonValue,undefined,4));
+                    editor.gotoLine(1); 
+                    session.$undoManager.markIgnored(rev); // mark the new group as ignored
+                    
+                    setTimeout(function(){ 
+                        editor.on('change',function(){
+                            try {
+                                const pkg = JSON.parse(editor.getValue());
+                                template_sourcecode.setItem(filename,pkg).then(function(){
+                                    
+                                });
+                            } catch (e) {
+                                
+                            }         
+                        });
+                    },100);
+                    
+                     resetBtn.onclick = function(){
+                        template_sourcecode.removeItem(filename).then(function(){
+                            // let rev = session.$undoManager.startNewGroup();
+                             editor.setValue(JSON.stringify(jsonValue,undefined,4));
+                             editor.gotoLine(1);
+                             session.$undoManager.markIgnored(rev);
+                        });
+                    };
+                    
+                };
+                
+                 template_sourcecode.getItem(filename).then(function(pkg){
+                     if (pkg) {
+                         setInitialJson( pkg );
+                     } else {
+                        setInitialJson();
+                     }
+                  }).catch(function(){setInitialJson();});
+
+            } else {
+        
+                fetch("/nwjs"+filename).then(function(response){
+                   response.text().then(function(defaultValue){
+                        template_sourcecode.getItem(filename).then(function(source){
+            
+                            if (source) {
+                                setIntitialSource(source);
+                            } else {
+                               setIntitialSource(defaultValue);
+                            }
+                
+                            function setIntitialSource(text){
+                                let session = editor.getSession();
+                                let rev = session.$undoManager.startNewGroup(); // start new undo group
+                                editor.setValue(text);
+                                editor.gotoLine(1);
+                                session.$undoManager.markIgnored(rev); // mark the new group as ignored
+                                
+                                setTimeout(function(){
+                                    // slight delay to prevent intial false trigger
+                                    editor.on('change',function(){
+                                        template_sourcecode.setItem(filename,editor.getValue()).then(function(){
+                                            // saved to db
+                                        });
+                                    });
+                                    
+                                },100);
+                                
+                                 
+                                resetBtn.onclick = function(){
+                                    template_sourcecode.removeItem(filename).then(function(){
+                                         //let rev = session.$undoManager.startNewGroup();
+                                         editor.setValue(defaultValue);
+                                         editor.gotoLine(1);
+                                         session.$undoManager.markIgnored(rev);
+                                    });
+                                };
+                                        
+                            }
+                        });
+                    });
+                });
+            }
+        }        
+        
+        
+        
+       
+       
+       
+
+        
+
+
+        
+        
+        
+          function htmlToggle(cls) {
+             html.classList.toggle(cls);
+             setTimeout(function(){
+                 editor_json.resize();
+                 editor_html.resize();
+                 editor_js.resize();
+             },100);
+         } 
+       
+        
+         function table_row_click(){
+            const this_hash=this.id.replace(/^v/,'');
+            let arrayBuffer;
+            Object.keys(nwjs_versions).forEach(function(k){
+                const v = nwjs_versions[k];
+                document.querySelector('#v'+v.sha).style.backgroundColor = v.sha === this_hash ? "yellow" : v.arrayBuffer?"aqua" : null;
+                if (v.sha===this_hash &&  v.arrayBuffer) {
+                    zip = new JSZip();
+                    zip.loadAsync(v.arrayBuffer,{createFolders: true}).then(function(zip){resetApp(v,zip);});
+                }
+            });
+            
+        }
+
+        
+        function readFile() {
+          let file = fileInput.files[0];
+          
+          
+
+          let reader = new FileReader();
+        
+          reader.readAsArrayBuffer(file);
+        
+          reader.onload = function() {
+              
+             fileInput.disabled = true;
+             
+             const arrayBuffer = reader.result;
+             
+             getSha256SumForBuffer(arrayBuffer,function(err,hash){
+                 console.log(file,hash);
+                 
+                 let version = nwjs_versions[file.name];
+                 
+                
+                 Object.keys(nwjs_versions).forEach(function(fn){
+                     let v = nwjs_versions[fn];
+                     let r =  document.querySelector('#v'+v.sha);
+                     if (v.sha === hash) {
+                         version = v;
+                          available_versions.setItem(fn,arrayBuffer).then(function(){
+                             r.style.backgroundColor="yellow";
+                             v.arrayBuffer = arrayBuffer;
+                             r.onclick = table_row_click;
+                             const a = document.querySelector('#v'+v.sha+' a');
+                             a.parentElement.replaceChild( document.createTextNode(fn),a);
+                             cachesExist.style.display="inline-block";
+                         });
+                     } else {
+                         r.style.backgroundColor = v.arrayBuffer ? "aqua" : null;
+                         r.onclick =  v.arrayBuffer ? table_row_click : null;
+                     }
+                 })
+             
+                 
+                 if (version) {
+                     if (version.sha !== hash) {
+                          alert ("that file seems corrupted, sorry");
+                         fileInput.disabled = false;
+                         fileInput.value = null;
+                         return;
+                     }
+                 } else {
+                     
+                     alert ("I don't recognize that file, sorry");
+                     fileInput.disabled = false;
+                     fileInput.value = null;
+                     return;
+                 }
+          
+          
+                 zip = new JSZip();
+                 zip.loadAsync(arrayBuffer,{createFolders: true}).then(function(zip){resetApp(version,zip);});
+                 
+                
+                 
+             });
+       
+                 
+          };
+          
+         
+  
+           reader.onerror = function() {
+            console.log(reader.error);
+          };
+        
+        }
+        
+         function resetApp(version,zip){
+                    
+                const app_folder = zip.folder(version.ziproot);
+                
+
+                dlBtn.onclick = function(){
+                    
+                        dlBtn.disabled = true;
+                        busy.style.display="inline-block";
+                          
+                        if (document.getElementById('cmp').checked) {
+                            
+                            create_package_nw(
+                                editor_json.getValue(),
+                                editor_html.getValue(),
+                                editor_js.getValue(),
+                                function(err,arrayBuffer){
+                                    if (err) return alert(err.message);
+                                    app_folder.file('package.nw',arrayBuffer);
+                                    exportAndDownload();
+                                });
+                        } else {
+                            const package_nw = app_folder.folder('package.nw');
+                            package_nw.file('package.json', editor_json.getValue());
+                            package_nw.file('index.html', editor_html.getValue());
+                            package_nw.file( 'index.js',editor_js.getValue());
+                            
+                            exportAndDownload();
+                        }
+                  
+                        
+                        
+                
+                };
+                
+                dlBtn.disabled = false;
+                fileInput.disabled = false;
+                
+                
+                function exportAndDownload(){
+                              
+                        app_folder.generateAsync({type:"blob"}).then(function (blob) { 
+                            
+                            saveAs(blob, "app.zip");      
+                            dlBtn.disabled = false;
+                            busy.style.display="none";
+                            
+                            // reload the zip fresh, in case the user toggles the package.nw folder/file setting
+                            zip = new JSZip();
+                            zip.loadAsync(arrayBuffer,{createFolders: true}).then(function(zip){resetApp(version,zip);});
+                            
+                        }, function (err) {
+                            alert(err);
+                        });
+                }
+ 
+            }
+        
+        
+        function getSha256SumForBuffer(arrayBuffer,callback) {
+          const hash = crypto.subtle.digest("SHA-256", arrayBuffer);
+          
+          hash.then(
+              
+              function(hashBuffer){
+                    const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
+                    const hashHex = hashArray.map(function(b) { return b.toString(16).padStart(2, "0");});
+                   callback(undefined,hashHex.join(""));
+               }
+          );
+           
+          hash.catch(callback);
+        }
+        
+        function create_package_nw(json,html,js,callback) {
+            let pkg = new JSZip();
+            pkg.file('package.json',json);
+            pkg.file('index.html',html);
+            pkg.file('index.js',js);
+            
+            pkg.generateAsync({type:"arraybuffer"}).then(function (arraybuffer) { 
+                callback(undefined,arraybuffer);
+            }).catch(callback);
+                            
+        }
+                
+                
+
+        </script>
+        
+    </body>
+    
+</html>
