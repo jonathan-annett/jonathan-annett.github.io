@@ -281,13 +281,9 @@ function readFile() {
  * @param {*} destinationDir The new directory to move to.
  */
 function renameFolderInZip(zipFile, originalDir, destinationDir) {
-
-    return new Promise(function(resolve,reject){
-
-        // Get the original directory entry
+   
         const originalDirContent = zipFile.folder(originalDir);
-        // Walk on all directory tree
-
+    
         const pending = [];
 
         const fixKeys = {};
@@ -330,8 +326,9 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
             zipFile.files[destinationDir+'/'] = dirInst;
             delete zipFile.files[originalDir+'/'];
         }    
-    });
 
+        return zipFile.folder(destinationDir);
+  
 }
 
 
