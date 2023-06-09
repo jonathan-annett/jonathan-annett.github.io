@@ -304,6 +304,10 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
                         unixPermissions: entry.unixPermissions,
                         comment: entry.comment,
                         date: entry.date,
+                        compression: "DEFLATE",
+                        compressionOptions: {
+                            level: 9 // force a compression and a compression level for this file
+                        }
                     });
                     resolve(true);
                 });
