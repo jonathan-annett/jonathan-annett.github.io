@@ -253,7 +253,7 @@ function readFile() {
         
         function exportAndDownload(){
                       
-                zip.generateAsync({type:"blob"}).then(function (blob) { 
+                zip.generateAsync({type:"blob", compression: "DEFLATE"}).then(function (blob) { 
                     
                     saveAs(blob, "app.zip");      
                     dlBtn.disabled = false;
