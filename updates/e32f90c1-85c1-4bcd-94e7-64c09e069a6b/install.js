@@ -290,7 +290,7 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
         // Build the new file directory in the new tree 
         const newFileDir = `${destinationDir}/${internalDir}`;
         // Put the file in the new tree, with the same properties
-        zipFile.file(newFileDir, entry.nodeStream(), { 
+        zipFile.file(newFileDir, entry.internalStream(), { 
             createFolders: true,
             unixPermissions: entry.unixPermissions,
             comment: entry.comment,
