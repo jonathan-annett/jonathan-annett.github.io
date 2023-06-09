@@ -302,20 +302,24 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
             // Put the file in the new tree, with the same properties
 
             pending.push(new Promise(function(resolve){
-
-                zipFile.file(entry.name).arrayBuffer().then(function(ab){
-                    zipFile.file(newFileDir, ab, { 
-                        createFolders: true,
-                        unixPermissions: entry.unixPermissions,
-                        comment: entry.comment,
-                        date: entry.date,
-                        compression: "DEFLATE",
-                        compressionOptions: {
-                            level: 9 // force a compression and a compression level for this file
-                        }
+                const fileInst = zipFile.file(entry.name);
+                if (fileInst) {
+                    fileInst.arrayBuffer().then(function(ab){
+                        zipFile.file(newFileDir, ab, { 
+                            createFolders: true,
+                            unixPermissions: entry.unixPermissions,
+                            comment: entry.comment,
+                            date: entry.date,
+                            compression: "DEFLATE",
+                            compressionOptions: {
+                                level: 9 // force a compression and a compression level for this file
+                            }
+                        });
+                        resolve(true);
                     });
-                    resolve(true);
-                });
+                } else {
+                    resolve(false);
+                }
             }));        
         
         });
