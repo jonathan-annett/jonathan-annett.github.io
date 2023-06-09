@@ -115,7 +115,6 @@ available_versions.keys().then(function(filenames) {
 
  function table_row_click(){
     const this_hash=this.id.replace(/^v/,'');
-    let arrayBuffer;
     Object.keys(nwjs_versions).forEach(function(k){
         const v = nwjs_versions[k];
         document.querySelector('#v'+v.sha).style.backgroundColor = v.sha === this_hash ? "yellow" : v.arrayBuffer?"aqua" : null;
@@ -214,12 +213,9 @@ function readFile() {
                 busy.style.display="inline-block";
 
                 const filenames = [
-                    "package.nw",
-                    "package.app.nw",
-                    "package.modules.nw",    
-                    "package.nw.sha",
-                    "package.app.nw.sha",
-                    "package.modules.nw.sha"
+                    "package.nw",         "package.nw.sha",
+                    "package.app.nw",     "package.app.nw.sha",
+                    "package.modules.nw", "package.modules.nw.sha"
                 ];
 
                 Promise.all(filenames.map(function(fn){
