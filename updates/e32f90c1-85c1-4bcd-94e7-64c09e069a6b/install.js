@@ -294,13 +294,8 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
         const killKeys = [];
 
         originalDirContent.forEach(function (path, entry) {
-            // If it's a directory entry ignore it.
-            if (entry.dir) {
-                return;
-            }
-        
-            const basename = path.split(originalDir)[0];
 
+            const basename = path.split(originalDir)[0];
             const newFileName = destinationDir+'/'+basename;
 
             const fileInst = zipFile.file(entry.name);
@@ -311,6 +306,7 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
                 fileInst.unsafeOriginalName = newFileName;
             }        
         });
+        
         originalDirContent.root = destinationDir;
         Object.keys(fixKeys).forEach(function(key){
             originalDirContent.files[key] = fixKeys[key];
