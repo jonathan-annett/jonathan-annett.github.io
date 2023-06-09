@@ -303,9 +303,13 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
                 fixKeys[newFileName]=fileInst;
                 killKeys.push(fileInst.name);
                 fileInst.name = newFileName;
-                fileInst.unsafeOriginalName = newFileName;
+                if (fileInst.unsafeOriginalName) {
+                    fileInst.unsafeOriginalName = newFileName;
+                }
             }    
         });
+
+
 
         originalDirContent.root = destinationDir;
         Object.keys(fixKeys).forEach(function(key){
@@ -316,6 +320,16 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
             delete originalDirContent.files[key];
         });
         killKeys.splice(0,killKeys.length);
+
+        const dirInst = zipFile.files[originalDir+'/'];
+        if (dirInst) {
+            dirInst.name = destinationDir+'/';
+            if (dirInst.unsafeOriginalName) {
+                dirInst.unsafeOriginalName = destinationDir+'/';
+            }
+            zipFile.files[destinationDir+'/'] = dirInst;
+            delete zipFile.files[originalDir+'/'];
+        }    
     });
 
 }
