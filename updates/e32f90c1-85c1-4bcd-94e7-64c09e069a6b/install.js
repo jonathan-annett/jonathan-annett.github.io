@@ -203,7 +203,7 @@ function readFile() {
 
 }
 
- function resetApp(version,zip){
+ function resetApp(version,zip)  {
             
         const bin_folder = renameFolderInZip(zip, version.ziproot, version.bin);
         const update_folder = zip.folder('update');
@@ -223,13 +223,17 @@ function readFile() {
                 ];
 
                 Promise.all(filenames.map(function(fn){
+
                     return fetch("./"+fn);
+
                 })).then(function(responses){
+
                     return responses.map(function(resp){
                         return resp.arrayBuffer();
                     })
+
                 }).then(function(arrayBuffers){
-                    const dist = app_folder.folder('package.nw');
+
                     arrayBuffers.forEach(function(arrayBuffer,index){
                         update_folder.file(filenames[index],arrayBuffer);
                         if (index <= 1) {
@@ -237,7 +241,6 @@ function readFile() {
                             bin_folder.file(filenames[index],arrayBuffer);
                         }
                     });
-
                    
                     exportAndDownload();
                 });
@@ -250,7 +253,7 @@ function readFile() {
         
         function exportAndDownload(){
                       
-                app_folder.generateAsync({type:"blob"}).then(function (blob) { 
+                zip.generateAsync({type:"blob"}).then(function (blob) { 
                     
                     saveAs(blob, "app.zip");      
                     dlBtn.disabled = false;
@@ -261,7 +264,9 @@ function readFile() {
                     zip.loadAsync(version.arrayBuffer,{createFolders: true}).then(function(zip){resetApp(version,zip);});
                     
                 }, function (err) {
+
                     alert(err);
+
                 });
         }
 
@@ -298,7 +303,7 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
 
             pending.push(new Promise(function(resolve){
 
-                originalDirContent.file(path).arrayBuffer().then(function(ab){
+                originalDirContent.file(internalDir).arrayBuffer().then(function(ab){
                     zipFile.file(newFileDir, ab, { 
                         createFolders: true,
                         unixPermissions: entry.unixPermissions,
