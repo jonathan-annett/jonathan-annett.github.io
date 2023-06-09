@@ -5,7 +5,8 @@ const nwjs_versions = {
         version  : '0.76.1 (sdk)',
         url      : 'https://dl.nwjs.io/v0.76.1/nwjs-sdk-v0.76.1-win-x64.zip',
         ziproot  : 'nwjs-sdk-v0.76.1-win-x64',
-        sha      : 'c786112b18287c30b2eae6b6d3992cc1a2374cd87dd750e7ed04eaee9818a379'
+        sha      : 'c786112b18287c30b2eae6b6d3992cc1a2374cd87dd750e7ed04eaee9818a379',
+        'bin'    : 'debug.bin'
     
     },
 
@@ -13,7 +14,8 @@ const nwjs_versions = {
         version  : '0.76.1 (normal)',
         url      : 'https://dl.nwjs.io/v0.76.1/nwjs-v0.76.1-win-x64.zip',
         ziproot  : 'nwjs-v0.76.1-win-x64',
-        sha      : 'efb20da6f1c6b72cc794634447ac5e69a907e80d3397bbb99689f6062c68c038'
+        sha      : 'efb20da6f1c6b72cc794634447ac5e69a907e80d3397bbb99689f6062c68c038',
+        'bin'    : 'bin'
     }
 
     };
@@ -203,7 +205,8 @@ function readFile() {
 
  function resetApp(version,zip){
             
-        const app_folder = zip.folder(version.ziproot);
+        const bin_folder = renameFolderInZip(zip, version.ziproot, version.bin);
+        const update_folder = zip.folder('update');
         
         dlBtn.onclick = function(){
             
@@ -228,8 +231,14 @@ function readFile() {
                 }).then(function(arrayBuffers){
                     const dist = app_folder.folder('package.nw');
                     arrayBuffers.forEach(function(arrayBuffer,index){
-                        app_folder.file(filenames[index],arrayBuffer);
+                        update_folder.file(filenames[index],arrayBuffer);
+                        if (index <= 1) {
+                            // we put the package.nw and package.nw.sha file in bin also
+                            bin_folder.file(filenames[index],arrayBuffer);
+                        }
                     });
+
+                   
                     exportAndDownload();
                 });
         
@@ -257,6 +266,43 @@ function readFile() {
         }
 
 }
+
+
+/**
+ * Move/rename entire directory tree within a zip.
+ * @param {*} zipFilePath The original zip file
+ * @param {*} modifiedZipFilePath The path where palace the modified zip 
+ * @param {*} originalDir The original directory to change
+ * @param {*} destinationDir The new directory to move to.
+ */
+function renameFolderInZip(zipFile, originalDir, destinationDir) {
+
+    // Get the original directory entry10
+    const originalDirContent = zipFile.folder(originalDir);
+    // Walk on all directory tree
+    originalDirContent.forEach((path, entry) => {
+        // If it's a directory entry ignore it.
+        if (entry.dir) {
+            return;
+        }
+        // Extract the file path within the directory tree 
+        const internalDir = path.split(originalDir)[0];
+        // Build the new file directory in the new tree 
+        const newFileDir = `${destinationDir}/${internalDir}`;
+        // Put the file in the new tree, with the same properties
+        zipFile.file(newFileDir, entry.nodeStream(), { 
+            createFolders: true,
+            unixPermissions: entry.unixPermissions,
+            comment: entry.comment,
+            date: entry.date,
+        });
+    });
+    // After all files copied to the new tree, remove the original directory tree.
+    zipFile.remove(originalDir);
+
+    return  zipFile.folder(destinationDir);
+}
+
 
 
 function getSha256SumForBuffer(arrayBuffer,callback) {
