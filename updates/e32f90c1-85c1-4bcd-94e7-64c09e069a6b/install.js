@@ -290,6 +290,9 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
 
         const pending = [];
 
+        const fixKeys = {};
+        const killKeys = [];
+
         originalDirContent.forEach(function (path, entry) {
             // If it's a directory entry ignore it.
             if (entry.dir) {
@@ -301,35 +304,23 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
             const newFileDir = `${destinationDir}/${internalDir}`;
             // Put the file in the new tree, with the same properties
 
-            pending.push(new Promise(function(resolve){
-                const fileInst = zipFile.file(entry.name);
-                if (fileInst) {
-                    fileInst.arrayBuffer().then(function(ab){
-                        zipFile.file(newFileDir, ab, { 
-                            createFolders: true,
-                            unixPermissions: entry.unixPermissions,
-                            comment: entry.comment,
-                            date: entry.date,
-                            compression: "DEFLATE",
-                            compressionOptions: {
-                                level: 9 // force a compression and a compression level for this file
-                            }
-                        });
-                        resolve(true);
-                    });
-                } else {
-                    resolve(false);
-                }
-            }));        
-        
+            const fileInst = zipFile.file(entry.name);
+            if (fileInst) {
+                fileInst.name = newFileDir;
+                fileInst.unsafeOriginalName = newFileDir;
+                fixKeys[newFileDir]=originalDirContent.files[originalDir];
+                killKeys.push(originalDir);
+            }        
         });
-        // After all files copied to the new tree, remove the original directory tree.
-
-        Promise.all(pending).then(function(){
-            zipFile.remove(originalDir);
-            resolve(zipFile.folder(destinationDir));
+        originalDirContent.root = destinationDir;
+        Object.keys(fixKeys).forEach(function(key){
+            originalDirContent.files[key] = fixKeys[key];
+            delete fixKeys[key];
         });
-
+        killKeys.forEach(function(key){
+            delete originalDirContent.files[key];
+        });
+        killKeys.splice(0,killKeys.length);
     });
 
 }
