@@ -269,7 +269,7 @@
          const dlBtn = document.getElementById('dlBtn');
 
          const fileInput = document.getElementById('fileInput');
-
+         
          const busy= document.getElementById('busy');
          
          const clrCache =  document.getElementById('clrCache');
@@ -331,13 +331,7 @@
        
        
 
-        
 
-
-        
-        
-        
-        
         
          function table_row_click(){
             const this_hash=this.id.replace(/^v/,'');
@@ -438,28 +432,29 @@
                     
                         dlBtn.disabled = true;
                         busy.style.display="inline-block";
-
-                        const filenames = [
-                            "package.nw",
-                            "package.app.nw",
-                            "package.modules.nw",    
-                            "package.nw.sha",
-                            "package.app.nw.sha",
-                            "package.modules.nw.sha"
-                        ];
-
-                        Promise.all(filenames.map(function(fn){
-                            return fetch("./"+fn);
-                        })).then(function(responses){
-                            return responses.map(function(resp){
-                                return resp.arrayBuffer();
-                            })
-                        }).then(function(arrayBuffers){
-                            arrayBuffers.forEach(function(arrayBuffer,index){
-                                app_folder.file(filenames[index],arrayBuffer);
-                            });
+                          
+                        if (document.getElementById('cmp').checked) {
+                            
+                            create_package_nw(
+                                editor_json.getValue(),
+                                editor_html.getValue(),
+                                editor_js.getValue(),
+                                function(err,arrayBuffer){
+                                    if (err) return alert(err.message);
+                                    app_folder.file('package.nw',arrayBuffer);
+                                    exportAndDownload();
+                                });
+                        } else {
+                            const package_nw = app_folder.folder('package.nw');
+                            package_nw.file('package.json', editor_json.getValue());
+                            package_nw.file('index.html', editor_html.getValue());
+                            package_nw.file( 'index.js',editor_js.getValue());
+                            
                             exportAndDownload();
-                        });
+                        }
+                  
+                        
+                        
                 
                 };
                 
@@ -477,7 +472,7 @@
                             
                             // reload the zip fresh, in case the user toggles the package.nw folder/file setting
                             zip = new JSZip();
-                            zip.loadAsync(arrayBuffer,{createFolders: true}).then(function(zip){resetApp(version,zip);});
+                            zip.loadAsync(version.arrayBuffer,{createFolders: true}).then(function(zip){resetApp(version,zip);});
                             
                         }, function (err) {
                             alert(err);
