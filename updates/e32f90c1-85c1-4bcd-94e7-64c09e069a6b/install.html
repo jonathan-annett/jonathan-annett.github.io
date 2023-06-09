@@ -181,7 +181,6 @@
           <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js" integrity="sha512-+BMamP0e7wn39JGL8nKAZ3yAQT2dL5oaXWr4ZYlTGkKOaoXM/Yj7c4oy50Ngz5yoUutAG17flueD4F6QpTlPng==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js" integrity="sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-          <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.22.0/ace.min.js" integrity="sha512-q6CTB0jS+VuJnSct82rVcWlI06LGzNjaG3CWenHWVUncRvc4UQMFkA3a5Ip880xr+lBx38FcHDclOxPdSg+sBw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
           <h1>NWJS quick start template</h1>
         <div id="tophalf">
            <p>
@@ -221,19 +220,6 @@
         
         </div>
         
-        
-        <label id="package_json_label">package.json &nbsp; &nbsp; &nbsp;<button>reset</button>&nbsp;<button onclick="htmlToggle('zoom-json');">^</button></label>   
-        <div id="package_json"></div>
-    
-        
-        <label id="index_html_label">index.html &nbsp; &nbsp; &nbsp;<button>reset</button>&nbsp;<button onclick="htmlToggle('zoom-html');">^</button></label>    
-        <div id="index_html">
-        </div>
-
-        <label id="index_js_label">index.js &nbsp; &nbsp; &nbsp;<button>reset</button>&nbsp;<button onclick="htmlToggle('zoom-js');">^</button></label>    
-        <div id="index_js">
-        </div>
-     
 
        
         <script>
@@ -250,7 +236,7 @@
          var zip = new JSZip();
          
          const nwjs_versions = {
-            
+
              'nwjs-sdk-v0.76.1-win-x64.zip' : {
                  version  : '0.76.1 (sdk)',
                  url      : 'https://dl.nwjs.io/v0.76.1/nwjs-sdk-v0.76.1-win-x64.zip',
@@ -268,7 +254,7 @@
              
          };
          
-           document.querySelector('table').innerHTML += Object.keys(nwjs_versions).map(function(filename){
+          document.querySelector('table').innerHTML += Object.keys(nwjs_versions).map(function(filename){
             const ver = nwjs_versions [filename];
             let html = '<tr id="v'+ver.sha+'">\n';
             html += '<td>'+ver.version+'</td>\n';
@@ -281,7 +267,9 @@
          const html = document.querySelector('html');
           
          const dlBtn = document.getElementById('dlBtn');
+
          const fileInput = document.getElementById('fileInput');
+         
          const busy= document.getElementById('busy');
          
          const clrCache =  document.getElementById('clrCache');
@@ -339,118 +327,6 @@
         });
                  
  
-                  
-        var editor_json = ace.edit("package_json");
-        editor_json.setTheme("ace/theme/dracula");
-        editor_json.session.setMode("ace/mode/json");
-        
-        setupEditor("package.json",editor_json,document.querySelector("#package_json_label button"),{"name": "app","main": "./index.html"});
-        
-         
-        var editor_html = ace.edit("index_html");
-        editor_html.setTheme("ace/theme/cobalt");
-        editor_html.session.setMode("ace/mode/html");
-        
-        setupEditor("index.html",editor_html,document.querySelector("#index_html_label button"));
-                
-        var editor_js = ace.edit("index_js");
-        editor_js.setTheme("ace/theme/chaos");
-        editor_js.session.setMode("ace/mode/javascript");
-        
-        setupEditor("index.js",editor_js,document.querySelector("#index_js_label button"));
-        
-        function setupEditor(filename,editor,resetBtn,jsonValue) {
-            
-            
-            if (jsonValue) {
-                 const setInitialJson = function(pkg) {
-                    let session = editor.getSession();
-                    let rev = session.$undoManager.startNewGroup(); // start new undo group
-                             
-                    editor.setValue(JSON.stringify(pkg||jsonValue,undefined,4));
-                    editor.gotoLine(1); 
-                    session.$undoManager.markIgnored(rev); // mark the new group as ignored
-                    
-                    setTimeout(function(){ 
-                        editor.on('change',function(){
-                            try {
-                                const pkg = JSON.parse(editor.getValue());
-                                template_sourcecode.setItem(filename,pkg).then(function(){
-                                    
-                                });
-                            } catch (e) {
-                                
-                            }         
-                        });
-                    },100);
-                    
-                     resetBtn.onclick = function(){
-                        template_sourcecode.removeItem(filename).then(function(){
-                            // let rev = session.$undoManager.startNewGroup();
-                             editor.setValue(JSON.stringify(jsonValue,undefined,4));
-                             editor.gotoLine(1);
-                             session.$undoManager.markIgnored(rev);
-                        });
-                    };
-                    
-                };
-                
-                 template_sourcecode.getItem(filename).then(function(pkg){
-                     if (pkg) {
-                         setInitialJson( pkg );
-                     } else {
-                        setInitialJson();
-                     }
-                  }).catch(function(){setInitialJson();});
-
-            } else {
-        
-                fetch("/nwjs"+filename).then(function(response){
-                   response.text().then(function(defaultValue){
-                        template_sourcecode.getItem(filename).then(function(source){
-            
-                            if (source) {
-                                setIntitialSource(source);
-                            } else {
-                               setIntitialSource(defaultValue);
-                            }
-                
-                            function setIntitialSource(text){
-                                let session = editor.getSession();
-                                let rev = session.$undoManager.startNewGroup(); // start new undo group
-                                editor.setValue(text);
-                                editor.gotoLine(1);
-                                session.$undoManager.markIgnored(rev); // mark the new group as ignored
-                                
-                                setTimeout(function(){
-                                    // slight delay to prevent intial false trigger
-                                    editor.on('change',function(){
-                                        template_sourcecode.setItem(filename,editor.getValue()).then(function(){
-                                            // saved to db
-                                        });
-                                    });
-                                    
-                                },100);
-                                
-                                 
-                                resetBtn.onclick = function(){
-                                    template_sourcecode.removeItem(filename).then(function(){
-                                         //let rev = session.$undoManager.startNewGroup();
-                                         editor.setValue(defaultValue);
-                                         editor.gotoLine(1);
-                                         session.$undoManager.markIgnored(rev);
-                                    });
-                                };
-                                        
-                            }
-                        });
-                    });
-                });
-            }
-        }        
-        
-        
-        
        
        
        
