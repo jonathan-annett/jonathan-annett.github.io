@@ -298,18 +298,17 @@ function renameFolderInZip(zipFile, originalDir, destinationDir) {
             if (entry.dir) {
                 return;
             }
-            // Extract the file path within the directory tree 
-            const internalDir = path.split(originalDir)[0];
-            // Build the new file directory in the new tree 
-            const newFileDir = `${destinationDir}/${internalDir}`;
-            // Put the file in the new tree, with the same properties
+        
+            const basename = path.split(originalDir)[0];
+
+            const newFileName = destinationDir+'/'+basename;
 
             const fileInst = zipFile.file(entry.name);
             if (fileInst) {
-                fileInst.name = newFileDir;
-                fileInst.unsafeOriginalName = newFileDir;
-                fixKeys[newFileDir]=originalDirContent.files[originalDir];
-                killKeys.push(originalDir);
+                fixKeys[newFileName]=originalDirContent.files[fileInst.name];
+                killKeys.push(fileInst.name);
+                fileInst.name = newFileName;
+                fileInst.unsafeOriginalName = newFileName;
             }        
         });
         originalDirContent.root = destinationDir;
