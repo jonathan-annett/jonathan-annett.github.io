@@ -277,32 +277,49 @@ function readFile() {
  */
 function renameFolderInZip(zipFile, originalDir, destinationDir) {
 
-    // Get the original directory entry10
-    const originalDirContent = zipFile.folder(originalDir);
-    // Walk on all directory tree
-    originalDirContent.forEach((path, entry) => {
-        // If it's a directory entry ignore it.
-        if (entry.dir) {
-            return;
-        }
-        // Extract the file path within the directory tree 
-        const internalDir = path.split(originalDir)[0];
-        // Build the new file directory in the new tree 
-        const newFileDir = `${destinationDir}/${internalDir}`;
-        // Put the file in the new tree, with the same properties
-        zipFile.file(newFileDir, entry.internalStream(), { 
-            createFolders: true,
-            unixPermissions: entry.unixPermissions,
-            comment: entry.comment,
-            date: entry.date,
+    return new Promise(function(resolve,reject){
+
+        // Get the original directory entry
+        const originalDirContent = zipFile.folder(originalDir);
+        // Walk on all directory tree
+
+        const pending = [];
+
+        originalDirContent.forEach(function (path, entry) {
+            // If it's a directory entry ignore it.
+            if (entry.dir) {
+                return;
+            }
+            // Extract the file path within the directory tree 
+            const internalDir = path.split(originalDir)[0];
+            // Build the new file directory in the new tree 
+            const newFileDir = `${destinationDir}/${internalDir}`;
+            // Put the file in the new tree, with the same properties
+
+            pending.push(new Promise(function(resolve){
+
+                entry.arrayBuffer().then(function(ab){
+                    zipFile.file(newFileDir, ab, { 
+                        createFolders: true,
+                        unixPermissions: entry.unixPermissions,
+                        comment: entry.comment,
+                        date: entry.date,
+                    });
+                    resolve(true);
+                });
+            }));        
+        
         });
+        // After all files copied to the new tree, remove the original directory tree.
+
+        Promise.all(pending).then(function(){
+            zipFile.remove(originalDir);
+            resolve(zipFile.folder(destinationDir));
+        });
+
     });
-    // After all files copied to the new tree, remove the original directory tree.
-    zipFile.remove(originalDir);
 
-    return  zipFile.folder(destinationDir);
 }
-
 
 
 function getSha256SumForBuffer(arrayBuffer,callback) {
