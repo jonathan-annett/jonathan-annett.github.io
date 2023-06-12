@@ -42,9 +42,9 @@
                         data.packages.map(function(pkg){
                             return `<a href="${pkg[ "update.info"] .updates}/update.html">${
                                 pkg.name
+                            }</a>`;
 
-                            }</a><br>`
-                        })
+                        }).join('<br>')
                         
                         }`;
 
