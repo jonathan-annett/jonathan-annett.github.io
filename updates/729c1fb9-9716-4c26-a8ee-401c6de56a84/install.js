@@ -29,7 +29,7 @@ fetchCacheBust("../index.json").then(function (response) {
     .then(function (data) {
 
         return getPermissionHex().then(function (hex) {
-            return data.permissions.indexOf(hex) < 0 ? Promise.reject() : Promise.resolve(data);
+            return data.permissions.indexOf(hex) < 0 ? Promise.reject(JSON.stringify({missingPermission:hex})) : Promise.resolve(data);
         });
 
     })
