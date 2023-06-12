@@ -4,54 +4,65 @@
     </head>
     <body>
         <script>
-
-            let key = localStorage.getItem('local.key');
-
-            if (!key) {
-                key = (Math.random().toString(36)+Date.now().toString(36)+Math.random().toString(36)).replace(/\0\./g,'');
-                localStorage.setItem('local.key',key);
-            }
-
-
-            const encoder = new TextEncoder();
-            const data = encoder.encode(key);
-
-            crypto.subtle.digest("SHA-256", data).then(function(digest){
-                const hashArray = Array.from(new Uint8Array(digest)); // convert buffer to byte array
-                const hashHex = hashArray
-                    .map((b) => b.toString(16).padStart(2, "0"))
-                    .join(""); // convert bytes to hex string
-                return Promise.resolve(hashHex); 
-            }).then(function(hex){
-
-              
+            
+            getPermissionHex().then(function(hex){
                     
-                    fetch("index.json").then(function(response){
-                        return response.json();
-                    }).then(function(data){ 
+                fetchCacheBust("index.json").then(function(response){
+                    return response.json();
+                }).then(function(data){ 
 
-                        if (data.permissions.indexOf(hex)<0) {
-                            document.body.innerHTML = 'No files found.';
-                            return console.log(JSON.stringify(hex));
-                        }
+                    if (data.permissions.indexOf(hex)<0) {
+                        document.body.innerHTML = 'No files found.';
+                        return console.log(JSON.stringify(hex));
+                    }
 
-                        document.body.innerHTML = `
-                        <h1>download links</h1>
-                        ${
+                    document.body.innerHTML = `
+                    <h1>download links</h1>
+                    ${
 
-                        data.packages.map(function(pkg){
-                            return `<a href="${pkg[ "update.info"] .updates}/install.html">${
-                                pkg.name
-                            }</a>`;
+                    data.packages.map(function(pkg){
 
-                        }).join('<br>')
-                        
-                        }`;
+                        return `<a href="${pkg[ "update.info"] .updates}/install.html">${
+                            pkg.name
+                        }</a>`;
 
-                    });
+                    }).join('<br>')
+                    
+                    }`;
+
+                });
                  
             });
-            
+
+
+            function getPermissionHex() {
+                return new Promise(function(resolve,reject){
+                    let key = localStorage.getItem('local.key');
+
+                    if (!key) {
+                        key = (Math.random().toString(36)+Date.now().toString(36)+Math.random().toString(36)).replace(/\0\./g,'');
+                        localStorage.setItem('local.key',key);
+                    }
+
+                    const encoder = new TextEncoder();
+                    const data = encoder.encode(key);
+
+                    crypto.subtle.digest("SHA-256", data).then(function(digest){
+                        const hashArray = Array.from(new Uint8Array(digest)); // convert buffer to byte array
+                        const hashHex = hashArray
+                            .map((b) => b.toString(16).padStart(2, "0"))
+                            .join(""); // convert bytes to hex string
+                         resolve(hashHex); 
+
+                    }).catch(reject);
+
+                });
+            }
+
+            function fetchCacheBust(url) {
+                return fetch(url+'?_='+Math.random().toString(36));
+            }
+                        
 
         </script>
     </body>
