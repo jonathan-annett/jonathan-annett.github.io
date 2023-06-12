@@ -33,13 +33,13 @@
                     
                     fetch("index.json").then(function(response){
                         return response.json();
-                    }).then(function(packages){ 
+                    }).then(function(data){ 
 
                         document.body.innerHTML = `
                         <h1>download links</h1>
                         ${
 
-                        packages.map(function(pkg){
+                        data.packages.map(function(pkg){
                             return `a href="${pkg[ "update.info"] .updates}/update.html">${
                                 pkg.name
 
