@@ -1,0 +1,59 @@
+{
+    "packages": [
+        {
+            "name": "lectern-sign-simulator",
+            "version": "1.0.0.18",
+            "main": "./index.html",
+            "update.info": {
+                "guid": "160aab15-f439-4d3a-8df7-5ee8ab3308b9",
+                "updates": "https://jonathan-annett.github.io/updates/160aab15-f439-4d3a-8df7-5ee8ab3308b9"
+            },
+            "dependencies": {
+                "extract-zip": "^2.0.1",
+                "jszip": "^3.10.1"
+            }
+        },
+        {
+            "name": "lectern-sign-server",
+            "version": "1.0.0.114",
+            "main": "./index.html",
+            "chromium-args": "--mixed-context",
+            "update.info": {
+                "guid": "729c1fb9-9716-4c26-a8ee-401c6de56a84",
+                "updates": "https://jonathan-annett.github.io/updates/729c1fb9-9716-4c26-a8ee-401c6de56a84"
+            },
+            "dependencies": {
+                "express": "^4.18.2",
+                "jszip": "^3.10.1",
+                "mime-types": "^2.1.35",
+                "ws": "^8.13.0"
+            }
+        },
+        {
+            "name": "app",
+            "version": "1.0.0.41",
+            "main": "./index.html",
+            "update.info": {
+                "guid": "e32f90c1-85c1-4bcd-94e7-64c09e069a6b",
+                "updates": "https://jonathan-annett.github.io/updates/e32f90c1-85c1-4bcd-94e7-64c09e069a6b"
+            },
+            "dependencies": {
+                "extract-zip": "^2.0.1",
+                "jszip": "^3.10.1"
+            }
+        },
+        {
+            "name": "app",
+            "version": "1.0.0.3",
+            "main": "./index.html",
+            "update.info": {
+                "guid": "e4af8b1b-a7bc-490c-8622-d5324f5d0cc1",
+                "updates": "https://jonathan-annett.github.io/updates/e4af8b1b-a7bc-490c-8622-d5324f5d0cc1"
+            },
+            "dependencies": {
+                "extract-zip": "^2.0.1",
+                "jszip": "^3.10.1"
+            }
+        }
+    ]
+}
