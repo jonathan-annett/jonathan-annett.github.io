@@ -48,7 +48,7 @@ const nwjs_versions = {
     return response.arrayBuffer();
   }).then(function(arrayBuffer){
      const zip = new JSZip();
-     zip.loadAsync(arayBuffer).then(function(zip){
+     zip.loadAsync(arrayBuffer).then(function(zip){
         zip.file('package.json').async('text').then(function(json){
             const pkg = JSON.parse(json);
             appName = pkg.name;
