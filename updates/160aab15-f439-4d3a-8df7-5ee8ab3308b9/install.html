@@ -175,13 +175,13 @@
         
     </head>
     
-    <body style="display:none">
+    <body>
         
         
-        <h1>nwjs app installer</h1>
+        <h1>NWJS quick start template</h1>
         <div id="tophalf">
            <p>
-          Step 1: Download a nwjs runtime zip (links are from  <a href="https://nwjs.io/">https://nwjs.io/</a> 
+          Step 1: Download a nwjs flavour (links are from  <a href="https://nwjs.io/">https://nwjs.io/</a> 
           <table>
               <tr>
                 <th>Version / Flavour</th>     
@@ -192,13 +192,14 @@
          </p>
          
          <p>
-        step 2: Load the zip file into this browser:
-        <input id="fileInput" type="file"  value="select">
+        step 2: Load it into the browser:
+        <input id="fileInput" type="file" onchange="readFile(this)" value="select">
         <span id="cachesExist">loaded zips are <span>cached</span> for next time <button id="clrCache">clear cache</button> </span>
         </p>
         
+
         <p>
-        step 3: Download an installer: <button disabled id="dlBtn">installer zip</button>   <button id="dlSdkBtn" hidden>debug Installer zip</button> <img id="busy" src="https://drop.1mb.site/X4WJEQ6PF.gif">
+        step 3: <button disabled id="dlBtn">download</button>  <img id="busy" src="https://drop.1mb.site/X4WJEQ6PF.gif">
         
         </p>
         
@@ -211,9 +212,8 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js" integrity="sha512-+BMamP0e7wn39JGL8nKAZ3yAQT2dL5oaXWr4ZYlTGkKOaoXM/Yj7c4oy50Ngz5yoUutAG17flueD4F6QpTlPng==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js" integrity="sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="/updates/install.js" defer></script>
+        <script src="install.js" defer></script>
         
     </body>
-    
     
 </html>

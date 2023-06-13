@@ -2,7 +2,7 @@
     "packages": [
         {
             "name": "lectern-sign-simulator",
-            "version": "1.0.0.20",
+            "version": "1.0.0.22",
             "main": "./index.html",
             "update.info": {
                 "guid": "160aab15-f439-4d3a-8df7-5ee8ab3308b9",
@@ -17,7 +17,7 @@
         },
         {
             "name": "lectern-sign-server",
-            "version": "1.0.0.234",
+            "version": "1.0.0.251",
             "main": "./index.html",
             "chromium-args": "--mixed-context",
             "update.info": {
