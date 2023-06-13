@@ -308,10 +308,11 @@ fetchCacheBust("/updates/index.json").then(function (response) {
                     dlBtn.disabled = true;
                     dlSdkBtn.disabled = true;
                     busy.style.display = "inline-block";
-                    prepareDownloader().then(function(ZIP){
-                        exportAndDownload(ZIP.root);
-                        dlBtn.disabled = false;
-                        dlSdkBtn.disabled = !sdkAvailable();
+                    prepareDownloader("bin").then(function(ZIP){
+                        exportAndDownload(ZIP.root).then(function(){
+                            dlBtn.disabled = false;
+                            dlSdkBtn.disabled = !sdkAvailable();
+                        });                       
                     });
                 };
                 dlBtn.disabled = false;
@@ -327,10 +328,35 @@ fetchCacheBust("/updates/index.json").then(function (response) {
                     dlBtn.disabled = true;
                     dlSdkBtn.disabled = true;
                     busy.style.display = "inline-block";
-                    prepareDownloader("debug.bin").then(function(ZIP){
-                        exportAndDownload(ZIP.root);
-                        dlBtn.disabled = !runtimeAvailable();
-                        dlSdkBtn.disabled = false;
+                    prepareDownloader("debug.bin").then(function(DEBUG_ZIP){
+
+                        zipDownloadName = zipDownloadName.replace('-v'+appVersion+'.zip','-debug-v'+appVersion+'.zip');
+                       
+                        if (runtimeAvailable()) {
+                            prepareDownloader("bin").then(function(RUNTIME_ZIP){
+
+                                copyFolderBetweenZips(RUNTIME_ZIP.root,DEBUG_ZIP.root,'bin').then(function(){
+
+                                    exportAndDownload(DEBUG_ZIP.root).then(function(){
+                                        dlBtn.disabled = false;
+                                        dlSdkBtn.disabled = !sdkAvailable();
+                                    });
+
+                                }).catch(function(err){
+                                    console.log(err);
+                                    exportAndDownload(DEBUG_ZIP.root).then(function(){
+                                        dlBtn.disabled = false;
+                                        dlSdkBtn.disabled = !sdkAvailable();
+                                    });
+                                });
+
+                            });
+                        } else {
+                            exportAndDownload(DEBUG_ZIP.root).then(function(){
+                                dlBtn.disabled = false;
+                                dlSdkBtn.disabled = !sdkAvailable();
+                            });
+                        }
                     });
 
                 };
@@ -348,7 +374,7 @@ fetchCacheBust("/updates/index.json").then(function (response) {
             function exportAndDownload(zip) {
                 return new Promise(function(resolve,reject){
                     zip.generateAsync({ type: "blob", compression: "DEFLATE" }).then(function (blob) {
-
+                        
                         saveAs(blob, zipDownloadName);
                         busy.style.display = "none";
 
@@ -414,6 +440,43 @@ fetchCacheBust("/updates/index.json").then(function (response) {
 
             return zipFile.folder(destinationDir);
 
+        }
+
+        function copyFolderBetweenZips(srcZip,destZip,folderRoot) {
+
+            const isZip = function (z) { return typeof z === 'object' && typeof z.file + typeof z.loadAsync === 'functionfunction'; };
+
+            return new Promise (function(resolve,reject){
+
+                if (! isZip(srcZip) ) return reject(new Error("invalid srcZip argument"));
+                if (! isZip(destZip) ) return reject(new Error("invalid destZip argument"));
+
+                const srcFolder = srcZip.folder(folderRoot);
+                const destFolder = destZip.folder(folderRoot);
+                
+                const filenames = [];
+
+                srcFolder.forEach(function (path, entry) {
+                    const fileInst = srcFolder.files[entry.name];
+                    if (fileInst) {
+                        filenames.push(entry.name);
+                    }
+                });
+
+                Promise.all(filenames.map(function(fn){
+                    const fileInst = srcFolder.files[fn];
+                    return fileInst.async('arraybuffer');
+                })).then(function(arraybuffers){
+                    arraybuffers.forEach(function(arraybuffer,index){
+                        const filename = filenames[index];
+                        const fileInst = srcFolder.files[filename];
+                        destFolder.file(filename,arraybuffer,{date:fileInst.date});
+                    });
+                    resolve();
+                }).catch(reject);
+                
+
+            }) ;
         }
 
 
