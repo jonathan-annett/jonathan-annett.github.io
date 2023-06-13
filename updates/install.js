@@ -102,8 +102,9 @@ fetchCacheBust("/updates/index.json").then(function (response) {
                                 bin_folder,
                                 update_folder
                             });
-                            return true;
+                          
                         });
+                        return true;
                     }
                 })) return ;
 
