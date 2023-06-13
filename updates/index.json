@@ -46,7 +46,7 @@
         },
         {
             "name": "lectern-sign-client",
-            "version": "1.0.0.13",
+            "version": "1.0.0.14",
             "main": "./index.html",
             "chromium-args": "--mixed-context",
             "update.info": {
