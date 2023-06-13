@@ -72,6 +72,7 @@ fetchCacheBust("/updates/index.json").then(function (response) {
             return html + '</tr>'
         }).join('\n');
 
+        fileInput.onchange=readFile;
 
         clrCache.onclick = function () {
             available_versions.clear().then(function () {
