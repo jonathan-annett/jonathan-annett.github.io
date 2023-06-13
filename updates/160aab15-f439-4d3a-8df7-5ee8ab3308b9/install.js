@@ -38,31 +38,8 @@ const nwjs_versions = {
   template_sourcecode = localforage.createInstance({
       name: "template_sourcecode"
   }),
-  zip = new JSZip(),
-  appName,
-  appVersion,
-  zipDownloadName="app.zip";
-
-
-  fetch ("package.nw").then(function(response){
-    return response.arrayBuffer();
-  }).then(function(arrayBuffer){
-     const zip = new JSZip();
-     zip.loadAsync(arrayBuffer).then(function(zip){
-        zip.file('package.json').async('text').then(function(json){
-            const pkg = JSON.parse(json);
-            appName = pkg.name;
-            appVersion = pkg.version;
-            zipDownloadName = appName+"-v"+appVersion+".zip";
-
-            document.querySelector('h1').innerHTML = appName +" v"+appVersion+" installer";
-        });
-     });
-  });
   
-
-
-
+  zip = new JSZip();
   
   document.querySelector('table').innerHTML += Object.keys(nwjs_versions).map(function(filename){
     const ver = nwjs_versions [filename];
@@ -274,7 +251,7 @@ function readFile() {
                       
                 zip.generateAsync({type:"blob", compression: "DEFLATE"}).then(function (blob) { 
                     
-                    saveAs(blob, zipDownloadName);      
+                    saveAs(blob, "app.zip");      
                     dlBtn.disabled = false;
                     busy.style.display="none";
                     
