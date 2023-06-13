@@ -139,6 +139,9 @@ fetchCacheBust("/updates/index.json").then(function (response) {
                             available_versions.getItem(fn).then(function (arrayBuffer) {
                                 getSha256SumForBuffer(arrayBuffer, function (err, hash) {
                                     const table_row = document.querySelector('#v' + hash);
+                                    if (!table_row) {
+                                        return resolve();
+                                    }
                                     if (ver.sha === hash) {
                                         ver.arrayBuffer = arrayBuffer;
                                         table_row.style.backgroundColor = "aqua";
