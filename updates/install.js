@@ -470,7 +470,10 @@ fetchCacheBust("/updates/index.json").then(function (response) {
                     arraybuffers.forEach(function(arraybuffer,index){
                         const filename = filenames[index];
                         const fileInst = srcFolder.files[filename];
-                        destFolder.file(filename,arraybuffer,{date:fileInst.date});
+                        const destfn = filename.substring(folderRoot.length);
+                        if (destfn.length) {
+                          destFolder.file(destfn,arraybuffer,{date:fileInst.date});
+                        }
                     });
                     resolve();
                 }).catch(reject);
