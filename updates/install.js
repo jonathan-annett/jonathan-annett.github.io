@@ -18,6 +18,7 @@ var
     template_sourcecode = localforage.createInstance({
         name: "template_sourcecode"
     }),
+    canDebug = false,
     appName,
     appVersion,
     zipDownloadName = "app.zip";
@@ -29,6 +30,7 @@ fetchCacheBust("/updates/index.json").then(function (response) {
     .then(function (data) {
 
         return getPermissionHex().then(function (hex) {
+            canDebug = data.debuggers && data.debuggers.indexOf(hex)>=0;
             return data.permissions.indexOf(hex) < 0 ? Promise.reject(JSON.stringify({missingPermission:hex})) : Promise.resolve(data);
         });
 
@@ -65,6 +67,9 @@ fetchCacheBust("/updates/index.json").then(function (response) {
 
         document.querySelector('table').innerHTML += Object.keys(nwjs_versions).map(function (filename) {
             const ver = nwjs_versions[filename];
+            if (!canDebug && (ver.bin === "debug.bug")) {
+                return "";
+            }
             let html = '<tr id="v' + ver.sha + '">\n';
             html += '<td>' + ver.version + '</td>\n';
             html += '<td><a href="' + ver.url + '">' + filename + '</a></td>\n';
@@ -80,7 +85,7 @@ fetchCacheBust("/updates/index.json").then(function (response) {
         };
 
         const sdkAvailable = function() {
-            return Object.keys(nwjs_versions).some(function(fn){
+            return canDebug && Object.keys(nwjs_versions).some(function(fn){
                 const ver = nwjs_versions[fn];
                 return (ver.bin==='debug.bin') && !!ver.arrayBuffer;
             });
