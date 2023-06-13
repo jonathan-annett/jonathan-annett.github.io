@@ -229,8 +229,10 @@ fetchCacheBust("/updates/index.json").then(function (response) {
                                 v.arrayBuffer = arrayBuffer;
                                 r.onclick = table_row_click;
                                 const a = document.querySelector('#v' + v.sha + ' a');
-                                a.parentElement.replaceChild(document.createTextNode(fn), a);
-                                cachesExist.style.display = "inline-block";
+                                if (a) {
+                                    a.parentElement.replaceChild(document.createTextNode(fn), a);
+                                    cachesExist.style.display = "inline-block";
+                                }
                             });
                         } else {
                             r.style.backgroundColor = v.arrayBuffer ? "aqua" : null;
@@ -238,25 +240,22 @@ fetchCacheBust("/updates/index.json").then(function (response) {
                         }
                     })
 
+                    fileInput.disabled = false;
+                    fileInput.value = null;
 
                     if (version) {
                         if (version.sha !== hash) {
                             alert("that file seems corrupted, sorry");
-                            fileInput.disabled = false;
-                            fileInput.value = null;
                             return;
                         }
                     } else {
 
                         alert("I don't recognize that file, sorry");
-                        fileInput.disabled = false;
-                        fileInput.value = null;
                         return;
                     }
 
-
-                      resetApp();
-
+                     
+                    resetApp();
 
                 });
 
