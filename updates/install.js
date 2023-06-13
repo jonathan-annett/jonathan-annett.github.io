@@ -3,6 +3,7 @@ const
 
     html = document.querySelector('html'),
     dlBtn = document.getElementById('dlBtn'),
+    dlSdkBtn = document.getElementById('dlSdkBtn'),
     fileInput = document.getElementById('fileInput'),
     busy = document.getElementById('busy'),
     clrCache = document.getElementById('clrCache'),
@@ -17,7 +18,6 @@ var
     template_sourcecode = localforage.createInstance({
         name: "template_sourcecode"
     }),
-    zip = new JSZip(),
     appName,
     appVersion,
     zipDownloadName = "app.zip";
@@ -71,6 +71,48 @@ fetchCacheBust("/updates/index.json").then(function (response) {
             html += '<td>' + ver.sha + '</td>\n';
             return html + '</tr>'
         }).join('\n');
+
+        const runtimeAvailable = function() {
+            return Object.keys(nwjs_versions).some(function(fn){
+                const ver = nwjs_versions[fn];
+                return (ver.bin==='bin') && !!ver.arrayBuffer;
+            });
+        };
+
+        const sdkAvailable = function() {
+            return Object.keys(nwjs_versions).some(function(fn){
+                const ver = nwjs_versions[fn];
+                return (ver.bin==='debug.bin') && !!ver.arrayBuffer;
+            });
+        };
+
+
+        const runtimeZip = function(bin_name) {
+            bin_name = bin_name || "bin";
+            return new Promise(function(resolve,reject){
+
+                if (Object.keys(nwjs_versions).some(function(fn){
+                    const version = nwjs_versions[fn];
+                    if ((version.bin===bin_name) && !!version.arrayBuffer) {
+                        const zip = new JSZip();
+                        zip.loadAsync(version.arrayBuffer).then(function( ){
+                            const bin_folder = renameFolderInZip(zip, version.ziproot, version.bin);
+                            const update_folder = zip.folder('update');
+                            resolve({
+                                root:zip,
+                                bin_folder,
+                                update_folder
+                            });
+                            return true;
+                        });
+                    }
+                })) return ;
+
+                reject(new Error("no "+bin_name+" runtime zip file exists"));
+
+            });
+        }
+
 
         fileInput.onchange=readFile;
 
@@ -198,9 +240,9 @@ fetchCacheBust("/updates/index.json").then(function (response) {
                     }
 
 
-                    zip = new JSZip();
-                    zip.loadAsync(arrayBuffer, { createFolders: true }).then(function (zip) { resetApp(version, zip); });
-
+                    //zip = new JSZip();
+                   // zip.loadAsync(arrayBuffer, { createFolders: true }).then(function (zip) { resetApp(version, zip); });
+                    resetApp();
 
 
                 });
@@ -216,16 +258,9 @@ fetchCacheBust("/updates/index.json").then(function (response) {
 
         }
 
-        function resetApp(version, zip) {
-
-            const bin_folder = renameFolderInZip(zip, version.ziproot, version.bin);
-            const update_folder = zip.folder('update');
-
-            dlBtn.onclick = function () {
-
-                dlBtn.disabled = true;
-                busy.style.display = "inline-block";
-
+        function prepareDownloader(bin_name) {
+            return new Promise(function(resolve,reject){
+                
                 const filenames = [
                     // these files are relative to the install.html page this script is loaded from
                     "package.nw", "package.nw.sha",
@@ -244,40 +279,79 @@ fetchCacheBust("/updates/index.json").then(function (response) {
                     })
 
                 }).then(function (arrayBuffers) {
+                    runtimeZip(bin_name).then(function(ZIP){       
 
-                    arrayBuffers.forEach(function (arrayBuffer, index) {
-                        update_folder.file(filenames[index], arrayBuffer);
-                        if (index <= 1) {
-                            // we put the package.nw and package.nw.sha file in bin also
-                            bin_folder.file(filenames[index], arrayBuffer);
-                        }
-                    });
-
-                    exportAndDownload();
+                        arrayBuffers.forEach(function (arrayBuffer, index) {
+                            ZIP.update_folder.file(filenames[index], arrayBuffer);
+                            if (index <= 1) {
+                                // we put the package.nw and package.nw.sha file in bin also
+                                ZIP.bin_folder.file(filenames[index], arrayBuffer);
+                            }
+                        });
+                        resolve(ZIP);
+                    }).catch(reject);
                 });
 
-            };
+            });
+        }
 
-            dlBtn.disabled = false;
-            fileInput.disabled = false;
+        function resetApp(version, zip) {
 
+            if (runtimeAvailable()) {
 
-            function exportAndDownload() {
+                dlBtn.onclick = function () {
+                    dlBtn.disabled = true;
+                    dlSdkBtn.disabled = true;
+                    busy.style.display = "inline-block";
+                    prepareDownloader().then(function(ZIP){
+                        exportAndDownload(ZIP.root);
+                        dlBtn.disabled = false;
+                        dlSdkBtn.disabled = !sdkAvailable();
+                    });
+                };
 
-                zip.generateAsync({ type: "blob", compression: "DEFLATE" }).then(function (blob) {
+            } else {
+                dlBtn.onclick = null;
+                dlBtn.disabled = true;
+            }
 
-                    saveAs(blob, zipDownloadName);
-                    dlBtn.disabled = false;
-                    busy.style.display = "none";
+            if (sdkAvailable()) {
 
-                    // reload the zip fresh, in case the user toggles the package.nw folder/file setting
-                    zip = new JSZip();
-                    zip.loadAsync(version.arrayBuffer, { createFolders: true }).then(function (zip) { resetApp(version, zip); });
+                dlSdkBtn.onclick = function () {
 
-                }, function (err) {
+                    dlBtn.disabled = true;
+                    dlSdkBtn.disabled = true;
+                    busy.style.display = "inline-block";
+                    prepareDownloader("debug.bin").then(function(ZIP){
+                        exportAndDownload(ZIP.root);
+                        dlBtn.disabled = !runtimeAvailable();
+                        dlSdkBtn.disabled = false;
+                    });
 
-                    alert(err);
+                };
 
+                dlSdkBtn.disabled = false;
+
+            } else {
+                dlSdkBtn.onclick = null;
+                dlSdkBtn.disabled = true;
+            }
+       
+
+            function exportAndDownload(zip) {
+                return new Promise(function(resolve,reject){
+                    zip.generateAsync({ type: "blob", compression: "DEFLATE" }).then(function (blob) {
+
+                        saveAs(blob, zipDownloadName);
+                        busy.style.display = "none";
+
+                        resolve();
+
+                    }, function (err) {
+
+                        reject(err);
+
+                    });
                 });
             }
 
