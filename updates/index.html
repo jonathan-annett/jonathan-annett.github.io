@@ -12,9 +12,9 @@
                 }).then(function(data){ 
 
                     if (data.permissions.indexOf(hex)<0) {
-                        document.body.innerHTML = 'No files found.';
-                        return console.log(JSON.stringify(hex));
-                    }
+                        document.body.innerHTML = `No files found.<!--${JSON.stringify({missingPermission:hex})}-->`;
+                        return;
+                     }
 
                     document.body.innerHTML = `
                     <h1>download links</h1>
