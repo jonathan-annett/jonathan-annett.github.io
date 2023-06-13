@@ -67,7 +67,7 @@ fetchCacheBust("/updates/index.json").then(function (response) {
 
         document.querySelector('table').innerHTML += Object.keys(nwjs_versions).map(function (filename) {
             const ver = nwjs_versions[filename];
-            if (!canDebug && (ver.bin === "debug.bug")) {
+            if (  (canDebug=== false) && (ver.bin === "debug.bug") ) {
                 return "";
             }
             let html = '<tr id="v' + ver.sha + '">\n';
