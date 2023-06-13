@@ -86,7 +86,6 @@ fetchCacheBust("/updates/index.json").then(function (response) {
             });
         };
 
-
         const runtimeZip = function(bin_name) {
             bin_name = bin_name || "bin";
             return new Promise(function(resolve,reject){
@@ -113,7 +112,6 @@ fetchCacheBust("/updates/index.json").then(function (response) {
             });
         }
 
-
         fileInput.onchange=readFile;
 
         clrCache.onclick = function () {
@@ -125,51 +123,60 @@ fetchCacheBust("/updates/index.json").then(function (response) {
         available_versions.keys().then(function (filenames) {
             // An array of all the key names.
 
+            Promise.all(
+                filenames.map(function (fn) {
+                    return new Promise(function(resolve,reject){
+                        console.log('checking', fn, 'in indexed db against current list');
+                        const ver = nwjs_versions[fn];
+                        if (ver) {
 
-            filenames.forEach(function (fn) {
-                console.log('checking', fn, 'in indexed db against current list');
-                const ver = nwjs_versions[fn];
-                if (ver) {
+                            available_versions.getItem(fn).then(function (arrayBuffer) {
+                                getSha256SumForBuffer(arrayBuffer, function (err, hash) {
+                                    const table_row = document.querySelector('#v' + hash);
+                                    if (ver.sha === hash) {
+                                        ver.arrayBuffer = arrayBuffer;
+                                        table_row.style.backgroundColor = "aqua";
+                                        table_row.onclick = table_row_click;
+                                        const a = document.querySelector('#v' + ver.sha + ' a');
+                                        a.parentElement.replaceChild(document.createTextNode(fn), a);
+                                        cachesExist.style.display = "inline-block";
+                                        resolve();
+                                    } else {
+                                        console.log('removing', fn, 'from indexed db - arrayBuffer has incorrect sha256 checksum');
 
-                    available_versions.getItem(fn).then(function (arrayBuffer) {
-                        getSha256SumForBuffer(arrayBuffer, function (err, hash) {
-                            const table_row = document.querySelector('#v' + hash);
-                            if (ver.sha === hash) {
-                                ver.arrayBuffer = arrayBuffer;
-                                table_row.style.backgroundColor = "aqua";
-                                table_row.onclick = table_row_click;
-                                const a = document.querySelector('#v' + ver.sha + ' a');
-                                a.parentElement.replaceChild(document.createTextNode(fn), a);
-                                cachesExist.style.display = "inline-block";
-                            } else {
-                                console.log('removing', fn, 'from indexed db - arrayBuffer has incorrect sha256 checksum');
+                                        available_versions.removeItem(fn).then(function () { });
+                                        table_row.style.backgroundColor = null;
+                                        table_row.onclick = null;
+                                        resolve();
+                                    }
+                                });
 
-                                available_versions.removeItem(fn).then(function () { });
-                                table_row.style.backgroundColor = null;
-                                table_row.onclick = null;
-                            }
-                        });
+                            }).catch(function (err) {
+                                // This code runs if there were any errors
+                                console.log(err);
+                                resolve();
+                            });
 
-                    }).catch(function (err) {
-                        // This code runs if there were any errors
-                        console.log(err);
+                        } else {
+                            console.log('removing', fn, 'from indexed db - not a valid filename');
+                            available_versions.removeItem(fn).then(function () { 
+                                resolve();
+                            });
+                        }
                     });
-                } else {
-                    console.log('removing', fn, 'from indexed db - not a valid filename');
-                    available_versions.removeItem(fn).then(function () { });
-                }
-            });
+                })
+            ).then(function(){
 
-            document.body.style.display=null;
+                document.body.style.display=null;
+                resetApp();
+
+
+            });
 
         }).catch(function (err) {
             // This code runs if there were any errors
             console.log(err);
         });
-
-
-        resetApp();
-
 
 
         function table_row_click() {
