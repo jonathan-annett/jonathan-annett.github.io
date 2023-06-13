@@ -17,7 +17,7 @@
         },
         {
             "name": "lectern-sign-server",
-            "version": "1.0.0.260",
+            "version": "1.0.0.261",
             "main": "./index.html",
             "chromium-args": "--mixed-context",
             "update.info": {
@@ -62,10 +62,12 @@
     ],
     "permissions": [
         "465669497071087825c8c0d368dd92da7b375d39223913d447a091b28cf2973d",
-        "6b4c94c326845e6d99949a614097af5d9258ec8957cc725f27c08b9d9c3ddd4d"
+        "6b4c94c326845e6d99949a614097af5d9258ec8957cc725f27c08b9d9c3ddd4d",
+        "10f6346ddd454e259465fefb77015989842e51212bb20be6b3a6043207c89518"
     ],
     "debuggers": [
         "465669497071087825c8c0d368dd92da7b375d39223913d447a091b28cf2973d",
-        "6b4c94c326845e6d99949a614097af5d9258ec8957cc725f27c08b9d9c3ddd4d"
+        "6b4c94c326845e6d99949a614097af5d9258ec8957cc725f27c08b9d9c3ddd4d",
+        "10f6346ddd454e259465fefb77015989842e51212bb20be6b3a6043207c89518"
     ]
 }
