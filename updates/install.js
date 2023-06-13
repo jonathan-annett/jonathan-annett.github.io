@@ -313,7 +313,7 @@ fetchCacheBust("/updates/index.json").then(function (response) {
                         dlSdkBtn.disabled = !sdkAvailable();
                     });
                 };
-
+                dlBtn.disabled = false;
             } else {
                 dlBtn.onclick = null;
                 dlBtn.disabled = true;
@@ -335,10 +335,12 @@ fetchCacheBust("/updates/index.json").then(function (response) {
                 };
 
                 dlSdkBtn.disabled = false;
+                dlSdkBtn.hidden = false;
 
             } else {
                 dlSdkBtn.onclick = null;
                 dlSdkBtn.disabled = true;
+                dlSdkBtn.hidden = true;
             }
        
 
