@@ -15,7 +15,7 @@
         },
         {
             "name": "lectern-sign-server",
-            "version": "1.0.0.147",
+            "version": "1.0.0.148",
             "main": "./index.html",
             "chromium-args": "--mixed-context",
             "update.info": {
