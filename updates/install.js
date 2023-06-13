@@ -168,16 +168,15 @@ fetchCacheBust("/updates/index.json").then(function (response) {
         });
 
 
+        resetApp();
+
+
 
         function table_row_click() {
             const this_hash = this.id.replace(/^v/, '');
             Object.keys(nwjs_versions).forEach(function (k) {
                 const v = nwjs_versions[k];
                 document.querySelector('#v' + v.sha).style.backgroundColor = v.sha === this_hash ? "yellow" : v.arrayBuffer ? "aqua" : null;
-                if (v.sha === this_hash && v.arrayBuffer) {
-                    zip = new JSZip();
-                    zip.loadAsync(v.arrayBuffer, { createFolders: true }).then(function (zip) { resetApp(v, zip); });
-                }
             });
 
         }
@@ -240,9 +239,7 @@ fetchCacheBust("/updates/index.json").then(function (response) {
                     }
 
 
-                    //zip = new JSZip();
-                   // zip.loadAsync(arrayBuffer, { createFolders: true }).then(function (zip) { resetApp(version, zip); });
-                    resetApp();
+                      resetApp();
 
 
                 });
@@ -295,7 +292,7 @@ fetchCacheBust("/updates/index.json").then(function (response) {
             });
         }
 
-        function resetApp(version, zip) {
+        function resetApp() {
 
             if (runtimeAvailable()) {
 
