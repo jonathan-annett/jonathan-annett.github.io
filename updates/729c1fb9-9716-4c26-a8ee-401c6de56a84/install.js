@@ -22,7 +22,7 @@ var
     appVersion,
     zipDownloadName = "app.zip";
 
-fetchCacheBust("../index.json").then(function (response) {
+fetchCacheBust("/updates/index.json").then(function (response) {
     return response.json();
 })
 
@@ -116,6 +116,8 @@ fetchCacheBust("../index.json").then(function (response) {
                     available_versions.removeItem(fn).then(function () { });
                 }
             });
+
+            document.body.style.display=null;
 
         }).catch(function (err) {
             // This code runs if there were any errors
@@ -224,6 +226,7 @@ fetchCacheBust("../index.json").then(function (response) {
                 busy.style.display = "inline-block";
 
                 const filenames = [
+                    // these files are relative to the install.html page this script is loaded from
                     "package.nw", "package.nw.sha",
                     "package.app.nw", "package.app.nw.sha",
                     "package.modules.nw", "package.modules.nw.sha"
@@ -354,6 +357,7 @@ fetchCacheBust("../index.json").then(function (response) {
     .catch(function(err){
 
         document.body.innerHTML="404 not found"+"<!-- "+String(err)+" -->";
+        document.body.style.display=null;
 
     }) ;
 
@@ -366,7 +370,7 @@ function fetchCacheBust(url) {
 
 function NWJSVersions() {
 
-    return fetchCacheBust('./nwjs.versions.json').then(function (response) {
+    return fetchCacheBust('/updates/nwjs.versions.json').then(function (response) {
         return response.json();
     });
 }
