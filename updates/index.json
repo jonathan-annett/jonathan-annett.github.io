@@ -2,7 +2,7 @@
     "packages": [
         {
             "name": "lectern-sign-simulator",
-            "version": "1.0.0.19",
+            "version": "1.0.0.20",
             "main": "./index.html",
             "update.info": {
                 "guid": "160aab15-f439-4d3a-8df7-5ee8ab3308b9",
