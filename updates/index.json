@@ -17,7 +17,7 @@
         },
         {
             "name": "lectern-sign-server",
-            "version": "1.0.0.371",
+            "version": "1.0.0.401",
             "main": "./index.html",
             "chromium-args": "--mixed-context",
             "update.info": {
@@ -25,6 +25,8 @@
                 "updates": "https://jonathan-annett.github.io/updates/729c1fb9-9716-4c26-a8ee-401c6de56a84"
             },
             "dependencies": {
+                "@ffmpeg/core": "^0.11.0",
+                "@ffmpeg/ffmpeg": "^0.11.6",
                 "express": "^4.18.2",
                 "jszip": "^3.10.1",
                 "mime-types": "^2.1.35",
