@@ -17,7 +17,7 @@
         },
         {
             "name": "lectern-sign-server",
-            "version": "1.0.0.406",
+            "version": "1.0.0.423",
             "main": "./index.html",
             "chromium-args": "--mixed-context",
             "update.info": {
@@ -28,6 +28,7 @@
                 "@ffmpeg/core": "^0.11.0",
                 "@ffmpeg/ffmpeg": "^0.11.6",
                 "express": "^4.18.2",
+                "ftpd": "^0.2.16",
                 "jszip": "^3.10.1",
                 "mime-types": "^2.1.35",
                 "ws": "^8.13.0"
