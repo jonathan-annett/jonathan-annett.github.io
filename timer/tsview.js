@@ -314,7 +314,8 @@ function createTimestampViewer(videoElement,canvas,timestampCanvas,liveCanvas,sc
     return {
         
         reset : function () {
-             targetStamp = mostRecentFrames[mostRecentFrames.length-1].timestamp;
+            const lastFrame = mostRecentFrames[mostRecentFrames.length-1];
+             targetStamp = lastFrame ? lastFrame.timestamp : timeProvider.now() ;
              
              timedRegionFrames.splice(0,timedRegionFrames.length).forEach(function(frm){
                  if (mostRecentFrames.indexOf(frm)<0) {
