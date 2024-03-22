@@ -207,7 +207,7 @@ function createTimestampViewer(videoElement,canvas,timestampCanvas,liveCanvas,sc
     		
     		if (timedRegionFrames.length) {
     		    const frameCount = mostRecentFrames.length + timedRegionFrames.length;
-    		    const unique = mostRecentFrames.concat(timedRegionFrames).filter(function(e,i,a){ return a.indexOf(e)===i;});
+    		    const unique = mostRecentFrames.concat(timedRegionFrames).filter(function(e,i,a){ return a.indexOf(e)===i;}).filter(function(e){ return !!e.frameBlob;});
     		    const uniqueBytes = unique.reduce(function(t,e){ return e.frameBlob.size+t;},0);
     		    const averageBytes = uniqueBytes / unique.length;
     		    const estimate = maxFrames * 3 * averageBytes;
