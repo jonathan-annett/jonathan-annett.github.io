@@ -188,14 +188,14 @@ html.reduced #now_disp:before {
  #wc_canvas2 {
     position : absolute;
     left     : 4px;
-  top : calc( 80% - 44px );
+  top : calc( 50% - 44px );
     width    : 15vw;
     height   : auto;
  }
  #wc_canvas3 {
     position : absolute;
     right    : 4px;
-   top : calc( 80% - 44px );
+   top : calc( 50% - 44px );
     width    : 15vw;
     height   : auto;
  }
