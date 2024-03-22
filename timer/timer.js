@@ -1,1606 +1,1815 @@
-
+/*!
+ * timer.js
+ * Copyright(c) 2023 Jonathan Annett
+ * MIT Licensed
+ */
 
 /*jshint maxerr: 10000 */
 
-/* global fs_api,ace,keycodes,keyNames,keyNamesHtml,evenSimplerPeer */
+/* global fs_api,ace,timerAPI,setupPip,timeProvider*/
 
-const oneSecond = 1000;
-const oneMinute = 60 * oneSecond;
+
+const oneSecond		= 1000;
+const oneMinute		= 60 * oneSecond;
 const skip_granularity = 15 * oneSecond;
-
-const ace_url = "https://cdnjs.cloudflare.com/ajax/libs/ace/1.15.2/ace.js";
-const ace_hash = "sha512-NSbvq6xPdfFIa2wwSh8vtsPL7AyYAYRAUWRDCqFH34kYIjQ4M7H2POiULf3CH11TRcq3Ww6FZDdLZ8msYhMxjg==";
 
 var timerWin;
 
-window.addEventListener("unload", onControlUnload);
+if (
+	(!!window.opener &&
+		 ["timer_control_window","remote_timer_window"].indexOf(window.name)>=0
+	) // companion / local hosted mode 
+		 ||
+	(window.location.protocol==="https:") // hosted single page mode
+   ) {
+	console.log("page load mode confirmed",document.referrer,location.origin);
+} else {
+	location.replace(location.origin);
+}
+
+
+window.addEventListener ("unload",onControlUnload);
+
+const wc_canvas = document.getElementById('wc_canvas');
+const wc_canvas2 = document.getElementById('wc_canvas2');
+const wc_canvas3 = document.getElementById('wc_canvas3');
+const wc_videoElement = document.getElementById('webcam');
+      
+wc_canvas.width = 1270;
+wc_canvas.height = 720;
+  
+let wc_viewer ;
 
 let doc = document;
 let qs = doc.querySelector.bind(doc);
 let getEl = doc.getElementById.bind(doc);
 
+let tabCount = 1;
+
 let shifting = false;
 let controlling = false;
+let alting = false;
 
-let stylesheet1 = getEl("style_1");
+let nudgeFactor  = controlling ? 60000 : 1000;
+	
+let endDelta	 =  controlling ? 60000 : 0;
+let seekEndDelta =  controlling ? 60000 : 1000;
+
+
+let stylesheet1= getEl ("style_1");
 let stylesheet1_obj;
-
-let peerLink = evenSimplerPeer({
-    custom : "Streamdeck",
-    scan : false
-});
-
-peerLink.on('connected',function(){
-    html.classList.remove("peer-show");
-    html.classList.add("peer-linked");
-    console.log("connected");
-});
-  
-peerLink.on('message',function(msg){
-    console.log(msg);
-});
-  
-peerLink.on('disconnected',function(){
-    html.classList.remove("peer-linked");
-    console.log("disconnected");
-});
-
-
-replaceStylesheet(stylesheet1, function (ev) {
-    stylesheet1_obj = ev;
+replaceStylesheet(stylesheet1,function(ev){
+	stylesheet1_obj = ev;
 });
 
 let aceScript;
-let elapsedDisp = getEl("elapsed_disp");
-let remainDisp = getEl("remain_disp");
-let startedDisp = getEl("started_disp");
-let endsDisp = getEl("ends_disp");
+let elapsedDisp  = getEl("elapsed_disp");
+let remainDisp   = getEl("remain_disp");
+let startedDisp  = getEl("started_disp");
+let endsDisp	 = getEl("ends_disp");
 
 let remainInfoDisp = getEl("remain_info_message");
 
-let custom_message = getEl("custom_message");
 
-let keycodesEdit = document.querySelector("#custom_key_edit div");
-updateKeycodesEdit(keycodesEdit);
+let custom_message  = getEl("custom_message");
 
 
 let durationDisp = getEl("duration_disp");
 let extraTimeDisp = getEl("extra_time_disp");
 
-let nowDisp = getEl("now_disp");
-let keyDisp = getEl("key_disp");
+
+ 
+
+let nowDisp	  = getEl("now_disp");
+let keyDisp	  = getEl("key_disp");
 let dispNextMins = getEl("disp_next_mins");
-let html = qs("html");
-let progress = qs('.progress');
+let html		 = qs("html");
+let progress	 = qs('.progress');
 let pausedAt;
 let pauseAcum = 0;
-
+  
 let runMode = "controller";
 
-let timerStack = [];
+let togglePIPMode ;
 
-var audioTrig = null;
+const isLinked = window.location.search.indexOf("&linked")>0;
 
-if (window.location.search.startsWith("?presenter")) {
+  if (window.location.search.startsWith("?presenter")) {
 
-    html.classList.add("reduced");
-    runMode = "presenter";
-    if (fs_api.isFullscreen()) {
-        document.title = "Presentation Timer - Remote Screen (Fullscreen)";
-    } else {
-        document.title = "Presentation Timer - Remote Screen";
-    }
+	  html.classList.add("reduced");
+	  runMode = "presenter";
+	  if (fs_api.isFullscreen()) {
+		 document.title = "Presentation Timer - Remote Screen (Fullscreen)";
+	  } else {
+		 document.title = "Presentation Timer - Remote Screen";
+	  }
 
-} else {
+  } else {
 
-    if (fs_api.isFullscreen()) {
-        document.title = "Presentation Timer - Control Screen (Fullscreen)";
-    } else {
-        document.title = "Presentation Timer - Control Screen";
-    }
+	 if (fs_api.isFullscreen()) {
+		 document.title = "Presentation Timer - Control Screen (Fullscreen)";
+	 } else {
+		 document.title = "Presentation Timer - Control Screen";
+	 }
 
-}
+	 togglePIPMode = setupPip(
+		"remain_disp",
+		"remain_disp_video",
+		192*2,108*2,
+		'100px "Lucida", sans-serif',
+		"#remain_disp_video_text",
+		"overlay",
+		"#remain_disp_video_text",
+		'40px "Lucida", sans-serif'
+	);
 
-let defaultDuration = readNumber("defaultDuration", 10 * oneMinute);
+	if (!togglePIPMode) {
+		setHtmlClass('nooverlay');
+	}
+
+  }
+  
+let defaultDuration = readNumber ( "defaultDuration", 10 * oneMinute ); 
 let thisDuration = defaultDuration;
-let startedAt = readNumber("startedAt", Date.now());
-let endsAt = readNumber("endsAt", startedAt + defaultDuration);
-let seekEndsAt = readNumber("seekEndsAt", endsAt);
+let startedAt	   = readNumber ( "startedAt",	   timeProvider.now()	 );
+let endsAt		  = readNumber ( "endsAt",		  startedAt + defaultDuration  ) ;
+let seekEndsAt	  = readNumber ( "seekEndsAt",	  endsAt		);
 
 
 let lastUpdateTick = 0;
-let lastTimeText = "";
-let enterTimeText = "";
+let lastTimeText   = "";
+let lastEndsAtText = "";
+let enterTimeText  = "";
 let enterHoursText = "";
-let tab_id = "tab_" + Date.now().toString();
+window.tab_id = "tab_"+timeProvider.now().toString(); 
 
-custom_message.addEventListener('focus', function () {
-    setTimeout(function () {
-        document.execCommand('selectAll', false, null);
-    }, 2);
+custom_message.addEventListener('focus', function(){
+  setTimeout(function(){
+	 document.execCommand('selectAll',false,null);
+  },2);
 });
 
 
-progress.style.width = '0%';
+  progress.style.width = '0%';
+	
+  dispNextMins.textContent = secToStr(defaultDuration/1000);
+  
+  let restartNeeded = isNaN (startedAt) || isNaN (endsAt);
+  if (!restartNeeded) {
+	  
+	  let overshoot = 1000 * 60 * 10;
+	  if ((timeProvider.now () > endsAt + overshoot) || (timeProvider.now() > seekEndsAt+ overshoot) ) {
+		  restartNeeded=true;
+	  } 
+
+  }
+  
+  if ( restartNeeded) {
+	 restartTimer() ;
+  } else {
+	  
+	  if ((timeProvider.now () > endsAt) || (timeProvider.now() > seekEndsAt) ) {
+		  endsAt = seekEndsAt;
+		  setHtmlClass("over");
+	  } 
+	   startedDisp.textContent =  local24HourTime (timeProvider.date(startedAt));
+	   endsDisp.textContent	=  local24HourTime ( timeProvider.date(endsAt) );
+	   durationDisp.textContent = secToStr((endsAt-startedAt) / 1000);
+	   
+	   
+	   pausedAt = readNumber("pausedAt",pausedAt);
+	   pauseAcum = readNumber("pauseAcum",pauseAcum);
+	   
+	   
+	   
+	   if (pausedAt!==undefined) {
+		   setHtmlClass("paused");
+	   }
+	
+	   
+	   displayUpdate();
+	   
+	   if ( readNumber("showbar",0) === 1) {
+		   setHtmlClass("showbar");
+	   } else {
+		   clearHtmlClass("showbar");
+	   }
+	   
+		if ( readNumber("showtimenow",0) === 1 ) {
+		   setHtmlClass("showtimenow");
+		 } else {
+		   clearHtmlClass("showtimenow");			
+		 } 
+		 
+		 
+		if ( readNumber("showmessages",0) === 1 ) {
+		   setHtmlClass("showmessages");
+		 } else {
+		   clearHtmlClass("showmessages");
+		 } 
+
+	   
+	   
+	   localStorage.setItem("remainDispClass",html.className);
+  }
+
+  dispNextMins.textContent = secToStr( defaultDuration / oneSecond );
+  
+  setInterval(displayUpdate,100);
+  doc.addEventListener("keyup",onDocKeyUp);
+  doc.addEventListener("keydown",onDocKeyDown);
+  
+  doc.addEventListener("contextmenu",function(e){ e.preventDefault();});
+  addEventListener('storage',onLocalStorage);
+  
+		   [].forEach.call(document.querySelectorAll('div.buttons div.btn'),function(el){
+			  el.addEventListener('pointerdown',keyMacroClick);
+		  });
+
+		  
+ 
+		  function keyMacroClick(e) {
+			  if (e.pointerType === "mouse") {
+				  if (e.button !== 0) {
+					  return;
+				  }
+			  }
+			  let keys = this.dataset.keys.split(",").map(function(code){
+				  
+				  if (code.startsWith('!')) {
+					  
+					  return {key : code.substr(1),__up:true};
+				  } else {
+					return {key : code};  
+				  }
+			  });
+			  
+			  if (e.shiftKey && keys[0].key===" ") {
+				  
+				  if (enterTimeText !== "") {
+					  this.dataset.keys = ' ,'+enterTimeText.split('').join(',')+', ';
+					  this.innerHTML = enterTimeText;
+					  clearHtmlClass("editing");
+					  dispNextMins.textContent = secToStr(defaultDuration/1000);
+					  enterTimeText = "";
+					  return;
+
+				  } else {
+					  keys = this.dataset.keys.split(",").map(function(code){
+						  if (code===" ")  {
+							  return { key :"Enter" };
+						  }
+						  return {key : code};  
+					  });
+					}
+			  }
+			  
+			  keys.forEach(function(e){
+				  if (e.__up) { 
+					onDocKeyUp(e);
+				  } else {
+					onDocKeyDown(e);
+				  }
+			  });
+		  }
+		  
+  
+   function openTimerWindow(close) {
+	  if (close===true) {
+		 if (timerWin) timerWin.close();
+		 if (window.opener) window.close();
+		 timerWin = undefined;
+	  } else {
+		 timerWin = open("timer.html?presenter", 'remote_timer_window', "location=0");
+		 if (timerWin) {
+			timerWin.addEventListener ("load",function(){
+				console.log("timer win loaded");
+				timerWin.addEventListener ("unload",onTimerWinUnload);
+			});
+		 }
+	  }
+	  return false;
+  }
+  
+  
+  function displayUpdate() {
+	  
+	  let timeNow =  timeProvider.now() ; 
+	  tabCount = getTabCount();
+	  let controllerCount = getTabCount(true);
+	  let pausing = false;
+
+	  let adjusting_down = false;
+	  let adjusting_up = false;
+	  let adjusting_delta = '0';
+	  let remain_actual ;
+	  
+	  if (tabCount===1) {
+		  clearHtmlClass("twoplus");
+	  } else {
+		  setHtmlClass("twoplus");
+	  }
+
+	  if (!fs_api.isFullscreen()) {
+			if (runMode === "presenter") {
+				if (tabCount===1) {
+					document.title = "Presentation Timer - Single Window";
+				} else { 
+					document.title = "Presentation Timer - Remote Screen";
+				}
+			} else  {
+				if (runMode==="controller" ) {
+					document.title = "Presentation Timer - Control Screen";
+				} else {
+				   document.title = "Presentation Timer";
+				}
+			}
+	  } else {
+			 if (runMode === "presenter") {
+						document.title = "Presentation Timer - Remote Screen (Fullscreen)";
+			 } else  {
+					if (runMode==="controller" ) {
+						document.title = "Presentation Timer - Control Screen (Fullscreen)";
+					} else {
+						document.title = "Presentation Timer (Fullscreen)";
+					}
+			}  
+	  } 
+	  
+	  if ((runMode==="controller" || tabCount=== 1) && !isLinked ) {
+		 
+		 let pausedMsec = pausedAt ? timeNow-pausedAt : 0;
+		  
+		 let actualRemain =  (seekEndsAt - timeNow) / oneSecond ;
+		 if (actualRemain>0) actualRemain++;
+		 remain_actual = secToStr(actualRemain);
+		 if (seekEndsAt < endsAt - 500) {
+			 
+			 if (seekEndsAt < endsAt - skip_granularity) {
+				 //endsAt -= skip_granularity;
+			 }
+			 
+			 endsAt -= 25;
+			 clearRemainClass("adjustingDown");
+			 setRemainClass("adjusting") ;
+			 adjusting_delta = Number ( (endsAt -seekEndsAt) / oneSecond).toFixed(1);
+			 
+			 keyDisp.textContent = "speeding up to match actual time ("+remain_actual+")  "+adjusting_delta+" seconds offset";
+			 writeNumber("endsAt",endsAt);
+			 adjusting_up = true;
+			
+		 } else {
+			  if (seekEndsAt > endsAt + 500) {
+				  if (seekEndsAt > endsAt + skip_granularity) {
+					  //endsAt += skip_granularity;
+				  }
+				  endsAt += 25;
+				  clearRemainClass("adjusting");
+				  setRemainClass("adjustingDown") ;
+				  adjusting_delta = Number ( (endsAt -seekEndsAt) / oneSecond).toFixed(1)
+				  keyDisp.textContent = "slowing down to match actual time ("+remain_actual+")  "+adjusting_delta+" seconds offset";
+				  writeNumber("endsAt",endsAt);
+				  adjusting_down = true;
+			  }  else {
+				  endsAt = seekEndsAt;
+				  clearRemainClass("adjusting") ;
+				  clearRemainClass("adjustingDown") ;
+				  remain_actual = undefined;
+				  keyDisp.textContent = tabCount === 1  ? "" : controllerCount > 1 ? "MULTIPLE CONTROLLERS TABS ARE OPEN. CLOSE ONE!" : pausedMsec === 0 ? "remote display active" : "countdown was paused at "+ local24HourTime (timeProvider.date(pausedAt));
+				  writeNumber("endsAt",endsAt);
+			  }
+		 }
+		 
+		  
+		 let secondsRemain = ((endsAt - timeNow) + (pausedMsec)) / oneSecond;
+		 let timeText,elapsedText;
+		 
+		 
+		 if (pausedMsec!=0) {
+			 const pausedTimeStr = secToStr(pausedMsec / oneSecond);
+			 remainInfoDisp.textContent =  runMode === "presenter" ? "Paused" : pausedTimeStr;
+			 endsDisp.textContent =  local24HourTime ( timeProvider.date(seekEndsAt+pausedMsec) );
+			 const accumTimeStr = secToStr((pauseAcum+pausedMsec) / oneSecond);
+			 extraTimeDisp.textContent = "+ "+accumTimeStr+" pauses";
+			 pausing = true;
+			 if (timerAPI && lastEndsAtText !== endsDisp.textContent) {
+				lastEndsAtText = endsDisp.textContent;
+				timerAPI.send({
+					setVariableValues:{
+						adjusting_up,
+						adjusting_down,
+						adjusting_delta,
+						remain_actual: remain_actual,
+						endsAt:lastEndsAtText,
+						paused:pausedTimeStr,
+						pauses:accumTimeStr,
+						pausing}
+					});
+			 }
+
+			
+			 
+		 } else {
+			 remainInfoDisp.textContent = "";
+			 if (pauseAcum===0) {
+				 extraTimeDisp.textContent = "";
+			 } else {
+				 extraTimeDisp.textContent = "+ "+secToStr(pauseAcum / oneSecond)+" pauses";
+			 }
+		 }
+		 
+		 
+		 
+		
+		 let elapsedMSec = (timeNow-startedAt) - (pausedMsec+pauseAcum);
+		 if (elapsedMSec < 0) {
+			 
+			setHtmlClass("future");
+			if (elapsedMSec > -60000) {
+				setHtmlClass("impending");
+			} else {
+				clearHtmlClass("impending");
+			}
+			seekEndsAt = startedAt + thisDuration;
+			bumpEnd(0,0);
+			endsAt = seekEndsAt;
+			elapsedText = secToStr((0-elapsedMSec) / oneSecond);
+			elapsedDisp.textContent = elapsedText;
+			timeText = secToStr(thisDuration/1000);
+			localStorage.setItem("elapsedDisp",elapsedText);
+				
+			 
+			
+		 } else {
+			 
+			clearHtmlClass("future");
+			if (secondsRemain >= 0 ) {
+				  timeText =  secToStr(secondsRemain+1);
+				 
+			} else {
+				  timeText =  secToStr((0-secondsRemain));
+				
+			}
+			elapsedText =  secToStr(elapsedMSec / oneSecond);
+					 
+		 }
+		 
+		 if (lastTimeText !== timeText) {
+				 if (lastUpdateTick===0 || timeNow - lastUpdateTick > 750) {
+					 lastUpdateTick = timeNow;
+					 remainDisp.textContent = timeText;
+					 elapsedDisp.textContent = elapsedText;
+					 
+					 
+					 lastTimeText = timeText;
+					 let expired = false;
+					 let impending = false;
+				   
+					 if (secondsRemain >=  0 ) {
+						 
+						clearHtmlClass("over");
+						
+						if (elapsedMSec >= 0) {
+							if (secondsRemain <= 60 ) {
+								setHtmlClass("impending");
+								impending=true;
+							} else {
+								clearHtmlClass("impending");								
+							}
+						}
+						
+						setBar(elapsedMSec,thisDuration);
+					 } else {
+						expired = true;
+						setHtmlClass("over");
+						clearHtmlClass("impending");	
+						setBarPct(100);
+					 }
+					 localStorage.setItem("remainDisp",timeText);
+					 if (timerAPI) {
+						timerAPI.send({
+							setVariableValues:{
+								adjusting_up,
+								adjusting_down,
+								adjusting_delta,
+								remain_actual: remain_actual||timeText,
+								expired,impending,pausing,
+								remain:timeText,
+								elapsed:elapsedText}});
+					 }
+
+				  }
+		 }
+		 localStorage.setItem("remainDispClass",html.className);
+		 
+	  } else {
+		  keyDisp.textContent = tabCount+" tabs open";
+	  }
+	   nowDisp.textContent = timeNowStr();
+  }
+  
+  function updateEnteredTimeText () {
+		 if (enterHoursText === "") {
+			dispNextMins.textContent = secToStr(Number(enterTimeText) * 60);
+		 } else {
+			dispNextMins.textContent = secToStr((Number(enterHoursText) * 3600) + (Number(enterTimeText) * 60)); 
+		 } 
+  }
+
+
+ function replaceStylesheet(el,cb) {
+	 
+	 let src = el.href;
+	 let xhr = new XMLHttpRequest(),
+		 css = '';//Empty string variable intended for the XMLHttpRequest response data...
+
+		function processRequest(){
+			if (xhr.readyState == 4){
+				css = this.responseText;
+				let editor,editorPre;
+				let sheet = document.createElement('style');
+				sheet.innerHTML = css;
+				let storedCss = localStorage.getItem("custom_css");
+				if (storedCss) {
+					sheet.innerHTML = storedCss;
+				}
+				document.body.appendChild(sheet);
+				el.parentNode.removeChild(el);
+				if (cb) {
+					cb(Object.defineProperties({},{
+						sheet : {value: sheet},
+						css : { 
+							set : function(newCss){
+								sheet.innerHTML = newCss;
+							},
+							get : function () {
+								return sheet.innerHTML;
+							}
+						},
+						reset : {value : function(){
+							sheet.innerHTML = css;
+							localStorage.removeItem("custom_css");
+						}},
+						editToggle : {
+							
+							value : function(){
+							if (editor) {
+								sheet.innerHTML = editor.getValue();
+								localStorage.setItem("custom_css",sheet.innerHTML);
+								editorPre.parentNode.removeChild(editorPre);
+								editor=undefined;
+							} else {
+								   let startEditor = function(){
+									  
+									  editorPre = document.createElement("pre");
+									  editorPre.id="css_editor";
+									  document.body.appendChild(editorPre);
+									  
+									  setTimeout(function(){
+										  editor = ace.edit("css_editor");
+										  editor.setTheme("ace/theme/chrome");
+										  editor.session.setMode("ace/mode/css");
+										  editor.setValue(sheet.innerHTML);
+										  editor.focus();							
+										  editor.gotoLine(1);
+									  },10);
+								};
+								
+								if (aceScript) {
+									
+								   
+								  let iv = setInterval(function(){
+									  if (window.ace) {
+										 clearInterval(iv);
+										 startEditor();
+									  }
+								  },100);
+									
+								} else {
+									
+									aceScript = document.createElement("script");
+									aceScript.setAttribute('integrity',"sha512-NSbvq6xPdfFIa2wwSh8vtsPL7AyYAYRAUWRDCqFH34kYIjQ4M7H2POiULf3CH11TRcq3Ww6FZDdLZ8msYhMxjg==");
+									aceScript.setAttribute('crossorigin',"anonymous" );
+									aceScript.setAttribute('referrerpolicy',"no-referrer");
+									aceScript.setAttribute('src',"https://cdnjs.cloudflare.com/ajax/libs/ace/1.15.2/ace.js");
+									document.body.appendChild(aceScript);
+									
+									let iv = setInterval(function(){
+										if (window.ace) {
+										   clearInterval(iv);
+										   startEditor();
+										}
+									},100);
+								
+								}
+								
+							}	   
+						}},
+						editing : {
+							get : function() {
+								return !!editor;
+							}
+						}
+					}));
+				}
+			 }
+		}
+
+		xhr.responseType = 'text';
+		xhr.open('GET', src);
+		xhr.onreadystatechange = processRequest;
+		xhr.send();
+
+ }
+
+  
+  function restartTimer(useDuration) {
+	thisDuration = useDuration ===undefined ? defaultDuration : useDuration;
+	lastUpdateTick = 0;
+	startedAt  = timeProvider.now();  
+	if (wc_viewer) {
+	    wc_viewer.reset();
+	    setHtmlClass('video-track');
+	} else {
+	    clearHtmlClass('video-track');
+	}
+	endsAt	 = startedAt + thisDuration;
+	pausedAt=undefined;
+	pauseAcum=0;
+	//thisDuration = defaultDuration;
+	seekEndsAt = endsAt;
+	startedDisp.textContent = local24HourTime ( timeProvider.date(startedAt) ); 
+	endsDisp.textContent	=  local24HourTime ( timeProvider.date(endsAt) ); 
+	durationDisp.textContent = secToStr(thisDuration / 1000);
+	extraTimeDisp.textContent = "";
+	
+	
+	writeNumber("pausedAt",pausedAt);
+	writeNumber("pauseAcum",pauseAcum);
+	
+	writeNumber("startedAt",startedAt);
+	writeNumber("endsAt",endsAt);
+	writeNumber("seekEndsAt",seekEndsAt);
+	clearHtmlClass("countup-override");
+	clearHtmlClass("paused");
+	setBarPct(0);
+
+	if (timerAPI) {
+		timerAPI.send( {
+			setVariableValues:{
+				startedAt:startedDisp.textContent,
+				endsAt:endsDisp.textContent,
+				default:durationDisp.textContent,
+				paused:'0:00',
+				pauses:'0:00',
+				pausing:false,
+				expired:false,
+				showpresenter: html.classList.contains("reduced") ? '1' : '0',
+				impending:thisDuration<=60000}
+			});
+	  }
+  }
+  
+  function setPresenterMode() {
+	  runMode = "presenter";
+	  html.classList.add("reduced");
+	  if (timerAPI) {
+		timerAPI.send( {setVariableValues:{showpresenter:  '1' }})   ;
+	}
+  }
+  
+  function setControllerMode() {
+	  runMode = "controller";
+	  html.classList.remove("reduced");
+	  if (timerAPI) {
+		timerAPI.send( {setVariableValues:{showpresenter:  '0' }});
+	}
+  }
+ 
+ 
 
-dispNextMins.textContent = secToStr(defaultDuration / 1000);
 
-let restartNeeded = isNaN(startedAt) || isNaN(endsAt);
-if (!restartNeeded) {
-
-    let overshoot = 1000 * 60 * 10;
-    if ((Date.now() > endsAt + overshoot) || (Date.now() > seekEndsAt + overshoot)) {
-        restartNeeded = true;
-    }
-
-}
-
-if (restartNeeded) {
-    restartTimer();
-} else {
-
-    if ((Date.now() > endsAt) || (Date.now() > seekEndsAt)) {
-        endsAt = seekEndsAt;
-        setHtmlClass("over");
-    }
-    startedDisp.textContent = new Date(startedAt).toLocaleTimeString();
-    endsDisp.textContent = new Date(endsAt).toLocaleTimeString();
-    durationDisp.textContent = secToStr((endsAt - startedAt) / 1000);
-
-
-    pausedAt = readNumber("pausedAt", pausedAt);
-    pauseAcum = readNumber("pauseAcum", pauseAcum);
-
-
-
-    if (pausedAt !== undefined) {
-        setHtmlClass("paused");
-    }
-
-
-    displayUpdate();
-
-    if (readNumber("showbar", 0) === 1) {
-        setHtmlClass("showbar");
-    }
-
-    if (readNumber("showtimenow", 0) === 1) {
-        setHtmlClass("showtimenow");
-    } else {
-        clearHtmlClass("showtimenow");
-
-    }
-
-
-    if (readNumber("showmessages", 0) === 1) {
-        setHtmlClass("showmessages");
-    } else {
-        clearHtmlClass("showmessages");
-    }
-
-
-
-    localStorage.setItem("remainDispClass", html.className);
-}
-
-dispNextMins.textContent = secToStr(defaultDuration / oneSecond);
-
-setInterval(displayUpdate, 100);
-doc.addEventListener("keyup", onDocKeyUp);
-doc.addEventListener("keydown", onDocKeyDown);
-doc.addEventListener("audio-trigger",onAudioTrigger);
-
-doc.addEventListener("contextmenu", function (e) { e.preventDefault(); });
-addEventListener('storage', onLocalStorage);
-
-[].forEach.call(document.querySelectorAll('div.buttons div.btn'), function (el) {
-    el.addEventListener('click', keyMacroClick);
-});
-
-function keyMacroClick(e) {
-
-    // the keycodes used by the button are stored in the "keys" attribute
-    // and are encoded as a comma separated list of keycodes, using the default value
-    // when executed, they are converted to the current keymap, so macros don't need to 
-    // be redefined when the keymap changes.
-    // since keycodes are only ever numbers (which are not redifinable in the keymap, or Space and Enter, and a few sepecial keys like Control, Shift, etc),
-    // the only "encoding" that takes place when a macro is recorded is for Space and Enter
-    let keys = this.dataset.keys.split(",").map(function (code) {
-
-        if (code.startsWith('!')) {
-
-            return { key: code.substr(1), __up: true };
-        } else {
-            return { key: code };
-        }
-    });
-
-    if (e.shiftKey && keys[0].key === " ") {
-
-        if (enterTimeText !== "") {
-            // typed in a duration and pressed shift while clicking the button
-            // this means "set this button to the duration I just typed"
-            this.dataset.keys = ' ,' + enterTimeText.split('').join(',') + ', ';
-            this.innerHTML = enterTimeText;
-            clearHtmlClass("editing");
-            dispNextMins.textContent = secToStr(defaultDuration / 1000);
-            enterTimeText = "";
-            return;
-
-        } else {
-            // pressed shift while clicking the button (no duration typed)
-            // this means "use the duration of the click button as the new default duration"
-            keys = this.dataset.keys.split(",").map(function (code) {
-                if (code === " ") {
-                    return { key: "Enter" };// replace space with enter, which forces a set default command, rather than a start timer command
-                }
-                return { key: keycodes[code] || code };
-            });
-        }
-    }
-
-    keys.forEach(function (e_encoded) {
-        // make a temp event object for the document key handler
-        // the keycodes are converted to the current keymap
-        // since we only inspect .key in the event object, we can just create a new object
-        // with only the .key property
-        let e = {
-            key: keycodes[e_encoded.key] || e_encoded.key
-        };
-
-        if (e_encoded.__up) {
-            onDocKeyUp(e);
-        } else {
-            onDocKeyDown(e);
-        }
-    });
-}
-
-function openTimerWindow(close) {
-    if (close === true) {
-        if (timerWin) timerWin.close();
-        timerWin = undefined;
-    } else {
-        timerWin = open("timer.html?presenter", 'remote_timer_window', "location=0");
-        if (timerWin) timerWin.addEventListener("unload", onTimerWinUnload);
-
-    }
-    return false;
-}
-
-function displayUpdate() {
-
-    let tabCount = getTabCount(), timeNow = Date.now();
-    let controllerCount = getTabCount(true);
-
-    if (tabCount === 1) {
-        clearHtmlClass("twoplus");
-    } else {
-        setHtmlClass("twoplus");
-    }
-
-    if (!fs_api.isFullscreen()) {
-        if (runMode === "presenter") {
-            if (tabCount === 1) {
-                document.title = "Presentation Timer - Single Window";
-            } else {
-                document.title = "Presentation Timer - Remote Screen";
-            }
-        } else {
-            if (runMode === "controller") {
-                document.title = "Presentation Timer - Control Screen";
-            } else {
-                document.title = "Presentation Timer";
-            }
-        }
-    } else {
-        if (runMode === "presenter") {
-            document.title = "Presentation Timer - Remote Screen (Fullscreen)";
-        } else {
-            if (runMode === "controller") {
-                document.title = "Presentation Timer - Control Screen (Fullscreen)";
-            } else {
-                document.title = "Presentation Timer (Fullscreen)";
-            }
-        }
-    }
-
-    if (runMode === "controller" || tabCount === 1) {
-
-        let pausedMsec = pausedAt ? timeNow - pausedAt : 0;
-
-        let actualRemain = (seekEndsAt - timeNow) / oneSecond;
-        if (actualRemain > 0) actualRemain++;
-
-        if (seekEndsAt < endsAt - 500) {
-
-            if (seekEndsAt < endsAt - skip_granularity) {
-                //endsAt -= skip_granularity;
-            }
-
-            endsAt -= 25;
-            setRemainClass("adjustingDown");
-            clearRemainClass("adjusting");
-
-            keyDisp.textContent = "speeding up to match actual time (" + secToStr(actualRemain) + ")  " + Number((endsAt - seekEndsAt) / oneSecond).toFixed(1) + " seconds offset";
-            writeNumber("endsAt", endsAt);
-        } else {
-            if (seekEndsAt > endsAt + 500) {
-                if (seekEndsAt > endsAt + skip_granularity) {
-                    //endsAt += skip_granularity;
-                }
-                endsAt += 25;
-                setRemainClass("adjusting");
-                clearRemainClass("adjustingDown");
-                keyDisp.textContent = "slowing down to match actual time (" + secToStr(actualRemain) + ")  " + Number((endsAt - seekEndsAt) / oneSecond).toFixed(1) + " seconds offset";
-                writeNumber("endsAt", endsAt);
-            } else {
-                endsAt = seekEndsAt;
-                clearRemainClass("adjusting");
-                clearRemainClass("adjustingDown");
-                keyDisp.textContent = tabCount === 1 ? "" : controllerCount > 1 ? "MULTIPLE CONTROLLERS TABS ARE OPEN. CLOSE ONE!" : pausedMsec === 0 ? "remote display active" : "countdown was paused at " + new Date(pausedAt).toLocaleTimeString();
-                writeNumber("endsAt", endsAt);
-            }
-        }
-
-
-        let secondsRemain = ((endsAt - timeNow) + (pausedMsec)) / oneSecond;
-        let timeText, elapsedText;
-
-
-        if (pausedMsec != 0) {
-            remainInfoDisp.textContent = runMode === "presenter" ? "Paused" : secToStr(pausedMsec / oneSecond);
-            endsDisp.textContent = new Date(seekEndsAt + pausedMsec).toLocaleTimeString();
-            extraTimeDisp.textContent = "+ " + secToStr((pauseAcum + pausedMsec) / oneSecond) + " pauses";
-
-        } else {
-            remainInfoDisp.textContent = "";
-            if (pauseAcum === 0) {
-                extraTimeDisp.textContent = "";
-            } else {
-                extraTimeDisp.textContent = "+ " + secToStr(pauseAcum / oneSecond) + " pauses";
-            }
-        }
-
-
-
-
-        let elapsedMSec = (timeNow - startedAt) - (pausedMsec + pauseAcum);
-        if (elapsedMSec < 0) {
-
-            setHtmlClass("future");
-            if (elapsedMSec > -60000) {
-                setHtmlClass("impending");
-            } else {
-                clearHtmlClass("impending");
-            }
-            seekEndsAt = startedAt + thisDuration;
-            bumpEnd(0, 0);
-            endsAt = seekEndsAt;
-            elapsedText = secToStr((0 - elapsedMSec) / oneSecond);
-            elapsedDisp.textContent = elapsedText;
-            timeText = secToStr(thisDuration / 1000);
-            localStorage.setItem("elapsedDisp", elapsedText);
-
-
-
-        } else {
-
-            clearHtmlClass("future");
-            if (secondsRemain >= 0) {
-                timeText = secToStr(secondsRemain + 1);
-
-            } else {
-                timeText = secToStr((0 - secondsRemain));
-
-            }
-            elapsedText = secToStr(elapsedMSec / oneSecond);
-
-        }
-
-        if (lastTimeText !== timeText) {
-            if (lastUpdateTick === 0 || timeNow - lastUpdateTick > 750) {
-                lastUpdateTick = timeNow;
-                remainDisp.textContent = timeText;
-                elapsedDisp.textContent = elapsedText;
-
-
-                lastTimeText = timeText;
-
-                if (secondsRemain >= 0) {
-
-                    clearHtmlClass("over");
-
-                    if (elapsedMSec >= 0) {
-                        if (secondsRemain <= 60) {
-                            setHtmlClass("impending");
-                        } else {
-                            clearHtmlClass("impending");
-                        }
-                    }
-
-                    setBar(elapsedMSec, thisDuration);
-                } else {
-                    setHtmlClass("over");
-                    clearHtmlClass("impending");
-
-                    setBarPct(100);
-                }
-                localStorage.setItem("remainDisp", timeText);
-            }
-        }
-        localStorage.setItem("remainDispClass", html.className);
-
-    } else {
-        keyDisp.textContent = tabCount + " tabs open";
-    }
-    nowDisp.textContent = timeNowStr();
-}
-
-function updateEnteredTimeText() {
-    if (enterHoursText === "") {
-        dispNextMins.textContent = secToStr(Number(enterTimeText) * 60);
-    } else {
-        dispNextMins.textContent = secToStr((Number(enterHoursText) * 3600) + (Number(enterTimeText) * 60));
-    }
-}
-
-function replaceStylesheet(el, cb) {
-
-    let src = el.href;
-    var xhr = new XMLHttpRequest(),
-        css = '';//Empty string variable intended for the XMLHttpRequest response data...
-
-    function processRequest() {
-        if (xhr.readyState == 4) {
-            css = this.responseText;
-            let editor, editorPre;
-            let sheet = document.createElement('style');
-            sheet.innerHTML = css;
-            let storedCss = localStorage.getItem("custom_css");
-            if (storedCss) {
-                sheet.innerHTML = storedCss;
-                document.body.appendChild(sheet);
-                el.parentNode.removeChild(el);
-            }
-            if (cb) {
-                cb(Object.defineProperties({}, {
-                    sheet: { value: sheet },
-                    css: {
-                        set: function (newCss) {
-                            sheet.innerHTML = newCss;
-                        },
-                        get: function () {
-                            return sheet.innerHTML;
-                        }
-                    },
-                    reset: {
-                        value: function () {
-                            sheet.innerHTML = css;
-                            localStorage.removeItem("custom_css");
-                        }
-                    },
-                    editToggle: {
-
-                        value: function () {
-                            if (editor) {
-                                sheet.innerHTML = editor.getValue();
-                                localStorage.setItem("custom_css", sheet.innerHTML);
-                                editorPre.parentNode.removeChild(editorPre);
-                                editor = undefined;
-                            } else {
-                                let startEditor = function () {
-
-                                    editorPre = document.createElement("pre");
-                                    editorPre.id = "css_editor";
-                                    document.body.appendChild(editorPre);
-
-                                    setTimeout(function () {
-                                        editor = ace.edit("css_editor");
-                                        editor.setTheme("ace/theme/chrome");
-                                        editor.session.setMode("ace/mode/css");
-                                        editor.setValue(sheet.innerHTML);
-                                        editor.focus();
-                                        editor.gotoLine(1);
-                                    }, 10);
-                                };
-
-                                if (aceScript) {
-
-
-                                    let iv = setInterval(function () {
-                                        if (window.ace) {
-                                            clearInterval(iv);
-                                            startEditor();
-                                        }
-                                    }, 100);
-
-                                } else {
-
-
-                                    aceScript = document.createElement("script");
-                                    aceScript.setAttribute('integrity', ace_hash);
-                                    aceScript.setAttribute('crossorigin', "anonymous");
-                                    aceScript.setAttribute('referrerpolicy', "no-referrer");
-                                    aceScript.setAttribute('src', ace_url);
-                                    document.body.appendChild(aceScript);
-
-                                    let iv = setInterval(function () {
-                                        if (window.ace) {
-                                            clearInterval(iv);
-                                            startEditor();
-                                        }
-                                    }, 100);
-
-                                }
-
-                            }
-                        }
-                    },
-                    editing: {
-                        get: function () {
-                            return !!editor;
-                        }
-                    }
-                }));
-            }
-        }
-    }
-
-    xhr.responseType = 'text';
-    xhr.open('GET', src);
-    xhr.onreadystatechange = processRequest;
-    xhr.send();
-
-}
-
-function restartTimer() {
-    lastUpdateTick = 0;
-    startedAt = Date.now();
-    endsAt = startedAt + defaultDuration;
-    pausedAt = undefined;
-    pauseAcum = 0;
-    thisDuration = defaultDuration;
-    seekEndsAt = endsAt;
-    startedDisp.textContent = new Date(startedAt).toLocaleTimeString();
-    endsDisp.textContent = new Date(endsAt).toLocaleTimeString();
-    durationDisp.textContent = secToStr(defaultDuration / 1000);
-    extraTimeDisp.textContent = "";
-
-
-    writeNumber("pausedAt", pausedAt);
-    writeNumber("pauseAcum", pauseAcum);
-
-    writeNumber("startedAt", startedAt);
-    writeNumber("endsAt", endsAt);
-    writeNumber("seekEndsAt", seekEndsAt);
-    clearHtmlClass("countup-override");
-    clearHtmlClass("paused");
-    setBarPct(0);
-}
-
-function pushTimer (msec,msg) {
-     
-   let pushed = {
-            startedAt: startedAt,
-            endsAt: endsAt, 
-            pausedAt: pausedAt,
-            pauseAcum: pauseAcum,
-            thisDuration: thisDuration,
-            defaultDuration : defaultDuration,
-            custom_message : custom_message.textContent,
-            showing_custom_message : html.classList.contains("show_custom_message")
-   };
-
-   timerStack.push(pushed);
-   defaultDuration = msec;
-   restartTimer();
-   if (msg ) {
-        custom_message.textContent = msg;
-        html.classList.add("show_custom_message");
-   } else {
-        custom_message.textContent = "";
-        html.classList.remove("show_custom_message");                
-   }
-}
-
-function popTimer () {
-   let popped = timerStack.pop();
-   if (popped) {
-        startedAt = popped.startedAt;
-        endsAt = popped.endsAt;
-        pausedAt = popped.pausedAt;
-        pauseAcum = popped.pauseAcum;
-        thisDuration = popped.thisDuration;
-        defaultDuration = popped.defaultDuration;
-        custom_message.textContent = popped.custom_message;
-        if (popped.showing_custom_message) {
-            html.classList.add("show_custom_message");
-        } else {
-            html.classList.remove("show_custom_message");
-        }
-        displayUpdate();
-   }
-}
-
-function getAudioInput(cb) {
-    navigator.mediaDevices.enumerateDevices().then(function (devices) {
-        devices = devices.filter(function (d) {
-            return d.kind === 'audioinput';
-        });
-
-        switch (devices.length) {
-
-            case 0: {
-                localStorage.removeItem("audioInput");
-                clearHtmlClass("audio-setup");
-
-                return cb(undefined);
-            }
-
-            case 1: {
-                localStorage.removeItem("audioInput");
-                clearHtmlClass("audio-setup");
-
-                return cb(devices[0].deviceId);
-            }
-
-            default: {
-                let stored = localStorage.getItem("audioInput");
-                if (stored) {
-                    clearHtmlClass("audio-setup");
-
-                    return cb(stored);
-                    break;
-                }
-
-                let el = qs("#audio-setup div");
-                el.innerHTML = devices.map(function (d) {
-                    return "<button value='" + d.deviceId + "'>" + d.label + "</button><br>";
-                }).join("\n");
-
-                el.querySelectorAll("button").forEach(function (b) {
-                    b.addEventListener("click", function () {
-                        let audioInput = b.value;
-                        localStorage.setItem("audioInput", audioInput);
-                        el.innerHTML = "";
-                        clearHtmlClass("audio-setup");
-                        cb(b.value);
-                    });
-                });
-                setHtmlClass("audio-setup");
-
-            }
-        }
-    });
-}
-
-function setPresenterMode() {
-    runMode = "presenter";
-    html.classList.add("reduced");
-
-}
-
-function setControllerMode() {
-    runMode = "controller";
-    html.classList.remove("reduced");
-}
 
 function extendDefaultToCurrentTimer() {
-    lastUpdateTick = 0;
-    endsAt = startedAt + defaultDuration;
-    thisDuration = defaultDuration;
-    seekEndsAt = endsAt;
-    writeNumber("endsAt", endsAt);
-    writeNumber("seekEndsAt", seekEndsAt);
-    durationDisp.textContent = secToStr(defaultDuration / 1000);
-    displayUpdate();
+	lastUpdateTick = 0;
+	endsAt = startedAt + defaultDuration;
+	thisDuration = defaultDuration;
+	seekEndsAt = endsAt;
+	writeNumber("endsAt",endsAt);
+	writeNumber("seekEndsAt",seekEndsAt);
+	durationDisp.textContent = secToStr(defaultDuration / 1000);
+	displayUpdate();
 }
 
 
-function onLocalStorage(ev) {
+function onLocalStorage(ev){
+	 
+	 
+	 
+	 if (runMode==="presenter" && (ev.key==="showbar"  ||  ev.key.startsWith("remainDisp"))){
+		 
+	   remainDisp.textContent = localStorage.getItem("remainDisp");
+	   html.className  = localStorage.getItem("remainDispClass")+" reduced";
+	   if ( readNumber("showbar",0)===1) {
+		  setHtmlClass("showbar");
+		  setBarPct(Number(localStorage.getItem("barpct")));
+	   } else {
+		   clearHtmlClass("showbar");
+	   }	  
+	 }  
+	  
+	 if (ev.key === "elapsedDisp"){
+		elapsedDisp.textContent = localStorage.getItem("elapsedDisp");
+	 }
+	 
+	 if (ev.key==="showtimenow" ) {
+	 
+		 if ( readNumber("showtimenow",0) === 1 ) {
+		   setHtmlClass("showtimenow");
+		 } else {
+		   clearHtmlClass("showtimenow");
+		   
+		   
+		 } 
 
+	}
+	
+	  if (ev.key==="showmessages" ) {
+	 
+		 if ( readNumber("showmessages",0) === 1 ) {
+		   setHtmlClass("showmessages");
+		 } else {
+		   clearHtmlClass("showmessages");
+		 } 
 
-
-    if (runMode === "presenter" && (ev.key === "showbar" || ev.key.startsWith("remainDisp"))) {
-
-        remainDisp.textContent = localStorage.getItem("remainDisp");
-        html.className = localStorage.getItem("remainDispClass") + " reduced";
-        if (readNumber("showbar", 0) === 1) {
-            setHtmlClass("showbar");
-            setBarPct(Number(localStorage.getItem("barpct")));
-        } else {
-            clearHtmlClass("showbar");
-        }
-
-
-
-    }
-
-    if (ev.key === "elapsedDisp") {
-        elapsedDisp.textContent = localStorage.getItem("elapsedDisp");
-    }
-
-    if (ev.key === "showtimenow") {
-
-        if (readNumber("showtimenow", 0) === 1) {
-            setHtmlClass("showtimenow");
-        } else {
-            clearHtmlClass("showtimenow");
-
-
-        }
-
-    }
-
-    if (ev.key === "showmessages") {
-
-        if (readNumber("showmessages", 0) === 1) {
-            setHtmlClass("showmessages");
-        } else {
-            clearHtmlClass("showmessages");
-        }
-
-    }
-
-    if (ev.key === "custom_message") {
-        let msg = localStorage.getItem("custom_message");
-        custom_message.textContent = msg;
-        if (msg === "") {
-            clearHtmlClass("show_custom_message");
-        } else {
-            setHtmlClass("show_custom_message");
-        }
-
-    }
-
-    if (stylesheet1_obj && !stylesheet1_obj.editing && ev.key === "custom_css") {
-
-        let storedCss = localStorage.getItem("custom_css");
-        if (storedCss) {
-            stylesheet1_obj.css = storedCss;
-        } else {
-            stylesheet1_obj.reset();
-        }
-
-    }
+	  }
+	  
+	  if (ev.key==="custom_message") {
+		  let msg = localStorage.getItem("custom_message");
+		  custom_message.textContent=msg;
+		  if (msg==="") {
+			  clearHtmlClass("show_custom_message");
+		  } else {
+			  setHtmlClass("show_custom_message");
+		  }	
+		  
+	  }
+	  
+	  if (stylesheet1_obj && !stylesheet1_obj.editing && ev.key==="custom_css") {
+		  
+			let storedCss = localStorage.getItem("custom_css");
+			if (storedCss) {
+				stylesheet1_obj.css = storedCss;
+			} else {
+				stylesheet1_obj.reset();
+			}
+			
+	  }
 }
 
 function getTabCount(cont) {
-    let dead = [];
-    let count = 1, tickNow = Date.now(), oldest = tickNow - 3000;
-    let lastCount = cont ? "lastController" : "last";
-    let lastTick  = cont ? "lastControllerTick" : "lastTick";
-    if (getTabCount[lastTick]) {
-        // use cached value if it's less than 500ms old
-        if (getTabCount[lastTick] > tickNow - 500) {
-            return getTabCount[lastCount];
-        }
-    }
+	let dead = [];
+	let count=1,tickNow = timeProvider.now(),oldest=tickNow - 3000;
    
-    if (!cont) {
-        writeNumber(tab_id, tickNow);
-        if (runMode === "controller") {
-            writeNumber("controller_" + tab_id, tickNow);
-        } else {
-            localStorage.removeItem("controller_" + tab_id);
-        }
-    }
-
-    for (let i = 0; i < localStorage.length; i++) {
-        let key = localStorage.key(i);
-        if (key !== tab_id && key.startsWith("tab_")) {
-            if (Number(localStorage.getItem(key)) < oldest) {
-                dead.push(key);
-            } else {
-                if (cont) {
-                    if (readNumber("controller_" + key, 0) > 0) {
-                        count++;
-                    }
-                } else {
-                    count++;
-                }
-            }
-
-        } else {
-
-            if (key.startsWith("controller_tab_")) {
-                if (Number(localStorage.getItem(key)) < oldest) {
-                    dead.push(key);
-                }
-            }
-        }
-
-    }
-    dead.forEach(function (key) {
-        localStorage.removeItem(key);
-    });
-    getTabCount[lastCount] = count;
-    getTabCount[lastTick]  = tickNow;
-    return count;
+	if (!cont) { 
+		writeNumber (tab_id,tickNow);
+		if (runMode==="controller") {
+			writeNumber ("controller_"+tab_id,tickNow);
+		} else {
+		   localStorage.removeItem ("controller_"+tab_id);
+		}
+	}
+	
+	for (let i=0; i< localStorage.length; i++) {
+	   let key = localStorage.key(i);
+	   if (key !== tab_id && key.startsWith("tab_")) {
+			if (Number(localStorage.getItem(key)) < oldest ) {
+			   dead.push(key);
+			} else {
+				if (cont) {
+					if (readNumber ("controller_"+key,0)>0) {
+					   count ++; 
+					} 
+				} else {
+				   count ++;
+				}
+			}		   
+		  
+	   } else {
+		   
+			if ( key.startsWith("controller_tab_")) {
+				if (Number(localStorage.getItem(key)) < oldest ) {
+				  dead.push(key);
+				} 
+			}
+	   } 
+	   
+	}
+	dead.forEach(function(key){
+	  localStorage.removeItem(key);
+	});
+	return count;
 }
 
 let custom_msg_timeout;
 
-function onAudioTrigger() {
-    //start the timer
-    onDocKeyDown({ key: keycodes.Space });
-    if (audioTrig) {
-        // dispose of the audio monitor
-        audioTrig.hide();
-        audioTrig.stop();
-        writeNumber("audioThreshold", audioTrig.getThreshold());        
-        audioTrig=null;
+function onKey_Pause(ev) {
+		const timeNow = timeProvider.now();
+		html.classList.toggle("paused");
+		lastTimeText="";
+		if (togglePIPMode) togglePIPMode.lastContent="";
+		if (html.classList.contains("paused")) {
+			pausedAt = timeProvider.now();
+			writeNumber("pausedAt",pausedAt);
+			endsAt = seekEndsAt;
+			const pauseAccumText = secToStr(pauseAcum / oneSecond);
+			extraTimeDisp.textContent = "+ "+pauseAccumText+" pauses";
+			if (timerAPI) {
+
+				timerAPI.send( {
+					setVariableValues:{
+						default:secToStr(defaultDuration/1000),
+						pausing:true,
+						pauses:pauseAccumText,
+						paused:'0:00'
+					}
+				} );
+			}
+		} else {
+			let pausedMsec = pausedAt ? timeNow-pausedAt : 0;
+			pausedAt = undefined;
+			seekEndsAt += pausedMsec;
+			pauseAcum += pausedMsec;
+			writeNumber("pausedAt",pausedAt);
+			writeNumber("pauseAcum",pauseAcum);
+
+			const pauseAccumText = secToStr(pauseAcum / oneSecond);
+
+			extraTimeDisp.textContent = "+ "+pauseAccumText+" pauses";
+	 
+			endsAt = seekEndsAt;
+			endsDisp.textContent = local24HourTime ( timeProvider.date(seekEndsAt) );
+			if (timerAPI) {
+
+				timerAPI.send( {
+					setVariableValues:{
+						default:secToStr(defaultDuration/1000),
+						endsAt:endsDisp.textContent,
+						pausing:false,
+						pauses:pauseAccumText,
+						paused:'0:00'
+					}
+				} );
+
+			}
+			
+		}
+}
+
+function onKey_UndoPause (ev) {
+	   
+	clearHtmlClass("paused");
+	pausedAt = undefined;
+	pauseAcum = 0;
+	writeNumber("pausedAt",pausedAt);
+	writeNumber("pauseAcum",pauseAcum);
+	extraTimeDisp.textContent = "";
+	
+	seekEndsAt = startedAt + thisDuration;
+	endsAt = seekEndsAt;
+	endsDisp.textContent = local24HourTime( timeProvider.date(seekEndsAt) ) ;
+
+	if (timerAPI) {
+		timerAPI.send ( {
+			setVariableValues:{
+				endsAt:endsDisp.textContent,
+				pauses:'0:00',
+				paused:'0:00'}} );
+	}
+		
+}
+
+function  onKey_ArrowDown(ev) {
+				  
+		bumpEnd(0-seekEndDelta,0-endDelta);
+		durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
+		displayUpdate();
+	
+}
+
+function  onKey_Shift_ArrowDown(ev) {
+				  
+	bumpStart(nudgeFactor);
+	durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
+	displayUpdate();
+
+}
+
+function  onKey_ArrowUp(ev) {
+	 bumpEnd(seekEndDelta,endDelta);
+	 durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
+	 displayUpdate();
+}
+
+function  onKey_Shift_ArrowUp(ev) {
+	 bumpStart(0-nudgeFactor);
+	 durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
+	 displayUpdate();
+}
+
+function onKey_ArrowLeft(ev) {
+
+	bumpStart(0-nudgeFactor);
+	bumpEnd(0-seekEndDelta,0-endDelta);
+	
+	durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
+	displayUpdate();
+
+}
+ 
+function onKey_ArrowRight(ev) {
+	bumpStart(nudgeFactor); 
+	bumpEnd(seekEndDelta,endDelta);
+	
+	durationDisp.textContent = secToStr((seekEndsAt-startedAt) / 1000);
+	displayUpdate();
+}
+
+ 
+function onKey_Ctrl_Q(ev) {
+   
+	if (is_nwjs()) {
+		require('nw.gui').App.quit();
+	}
+	
+}
+
+
+function onKey_Space(ev) {
+ 
+	const preserve_default = defaultDuration;
+		
+	saveEditedTime();
+	restartTimer();
+		
+	if (defaultDuration !== preserve_default) {
+		defaultDuration = preserve_default;
+		dispNextMins.textContent = secToStr(defaultDuration/1000);
+		clearHtmlClass("editing");
+		writeNumber("defaultDuration",defaultDuration);
+	}
+	
+
+}
+
+function onKey_Shift_Space(ev) {
+ 
+	const preserve_default = defaultDuration;
+	
+	saveEditedTime();
+	
+	extendDefaultToCurrentTimer();
+	
+	if (defaultDuration !== preserve_default) {
+		defaultDuration = preserve_default;
+		dispNextMins.textContent = secToStr(defaultDuration/1000);
+		clearHtmlClass("editing");
+		writeNumber("defaultDuration",defaultDuration);
+	}
+	
+}
+
+function onKey_Control_Space(ev) {
+ 
+	const preserve_default = defaultDuration;
+
+	lastUpdateTick = 0;
+	endsAt = seekEndsAt;
+	clearRemainClass("adjusting") ;
+	clearRemainClass("adjustingDown") ;
+	keyDisp.textContent = tabCount+" tabs open";
+	lastTimeText="";
+	writeNumber("endsAt",endsAt);
+
+}
+
+let videoFrameTimer;
+
+function hideFSVideoAfterTimeout () {
+    if (videoFrameTimer) {
+        clearTimeout(videoFrameTimer);
+        videoFrameTimer = undefined;
     }
+    clearHtmlClass("video-live-fullscreen");
+	clearHtmlClass("video-start-fullscreen");
+	if (wc_viewer) {
+        wc_viewer.updateTimestamp(wc_viewer.getTimestamp());
+	}
+    clearHtmlClass("video-live-fullscreen");
+	clearHtmlClass("video-start-fullscreen");}
 
-}
-
-function onDocKeyDown(ev) {
-
-    if (html.classList.contains("edit_custom_message")) {
-
-        if (ev.key === keycodes.Enter || ev.key === keycodes.ENTER) {
-            custom_message.contentEditable = false;
-            html.classList.remove("edit_custom_message");
-            if (custom_message.textContent === "custom message") {
-                html.classList.remove("show_custom_message");
-                localStorage.setItem("custom_message", "");
-
-            } else {
-                html.classList.add("show_custom_message");
-                custom_msg_timeout = setTimeout(function () {
-                    custom_msg_timeout = undefined;
-                    localStorage.setItem("custom_message", custom_message.textContent);
-                }, 500);
-            }
-        }
-        return;
-    } else {
-        if (html.classList.contains("show_custom_message")) {
-
-            if (ev.key === keycodes.c || ev.key === keycodes.C) {
-                html.classList.remove("edit_custom_message");
-                html.classList.remove("show_custom_message");
-                if (custom_msg_timeout) {
-                    clearTimeout(custom_msg_timeout);
-                    custom_msg_timeout = undefined;
-                }
-                localStorage.setItem("custom_message", "");
-                return;
-
-
-            }
-
-        }
+function onVideoUpdate () {
+    if (videoFrameTimer) {
+		clearTimeout(videoFrameTimer);
+		videoFrameTimer = undefined;
     }
+	if (wc_viewer.showingLive() &&  html.classList.contains("video-auto") ) {	
+        clearHtmlClass("video-live-fullscreen");
+        setHtmlClass("video-start-fullscreen");
+	    videoFrameTimer = setTimeout(hideFSVideoAfterTimeout,2000);
+	}
+	
+}
 
-    if (html.classList.contains("custom_key_edit")) {
-        if (html.classList.contains("defining")) {
-            return false;
-        }
-        ev.preventDefault();
-        if (keyWasPressed("KeyCodeEditor", ev)) {
-            html.classList.remove("custom_key_edit");
-            return;
-        }
-        // when editing keycodes, ignore all other keys in this callback
-        return false;
+function onVideoReset () {
+    onVideoUpdate ();
+}
 
+function onKey_V(ev) {
+   // V by itself = toggle live view
+    if (!wc_viewer) {   
+			wc_viewer = createTimestampViewer(wc_videoElement,wc_canvas,wc_canvas2,wc_canvas3);
+			wc_viewer.on('update',onVideoUpdate);
+			wc_viewer.on('reset',onVideoReset);
+		    setHtmlClass('video-track');
+		    clearHtmlClass("video-auto");
+	} else {
+		wc_viewer.showLive(!wc_viewer.showingLive());
+		setHtmlClass('video-track');
+		clearHtmlClass("video-auto");
     }
-
-
-
-
-    if (stylesheet1_obj && stylesheet1_obj.editing && location.protocol === "https:") {
-
-
-        if (keyWasPressed("StyleEditor", ev) && ev.ctrlKey) {
-            ev.preventDefault();
-            stylesheet1_obj.editToggle();
-            if (ev.shiftKey) {
-                stylesheet1_obj.reset();
-            }
-        }
-
-        return;
-
-    }
-
-    let tabCount = getTabCount(), timeNow = Date.now();
-
-    let factor = controlling ? 60000 : 1000;
-
-    let endDelta = controlling ? 60000 : 0;
-    let seekEndDelta = controlling ? 60000 : 1000;
-
-
-    if (typeof ev.key === 'string' && ((ev.key >= 1 && ev.key <= 9) || ev.key === "0")) {
-        enterTimeText = enterTimeText + "" + ev.key;
-        setHtmlClass("editing");
-        updateEnteredTimeText();
-    } else {
-
-
-        if (keyWasPressed("Space", ev)) {
-
-            const preserve_default = defaultDuration;
-
-            if (controlling) {
-                lastUpdateTick = 0;
-                endsAt = seekEndsAt;
-                clearRemainClass("adjusting");
-                clearRemainClass("adjustingDown");
-                keyDisp.textContent = tabCount + " tabs open";
-                writeNumber("endsAt", endsAt);
-            } else {
-                saveEditedTime();
-
-                if (shifting)
-                    extendDefaultToCurrentTimer();
-                else
-                    restartTimer();
-
-                if (defaultDuration !== preserve_default) {
-                    defaultDuration = preserve_default;
-                    dispNextMins.textContent = secToStr(defaultDuration / 1000);
-                    clearHtmlClass("editing");
-                    writeNumber("defaultDuration", defaultDuration);
-                }
-
-            }
-            return;
-        }
-
-        if (keyWasPressed("KeyCodeEditor", ev)) {
-            html.classList.add("custom_key_edit");
-            return;
-        }
-
-        if (keyWasPressed("LinkManager", ev)) {
-            html.classList.toggle("peer-show");
-            return;
-        }
-
-
-        if (keyWasPressed("Pause", ev)) {
-
-            html.classList.toggle("paused");
-            if (html.classList.contains("paused")) {
-                pausedAt = Date.now();
-                writeNumber("pausedAt", pausedAt);
-                endsAt = seekEndsAt;
-                extraTimeDisp.textContent = "+ " + secToStr(pauseAcum / oneSecond) + " pauses";
-
-            } else {
-                let pausedMsec = pausedAt ? timeNow - pausedAt : 0;
-                pausedAt = undefined;
-                seekEndsAt += pausedMsec;
-                pauseAcum += pausedMsec;
-                writeNumber("pausedAt", pausedAt);
-                writeNumber("pauseAcum", pauseAcum);
-
-                extraTimeDisp.textContent = "+ " + secToStr(pauseAcum / oneSecond) + " pauses";
-
-                endsAt = seekEndsAt;
-                endsDisp.textContent = new Date(seekEndsAt).toLocaleTimeString();
-
-            }
-
-
-
-            return;
-        }
-
-        if (keyWasPressed("UndoPause", ev)) {
-
-            clearHtmlClass("paused");
-            pausedAt = undefined;
-            pauseAcum = 0;
-            extraTimeDisp.textContent = "";
-
-            seekEndsAt = startedAt + thisDuration;
-            endsAt = seekEndsAt;
-            endsDisp.textContent = new Date(seekEndsAt).toLocaleTimeString();
-
-            return;
-
-        }
-
-        if (keyWasPressed("Period", ev)) {
-            if ((enterTimeText !== "") && (enterTimeText.indexOf(".") < 0)) {
-
-                enterTimeText = enterTimeText + ev.key;
-                setHtmlClass("editing");
-                updateEnteredTimeText();
-
-            }
-            return;
-        }
-
-
-        if (keyWasPressed("Colon", ev)) {
-            if (enterHoursText === "") {
-                enterHoursText = enterTimeText;
-                enterTimeText = "";
-                setHtmlClass("editing");
-                dispNextMins.textContent = secToStr((Number(enterHoursText) * 3600) + (Number(enterTimeText) * 60));
-            }
-            return;
-        }
-
-
-        if (keyWasPressed("Backspace", ev)) {
-
-            if (enterTimeText !== "") {
-                enterTimeText = enterTimeText.substr(0, enterTimeText.length - 1);
-                updateEnteredTimeText();
-            } else {
-                clearHtmlClass("editing");
-                dispNextMins.textContent = secToStr(defaultDuration / 1000);
-
-            }
-            return;
-        }
-
-        if (keyWasPressed("Enter", ev)) {
-
-            if (controlling) {
-                lastUpdateTick = 0;
-                endsAt = seekEndsAt;
-                clearRemainClass("adjusting");
-                clearRemainClass("adjustingDown");
-                keyDisp.textContent = tabCount + " tabs open";
-                writeNumber("endsAt", endsAt);
-            } else {
-                saveEditedTime();
-            }
-            return;
-        }
-
-        if (keyWasPressed("QuitApp", ev)) {
-            if (controlling) {
-                if (is_nwjs()) {
-                    require('nw.gui').App.quit();
-                }
-            }
-
-            return;
-        }
-
-
-        if (keyWasPressed("ArrowDown", ev)) {
-
-
-            //if (controlling && ev.key==="-") break;
-
-            if (!html.classList.contains("editing")) {
-                if (shifting) {
-                    bumpStart(factor);
-                } else {
-                    bumpEnd(0 - seekEndDelta, 0 - endDelta);
-                }
-                durationDisp.textContent = secToStr((seekEndsAt - startedAt) / 1000);
-                displayUpdate();
-            }
-            else {
-
-            }
-            return;
-        }
-
-
-        if (keyWasPressed("ArrowUp", ev)) {
-            //if (controlling && ev.key==="+") break;
-
-            if (!html.classList.contains("editing")) {
-                if (shifting) {
-                    bumpStart(0 - factor);
-                } else {
-                    bumpEnd(seekEndDelta, endDelta);
-                }
-                durationDisp.textContent = secToStr((seekEndsAt - startedAt) / 1000);
-                displayUpdate();
-            }
-            else {
-
-            }
-            return;
-        }
-
-        if (keyWasPressed("ArrowLeft", ev)) {
-            bumpStart(0 - factor);
-            bumpEnd(0 - seekEndDelta, 0 - endDelta);
-
-            durationDisp.textContent = secToStr((seekEndsAt - startedAt) / 1000);
-            displayUpdate();
-
-            return;
-        }
-
-        if (keyWasPressed("ArrowRight", ev)) {
-            bumpStart(factor);
-            bumpEnd(seekEndDelta, endDelta);
-
-            durationDisp.textContent = secToStr((seekEndsAt - startedAt) / 1000);
-            displayUpdate();
-
-            return;
-        }
-
-        if (ev.key === "Shift") {
-            shifting = true;
-            setHtmlClass("shifting");
-            return;
-        }
-
-        if (ev.key === "Control") {
-            controlling = true;
-            setHtmlClass("controlling");
-            return;
-        }
-
-
-
-        if (ev.key === "i" || ev.key === "I") {
-            if (controlling && shifting) {
-                ev.preventDefault();
-            }
-            return;
-        }
-
-
-
-        if (keyWasPressed("ToggleFullScreen", ev)) {
-            if (fs_api.isFullscreen()) {
-                fs_api.exitFullscreen();
-            } else {
-                fs_api.enterFullscreen();
-            }
-            return;
-
-        }
-
-        if (keyWasPressed("ToggleProgressBar", ev)) {
-            html.classList.toggle("showbar");
-            writeNumber("showbar", html.classList.contains("showbar") ? 1 : 0);
-
-            return;
-        }
-
-
-        if (keyWasPressed("ToggleMessagesMode", ev)) {
-            html.classList.toggle("showmessages");
-            writeNumber("showmessages", html.classList.contains("showmessages") ? 1 : 0);
-            return;
-        }
-
-        if (keyWasPressed("ToggleTimeOfDay", ev)) {
-            html.classList.toggle("showtimenow");
-            writeNumber("showtimenow", html.classList.contains("showtimenow") ? 1 : 0);
-            return;
-        }
-
-        if (keyWasPressed("TogglePresenterScreen", ev)) {
-
-            if (window.location.search !== "?presenter" && tabCount === 1) {
-                html.classList.toggle("reduced");
-                runMode = html.classList.contains("reduced") ? "presenter" : "controller";
-
-            }
-            html.classList[html.classList.contains("reduced") ? "remove" : "add"]("showbuttons");
-            return;
-        }
-
-
-
-        if (keyWasPressed("SingleScreenMode", ev)) {
-
-
-
-            if (window.location.search !== "?presenter" && tabCount === 1) {
-                html.classList.add("reduced");
-                html.classList.add("showbuttons");
-                runMode = "presenter";
-                if (!fs_api.isFullscreen()) {
-                    fs_api.enterFullscreen();
-                }
-            }
-
-            return;
-        }
-
-
-        if (keyWasPressed("StyleEditor", ev)) {
-            if (ev.ctrlKey) {
-                if (stylesheet1_obj) {
-                    if (ev.shiftKey) {
-                        stylesheet1_obj.reset();
-                        if (stylesheet1_obj.editing) {
-                            stylesheet1_obj.editToggle();
-                        }
-                    } else {
-                        stylesheet1_obj.editToggle();
-                    }
-                }
-                ev.preventDefault();
-
-            }
-            return;
-        }
-
-        if (keyWasPressed("ExtendTimerToDefault", ev)) {
-            // extend current timer to default time
-            extendDefaultToCurrentTimer();
-            return;
-        }
-
-        if (keyWasPressed("ToggleCustomMessage", ev)) {
-
-
-            html.classList.add("edit_custom_message");
-            html.classList.remove("show_custom_message");
-            custom_message.innerText = "custom message";
-            custom_message.contentEditable = true;
-            custom_message.focus();
-            ev.preventDefault();
-
-            return;
-        }
-
-        if (keyWasPressed("OpenRemoteWindow", ev)) {
-
-            ev.preventDefault();
-            openTimerWindow(tabCount > 1);
-
-            return;
-
-        }
-
-
-        if (keyWasPressed("ToggleAudio", ev)) {
-
-            if (audioTrig) {
-
-                if (shifting) {
-                    //shift-a = stop monitoring audio and hide meter
-                    audioTrig.stop();
-                    writeNumber("audioThreshold", audioTrig.getThreshold());    
-                    audioTrig=null;
-                    return;
-                }
-
-                if (controlling) {
-                       // ctrl-a = show meter wait for trigger
-                       audioTrig.show();
-                       audioTrig.reset();
-                } else {
-                    // a = toggle display of audio meter
-                    audioTrig.toggle();
-                }
-
-            } else {
-                if (shifting) {
-                    // shift-a = stop monitoring audio and hide meter
-                    // already stopped,and object does not exist
-
-                    return;
-                }
-                let doReset = controlling;
-            
-                getAudioInput(
-
-                    function (deviceId) {
-
-                        if(audioTrig) {
-                            audioTrig.stop();
-                            audioTrig=null;
-                            setTimeout(startAudio,500,deviceId,doReset);
-                        } else {
-                            startAudio(deviceId,doReset);
-                        }
-
-                    
-                    }
-
-                );
-
-
-                
-
-
-            }
-        }
-
-        if (keyWasPressed("Devices",ev)) {
-            localStorage.removeItem("audioInput");  
-            getAudioInput(
-
-                function (deviceId) {
-
-                    if(audioTrig) {
-                        audioTrig.stop();
-                        audioTrig=null;
-                        setTimeout(startAudio,500,deviceId);
-                    } else {
-                        startAudio(deviceId);
-                    }
-
-                    
-                }
-
-            );
-
-        }
-    }
-
-    function startAudio(deviceId,doReset){
-        audioTrig = audioTriggers(deviceId);
-        audioTrig.setThreshold(readNumber("audioThreshold"),audioTrig.getThreshold());
-        audioTrig.show(); 
-        if (doReset) {
-            audioTrig.reset();
-        }
-
-    }
-
-}
-function saveEditedTime() {
-    if (!((enterTimeText === "") || (enterTimeText === ""))) {
-        defaultDuration = ((Number(enterHoursText) * 3600) + (Number(enterTimeText) * 60)) * 1000;
-
-        if (Date.now() - startedAt < 0) {
-            // if editing a future start time
-            thisDuration = defaultDuration;
-        }
-        enterTimeText = "";
-        enterHoursText = "";
-
-        dispNextMins.textContent = secToStr(defaultDuration / 1000);
-        clearHtmlClass("editing");
-        writeNumber("defaultDuration", defaultDuration);
-    }
+    clearHtmlClass("video-live-fullscreen");
+    clearHtmlClass("video-start-fullscreen");
 }
 
-function onDocKeyUp(ev) {
-    switch (ev.key) {
-        case "Shift":
-            shifting = false;
-            clearHtmlClass("shifting");
-            break;
-        case "Control":
-            controlling = false;
-            clearHtmlClass("controlling");
-            break;
-    }
+function onKey_Shift_V(ev) {
+	if (!wc_viewer) {   
+		
+			wc_viewer = createTimestampViewer(wc_videoElement,wc_canvas,wc_canvas2,wc_canvas3);
+			wc_viewer.on('update',onVideoUpdate);
+			wc_viewer.on('reset',onVideoReset);
+			clearHtmlClass("video-live-fullscreen");
+			clearHtmlClass("video-start-fullscreen");
+			setHtmlClass('video-track');
+	
+	} else {
+		// shift V = choose next camera
+		wc_viewer.nextCamera();
+	}
 }
 
 
-function bumpStart(factor) {
-    startedAt += factor;
-    startedDisp.textContent = new Date(startedAt).toLocaleTimeString();
-    writeNumber("startedAt", startedAt);
+
+function onKey_Control_V(ev) {
+	if (!wc_viewer) {   
+		wc_viewer = createTimestampViewer(wc_videoElement,wc_canvas,wc_canvas2,wc_canvas3);
+		wc_viewer.on('update',onVideoUpdate);
+		wc_viewer.on('reset',onVideoReset);
+		clearHtmlClass("video-start-fullscreen");
+		setHtmlClass("video-live-fullscreen");
+		wc_viewer.showLive(true);
+		setHtmlClass("video-auto");
+		setHtmlClass('video-track');
+	} else {
+	
+		if (wc_viewer.getTimestamp()) {
+		    
+		    if (html.classList.contains("video-auto")) {
+                clearHtmlClass("video-auto");
+                hideFSVideoAfterTimeout ();
+		    } else {
+		        setHtmlClass("video-auto");
+		        wc_viewer.showLive(true);
+		
+		    }
+
+	        onVideoUpdate ();
+	
+		} else {
+	    	setHtmlClass("video-live-fullscreen");
+	    	clearHtmlClass("video-start-fullscreen");
+    		setHtmlClass('video-track');
+	    	toggleHtmlClass('video-auto');
+	    	if (html.classList.contains('video-auto')) {
+	            wc_viewer.showLive(true);
+	    	}	
+    		onVideoUpdate ();
+		}
+	}
 }
 
-function bumpEnd(seekEndDelta, endDelta) {
-    seekEndsAt += seekEndDelta;
-    endsAt += endDelta;
+function onKey_Control_Shift_V(ev) {
+	if (wc_viewer) {   
+		// ctrl-shift-v = stop using video mode
+		hideFSVideoAfterTimeout ();
+		 wc_viewer.stop();
+		 wc_viewer=undefined;
+		 
+	 }
+	clearHtmlClass("video-live-fullscreen");
+	clearHtmlClass("video-start-fullscreen");
+	clearHtmlClass('video-track');
+	clearHtmlClass('video-auto');
+	wc_canvas.style.display="none";
+	wc_canvas2.style.display="none";
+	wc_canvas3.style.display="none";
+	
+}
 
-    thisDuration = seekEndsAt - startedAt;
+function onKey_Control_Shift_W(ev) {
+	if (wc_viewer) {   
+		// ctrl-shift-v = stop using video mode
+		hideFSVideoAfterTimeout ();
+		 wc_viewer.stop();
+		 wc_viewer=undefined;
+		 
+	 }
+	 clearHtmlClass('video-track');
+}
+function onKey_Shift_W(ev) {
+    if (!wc_viewer) {   
+		wc_viewer = createTimestampViewer(wc_videoElement,wc_canvas,wc_canvas2,wc_canvas3,true);
+		wc_viewer.on('update',onVideoUpdate);
+		wc_viewer.on('reset',onVideoReset);
+		clearHtmlClass("video-live-fullscreen");
+		clearHtmlClass("video-start-fullscreen");
+	    setHtmlClass('video-track');
+	} else {
+	    wc_viewer.useScreenCapture();
+        clearHtmlClass("video-live-fullscreen");
+        clearHtmlClass("video-start-fullscreen");
+	}
+}
 
-    endsDisp.textContent = new Date(seekEndsAt).toLocaleTimeString();
-    writeNumber("seekEndsAt", seekEndsAt);
+function onKey_W (ev) {
+
+}
+
+function onKey_Control_W (ev) {
+
 }
 
 
-function setBarPct(pct) {
-    progress.style.width = pct + '%';
-    localStorage.setItem("barpct", pct.toString());
+function onKey_M (ev) {
+	html.classList.toggle("showmessages");
+	writeNumber("showmessages",html.classList.contains("showmessages") ? 1 : 0);
+	if (togglePIPMode) togglePIPMode.lastContent="";
+	lastTimeText = "";
 }
 
-function setBar(elapsed, total) {
-    let pct = Math.floor((elapsed / total) * 100);
-    setBarPct(pct);
+function onKey_B(ev) {
+	const toggledState = html.classList.contains("showbar") ? 0 : 1;
+	html.classList.toggle("showbar");
+	writeNumber("showbar",toggledState);
+}
+
+function onKey_T(ev) {
+	const toggledState = html.classList.contains("showtimenow") ? 0 : 1;
+	html.classList.toggle("showtimenow");
+	writeNumber("showtimenow",toggledState);
+}
+
+function onKey_O (ev) {
+	if (togglePIPMode) togglePIPMode();
+}
+
+function onKey_P (ev) {
+   
+
+	if (window.location.search !== "?presenter" &&  tabCount === 1) {
+		html.classList.toggle("reduced");
+		const isPres = html.classList.contains("reduced");
+		runMode = isPres ? "presenter":"controller";
+
+		if (timerAPI) {
+			timerAPI.send(  {setVariableValues:{showpresenter: isPres ? '1' : '0' }});
+		}
+	}
+	html.classList[ html.classList.contains("reduced") ? "remove" : "add"]("showbuttons");
+
+}
+
+function onKey_S (ev) {
+ 
+	if (window.location.search !== "?presenter" &&  tabCount === 1) {
+		html.classList.add("reduced");
+		html.classList.add("showbuttons");
+		runMode = "presenter";
+		if (!fs_api.isFullscreen()) {
+			fs_api.enterFullscreen();  
+			}
+
+		if (timerAPI) {
+			timerAPI.send({setVariableValues:{showpresenter: '1' }});
+		}
+	}
+
+			
+}
+
+function onKey_Control_S (ev) {
+ 
+			
+  
+	if (stylesheet1_obj) {
+	   stylesheet1_obj.editToggle();
+	}
+	ev.preventDefault();
+  
+	
+}
+
+function onKey_Control_Shift_S (ev) {
+ 
+	if (stylesheet1_obj) {
+		stylesheet1_obj.reset();
+		if (stylesheet1_obj.editing) {
+			stylesheet1_obj.editToggle();
+		}
+	}
+	ev.preventDefault();
+	
+}
+
+function onKey_X (ev) {
+	extendDefaultToCurrentTimer();
+}
+
+function onKey_C (ev) {
+				 
+	html.classList.add("edit_custom_message");
+	html.classList.remove("show_custom_message");
+	custom_message.innerText="custom message";
+	custom_message.contentEditable=true;
+	custom_message.focus();
+	ev.preventDefault();			
+		 
+}
+
+function onKey_R ( ev ) {
+
+	if (!controlling) {
+		ev.preventDefault();
+		if (!isSingleScreenMode() && !(runMode === "presenter" && tabCount===1)) {
+			openTimerWindow(tabCount>1);
+		}
+	}
 }
 
 
-function readNumber(nm, def) {
-    let str = localStorage.getItem(nm);
-    return str ? Number(str) : def;
+function onDocKeyDown(ev){
+
+	const checkModifiers = function(){
+		controlling = ev.ctrlKey;
+		html.classList[controlling?"add":"remove"]("controlling");
+		shifting = ev.shiftKey;
+		html.classList[shifting?"add":"remove"]("shifting");
+		alting = ev.altKey;
+		html.classList[alting?"add":"remove"]("alting");
+		 
+	};
+   
+   if (html.classList.contains("edit_custom_message")) {
+	   
+		if  ( ev.key === "Enter") {
+			   custom_message.contentEditable=false;
+			   html.classList.remove("edit_custom_message");
+			   if (custom_message.textContent==="custom message") {
+				   html.classList.remove("show_custom_message");
+				   localStorage.setItem("custom_message","");
+				   
+			   } else {
+				   html.classList.add("show_custom_message");
+				   custom_msg_timeout = setTimeout(function(){
+					   custom_msg_timeout = undefined;
+					   localStorage.setItem("custom_message",custom_message.textContent);
+				   },500);
+			   }
+		}
+	   return checkModifiers();
+   } else {
+	   if (html.classList.contains("show_custom_message")) {
+
+			if  ( ev.key ==="c" || ev.key==="C") {
+			   html.classList.remove("edit_custom_message");
+			   html.classList.remove("show_custom_message");
+			   if (custom_msg_timeout) {
+				   clearTimeout(custom_msg_timeout);
+				   custom_msg_timeout = undefined;
+			   }
+			   localStorage.setItem("custom_message","");
+			   return checkModifiers();		   
+			   
+			}
+
+	   }
+   }
+   
+   
+   if (stylesheet1_obj && stylesheet1_obj.editing) {
+	   
+	   if ( (ev.key === "S" || ev.key === "s")  && ev.ctrlKey ) {
+			ev.preventDefault();
+			stylesheet1_obj.editToggle();
+			if (ev.shiftKey) {
+				stylesheet1_obj.reset();
+			}
+	   }
+	   
+	   return checkModifiers();
+	   
+   }
+   
+	tabCount = getTabCount()  ;
+	 
+	nudgeFactor = controlling ? 60000 : 1000;
+	
+	endDelta	 =  controlling ? 60000 : 0;
+	seekEndDelta =  controlling ? 60000 : 1000;
+	
+	
+	if (typeof ev.key === 'string' && ( ( ev.key >= 1 && ev.key <=9) || ev.key=== "0") ) {
+	   enterTimeText = enterTimeText + "" + ev.key;
+	   setHtmlClass("editing");
+	   updateEnteredTimeText () ;
+	} else {
+		
+		switch ( ev.key ) {
+			
+			case "/"://numkeypad
+			case '"': return onKey_Pause(ev);
+				
+			case "Tab":  //numkeypad 
+			case "'":  return onKey_UndoPause (ev);
+				
+			case ".":
+				 if ( (enterTimeText !== "") && (enterTimeText.indexOf(".") <0 ) ) {
+					 
+					 enterTimeText = enterTimeText + ev.key;
+					 setHtmlClass("editing");
+					 updateEnteredTimeText () ;
+					 
+				}
+				break;
+				
+			case ":":
+				if (enterHoursText === "") {
+					enterHoursText = enterTimeText;
+					enterTimeText  = "";
+					setHtmlClass("editing");
+					dispNextMins.textContent = secToStr((Number(enterHoursText) * 3600) + (Number(enterTimeText) * 60));
+				}
+				break;
+			case "Backspace" :
+				if (enterTimeText !== "" ) {
+					enterTimeText = enterTimeText.substr(0,enterTimeText.length-1);
+					updateEnteredTimeText () ;
+				} else {
+					clearHtmlClass("editing");
+					dispNextMins.textContent = secToStr(defaultDuration/1000);
+					
+				}
+				break;
+			case "Enter" : 
+				
+				if (controlling) {
+					  lastUpdateTick = 0;
+					  endsAt = seekEndsAt;
+					  clearRemainClass("adjusting") ;
+					  clearRemainClass("adjustingDown") ;
+					  keyDisp.textContent = tabCount+" tabs open";
+					  writeNumber("endsAt",endsAt);
+				 } else {	  
+					saveEditedTime();
+				 }				
+				
+				break;
+
+			case "q":
+			case "Q":
+					if (controlling) {
+						onKey_Ctrl_Q(ev);
+					}
+	
+					break;
+				
+			
+			case "ArrowDown" : 
+				
+				if (!html.classList.contains("editing") ) {
+					if (shifting) {
+						onKey_Shift_ArrowDown(ev)
+					} else {
+						onKey_ArrowDown(ev)
+					}					 
+				} 
+
+				break;
+		   
+			case "ArrowUp" : 
+				 
+				if (!html.classList.contains("editing") ) {
+					if (shifting) {
+						onKey_Shift_ArrowUp(ev)
+					} else {
+						onKey_ArrowUp(ev)
+					}					 
+				} 
+				
+				break;			
+			
+			case "ArrowLeft": 
+
+				if (!html.classList.contains("editing") ) {
+						onKey_ArrowLeft(ev)
+				} 
+				break; 
+
+		   
+			case "ArrowRight": 
+
+				if (!html.classList.contains("editing") ) {
+						onKey_ArrowRight(ev)
+				} 
+				
+			  break;
+
+			case "Shift" : {
+				shifting = true; 
+				setHtmlClass("shifting");
+				
+
+				break;
+			}
+			
+			case "Control" : 
+				controlling = true; 
+				setHtmlClass("controlling");
+				break ;
+				
+			case "Alt" : 
+			    alting = true;
+			    setHtmlClass("alting");
+			    break;
+			case "i":
+			case "I":
+				if (controlling && shifting) {
+				   ev.preventDefault();
+				}
+				break;  
+			case "F":
+			case "f":  
+				  if (!controlling) {	  
+					 if (fs_api.isFullscreen()) {
+						fs_api.exitFullscreen();
+					} else {
+						fs_api.enterFullscreen();  
+					} }
+				  break;
+				  
+			case "b":
+			case "B": 
+				if (!controlling) {onKey_B(ev);}
+				break;
+			 
+			case "*":// numkey pad use
+			case " ":
+				
+				 if (controlling) {
+					onKey_Control_Space(ev);
+				 } else {	  
+					if (shifting)  {
+					   onKey_Shift_Space(ev);
+					} else {
+					   onKey_Space(ev);
+					}
+				 }
+
+				break;
+				
+			case "m":
+			case "M":
+				if (!controlling){ onKey_M (ev);}
+				break;
+				
+			case "l":
+			case "L": 
+			     if (!controlling) {
+			 	       if (shifting) {
+			                timeProvider.useLocal();
+			         } 
+			     }
+			    break;
+				
+			case "t":
+			case "T": 
+			    
+			 	 if (!controlling) {
+			 	     
+			 	     if (shifting) {
+			            timeProvider.resync();
+    			     } else {
+    			        onKey_T(ev) ;
+    			     }
+				
+			    }
+			    
+				break;
+				
+			case "v":
+			    
+			case "V":
+			    if (window.location.search !== "?presenter") {
+			        
+			        if (controlling) {
+			            if (shifting) {
+			                onKey_Control_Shift_V (ev);
+						} else {
+							onKey_Control_V (ev);
+						}
+			        } else {
+			            if (shifting) {
+			              
+			                onKey_Shift_V (ev);
+			                
+			            } else {
+			                onKey_V (ev);
+			            }
+			        }
+			        
+    			   
+
+			    }			    
+			    break;
+			 case "w" :
+			 case "W" :
+			     
+			     if (window.location.search !== "?presenter") {
+					 
+					 	 if (shifting) {
+        				    onKey_Shift_W (ev);
+            			 }
+				 
+					
+ 
+				 }				
+				 break;
+
+			case "o":
+			case "O":
+				if (!controlling) {onKey_O (ev);}
+				break;
+
+			case "p":
+			case "P":				
+				if (!controlling) {onKey_P (ev);}
+				break;
+
+			case "s":
+			case "S":
+				
+				if (controlling) {
+				   
+					if (shifting) {
+						onKey_Control_Shift_S (ev)
+					} else {
+						onKey_Control_S (ev)
+					}
+				
+				} else {
+				
+					onKey_S (ev)
+				}
+				break;
+				
+			case "x":
+			case "X": // extend current timer to default time
+				if (!controlling) { onKey_X (ev); }
+				break;
+				
+			case "c":
+			case "C":
+				if (!controlling) { onKey_C (ev); }			  
+				break;
+
+			case "R":
+			case "r":
+
+				if (!controlling) {
+					onKey_R ( ev ) ;
+				}
+				break;
+
+	  
+	}}
 }
 
-function writeNumber(nm, val) {
-    if (val === undefined) {
-        localStorage.removeItem(nm);
-    } else {
-        localStorage.setItem(nm, val.toString());
-    }
+
+function isSingleScreenMode() {
+	if ( window.location.search.startsWith("?presenter") )  {
+		return false;
+	}
+	return html.classList.contains("reduced") && 
+		   html.classList.contains("showbuttons") &&
+		   runMode === "presenter";
 }
 
-function secToStr(sec) {
-    let prefix = sec < 0 ? "-" : "";
-    if (sec < 0) {
-        sec = 0 - sec;
-    }
-    let min = Math.trunc(sec / 60) % 60;
-    let hr = Math.trunc(sec / 3600);
-    let sx = Math.trunc(sec % 60);
+
+	function setDefaultDuration(msecs) {
+		defaultDuration = msecs;
+		if (timeProvider.now()-startedAt<0) { 
+			// if editing a future start time
+			thisDuration = defaultDuration;
+		}
+		enterTimeText  = "";
+		enterHoursText = "";
+		
+		dispNextMins.textContent = secToStr(defaultDuration/1000);
+		clearHtmlClass("editing");
+		writeNumber("defaultDuration",defaultDuration);
+
+	}
+
+	function saveEditedTime(){
+		if ( !  (  (enterTimeText === "" ) || (enterTimeText === "" ) ) ) {
+			setDefaultDuration  ( ((Number(enterHoursText) * 3600) + (Number(enterTimeText) * 60) ) * 1000);
+
+			if (timerAPI) {
+				timerAPI.send( {setVariableValues:{default:dispNextMins.textContent}});
+			}
+
+			
+		 }
+	}
+		
+	function onDocKeyUp(ev){
+		controlling = ev.ctrlKey;
+		html.classList[controlling?"add":"remove"]("controlling");
+		shifting = ev.shiftKey;
+		html.classList[shifting?"add":"remove"]("shifting");
+		alting = ev.altKey;
+		html.classList[alting?"add":"remove"]("alting");
+		
+	 
+	}
+
+/* 
+add milliseconds to the start time
+ */
+	function bumpStart(milliseconds){
+		startedAt += milliseconds;   
+		startedDisp.textContent = local24HourTime( timeProvider.date(startedAt) );
+		writeNumber("startedAt",startedAt);
+		lastTimeText="";
+		if (timerAPI) {
+			timerAPI.send ({setVariableValues:{startedAt:startedDisp.textContent}});
+		}
+		if (wc_viewer) {
+		    wc_viewer.updateTimestamp(startedAt);
+		}
+	}
+	
+	function bumpEnd(seekEndDelta,endDelta) {
+	   seekEndsAt += seekEndDelta;
+	   endsAt	 += endDelta;
+	   
+	   thisDuration = seekEndsAt-startedAt;
+	
+	   endsDisp.textContent	= local24HourTime( timeProvider.date(seekEndsAt) );
+	   writeNumber("seekEndsAt",seekEndsAt);
+	   lastTimeText="";
+	   if (timerAPI) {
+		timerAPI.send( {setVariableValues:{endsAt:endsDisp.textContent}}) ;
+	   }
+   }
 
 
-    let sx_ = (sx < 10 ? "0" : "") + sx.toString();
-    if (hr < 1) {
-        let min_ = min.toString();
-        return prefix + min_ + ":" + sx_;
-    }
-    let min_ = (min < 10 ? "0" : "") + min.toString();
-    let hr_ = hr.toString();
-    return prefix + hr_ + ":" + min_ + ":" + sx_;
+	function setBarPct(pct) {
+		progress.style.width  = pct + '%';
+		localStorage.setItem("barpct",pct.toString());
+	}
+	
+	function setBar(elapsed,total) {
+		let pct = Math.floor((elapsed/total) *100);
+		setBarPct(pct);
+	}
+	   
+  
+  function readNumber(nm,def) {
+	  let str =  localStorage.getItem(nm);
+	  return str ? Number (str) : def;
+  }
+  
+  function writeNumber(nm,val) {
+	  if (val===undefined) {
+		  localStorage.removeItem(nm);
+	  } else {
+		  localStorage.setItem(nm,val.toString());
+	  }
+
+	  if (timerAPI && ["showtimenow","showmessages","showbar"].indexOf(nm)>=0) {
+		const vars = {};
+		vars[nm]=val.toString()||'0';
+		timerAPI.send( {setVariableValues:vars} ); 
+	  }
+  }
+  
+  function msecToStr(msec) {
+      let sec = Math.floor(msec / 1000) % 86400;// convert to seconds, ignore any year/month/day component
+	  return secToStr(sec);
+  }
+
+  function secToStr(sec) {
+	  let prefix = sec < 0 ? "-" : "";
+	  if (sec<0) {
+		  sec=0-sec;
+	  }
+	  let min = Math.trunc(sec / 60 ) % 60;
+	  let hr  = Math.trunc(sec / 3600 );
+	  let sx  = Math.trunc(sec % 60);
+	  
+	 
+	  let sx_  = (sx < 10 ? "0" : "") + sx.toString();
+	  if (hr < 1 ) {
+		   let min_ = min.toString();
+		   return prefix + min_+":"+sx_;
+	  }
+	  let min_ = (min < 10 ? "0" : "") + min.toString();
+	  let hr_  = hr.toString();
+	  return prefix+hr_+":"+min_+":"+sx_;
+  }
+
+  function local24HourTime(dt) {
+	 const parts = dt.toString().split(':');
+	 parts[0] = parts[0].split(' ').pop();
+	 parts[2] = parts[2].split(' ')[0];
+	 return parts.join(':');
+  }
+  
+  function timeNowStr() {
+	  let when = timeProvider.date();
+	  return local24HourTime(when);
+  }
+  
+  function setRemainClass(cls) {
+	  if ( ! remainDisp.classList.contains(cls) )remainDisp.classList.add(cls);
+  }
+
+  function clearRemainClass(cls) {
+	  if ( remainDisp.classList.contains(cls) ) remainDisp.classList.remove(cls);
+  }
+  
+  function toggleRemainClass(cls) {
+	   remainDisp.classList.toggle(cls);
+  }
+
+
+  function setHtmlClass(cls) {
+	  if ( ! html.classList.contains(cls) ) html.classList.add(cls);
+  }
+
+  function clearHtmlClass(cls) {
+	  if ( html.classList.contains(cls) ) html.classList.remove(cls);
+  }
+
+  function toggleHtmlClass(cls) {
+	  if ( ! html.classList.contains(cls) ) {
+	      html.classList.add(cls);
+	  } else {
+	      html.classList.remove(cls);
+	  } 
+  }
+  
+ 
+  function onTimerWinUnload(){
+	  localStorage.removeItem (timerWin.tab_id);
+	  timerWin=undefined;
+  }
+  
+  function onControlUnload () {
+	 if (timerWin) {
+		timerWin.close();
+		timerWin = undefined;
+	 }
+	 localStorage.removeItem (tab_id);
+	 localStorage.removeItem ("controller_"+tab_id);
+  }
+  
+
+  function is_nwjs(){
+	try{
+		return (typeof require('nw.gui') !== "undefined");
+	} catch (e){
+		return false;
+	}
+ }
+
+if (
+	(runMode !== 'presenter') && 
+	(location.protocol === 'http:' && !location.hostname.endsWith('.com')) &&
+	(typeof startTimerApi === 'function') ) {
+	startTimerApi();
 }
 
-function timeNowStr() {
-    let when = new Date();
-    return when.toLocaleTimeString();
-}
 
-function setRemainClass(cls) {
-    if (!remainDisp.classList.contains(cls)) remainDisp.classList.add(cls);
-}
-
-function clearRemainClass(cls) {
-    if (remainDisp.classList.contains(cls)) remainDisp.classList.remove(cls);
-}
-
-function toggleRemainClass(cls) {
-    remainDisp.classList.toggle(cls);
-}
-
-function setHtmlClass(cls) {
-    if (!html.classList.contains(cls)) html.classList.add(cls);
-}
-
-function clearHtmlClass(cls) {
-    if (html.classList.contains(cls)) html.classList.remove(cls);
-}
-
-function onTimerWinUnload() {
-    timerWin = undefined;
-}
-
-function onControlUnload() {
-    if (timerWin) {
-        timerWin.close();
-        timerWin = undefined;
-    }
-}
-
-function is_nwjs() {
-    try {
-        return (typeof require('nw.gui') !== "undefined");
-    } catch (e) {
-        return false;
-    }
-}
-
-function audioTriggers(deviceId) {
-
-    // Initialize variables
-    let activeStream = null;
-    let audioContext = new AudioContext();
-    //let analyserNode = audioContext.createAnalyser();
-    let analyserNode = createAudioMeter(audioContext);
-           
-    //analyserNode.fftSize = 2048;
-    //const bufferLength = analyserNode.frequencyBinCount;
-    //const dataArray = new Uint8Array(bufferLength);
-    let threshold = 0.5;
-
-    let callbackTriggered=true;
-
-    // Create canvas element
-    const canvas = document.getElementById('audio-canvas');
-    const canvasCtx = canvas.getContext('2d');
-    canvas.width  = 10;//canvas.offsetWidth;
-    canvas.height = 100;//canvas.offsetHeight;
-
-    // Create mouse event listener to set threshold
-    canvas.addEventListener('mousedown', function (e) {
-        const rect = canvas.getBoundingClientRect();
-        const mouseY = e.clientY - rect.top;
-        threshold = 1 - mouseY / canvas.height;
-    });
-
-    // Create reset method to restart monitoring
-    function resetAudioTrigger() {
-        callbackTriggered=false;
-    }
-
-
-    // Connect analyser node to audio source and update visualization
-
-
-        navigator.mediaDevices.getUserMedia( 
-            deviceId ? {  audio:{deviceId: deviceId} } :  { audio: true }
-        ).then(function (stream) {
-            const source = audioContext.createMediaStreamSource(stream);
-            activeStream = stream;
-            source.connect(analyserNode);
-            updateVisualization();
-        })
-        .catch(function (err) {
-            console.error('Error accessing microphone: ', err);
-        });
-
-    // Function to update the visualization
-    function updateVisualization() {
-        if (!!activeStream) {
-            requestAnimationFrame(updateVisualization);
-            //analyserNode.getByteFrequencyData(dataArray);
-            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-            //const average = dataArray.reduce((acc, val) => acc + val) / bufferLength;
-            const normalizedAverage = analyserNode.volume;// average / 255;
-            canvasCtx.fillStyle = 'white'
-            const y = canvas.height - (normalizedAverage * canvas.height);
-            canvasCtx.fillRect(0, y, canvas.width, canvas.height);
-
-            // Draw threshold line
-            canvasCtx.beginPath();
-            canvasCtx.lineWidth = 2;
-            canvasCtx.moveTo(0, canvas.height - (threshold * canvas.height));
-            canvasCtx.lineTo(canvas.width, canvas.height - (threshold * canvas.height));
-            canvasCtx.strokeStyle =  'yellow';
-            canvasCtx.stroke();
-
-            if (normalizedAverage >= threshold && !callbackTriggered) {
-                callbackTriggered = true;
-                const audioTriggerEvent = new Event('audio-trigger');
-                document.dispatchEvent(audioTriggerEvent);
-            }
-        }
-    }
-
-
-    function toggle() {
-        html.classList.toggle("audio");
-    }
-
-    function show() {
-        html.classList.add("audio");
-    }
-
-    function hide() {
-        html.classList.remove("audio");
-
-    }
-
-    function stop () {
-        if (activeStream && analyserNode) {
-            analyserNode.disconnect(activeStream);
-            if (activeStream.getTracks) {
-                activeStream.getTracks().forEach(function(track) {
-                    track.stop();
-                });
-            }
-            activeStream=null;
-            analyserNode=null;
-            audioContext=null;
-        }
-        html.classList.remove("audio");
-
-    }
-
-    return {
-        reset: resetAudioTrigger,
-        toggle: toggle,
-        show: show,
-        hide: hide,
-        stop:stop,
-        setThreshold: function (val) {
-            threshold = val;
-        },
-        getThreshold: function () {
-            return threshold;
-        }
-
-    };
-
-
-}
+ 
