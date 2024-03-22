@@ -346,7 +346,10 @@ function createTimestampViewer(videoElement,canvas,timestampCanvas,liveCanvas,sc
         showLive : function (v) {
             showlive=v||false;
 			displayFrameClosestTo(targetStamp);
-            if (!showlive) {
+            if (showlive) {
+                timestampCanvas.style.display="inline-block";
+                liveCanvas.style.display="inline-block";
+            } else {
                 timestampCanvas.style.display="none";
                 liveCanvas.style.display="none";
             }
