@@ -1,28 +1,26 @@
 <html class="showbuttons">
+<!--
+/*!
+ * timer.html
+ * Copyright(c) 2023 Jonathan Annett
+ * MIT Licensed
+*/
+-->
   <head>
       <title>Presentation Timer</title>
-      <link rel="stylesheet" href="keyhelp.css">
       <link rel="stylesheet" href="timer.css" id="style_1">
   </head>
   <body>
-    <script src="fsapi.js"></script>
-    <script src="keys.js"></script>
-    <script src="volume-meter.js"></script>
-    <script src="timer.js" defer></script>
-    <script src="qrtest/even-simpler-peer.js"></script>    
-
-    <div class="keyhelptext">
-        <div data-key="ArrowLeft" class='key__button'>&larr;</div>
-        <div data-key="ArrowRight" class='key__button'>&rarr;</div>
-        <span>= fix a late/early start (seconds),</span>
-        <div data-key="ArrowUp" class='key__button'>&uarr;</div>
-        <div data-key="ArrowDown" class='key__button'>&darr;</div>
-        <span>= Nudge end time (seconds),</span>
-        <div class='key__button'>Space</div>
-        <span>= start countdown using</span>
-    </div>
-
-
+      <script src="w3color.js"></script> 
+      <script src="fsapi.js"></script>
+      <script src="inettime.js"></script>
+      <script src="tsview.js"></script>
+      <script src="longPollPoster.js"></script>
+      <script src="timeroverlaypip.js"></script>
+      <script src="elementcolors.js"></script>
+      <script src="timerapi.js"></script>
+      <script src="currentdevice.js"></script>
+      <script src="timer.js" defer></script>    
       <div class="buttons">
           <span>&nbsp;&nbsp;Presets</span>
           <div class="btn" data-keys=" ,1,0, ">
@@ -73,9 +71,12 @@
           <div id="btnresume" class="btn btn2" data-keys="&quot;">
               resume
           </div>
+          <div id="btnfloat" class="btn btn2" data-keys="o">
+            overlay
+         </div>
           
       </div>
-
+<!--div class="buttonsmask"></div-->
       <div id="clock_main">
           <div class="xfs_only" id="started_disp"></div>
           <div class="xfs_only" id="elapsed_disp"></div>
@@ -84,7 +85,6 @@
           <div id="remain_info_message"></div>
           <div id="custom_message"></div>
           <div id="remain_disp"></div>
-          <div id="pushed_remain_disp"></div>
           <div id="duration_disp"></div>
           <div id="ends_disp"></div>
           <div id="extra_time_disp"></div>
@@ -92,20 +92,18 @@
       </div>
        
       <div class="xfs_only" id="disp_next_mins">mins</div>
-
-      <div id="custom_key_edit" class="keyhelptext">
-            <span>Custom Keyboard Configuration</span>
-            <div></div>
-            <pre>
-                
-            </pre>
-      </div>
+      
+      <video id="webcam" autoplay style="display: none;"></video>
+      <canvas id="wc_canvas" style="display: none; width : auto; height:1080px;"></canvas>
+      <canvas class="xfs_only" id="wc_canvas2" style="display:none;"></canvas>
+      <canvas class="xfs_only" id="wc_canvas3" style="display:none;"></canvas>
+  
+ 
      
       <div id="key_disp"></div>
-      <p id="link">open timer <a href="#" onclick="return openTimerWindow();">display</a> screen</p>
+      <p id="link">open timer <a href="#" onclick="return openTimerWindow();">display</a> screen. <a href="https://github.com/jonathan-annett/timer">help</a></p>
     
-       <div class="media_query_detect"></div>
-
+      <div class="media_query_detect"></div>
        <div class="mainDiv">
           <div class="progressDiv">
              <div class="progress">
@@ -113,21 +111,11 @@
            </div>
        </div>
 
-       
+        <span id="remain_disp_video_text"></span>
+        <video id="remain_disp_video" muted autoplay></video>
 
        <div id="drag_to_monitor">Drag window to appropriate monitor and press F to make it Fullscreen</div>
-
-       <div id="audio-meter">
-        <canvas id="audio-canvas"></canvas>
-      </div>
-      <div id="audio-setup">
-            <h1>Audio Setup</h1>
-            <p>Choose an audio input</p>
-            <button onclick="clearHtmlClass('audio-setup');qs('#audio-setup div').innerHTML='';">Cancel</button>
-            <div>
-
-            </div>
-      </div>
-      
+       <div id="video-track">Video Assist</div>
+       <div id="video-auto">Auto Zoom</div>
   </body>    
 </html>    
