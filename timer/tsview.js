@@ -260,7 +260,19 @@ function createTimestampViewer(videoElement,canvas,timestampCanvas,liveCanvas,sc
        }
       
       paintBlob(timestampCanvas,closestFrame.frameBlob,closestFrame.timestamp,index);
+      timestampCanvas.blob = closestFrame.frameBlob;
+      timestampCanvas.onclick = saveCapturedFrame;
+      timestampCanvas.filename = `Capture @ ${timestampToStr (timestamp).replace(/\:/g,'_')}.png`;
       
+      
+    }
+    
+    function saveCapturedFrame(ev) {
+        if (timestampCanvas.blob && timestampCanvas.blob.size && timestampCanvas.filename) {
+             saveAs(timestampCanvas.blob, timestampCanvas.filename);
+                
+            
+        }
     }
     
     function paintBlob(dispCanvas,blob,timestamp,index) {
@@ -310,6 +322,8 @@ function createTimestampViewer(videoElement,canvas,timestampCanvas,liveCanvas,sc
     
 
     startRecording(); // Start recording frames
+    
+   
     
     return {
         
@@ -383,6 +397,10 @@ function createTimestampViewer(videoElement,canvas,timestampCanvas,liveCanvas,sc
             
             timestampCanvas.style.display = "none";
             liveCanvas.style.display = "none";
+            
+            timestampCanvas.onclick = null;
+            timestampCanvas.blob = null;
+            
             
             if (stream) {
                 stream.getTracks().forEach(function(track) {
