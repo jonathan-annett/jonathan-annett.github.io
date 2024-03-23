@@ -1454,7 +1454,7 @@ function onDocKeyDown(ev){
 			case "i":
 			case "I":
 				if (controlling && shifting) {
-				   ev.preventDefault();
+				   //ev.preventDefault();
 				}
 				break;  
 			case "F":
