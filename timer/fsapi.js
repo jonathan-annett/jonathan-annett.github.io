@@ -1,4 +1,34 @@
 var fs_api = (function() {
+
+  const  fs_notifiers = new Map( );
+
+  // function to detect if this window is currently in fullscreen mode
+  const is_fs = function(){
+    return (window.screen.width == window.innerWidth && window.screen.height == window.innerHeight);
+  };
+  // save initial fullscreen state of this window 
+  let was_fs = is_fs();
+
+  let notify_fs = function(f){fs_notifiers.forEach(function(fn){fn(f);})};
+
+  const  fs_add_notifier=function(fn){
+    if (typeof fn==='function') {
+      fs_notifiers.set(fn,fn);
+      fn(is_fs());
+    }
+  };
+  const  fs_remove_notifier=function(fn){
+    if (typeof fn==='function') {
+       fs_notifiers.delete(fn);
+    } else {
+      if (fn ===null) {
+        fs_notifiers.clear();
+      }
+    }
+  };
+  
+  fs_add_notifier(function(f){console.log(f?"entered fullscreen":"exited fs")});
+  
   var fs_api = makeFullScreenApi(document.body, function(api) {
     var persistent = false,
       trigger = false,
@@ -64,6 +94,18 @@ var fs_api = (function() {
     };
   });
   fs_api.newApi = makeFullScreenApi;
+
+  window.onresize = function (event) {
+ 
+      if (is_fs()) {
+          notify_fs((was_fs = true));
+      } else {
+        if (was_fs) {
+          notify_fs((was_fs = false));
+        }
+      }
+  };
+
   return fs_api;
 
   function makeFullScreenApi(element, cb) {
@@ -72,6 +114,16 @@ var fs_api = (function() {
           fn(element, isFs);
         });
       },
+
+      debounce = null,
+      fs_cb = function(isFs) {
+          if (isFs===debounce) return;
+          debounce=isFs;
+          notify(isFs ? fs_api.__events.enter : fs_api.__events.exit, isFs);
+          notify(fs_api.__events.toggle, isFs);
+      } ,     
+        
+      
       fs_api = {
         isFullscreen: function() {
           return false;
@@ -105,18 +157,21 @@ var fs_api = (function() {
         }
       },
       setNotifiers = function(ev, flag) {
-        (fs_api.isFullscreen = function() {
-          return !!document[flag];
-        }),
-          document.addEventListener(
-            ev,
-            function() {
-              var isFs = fs_api.isFullscreen();
-              notify(isFs ? fs_api.__events.enter : fs_api.__events.exit, isFs);
-              notify(fs_api.__events.toggle, isFs);
-            },
-            false
-          );
+        fs_api.isFullscreen = function() {
+          return is_fs();
+        };
+
+ 
+        document.addEventListener(
+          ev,
+          function() {
+            fs_cb(fs_api.isFullscreen());
+          },
+          false
+        );
+
+      
+        
       };
 
     if (element.requestFullscreen) {
@@ -134,6 +189,9 @@ var fs_api = (function() {
         tryit();
       };
       setNotifiers("fullscreenchange", "fullscreen");
+
+     fs_add_notifier(fs_cb);
+      
     } else if (element.msRequestFullscreen) {
       fs_api.enterFullscreen = function() {
         return element.msRequestFullscreen();
