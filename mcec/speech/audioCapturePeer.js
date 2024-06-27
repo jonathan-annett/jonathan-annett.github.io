@@ -271,7 +271,7 @@
                    const callback = function(mutationsList, observer) {
                        for (const mutation of mutationsList) {
                            if (mutation.type === 'childList') {
-                               const content = targetNode.textContent;
+                               const textContent = targetNode.textContent;
                                if (peer && peerConnected) {
                                 peer.send({captions:textContent});
 
@@ -307,7 +307,7 @@
                     alert("powerpoint connect Script is on clipboard");
                 });
             };
-            document.getElementById('btnCopySignal').disabled = false;
+            document.getElementById('btnCopyGoogleSignal').disabled = false;
                 
         });
         peer.on('connect', () => {
@@ -317,6 +317,9 @@
         });
         peer.on('data', (e) => {
             console.log('data',e);
+
+            const customEvent = new CustomEvent('PPTSpeechEvent', { detail: e.data });
+            document.dispatchEvent(customEvent);
         });
 
 
