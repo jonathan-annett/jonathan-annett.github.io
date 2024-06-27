@@ -1,8 +1,8 @@
 
-function pptLink() {
+function pptLink(chromaKeyed) {
 
 
-    const sourceCode = (function (incomingSignal) {
+    const sourceCode = (function (incomingSignal,chromaKeyed) {
 
 
         try {
@@ -27,18 +27,19 @@ function pptLink() {
              const chroma	= '#00FF00';
              const textColor = 'yellow';	// edit this to change the color
              const fontFamily = 'consolas'; // edit this to change the font
-          
-            ["SlideShowBackground","SubtitleContainer","SubtitleResultDiv","SlideShowContainer","SubtitleResultSpan"].forEach(function(id){
-              const x = document.getElementById(id);
-              if (x) {
-                x.style.backgroundColor = chroma;
+             if (chromaKeyed) {
+                ["SlideShowBackground","SubtitleContainer","SubtitleResultDiv","SlideShowContainer","SubtitleResultSpan"].forEach(function(id){
+                    const x = document.getElementById(id);
+                    if (x) {
+                    x.style.backgroundColor = chroma;
+                    
+                    } else {
+                    repeat = true;
+                            
+                    }
                 
-              } else {
-                repeat = true;
-                     
-              }
-            
-          });
+                });
+            }
            
           
            if (repeat) {
@@ -56,10 +57,12 @@ function pptLink() {
                 });
                 peer.on('connect', () => {
                     console.log('Connected');
-                    if (document.fullscreenElement) {
+                    if (!chromaKeyed && document.fullscreenElement) {
                         document.exitFullscreen().then(function(){
                             peerConnected = true;
                         });
+                    } else {
+                        peerConnected = true;
                     }
                     
                 });
@@ -68,7 +71,8 @@ function pptLink() {
                 });
                 peer.signal(incomingSignal);
             }
-            /*
+
+           if (chromaKeyed) {
                let style = document.createElement("style"), 
               styleContent = document.createTextNode('* { background-Color : '+chroma+'; !important; color : '+textColor+' !important;  font-family :'+fontFamily+' !important;}'); 
               style.appendChild(styleContent ); 
@@ -76,7 +80,7 @@ function pptLink() {
                                                         
                caput[0].appendChild(style);
                
-              */ 
+           }
                const targetNode = document.querySelector("#SubtitleResultSpan");
                
                const config = {
@@ -119,9 +123,9 @@ function pptLink() {
     const peer = new SimplePeer({ initiator: true, trickle: false });
     peer.on('signal', data => {
         const signalJSON = JSON.stringify(data);
-
+        const chromaKeyedJSON = JSON.stringify(chromaKeyed);
         document.getElementById('btnCopyPPTSignal').onclick= function(){
-                navigator.clipboard.writeText(`(${sourceCode})(${signalJSON});`).then(function(){
+                navigator.clipboard.writeText(`(${sourceCode})(${signalJSON},${chromaKeyedJSON});`).then(function(){
                     alert("powerpoint connect Script is on clipboard");
                     document.getElementById('btnCopyPPTSignal').disabled = true;
                     document.getElementById('btnPastePPTSignal').onclick = function(){
