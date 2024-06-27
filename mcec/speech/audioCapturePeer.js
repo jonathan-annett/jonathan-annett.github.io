@@ -193,8 +193,7 @@
     function pptLink() {
 
 
-        const sourceCode = 
-        (function (incomingSignal) {
+        const sourceCode = (function (incomingSignal) {
     
     
             try {
@@ -307,7 +306,7 @@
                     alert("powerpoint connect Script is on clipboard");
                 });
             };
-            document.getElementById('btnCopyGoogleSignal').disabled = false;
+            document.getElementById('btnCopySignal').disabled = false;
                 
         });
         peer.on('connect', () => {
