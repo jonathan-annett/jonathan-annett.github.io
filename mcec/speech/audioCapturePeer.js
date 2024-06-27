@@ -139,7 +139,7 @@
     			  //final_transcript = capitalize(final_transcript);
     			  console.log({interim_transcript,final_transcript});
 
-                  const customEvent = new CustomEvent('customSpeechEvent', { detail: {interim_transcript,final_transcript} });
+                  const customEvent = new CustomEvent('GoogleSpeechEvent', { detail: {interim_transcript,final_transcript} });
                   document.dispatchEvent(customEvent);
     
     			  //final_span.innerHTML = linebreak(final_transcript);

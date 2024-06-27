@@ -4,8 +4,8 @@ audioCapturePeer.init();
 pptLink();
 
 
-document.addEventListener('PPTSpeechEvent',function(e){  
-    document.getElementById('transcription').textContent = e.detail.interim_transcript;
+document.addEventListener('GoogleSpeechEvent',function(e){  
+    document.getElementById('Google_transcription').textContent = e.detail.interim_transcript;
 });
 
 

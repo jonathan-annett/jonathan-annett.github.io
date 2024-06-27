@@ -3,6 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <title>Captioning Control Screen</title>
+
+    <style>
+
+
+    #Google_transcription {
+       
+       font-family: consolas;
+       background-color: black;
+       color: white;
+       font-size: 38pt;
+       height: 233px;
+       overflow: hidden;
+       display: flex;
+       flex-direction: column-reverse;
+       justify-content: flex-start;
+       padding: 10px;
+       /* border: 1px solid #000; */
+       /* background-color: #f9f9f9; */
+       position: absolute;
+       left: 0;
+       top: 75vh;
+       right: 0;
+   
+       }
+   
+    #Google_setup {
+        position :absolute;
+        left: 0;
+        right: 0;
+        bottom:75vh;
+    }
+
+    #PPT_setup {
+        position :absolute;
+        left: 0;
+        right: 0;
+        bottom: 233px;
+    }
+    #PPT_transcription {
+       
+    font-family: consolas;
+    background-color: black;
+    color: white;
+    font-size: 38pt;
+    height: 233px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-start;
+    padding: 10px;
+    /* border: 1px solid #000; */
+    /* background-color: #f9f9f9; */
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    }
+
+    </style>
 </head>
 <body>
     <h1>Captioning Control Screen</h1>
@@ -11,12 +71,14 @@
         <h2>Outgoing Signal</h2>
         <textarea style="display:none" id="outgoingSignal" rows="10" cols="50"></textarea>
     </div>
-    <div>
+    <div id="Google_setup">
     <h2>Google Speech API</h2>
-    <select id="audioSource"></select>
+    <select  style="display:none" id="audioSource"></select>
     <button id="start">Start</button>
     <button style="display:none" disabled id="btnCopyGoogleSignal"  >Copy Google Request</button>    <button disabled id="btnPasteGoogleSignal"  >Paste Google Answer</button><br>
-    <h2>PowerPoint Speech API</h2>
+    </div>
+    <div id="PPT_setup">
+        <h2>PowerPoint Speech API</h2>
     <button disabled id="btnCopyPPTSignal">Copy PPT Request</button> <button disabled id="btnPastePPTSignal" >Paste PPT Reponse</button><br>
     </div>
     <div style="display:none" >
@@ -24,7 +86,7 @@
         <textarea id="answerSignal" rows="10" cols="50"></textarea>
         <button id="connect">Connect</button>
     </div>
-    <div id="transcription"></div>
+    <div id="Google_transcription"></div>
     <div id="PPT_transcription"></div>
    
     <script src="simplepeer.min.js"></script> <!--script src="https://cdn.jsdelivr.net/npm/simple-peer/simplepeer.min.js"></script-->
