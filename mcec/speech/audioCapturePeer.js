@@ -37,10 +37,11 @@ class AudioCapturePeer {
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         if (this.connected) {
           console.log("adding stream to peer");
-          this.peer.addStream(stream);            
+          //this.peer.addStream(stream);            
+          stream.getTracks().forEach(track => this.peer.addTrack(track, stream));
         } else {
             console.log("starting local recognition");
-            this.startRecognition(stream);
+            await this.setupAudioWorklet(stream);
         }
     }
 
@@ -49,29 +50,20 @@ class AudioCapturePeer {
         this.peer.signal(JSON.parse(answerSignal));
     }
 
-    startRecognition(stream) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'en-US';
-        recognition.continuous = true;
-
+    async setupAudioWorklet(stream) {
         const audioContext = new AudioContext();
-        const source = audioContext.createMediaStreamSource(stream);
-        const processor = audioContext.createScriptProcessor(2048, 1, 1);
+        await audioContext.audioWorklet.addModule('speechProcessor.js');
+        const speechNode = new AudioWorkletNode(audioContext, 'speech-processor');
 
-        source.connect(processor);
-        processor.connect(audioContext.destination);
-        
-        processor.onaudioprocess = function(event) {
-            const inputBuffer = event.inputBuffer.getChannelData(0);
-            recognition.onaudiostart = () => recognition.start();
-            recognition.onresult = event => {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('transcription').innerText = transcript;
-                const customEvent = new CustomEvent('customSpeechEvent', { detail: transcript });
-                document.dispatchEvent(customEvent);
-            };
-            recognition.onerror = event => console.error(event.error);
+        speechNode.port.onmessage = (event) => {
+            const transcript = event.data;
+            document.getElementById('transcription').innerText = transcript;
+            const customEvent = new CustomEvent('customSpeechEvent', { detail: transcript });
+            document.dispatchEvent(customEvent);
         };
+
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(speechNode);
+        speechNode.connect(audioContext.destination);
     }
 }
