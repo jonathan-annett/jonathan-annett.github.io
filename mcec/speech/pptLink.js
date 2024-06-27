@@ -51,7 +51,12 @@ function pptLink() {
                 });
                 peer.on('connect', () => {
                     console.log('Connected');
-                    peerConnected = true;
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen().then(function(){
+                            peerConnected = true;
+                        });
+                    }
+                    
                 });
                 peer.on('close', () => {
                     peerConnected = false;
