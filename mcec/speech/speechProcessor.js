@@ -1,7 +1,7 @@
 class SpeechProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
-        this.recognition = new (self.SpeechRecognition || self.webkitSpeechRecognition)();
+        this.recognition = new (globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition)();
         this.recognition.lang = 'en-US';
         this.recognition.continuous = true;
 
