@@ -54,7 +54,9 @@ function pptLink(chromaKeyed) {
                     }).catch(function(e){
                         const btn = document.createElement('button');
                         btn.textContent = "Copy Response";
-                        btn.style= "position:absolute;bottom:10px;left:10px;width:100px;height:20px;";
+                        btn.style= "position:absolute;bottom:10px;left:10px;width:135px;height:50px;z-index:99999;background-color: yellow";
+
+ 
                         btn.onclick = function(){
                             btn.parentElement.removeChild(btn);
                             navigator.clipboard.writeText(json).then(function(){
