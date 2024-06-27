@@ -48,10 +48,22 @@ function pptLink(chromaKeyed) {
 
                 peer = new SimplePeer({ initiator: false, trickle: false });
                 peer.on('signal', data => {
-                    navigator.clipboard.writeText(JSON.stringify(data)).then(function(){
+                    const json =  JSON.stringify(data);
+                    navigator.clipboard.writeText(json).then(function(){
                         console.log ("on clipboard");
                     }).catch(function(e){
-                        console.log( JSON.stringify(data) );
+                        const btn = document.createElement('button');
+                        btn.textContent = "Copy Response";
+                        btn.style= "position:absolute;bottom:10px;left:10px;width:100px;height:20px;";
+                        btn.onclick = function(){
+                            btn.parentElement.removeChild(btn);
+                            navigator.clipboard.writeText(json).then(function(){
+                                console.log ("on clipboard");
+                            }).catch(function(e){
+                                console.log(json );
+                            });
+                        };
+                        document.body.appendChild(btn);
                    
                     });
                 });
