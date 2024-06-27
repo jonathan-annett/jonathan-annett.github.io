@@ -141,9 +141,9 @@ function pptLink() {
     });
     peer.on('data', (data) => {
         if (typeof data === 'object') {
-            if (data.constructor.name === 'ArrayBuffer') {
+          //  if (data.constructor.name === 'ArrayBuffer') {
                 data = JSON.parse(new TextDecoder().decode(data))
-            }
+         //   }
         } else {
             if (typeof data === 'string') {
                 data = JSON.parse(data);
