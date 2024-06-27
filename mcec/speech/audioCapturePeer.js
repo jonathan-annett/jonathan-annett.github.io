@@ -33,34 +33,16 @@
     		});
     		document.getElementById('start').addEventListener('click', () => this.start());
     		document.getElementById('connect').addEventListener('click', () => this.connect());
-    	}
-    
-    	async start() {
-                function showInfo(x) {
-            		console.log(x);
-            	}
-    		if (this.connected) {
-    		    const audioSelect = document.getElementById('audioSource');
-				const constraints = {
-					audio: { deviceId: audioSelect.value ? { exact: audioSelect.value } : undefined }
-				};
-				const stream = await navigator.mediaDevices.getUserMedia(constraints);
-				
-		
-			  
-    		  console.log("adding stream to peer");
-    		  //this.peer.addStream(stream);			
-    		  stream.getTracks().forEach(track => this.peer.addTrack(track, stream));
-    		} else {
-    			console.log("starting local recognition");
-    		//	await this.setupAudioWorklet(stream);
-    
+
+            
     			var recognition = new webkitSpeechRecognition();
+                this.recognition= recognition;
+
     			var recognizing = false;
                 var ignore_onend = false;
     			var final_transcript = '';
     			
-    			var start_timestamp = Date.now();
+    			var start_timestamp ;
     
     			recognition.continuous = true;
     			recognition.interimResults = true;
@@ -137,14 +119,62 @@
     			//	showButtons('inline-block');
     			  }
     			};
+
+                this.restart = function () {
+                    
+                if (recognizing) {
+                    recognition.stop();
+                    return;
+                  }
+                  final_transcript = '';
+                  recognition.lang = select_dialect.value;
+                  recognition.start();
+                  ignore_onend = false;
+                 // final_span.innerHTML = '';
+                 // interim_span.innerHTML = '';
+                  //start_img.src = '/intl/en/chrome/assets/common/images/content/mic-slash.gif';
+                  showInfo('info_allow');
+                  //showButtons('none');
+                  start_timestamp = event.timeStamp;
     		  }
+
+             
+
+    	}
+
+
+
+    
+    	async start() {
+                function showInfo(x) {
+            		console.log(x);
+            	}
+                
+    		if (this.connected) {
+    		    const audioSelect = document.getElementById('audioSource');
+				const constraints = {
+					audio: { deviceId: audioSelect.value ? { exact: audioSelect.value } : undefined }
+				};
+				const stream = await navigator.mediaDevices.getUserMedia(constraints);
+				
+		
+			  
+    		  console.log("adding stream to peer");
+    		  //this.peer.addStream(stream);			
+    		  stream.getTracks().forEach(track => this.peer.addTrack(track, stream));
+    		} else {
+    			console.log("starting local recognition");
+    		//	await this.setupAudioWorklet(stream);
+
+                this.restart();
+    
     		}
-    	
+        }
     
     	connect() {
     		const answerSignal = document.getElementById('answerSignal').value;
     		this.peer.signal(JSON.parse(answerSignal));
     	}
     
-    	 
+    
     }
