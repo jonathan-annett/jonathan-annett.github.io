@@ -81,7 +81,7 @@ function pptLink() {
                        if (mutation.type === 'childList') {
                            const textContent = targetNode.textContent;
                            if (peer && peerConnected) {
-                            peer.send({captions:textContent});
+                            peer.send(JSON.stringify({captions:textContent}));
 
                            }
 
@@ -140,6 +140,15 @@ function pptLink() {
         connected = true;
     });
     peer.on('data', (data) => {
+        if (typeof data === 'object') {
+            if (data.constructor.name === 'ArrayBuffer') {
+                data = JSON.parse(new TextDecoder().decode(data))
+            }
+        } else {
+            if (typeof data === 'string') {
+                data = JSON.parse(data);
+            }
+        }
         console.log('data',data);
 
         const customEvent = new CustomEvent('PPTSpeechEvent', { detail: data });
