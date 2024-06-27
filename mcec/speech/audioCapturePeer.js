@@ -46,6 +46,10 @@
     
     			recognition.continuous = true;
     			recognition.interimResults = true;
+
+                function showInfo(x) {
+            		console.log(x);
+            	}
     
     		
     			recognition.onstart = function() {
@@ -146,9 +150,7 @@
 
     
     	async start() {
-                function showInfo(x) {
-            		console.log(x);
-            	}
+              
 
     		if (this.connected) {
     		    const audioSelect = document.getElementById('audioSource');
