@@ -63,7 +63,7 @@ function pptLink() {
                 });
                 peer.signal(incomingSignal);
             }
-        
+            /*
                let style = document.createElement("style"), 
               styleContent = document.createTextNode('* { background-Color : '+chroma+'; !important; color : '+textColor+' !important;  font-family :'+fontFamily+' !important;}'); 
               style.appendChild(styleContent ); 
@@ -71,7 +71,7 @@ function pptLink() {
                                                         
                caput[0].appendChild(style);
                
-               
+              */ 
                const targetNode = document.querySelector("#SubtitleResultSpan");
                
                const config = {
