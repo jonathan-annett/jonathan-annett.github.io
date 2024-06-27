@@ -50,7 +50,7 @@ function pptLink(chromaKeyed) {
                 peer.on('signal', data => {
                     const json =  JSON.stringify(data);
                     navigator.clipboard.writeText(json).then(function(){
-                        console.log ("on clipboard");
+                      
                     }).catch(function(e){
                         const btn = document.createElement('button');
                         btn.textContent = "Copy Response";
@@ -180,6 +180,7 @@ function pptLink(chromaKeyed) {
         console.log('data',data);
 
         const customEvent = new CustomEvent('PPTSpeechEvent', { detail: data });
+        localStorage.setItem("PPTCaptions",data.captions);
         document.dispatchEvent(customEvent);
     });
 
