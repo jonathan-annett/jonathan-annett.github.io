@@ -47,7 +47,12 @@ function pptLink() {
 
                 peer = new SimplePeer({ initiator: false, trickle: false });
                 peer.on('signal', data => {
-                    prompt( "response for connect challenge", JSON.stringify(data) );
+                    navigator.clipboard.writeText(JSON.stringify(data)).then(function(){
+                        console.log ("on clipboard");
+                    }).catch(function(e){
+                        console.log( JSON.stringify(data) );
+                   
+                    });
                 });
                 peer.on('connect', () => {
                     console.log('Connected');
