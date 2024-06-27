@@ -127,7 +127,7 @@
                     return;
                   }
                   final_transcript = '';
-                  recognition.lang = select_dialect.value;
+                  recognition.lang = "10";//select_dialect.value;
                   recognition.start();
                   ignore_onend = false;
                  // final_span.innerHTML = '';
@@ -149,7 +149,7 @@
                 function showInfo(x) {
             		console.log(x);
             	}
-                
+
     		if (this.connected) {
     		    const audioSelect = document.getElementById('audioSource');
 				const constraints = {
