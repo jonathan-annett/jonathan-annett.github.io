@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Speech API Peer</title>
+</head>
+<body>
+    <h1>Speech API Peer</h1>
+    <div>
+        <h2>Incoming Signal</h2>
+        <textarea id="incomingSignal" rows="10" cols="50"></textarea>
+        <button id="connect">Connect</button>
+    </div>
+    <div>
+        <h2>Outgoing Signal</h2>
+        <textarea id="outgoingSignal" rows="10" cols="50"></textarea>
+    </div>
+    <div id="transcription"></div>
+    <script src="simplepeer.min.js"></script> <!--script src="https://cdn.jsdelivr.net/npm/simple-peer/simplepeer.min.js"></script-->
+    <script src="speechAPIPeer.js"></script>
+    <script src="speechAPITest.js" defer></script>
+</body>
+</html>
