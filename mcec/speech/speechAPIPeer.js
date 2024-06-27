@@ -6,9 +6,15 @@ class SpeechAPIPeer {
         });
         this.peer.on('connect', () => {
             console.log('Connected');
+            this.peer.send("hello back");
         });
         this.peer.on('stream', stream => {
+            console.log("got stream from peer");
             this.startRecognition(stream);
+        });
+
+        this.peer.on('data', (e) => {
+            console.log('data',e);
         });
     }
 

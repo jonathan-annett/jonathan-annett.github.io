@@ -6,6 +6,10 @@ class AudioCapturePeer {
         });
         this.peer.on('connect', () => {
             console.log('Connected');
+            this.peer.send("hello");
+        });
+        this.peer.on('data', (e) => {
+            console.log('data',e);
         });
     }
 
@@ -30,6 +34,7 @@ class AudioCapturePeer {
             audio: { deviceId: audioSelect.value ? { exact: audioSelect.value } : undefined }
         };
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        console.log("adding stream to peer");
         this.peer.addStream(stream);
     }
 
