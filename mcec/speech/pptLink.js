@@ -22,7 +22,7 @@ function pptLink() {
         function bootstrap(){
             
         
-            let repeat,peerConnected;
+            let repeat,peerConnected,peer;
           
              const chroma	= '#00FF00';
              const textColor = 'yellow';	// edit this to change the color
@@ -45,7 +45,7 @@ function pptLink() {
                 setTimeout(bootstrap,500);
           } else {
 
-                const peer = new SimplePeer({ initiator: false, trickle: false });
+                peer = new SimplePeer({ initiator: false, trickle: false });
                 peer.on('signal', data => {
                     console.log( JSON.stringify(data) );
                 });
@@ -106,24 +106,24 @@ function pptLink() {
      
     }).toString();
 
-    let peer = new SimplePeer({ initiator: true, trickle: false });
+    const peer = new SimplePeer({ initiator: true, trickle: false });
     peer.on('signal', data => {
         const signalJSON = JSON.stringify(data);
 
         document.getElementById('btnCopyPPTSignal').onclick= function(){
-            navigator.clipboard.writeText(`(${sourceCode})(${signalJSON});`).then(function(){
-                alert("powerpoint connect Script is on clipboard");
-                document.getElementById('btnCopyPPTSignal').disabled = true;
-                document.getElementById('btnPastePPTSignal').onclick = function(){
-                navigator.clipboard.readText().then(function(text){
-                    try {
-                        peer.signal(JSON.parse(text));
-                    } catch (e) {
-                        
-                    }
-                })
-               
-            };
+                navigator.clipboard.writeText(`(${sourceCode})(${signalJSON});`).then(function(){
+                    alert("powerpoint connect Script is on clipboard");
+                    document.getElementById('btnCopyPPTSignal').disabled = true;
+                    document.getElementById('btnPastePPTSignal').onclick = function(){
+                    navigator.clipboard.readText().then(function(text){
+                        try {
+                            peer.signal(JSON.parse(text));
+                        } catch (e) {
+                            
+                        }
+                    })
+                
+                };
             document.getElementById('btnPastePPTSignal').disabled = false;
             });
             
@@ -136,8 +136,8 @@ function pptLink() {
     });
     peer.on('connect', () => {
         console.log('Connected');
-        this.peer.send("hello");
-        this.connected = true;
+        peer.send("hello");
+        connected = true;
     });
     peer.on('data', (e) => {
         console.log('data',e);
