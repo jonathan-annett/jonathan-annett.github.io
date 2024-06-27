@@ -4,42 +4,9 @@
     					 
     */
     
-     class AudioCapturePeer {
+     class GoogleSpeechAPI_SPN {
     	constructor() {
-    		this.peer = new SimplePeer({ initiator: true, trickle: false });
-    		this.peer.on('signal', data => {
-    			document.getElementById('outgoingSignal').value = JSON.stringify(data);
-                document.getElementById('btnCopyGoogleSignal').onclick= function(){
-                    navigator.clipboard.writeText(JSON.stringify(data)).then(function(){
-                        alert("google connect data is on clipboard");
-
-                        document.getElementById('btnPasteGoogleSignal').onclick = function(){
-                            navigator.clipboard.readText().then(function(text){
-                                try {
-                                    peer.signal(JSON.parse(text));
-                                } catch (e) {
-                                    
-                                }
-                            })
-                           
-                        };
-                        document.getElementById('btnCopyGoogleSignal').disabled = true;
-                        document.getElementById('btnPasteGoogleSignal').disabled = false;
-                    });
-
-                };
-
-                document.getElementById('btnCopyGoogleSignal').disabled = false;
-
-    		});
-    		this.peer.on('connect', () => {
-    			console.log('Connected');
-    			this.peer.send("hello");
-    			this.connected = true;
-    		});
-    		this.peer.on('data', (e) => {
-    			console.log('data',e);
-    		});
+    		 
     	}
     
     	async init() {
@@ -132,54 +99,22 @@
     			  
     			};
 
-                this.restart = function () {
-                    
-                if (recognizing) {
-                    recognition.stop();
-                    return;
-                  }
-                  final_transcript = '';
-                  recognition.lang = "10";//select_dialect.value;
-                  recognition.start();
-                  ignore_onend = false;
-                 // final_span.innerHTML = '';
-                 // interim_span.innerHTML = '';
-                  //start_img.src = '/intl/en/chrome/assets/common/images/content/mic-slash.gif';
-                  showInfo('info_allow');
-                  //showButtons('none');
-                  start_timestamp = event.timeStamp;
+                this.start = function () {
+						
+					if (recognizing) {
+						recognition.stop();
+						return;
+                  	}
+					final_transcript = '';
+					recognition.lang = "10";//select_dialect.value;
+					recognition.start();
+					ignore_onend = false;
+					showInfo('info_allow');
+					start_timestamp = event.timeStamp;
     		  }
-
-             
 
     	}
 
-
-
-    
-    	async start() {
-              
-
-    		if (this.connected) {
-    		    const audioSelect = document.getElementById('audioSource');
-				const constraints = {
-					audio: { deviceId: audioSelect.value ? { exact: audioSelect.value } : undefined }
-				};
-				const stream = await navigator.mediaDevices.getUserMedia(constraints);
-				
-		
-			  
-    		  console.log("adding stream to peer");
-    		  //this.peer.addStream(stream);			
-    		  stream.getTracks().forEach(track => this.peer.addTrack(track, stream));
-    		} else {
-    			console.log("starting local recognition");
-    		//	await this.setupAudioWorklet(stream);
-
-                this.restart();
-    
-    		}
-        }
     
     	connect() {
     		const answerSignal = document.getElementById('answerSignal').value;
