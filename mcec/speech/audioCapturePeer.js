@@ -7,6 +7,7 @@ class AudioCapturePeer {
         this.peer.on('connect', () => {
             console.log('Connected');
             this.peer.send("hello");
+            this.connected = true;
         });
         this.peer.on('data', (e) => {
             console.log('data',e);
@@ -34,12 +35,43 @@ class AudioCapturePeer {
             audio: { deviceId: audioSelect.value ? { exact: audioSelect.value } : undefined }
         };
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        console.log("adding stream to peer");
-        this.peer.addStream(stream);
+        if (this.connected) {
+          console.log("adding stream to peer");
+          this.peer.addStream(stream);            
+        } else {
+            console.log("starting local recognition");
+            startRecognition(stream);
+        }
     }
 
     connect() {
         const answerSignal = document.getElementById('answerSignal').value;
         this.peer.signal(JSON.parse(answerSignal));
+    }
+
+    startRecognition(stream) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.continuous = true;
+
+        const audioContext = new AudioContext();
+        const source = audioContext.createMediaStreamSource(stream);
+        const processor = audioContext.createScriptProcessor(2048, 1, 1);
+
+        source.connect(processor);
+        processor.connect(audioContext.destination);
+        
+        processor.onaudioprocess = function(event) {
+            const inputBuffer = event.inputBuffer.getChannelData(0);
+            recognition.onaudiostart = () => recognition.start();
+            recognition.onresult = event => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('transcription').innerText = transcript;
+                const customEvent = new CustomEvent('customSpeechEvent', { detail: transcript });
+                document.dispatchEvent(customEvent);
+            };
+            recognition.onerror = event => console.error(event.error);
+        };
     }
 }
