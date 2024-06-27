@@ -2,25 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Audio Capture Peer</title>
+    <title>Captioning Control Screen</title>
 </head>
 <body>
-    <h1>Audio Capture Peer</h1>
-    <select id="audioSource"></select>
-    <button id="start">Start</button>
-    <div>
+    <h1>Captioning Control Screen</h1>
+
+    <div style="display:none" >
         <h2>Outgoing Signal</h2>
         <textarea style="display:none" id="outgoingSignal" rows="10" cols="50"></textarea>
     </div>
-    <button disabled id="btnCopyGoogleSignal"  >Copy Google Request</button>    <button disabled id="btnPasteGoogleSignal"  >Paste Google Answer</button><br>
-
-    <button disabled id="btnCopyPPTSignal"  >Copy PPT Request</button> <button disabled id="btnPastePPTSignal"  >Paste PPT Answer</button><br>
     <div>
+    <h2>Google Speech API</h2>
+    <select id="audioSource"></select>
+    <button id="start">Start</button>
+    <button style="display:none" disabled id="btnCopyGoogleSignal"  >Copy Google Request</button>    <button disabled id="btnPasteGoogleSignal"  >Paste Google Answer</button><br>
+    <h2>PowerPoint Speech API</h2>
+    <button disabled id="btnCopyPPTSignal">Copy PPT Request</button> <button disabled id="btnPastePPTSignal" >Paste PPT Reponse</button><br>
+    </div>
+    <div style="display:none" >
         <h2>Answer Signal</h2>
         <textarea id="answerSignal" rows="10" cols="50"></textarea>
         <button id="connect">Connect</button>
     </div>
     <div id="transcription"></div>
+    <div id="PPT_transcription"></div>
    
     <script src="simplepeer.min.js"></script> <!--script src="https://cdn.jsdelivr.net/npm/simple-peer/simplepeer.min.js"></script-->
     <script src="audioCapturePeer.js"></script>
