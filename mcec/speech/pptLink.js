@@ -139,10 +139,10 @@ function pptLink() {
         peer.send("hello");
         connected = true;
     });
-    peer.on('data', (e) => {
-        console.log('data',e);
+    peer.on('data', (data) => {
+        console.log('data',data);
 
-        const customEvent = new CustomEvent('PPTSpeechEvent', { detail: e.data });
+        const customEvent = new CustomEvent('PPTSpeechEvent', { detail: data });
         document.dispatchEvent(customEvent);
     });
 
