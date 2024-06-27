@@ -40,7 +40,7 @@ class AudioCapturePeer {
           this.peer.addStream(stream);            
         } else {
             console.log("starting local recognition");
-            startRecognition(stream);
+            this.startRecognition(stream);
         }
     }
 
