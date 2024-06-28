@@ -156,7 +156,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             document.dispatchEvent(customEvent);
         };
 
-        this.start = () => {
+        this.start = (event) => {
             if (recognizing) {
                 recognition.stop();
                 return;
@@ -176,9 +176,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             start_timestamp = event.timeStamp;
         };
 
-		document.addEventListener('DOMContentLoaded',function(){
-			this.init();
-		});
+		document.addEventListener('DOMContentLoaded',this.start);
     }
 }
 
