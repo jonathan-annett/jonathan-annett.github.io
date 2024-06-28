@@ -8,9 +8,9 @@ function createClipboardScript(code,cb) {
         peer.on('signal',function(signalData){
 
             compressToBase64(`
-                ${code.name}( startPeerHandler(${JSON.stringify(signalData)} );
-
+                ${code.name}( startPeerHandler(${JSON.stringify(signalData)}) );
                 ${code.toString()}
+                ${startPeerHandler.toString()}
 
             `).then(function(scriptsSrc){
 
@@ -25,7 +25,7 @@ function createClipboardScript(code,cb) {
                     
                     ${decompressFromBase64.toString()}
                     ${loadCompressedScript.toString()}
-                    ${startPeerHandler.toString()}
+                   
                     ${simplePeerLib.toString()}
                     ${compresedSimplePeer.toString()}
                 })();
