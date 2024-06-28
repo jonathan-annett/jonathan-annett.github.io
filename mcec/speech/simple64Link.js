@@ -16,7 +16,6 @@ function createClipboardScript(code,copyButton,pasteButton,cb) {
 
                 scriptsSrc = `
                    (function(){ 
-                    debugger;
                     simplePeerLib().then(function(){
                         return loadCompressedScript(${JSON.stringify(scriptsSrc)});
                     }).then(function(fn){
@@ -81,7 +80,6 @@ function startPeerHandler(signalData) {
         peerConnected : false
     };
     handler.peer = new SimplePeer({initator:false,trickle:false});
-    let backupPeer = new SimplePeer({initator:true,trickle:false});
     
     handler.peer.on('signal', function(data ) {
 
@@ -111,18 +109,6 @@ function startPeerHandler(signalData) {
         handler.peerConnected = false;
     });
     handler.peer.signal(signalData);
-    const backupSignalFunc = function (backupSignal){
-        handler.peer.send(JSON.stringify({backupSignal}));
-    };
-    const backupConnectedFunc =function(){
-        handler.peer = backupPeer; 
-        handler.peerConnected = true;
-        backupPeer = new SimplePeer({initator:true,trickle:false});
-        backupPeer.on('signal',backupSignalFunc);
-        backupPeer.on('connect',backupConnectedFunc);        
-    };
-    backupPeer.on('signal',backupSignalFunc);
-    backupPeer.on('connect',backupConnectedFunc);
     return handler;
 }   
 
