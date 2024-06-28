@@ -9,15 +9,26 @@ function createClipboardScript(code,cb) {
 
             compressToBase64(`
                 ${code.name}( startPeerHandler(${JSON.stringify(signalData)} );
+
+                ${code.toString()}
+                
             `).then(function(scriptsSrc){
 
                 scriptsSrc = `
-                    ${scriptsSrc}
+                   (function(){ 
+                    debugger;
+                    simplePeerLib().then(function(){
+                        return loadCompressedScript(${JSON.stringify(scriptsSrc)});
+                    }).then(function(fn){
+                        fn();
+                    });
+                    
                     ${decompressFromBase64.toString()}
                     ${loadCompressedScript.toString()}
                     ${startPeerHandler.toString()}
                     ${simplePeerLib.toString()}
                     ${compresedSimplePeer.toString()}
+                })();
                 `;
 
                 cb('script',scriptsSrc);
