@@ -1,5 +1,5 @@
 
-function createClipboardScript(code,cb) {
+function createClipboardScript(code,copyButton,pasteButton,cb) {
 
     simplePeerLib ().then(function(SimplePeer){
         let peer;
@@ -31,7 +31,27 @@ function createClipboardScript(code,cb) {
                 })();
                 `;
 
-                cb('script',scriptsSrc);
+                      
+                copyButton.onclick = function() {
+                    navigator.clipboard.writeText(scriptsSrc);
+                    copyButton.disabled = true;
+                    pasteButton.onclick = function(){
+                        navigator.clipboard.readText().then(function(json){
+                            try {
+                                const message = JSON.parse(json);
+                                if (peer) {
+                                    peer.signal(message);
+                                    pasteButton.disabled = true;  
+                                }
+                            } catch(e) {
+                                
+                            }
+                        });
+                    }; 
+                    pasteButton.disabled = false;                    
+                };
+                copyButton.disabled = false;
+                
 
             }).catch(function (err){
                 cb('error',err);
@@ -169,32 +189,8 @@ function initateClipboardLink(copyButton,pasteButton,code,cb) {
     pasteButton.disabled = true;
     let peer;
 
-    createClipboardScript(code,function(what,data){
+    createClipboardScript(code,copyButton,pasteButton,function(what,data){
         switch (what) {
-            case 'script': {
-
-               
-                copyButton.onclick = function() {
-                    navigator.clipboard.writeText(data);
-                    copyButton.disabled = true;
-                    pasteButton.onclick = function(){
-                        navigator.clipboard.readText().then(function(json){
-                            try {
-                                const message = JSON.parse(json);
-                                if (peer) {
-                                    peer.signal(message);
-                                    pasteButton.disabled = true;  
-                                }
-                            } catch(e) {
-                                
-                            }
-                        });
-                    }; 
-                    pasteButton.disabled = false;                    
-                };
-                copyButton.disabled = false;
-                break;
-            }
             case 'data' :
             case 'connect' :
             if (what==='connect') {
