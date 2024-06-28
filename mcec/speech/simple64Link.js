@@ -11,7 +11,7 @@ function createClipboardScript(code,cb) {
                 ${code.name}( startPeerHandler(${JSON.stringify(signalData)} );
 
                 ${code.toString()}
-                
+
             `).then(function(scriptsSrc){
 
                 scriptsSrc = `
@@ -85,14 +85,7 @@ function startPeerHandler(signalData) {
     });
     handler.peer.on('connect', () => {
         console.log('Connected');
-        if (!chromaKeyed && document.fullscreenElement) {
-            document.exitFullscreen().then(function(){
-                handler.peerConnected = true;
-            });
-        } else {
-            handler.peerConnected = true;
-        }
-        
+        handler.peerConnected = true;
     });
     peer.on('close', () => {
         handler.peerConnected = false;
@@ -156,7 +149,7 @@ async function loadCompressedScript(compressedScript) {
         const src = await decompressFromBase64(compressedScript);
         return new Function (src);
     } catch (e) {
-        console.error( e.message||String(e));
+        console.error( e.message||String(e) );
     }
 }
 
