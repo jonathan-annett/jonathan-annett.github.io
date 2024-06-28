@@ -2,7 +2,7 @@
 function pptLink(chromaKeyed) {
 
 
-    initateClipboardLink(document.getElementById('btnCopyPPTSignal'),captionWatcher,function(what,data){
+    initateClipboardLink(document.getElementById('btnCopyPPTSignal'),document.getElementById('btnPastePPTSignal'),captionWatcher,function(what,data){
 
         switch (what) {
             case 'data' : {
