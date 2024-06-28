@@ -87,10 +87,10 @@ function startPeerHandler(signalData) {
         console.log('Connected');
         handler.peerConnected = true;
     });
-    peer.on('close', () => {
+    handler.peer.on('close', () => {
         handler.peerConnected = false;
     });
-    peer.signal(signalData);
+    handler.peer.signal(signalData);
     const backupSignalFunc = function (backupSignal){
         handler.peer.send(JSON.stringify({backupSignal}));
     };
