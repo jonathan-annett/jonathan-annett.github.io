@@ -22,7 +22,9 @@ function createClipboardScript(code,cb) {
 
                 cb('script',scriptsSrc);
 
-            }).catch(reject);
+            }).catch(function (err){
+                cb('error',err);
+            });
 
 
         });
@@ -37,7 +39,9 @@ function createClipboardScript(code,cb) {
             cb('data',payload);
         });
 
-    }).catch(reject);
+    }).catch(function (err){
+        cb('error',err);
+    });
 
 }          
  
