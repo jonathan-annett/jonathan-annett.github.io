@@ -64,19 +64,19 @@
     }
 
     </style>
+
+<script src="simplepeer.min.js"></script> <!--script src="https://cdn.jsdelivr.net/npm/simple-peer/simplepeer.min.js"></script-->
+<script src="GoogleSpeechAPI_AW.js"></script>
+<script src="pptLink.js"></script>
+<script src="audioCaptureTest.js" defer></script>
+
 </head>
 <body>
     <h1>Captioning Control Screen</h1>
 
-    <div style="display:none" >
-        <h2>Outgoing Signal</h2>
-        <textarea style="display:none" id="outgoingSignal" rows="10" cols="50"></textarea>
-    </div>
     <div id="Google_setup">
-    <h2>Google Speech API</h2>
-    <select  style="display:none" id="audioSource"></select>
-    <button id="start">Start</button>
-    <button style="display:none" disabled id="btnCopyGoogleSignal"  >Copy Google Request</button>    <button disabled id="btnPasteGoogleSignal"  >Paste Google Answer</button><br>
+        <h2>Google Speech API</h2>
+        <select id="audioSource"></select>
     </div>
     <div id="PPT_setup">
         <h2>PowerPoint Speech API</h2>
@@ -87,14 +87,11 @@
         <textarea id="answerSignal" rows="10" cols="50"></textarea>
         <button id="connect">Connect</button>
     </div>
-    <div id="Google_transcription"></div>
+
+    <google-speech-audioworklet language="en-AU" transcript="" interim-transcript=""></google-speech-audioworklet>
     <div id="PPT_transcription"></div>
    
-    <script src="simplepeer.min.js"></script> <!--script src="https://cdn.jsdelivr.net/npm/simple-peer/simplepeer.min.js"></script-->
-    <script src="GoogleSpeechAPI_SPN.js"></script>
-    <script src="pptLink.js"></script>
-    <script src="audioCaptureTest.js" defer></script>
-    
-    <google-speech-spn language="en-AU" transcript="" interim-transcript=""></google-speech-spn>
+
+  
 </body>
 </html>

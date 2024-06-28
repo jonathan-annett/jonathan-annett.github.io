@@ -4,25 +4,31 @@ class SpeechProcessor extends AudioWorkletProcessor {
         this.recognition = new (globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition)();
         this.recognition.lang = 'en-US';
         this.recognition.continuous = true;
+        this.recognition.interimResults = true;
 
         this.recognition.onresult = (event) => {
-            const transcript = Array.from(event.results)
-                .map(result => result[0])
-                .map(result => result.transcript)
-                .join('');
-            this.port.postMessage(transcript);
-        };
+            let final_transcript = '';
+            let interim_transcript = '';
 
-        this.recognition.onerror = (event) => {
-            console.error(event.error);
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    final_transcript += event.results[i][0].transcript;
+                } else {
+                    interim_transcript += event.results[i][0].transcript;
+                }
+            }
+
+            this.port.postMessage({
+                finalTranscript: final_transcript,
+                interimTranscript: interim_transcript
+            });
         };
 
         this.recognition.start();
     }
 
     process(inputs, outputs, parameters) {
-        // Audio processing is done automatically by the Speech API,
-        // so we don't need to process audio samples here.
+        // Audio processing logic, if needed.
         return true;
     }
 }
