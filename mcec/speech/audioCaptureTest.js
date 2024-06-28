@@ -1,6 +1,3 @@
- 
-pptLink();
-
 
 document.addEventListener('GoogleSpeechEvent',function(e){  
     document.getElementById('Google_transcription').textContent = e.detail.interim_transcript;
