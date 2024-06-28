@@ -79,9 +79,10 @@ class PPTCaptions extends HTMLElement {
     }
 
     init() {
+        const self = this;
        initatePPTLink(function(what,data){
            if (what==='data') {
-               this.setAttribute('interim-transcript', data.captions);
+                self.setAttribute('interim-transcript', data.captions);
            }
        })
     }
