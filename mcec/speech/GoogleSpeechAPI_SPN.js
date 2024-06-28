@@ -175,6 +175,10 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             showInfo('info_allow');
             start_timestamp = event.timeStamp;
         };
+
+		document.addEventListener('DOMContentLoaded',function(){
+			this.init();
+		});
     }
 }
 
