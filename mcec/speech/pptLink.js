@@ -1,22 +1,10 @@
 
-function pptLink(chromaKeyed) {
 
 
-    initateClipboardLink(document.getElementById('btnCopyPPTSignal'),document.getElementById('btnPastePPTSignal'),captionWatcher,function(what,data){
+function initatePPTLink(cb) {
 
-        switch (what) {
-            case 'data' : {
-                 console.log(data);
-                break;
-            }
-            case 'connect' : {
-                console.log("connected");
-                break;
-            }
 
-        }
-        
-    });
+    initateClipboardLink(document.getElementById('btnCopyPPTSignal'),document.getElementById('btnPastePPTSignal'),captionWatcher,cb);
     
     
     function captionWatcher(handler) {
