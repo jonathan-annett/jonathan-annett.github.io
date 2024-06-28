@@ -32,6 +32,8 @@ class GoogleSpeechAPI_AW extends HTMLElement {
         this.audioContext = null;
         this.speechNode = null;
         this.mediaStream = null;
+        this.recognition = null;
+        this.audioChunks = [];
     }
 
     connectedCallback() {
@@ -87,11 +89,9 @@ class GoogleSpeechAPI_AW extends HTMLElement {
         await this.audioContext.audioWorklet.addModule('speechProcessor.js');
         this.speechNode = new AudioWorkletNode(this.audioContext, 'speech-processor');
 
+        // Handle messages from the Audio Worklet
         this.speechNode.port.onmessage = (event) => {
-            const { finalTranscript, interimTranscript } = event.data;
-            this.transcript = finalTranscript;
-            this.interimTranscript = interimTranscript;
-            this.render();
+            this.handleAudioData(event.data);
         };
 
         const constraints = deviceId ? { audio: { deviceId: { exact: deviceId } } } : { audio: true };
@@ -100,6 +100,58 @@ class GoogleSpeechAPI_AW extends HTMLElement {
         const source = this.audioContext.createMediaStreamSource(this.mediaStream);
         source.connect(this.speechNode);
         this.speechNode.connect(this.audioContext.destination);
+
+        // Initialize speech recognition
+        this.initSpeechRecognition();
+    }
+
+    handleAudioData(audioBuffer) {
+        // Convert the Float32Array to a Blob
+        const audioBlob = new Blob([audioBuffer], { type: 'audio/wav' });
+
+        // Check if the recognition is active, if not start it
+        if (!this.recognition) {
+            this.initSpeechRecognition();
+        }
+
+        // Process the audioBlob with the SpeechRecognition API if needed
+        this.recognition.onaudioprocess(audioBlob);
+    }
+
+    initSpeechRecognition() {
+        this.recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        this.recognition.lang = this.language || 'en-US';
+        this.recognition.continuous = true;
+        this.recognition.interimResults = true;
+
+        this.recognition.onresult = (event) => {
+            let final_transcript = '';
+            let interim_transcript = '';
+
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    final_transcript += event.results[i][0].transcript;
+                } else {
+                    interim_transcript += event.results[i][0].transcript;
+                }
+            }
+
+            this.transcript = final_transcript;
+            this.interimTranscript = interim_transcript;
+            this.render();
+        };
+
+        this.recognition.onerror = (event) => {
+            console.error('Speech recognition error', event);
+        };
+
+        this.recognition.onend = () => {
+            console.log('Speech recognition ended');
+            // Restart recognition if needed
+            this.recognition.start();
+        };
+
+        this.recognition.start();
     }
 
     render() {
