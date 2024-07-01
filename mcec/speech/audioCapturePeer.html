@@ -6,6 +6,12 @@
 
     <style>
 
+    :root {
+        --font-family: Arial;
+        --font-size: 16px;
+        --page-color: #000000;
+        --text-color: #ffffff;
+    }
 
 google-speech-spn {
        
@@ -24,14 +30,15 @@ google-speech-spn {
     }
 
     #PPT_setup {
+        
         position :absolute;
         left: 0;
         right: 0;
         height : 130px;
         bottom: 233px;
     }
+
     ppt-captions {
-       
       height: 233px;
     
     position: absolute;
@@ -39,6 +46,15 @@ google-speech-spn {
     right: 0;
     bottom: 0;
 
+    }
+    ppt-captions,
+    google-speech-spn,
+    google-speech-audioworklet  {
+
+        background-color: var(--page-color);
+                color: var(--text-color);
+                font-family: var(--font-family);
+                font-size: var(--font-size);
     }
 
     
@@ -54,6 +70,39 @@ google-speech-spn {
 </head>
 <body>
     <h1>Captioning Control Screen</h1>
+
+
+    
+    <form id="styleForm">
+        <label for="fonts">Font Family:</label>
+        <select id="fonts" name="fonts">
+            <option value="Arial" style="font-family: Arial;">Arial</option>
+            <option value="Helvetica" style="font-family: Helvetica;">Helvetica</option>
+            <option value="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman</option>
+            <option value="Courier New" style="font-family: 'Courier New';">Courier New</option>
+            <option value="Verdana" style="font-family: Verdana;">Verdana</option>
+            <option value="Georgia" style="font-family: Georgia;">Georgia</option>
+            <option value="Palatino" style="font-family: Palatino;">Palatino</option>
+            <option value="Garamond" style="font-family: Garamond;">Garamond</option>
+            <option value="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS</option>
+            <option value="Trebuchet MS" style="font-family: 'Trebuchet MS';">Trebuchet MS</option>
+            <option value="Arial Black" style="font-family: 'Arial Black';">Arial Black</option>
+            <option value="Impact" style="font-family: Impact;">Impact</option>
+        </select>
+    
+        <label for="fontSize">Font size:</label>
+        <input type="number" id="fontSize" name="fontSize" min="8" max="72" value="16"> px
+    
+        <label for="pageColor">Page color:</label>
+        <input type="color" id="pageColor" name="pageColor" value="#ffffff">
+    
+        <label for="textColor">Text color:</label>
+        <input type="color" id="textColor" name="textColor" value="#000000">
+    
+        <button type="button" onclick="applyStyles()">Apply</button>
+    </form>
+    
+
 
     <div id="Google_setup">
         <h2>Google Speech API</h2>
@@ -71,7 +120,21 @@ google-speech-spn {
     <google-speech-spn language="en-AU" transcript="" interim-transcript=""></google-speech-spn>
     <ppt-captions language="en-AU" transcript="" interim-transcript=""></ppt-captions>
    
-
+    <script>
+        function applyStyles() {
+            const font = document.getElementById('fonts').value;
+            const fontSize = document.getElementById('fontSize').value + 'px';
+            const pageColor = document.getElementById('pageColor').value;
+            const textColor = document.getElementById('textColor').value;
+        
+            document.documentElement.style.setProperty('--font-family', font);
+            document.documentElement.style.setProperty('--font-size', fontSize);
+            document.documentElement.style.setProperty('--page-color', pageColor);
+            document.documentElement.style.setProperty('--text-color', textColor);
+        }
+    </script>
+      
+        
   
 </body>
 </html>
