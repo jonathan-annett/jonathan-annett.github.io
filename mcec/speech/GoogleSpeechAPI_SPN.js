@@ -392,7 +392,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
 
         this.restart = () => {
             this.stop();
-            this.start(new Event('restart'));
+            setTimeout(this.start, 500,new Event('restart'));
         };
 
         document.addEventListener('DOMContentLoaded', this.start);
