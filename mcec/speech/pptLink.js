@@ -3,13 +3,25 @@
 
 function initatePPTLink(cb) {
 
+  const targetQuery = "#SubtitleResultSpan";
 
-    initateClipboardLink(document.getElementById('btnCopyPPTSignal'),document.getElementById('btnPastePPTSignal'),captionWatcher,cb);
+
+    initateClipboardLink(
+        document.getElementById('btnCopyPPTSignal'),
+        document.getElementById('btnPastePPTSignal'),
+        captionWatcher,
+        targetQuery,
+        cb);
     
     
     function captionWatcher(handler) {
 
-        const targetNode = document.querySelector("#SubtitleResultSpan");
+        if (!handler) {
+            alert ("pasted into incorrect console area!")
+            return;
+        }
+
+        const targetNode = document.querySelector(targetQuery);
                
         const config = {
             attributes: true,
@@ -26,7 +38,7 @@ function initatePPTLink(cb) {
                         try {
                             handler.peer.send(JSON.stringify({captions:textContent}));
                         } catch (e) {
-                            
+
                         }
                     }
               } else if (mutation.type === 'characterData') {

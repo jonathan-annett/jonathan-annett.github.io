@@ -1,5 +1,5 @@
 
-function createClipboardScript(code,copyButton,pasteButton,cb) {
+function createClipboardScript(code,copyButton,pasteButton,targetQuery,cb) {
 
     simplePeerLib ().then(function(SimplePeer){
         let peer;
@@ -8,7 +8,7 @@ function createClipboardScript(code,copyButton,pasteButton,cb) {
         peer.on('signal',function(signalData){
 
             compressToBase64(`
-                ${code.name}( startPeerHandler(${JSON.stringify(signalData)}) );
+                ${code.name}( startPeerHandler(${JSON.stringify(signalData)},${JSON.stringify(targetQuery)}) );
                 ${code.toString()}
                 ${startPeerHandler.toString()}
 
@@ -75,7 +75,13 @@ function createClipboardScript(code,copyButton,pasteButton,cb) {
 
 }          
  
-function startPeerHandler(signalData) {
+function startPeerHandler(signalData,targetQuery) {
+
+
+
+    if (!document.querySelector(targetQuery)) {        
+        return false;
+    }
     const handler = {
         peerConnected : false
     };
