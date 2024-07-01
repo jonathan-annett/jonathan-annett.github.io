@@ -54,8 +54,8 @@ function createClipboardScript(code,copyButton,pasteButton,cb) {
                             navigator.clipboard.readText().then(function(json){
                                 try {
                                     const message = JSON.parse(json);
-                                    if (peer) {
-                                        peer.signal(message);
+                                    if (newPeer) {
+                                        newPeer.signal(message);
                                         pasteButton.disabled = true;  
                                     }
                                 } catch(e) {
@@ -78,6 +78,7 @@ function createClipboardScript(code,copyButton,pasteButton,cb) {
             
             newPeer.on('connect',function(){
                 peer = newPeer;
+                newPeer = null;
                 cb('connect',peer);
             });
     
