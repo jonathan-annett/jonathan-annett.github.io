@@ -28,7 +28,7 @@ class GoogleSpeechAPI_AW extends HTMLElement {
             }
         `;
         this.shadowRoot.appendChild(style);
-
+ 
         // Initialize variables
         this.audioContext = null;
         this.speechNode = null;

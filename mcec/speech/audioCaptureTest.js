@@ -8,7 +8,7 @@ document.addEventListener('PPTSpeechEvent',function(e){
     document.getElementById('PPT_transcription').textContent =  e.detail.captions;
 });
 */
-
+  
 function applyStyles() {
     const font = document.getElementById('fonts').value;
     const fontSize = document.getElementById('fontSize').value + 'px';

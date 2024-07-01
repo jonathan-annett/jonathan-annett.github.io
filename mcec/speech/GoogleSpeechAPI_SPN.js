@@ -26,7 +26,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
                 font-family: var(--font-family) !important;
                 font-size: var(--font-size) !important;
             }
-        `;
+        `;  
         this.shadowRoot.appendChild(style);
     }
 
