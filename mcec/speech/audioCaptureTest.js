@@ -20,11 +20,11 @@ function readStyles() {
     load('textColor','--text-color');
     load('captionsHeight','---captions-height','px');
 
-    function load(elId,name,suffix) {
-        const value = localStorage.getItem(name);
-        if (!value) return;
-        document.documentElement.style.setProperty(name, value);
-        document.getElementById(elId).value = suffix ?  value + suffix : value;
+    function load(elementId,cssKey,valueSuffix) {
+        const storedValue = localStorage.getItem(cssKey);
+        if (!storedValue) return;
+        document.documentElement.style.setProperty(cssKey,  valueSuffix ?  storedValue + valueSuffix : storedValue);
+        document.getElementById(elementId).value = storedValue;
     }
 }
 function applyStyles() {
@@ -35,10 +35,10 @@ function applyStyles() {
     save('textColor','--text-color');
     save('captionsHeight','---captions-height','px');
 
-    function save(name,value,suffix) {
-        const value =  document.getElementById(name).value;
-        localStorage.setItem(name,value);
-        document.documentElement.style.setProperty(name, suffix ? value + suffix : value);
+    function save(elementId,cssKey,valueSuffix) {
+        const editedValue =  document.getElementById(elementId).value;
+        localStorage.setItem(cssKey,editedValue);
+        document.documentElement.style.setProperty(cssKey, valueSuffix ? editedValue + valueSuffix : editedValue);
     }
     
 }
