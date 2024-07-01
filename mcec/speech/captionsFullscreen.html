@@ -30,16 +30,25 @@
 
  
     #captions {
-        position : absolute;
-        left: 0;
-        right: 0;
-        bottom :0;
-        height : var(--captions-height) !important;
 
+          
+        overflow: hidden;
+        display: flex;
+        flex-direction: column-reverse;
+        justify-content: flex-start;
+        padding: 10px;
+        height : var(--captions-height) !important;
         background-color: var(--color-main-background) !important;
         color: var(--text-color) !important;
         font-family: var(--font-family) !important;
         font-size: var(--font-size) !important;
+
+
+        position : absolute;
+        left: 0;
+        right: 0;
+        bottom :0;
+      
 
     }
 
