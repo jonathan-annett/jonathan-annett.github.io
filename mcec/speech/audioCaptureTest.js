@@ -4,7 +4,7 @@ var activeProvider = 'google-spn';
 
 document.addEventListener('CustomSpeechEvent',function(e){  
     if (e.detail.provider === activeProvider) {
-        localStorage.setItem('captions',e.detail.interim_transcript || e.detail.interim_transcript || "")
+        localStorage.setItem('captions',e.detail.transcript || "")
     }  
 });
 
