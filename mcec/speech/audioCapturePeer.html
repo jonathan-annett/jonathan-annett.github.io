@@ -14,14 +14,6 @@
         --captions-height:238px;
     }
 
-google-speech-spn {
-       
-       position: absolute;
-       left: 0;
-       top: 30vh;
-       right: 0;
-   
-    }
    
     #Google_setup {
         position :absolute;
@@ -39,17 +31,25 @@ google-speech-spn {
         bottom: 233px;
     }
 
-    ppt-captions {
-      height: 233px;
-    
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-
+    google-speech-spn {
+       
+       position: absolute;
+       left: 0;
+       top: 30vh;
+       right: 0;
+       height : var(--captions-height) !important;
     }
 
- 
+
+    ppt-captions {
+        height : var(--captions-height) !important;
+    
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+    }
     
     </style>
 
@@ -114,7 +114,7 @@ google-speech-spn {
     </div>
 
     <google-speech-spn language="en-AU" transcript="" interim-transcript=""></google-speech-spn>
-    <ppt-captions language="en-AU" transcript="" interim-transcript=""></ppt-captions>
+    <ppt-captions language="en-AU" transcript=""></ppt-captions>
     
   
 </body>

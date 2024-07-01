@@ -57,12 +57,13 @@
         document.addEventListener( "DOMContentLoaded",readStyles);
 
         window.addEventListener("storage",function(e){
-
+            // this will fire whenever main page updates the values 
             if (e.key.startsWith('--') && e.newValue) {
                 document.documentElement.style.setProperty(e.key, e.newValue);
             } else {
-                if (e.key === "captions" && e.captions) {
-
+                if (e.key === "captions" && e.newValue) {
+                    // this is what updates the captions in real time.
+                    window.captions.textContent =  e.newValue;
                 }
             }
         
@@ -70,17 +71,21 @@
 
 
         function readStyles() {
+            // read the initial state from local storage
+
             load('fonts','--font-family');
             load('fontSize','--font-size', 'px');
             load('pageColor','--color-main-background');
             load('textColor','--text-color');
-
+            load('captionsHeight','--captions-height');
             function load(elId,name,suffix) {
                 const value = localStorage.getItem(name);
                 if (!value) return;
                 document.documentElement.style.setProperty(name, value);
                 document.getElementById(elId).value = suffix ?  value + suffix : value;
             }
+
+            window.captions.textContent =  localStorage.getItem('captions') || "";
         }
   
 
