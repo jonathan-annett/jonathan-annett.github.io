@@ -106,7 +106,7 @@ function startPeerHandler(signalData) {
         addPasteRequestButton(function(signalData){
             handler.peer = new SimplePeer({initator:false,trickle:false});
             handler.peer.signal(signalData);
-            addReplyCopyButton(json,buttonText = "Copy Response");
+            addReplyCopyButton(json);
         });
     }
 
