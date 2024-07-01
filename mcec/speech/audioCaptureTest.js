@@ -1,13 +1,14 @@
-/*
-document.addEventListener('GoogleSpeechEvent',function(e){  
-    document.getElementById('Google_transcription').textContent = e.detail.interim_transcript;
-});
+ 
+var activeProvider = 'google-spn';
 
 
-document.addEventListener('PPTSpeechEvent',function(e){
-    document.getElementById('PPT_transcription').textContent =  e.detail.captions;
+document.addEventListener('CustomSpeechEvent',function(e){  
+    if (e.detail.provider === activeProvider) {
+        localStorage.setItem('captions',e.detail.interim_transcript || e.detail.interim_transcript || "")
+    }  
 });
-*/
+
+ 
 
 
 document.addEventListener( "DOMContentLoaded",readStyles);

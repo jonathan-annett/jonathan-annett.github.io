@@ -69,24 +69,23 @@
         
         });
 
-
         function readStyles() {
-            // read the initial state from local storage
-
             load('fonts','--font-family');
             load('fontSize','--font-size', 'px');
             load('pageColor','--color-main-background');
             load('textColor','--text-color');
-            load('captionsHeight','--captions-height');
-            function load(elId,name,suffix) {
-                const value = localStorage.getItem(name);
-                if (!value) return;
-                document.documentElement.style.setProperty(name, value);
-                document.getElementById(elId).value = suffix ?  value + suffix : value;
-            }
-
+            load('captionsHeight','--captions-height','px');
             window.captions.textContent =  localStorage.getItem('captions') || "";
+
+            function load(elementId,cssKey,valueSuffix) {
+                const storedValue = localStorage.getItem(cssKey);
+                if (!storedValue) return;
+                document.documentElement.style.setProperty(cssKey,  valueSuffix ?  storedValue + valueSuffix : storedValue);
+                document.getElementById(elementId).value = storedValue;
+            }
         }
+
+ 
   
 
     </script>
