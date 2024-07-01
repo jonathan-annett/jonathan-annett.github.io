@@ -54,16 +54,8 @@ function readStyles() {
     };
 
     document.querySelector('#restartGoogle').onclick = function() {
-        let el = document.querySelector('google-speech-spn');
-        let parent = el.parentElement;
-        parent.removeChild(el);
-        el = document.createElement('google-speech-spn');
-        parent.appendChild(el);
-
-        el.onclick = function() {
-            document.body.className = "google-spn";
-        };
-    };
+        document.querySelector('google-speech-spn').restart();
+    };  
     
 
     function load(elementId,cssKey,valueSuffix) {
