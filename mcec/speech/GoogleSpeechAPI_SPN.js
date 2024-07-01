@@ -14,13 +14,13 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
         const style = document.createElement('style');
         style.textContent = `
             .wrapper {
-                height: 233px;
+                
                 overflow: hidden;
                 display: flex;
                 flex-direction: column-reverse;
                 justify-content: flex-start;
                 padding: 10px;
-
+                height : var(--captions-height) !important;
                 background-color: var(--page-color) !important;
                 color: var(--text-color) !important;
                 font-family: var(--font-family) !important;

@@ -8,15 +8,37 @@ document.addEventListener('PPTSpeechEvent',function(e){
     document.getElementById('PPT_transcription').textContent =  e.detail.captions;
 });
 */
-  
-function applyStyles() {
-    const font = document.getElementById('fonts').value;
-    const fontSize = document.getElementById('fontSize').value + 'px';
-    const pageColor = document.getElementById('pageColor').value;
-    const textColor = document.getElementById('textColor').value;
 
-    document.documentElement.style.setProperty('--font-family', font);
-    document.documentElement.style.setProperty('--font-size', fontSize);
-    document.documentElement.style.setProperty('--page-color', pageColor);
-    document.documentElement.style.setProperty('--text-color', textColor);
+
+document.addEventListener( "DOMContentLoaded",readStyles);
+
+
+function readStyles() {
+    load('fonts','--font-family');
+    load('fontSize','--font-size', 'px');
+    load('pageColor','--color-main-background');
+    load('textColor','--text-color');
+    load('captionsHeight','---captions-height','px');
+
+    function load(elId,name,suffix) {
+        const value = localStorage.getItem(name);
+        if (!value) return;
+        document.documentElement.style.setProperty(name, value);
+        document.getElementById(elId).value = suffix ?  value + suffix : value;
+    }
+}
+function applyStyles() {
+ 
+    save('fonts','--font-family');
+    save('fontSize','--font-size', 'px');
+    save('pageColor','--color-main-background');
+    save('textColor','--text-color');
+    save('captionsHeight','---captions-height','px');
+
+    function save(name,value,suffix) {
+        const value =  document.getElementById(name).value;
+        localStorage.setItem(name,value);
+        document.documentElement.style.setProperty(name, suffix ? value + suffix : value);
+    }
+    
 }

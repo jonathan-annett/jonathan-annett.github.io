@@ -1,0 +1,89 @@
+<html>
+
+<style>
+
+    
+    :root {
+        --font-family: Arial;
+        --font-size: 16px;
+        --color-main-background: #000000;
+        --text-color: #ffffff;
+        --captions-height: 238px;
+    }
+
+ 
+
+    body {
+        
+        background-color:var(--color-main-background);
+        background:var(--color-main-background);
+                
+    }
+
+    :backdrop { background-color:var(--color-main-background); background:var(--color-main-background);} 
+    ::backdrop { background-color:var(--color-main-background); background:var(--color-main-background);} 
+    :-ms-fullscreen { background-color:var(--color-main-background); background:var(--color-main-background);} 
+    :-moz-full-screen { background-color:var(--color-main-background); background:var(--color-main-background);} 
+    :-webkit-full-screen { background-color:var(--color-main-background); background:var(--color-main-background);} 
+    ::fullscreen { background-color:var(--color-main-background); background:var(--color-main-background);} 
+    :fullscreen { background-color:var(--color-main-background); background:var(--color-main-background);} 
+
+ 
+    #captions {
+        position : absolute;
+        left: 0;
+        right: 0;
+        bottom :0;
+        height : var(--captions-height) !important;
+
+        background-color: var(--color-main-background) !important;
+        color: var(--text-color) !important;
+        font-family: var(--font-family) !important;
+        font-size: var(--font-size) !important;
+
+    }
+
+</style>
+
+<body>
+    <div id="captions">
+
+
+    </div>
+
+    <script>
+
+
+        document.addEventListener( "DOMContentLoaded",readStyles);
+
+        window.addEventListener("storage",function(e){
+
+            if (e.key.startsWith('--') && e.newValue) {
+                document.documentElement.style.setProperty(e.key, e.newValue);
+            } else {
+                if (e.key === "captions" && e.captions) {
+
+                }
+            }
+        
+        });
+
+
+        function readStyles() {
+            load('fonts','--font-family');
+            load('fontSize','--font-size', 'px');
+            load('pageColor','--color-main-background');
+            load('textColor','--text-color');
+
+            function load(elId,name,suffix) {
+                const value = localStorage.getItem(name);
+                if (!value) return;
+                document.documentElement.style.setProperty(name, value);
+                document.getElementById(elId).value = suffix ?  value + suffix : value;
+            }
+        }
+  
+
+    </script>
+</body>
+</html>
