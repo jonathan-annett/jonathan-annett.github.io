@@ -80,21 +80,9 @@ function startPeerHandler(signalData) {
     const handler = {
         peerConnected : false
     };
-    handler.peer = new SimplePeer({initator:false,trickle:false});
     
-    handler.peer.on('signal', function(data ) {
-        addReplyCopyButton(JSON.stringify(data));             
-    });
-    handler.peer.on('connect', () => {
-        console.log('Connected');
-        handler.peerConnected = true;
-    });
-
-    handler.peer.on('error', peerCloseError)
-    handler.peer.on('close', peerCloseError);
-
-    handler.peer.signal(signalData);
-
+    createLocalPeer(signalData);
+   
     return handler;
 
     function peerCloseError (err) {
@@ -103,13 +91,22 @@ function startPeerHandler(signalData) {
         // this is to allow us to reestablish a link without stopping powerpoint. 
         console.log(err);
 
-        addPasteRequestButton(function(signalData){
-            handler.peer = new SimplePeer({initator:false,trickle:false});
-            handler.peer.signal(signalData);
-            handler.peer.on('signal', function(data ) {
-                addReplyCopyButton(JSON.stringify(data));             
-            });
+        addPasteRequestButton(createLocalPeer);
+    }
+
+    function createLocalPeer(signalData){
+        handler.peer = new SimplePeer({initator:false,trickle:false});
+       
+        handler.peer.on('signal', function(data ) {
+            addReplyCopyButton(JSON.stringify(data));             
         });
+        handler.peer.on('connect', () => {
+            console.log('Connected');
+            handler.peerConnected = true;
+        });
+        handler.peer.on('error', peerCloseError)
+        handler.peer.on('close', peerCloseError);
+        handler.peer.signal(signalData);
     }
 
     function addReplyCopyButton(json,buttonText = "Copy Response") {
