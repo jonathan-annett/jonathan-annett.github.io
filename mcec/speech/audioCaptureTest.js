@@ -51,7 +51,20 @@ function readStyles() {
 
     document.querySelector('ppt-captions').onclick = function() {
         document.body.className = "powerpoint";
-    }
+    };
+
+    document.querySelector('#restartGoogle').onclick = function() {
+        let el = document.querySelector('google-speech-spn');
+        let parent = el.parentElement;
+        parent.removeChild(el);
+        el = document.createElement('google-speech-spn');
+        parent.appendChild(el);
+
+        el.onclick = function() {
+            document.body.className = "google-spn";
+        };
+    };
+    
 
     function load(elementId,cssKey,valueSuffix) {
         const storedValue = localStorage.getItem(cssKey);
