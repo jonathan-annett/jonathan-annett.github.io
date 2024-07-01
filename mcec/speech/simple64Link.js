@@ -101,7 +101,7 @@ function startPeerHandler(signalData) {
         // show a paste button and wait for user to click it, callback with new peer's signal data to send to start new link 
         // this is to allow us to reestablish a link without stopping powerpoint. 
         console.log(err);
-        
+
         addPasteRequestButton(function(signalData){
             handler.peer = new SimplePeer({initator:false,trickle:false});
             peer.signal(signalData);
@@ -127,20 +127,20 @@ function startPeerHandler(signalData) {
     }
 
     function addPasteRequestButton(cb) {
-        debugger;
         const btn = document.createElement('button');
         btn.textContent = "Paste Request";
         btn.style= "position:absolute;bottom:10px;left:10px;width:135px;height:50px;z-index:99999;background-color: red";
 
         btn.onclick = function(){
             navigator.clipboard.readText().then(function(text){
+                debugger;
                   // this will actually be some javascript
                 const getb64 = /loadCompressedScript\(\"(.*)\"\)/.exec(text);
                 if (getb64) {
                     const b64 = getb64[1];
 
                     decompressFromBase64(b64).then(function(js){
-                        debugger;
+                     
                         const getJSON = /startPeerHandler\(\{\"(.*)\}\)/.exec(js);
                         if (getJSON) {
                             const json = `{"${getJSON[1]}}`; // yes this is correct! regex group does not include '{"' or '}'
@@ -161,6 +161,8 @@ function startPeerHandler(signalData) {
  
             });
         }
+
+        document.body.appendChild(btn);    
     }
 }   
 
