@@ -1,5 +1,5 @@
 
-function createClipboardScript(code,copyButton,pasteButton,targetQuery,cb) {
+function createClipboardScript(code,copyButton,pasteButton,cb) {
 
     simplePeerLib ().then(function(SimplePeer){
         let peer;

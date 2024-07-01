@@ -3,14 +3,13 @@
 
 function initatePPTLink(cb) {
 
-  const targetQuery = "#SubtitleResultSpan";
+    const targetQuery = "#SubtitleResultSpan";
 
 
     initateClipboardLink(
         document.getElementById('btnCopyPPTSignal'),
         document.getElementById('btnPastePPTSignal'),
         captionWatcher,
-        targetQuery,
         cb);
     
     
