@@ -146,7 +146,6 @@ function startPeerHandler(signalData) {
 
         btn.onclick = function(){
             navigator.clipboard.readText().then(function(text){
-                debugger;
                   // this will actually be some javascript
                 const getb64 = /loadCompressedScript\(\"(.*)\"\)/.exec(text);
                 if (getb64) {
