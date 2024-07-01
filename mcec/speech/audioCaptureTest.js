@@ -8,7 +8,7 @@ document.addEventListener('CustomSpeechEvent',function(e){
      
      
     if  (!!lastSpeechEventTimeout && e.detail.provider === "powerpoint") {
-        if (querySelector('#preferPowerpoint').checked) {
+        if (document.querySelector('#preferPowerpoint').checked) {
             document.body.className = e.detail.provider; 
         }
     }
