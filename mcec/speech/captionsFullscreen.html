@@ -81,7 +81,7 @@
                 const storedValue = localStorage.getItem(cssKey);
                 if (!storedValue) return;
                 document.documentElement.style.setProperty(cssKey,  valueSuffix ?  storedValue + valueSuffix : storedValue);
-                document.getElementById(elementId).value = storedValue;
+                //document.getElementById(elementId).value = storedValue;
             }
         }
 
