@@ -3,71 +3,94 @@ function createClipboardScript(code,copyButton,pasteButton,cb) {
 
     simplePeerLib ().then(function(SimplePeer){
         let peer;
-        
-        peer = new SimplePeer ({initiator:true,trickle:false});
-        peer.on('signal',function(signalData){
+        createPeer();
+       
 
-            compressToBase64(`
-                ${code.name}( startPeerHandler(${JSON.stringify(signalData)}) );
-                ${code.toString()}
-                ${startPeerHandler.toString()}
 
-            `).then(function(scriptsSrc){
+        function onErrorClose () {
+            if (peer) {
+                try {
+                    peer.close()    
+                } catch (e) {
 
-                scriptsSrc = `
-                   (function(){ 
-                    simplePeerLib().then(function(){
-                        return loadCompressedScript(${JSON.stringify(scriptsSrc)});
-                    }).then(function(fn){
-                        fn();
-                    });
-                    
-                    ${decompressFromBase64.toString()}
-                    ${loadCompressedScript.toString()}
-                   
-                    ${simplePeerLib.toString()}
-                    ${compresedSimplePeer.toString()}
-                })();
-                `;
+                }
+                peer = undefined;
+                createPeer();
+            }
+        }
 
-                      
-                copyButton.onclick = function() {
-                    navigator.clipboard.writeText(scriptsSrc);
-                    copyButton.disabled = true;
-                    pasteButton.onclick = function(){
-                        navigator.clipboard.readText().then(function(json){
-                            try {
-                                const message = JSON.parse(json);
-                                if (peer) {
-                                    peer.signal(message);
-                                    pasteButton.disabled = true;  
-                                }
-                            } catch(e) {
-                                
-                            }
+        function createPeer() {
+            let newPeer = new SimplePeer ({initiator:true,trickle:false});
+            newPeer.on('signal',function(signalData){
+    
+                compressToBase64(`
+                    ${code.name}( startPeerHandler(${JSON.stringify(signalData)}) );
+                    ${code.toString()}
+                    ${startPeerHandler.toString()}
+    
+                `).then(function(scriptsSrc){
+    
+                    scriptsSrc = `
+                       (function(){ 
+                        simplePeerLib().then(function(){
+                            return loadCompressedScript(${JSON.stringify(scriptsSrc)});
+                        }).then(function(fn){
+                            fn();
                         });
-                    }; 
-                    pasteButton.disabled = false;                    
-                };
-                copyButton.disabled = false;
-                
-
-            }).catch(function (err){
-                cb('error',err);
+                        
+                        ${decompressFromBase64.toString()}
+                        ${loadCompressedScript.toString()}
+                       
+                        ${simplePeerLib.toString()}
+                        ${compresedSimplePeer.toString()}
+                    })();
+                    `;
+    
+                          
+                    copyButton.onclick = function() {
+                        navigator.clipboard.writeText(scriptsSrc);
+                        copyButton.disabled = true;
+                        pasteButton.onclick = function(){
+                            navigator.clipboard.readText().then(function(json){
+                                try {
+                                    const message = JSON.parse(json);
+                                    if (peer) {
+                                        peer.signal(message);
+                                        pasteButton.disabled = true;  
+                                    }
+                                } catch(e) {
+                                    
+                                }
+                            });
+                        }; 
+                        pasteButton.disabled = false;                    
+                    };
+                    copyButton.disabled = false;
+                    
+    
+                }).catch(function (err){
+                    cb('error',err);
+                });
+    
+    
             });
-
-
-        });
-
-        
-        peer.on('connect',function(){
-            cb('connect',peer);
-        });
-
-        peer.on('data',function(json){
-            const payload = JSON.parse(json);
-            cb('data',payload);
-        });
+    
+            
+            newPeer.on('connect',function(){
+                peer = newPeer;
+                cb('connect',peer);
+            });
+    
+            newPeer.on('data',function(json){
+                const payload = JSON.parse(json);
+                cb('data',payload);
+            });
+    
+    
+            newPeer.on('close',onErrorClose);
+            newPeer.on('error',onErrorClose);
+            
+        }
 
     }).catch(function (err){
         cb('error',err);
