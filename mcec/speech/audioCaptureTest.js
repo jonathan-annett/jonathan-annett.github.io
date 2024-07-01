@@ -1,8 +1,31 @@
- 
+
+let lastSpeechEventTimeout;
+const failoverMsec = 5000;
+
+
 document.addEventListener('CustomSpeechEvent',function(e){  
+   
     if (e.detail.provider === document.body.className) {
-        localStorage.setItem('captions',e.detail.transcript || "")
-    }  
+        
+        if (lastSpeechEventTimeout) {
+            clearTimeout(lastSpeeachEventTimeout);
+            lastSpeechEventTimeout = undefined;
+        }
+        localStorage.setItem('captions',e.detail.transcript || "");
+
+    }  else {
+        if (!lastSpeechEventTimeout) {
+            lastSpeechEventTimeout = setTimeout(
+                function() {
+                    document.body.className = e.detail.provider;
+                    localStorage.setItem('captions',e.detail.transcript || "");
+                },
+                failoverMsec
+            );
+        }
+    }
+
+
 });
 
  
