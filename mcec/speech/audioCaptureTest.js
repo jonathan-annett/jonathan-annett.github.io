@@ -8,7 +8,8 @@ document.addEventListener('PPTSpeechEvent',function(e){
     document.getElementById('PPT_transcription').textContent =  e.detail.captions;
 });
 */
-const audioContext = new AudioContext();
+
+var audioContext;
 
 const startAudio = async (context, meterElement) => {
     await context.audioWorklet.addModule('volume-meter-processor.js');
@@ -27,6 +28,8 @@ document.addEventListener("DOMContentLoaded",function(){
     buttonEl.disabled = false;
     meterEl.disabled = false;
     buttonEl.addEventListener('click', async () => {
+        audioContext = new AudioContext();
+
         await startAudio(audioContext, meterEl);
         audioContext.resume();
         buttonEl.disabled = true;
