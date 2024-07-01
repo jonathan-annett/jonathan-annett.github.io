@@ -82,9 +82,27 @@ function startPeerHandler(signalData) {
     handler.peer = new SimplePeer({initator:false,trickle:false});
     
     handler.peer.on('signal', function(data ) {
+        addReplyCopyButton(JSON.stringify(data));             
+    });
+    handler.peer.on('connect', () => {
+        console.log('Connected');
+        handler.peerConnected = true;
+    });
+    handler.peer.on('close', () => {
+        handler.peerConnected = false;// this pprevents trying to send while down
+        // show a paste button and wait for user to click it, callback with new peer's signal data to send to start new link 
+        // this is to allow us to reestablish a link without stopping powerpoint. 
+        addPasteRequestButton(function(signalData){
+            handler.peer = new SimplePeer({initator:false,trickle:false});
+            peer.signal(signalData);
+            addReplyCopyButton(json,buttonText = "Copy Response");
+        });
+    });
+    handler.peer.signal(signalData);
+    return handler;
 
-        const json =  JSON.stringify(data);
-        
+
+    function addReplyCopyButton(json,buttonText = "Copy Response") {
         const btn = document.createElement('button');
         btn.textContent = "Copy Response";
         btn.style= "position:absolute;bottom:10px;left:10px;width:135px;height:50px;z-index:99999;background-color: yellow";
@@ -98,18 +116,45 @@ function startPeerHandler(signalData) {
             });
         };
 
-        document.body.appendChild(btn);            
-            
-    });
-    handler.peer.on('connect', () => {
-        console.log('Connected');
-        handler.peerConnected = true;
-    });
-    handler.peer.on('close', () => {
-        handler.peerConnected = false;
-    });
-    handler.peer.signal(signalData);
-    return handler;
+        document.body.appendChild(btn);    
+    }
+
+    function addPasteRequestButton(cb) {
+        debugger;
+        const btn = document.createElement('button');
+        btn.textContent = "Paste Request";
+        btn.style= "position:absolute;bottom:10px;left:10px;width:135px;height:50px;z-index:99999;background-color: red";
+
+        btn.onclick = function(){
+            navigator.clipboard.readText().then(function(text){
+                  // this will actually be some javascript
+                const getb64 = /loadCompressedScript\(\"(.*)\"\)/.exec(text);
+                if (getb64) {
+                    const b64 = getb64[1];
+
+                    decompressFromBase64(b64).then(function(js){
+                        debugger;
+                        const getJSON = /startPeerHandler\(\{\"(.*)\}\)/.exec(js);
+                        if (getJSON) {
+                            const json = `{"${getJSON[1]}}`; // yes this is correct! regex group does not include '{"' or '}'
+                            try {
+
+                                cb( JSON.parse(json) );
+                                btn.parentElement.removeChild(btn);
+
+                            } catch (e) {
+                                
+                            }
+                        }
+
+                    });
+
+                }
+              
+ 
+            });
+        }
+    }
 }   
 
 async function compressToBase64(inputString) {
