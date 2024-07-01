@@ -76,11 +76,12 @@ function createClipboardScript(code,copyButton,pasteButton,cb) {
 }          
  
 function startPeerHandler(signalData) {
+    let btn;
 
     const handler = {
         peerConnected : false
     };
-    
+
     createLocalPeer(signalData);
    
     return handler;
@@ -109,15 +110,27 @@ function startPeerHandler(signalData) {
         handler.peer.signal(signalData);
     }
 
+    function removeBtn() {
+        if (btn) {
+            btn.parentElement.removeChild(btn);
+        }
+        btn = null;
+    }
+
+    function createBtn() {
+        removeBtn();
+        btn = document.createElement('button');
+        return btn;
+    }
+
     function addReplyCopyButton(json,buttonText = "Copy Response") {
-        const btn = document.createElement('button');
-        btn.textContent = "Copy Response";
-        btn.style= "position:absolute;bottom:10px;left:10px;width:135px;height:50px;z-index:99999;background-color: yellow";
+        createBtn().textContent = "Copy Response";
+            btn.style= "position:absolute;bottom:10px;left:10px;width:135px;height:50px;z-index:99999;background-color: yellow";
 
         btn.onclick = function(){
-            btn.parentElement.removeChild(btn);
+            
             navigator.clipboard.writeText(json).then(function(){
-                    
+                removeBtn() ;     
             }).catch(function(e){
                 console.log(json );
             });
@@ -127,8 +140,8 @@ function startPeerHandler(signalData) {
     }
 
     function addPasteRequestButton(cb) {
-        const btn = document.createElement('button');
-        btn.textContent = "Paste Request";
+        
+        createBtn().textContent = "Paste Request";
         btn.style= "position:absolute;bottom:10px;left:10px;width:135px;height:50px;z-index:99999;background-color: red";
 
         btn.onclick = function(){
@@ -147,7 +160,7 @@ function startPeerHandler(signalData) {
                             try {
 
                                 cb( JSON.parse(json) );
-                                btn.parentElement.removeChild(btn);
+                                removeBtn();
 
                             } catch (e) {
                                 
