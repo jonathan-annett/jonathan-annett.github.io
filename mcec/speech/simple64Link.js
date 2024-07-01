@@ -88,19 +88,26 @@ function startPeerHandler(signalData) {
         console.log('Connected');
         handler.peerConnected = true;
     });
-    handler.peer.on('close', () => {
-        handler.peerConnected = false;// this pprevents trying to send while down
+
+    handler.peer.on('error', peerCloseError)
+    handler.peer.on('close', peerCloseError);
+
+    handler.peer.signal(signalData);
+
+    return handler;
+
+    function peerCloseError (err) {
+          handler.peerConnected = false;// this prevents trying to send while down
         // show a paste button and wait for user to click it, callback with new peer's signal data to send to start new link 
         // this is to allow us to reestablish a link without stopping powerpoint. 
+        console.log(err);
+        
         addPasteRequestButton(function(signalData){
             handler.peer = new SimplePeer({initator:false,trickle:false});
             peer.signal(signalData);
             addReplyCopyButton(json,buttonText = "Copy Response");
         });
-    });
-    handler.peer.signal(signalData);
-    return handler;
-
+    }
 
     function addReplyCopyButton(json,buttonText = "Copy Response") {
         const btn = document.createElement('button');

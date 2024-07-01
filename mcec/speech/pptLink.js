@@ -23,12 +23,20 @@ function initatePPTLink(cb) {
                 if (mutation.type === 'childList') {
                     const textContent = targetNode.textContent;
                     if (handler.peer && handler.peerConnected) {
-                        handler.peer.send(JSON.stringify({captions:textContent}));
+                        try {
+                            handler.peer.send(JSON.stringify({captions:textContent}));
+                        } catch (e) {
+                            
+                        }
                     }
               } else if (mutation.type === 'characterData') {
                     const textContent = targetNode.textContent;
                     if (handler.peer && handler.peerConnected) {
-                        handler.peer.send(JSON.stringify({captions:textContent}));
+                        try {
+                            handler.peer.send(JSON.stringify({captions:textContent}));
+                        } catch (e) {
+
+                        }
                     }
                 }
             }
