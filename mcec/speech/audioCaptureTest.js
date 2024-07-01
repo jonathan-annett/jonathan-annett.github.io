@@ -1,4 +1,4 @@
-
+/*
 document.addEventListener('GoogleSpeechEvent',function(e){  
     document.getElementById('Google_transcription').textContent = e.detail.interim_transcript;
 });
@@ -7,6 +7,9 @@ document.addEventListener('GoogleSpeechEvent',function(e){
 document.addEventListener('PPTSpeechEvent',function(e){
     document.getElementById('PPT_transcription').textContent =  e.detail.captions;
 });
+*/
+const audioContext = new AudioContext();
+
 const startAudio = async (context, meterElement) => {
     await context.audioWorklet.addModule('volume-meter-processor.js');
     const mediaStream = await navigator.mediaDevices.getUserMedia({audio: true});
