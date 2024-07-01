@@ -7,7 +7,16 @@ document.addEventListener('GoogleSpeechEvent',function(e){
 document.addEventListener('PPTSpeechEvent',function(e){
     document.getElementById('PPT_transcription').textContent =  e.detail.captions;
 });
-
+const startAudio = async (context, meterElement) => {
+    await context.audioWorklet.addModule('volume-meter-processor.js');
+    const mediaStream = await navigator.mediaDevices.getUserMedia({audio: true});
+    const micNode = context.createMediaStreamSource(mediaStream);
+    const volumeMeterNode = new AudioWorkletNode(context, 'volume-meter');   
+    volumeMeterNode.port.onmessage = ({data}) => {
+      meterElement.value = data * 500;
+    };
+    micNode.connect(volumeMeterNode).connect(context.destination);
+  };
 document.addEventListener("DOMContentLoaded",function(){
 
     const buttonEl = document.getElementById('button-start');
