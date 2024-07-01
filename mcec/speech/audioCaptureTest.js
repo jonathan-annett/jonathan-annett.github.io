@@ -4,9 +4,13 @@ const failoverMsec = 5000;
 
 
 document.addEventListener('CustomSpeechEvent',function(e){  
-     // give priority to powerpoint if it is active  
+     // give priority to powerpoint if it is active 
+     
+     
     if  (!!lastSpeechEventTimeout && e.detail.provider === "powerpoint") {
-        document.body.className = e.detail.provider; 
+        if (querySelector('#preferPowerpoint').checked) {
+            document.body.className = e.detail.provider; 
+        }
     }
 
     if (e.detail.provider === document.body.className ) {
