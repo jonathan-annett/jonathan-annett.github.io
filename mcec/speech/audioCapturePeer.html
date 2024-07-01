@@ -47,16 +47,8 @@ google-speech-spn {
     bottom: 0;
 
     }
-    ppt-captions,
-    google-speech-spn,
-    google-speech-audioworklet  {
 
-        background-color: var(--page-color);
-                color: var(--text-color);
-                font-family: var(--font-family);
-                font-size: var(--font-size);
-    }
-
+ 
     
     </style>
 
@@ -73,7 +65,7 @@ google-speech-spn {
     
     <form id="styleForm">
         <label for="fonts">Font Family:</label>
-        <select id="fonts" name="fonts">
+        <select id="fonts" name="fonts" onchange="applyStyles()">
             <option value="Arial" style="font-family: Arial;">Arial</option>
             <option value="Helvetica" style="font-family: Helvetica;">Helvetica</option>
             <option value="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman</option>
@@ -89,15 +81,15 @@ google-speech-spn {
         </select>
     
         <label for="fontSize">Font size:</label>
-        <input type="number" id="fontSize" name="fontSize" min="8" max="72" value="16"> px
+        <input type="number" id="fontSize" name="fontSize" min="8" max="72" value="16" onblur="applyStyles()"> px
     
         <label for="pageColor">Page color:</label>
-        <input type="color" id="pageColor" name="pageColor" value="#ffffff">
+        <input type="color" id="pageColor" name="pageColor" value="#000000" onchange="applyStyles()">
     
         <label for="textColor">Text color:</label>
-        <input type="color" id="textColor" name="textColor" value="#000000">
+        <input type="color" id="textColor" name="textColor" value="#ffffff" onchange="applyStyles()"> 
     
-        <button type="button" onclick="applyStyles()">Apply</button>
+        
     </form>
     
 
