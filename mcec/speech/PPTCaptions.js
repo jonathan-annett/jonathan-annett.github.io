@@ -54,37 +54,38 @@ class PPTCaptions extends HTMLElement {
         this.setAttribute('transcript', value);
     }
 
-    // Getter and Setter for interimTranscript
-    get interimTranscript() {
-        return this.getAttribute('interim-transcript');
-    }
-
-    set interimTranscript(value) {
-        this.setAttribute('interim-transcript', value);
-    }
+   
 
     // Observed attributes
     static get observedAttributes() {
-        return ['transcript', 'interim-transcript'];
+        return ['transcript'];
     }
 
     // Callback when observed attributes change
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue !== newValue) {
+           
+            const customEvent = new CustomEvent('CustomSpeechEvent', {
+                detail: {
+                    provider: 'powerpoint',
+                    transcript: this.transcript
+                }
+            });
+            document.dispatchEvent(customEvent);
             this.render();
         }
     }
 
     // Rendering logic
     render() {
-        this.shadowRoot.querySelector('.wrapper').textContent = `${this.transcript} ${this.interimTranscript}`;
+        this.shadowRoot.querySelector('.wrapper').textContent = this.transcript;
     }
 
     init() {
         const self = this;
        initatePPTLink(function(what,data){
            if (what==='data') {
-                self.setAttribute('interim-transcript', data.captions);
+                self.setAttribute('transcript', data.captions);
            }
        })
     }
