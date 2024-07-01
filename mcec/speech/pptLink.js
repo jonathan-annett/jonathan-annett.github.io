@@ -3,7 +3,7 @@
 
 function initatePPTLink(cb) {
 
-    const targetQuery = "#SubtitleResultSpan";
+   
 
 
     initateClipboardLink(
@@ -14,6 +14,7 @@ function initatePPTLink(cb) {
     
     
     function captionWatcher(handler) {
+        const targetQuery = "#SubtitleResultSpan";
 
         if (!handler) {
             alert ("pasted into incorrect console area!")
