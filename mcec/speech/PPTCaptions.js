@@ -21,11 +21,11 @@ class PPTCaptions extends HTMLElement {
                 justify-content: flex-start;
                 padding: 10px;
                 height : var(--captions-height) !important;
-                background-color: var(--page-color) !important;
+                background-color: var(--color-main-background) !important;
                 color: var(--text-color) !important;
                 font-family: var(--font-family) !important;
                 font-size: var(--font-size) !important;
-                
+
             }
         `;
         this.shadowRoot.appendChild(style);

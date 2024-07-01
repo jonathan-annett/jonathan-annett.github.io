@@ -41,4 +41,4 @@ function applyStyles() {
         document.documentElement.style.setProperty(cssKey, valueSuffix ? editedValue + valueSuffix : editedValue);
     }
     
-}
+}   
