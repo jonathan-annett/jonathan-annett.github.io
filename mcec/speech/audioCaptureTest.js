@@ -47,10 +47,12 @@ function readStyles() {
 
     document.querySelector('google-speech-spn').onclick = function() {
         document.body.className = "google-spn";
+        localStorage.setItem('captions',document.querySelector('google-speech-spn').transcript);
     };
 
     document.querySelector('ppt-captions').onclick = function() {
         document.body.className = "powerpoint";
+        localStorage.setItem('captions',document.querySelector('ppt-captions').transcript);
     };
 
     document.querySelector('#restartGoogle').onclick = function() {
