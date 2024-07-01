@@ -18,7 +18,7 @@ function readStyles() {
     load('fontSize','--font-size', 'px');
     load('pageColor','--color-main-background');
     load('textColor','--text-color');
-    load('captionsHeight','---captions-height','px');
+    load('captionsHeight','--captions-height','px');
 
     function load(elementId,cssKey,valueSuffix) {
         const storedValue = localStorage.getItem(cssKey);
@@ -33,7 +33,7 @@ function applyStyles() {
     save('fontSize','--font-size', 'px');
     save('pageColor','--color-main-background');
     save('textColor','--text-color');
-    save('captionsHeight','---captions-height','px');
+    save('captionsHeight','--captions-height','px');
 
     function save(elementId,cssKey,valueSuffix) {
         const editedValue =  document.getElementById(elementId).value;
