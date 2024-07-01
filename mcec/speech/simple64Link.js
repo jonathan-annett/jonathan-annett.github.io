@@ -170,6 +170,29 @@ function startPeerHandler(signalData,targetQuery) {
 
         document.body.appendChild(btn);    
     }
+
+    async function decompressFromBase64(base64String) {
+        const binaryString = atob(base64String);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        const ds = new DecompressionStream('deflate');
+        const writer = ds.writable.getWriter();
+        
+        writer.write(bytes);
+        writer.close();
+        
+        const decompressedStream = ds.readable;
+        const decompressedData = await new Response(decompressedStream).arrayBuffer();
+        
+        const decoder = new TextDecoder();
+        return decoder.decode(decompressedData);
+    }
+     
 }   
 
 async function compressToBase64(inputString) {
