@@ -1,9 +1,6 @@
  
-var activeProvider = 'google-spn';
-
-
 document.addEventListener('CustomSpeechEvent',function(e){  
-    if (e.detail.provider === activeProvider) {
+    if (e.detail.provider === document.body.className) {
         localStorage.setItem('captions',e.detail.transcript || "")
     }  
 });
@@ -20,6 +17,14 @@ function readStyles() {
     load('pageColor','--color-main-background');
     load('textColor','--text-color');
     load('captionsHeight','--captions-height','px');
+
+    document.querySelector('google-speech-spn').onclick = function() {
+        document.body.className = "google-spn";
+    };
+
+    document.querySelector('ppt-captions').onclick = function() {
+        document.body.className = "powerpoint";
+    }
 
     function load(elementId,cssKey,valueSuffix) {
         const storedValue = localStorage.getItem(cssKey);
