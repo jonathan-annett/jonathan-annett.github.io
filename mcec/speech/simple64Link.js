@@ -125,7 +125,21 @@ function startPeerHandler(signalData) {
 
     function addReplyCopyButton(json,buttonText = "Copy Response") {
         createBtn().textContent = "Copy Response";
-            btn.style= "position:absolute;bottom:10px;left:10px;width:135px;height:50px;z-index:99999;background-color: yellow";
+
+
+        btn.style=    `
+    
+    position: absolute;
+    top: calc(50vh - 50px);
+    left: calc(50vw - 170px);
+    width: 340px;
+    height: 100px;
+    z-index: 99999;
+    background-color: yellow;
+    font-size: 29pt;
+
+        `;
+            
 
         btn.onclick = function(){
             
@@ -142,7 +156,20 @@ function startPeerHandler(signalData) {
     function addPasteRequestButton(cb) {
         
         createBtn().textContent = "Paste Request";
-        btn.style= "position:absolute;bottom:10px;left:10px;width:135px;height:50px;z-index:99999;background-color: red";
+        btn.style=    `
+        
+    
+    position: absolute;
+    top: calc(50vh - 50px);
+    left: calc(50vw - 170px);
+    width: 340px;
+    height: 100px;
+    z-index: 99999;
+    background-color: red;
+    font-size: 29pt;
+ 
+                `;
+                    
 
         btn.onclick = function(){
             navigator.clipboard.readText().then(function(text){
