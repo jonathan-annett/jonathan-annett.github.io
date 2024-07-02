@@ -19,13 +19,13 @@ document.head.appendChild(gatekeeperStyle);
 
 document.addEventListener('DOMContentLoaded',function(){
     // build list of elements needing dynamic load (scripts/images/embeds/iframes)
-    const needsSrc = [].forEach.call(document.querySelectorAll('.gatekept'),
+    const needsSrc = [].map.call(document.querySelectorAll('.gatekept'),
     function(el){
         return !!el.dataset.src;
     });
 
     //build list of anchors needing setting
-    const needsHref = [].forEach.call(document.querySelectorAll('.gatekept'),
+    const needsHref = [].map.call(document.querySelectorAll('.gatekept'),
     function(el){
         return !!el.dataset.href;
     })
