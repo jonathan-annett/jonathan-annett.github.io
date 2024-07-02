@@ -1,5 +1,6 @@
 
 const gatekeeperStyle = document.createElement('style');
+const gatekeeperAlgo = "SHA-256";
 gatekeeperStyle.textContent = `
 
     .gatekeeper {
@@ -44,7 +45,7 @@ document.addEventListener('DOMContentLoaded',function(){
     }
 
     //hash the id for comparison in inclusion list
-    crypto.subtle.digest('sha256',new TextEncoder().encode([locationUrl,browserId].join('/'))).then(unlock);
+    crypto.subtle.digest(gatekeeperAlgo,new TextEncoder().encode([locationUrl,browserId].join('/'))).then(unlock);
 
     function unlock(key) {
         browserId = undefined;
