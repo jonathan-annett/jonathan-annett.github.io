@@ -49,6 +49,10 @@ function readStyles() {
     load('textColor','--text-color');
     load('captionsHeight','--captions-height','px');
 
+    load('captionsLeft','--captions-left','px');
+    load('captionsRight','--captions-right','px');
+    load('captionsBottom','--captions-bottom','px');
+
     document.querySelector('google-speech-spn').onclick = function() {
         document.body.className = "google-spn";
         localStorage.setItem('captions',document.querySelector('google-speech-spn').transcript);
@@ -78,6 +82,10 @@ function applyStyles() {
     save('pageColor','--color-main-background');
     save('textColor','--text-color');
     save('captionsHeight','--captions-height','px');
+
+    save('captionsLeft','--captions-left','px');
+    save('captionsRight','--captions-right','px');
+    save('captionsBottom','--captions-bottom','px');
 
     function save(elementId,cssKey,valueSuffix) {
         const editedValue =  document.getElementById(elementId).value;

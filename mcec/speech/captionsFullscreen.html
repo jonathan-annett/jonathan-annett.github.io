@@ -13,6 +13,10 @@
             --color-main-background: #000000;
             --text-color: #ffffff;
             --captions-height: 238px;
+            
+            --captions-left:1px;
+            --captions-right:1px;
+            --captions-bottom:1px;
         }
 
     
@@ -50,9 +54,9 @@
 
 
             position : absolute;
-            left: 0;
-            right: 0;
-            bottom :0;
+            left:  var(--captions-left);
+            right: var(--captions-right);
+            bottom : var(--captions-bottom);
             user-select: none;
             cursor: none;     
         }
@@ -89,6 +93,12 @@
             load('pageColor','--color-main-background');
             load('textColor','--text-color');
             load('captionsHeight','--captions-height','px');
+
+            load('captionsLeft','--captions-left','px');
+            load('captionsRight','--captions-right','px');
+            load('captionsBottom','--captions-bottom','px');
+
+
             window.captions.textContent =  localStorage.getItem('captions') || "";
 
             function load(elementId,cssKey,valueSuffix) {
