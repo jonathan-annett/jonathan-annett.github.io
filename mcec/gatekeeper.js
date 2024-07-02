@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
             // specific pages can be gatekept from other browsers (ie those without master keys)
             if (document.body.dataset.gatekeeperkeys) {
-                const keys = document.body.dataset.gatekeeperKeys.split(',');
+                const keys = document.body.dataset.gatekeeperkeys.split(',');
                 if (keys.indexOf(key)< 0) {
                     // this page has been gatekept from user
 
