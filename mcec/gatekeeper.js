@@ -87,8 +87,21 @@ document.addEventListener('DOMContentLoaded',function(){
                 }
             );
             // remove the styling that hides gatekept elements
-            gatekeeperStyle.parentElement.removeChild(gatekeeperStyle);
-           
+            gatekeeperStyle.textContent = `
+
+            iframe.gatekept {
+                position: absolute;
+                left:0;
+                right:0;
+                top:0;
+                bottom:0;
+            }
+
+            .gatekeeper {
+                display : none;
+            }
+`;
+                   
             //user can access this page
             const customEvent = new CustomEvent('gatekeeper', {
                 detail: {
