@@ -147,8 +147,8 @@ function startPeerHandler(signalData) {
         return btn;
     }
 
-    function addReplyCopyButton(json,buttonText = "Copy Response") {
-        createBtn().textContent = "Copy Response";
+    function addReplyCopyButton(json) {
+        createBtn().textContent = "Ready To Connect";
 
 
         btn.style=    `
@@ -159,7 +159,7 @@ function startPeerHandler(signalData) {
     width: 340px;
     height: 100px;
     z-index: 99999;
-    background-color: yellow;
+    background-color: Lime;
     font-size: 29pt;
 
         `;
@@ -179,7 +179,7 @@ function startPeerHandler(signalData) {
 
     function addPasteRequestButton(cb) {
         
-        createBtn().textContent = "Paste Request";
+        createBtn().textContent = "Reconnect";
         btn.style=    `
         
     
