@@ -196,6 +196,56 @@ customElements.define('google-speech-spn', GoogleSpeechAPI_SPN);
 */
 
 
+function textSmoother (timeout,cb) {
+    let samples= [];
+    let to;
+
+    addSample.stop() = function( ) {
+        if (to) {
+            clearTimeout(to);
+            samples.splice(0,samples.length);
+            samples=undefined;
+            to=undefined;
+        }
+    };
+    return addSample;
+
+    function getSmoothed() {
+
+        const bestBefore  = Date.now() - timeout;        
+        const smoothed = samples.filter(function(sample){
+           return sample.when <= bestBefore;
+        });
+
+        if (smoothed.length>0) {
+            samples = samples.filter(function(sample){
+                return sample.when > bestBefore; 
+            });
+            return smoothed.pop().text;
+        } 
+
+    }
+
+    function addSample(txt) {
+        samples.push({text:txt,when : Date.now()});
+        let smoothed = getSmoothed();
+        if (smoothed) {
+            cb(smoothed);
+        }
+        if (to) clearTimeout(to);
+        to = setTimeout(function waitfor(){
+            to = undefined;
+            let smoothed = getSmoothed();
+            if (smoothed) {
+                cb(smoothed);
+            } else {
+                to = setTimeout (waitfor,timeout/4);
+            }
+        },timeout / 2);
+    }
+
+    
+}
 
 class GoogleSpeechAPI_SPN extends HTMLElement {
     constructor() {
@@ -332,6 +382,16 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             this.restart();
         };
 
+        const onTranscript = textSmoother (1500,function(transcript){
+            const customEvent = new CustomEvent('CustomSpeechEvent', {
+                detail: {
+                    provider: 'google-spn',
+                    transcript: transcript 
+                }
+            });
+            document.dispatchEvent(customEvent);
+        });
+
         recognition.onresult = (event) => {
             let interim_transcript = '';
 
@@ -354,13 +414,15 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             full_transcript[full_transcript.length - 2] = final_transcript;
             full_transcript[full_transcript.length - 1] = interim_transcript;
 
+            onTranscript(full_transcript.join('\n'));
+            /*
             const customEvent = new CustomEvent('CustomSpeechEvent', {
                 detail: {
                     provider: 'google-spn',
                     transcript: full_transcript.join('\n')
                 }
             });
-            document.dispatchEvent(customEvent);
+            document.dispatchEvent(customEvent);*/
         };
 
         this.start = (event) => {
@@ -390,6 +452,8 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
                 recognizing = false;
                 showInfo('info_start');
             }
+
+            onTranscript.stop();
         };
 
         this.restart = () => {
