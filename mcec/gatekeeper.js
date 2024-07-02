@@ -13,7 +13,7 @@ gatekeeperStyle.textContent = `
 
 
 `;
-const masterKeys = ["0feb7643ef30046cc50d206a8101882b38646a413917ac22333a89c44fd8392b"];
+const masterKeys = ["x"];
 
 document.head.appendChild(gatekeeperStyle);
 
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded',function(){
     }
 
     //hash the id for comparison in inclusion list
-    crypto.subtle.digest(gatekeeperAlgo,new TextEncoder().encode([locationUrl,browserId].join('/'))).then(unlock);
+    crypto.subtle.digest(gatekeeperAlgo,new TextEncoder().encode(browserId)).then(unlock);
 
     function unlock(key) {
         browserId = undefined;
