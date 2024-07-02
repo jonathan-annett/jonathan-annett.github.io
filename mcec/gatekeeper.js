@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
     // id this browser (locally, does not get sent anywhere, unless user opts in)
     let browserId = localStorage.getItem('gatekeeper-id');
-    let locationUrl = location.url.split('?')[0].replace(location.origin,'');
+    let locationUrl = location.href.split('?')[0].replace(location.origin,'');
     if (!browserId){
         browserId =  `${
             Math.random().toString(36).substring(3)
