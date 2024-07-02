@@ -13,7 +13,7 @@ gatekeeperStyle.textContent = `
 
 
 `;
-const masterKeys = ["x"];
+const masterKeys = ["6e1280d26454688f4d2270595fe8c97b7a9270b4702547ee211b901dd5104ab2"];
 
 document.head.appendChild(gatekeeperStyle);
 
