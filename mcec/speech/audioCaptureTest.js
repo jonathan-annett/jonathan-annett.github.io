@@ -66,7 +66,7 @@ function readStyles() {
 
     function load(elementId,cssKey,valueSuffix) {
         const storedValue = localStorage.getItem(cssKey);
-        if (!storedValue) return;
+        if (null===storedValue) return;
         document.documentElement.style.setProperty(cssKey,  valueSuffix ?  storedValue + valueSuffix : storedValue);
         document.getElementById(elementId).value = storedValue;
     }
