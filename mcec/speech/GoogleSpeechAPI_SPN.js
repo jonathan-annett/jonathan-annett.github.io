@@ -196,9 +196,16 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
                 recognition.stop();
                 recognizing = false;
                 showInfo('info_start');
+            } else {
+                final_transcript = '';
+                full_transcript.splice(0,full_transcript.length);
+                full_transcript.push( final_transcript) ;
+                full_transcript.push('');
+                this.interimTranscript = '';
+                 this.render();
             }
 
-            onTranscript.stop();
+          
         };
 
         this.restart = () => {
