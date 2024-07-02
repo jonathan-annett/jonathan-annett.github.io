@@ -329,6 +329,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
                 showInfo('info_start');
                 return;
             }
+            this.restart();
         };
 
         recognition.onresult = (event) => {
@@ -368,12 +369,13 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
                 return;
             }
             final_transcript = '';
-            full_transcript[full_transcript.length - 1] = final_transcript;
+            full_transcript.splice(0,full_transcript.length);
+            full_transcript.push( final_transcript) ;
             full_transcript.push('');
 
-            while (full_transcript.length > 2 && full_transcript[0] === '') {
-                full_transcript.splice(0, 1);
-            }
+            this.interimTranscript = '';
+            
+            this.render();
 
             recognition.lang = this.language || 'en-AU';
             recognition.start();
@@ -392,6 +394,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
 
         this.restart = () => {
             this.stop();
+
             setTimeout(this.start, 500,new Event('restart'));
         };
 
