@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded',function(){
                         }
                     });
                     document.dispatchEvent(customEvent);
+                    console.log("This Browser Key:",key);
                     return;
                 }
             }
