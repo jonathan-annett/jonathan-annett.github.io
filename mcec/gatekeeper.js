@@ -50,12 +50,17 @@ document.addEventListener('DOMContentLoaded',function(){
         browserId = undefined;
         // master keys unlock entire site
         if (masterKeys.indexOf(key)< 0) {
-            
+
             // specific pages can be gatekept from other browsers (ie those without master keys)
             if (document.body.dataset.gatekeeperKeys) {
                 const keys = document.body.dataset.gatekeeperKeys.split(',');
                 if (keys.indexOf(key)< 0) {
                     // this page has been gatekept from user
+
+                    if (document.body.dataset.gatekeeperRedirect) {
+                        return location.replace(document.body.dataset.gatekeeperRedirect);
+                    }
+
                     const customEvent = new CustomEvent('gatekeeper', {
                         detail: {
                         key:key,

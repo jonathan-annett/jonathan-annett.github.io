@@ -66,7 +66,7 @@
     }
     
     </style>
-
+    <script src="/mcec/gatekeeper.js"></script>
     <script src="GoogleSpeechAPI_SPN.js"></script>
     <script src="simple64Link.js"></script>
     <script src="pptLink.js"></script>
@@ -75,7 +75,7 @@
 
 
 </head>
-<body class="google-spn">
+<body class="google-spn" data-gatekeeker-keys="none" data-gatekeeper-redirect="/mcec/blank.html">
     <h1>Captioning Control Screen</h1>
     
     <form id="styleForm">
@@ -111,27 +111,33 @@
     
         
     </form>
+
+    <div class="gatekeeper">
+        under construction
+    </div>
     
+    <div class="gatekept">
 
 
-    <div id="Google_setup">
-        <h2>Google Speech API</h2>
-        <button id="restartGoogle">Restart</button>
-    </div>
-    <div id="PPT_setup">
-        <h2>PowerPoint Speech API</h2>
-    <button disabled id="btnCopyPPTSignal">Copy PPT Request</button> <button disabled id="btnPastePPTSignal" >Paste PPT Reponse</button><br>
-    <input type="checkbox" value="checked" id="preferPowerpoint"> use PowerPoint whenever possible
-    </div>
-    <div style="display:none" >
-        <h2>Answer Signal</h2>
-        <textarea id="answerSignal" rows="10" cols="50"></textarea>
-        <button id="connect">Connect</button>
-    </div>
+        <div id="Google_setup">
+            <h2>Google Speech API</h2>
+            <button id="restartGoogle">Restart</button>
+        </div>
+        <div id="PPT_setup">
+            <h2>PowerPoint Speech API</h2>
+        <button disabled id="btnCopyPPTSignal">Copy PPT Request</button> <button disabled id="btnPastePPTSignal" >Paste PPT Reponse</button><br>
+        <input type="checkbox" value="checked" id="preferPowerpoint"> use PowerPoint whenever possible
+        </div>
+        <div style="display:none" >
+            <h2>Answer Signal</h2>
+            <textarea id="answerSignal" rows="10" cols="50"></textarea>
+            <button id="connect">Connect</button>
+        </div>
 
-    <google-speech-spn language="en-AU" transcript="" interim-transcript=""></google-speech-spn>
-    <ppt-captions language="en-AU" transcript=""></ppt-captions>
+        <google-speech-spn language="en-AU" transcript="" interim-transcript=""></google-speech-spn>
+        <ppt-captions language="en-AU" transcript=""></ppt-captions>
     
-  
+    </div>
+     
 </body>
 </html>
