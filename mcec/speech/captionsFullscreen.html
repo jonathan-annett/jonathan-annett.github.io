@@ -1,60 +1,64 @@
 <html>
+<head> 
+    <meta http-equiv='cache-control' content='no-cache'> 
+    <meta http-equiv='expires' content='0'> 
+    <meta http-equiv='pragma' content='no-cache'>
+    
+    <style>
 
-<style>
+        
+        :root {
+            --font-family: Arial;
+            --font-size: 16px;
+            --color-main-background: #000000;
+            --text-color: #ffffff;
+            --captions-height: 238px;
+        }
 
     
-    :root {
-        --font-family: Arial;
-        --font-size: 16px;
-        --color-main-background: #000000;
-        --text-color: #ffffff;
-        --captions-height: 238px;
-    }
 
- 
+        body {
+            
+            background-color:var(--color-main-background);
+            background:var(--color-main-background);
+            user-select: none;   
+            cursor: none;     
+        }
 
-    body {
-        
-        background-color:var(--color-main-background);
-        background:var(--color-main-background);
-        user-select: none;   
-        cursor: none;     
-    }
+        :backdrop { background-color:var(--color-main-background); background:var(--color-main-background);} 
+        ::backdrop { background-color:var(--color-main-background); background:var(--color-main-background);} 
+        :-ms-fullscreen { background-color:var(--color-main-background); background:var(--color-main-background);} 
+        :-moz-full-screen { background-color:var(--color-main-background); background:var(--color-main-background);} 
+        :-webkit-full-screen { background-color:var(--color-main-background); background:var(--color-main-background);} 
+        ::fullscreen { background-color:var(--color-main-background); background:var(--color-main-background);} 
+        :fullscreen { background-color:var(--color-main-background); background:var(--color-main-background);} 
 
-    :backdrop { background-color:var(--color-main-background); background:var(--color-main-background);} 
-    ::backdrop { background-color:var(--color-main-background); background:var(--color-main-background);} 
-    :-ms-fullscreen { background-color:var(--color-main-background); background:var(--color-main-background);} 
-    :-moz-full-screen { background-color:var(--color-main-background); background:var(--color-main-background);} 
-    :-webkit-full-screen { background-color:var(--color-main-background); background:var(--color-main-background);} 
-    ::fullscreen { background-color:var(--color-main-background); background:var(--color-main-background);} 
-    :fullscreen { background-color:var(--color-main-background); background:var(--color-main-background);} 
+    
+        #captions {
 
- 
-    #captions {
-
-          
-        overflow: hidden;
-        display: flex;
-        flex-direction: column-reverse;
-        justify-content: flex-start;
-        padding: 10px;
-        height : var(--captions-height) !important;
-        background-color: var(--color-main-background) !important;
-        color: var(--text-color) !important;
-        font-family: var(--font-family) !important;
-        font-size: var(--font-size) !important;
+            
+            overflow: hidden;
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: flex-start;
+            padding: 10px;
+            height : var(--captions-height) !important;
+            background-color: var(--color-main-background) !important;
+            color: var(--text-color) !important;
+            font-family: var(--font-family) !important;
+            font-size: var(--font-size) !important;
 
 
-        position : absolute;
-        left: 0;
-        right: 0;
-        bottom :0;
-        user-select: none;
-        cursor: none;     
-    }
+            position : absolute;
+            left: 0;
+            right: 0;
+            bottom :0;
+            user-select: none;
+            cursor: none;     
+        }
 
-</style>
-
+    </style>
+</head>
 <body>
     <div id="captions">
 
