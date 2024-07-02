@@ -46,6 +46,7 @@ function readStyles() {
     load('fonts','--font-family');
     load('fontSize','--font-size', 'px');
     load('pageColor','--color-main-background');
+    load('captionsColor','--captions-color');
     load('textColor','--text-color');
     load('captionsHeight','--captions-height','px');
 
@@ -80,6 +81,7 @@ function applyStyles() {
     save('fonts','--font-family');
     save('fontSize','--font-size', 'px');
     save('pageColor','--color-main-background');
+    save('captionsColor','--captions-color');
     save('textColor','--text-color');
     save('captionsHeight','--captions-height','px');
 
