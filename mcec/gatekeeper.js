@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded',function(){
     function unlock(key) {
         browserId = undefined;
         // convert digest to hex
-        key = key.map((b) => b.toString(16).padStart(2, "0")).join("");
+        key = Array.from(key).map((b) => b.toString(16).padStart(2, "0")).join("");
         
         // master keys unlock entire site
         if (masterKeys.indexOf(key)< 0) {
