@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded',function(){
     }
 
     //hash the id for comparison in inclusion list
-    crypto.subtle.digest('sha256',new Blob([locationUrl,browserId])).then(unlock);
+    crypto.subtle.digest('sha256',new TextEncoder().encode([locationUrl,browserId].join('/'))).then(unlock);
 
     function unlock(key) {
         browserId = undefined;
