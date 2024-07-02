@@ -13,7 +13,10 @@ gatekeeperStyle.textContent = `
 
 
 `;
-const masterKeys = ["5597de04d9ed42745c4ec8e2300bc3bb12819ae2528f94048eedc1d067c20cf3"];
+const masterKeys = [
+    "5597de04d9ed42745c4ec8e2300bc3bb12819ae2528f94048eedc1d067c20cf3", // lap
+    "fa3d4c767f239060c78487809b3be18f3fce4e5c2abfcabdd9ab8987c70c99b5" // spare3
+];
 
 document.head.appendChild(gatekeeperStyle);
 
