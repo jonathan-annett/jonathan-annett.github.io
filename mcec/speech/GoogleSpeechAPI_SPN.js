@@ -200,7 +200,7 @@ function textSmoother (timeout,cb) {
     let samples= [];
     let to;
 
-    addSample.stop() = function( ) {
+    addSample.stop = function( ) {
         if (to) {
             clearTimeout(to);
             samples.splice(0,samples.length);
