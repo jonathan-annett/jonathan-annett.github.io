@@ -15,7 +15,8 @@ gatekeeperStyle.textContent = `
 `;
 const masterKeys = [
     "5597de04d9ed42745c4ec8e2300bc3bb12819ae2528f94048eedc1d067c20cf3", // lap
-    "fa3d4c767f239060c78487809b3be18f3fce4e5c2abfcabdd9ab8987c70c99b5" // spare3
+    "fa3d4c767f239060c78487809b3be18f3fce4e5c2abfcabdd9ab8987c70c99b5", // spare3
+    "d28ad1f40230e504c0081af29f931f025b4714a9bd081233cf1967313b5c7127"  // timer6
 ];
 
 document.head.appendChild(gatekeeperStyle);
