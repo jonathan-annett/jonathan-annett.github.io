@@ -73,13 +73,38 @@ function sendJWTTestRequest(apiUserId, apiUserKey, apiUserSecret, ungerboeckApiU
     return fetch (
         ungerboeckApiUrl,
         {
-            mode: 'no-cors',
-            headers: {
-                'Authorization': 'Bearer ' +  constructJWT(apiUserId, apiUserKey, apiUserSecret),
-                'Content-Type': 'application/json'
-            }
+            "method": "GET",
+            "mode": 'no-cors',
+            "headers": {
+                "authorization":  'Bearer ' +  constructJWT(apiUserId, apiUserKey, apiUserSecret),
+                "accept": "application/json"
+            },
+            "body": null,
+             "credentials": "include"
         }
     );
+
+/*
+    fetch("https://mcec.ungerboeck.net/test/api/v1/Functions/10/113631/1", {
+        "headers": {
+          "accept": "application/json",
+          "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+          "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJVU0lNQ0VDQVBJIiwia2V5IjoiM2EwYWZjYzItZGQ1YS00MzVhLTk4YjItYTFlZjIwYmI1MmMwIiwiZXhwIjoxNzIwMDU4NDY3LCJpYXQiOiIxNzIwMDU4NDA3Iiwic3ViIjoiIn0.xI_F4Zs3zQhNMCc5SEk5sSt-yA2N5w0SOMRPpUSwPxE",
+          "priority": "u=1, i",
+          "sec-ch-ua": "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin"
+        },
+        "referrer": "https://mcec.ungerboeck.net/test/api/help/index?urls.primaryName=swagger",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": null,
+        "method": "GET",
+        "mode": "cors",
+        "credentials": "include"
+      });*/
 
 }
 
