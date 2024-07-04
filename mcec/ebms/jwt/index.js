@@ -74,9 +74,12 @@ function sendJWTTestRequest(apiUserId, apiUserKey, apiUserSecret, ungerboeckApiU
         ungerboeckApiUrl,
         {
             "method": "GET",
+            "mode": 'cors',
             "headers": {
                 "authorization":  'Bearer ' +  constructJWT(apiUserId, apiUserKey, apiUserSecret),
-                "accept": "application/json"
+                "accept": "application/json",
+                          "sec-fetch-mode": "cors",
+                          "sec-fetch-site": "cross-site"
             } 
         }
     );
