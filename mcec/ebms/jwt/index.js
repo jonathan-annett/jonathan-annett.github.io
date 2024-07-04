@@ -74,7 +74,6 @@ function sendJWTTestRequest(apiUserId, apiUserKey, apiUserSecret, ungerboeckApiU
         ungerboeckApiUrl,
         {
             "method": "GET",
-            "mode": 'cors',
             "headers": {
                 "authorization":  'Bearer ' +  constructJWT(apiUserId, apiUserKey, apiUserSecret),
                 "accept": "application/json"
