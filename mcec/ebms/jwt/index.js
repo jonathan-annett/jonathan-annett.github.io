@@ -1,8 +1,10 @@
 // sensitive info is stored in local storage(as plain text)
 // does not get saved online, must be entered by user first time the test page is loaded
+loadCredentialsFromStorage()
 
 
 function loadCredentialsFromStorage() {
+    //also sets up save-on-edit callback 
    [
     "apiUserId",
     "apiUserKey",
