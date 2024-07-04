@@ -75,7 +75,6 @@ function sendJWTTestRequest(apiUserId, apiUserKey, apiUserSecret, apiUrl) {
         apiUrl,
         {
             method: "GET",
-            mode: 'no-cors',
             headers: {
                 "Authorization": 'Bearer ' + constructJWT(apiUserId, apiUserKey, apiUserSecret),
                 "Accept": "application/json"
