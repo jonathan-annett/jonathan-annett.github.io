@@ -80,7 +80,7 @@ function sendJWTTestRequest(apiUserId, apiUserKey, apiUserSecret, ungerboeckApiU
                 "accept": "application/json"
             },
             "body": null,
-             "credentials": "include"
+          //   "credentials": "include"
         }
     );
 
