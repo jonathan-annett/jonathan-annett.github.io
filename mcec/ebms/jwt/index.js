@@ -24,7 +24,7 @@ function loadCredentialsFromStorage() {
         apiCall("Events",[ window.EventID.value ]).then(console.log).catch(console.error); 
    }; 
 
-   window.btnEvent.onclick = function (e) {
+   window.btnFunction.onclick = function (e) {
          apiCall("Functions",[  window.EventID.value, window.FunctionID.value ]).then(console.log).catch(console.error); 
    }; 
 }
