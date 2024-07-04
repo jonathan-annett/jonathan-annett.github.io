@@ -35,7 +35,7 @@ function TestJWTAuthorization() {
 
 
 function urlFormatStr(base,endpoint,orgCode,args,search) {
-    return `${base}/${endpoint}/${[OrgCode].concat(args).join('/')}${
+    return `${base}/${endpoint}/${[orgCode].concat(args).join('/')}${
         search ?  "?search=" +  encodeURIComponent(Object.keys(search).map(function(key){
             return key + ' eq ' + search[key] ;
         }).join (' and ') ) : ''
