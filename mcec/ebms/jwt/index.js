@@ -1,6 +1,7 @@
-// sensitive info is stored in local storage(as plain text)
+// sensitive info is stored in localStorage (as plain text)
 // does not get saved online, must be entered by user first time the test page is loaded
 loadCredentialsFromStorage()
+
 
 
 function loadCredentialsFromStorage() {
@@ -10,16 +11,38 @@ function loadCredentialsFromStorage() {
     "apiUserKey",
     "apiUserSecret",
     "ungerboeckApiUrl",
+    "EventID",
+    "FunctionID"
    ].forEach(function(key){
        window[key].value = localStorage.getItem(key) || '';
        window[key].oninput = function(){
            localStorage.setItem(key,window[key].value);
        };
    });
+
+   window.btnEvent.onclick = function (e) {
+        apiCall("Events",[ window.EventID.value ]).then(console.log).catch(console.error); 
+   }; 
+
+   window.btnEvent.onclick = function (e) {
+         apiCall("Functions",[  window.EventID.value, window.FunctionID.value ]).then(console.log).catch(console.error); 
+   }; 
+}
+
+function TestJWTAuthorization() {
+   return apiCall("Events",["113631"]); 
 }
 
 
-function TestJWTAuthorization() {
+function urlFormatStr(base,endpoint,orgCode,args,search) {
+    return `${base}/${endpoint}/${[OrgCode].concat(args).join('/')}${
+        search ?  "?search=" +  encodeURIComponent(Object.keys(search).map(function(key){
+            return key + ' eq ' + search[key] ;
+        }).join (' and ') ) : ''
+    }`;
+}
+
+function apiCall(endpoint,args,search) {
 
     //Change these values
     /*
@@ -33,56 +56,30 @@ function TestJWTAuthorization() {
     var apiUserSecret = window.apiUserSecret.value;
     var ungerboeckApiUrl =  window.ungerboeckApiUrl.value;
 
+    const OrgCode = '10';
 
     if (apiUserId && apiUserId.trim() != "" && apiUserKey && apiUserKey.trim() != "" && apiUserSecret && apiUserSecret.trim() != "") {
-        window.demo.textContent = 'Running example call.  Please wait...';
-        //$('#demo').text('Running example call.  Please wait...');
-
-        sendJWTTestRequest(apiUserId, apiUserKey, apiUserSecret, ungerboeckApiUrl);
+        
+        return sendJWTTestRequest(apiUserId, apiUserKey, apiUserSecret,  urlFormatStr(ungerboeckApiUrl,endpoint,OrgCode,args,search) );
 
     } else  {
-        window.demo = 'User info is empty.  Check your input.';
-        //$('#demo').text('User info is empty.  Check your input.');
+       return Promise.reject( new Error( 'User info is empty.  Check your input.' ));
+        
     }
 }
 
 function sendJWTTestRequest(apiUserId, apiUserKey, apiUserSecret, ungerboeckApiUrl) {
-    var method = "GET";
 
-    var jwt = constructJWT(apiUserId, apiUserKey, apiUserSecret);
-
-    fetch (
+    return fetch (
         ungerboeckApiUrl,
         {
             headers: {
-                'Authorization': 'Bearer ' + jwt,
+                'Authorization': 'Bearer ' +  constructJWT(apiUserId, apiUserKey, apiUserSecret),
                 'Content-Type': 'application/json'
             }
         }
-    ).then (function (data){
-         window.demo.textContent = 'Success: Located ' + data.Name
-    }).catch (function(error){
-        console.log(error);
-        window.demo.textContent = 'API call failed.  Please inspect for errors.';
-    })
+    );
 
-   /*
-       $.ajax({
-        type: method,
-        url: ungerboeckApiUrl, //Make sure you pick an endpoint the API User is allowed to access
-        headers: {
-            'Authorization': 'Bearer ' + jwt,
-            'Content-Type': 'application/json'
-        },
-        success: function (data) {
-            $('#demo').text('Success: Located ' + data.Name);
-        },
-        error: function () {
-            $('#demo').text('API call failed.  Please inspect for errors.');
-        }
-    });
-   
-   */
 }
 
 function constructJWT(apiUserId, apiUserKey, apiUserSecret) {
