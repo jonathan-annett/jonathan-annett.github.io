@@ -68,13 +68,14 @@ function apiCall(endpoint,args,search) {
     }
 }
 
+ 
 function sendJWTTestRequest(apiUserId, apiUserKey, apiUserSecret, apiUrl) {
 
     return fetch (
         apiUrl,
         {
             method: "GET",
-            mode: 'cors',
+            mode: 'no-cors',
             headers: {
                 "Authorization": 'Bearer ' + constructJWT(apiUserId, apiUserKey, apiUserSecret),
                 "Accept": "application/json"
