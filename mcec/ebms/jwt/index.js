@@ -80,7 +80,7 @@ function sendJWTTestRequest(apiUserId, apiUserKey, apiUserSecret, apiUrl) {
                 "Authorization": 'Bearer ' + constructJWT(apiUserId, apiUserKey, apiUserSecret),
                 "Accept": "application/json"
             },
-            "credentials": "include"
+          //  "credentials": "include"
         }
     );
 }
