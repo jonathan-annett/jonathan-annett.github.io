@@ -73,6 +73,7 @@ function sendJWTTestRequest(apiUserId, apiUserKey, apiUserSecret, ungerboeckApiU
     return fetch (
         ungerboeckApiUrl,
         {
+            mode: 'no-cors',
             headers: {
                 'Authorization': 'Bearer ' +  constructJWT(apiUserId, apiUserKey, apiUserSecret),
                 'Content-Type': 'application/json'
