@@ -85,8 +85,12 @@ class PPTCaptions extends HTMLElement {
         const self = this;
        initatePPTLink(function(what,data){
            if (what==='data') {
+                if (data.caption.indexOf('[Starting Subtitles]')<0) {
+                    self.setAttribute('transcript', data.captions  );
 
-                self.setAttribute('transcript', /\[(\s*)Starting(\s+)Subtitles(\s*)\]/.test( data.caption) ? '' :   data.captions  );
+                } else {
+                    self.setAttribute('transcript', '' );
+                }
            }
        })
     }
