@@ -55,14 +55,14 @@ function readStyles() {
     load('captionsBottom','--captions-bottom','px');
 
     
-    document.querySelector('#mute_captions').onclick = function() {
+    document.querySelector('#mute_captions').addEventListener('click', function() {
         document.body.className = "muted";
         localStorage.setItem('captions','');
         if (lastSpeechEventTimeout) {
             clearTimeout(lastSpeechEventTimeout);
             lastSpeechEventTimeout=undefined;
         }
-    };
+    });
 
     document.querySelector('google-speech-spn').onclick = function() {
         document.body.className = "google-spn";
