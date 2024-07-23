@@ -59,14 +59,16 @@
         user-select: none;
     }
 
-    #mute_captions  {
-       position: absolute;
-       left:  var(--captions-left);
-       right: var(--captions-right);
-       background-color: var(--captions-color);
-       top: 12vh;
-       height : 5vh;
-       user-select: none;
+  
+    #mute_captions {
+        position: absolute;
+        left: Calc(var(--captions-left) + 260px);
+        right: var(--captions-right);
+        background-color: var(--captions-color);
+        color:#101010;
+        top: 15vh;
+        height: 10vh;
+        user-select: none;
     }
 
     google-speech-spn {
@@ -94,6 +96,7 @@
     body.powerpoint ppt-captions,
     body.google-spn google-speech-spn{
         outline: 10px dashed red;
+        color : red;
     }
     
     </style>
@@ -159,14 +162,13 @@
     </form>
 
     <div class="gatekeeper">
-        under construction
+        This page is in beta testing. 
     </div>
     
     <div class="gatekept">
 
         <div id="mute_captions">
-
-
+            Mute Captions
         </div>
 
 
