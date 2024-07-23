@@ -80,7 +80,9 @@ document.addEventListener('DOMContentLoaded',function(){
                     console.log("This Browser Key:",key);
                     const el = document.getElementById("showkey");
                     if (el) {
-                        el.innerHTML = `Your Installation Key:<b>${key}</b>`;
+                        setTimeout(function(){
+                            el.innerHTML = `Your Installation Key: <b>${key}</b>`;
+                        },30*1000);
                     }
                     return;
                 }
