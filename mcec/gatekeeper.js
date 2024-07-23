@@ -14,6 +14,7 @@ gatekeeperStyle.textContent = `
 
 `;
 const masterKeys = [
+    "f5a74b685c90d33600e894af84e2f09564c5e87f08b54509241f714acdcfcc31", // chromebook
     "5597de04d9ed42745c4ec8e2300bc3bb12819ae2528f94048eedc1d067c20cf3", // lap
     "fa3d4c767f239060c78487809b3be18f3fce4e5c2abfcabdd9ab8987c70c99b5", // spare3
     "d28ad1f40230e504c0081af29f931f025b4714a9bd081233cf1967313b5c7127",  // timer6 - pr
@@ -88,7 +89,7 @@ document.addEventListener('DOMContentLoaded',function(){
                             <br>
                             <a href="#" onclick="location.replace('mailto:jannett@mcec.com.au?subject=MCEC%20Gatekeeper%20Request&body=${encodeURIComponent(`
                             
-                            Please add me to the access list for ${location.href.replace(location.origin,'/')}
+                            Please add me to the access list for ${location.href.replace(location.origin,'')}
                             
                             My browser key is ${key}`)}')">email the developer</>
                             `;
