@@ -18,6 +18,12 @@
             --captions-left:1px;
             --captions-right:1px;
             --captions-bottom:1px;
+
+            --caption-disclaimer:"";
+            --caption-disclaimer-font-family: Arial;
+            --caption-disclaimer-font-size: 10px;
+            --caption-disclaimer-text-color: #dbc8c8;
+         
         }
 
     
@@ -61,6 +67,13 @@
             user-select: none;
             cursor: none;     
         }
+
+        #captions::before {
+            content:var(--caption-disclaimer);
+            font-family: var(--caption-disclaimer-font-family) !important;
+            font-size: var(--caption-disclaimer-font-size) !important;
+
+        } 
 
     </style>
 </head>
