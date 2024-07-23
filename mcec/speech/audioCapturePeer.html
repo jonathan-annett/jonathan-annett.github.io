@@ -65,11 +65,20 @@
         left: Calc(var(--captions-left) + 260px);
         right: var(--captions-right);
         background-color: var(--captions-color);
-        color:#101010;
+        color:#d69797;
         top: 15vh;
         height: 10vh;
         user-select: none;
     }
+
+    body.muted  #mute_captions, body.powerpoint ppt-captions, body.google-spn google-speech-spn {
+    outline: 10px dashed red;
+    color: red;
+    font-family: var(--font-family) !important;
+    font-size: var(--font-size) !important;
+    text-align: center;
+    vertical-align: bottom;
+}
 
     google-speech-spn {
        
