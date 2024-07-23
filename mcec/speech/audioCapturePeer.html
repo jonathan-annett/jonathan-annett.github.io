@@ -49,6 +49,16 @@
         user-select: none;
     }
 
+    #mute_captions  {
+       position: absolute;
+       left:  var(--captions-left);
+       right: var(--captions-right);
+       background-color: var(--captions-color);
+       top: 10vh;
+       height : 2.5vh;
+       user-select: none;
+    }
+
     google-speech-spn {
        
        position: absolute;
@@ -70,6 +80,7 @@
 
     }
 
+    body.muted  #mute_captions,
     body.powerpoint ppt-captions,
     body.google-spn google-speech-spn{
         outline: 10px dashed red;
@@ -142,6 +153,11 @@
     </div>
     
     <div class="gatekept">
+
+        <div id="mute_captions">
+
+
+        </div>
 
 
         <div id="Google_setup">

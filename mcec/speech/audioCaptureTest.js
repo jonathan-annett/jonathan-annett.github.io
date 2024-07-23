@@ -8,7 +8,7 @@ document.addEventListener('CustomSpeechEvent',function(e){
      
      
     if  (!!lastSpeechEventTimeout && e.detail.provider === "powerpoint") {
-        if (document.querySelector('#preferPowerpoint').checked) {
+        if (document.querySelector('#preferPowerpoint').checked && document.body.className !== 'muted') {
             document.body.className = e.detail.provider; 
         }
     }
@@ -53,6 +53,16 @@ function readStyles() {
     load('captionsLeft','--captions-left','px');
     load('captionsRight','--captions-right','px');
     load('captionsBottom','--captions-bottom','px');
+
+    
+    document.querySelector('mute_captions').onclick = function() {
+        document.body.className = "muted";
+        localStorage.setItem('captions','');
+        if (lastSpeechEventTimeout) {
+            clearTimeout(lastSpeechEventTimeout);
+            lastSpeechEventTimeout=undefined;
+        }
+    };
 
     document.querySelector('google-speech-spn').onclick = function() {
         document.body.className = "google-spn";
