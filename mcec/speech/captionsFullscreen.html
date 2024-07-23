@@ -80,7 +80,7 @@
             if (e.key.startsWith('--') && e.newValue) {
                 document.documentElement.style.setProperty(e.key, e.newValue);
             } else {
-                if (e.key === "captions" && e.newValue) {
+                if (e.key === "captions" && null!==e.newValue) {
                     // this is what updates the captions in real time.
                     window.captions.textContent =  e.newValue;
                 }
