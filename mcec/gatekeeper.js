@@ -85,11 +85,12 @@ document.addEventListener('DOMContentLoaded',function(){
                             
                             Your Installation Key: <b>${key}</b>
                             <br>
+                            <br>
                             <a href="#" onclick="location.replace('mailto:jannett@mcec.com.au?subject=MCEC%20Gatekeeper%20Request&body=${encodeURIComponent(`
                             
                             Please add me to the access list for ${location.href.replace(location.origin,'/')}
                             
-                            My browser key is ${key}`)}')">email the developer</>"
+                            My browser key is ${key}`)}')">email the developer</>
                             `;
                         },30*1000);
                     }
