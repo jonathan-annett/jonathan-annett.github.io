@@ -81,7 +81,16 @@ document.addEventListener('DOMContentLoaded',function(){
                     const el = document.getElementById("showkey");
                     if (el) {
                         setTimeout(function(){
-                            el.innerHTML = `Your Installation Key: <b>${key}</b>`;
+                            el.innerHTML = `
+                            
+                            Your Installation Key: <b>${key}</b>
+                            <br>
+                            <a href="#" onclick="location.replace('mailto:jannett@mcec.com.au?subject=MCEC%20Gatekeeper%20Request&body=${encodeURIComponent(`
+                            
+                            Please add me to the access list for ${location.href.replace(location.origin,'/')}
+                            
+                            My browser key is ${key}`)}')">email the developer</>"
+                            `;
                         },30*1000);
                     }
                     return;
