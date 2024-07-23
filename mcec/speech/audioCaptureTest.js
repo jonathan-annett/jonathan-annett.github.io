@@ -22,7 +22,7 @@ document.addEventListener('CustomSpeechEvent',function(e){
         localStorage.setItem('captions',e.detail.transcript || "");
 
     }  else {
-        if (!lastSpeechEventTimeout) {
+        if (!lastSpeechEventTimeout && document.body.className !== 'muted' ) {
             lastSpeechEventTimeout = setTimeout(
                 function() {
                     document.body.className = e.detail.provider;
@@ -56,12 +56,14 @@ function readStyles() {
 
     
     document.querySelector('#mute_captions').addEventListener('click', function() {
-        document.body.className = "muted";
-        localStorage.setItem('captions','');
         if (lastSpeechEventTimeout) {
             clearTimeout(lastSpeechEventTimeout);
             lastSpeechEventTimeout=undefined;
         }
+        
+        document.body.className = "muted";
+        localStorage.setItem('captions','');
+       
     });
 
     document.querySelector('google-speech-spn').onclick = function() {
