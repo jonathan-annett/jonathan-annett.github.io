@@ -55,7 +55,7 @@ function readStyles() {
     load('captionsBottom','--captions-bottom','px');
 
     
-    document.querySelector('mute_captions').onclick = function() {
+    document.querySelector('#mute_captions').onclick = function() {
         document.body.className = "muted";
         localStorage.setItem('captions','');
         if (lastSpeechEventTimeout) {
