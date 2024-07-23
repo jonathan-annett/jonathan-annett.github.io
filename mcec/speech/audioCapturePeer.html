@@ -69,16 +69,21 @@
         top: 15vh;
         height: 10vh;
         user-select: none;
+        font-family: var(--font-family) !important;
+        font-size: var(--font-size) !important;
+         text-align: center;
+         vertical-align: bottom;
     }
 
     body.muted  #mute_captions, body.powerpoint ppt-captions, body.google-spn google-speech-spn {
-    outline: 10px dashed red;
-    color: red;
-    font-family: var(--font-family) !important;
-    font-size: var(--font-size) !important;
-    text-align: center;
-    vertical-align: bottom;
-}
+        outline: 10px dashed red;
+
+    }
+
+    body.muted  #mute_captions {
+            color: red;
+    }
+
 
     google-speech-spn {
        
