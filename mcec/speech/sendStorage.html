@@ -19,7 +19,7 @@
         webSocket.send(JSON.stringify({connect:getStorage()}));
     });
    
-    window.on('storage',function(e){
+    window.addEventListener ('storage',function(e){
         if (null===e.key) {
            webSocket.send(JSON.stringify({clear:true}));
         } else {
