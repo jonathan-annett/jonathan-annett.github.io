@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded',function(){
                     });
                     document.dispatchEvent(customEvent);
                     console.log("This Browser Key:",key);
-                    const el = document.getElementByid("showkey");
+                    const el = document.getElementById("showkey");
                     if (el) {
                         el.innerHTML = `Your Installation Key:<b>${key}</b>`;
                     }
