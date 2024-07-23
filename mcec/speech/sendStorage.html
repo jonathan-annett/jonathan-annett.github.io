@@ -1,0 +1,56 @@
+<html>
+<head>
+</head>
+<body>
+  <form id="input-form">
+    <label for="message">Enter Message:</label>
+    <input type="text" id="message" name="message"><br><br>
+    <input type="submit" value="Send">
+  </form>
+  <div id="messages"></div>
+  <script>
+    const webSocket = new WebSocket('ws://localhost:3001/');
+    const pageID = Math.random().toString(36).slice(2);
+    webSocket.onmessage = (event) => {
+      console.log(event);
+    };
+    webSocket.addEventListener("open", () => {
+        console.log("We are connected");
+        webSocket.send(JSON.stringify({connect:getStorage()}));
+    });
+   
+    window.on('storage',function(e){
+        if (null===e.key) {
+           webSocket.send(JSON.stringify({clear:true}));
+        } else {
+           if (null===e.newValue) {
+               webSocket.send(JSON.stringify({removeItem:e.key}));
+           } else {
+               webSocket.send(JSON.stringify({setItem:e.key,value:e.newValue}));
+           }          
+        }
+    });
+
+
+    function getStorage(keys){
+        const data = {};
+        keys = keys || Object.keys(localStorage);
+        keys.forEach((key)=>{
+            data[key]=localStorage.getItem(key);
+        })
+        return JSON.stringify(data);
+    }
+
+    function setStorage(json) {
+        const data = JSON.parse(json);
+        let keys = new Set(Object.keys(localStorage));
+        Object.keys(data).forEach((key)=>{
+            localStorage.setItem(key,data[key]);
+            delete data[key];
+            keys.delete(key);
+        });
+    }
+
+  </script>
+</body>
+</html>
