@@ -99,8 +99,8 @@ function simplePeerLink(wss_url) {
 
         let urlDigits = sessionStorage.getItem('peerDigits') || '';
 
-        let lastSecret = urlDigits ? null : sessionStorage.getItem('secret');
-        let lastPeerSecret = urlDigits ? null : sessionStorage.getItem('peerSecret');
+        let lastSecret     = urlDigits ? null : localStorage.getItem('secret') || sessionStorage.getItem('secret');
+        let lastPeerSecret = urlDigits ? null : localStorage.getItem('peerSecret') || sessionStorage.getItem('peerSecret');
 
         if (!(lastPeerSecret && lastSecret)) {
             lastSecret = null;
@@ -141,7 +141,7 @@ function simplePeerLink(wss_url) {
                         const time = parseInt(e.data);
                         if (!isNaN(time) && time > 0) {
                             ws.timeResolve(time);
-                            delete ws.timeResolve
+                            delete ws.timeResolve;
                             return true;
                         }
                     } catch (e) {
@@ -225,6 +225,20 @@ function simplePeerLink(wss_url) {
                                     };
 
                                     startPeer(userSocket, initiator);
+
+                                    document.body.addEventListener('keydown',function(e){
+
+                                        if (e.key === 's' ) {
+                                            localStorage.setItem('secret',secret);
+                                            localStorage.setItem('peerSecret',secret);                                            
+                                        } else {
+                                            if (e.key === 'x') {
+                                                localStorage.removeItem('secret',secret);
+                                                localStorage.removeItem('peerSecret',secret); 
+                                                location.reload();                                           
+                                            }
+                                        }
+                                    });
 
 
                                     resolve(userSocket);

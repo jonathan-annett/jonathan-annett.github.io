@@ -24,7 +24,7 @@ let bootstrap = false;
 if (wss_link_url) {
     simplePeerLink(wss_link_url).then((function(socket){
 
-
+       
 
         socket.onmessage = (data) => {
             const {key,oldValue,newValue} = JSON.parse(data);
