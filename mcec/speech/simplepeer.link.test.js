@@ -20,9 +20,12 @@ const keys = [
     '--text-color',
     '--captions-color'    
 ];
-
+let bootstrap = false;
 if (wss_link_url) {
     simplePeerLink(wss_link_url).then((function(socket){
+
+
+
         socket.onmessage = (data) => {
             const {key,oldValue,newValue} = JSON.parse(data);
             if (keys.indexOf(key)>=0){
@@ -38,8 +41,16 @@ if (wss_link_url) {
             const {key,oldValue,newValue} = ev;
 
             if (keys.indexOf(key)>=0){
+
                 console.log("sending",key,newValue);
                 socket.send(JSON.stringify({key,oldValue,newValue}));
+                if (!bootstrap) {
+                    keys.forEach(function(k){
+                        if (k===key) return;
+                        socket.send(JSON.stringify({key:k,oldValue:null,newValue:localStorage.getValue(k)}));
+                    });
+                    bootstrap=true;
+                }
             } else {
                 console.log('ignoring',{key,oldValue,newValue});
             }
