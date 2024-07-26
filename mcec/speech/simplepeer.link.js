@@ -252,7 +252,7 @@ function simplePeerLink(wss_url) {
 
                 function startPeer(userSocket, initiator) {
 
-                    let peer = new SimplePeer({ initiator, trickle: true });
+                    let peer = new SimplePeer({ initiator, trickle: false });
 
                     socket.onmessage = function (e) {
                         if (tryTimeResolve(socket, e)) return;
