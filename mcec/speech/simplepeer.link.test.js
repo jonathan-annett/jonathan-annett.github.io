@@ -28,6 +28,7 @@ if (wss_link_url) {
 
         socket.onmessage = (data) => {
             const {key,oldValue,newValue} = JSON.parse(data);
+            console.log("received",key,newValue);
             if (keys.indexOf(key)>=0){
                 if (newValue===null) {
                     localStorage.removeItem(key)
