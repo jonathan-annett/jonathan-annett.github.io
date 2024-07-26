@@ -25,7 +25,7 @@ if (wss_link_url) {
     simplePeerLink(wss_link_url).then((function(socket){
         socket.onmessage = (data) => {
             const {key,oldValue,newValue} = JSON.parse(data);
-            if (keys.indexOf(ev.key)>=0){
+            if (keys.indexOf(key)>=0){
                 if (newValue===null) {
                     localStorage.removeItem(key)
                 } else {
@@ -37,9 +37,12 @@ if (wss_link_url) {
         window.onstorage=function(ev){
             const {key,oldValue,newValue} = ev;
 
-            if (keys.indexOf(ev.key)>=0){
+            if (keys.indexOf(key)>=0){
+                console.log("sending",key,newValue);
                 socket.send(JSON.stringify({key,oldValue,newValue}));
+            } else {
+                console.log('ignoring',{key,oldValue,newValue});
             }
-        }
+        };
     }));
 }
