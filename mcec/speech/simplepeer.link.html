@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Test Connect</title>
+    <link rel="icon" href="data:,">
+    <style>
+        body, html {
+            margin: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #clock {
+            opacity: 0;           
+            width: 80vh;
+            height: 80vh;
+            position: relative;
+            animation: fadeIn 0.5s forwards, none;
+        }
+      
+     
+
+        #digits {
+            width: 60vh;
+            height: auto;
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: Consolas;
+            color: blue;
+            font-size: 10vh;
+            text-align: center;
+        }
+      
+        body.start #digits {
+           top: 50%;            
+        }
+      
+        #enteredDigits{
+           width: 60vh;
+            height: auto;
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: Consolas;
+            color: gray;
+            font-size: 10vh;
+            text-align: center;
+      }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+      
+         
+
+       @keyframes leadInAnimation {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(var(--lead-in-degrees)); }
+        }
+
+        @keyframes syncAnimation {
+            from { transform: rotate(var(--lead-in-degrees)); }
+            to { transform: rotate(calc(var(--lead-in-degrees) + 360deg)); }
+        }
+      
+        /* Example of changing color to red */
+        .red {
+            filter: invert(17%) sepia(92%) saturate(7488%) hue-rotate(358deg) brightness(99%) contrast(102%);
+        }
+
+        /* Example of changing color to green */
+        .green {
+            filter: invert(52%) sepia(93%) saturate(1918%) hue-rotate(96deg) brightness(101%) contrast(105%);
+        }
+      
+      
+      #output,
+      #txt {        
+        display : none;
+      }
+      
+      
+      body.connected #output,
+      body.connected #txt {
+          display : block;
+      }
+      body.connected #digits,
+      body.connected #enteredDigits,      
+      body.connected #clock  {
+          display : none;
+      }
+      
+      
+      
+       #log {
+        position: absolute;
+        left : 10px;
+        right : 10px;
+        font-size:2vh;
+        height: auto;
+        top: 10vh;
+      }
+      
+      
+       #output {
+        position: absolute;
+        left : 10px;
+        right : 10px;
+        font-size:2vh;
+        height: auto;
+        bottom: 10vh;
+      }
+      
+      #txt {
+        position: absolute;
+        left : 10px;
+        right : 10px;
+        font-size:2vh;
+        height: 10vh;
+        bottom:10px;
+      }
+      
+      body.qr #enteredDigits,
+      body.qr #digits,
+      body.qr #clock,
+      #qrcode {
+        display : none;
+      }
+      
+      body.qr #qrcode {
+        display : block;  
+        left : Calc(50vw - 150px);
+        top : Calc(50vh - 150px);
+        width : 300px;
+        height : 300px;
+      }
+      
+      
+    </style>
+</head>
+<body class="start">
+
+    <img id="clock"  src="clock.png">
+    <div id="digits"></div>
+    <div id="enteredDigits"></div>
+    <textarea id="txt"></textarea>
+    <pre id="output"></pre>
+    <pre id="log"></pre>
+      
+    <script src="hi-base32.js"></script>
+    <script src="simplepeer.min.js"></script>
+    <script src="simplepeer.link.js"></script>
+    <script src="qrcode.js"></script>
+  
+     <div id="qrcode"></div>
+   
+    <script src="auth.js"></script>
+
+    <script src="simplepeer.link.test.js" defer></script>
+</body>
+</html>
