@@ -21,7 +21,7 @@ const keys = [
     '--captions-color'    
 ];
 let bootstrap = false;
-if (wss_link_url) {
+if (false && wss_link_url) {
     simplePeerLink(wss_link_url).then((function(socket){
 
        
