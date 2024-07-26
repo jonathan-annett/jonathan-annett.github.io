@@ -164,7 +164,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             const customEvent = new CustomEvent('CustomSpeechEvent', {
                 detail: {
                     provider: 'google-spn',
-                    transcript: full_transcript.join('\n').substr(-1024);
+                    transcript: full_transcript.join('\n').substr(-1024)
                 }
             });
             document.dispatchEvent(customEvent);
