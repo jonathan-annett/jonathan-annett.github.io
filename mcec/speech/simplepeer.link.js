@@ -241,8 +241,8 @@ function simplePeerLink(wss_url) {
                         document.body.addEventListener('keydown',function(e){
 
                             if (e.key === 's' ) {
-                                localStorage.setItem('secret',secret);
-                                localStorage.setItem('peerSecret',secret);                                            
+                                localStorage.setItem('secret',socket.secret);
+                                localStorage.setItem('peerSecret',socket.peerSecret);                                            
                             } else {
                                 if (e.key === 'x') {
                                     localStorage.removeItem('secret');
