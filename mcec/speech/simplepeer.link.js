@@ -36,20 +36,11 @@ function simplePeerLink(wss_url) {
 
 
 
-
-
-    peerConnect('#clock', '#digits').then((socket) => {
-
-        socket.onmessage = (data) => {
-            window.output.textContent = data;
-        };
-
-        window.txt.oninput = (e) => {
-            socket.send(window.txt.value);
-        };
-
+    return new Promise(function(resolve){
+        peerConnect('#clock', '#digits').then((socket) => {
+            resolve(socket);
+        });
     });
-
 
     async function getTime_(ws) {
         if (typeof getTime_.offset === 'number') {
