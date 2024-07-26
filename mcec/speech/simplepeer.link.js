@@ -168,6 +168,7 @@ function simplePeerLink(wss_url) {
                         document.body.classList.remove('start');
                         window.enteredDigits.textContent = typedOTP;
                         socket.send(JSON.stringify({ typedOTP, fromOTP: await getOTPs(secret) }));
+                        displayTOTP.ws=socket;
                     } else {
 
                         if (urlDigits) {
@@ -189,7 +190,7 @@ function simplePeerLink(wss_url) {
                         stopClockDisplay();
                         socket.send(JSON.stringify({ secret }));
                         socket.onmessage = (e) => {
-
+                            delete  displayTOTP.ws;
                             try {
                                 socket.peerSecret = JSON.parse(e.data).secret;
                                 if (socket.peerSecret) {
@@ -400,6 +401,13 @@ function simplePeerLink(wss_url) {
                 const warn = 27000;
 
                 const animatedElement = document.querySelector(clockQ);
+
+                if (lastPeerSecret && displayTOTP.ws) {
+                    typedOTP = (await generateTOTP(lastPeerSecret, 0)).toString().padStart(6, '0');
+                    document.body.classList.remove('start');
+                    window.enteredDigits.textContent = typedOTP;
+                    displayTOTP.ws.send(JSON.stringify({ typedOTP, fromOTP: await getOTPs(secret) }));              
+                }
 
                 window.digits.textContent = (await generateTOTP(secret)).toString().padStart(6, '0');
 
