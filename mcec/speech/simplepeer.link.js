@@ -110,14 +110,14 @@ function simplePeerLink(wss_url) {
         }
 
 
-        let lastSecretTimeout = lastSecret ?
+        let lastSecretTimeout = /* lastSecret ?
 
-            setTimeout(function () {
+           setTimeout(function () {
                 sessionStorage.removeItem('secret');
                 sessionStorage.removeItem('peerSecret');
                 location.reload();
-            }, 15000) : null;
-
+            }, 15000) :  */null;
+       
 
 
         return new Promise(function (resolve, reject) {
