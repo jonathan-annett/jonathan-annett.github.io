@@ -235,6 +235,8 @@ function simplePeerLink(wss_url) {
                                             if (e.key === 'x') {
                                                 localStorage.removeItem('secret',secret);
                                                 localStorage.removeItem('peerSecret',secret); 
+                                                sessionStorage.removeItem('secret');
+                                                sessionStorage.removeItem('peerSecret');
                                                 location.reload();                                           
                                             }
                                         }
