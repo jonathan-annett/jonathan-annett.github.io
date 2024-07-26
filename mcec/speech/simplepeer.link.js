@@ -233,8 +233,8 @@ function simplePeerLink(wss_url) {
                                             localStorage.setItem('peerSecret',secret);                                            
                                         } else {
                                             if (e.key === 'x') {
-                                                localStorage.removeItem('secret',secret);
-                                                localStorage.removeItem('peerSecret',secret); 
+                                                localStorage.removeItem('secret');
+                                                localStorage.removeItem('peerSecret'); 
                                                 sessionStorage.removeItem('secret');
                                                 sessionStorage.removeItem('peerSecret');
                                                 location.reload();                                           
@@ -370,7 +370,14 @@ function simplePeerLink(wss_url) {
                             showqr(window.digits.textContent);
 
                         } else {
-                            document.body.className = ''
+                            document.body.className = '';
+                            if (e.key === "x") {
+                                localStorage.removeItem('secret');
+                                localStorage.removeItem('peerSecret'); 
+                                sessionStorage.removeItem('secret');
+                                sessionStorage.removeItem('peerSecret');
+                                location.reload(); 
+                            }      
                         }
                     }
 
