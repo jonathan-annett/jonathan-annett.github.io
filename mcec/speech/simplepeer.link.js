@@ -226,22 +226,7 @@ function simplePeerLink(wss_url) {
 
                                     startPeer(userSocket, initiator);
 
-                                    document.body.addEventListener('keydown',function(e){
-
-                                        if (e.key === 's' ) {
-                                            localStorage.setItem('secret',secret);
-                                            localStorage.setItem('peerSecret',secret);                                            
-                                        } else {
-                                            if (e.key === 'x') {
-                                                localStorage.removeItem('secret');
-                                                localStorage.removeItem('peerSecret'); 
-                                                sessionStorage.removeItem('secret');
-                                                sessionStorage.removeItem('peerSecret');
-                                                location.reload();                                           
-                                            }
-                                        }
-                                    });
-
+                                   
 
                                     resolve(userSocket);
 
@@ -253,6 +238,21 @@ function simplePeerLink(wss_url) {
 
 
                         };
+                        document.body.addEventListener('keydown',function(e){
+
+                            if (e.key === 's' ) {
+                                localStorage.setItem('secret',secret);
+                                localStorage.setItem('peerSecret',secret);                                            
+                            } else {
+                                if (e.key === 'x') {
+                                    localStorage.removeItem('secret');
+                                    localStorage.removeItem('peerSecret'); 
+                                    sessionStorage.removeItem('secret');
+                                    sessionStorage.removeItem('peerSecret');
+                                    location.reload();                                           
+                                }
+                            }
+                        });
 
 
 
