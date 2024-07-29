@@ -70,7 +70,7 @@
 
     <div class="info">&nbsp;</div>
     <script>
-      class SilenceDetector {
+      class SilenceDetector0 {
             constructor(threshold = 0.01, silenceDuration = 5000) {
                 this.threshold = threshold;
                 this.silenceDuration = silenceDuration;
@@ -135,6 +135,117 @@
             }
         }
 
+
+
+        class AudioMonitor {
+                constructor(asilenceDetector, eventTimeout = 5000) {
+                    this.silenceDetector = silenceDetector;
+                    this.eventTimeout = eventTimeout;
+                    this.lastSpeechEventTime = null;
+                    this.audioActive = false;
+                    
+                    // Listen for silence detection events
+                    window.addEventListener('silenceDetected', () => {
+                        this.audioActive = false;
+                    });
+
+                    window.addEventListener('audioResumed', () => {
+                        this.audioActive = true;
+                        this.checkForWarning();
+                    });
+
+                    // Listen for custom TTS events
+                    document.addEventListener('CustomSpeechEvent', (event) => {
+                        this.lastSpeechEventTime = Date.now();
+                        this.checkForWarning();
+                    });
+                }
+
+                checkForWarning() {
+                    if (this.audioActive && this.lastSpeechEventTime) {
+                        const currentTime = Date.now();
+                        if (currentTime - this.lastSpeechEventTime <= this.eventTimeout) {
+                            this.emitWarningEvent();
+                        }
+                    }
+                }
+
+                emitWarningEvent() {
+                    const warningEvent = new CustomEvent('WarningEvent', {
+                        detail: {
+                            message: 'Potential issue detected with the text-to-speech service.',
+                            timestamp: Date.now()
+                        }
+                    });
+                    document.dispatchEvent(warningEvent);
+                }
+            }
+
+            class SilenceDetector {
+                constructor(threshold = 0.01, silenceDuration = 5000) {
+                    this.threshold = threshold;
+                    this.silenceDuration = silenceDuration;
+                    this.silenceTimeout = null;
+                    this.isSilent = false;
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.init();
+                }
+
+                async init() {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        this.audioInput = this.audioContext.createMediaStreamSource(stream);
+                        this.analyser = this.audioContext.createAnalyser();
+                        this.analyser.fftSize = 256;
+                        this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+                        this.audioInput.connect(this.analyser);
+                        this.monitor();
+                    } catch (error) {
+                        console.error('Error accessing audio input:', error);
+                    }
+                }
+
+                monitor() {
+                    this.analyser.getByteFrequencyData(this.dataArray);
+                    let sum = 0;
+                    for (let i = 0; i < this.dataArray.length; i++) {
+                        sum += this.dataArray[i];
+                    }
+                    const average = sum / this.dataArray.length;
+
+                    if (average < this.threshold * 256) {
+                        if (!this.isSilent) {
+                            if (this.silenceTimeout === null) {
+                                this.silenceTimeout = setTimeout(() => {
+                                    this.isSilent = true;
+                                    this.emitEvent('silenceDetected', Date.now());
+                                }, this.silenceDuration);
+                            }
+                        }
+                    } else {
+                        if (this.isSilent) {
+                            this.isSilent = false;
+                            this.emitEvent('audioResumed', Date.now());
+                        }
+                        if (this.silenceTimeout !== null) {
+                            clearTimeout(this.silenceTimeout);
+                            this.silenceTimeout = null;
+                        }
+                    }
+
+                    requestAnimationFrame(() => this.monitor());
+                }
+
+                emitEvent(eventType, timestamp) {
+                    const event = new CustomEvent(eventType, { detail: { timestamp } });
+                    window.dispatchEvent(event);
+                }
+
+                setThreshold(value) {
+                    this.threshold = value;
+                }
+            }
+
         // Usage example
         const startButton = document.querySelector('#startBtn');
 
@@ -184,6 +295,13 @@
                 thresholdValue.textContent = newThreshold.toFixed(2);
             });
 
+
+
+            const audioMonitor = new AudioMonitor(silenceDetector, 5000);
+
+            document.addEventListener('WarningEvent', (event) => {
+                console.log('Warning:', event.detail.message, 'at', new Date(event.detail.timestamp));
+            });
         });
     </script>
 </body>
