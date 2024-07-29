@@ -17,6 +17,7 @@
             padding: 20px;
             border: 2px solid #ccc;
             border-radius: 10px;
+            width: 50px;
             display: none;
             background-color: #ffcccc;
             color: #a00;
@@ -24,11 +25,12 @@
         .audio-indicator {
             font-size: 2em;
             padding: 20px;
+            width: 50px;
             border: 2px solid #ccc;
             border-radius: 10px;
             display: none;
-            background-color: #ffcccc;
-            color: rgb(48, 170, 0);
+            background-color: rgb(48, 170, 0);
+            color: black;
         }
 
         body.silent .silence-indicator {
@@ -148,7 +150,11 @@
 
             
             window.addEventListener('audioActive', (event) => {
-                document.body.classList.toggle('audio');
+                if (event.detail.active) {
+                    document.body.classList.toggle('audio');
+                } else {
+                    document.body.classList.remove('audio');
+                }
             });
 
             thresholdSlider.addEventListener('input', (event) => {

@@ -40,6 +40,11 @@ class SilenceDetector {
                         this.isSilent = true;
                         this.emitEvent('silenceDetected', Date.now());
                     }, this.silenceDuration);
+                } else {
+                    if (timeNow-this.lastAudioNotified > this.renotifyTimeout) {
+                        this.lastAudioNotified = timeNow;
+                        this.emitEvent('audioActive', {timestamp:this.lastAudioNotified,active:false});
+                    }
                 }
             }
         } else {
@@ -51,7 +56,7 @@ class SilenceDetector {
                 const timeNow = Date.now();
                 if (timeNow-this.lastAudioNotified > this.renotifyTimeout) {
                     this.lastAudioNotified = timeNow;
-                    this.emitEvent('audioActive', this.lastAudioNotified);
+                    this.emitEvent('audioActive', {timestamp:this.lastAudioNotified,active:true});
                 }
             }
             if (this.silenceTimeout !== null) {
