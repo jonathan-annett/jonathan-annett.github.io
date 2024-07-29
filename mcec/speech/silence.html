@@ -8,10 +8,6 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             height: 100vh;
             background-color: #f0f0f0;
         }
@@ -51,7 +47,6 @@
         }
 
         .info {
-
             position : absolute;
             bottom : 10px;
             left: 10px;
@@ -69,6 +64,23 @@
 
 
        
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .iframeWrap  {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height :20vh;
+            overflow: hidden;
+        }
     </style>
 </head>
 
@@ -153,12 +165,12 @@
         });
 
 
+
     </script>
+<div class="iframeWrap">
+    <iframe allow="microphone" allowusermedia src="https://audiogeek.1mb.site/levels.html"> </iframe>
+</div>
 
-    <iframe srsc="https://audiogeek.1mb.site/levels.html">
-
-
-    </iframe>
 </body>
 
 </html>
