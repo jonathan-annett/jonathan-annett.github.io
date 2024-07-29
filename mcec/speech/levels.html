@@ -419,8 +419,6 @@ freqLabs.forEach(function(lab){
 var freqButton = document.getElementById('freqStyle');
 
 
-const bodyClass = document.body.classList;
-
 
 window.onresize = reportWindowSize;
 
@@ -599,14 +597,14 @@ function realTimeDisplayFunc(instance)  {
     const value = instance.getEnergy();
 
     if (value > (ceilValue * (scale = scaleRange.value / scaleRange.min)  )) {
-        if (!bodyClass.contains) {
-            bodyClass.add('overThreshold');
+        if (!document.body.classList.contains) {
+            document.body.classList.add('overThreshold');
             emitEvent("overThreshold",Date.now());
         }
        
     } else {
-        if (bodyClass.contains) {
-            bodyClass.remove('overThreshold');
+        if (document.body.classList.contains) {
+            document.body.classList.remove('overThreshold');
             emitEvent("underThreshold",Date.now());
         }
        
