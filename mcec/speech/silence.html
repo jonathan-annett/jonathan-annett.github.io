@@ -29,18 +29,31 @@
         .indicator.show {
             display: block;
         }
+
+        #startBtn {
+            position : absolute;
+            top : 10px;
+            left: 10px;
+        }
+
+        .info {
+
+            position : absolute;
+            bottom : 10px;
+            left: 10px;
+        }
     </style>
 </head>
 
 <body>
     <button id="startBtn">start</button>
-    
+
     <div id="silence-indicator" class="indicator">
         <p>SILENCE</p>
-        <p class="info"></p>
-
-       
+      
     </div>
+
+    <div class="info"></div>
     <script>
         class SilenceDetector {
             constructor(threshold = 0.01, silenceDuration = 5000) {
@@ -112,7 +125,7 @@
             const silenceDetector = new SilenceDetector(0.01, 5000);
 
             const silenceIndicator = document.getElementById('silence-indicator');
-            const silenceInfo = document.querySelector('#silence-indicator p.info');
+            const silenceInfo = document.querySelector('div.info');
 
             let updateTimeout;
 
@@ -123,12 +136,12 @@
                 silenceIndicator.classList.add('show');
                 if (updateTimeout) clearTimeout(updateTimeout);
 
-                updateTimeout = setTimeout(function dispSeconds() {
-                    const elapsedMsec = Date.now() - event.detail.timestamp;
+                updateTimeout = setTimeout(function dispSeconds(silentAt) {
+                    const elapsedMsec = Date.now() - silentAt;
                     const Seconds = (elapsedMsec / 1000).toFixed(1);
-                    silenceInfo.textContent = `${elapsed} seconds`;
-                    updateTimeout = setTimeout(dispSeconds, 100);
-                }, 100);
+                    silenceInfo.innerHTML = `silent for ${elapsed} seconds`;
+                    updateTimeout = setTimeout(dispSeconds, 100,silentAt);
+                }, 100, event.detail.timestamp);
             });
 
             window.addEventListener('audioResumed', (event) => {
