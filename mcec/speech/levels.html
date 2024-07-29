@@ -527,6 +527,7 @@ c2.addEventListener('mousemove',function(e){
     if(e.buttons === 1) {
         const rectangle = c2.getBoundingClientRect();
         ceilValue = ((c2.clientHeight)-(e.y - rectangle.top+4))/c2.clientHeight/scale;  
+        console.log({ceilValue});
         scaleChanged();
     }
  });
@@ -597,7 +598,7 @@ function realTimeDisplayFunc(instance)  {
     
     const value = instance.getEnergy();
 
-    if (value > ceilValue) {
+    if (value > (ceilValue * (scale = scaleRange.value / scaleRange.min)  )) {
         if (!bodyClass.contains) {
             bodyClass.add('overThreshold');
             emitEvent("overThreshold",Date.now());
