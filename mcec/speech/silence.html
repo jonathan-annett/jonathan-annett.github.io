@@ -53,7 +53,7 @@
       
     </div>
 
-    <div class="info"></div>
+    <div class="info">&nbsp;</div>
     <script>
         class SilenceDetector {
             constructor(threshold = 0.01, silenceDuration = 5000) {
@@ -138,7 +138,7 @@
 
                 updateTimeout = setTimeout(function dispSeconds(silentAt) {
                     const elapsedMsec = Date.now() - silentAt;
-                    const Seconds = (elapsedMsec / 1000).toFixed(1);
+                    const elapsed = (elapsedMsec / 1000).toFixed(1);
                     silenceInfo.innerHTML = `silent for ${elapsed} seconds`;
                     updateTimeout = setTimeout(dispSeconds, 100,silentAt);
                 }, 100, event.detail.timestamp);
@@ -150,6 +150,7 @@
                 if (updateTimeout) {
                     clearTimeout(updateTimeout);
                     updateTimeout = undefined;
+                    silenceInfo.innerHTML = `${silenceInfo.innerHTML}. audio resumed at ${new Date().toISOString()}`;
                 }
             });
 
