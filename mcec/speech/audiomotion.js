@@ -7,7 +7,7 @@
  * @license AGPL-3.0-or-later
  */
 
-const VERSION = '3.6.0';
+const VERSION = '3.6.0'; 
 
 // internal constants
 const TAU     = 2 * Math.PI,
