@@ -70,7 +70,7 @@
 
     <div class="info">&nbsp;</div>
     <script>
-        class SilenceDetector {
+      class SilenceDetector {
             constructor(threshold = 0.01, silenceDuration = 5000) {
                 this.threshold = threshold;
                 this.silenceDuration = silenceDuration;
@@ -128,6 +128,10 @@
             emitEvent(eventType, timestamp) {
                 const event = new CustomEvent(eventType, { detail: { timestamp } });
                 window.dispatchEvent(event);
+            }
+
+            setThreshold(value) {
+                this.threshold = value;
             }
         }
 
