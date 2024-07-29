@@ -72,13 +72,13 @@
     </style>
 </head>
 
-<body class="silent">
+<body class="">
     <button id="startBtn">start</button>
 
-    <div id="silence-indicator" class="indicator">
+    <div id="silence-indicator" class="silence-indicator">
         SILENCE
     </div>
-    <div id="silence-indicator" class="indicator">
+    <div id="audio-indicator" class="audio-indicator">
         AUDIO
     </div>
 
@@ -101,7 +101,6 @@
 
             const silenceDetector = new SilenceDetector(0.01, 5000);
 
-            const silenceIndicator = document.getElementById('silence-indicator');
             const thresholdSlider = document.getElementById('threshold-slider');
             const thresholdValue = document.getElementById('threshold-value');
             const silenceInfo = document.querySelector('div.info');
