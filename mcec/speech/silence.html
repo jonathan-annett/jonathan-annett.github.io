@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,10 +31,13 @@
         }
     </style>
 </head>
+
 <body>
     <div id="silence-indicator" class="indicator">
         <p>SILENCE</p>
         <p class="info"></p>
+
+        <button id="startBtn">start</button>
     </div>
     <script>
         class SilenceDetector {
@@ -98,34 +102,44 @@
         }
 
         // Usage example
-        const silenceDetector = new SilenceDetector(0.01, 5000);
+        const startButton = document.querySelector('#startBtn');
 
-        const silenceIndicator = document.getElementById('silence-indicator');
-        const silenceInfo = document.querySelector('#silence-indicator p.info');
+        startButton.addEventListener('click', function () {
+            startButton.disabled = true;
 
-        let updateTimeout;
+            const silenceDetector = new SilenceDetector(0.01, 5000);
 
-        window.addEventListener('silenceDetected', (event) => {
-            console.log('Silence detected at:', event.detail.timestamp);
-            silenceIndicator.classList.add('show');
-            if (updateTimeout) clearTimeout (updateTimeout);
+            const silenceIndicator = document.getElementById('silence-indicator');
+            const silenceInfo = document.querySelector('#silence-indicator p.info');
 
-            updateTimeout=setTimeout(function dispSeconds(){
-                const elapsedMsec = Date.now() - event.detail.timestamp; 
-                const Seconds = (elapsedMsec / 1000).toFixed(1);
-                silenceInfo.textContent = `${elapsed} seconds`;
-                updateTimeout=setTimeout(dispSeconds,100);
-            },100);
-        });
+            let updateTimeout;
 
-        window.addEventListener('audioResumed', (event) => {
-            console.log('Audio resumed at:', event.detail.timestamp);
-            silenceIndicator.classList.remove('show');
-            if (updateTimeout) {
-                clearTimeout (updateTimeout);
-                updateTimeout=undefined;
-            }
+
+
+            window.addEventListener('silenceDetected', (event) => {
+                console.log('Silence detected at:', event.detail.timestamp);
+                silenceIndicator.classList.add('show');
+                if (updateTimeout) clearTimeout(updateTimeout);
+
+                updateTimeout = setTimeout(function dispSeconds() {
+                    const elapsedMsec = Date.now() - event.detail.timestamp;
+                    const Seconds = (elapsedMsec / 1000).toFixed(1);
+                    silenceInfo.textContent = `${elapsed} seconds`;
+                    updateTimeout = setTimeout(dispSeconds, 100);
+                }, 100);
+            });
+
+            window.addEventListener('audioResumed', (event) => {
+                console.log('Audio resumed at:', event.detail.timestamp);
+                silenceIndicator.classList.remove('show');
+                if (updateTimeout) {
+                    clearTimeout(updateTimeout);
+                    updateTimeout = undefined;
+                }
+            });
+
         });
     </script>
 </body>
+
 </html>
