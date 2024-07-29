@@ -568,7 +568,7 @@ function showHistoryLine(seconds,over) {
 function emitEvent(eventType, timestamp) {
     const event = new CustomEvent(eventType, { detail: { timestamp } });
     window.dispatchEvent(event);
-    window.top.postMessage({EventType,timestamp});
+    window.top.postMessage({eventType,timestamp});
 }
 
 function realTimeDisplayFunc(instance)  {
