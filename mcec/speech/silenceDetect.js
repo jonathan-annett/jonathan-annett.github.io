@@ -49,7 +49,7 @@ class SilenceDetector {
                 this.emitEvent('audioResumed', this.lastAudioNotified);
             } else {
                 const timeNow = Date.now();
-                if (timeNow-this.lastAudioNotified > renotifyTimeout) {
+                if (timeNow-this.lastAudioNotified > this.renotifyTimeout) {
                     this.lastAudioNotified = timeNow;
                     this.emitEvent('audioActive', this.lastAudioNotified);
                 }
