@@ -597,13 +597,13 @@ function realTimeDisplayFunc(instance)  {
     const value = instance.getEnergy();
 
     if (value > (ceilValue * (scale = scaleRange.value / scaleRange.min)  )) {
-        if (!document.body.classList.contains('overThreshold') {
+        if (!document.body.classList.contains('overThreshold')) {
             document.body.classList.add('overThreshold');
             emitEvent("overThreshold",Date.now());
         }
        
     } else {
-        if (document.body.classList.contains('overThreshold') {
+        if (document.body.classList.contains('overThreshold')) {
             document.body.classList.remove('overThreshold');
             emitEvent("underThreshold",Date.now());
         }
