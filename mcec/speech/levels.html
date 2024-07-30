@@ -476,7 +476,7 @@ for (let i=0;i<smoothingBuffer.length;i++) {
 	smoothingBuffer[0]=0;
 }
 
-const silenceDetector = new SilenceDetector(Infinity, 5000,500,getAudioLevel);
+const silenceDetector = new SilenceDetector(ceilValue, 5000,500,getAudioLevel);
 const silenceInfo = document.querySelector('.silenceInfo');
 let updateTimeout;
 
@@ -528,7 +528,6 @@ function scaleChanged(e)  {
 
     const ct = ((rectangle.top + rectangle.height) - vv) -4 ;
 	lineCeil.style.top = `${ ct }px`;
-  silenceDetector.setThreshold(vv,1);
 	lineCeil.style.display = 'block';
 	if (e) {
 	    redrawLines = historyBuffer.length;
@@ -606,14 +605,14 @@ freqLabs[1].addEventListener('mousedown',function(e){
 c2.addEventListener('mousedown',function(e){
    const rectangle = c2.getBoundingClientRect();
    ceilValue = ((c2.clientHeight)-(e.y - rectangle.top+4))/c2.clientHeight/scale;  
-   //console.log({ceilValue});
+   silenceDetector.setThreshold(ceilValue,1);
    scaleChanged();
 });
 c2.addEventListener('mousemove',function(e){
     if(e.buttons === 1) {
         const rectangle = c2.getBoundingClientRect();
         ceilValue = ((c2.clientHeight)-(e.y - rectangle.top+4))/c2.clientHeight/scale;  
-        //console.log({ceilValue});
+        silenceDetector.setThreshold(ceilValue,1);
         scaleChanged();
     }
  });
@@ -689,7 +688,7 @@ function realTimeDisplayFunc(instance)  {
     const value = realTimeDisplayFunc.value =  instance.getEnergy();
     
 
-    if (value > (ceilValue * (scale = scaleRange.value / scaleRange.min)  )) {
+    if (value > ceilValue ) {
         if (!document.body.classList.contains('overThreshold')) {
             document.body.classList.add('overThreshold');
         }
@@ -868,7 +867,8 @@ function onCeilButtonClick (ev){
         localStorage.setItem('ceilValue',lineEl.info.max);
 		localStorage.setItem('scale',scale);
 		ceilValue = lineEl.info.max;
-		
+    silenceDetector.setThreshold(ceilValue,1);
+
 	}
 }
 
