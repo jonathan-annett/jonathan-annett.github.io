@@ -52,6 +52,11 @@ function readStyles() {
     load('captionsRight','--captions-right','px');
     load('captionsBottom','--captions-bottom','px');
 
+
+    window.addEventListener('message',function(e){
+        console.log(e);
+    });
+
     
     document.querySelector('#mute_captions').addEventListener('click', function() {
         if (lastSpeechEventTimeout) {

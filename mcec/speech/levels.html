@@ -7,7 +7,7 @@
  
   
 
-  <title>audiogeek levels monitor</title>
+  <title>audio monitor</title>
   
   
   
@@ -476,7 +476,7 @@ for (let i=0;i<smoothingBuffer.length;i++) {
 	smoothingBuffer[0]=0;
 }
 
-const silenceDetector = new SilenceDetector(ceilValue, 5000,500,getAudioLevel);
+const silenceDetector = new SilenceDetector(ceilValue, 5000,500,getAudioLevel,window===window.top?undefined:window.top);
 const silenceInfo = document.querySelector('.silenceInfo');
 let updateTimeout;
 
@@ -515,12 +515,13 @@ scaleChanged();
 scaleRange.addEventListener( 'input',scaleChanged);
 
 function scaleChanged(e)  {
-    scale = scaleRange.value / scaleRange.min;
-    scaleInfo.textContent = `1:${scale.toFixed(1).replace(/\.0$/,'')}`;
-    const rectangle = c2.getBoundingClientRect();
-    const vv = (rectangle.height * ceilValue * scale );
+  
+  scale = scaleRange.value / scaleRange.min;
+  scaleInfo.textContent = `1:${scale.toFixed(1).replace(/\.0$/,'')}`;
+  const rectangle = c2.getBoundingClientRect();
+  const vv = (rectangle.height * ceilValue * scale );
 
-    const ct = ((rectangle.top + rectangle.height) - vv) -4 ;
+  const ct = ((rectangle.top + rectangle.height) - vv) -4 ;
 	lineCeil.style.top = `${ ct }px`;
 	lineCeil.style.display = 'block';
 	if (e) {
@@ -690,8 +691,7 @@ function realTimeDisplayFunc(instance)  {
     } else {
         if (document.body.classList.contains('overThreshold')) {
             document.body.classList.remove('overThreshold');
-        }
-       
+        }       
     }
     
     smoothingBuffer.push(value);
@@ -858,10 +858,16 @@ function onCeilButtonClick (ev){
         lineCeil.style.top = `${ Number.parseInt(lineEl.style.top)-4 }px`;
         lineCeil.style.display = "block";
         
+  
+          
+      if (ev.shiftKey) {
+        localStorage.setItem('ceilValue',lineEl.info.min);
+      } else {
         localStorage.setItem('ceilValue',lineEl.info.max);
-		localStorage.setItem('scale',scale);
-		ceilValue = lineEl.info.max;
-    silenceDetector.setThreshold(ceilValue,1);
+      }
+		    localStorage.setItem('scale',scale);
+		    ceilValue = lineEl.info.max;
+        silenceDetector.setThreshold(ceilValue,1);
 
 	}
 }
@@ -933,8 +939,9 @@ document.onkeydown = function(evt) {
         if ((evt.code === "Enter") && started && (line5.style.display === "block")) {
             lineCeil.style.top = `${ Number.parseInt(line5.style.top)-4 }px`;
             lineCeil.style.display = "block";
-		}
+	   	}
     }
+
 };
 
 function stopStream( stream ) {
