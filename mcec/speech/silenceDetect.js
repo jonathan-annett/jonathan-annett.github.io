@@ -8,7 +8,6 @@ class SilenceDetector {
         this.silenceTimeout = null;
         this.isSilent = false;
         this.lastAudioNotified = Date.now();
-        this.renotifyTimeout = renotifyTimeout;
         if (typeof getEnergyFunction==='function') {
             this.getEnergy = getEnergyFunction;
             this.monitor();
@@ -53,12 +52,6 @@ class SilenceDetector {
                         this.isSilent = true;
                         this.emitEvent('silenceDetected', Date.now());
                     }, this.silenceDuration);
-                } else {
-                    const timeNow = Date.now();
-                    if (timeNow-this.lastAudioNotified > this.renotifyTimeout) {
-                        this.lastAudioNotified = timeNow;
-                        this.emitEvent('audioActive', {timestamp:this.lastAudioNotified,active:false});
-                    }
                 }
             }
         } else {
@@ -66,12 +59,6 @@ class SilenceDetector {
                 this.isSilent = false;
                 this.lastAudioNotified = Date.now()
                 this.emitEvent('audioResumed', this.lastAudioNotified);
-            } else {
-                const timeNow = Date.now();
-                if (timeNow-this.lastAudioNotified > this.renotifyTimeout) {
-                    this.lastAudioNotified = timeNow;
-                    this.emitEvent('audioActive', {timestamp:this.lastAudioNotified,active:true});
-                }
             }
             if (this.silenceTimeout !== null) {
                 clearTimeout(this.silenceTimeout);
