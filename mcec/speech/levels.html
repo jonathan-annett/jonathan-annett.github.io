@@ -684,12 +684,12 @@ function realTimeDisplayFunc(instance)  {
        
     // we are going to paint each bar gray, then overpaint the current max (hot zone) in red
     
-    const value = realTimeDisplayFunc.value =  instance.getEnergy();
-    
+    const value = instance.getEnergy();
+    realTimeDisplayFunc.value = value / (scale = scaleRange.value / scaleRange.min);
 
-    let silenceTimeout;
+ 
 
-    if (value > (ceilValue * (scale = scaleRange.value / scaleRange.min)  )) {
+    if (realTimeDisplayFunc.value > ceilValue ) {
         if (!document.body.classList.contains('overThreshold')) {
             document.body.classList.add('overThreshold');
         }
