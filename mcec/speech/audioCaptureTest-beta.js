@@ -62,10 +62,15 @@ function readStyles() {
     eventer(messageEvent,function(e) {
         var key = e.message ? "message" : "data";
         var data = e[key];
+
+        console.log({data});
         //run function//
     },false);
    })()
 
+   document.querySelector('#toggleLevels').addEventListener('click', function() {
+        document.body.classList.toggle('levels');
+   });
     
     document.querySelector('#mute_captions').addEventListener('click', function() {
         if (lastSpeechEventTimeout) {
