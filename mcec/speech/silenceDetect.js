@@ -48,9 +48,10 @@ class SilenceDetector {
         if (this.getEnergy () < this.threshold * this.thresholdWeight ) {
             if (!this.isSilent) {
                 if (this.silenceTimeout === null) {
+                    const silenceWasAt = Date.now();
                     this.silenceTimeout = setTimeout(() => {
                         this.isSilent = true;
-                        this.emitEvent('silenceDetected', Date.now());
+                        this.emitEvent('silenceDetected', silenceWasAt);
                     }, this.silenceDuration);
                 }
             }
