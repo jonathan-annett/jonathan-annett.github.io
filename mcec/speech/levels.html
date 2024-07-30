@@ -478,6 +478,7 @@ for (let i=0;i<smoothingBuffer.length;i++) {
 
 const silenceDetector = new SilenceDetector(Infinity, 5000,500,getAudioLevel);
 const silenceInfo = document.querySelector('.silenceInfo');
+let updateTimeout;
 
 window.addEventListener('silenceDetected', (event) => {
     console.log('Silence detected at:', event.detail.timestamp);
