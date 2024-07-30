@@ -211,9 +211,9 @@ body {
   cursor: pointer;
 }
 
-div.silence {
-  display:none;
-  z-index: 99999;
+div.silent {
+    display:none;
+    z-index: 99999;
     position: absolute;
     background-color: red;
     color: white;
@@ -242,7 +242,7 @@ div.overThreshold {
     position: absolute;
     color: silver;
     font-size: 10pt;
-    right: 160px;
+    right: 200px;
     top: 4px;
 }
 
@@ -252,7 +252,7 @@ body.overThreshold div.overThreshold {
 
 
 
-body.silence div.silence,
+body.silent div.silent,
 body.audio div.overThreshold {
     display:block;
 }
@@ -307,8 +307,8 @@ body.audio div.overThreshold {
 
 <div class="silenceInfo"></div>
 
-<div class="silence">
-    SILENCE
+<div class="silent">
+    SILENT
 </div>
 <div class="overThreshold">
   AUDIO
@@ -501,7 +501,7 @@ window.addEventListener('audioResumed', (event) => {
     if (updateTimeout) {
         clearTimeout(updateTimeout);
         updateTimeout = undefined;
-        silenceInfo.innerHTML = `${silenceInfo.innerHTML}. audio resumed at ${new Date().toISOString()}`;
+        silenceInfo.innerHTML = `${silenceInfo.innerHTML}. audio resumed at ${new Date().toLocaleTimeString()}`;
     }
 });
 
