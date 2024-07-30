@@ -1,6 +1,7 @@
 
 class SilenceDetector {
-    constructor(threshold = 0.01, silenceDuration = 5000, renotifyTimeout = 500, getEnergyFunction=null) {
+    constructor(threshold = 0.01, silenceDuration = 5000, renotifyTimeout = 500, getEnergyFunction=null,target) {
+        this.eventTarget = (target !== window && target) || null;
         this.threshold = threshold;
         this.thresholdWeight = 256;
         this.silenceDuration = silenceDuration;
@@ -81,9 +82,12 @@ class SilenceDetector {
         requestAnimationFrame(() => this.monitor());
     }
 
-    emitEvent(eventType, timestamp) {
-        const event = new CustomEvent(eventType, { detail: { timestamp } });
+    emitEvent(eventType, timestamp) {       
+        const event = new CustomEvent(eventType, { detail: { timestamp } });  
         window.dispatchEvent(event);
+        if (this.eventTarget) {
+            this.eventTarget.dispatchEvent(event);
+        }
     }
 
     setThreshold(value,weight) {

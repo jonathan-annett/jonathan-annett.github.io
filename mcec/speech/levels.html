@@ -212,12 +212,13 @@ body {
 }
 
 div.silence {
+  display:none;
   z-index: 99999;
     position: absolute;
     background-color: red;
     color: white;
     font-size: 13pt;
-    right: 150px;
+    right: 100px;
     top: 4px;
     padding: 5px;
 
@@ -227,16 +228,32 @@ div.overThreshold {
     display:none;
     z-index: 99999;
     position: absolute;
-    background-color: lime;
+    background-color: green;
     color: black;
     font-size: 13pt;
-    right: 109px;
+    right: 110px;
     top: 4px;
     padding: 5px;
 }
 
-body.silence div.silence,
+
+.silenceInfo  {
+    z-index: 99999;
+    position: absolute;
+    color: silver;
+    font-size: 10pt;
+    right: 160px;
+    top: 4px;
+}
+
 body.overThreshold div.overThreshold {
+  background-color: lime;
+}
+
+
+
+body.silence div.silence,
+body.audio div.overThreshold {
     display:block;
 }
 
@@ -287,6 +304,8 @@ body.overThreshold div.overThreshold {
   <input type="range" min="100" max="400" value="250" class="slider" id="scaleRange">
 </div>
 <label id="scaleInfo"></label>
+
+<div class="silenceInfo"></div>
 
 <div class="silence">
     SILENCE
@@ -458,6 +477,41 @@ for (let i=0;i<smoothingBuffer.length;i++) {
 }
 
 const silenceDetector = new SilenceDetector(Infinity, 5000,500,getAudioLevel);
+const silenceInfo = document.querySelector('.silenceInfo');
+
+window.addEventListener('silenceDetected', (event) => {
+    console.log('Silence detected at:', event.detail.timestamp);
+    document.body.classList.add('silent');
+    document.body.classList.remove('audio');
+    if (updateTimeout) clearTimeout(updateTimeout);
+
+    updateTimeout = setTimeout(function dispSeconds(silentAt) {
+        const elapsedMsec = Date.now() - silentAt;
+        const elapsed = (elapsedMsec / 1000).toFixed(1);
+        silenceInfo.innerHTML = `silent for ${elapsed} seconds`;
+        updateTimeout = setTimeout(dispSeconds, 100,silentAt);
+    }, 100, event.detail.timestamp);
+});
+
+window.addEventListener('audioResumed', (event) => {
+    console.log('Audio resumed at:', event.detail.timestamp);
+    document.body.classList.remove('silent');
+    document.body.classList.add('audio');
+    if (updateTimeout) {
+        clearTimeout(updateTimeout);
+        updateTimeout = undefined;
+        silenceInfo.innerHTML = `${silenceInfo.innerHTML}. audio resumed at ${new Date().toISOString()}`;
+    }
+});
+
+
+window.addEventListener('audioActive', (event) => {
+    if (event.detail.active) {
+        document.body.classList.toggle('audio');
+    } else {
+        document.body.classList.remove('audio');
+    }
+});
 
 scaleChanged();
 
