@@ -116,6 +116,26 @@
         outline: 10px dashed red;
         color : red;
     }
+
+    
+       
+    iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .iframeWrap  {
+            position: absolute;
+            top: 0;
+            left: 20vw;
+            right: 0;
+            height :261px;
+            overflow: hidden;
+        }
     
     </style>
     <script src="/mcec/gatekeeper.js"></script>
@@ -191,6 +211,9 @@
             Mute Captions
         </div>
 
+        <div class="iframeWrap">
+            <iframe allow="microphone" allowusermedia src="levels.html"> </iframe>
+        </div>
         
         <button id="startBtn">Start Audio Monitor</button>
         <div id="silence-indicator" class="indicator">SILENCE</div>
