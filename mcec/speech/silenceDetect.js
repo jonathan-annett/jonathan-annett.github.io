@@ -43,9 +43,9 @@ class SilenceDetector {
 
     monitor() {
  
-        const average = getEnergy ();
+     
 
-        if (average < this.threshold * this.thresholdWeight ) {
+        if (this.getEnergy () < this.threshold * this.thresholdWeight ) {
             if (!this.isSilent) {
                 if (this.silenceTimeout === null) {
                     this.silenceTimeout = setTimeout(() => {
