@@ -74,7 +74,7 @@ class SilenceDetector {
         const event = new CustomEvent(eventType, { detail: { timestamp } });  
         window.dispatchEvent(event);
         if (this.eventTarget && this.eventTarget.postMessage) {
-            this.eventTarget.postMessage({ event:eventType,detail: { timestamp }});
+            this.eventTarget.postMessage({ event:eventType,detail: { timestamp }},"*");
         }
 
         

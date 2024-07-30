@@ -515,7 +515,7 @@ scaleChanged();
 scaleRange.addEventListener( 'input',scaleChanged);
 
 function scaleChanged(e)  {
-  
+
   scale = scaleRange.value / scaleRange.min;
   scaleInfo.textContent = `1:${scale.toFixed(1).replace(/\.0$/,'')}`;
   const rectangle = c2.getBoundingClientRect();
@@ -650,7 +650,7 @@ function showHistoryLine(seconds,over) {
 function emitEvent(eventType, timestamp) {
     const event = new CustomEvent(eventType, { detail: { timestamp } });
     window.dispatchEvent(event);
-    window.top.postMessage({eventType,timestamp});
+    window.top.postMessage({eventType,timestamp},"*");
 }
 
 function getAudioLevel() {
@@ -855,14 +855,16 @@ setCeilButton2.addEventListener( 'change',onCeilButtonClick);
 function onCeilButtonClick (ev){
    const lineEl = ev.target.parentElement.dataset.seconds == '5' ? line5:line60;
    if (started && (lineEl.style.display === "block")) {
-        lineCeil.style.top = `${ Number.parseInt(lineEl.style.top)-4 }px`;
+
         lineCeil.style.display = "block";
         
   
           
       if (ev.shiftKey) {
-        localStorage.setItem('ceilValue',lineEl.info.min);
+        lineCeil.style.top = `${ Number.parseInt(lineEl.style.top)+ Number.parseInt(lineEl.style.height) -4 }px`;
+        localStorage.setItem('ceilValue',lineEl.info.average);
       } else {
+        lineCeil.style.top = `${ Number.parseInt(lineEl.style.top)-4 }px`;
         localStorage.setItem('ceilValue',lineEl.info.max);
       }
 		    localStorage.setItem('scale',scale);

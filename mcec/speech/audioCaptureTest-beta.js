@@ -53,9 +53,18 @@ function readStyles() {
     load('captionsBottom','--captions-bottom','px');
 
 
-    window.addEventListener('message',function(e){
-        console.log(e);
-    });
+   (function () {
+    var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+    var eventer = window[eventMethod];
+    var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+    
+    // Listen to message from child window
+    eventer(messageEvent,function(e) {
+        var key = e.message ? "message" : "data";
+        var data = e[key];
+        //run function//
+    },false);
+   })()
 
     
     document.querySelector('#mute_captions').addEventListener('click', function() {

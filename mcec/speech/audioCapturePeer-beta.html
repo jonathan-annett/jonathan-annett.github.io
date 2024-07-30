@@ -117,25 +117,44 @@
         color : red;
     }
 
-    
-       
     iframe {
+
+
+        position: absolute;
+    top: 0;
+    left: -1739px;
+     width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    }
+       
+
+        .iframeWrap  {
+            position: absolute;
+    top: 0px;
+     right: 4px;
+    height: 43px;
+    width: 190px;
+    overflow: hidden;
+        }
+
+        body.levels    iframe {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            width: 100vw;
+            width: 100%;
             height: 100vh;
         }
 
-        .iframeWrap  {
+
+body.levels  .iframeWrap  {
             position: absolute;
-            top: 0;
-            left: 20vw;
+            top: 50px;
+            left: 0;
             right: 0;
-            height :261px;
-            overflow: hidden;
-        }
+            height : 261px;
+}
     
     </style>
     <script src="/mcec/gatekeeper.js"></script>
@@ -215,9 +234,6 @@
             <iframe allow="microphone" allowusermedia src="levels.html"> </iframe>
         </div>
         
-        <button id="startBtn">Start Audio Monitor</button>
-        <div id="silence-indicator" class="indicator">SILENCE</div>
-        <div id="audio-indicator" class="indicator">AUDIO</div>
         <div id="Google_setup">
             <h2>Google Speech API</h2>
             <button id="restartGoogle">Restart</button>
