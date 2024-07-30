@@ -1,14 +1,21 @@
 
 class SilenceDetector {
-    constructor(threshold = 0.01, silenceDuration = 5000, renotifyTimeout = 500) {
+    constructor(threshold = 0.01, silenceDuration = 5000, renotifyTimeout = 500, getEnergyFunction=null) {
         this.threshold = threshold;
+        this.thresholdWeight = 256;
         this.silenceDuration = silenceDuration;
         this.silenceTimeout = null;
         this.isSilent = false;
         this.lastAudioNotified = Date.now();
         this.renotifyTimeout = renotifyTimeout;
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        this.init();
+        if (typeof getEnergyFunction==='function') {
+            this.getEnergy = getEnergyFunction;
+            this.monitor();
+        } else {
+            this.getEnergy = this._getEnergy;
+            this.init();
+        }
     }
 
     async init() {
@@ -25,15 +32,20 @@ class SilenceDetector {
         }
     }
 
-    monitor() {
+    _getEnergy () {
         this.analyser.getByteFrequencyData(this.dataArray);
         let sum = 0;
         for (let i = 0; i < this.dataArray.length; i++) {
             sum += this.dataArray[i];
         }
-        const average = sum / this.dataArray.length;
+        return sum / this.dataArray.length;        
+    }
 
-        if (average < this.threshold * 256) {
+    monitor() {
+ 
+        const average = getEnergy ();
+
+        if (average < this.threshold * this.thresholdWeight ) {
             if (!this.isSilent) {
                 if (this.silenceTimeout === null) {
                     this.silenceTimeout = setTimeout(() => {
@@ -74,7 +86,12 @@ class SilenceDetector {
         window.dispatchEvent(event);
     }
 
-    setThreshold(value) {
+    setThreshold(value,weight) {
         this.threshold = value;
+        this.thresholdWeight  = weight || 256;
+    }
+
+    setEnergyFunc(getEnergyFunction) {
+        this.getEnergy = getEnergyFunction;
     }
 }
