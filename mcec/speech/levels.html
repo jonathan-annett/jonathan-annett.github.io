@@ -635,10 +635,6 @@ function realTimeDisplayFunc(instance)  {
     let silenceTimeout;
 
     if (value > (ceilValue * (scale = scaleRange.value / scaleRange.min)  )) {
-        if (silenceTimeout) {
-          clearTimeout(silenceTimeout);
-        }
-        silenceTimeout = setTimeout(silenceTrigger,5000);
         if (!document.body.classList.contains('overThreshold')) {
             document.body.classList.add('overThreshold');
         }
