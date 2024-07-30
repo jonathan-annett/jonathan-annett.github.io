@@ -8,11 +8,11 @@ class SilenceDetector {
         this.isSilent = false;
         this.lastAudioNotified = Date.now();
         this.renotifyTimeout = renotifyTimeout;
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         if (typeof getEnergyFunction==='function') {
             this.getEnergy = getEnergyFunction;
             this.monitor();
         } else {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             this.getEnergy = this._getEnergy;
             this.init();
         }
