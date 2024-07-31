@@ -124,7 +124,7 @@
 
 
             window.addEventListener('silenceDetected', (event) => {
-                console.log('Silence detected at:', event.detail.timestamp);
+                console.log('Silence detected:', event.detail);
                 document.body.classList.add('silent');
                 document.body.classList.remove('audio');
                 if (updateTimeout) clearTimeout(updateTimeout);
@@ -138,7 +138,7 @@
             });
 
             window.addEventListener('audioResumed', (event) => {
-                console.log('Audio resumed at:', event.detail.timestamp);
+                console.log('Audio resumed:', event.detail);
                 document.body.classList.remove('silent');
                 document.body.classList.add('audio');
                 if (updateTimeout) {
@@ -150,6 +150,7 @@
 
             
             window.addEventListener('audioActive', (event) => {
+                console.log('Audio active:', event.detail);
                 if (event.detail.active) {
                     document.body.classList.toggle('audio');
                 } else {

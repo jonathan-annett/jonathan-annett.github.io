@@ -37,10 +37,10 @@ document.addEventListener('CustomSpeechEvent',function(e){
 });
 
 
-document.addEventListener( "DOMContentLoaded",readStyles);
+document.addEventListener( "DOMContentLoaded",pageReady);
 
 
-function readStyles() {
+function pageReady() {
     load('fonts','--font-family');
     load('fontSize','--font-size', 'px');
     load('pageColor','--color-main-background');
@@ -63,10 +63,10 @@ function readStyles() {
         var key = e.message ? "message" : "data";
         var data = e[key];
 
-        console.log({data});
+        console.log("on message",{data});
         //run function//
     },false);
-   })()
+   })();
 
    document.querySelector('#toggleLevels').addEventListener('click', function() {
         document.body.classList.toggle('levels');

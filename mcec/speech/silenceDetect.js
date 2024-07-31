@@ -7,6 +7,7 @@ class SilenceDetector {
         this.silenceDuration = silenceDuration;
         this.silenceTimeout = null;
         this.isSilent = false;
+        this.renotifyTimeout = renotifyTimeout;
         this.lastAudioNotified = Date.now();
         if (typeof getEnergyFunction==='function') {
             this.getEnergy = getEnergyFunction;
@@ -46,24 +47,39 @@ class SilenceDetector {
      
 
         if (this.getEnergy () < this.threshold * this.thresholdWeight ) {
+            // useful audio is not present
             if (!this.isSilent) {
                 if (this.silenceTimeout === null) {
                     const silenceWasAt = Date.now();
                     this.silenceTimeout = setTimeout(() => {
+                        const silenceDuration = Date.now() - silenceWasAt;
+                        const audioDuration = this.lastAudioSeenAt ? silenceWasAt- this.lastAudioSeenAt : null;
                         this.isSilent = true;
-                        this.emitEvent('silenceDetected', silenceWasAt);
+                        this.silenceWasAt = silenceWasAt;
+                        this.emitEvent('silenceDetected', {silenceWasAt,audioDuration,silenceDuration,lastAudioSeenAt:this.lastAudioSeenAt});
                     }, this.silenceDuration);
                 }
             }
         } else {
+            // useful audio is present
+            this.lastAudioSeenAt = Date.now();
             if (this.isSilent) {
+                // audio just resumed after a period of silence
                 this.isSilent = false;
-                this.lastAudioNotified = Date.now()
-                this.emitEvent('audioResumed', this.lastAudioNotified);
+                this.lastAudioNotified = lastAudioSeenAt;
+                this.audioResumedAt = this.lastAudioNotified;
+                this.previousSilenceDuration = this.silenceWasAt ?  this.audioResumedAt - this.silenceWasAt : null;
+                this.emitEvent('audioResumed', {audioResumedAt:this.audioResumedAt,previousSilenceDuration:this.previousSilenceDuration,silenceWasAt:this.silenceWasAt});
             }
             if (this.silenceTimeout !== null) {
                 clearTimeout(this.silenceTimeout);
                 this.silenceTimeout = null;
+            } else {
+                if ( (this.lastAudioSeenAt - this.lastAudioNotified) > this.renotifyTimeout ) {
+                    this.lastAudioNotified = this.lastAudioSeenAt;
+                    const audioDuration = this.audioResumedAt ? this.lastAudioSeenAt - this.audioResumedAt : null;
+                    this.emitEvent('audioActive', {audioResumedAt:this.audioResumedAt,audioDuration,previousSilenceDuration:this.previousSilenceDuration,silenceWasAt:this.silenceWasAt});
+                }
             }
         }
 
