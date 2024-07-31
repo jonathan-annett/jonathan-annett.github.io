@@ -41,6 +41,8 @@ document.addEventListener( "DOMContentLoaded",pageReady);
 
 
 function pageReady() {
+    const html = document.querySelector('html');
+
     load('fonts','--font-family');
     load('fontSize','--font-size', 'px');
     load('pageColor','--color-main-background');
@@ -69,7 +71,7 @@ function pageReady() {
    })();
 
    document.querySelector('#toggleLevels').addEventListener('click', function() {
-        document.body.classList.toggle('levels');
+        html.classList.toggle('levels');
    });
     
     document.querySelector('#mute_captions').addEventListener('click', function() {
