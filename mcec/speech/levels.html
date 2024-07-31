@@ -480,10 +480,17 @@ const silenceDetector = new SilenceDetector(ceilValue, 5000,500,getAudioLevel,wi
 const silenceInfo = document.querySelector('.silenceInfo');
 let updateTimeout;
 
+let classLists = [  document.body.classList ];
+if (window.top && window.top !== window) {
+  classLists.push(window.top.document.querySelector('html').classList);
+}
+
 window.addEventListener('silenceDetected', (event) => {
     console.log('Silence detected at:', event.detail);
-    document.body.classList.add('silent');
-    document.body.classList.remove('audio');
+    classLists.forEach(function(list){
+      list.add('silent');
+      list.remove('audio');
+    });
     if (updateTimeout) clearTimeout(updateTimeout);
 
     updateTimeout = setTimeout(function dispSeconds(lastAudioSeenAt) {
@@ -496,8 +503,10 @@ window.addEventListener('silenceDetected', (event) => {
 
 window.addEventListener('audioResumed', (event) => {
     console.log('Audio resumed at:', event.detail);
-    document.body.classList.remove('silent');
-    document.body.classList.add('audio');
+    classLists.forEach(function(list){
+      list.remove('silent');
+      list.add('audio');
+    });
     if (updateTimeout) {
         clearTimeout(updateTimeout);
         updateTimeout = undefined;
@@ -691,14 +700,20 @@ function realTimeDisplayFunc(instance)  {
     
 
     if (value > ceilValue ) {
-        if (!document.body.classList.contains('overThreshold')) {
-            document.body.classList.add('overThreshold');
+
+      classLists.forEach(function(list){
+        if (!list.contains('overThreshold')) {
+            list.add('overThreshold');
         }
+    });      
+      
        
     } else {
-        if (document.body.classList.contains('overThreshold')) {
-            document.body.classList.remove('overThreshold');
-        }       
+        classLists.forEach(function(list){
+          if (list.contains('overThreshold')) {
+              list.remove('overThreshold');
+          }
+        });       
     }
     
     smoothingBuffer.push(value);
