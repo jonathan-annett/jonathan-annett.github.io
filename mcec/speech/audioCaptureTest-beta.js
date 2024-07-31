@@ -2,6 +2,8 @@
 //jshint esversion : 8
 //jshint undef : true
 
+/* global setupPip*/
+
 let lastSpeechEventTimeout;
 const failoverMsec = 5000;
 
@@ -88,7 +90,7 @@ function pageReady() {
 	);
 
 	if (!togglePIPMode) {
-		setHtmlClass('nooverlay');
+		html.classList.add('nooverlay');
 	}
 
 
@@ -128,13 +130,13 @@ function pageReady() {
 
    function onAudioResumed({audioResumedAt,previousSilenceDuration,silenceWasAt}) {
 
-        if (previousSilenceDuration > 5 * 60 * 1000) {
-            // assume google speech has died as it was more than 5 minutes of silence.
-            console.log("google Watchdog: restarting engine - preceding silence was ", (previousSilenceDuration / (60*1000)).toFixed(1) , 'minutes' );
-            document.querySelector('google-speech-spn').restart();
-        }
+		if (previousSilenceDuration > 5 * 60 * 1000) {
+			// assume google speech has died as it was more than 5 minutes of silence.
+			console.log("google Watchdog: restarting engine - preceding silence was ", (previousSilenceDuration / (60*1000)).toFixed(1) , 'minutes' );
+			document.querySelector('google-speech-spn').restart();
+		}
 
-        // in any case. recheck in 5 seconds if the recognition is generating messages...
+		// in any case. recheck in 5 seconds if the recognition is generating messages...
 		if (checkGoogle.watchdog) {
 			console.log("google Watchdog: restarting timeout");
 			clearTimeout(checkGoogle.watchdog);
@@ -151,7 +153,7 @@ function pageReady() {
    });
 
    document.querySelector('# toggleOverlay').addEventListener('click', function() {
-	    togglePIPMode ();
+		togglePIPMode ();
 	});
 	
 	
