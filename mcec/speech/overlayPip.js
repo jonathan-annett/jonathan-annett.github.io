@@ -11,7 +11,7 @@ function setupPip(sourceId,targetId,width,height,font,fgQuery,htmlClass) {
     if (!target.requestPictureInPicture) return null;
     
     togglePictureInPicture.content = document.getElementById(sourceId);
-    const fgEl =  togglePictureInPicture.content;
+    const fgEl = fgQuery ? document.querySelector(fgQuery) : togglePictureInPicture.content;
     const topLineEl = toplineQry ? document.querySelector(toplineQry) : null;
     const bg = getInheritedBackgroundColor(fgEl);
     togglePictureInPicture.lastContent = "";
