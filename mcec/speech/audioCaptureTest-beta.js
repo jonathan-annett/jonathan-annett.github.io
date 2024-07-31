@@ -60,15 +60,53 @@ function pageReady() {
     var eventer = window[eventMethod];
     var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
     
+    const eventFuncs =  {audioActvive:onAudioActive,silenceDetected:onSilence,audioResumed:onAudioResumed};
     // Listen to message from child window
     eventer(messageEvent,function(e) {
         var key = e.message ? "message" : "data";
         var data = e[key];
 
-        console.log("on message",{data});
-        //run function//
+        const fn = eventFuncs [data.event];
+        if (fn) {
+            fn(data.detail);
+        } else {
+            console.log("on message",{data});
+        }
+
     },false);
    })();
+
+   function onSilence({silenceWasAt,audioDuration,silenceDuration,lastAudioSeenAt}) {
+        if (checkGoogle.watchdog) {
+            clearTimeout(checkGoogle.watchdog);
+            delete checkGoogle.watchdog;
+            console.log("google Watchdog: waiting for audio (currently in silence)");
+        }
+   }
+
+   function onAudioActive({audioResumedAt,audioDuration,previousSilenceDuration,silenceWasAt}) {
+    
+   }
+
+   function onAudioResumed({audioResumedAt,previousSilenceDuration,silenceWasAt}) {
+        if (checkGoogle.watchdog) {
+            console.log("google Watchdog: restarting timeout");
+            clearTimeout(checkGoogle.watchdog);
+        } else {
+            console.log("google Watchdog: starting timeout");
+        }
+        checkGoogle.watchdog = setTimeout(checkGoogle,5000);     
+
+   }
+
+   function checkGoogle () {
+        if (checkGoogle.watchdog) {
+            clearTimeout(checkGoogle.watchdog);
+            delete checkGoogle.watchdog;
+            console.log("google Watchdog: restarting gooogle speech");
+            document.querySelector('google-speech-spn').restart();
+        }
+    }
 
    document.querySelector('#toggleLevels').addEventListener('click', function() {
         html.classList.toggle('levels');
@@ -86,6 +124,12 @@ function pageReady() {
     });
 
     document.querySelector('google-speech-spn').onclick = function() {
+        if ( checkGoogle.watchdog ) {
+            // put the watchdog back in it's kennel
+            clearTimeout(checkGoogle.watchdog);
+            delete checkGoogle.watchdog;
+            console.log("google Watchdog: back in kennel");
+        }
         document.body.className = "google-spn";
         localStorage.setItem('captions',document.querySelector('google-speech-spn').transcript);
     };
