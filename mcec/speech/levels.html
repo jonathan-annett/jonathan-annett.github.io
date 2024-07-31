@@ -509,11 +509,6 @@ window.addEventListener('audioResumed', (event) => {
    
 window.addEventListener('audioActive', (event) => {
     console.log('Audio active:', event.detail);
-    if (event.detail.active) {
-        document.body.classList.toggle('audio');
-    } else {
-        document.body.classList.remove('audio');
-    }
 });
 
 scaleChanged();

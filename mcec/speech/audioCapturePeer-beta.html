@@ -180,61 +180,61 @@ html.levels  .iframeWrap  {
 <body class="google-spn" data-gatekeeperkeys="none" data-gatekeeper-redirect="/mcec/blank.html">
     <h1>Captioning Control Screen</h1>
     
-    <form id="styleForm">
-        <label for="fonts">Font Family:</label>
-        <select id="fonts" name="fonts" onchange="applyStyles()">
-            <option selected value="Consolas" style="font-family: 'Consolas';">Consolas</option>
-            <option value="Arial" style="font-family: Arial;">Arial</option>
-            <option value="Helvetica" style="font-family: Helvetica;">Helvetica</option>
-            <option value="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman</option>
-            <option value="Courier New" style="font-family: 'Courier New';">Courier New</option>
-            <option value="Verdana" style="font-family: Verdana;">Verdana</option>
-            <option value="Georgia" style="font-family: Georgia;">Georgia</option>
-            <option value="Palatino" style="font-family: Palatino;">Palatino</option>
-            <option value="Garamond" style="font-family: Garamond;">Garamond</option>
-            <option value="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS</option>
-            <option value="Trebuchet MS" style="font-family: 'Trebuchet MS';">Trebuchet MS</option>
-            <option value="Arial Black" style="font-family: 'Arial Black';">Arial Black</option>
-            <option value="Impact" style="font-family: Impact;">Impact</option>
-        </select>
-
-        <label for="captionsHeight">Height:</label>
-        <input type="number" id="captionsHeight" name="captionsHeight" min="30" max="400" value="238" onblur="applyStyles()" onchange="applyStyles()"> px
-    
-
-        <label for="captionsLeft">Left:</label>
-        <input type="number" id="captionsLeft" name="captionsLeft" min="0" max="100" value="1" onblur="applyStyles()" onchange="applyStyles()"> px
-    
-        <label for="captionsRight">Right:</label>
-        <input type="number" id="captionsRight" name="captionsRight" min="0" max="100" value="1" onblur="applyStyles()" onchange="applyStyles()"> px
-    
-        <label for="captionsBottom">Bottom:</label>
-        <input type="number" id="captionsBottom" name="captionsBottom" min="0" max="100" value="1" onblur="applyStyles()" onchange="applyStyles()"> px
-    
-
-
-        <label for="fontSize">Font size:</label>
-        <input type="number" id="fontSize" name="fontSize" min="8" max="72" value="38" onblur="applyStyles()" onchange="applyStyles()"> px
-    
-        <label for="pageColor">Page color:</label>
-        <input type="color" id="pageColor" name="pageColor" value="#000000" onchange="applyStyles()" oninput="applyStyles()">
-    
-
-        <label for="captionsColor">Captions color:</label>
-        <input type="color" id="captionsColor" name="captionsColor" value="#000000" onchange="applyStyles()" oninput="applyStyles()">
-    
-        <label for="textColor">Text color:</label>
-        <input type="color" id="textColor" name="textColor" value="#ffffff" onchange="applyStyles()" oninput="applyStyles()"> 
-    
-        
-    </form>
 
     <div class="gatekeeper">
         This page is in beta testing. 
     </div>
     
     <div class="gatekept">
-
+        <form id="styleForm">
+            <label for="fonts">Font Family:</label>
+            <select id="fonts" name="fonts" onchange="applyStyles()">
+                <option selected value="Consolas" style="font-family: 'Consolas';">Consolas</option>
+                <option value="Arial" style="font-family: Arial;">Arial</option>
+                <option value="Helvetica" style="font-family: Helvetica;">Helvetica</option>
+                <option value="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman</option>
+                <option value="Courier New" style="font-family: 'Courier New';">Courier New</option>
+                <option value="Verdana" style="font-family: Verdana;">Verdana</option>
+                <option value="Georgia" style="font-family: Georgia;">Georgia</option>
+                <option value="Palatino" style="font-family: Palatino;">Palatino</option>
+                <option value="Garamond" style="font-family: Garamond;">Garamond</option>
+                <option value="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS</option>
+                <option value="Trebuchet MS" style="font-family: 'Trebuchet MS';">Trebuchet MS</option>
+                <option value="Arial Black" style="font-family: 'Arial Black';">Arial Black</option>
+                <option value="Impact" style="font-family: Impact;">Impact</option>
+            </select>
+    
+            <label for="captionsHeight">Height:</label>
+            <input type="number" id="captionsHeight" name="captionsHeight" min="30" max="400" value="238" onblur="applyStyles()" onchange="applyStyles()"> px
+        
+    
+            <label for="captionsLeft">Left:</label>
+            <input type="number" id="captionsLeft" name="captionsLeft" min="0" max="100" value="1" onblur="applyStyles()" onchange="applyStyles()"> px
+        
+            <label for="captionsRight">Right:</label>
+            <input type="number" id="captionsRight" name="captionsRight" min="0" max="100" value="1" onblur="applyStyles()" onchange="applyStyles()"> px
+        
+            <label for="captionsBottom">Bottom:</label>
+            <input type="number" id="captionsBottom" name="captionsBottom" min="0" max="100" value="1" onblur="applyStyles()" onchange="applyStyles()"> px
+        
+    
+    
+            <label for="fontSize">Font size:</label>
+            <input type="number" id="fontSize" name="fontSize" min="8" max="72" value="38" onblur="applyStyles()" onchange="applyStyles()"> px
+        
+            <label for="pageColor">Page color:</label>
+            <input type="color" id="pageColor" name="pageColor" value="#000000" onchange="applyStyles()" oninput="applyStyles()">
+        
+    
+            <label for="captionsColor">Captions color:</label>
+            <input type="color" id="captionsColor" name="captionsColor" value="#000000" onchange="applyStyles()" oninput="applyStyles()">
+        
+            <label for="textColor">Text color:</label>
+            <input type="color" id="textColor" name="textColor" value="#ffffff" onchange="applyStyles()" oninput="applyStyles()"> 
+        
+            
+        </form>
+    
         <div id="mute_captions">
             Mute Captions
         </div>
