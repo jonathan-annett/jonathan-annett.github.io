@@ -59,8 +59,7 @@ function initatePPTLink(cb) {
         
         // Start observing the target node with the configured parameters
         observer.observe(targetNode, config);
-
-      
+        
          
     }
 
