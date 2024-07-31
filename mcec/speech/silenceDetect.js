@@ -9,7 +9,7 @@ class SilenceDetector {
 		this.thresholdWeight = 256;
 		this.silenceDuration = silenceDuration;
 		this.silenceTimeout = null;
-		this.isSilent = true;
+		this.isSilent = false;
 		this.renotifyTimeout = renotifyTimeout;
 		this.lastAudioNotified = Date.now();
 		this.first = true;
