@@ -46,9 +46,9 @@ class SilenceDetector {
 		return sum / this.dataArray.length;		
 	}
 
-	monitor() {
+	monitor(inTimeout) {
  
-	 
+	    if (!inTimeout)clearTimeout(this.repeatTimeout);
 
 		if (this.getEnergy () < this.threshold * this.thresholdWeight ) {
 			// useful audio is not present
@@ -98,6 +98,7 @@ class SilenceDetector {
 		}
 
 		requestAnimationFrame(() => this.monitor());
+        this.repeatTimeout = setTimeout(() => this.monitor(true),0);
 	}
 
 	emitEvent(eventType, detail) {	   
