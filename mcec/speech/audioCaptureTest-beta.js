@@ -76,6 +76,21 @@ function pageReady() {
 	load('captionsRight','--captions-right','px');
 	load('captionsBottom','--captions-bottom','px');
 
+	
+	const togglePIPMode = setupPip(
+		"captions",
+		"captions_overlay",
+		window.innerWidth  - (parseInt( localStorage.getItem('--captions-left') )+ parseInt( localStorage.getItem('--captions-right')))  ,
+		parseInt( localStorage.getItem('--captions-height') ),
+		localStorage.getItem('--font-family'),
+		false,
+		"overlay" 
+	);
+
+	if (!togglePIPMode) {
+		setHtmlClass('nooverlay');
+	}
+
 
    (function () {
 	var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
@@ -134,6 +149,11 @@ function pageReady() {
    document.querySelector('#toggleLevels').addEventListener('click', function() {
 		html.classList.toggle('levels');
    });
+
+   document.querySelector('# toggleOverlay').addEventListener('click', function() {
+	    togglePIPMode ();
+	});
+	
 	
 	document.querySelector('#mute_captions').addEventListener('click', function() {
 		if (lastSpeechEventTimeout) {
@@ -143,21 +163,22 @@ function pageReady() {
 		
 		document.body.className = "muted";
 		localStorage.setItem('captions','');
-	   
 	});
 
 	document.querySelector('google-speech-spn').onclick = function() {
 		document.body.className = "google-spn";
 		localStorage.setItem('captions',document.querySelector('google-speech-spn').transcript);
+		togglePIPMode.content = document.querySelector('google-speech-spn');
 	};
 
 	document.querySelector('ppt-captions').onclick = function() {
 		document.body.className = "powerpoint";
 		localStorage.setItem('captions',document.querySelector('ppt-captions').transcript);
+		togglePIPMode.content = document.querySelector('ppt-captions');
 	};
 
 	document.querySelector('#restartGoogle').onclick = function() {
-		document.querySelector('google-speech-spn').restart();
+		document.querySelector('google-speech-spn').restart();	
 	};  
 	
 
