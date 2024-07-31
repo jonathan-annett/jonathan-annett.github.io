@@ -70,7 +70,7 @@ function pageReady() {
     var eventer = window[eventMethod];
     var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
     
-    const eventFuncs =  {audioActvive:onAudioActive,silenceDetected:onSilence,audioResumed:onAudioResumed};
+    const eventFuncs =  {audioActive:onAudioActive,silenceDetected:onSilence,audioResumed:onAudioResumed};
     // Listen to message from child window
     eventer(messageEvent,function(e) {
         var key = e.message ? "message" : "data";
