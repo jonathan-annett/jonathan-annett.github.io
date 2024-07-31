@@ -90,11 +90,11 @@ class SilenceDetector {
 		requestAnimationFrame(() => this.monitor());
 	}
 
-	emitEvent(eventType, timestamp) {	   
-		const event = new CustomEvent(eventType, { detail: { timestamp } });  
+	emitEvent(eventType, detail) {	   
+		const event = new CustomEvent(eventType, { detail: detail });  
 		window.dispatchEvent(event);
 		if (this.eventTarget && this.eventTarget.postMessage) {
-			this.eventTarget.postMessage({ event:eventType,detail: { timestamp }},"*");
+			this.eventTarget.postMessage({ event:eventType, detail },"*");
 		}
 
 		
