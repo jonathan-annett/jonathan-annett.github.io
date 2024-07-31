@@ -54,9 +54,9 @@ class SilenceDetector {
 			// useful audio is not present
 			if (!this.isSilent) {
 				if (this.silenceTimeout === null) {
-					const silenceWasAt = Date.now();
+					const silenceWasAt = this.lastAudioSeenAt;
 					this.silenceTimeout = setTimeout(() => {
-						const silenceDuration = Date.now() - silenceWasAt;
+						const silenceDuration = Date.now() - this.lastAudioSeenAt;
 						const audioDuration = this.lastAudioSeenAt ? silenceWasAt- this.lastAudioSeenAt : null;
 						this.isSilent = true;
 						this.silenceWasAt = silenceWasAt;

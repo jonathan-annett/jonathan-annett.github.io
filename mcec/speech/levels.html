@@ -501,7 +501,11 @@ window.addEventListener('audioResumed', (event) => {
     if (updateTimeout) {
         clearTimeout(updateTimeout);
         updateTimeout = undefined;
-        silenceInfo.innerHTML = `${silenceInfo.innerHTML}. audio resumed at ${new Date().toLocaleTimeString()}`;
+        silenceInfo.innerHTML = `${silenceInfo.innerHTML}.<br>Audio resumed at ${
+        
+            new Date(event.detail.audioResumedAt ).toLocaleTimeString()
+        
+        }`;
     }
 });
 
