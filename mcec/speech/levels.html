@@ -617,6 +617,8 @@ c2.addEventListener('mousedown',function(e){
    const rectangle = c2.getBoundingClientRect();
    ceilValue = ((c2.clientHeight)-(e.y - rectangle.top+4))/c2.clientHeight/scale;  
    silenceDetector.setThreshold(ceilValue,1);
+   localStorage.setItem('ceilValue',lineEl.info.max);
+   
    scaleChanged();
 });
 c2.addEventListener('mousemove',function(e){
@@ -624,6 +626,7 @@ c2.addEventListener('mousemove',function(e){
         const rectangle = c2.getBoundingClientRect();
         ceilValue = ((c2.clientHeight)-(e.y - rectangle.top+4))/c2.clientHeight/scale;  
         silenceDetector.setThreshold(ceilValue,1);
+        localStorage.setItem('ceilValue',lineEl.info.max);
         scaleChanged();
     }
  });
