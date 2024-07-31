@@ -477,6 +477,7 @@ for (let i=0;i<smoothingBuffer.length;i++) {
 }
 
 const silenceDetector = new SilenceDetector(ceilValue, 5000,500,getAudioLevel,window===window.top?undefined:window.top);
+silenceDetector.setThreshold(ceilValue,1);
 const silenceInfo = document.querySelector('.silenceInfo');
 let updateTimeout;
 
