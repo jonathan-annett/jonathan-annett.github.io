@@ -52,12 +52,18 @@ class SilenceDetector {
 
 		if (this.getEnergy () < this.threshold * this.thresholdWeight ) {
 			// useful audio is not present
+
+            if (!this.lastAudioSeenAt){
+                this.lastAudioSeenAt = Date.now();
+            }
+
+
 			if (!this.isSilent) {
 				if (this.silenceTimeout === null) {
-					const silenceWasAt = this.lastAudioSeenAt;
+					const silenceWasAt =  Date.now() ;
 					this.silenceTimeout = setTimeout(() => {
 						const silenceDuration = Date.now() - this.lastAudioSeenAt;
-						const audioDuration = this.lastAudioSeenAt ? silenceWasAt- this.lastAudioSeenAt : null;
+						const audioDuration = this.lastAudioSeenAt && this.audioResumedAt ?  this.lastAudioSeenAt - this.audioResumedAt : null;
 						this.isSilent = true;
 						this.silenceWasAt = silenceWasAt;
 						this.emitEvent('silenceDetected', {silenceWasAt,audioDuration,silenceDuration,lastAudioSeenAt:this.lastAudioSeenAt});
@@ -67,6 +73,10 @@ class SilenceDetector {
 		} else {
 			// useful audio is present
 			this.lastAudioSeenAt = Date.now();
+            if (!this.audioResumedAt){
+                this.audioResumedAt = this.lastAudioSeenAt;
+            }
+
 			if (this.isSilent) {
 				// audio just resumed after a period of silence
 				this.isSilent = false;
