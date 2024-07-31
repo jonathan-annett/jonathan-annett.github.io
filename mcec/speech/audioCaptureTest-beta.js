@@ -13,6 +13,16 @@ document.addEventListener('CustomSpeechEvent',function(e){
         }
     }
 
+
+    if  (e.detail.provider === 'google-spn' && checkGoogle.watchdog) {
+        // put the watchdog back in it's kennel
+        clearTimeout(checkGoogle.watchdog);
+        delete checkGoogle.watchdog;
+        console.log("google Watchdog: back in kennel");
+    }
+
+
+
     if (e.detail.provider === document.body.className ) {
 
         if (lastSpeechEventTimeout) {
@@ -78,6 +88,7 @@ function pageReady() {
 
    function onSilence({silenceWasAt,audioDuration,silenceDuration,lastAudioSeenAt}) {
         if (checkGoogle.watchdog) {
+            // we don't want to try to restart the google speech api unless we have seen some audio...
             clearTimeout(checkGoogle.watchdog);
             delete checkGoogle.watchdog;
             console.log("google Watchdog: waiting for audio (currently in silence)");
@@ -95,6 +106,7 @@ function pageReady() {
         } else {
             console.log("google Watchdog: starting timeout");
         }
+        // audio has begun after at least 5 seconds of silence - in 5 seconds see if there are any messages from google speech 
         checkGoogle.watchdog = setTimeout(checkGoogle,5000);     
 
    }
@@ -124,12 +136,6 @@ function pageReady() {
     });
 
     document.querySelector('google-speech-spn').onclick = function() {
-        if ( checkGoogle.watchdog ) {
-            // put the watchdog back in it's kennel
-            clearTimeout(checkGoogle.watchdog);
-            delete checkGoogle.watchdog;
-            console.log("google Watchdog: back in kennel");
-        }
         document.body.className = "google-spn";
         localStorage.setItem('captions',document.querySelector('google-speech-spn').transcript);
     };
