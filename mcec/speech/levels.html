@@ -705,7 +705,9 @@ function realTimeDisplayFunc(instance)  {
 
     if (!silenceDetector.initialChecked) {
       silenceDetector.initialChecked=true;
-      silenceDetector.initialCheck();
+      setTimeout(()=>{
+        silenceDetector.initialCheck();
+      },500);
     }
     
 
