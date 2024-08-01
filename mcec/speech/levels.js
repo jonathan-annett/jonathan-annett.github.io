@@ -2,6 +2,8 @@
  
 import AudioMotionAnalyzer from './audiomotion.js';
 
+window.Levels = Levels;
+
 async function Levels() {
 
 // constants purloined from https://www.engineeringtoolbox.com/octave-bands-frequency-limits-d_1602.html
