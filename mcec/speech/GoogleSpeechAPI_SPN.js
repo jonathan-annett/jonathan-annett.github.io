@@ -80,19 +80,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
     // Rendering logic
     render() {
         this.shadowRoot.querySelector('.wrapper').textContent = `${this.transcript} ${this.interimTranscript}`;
-
-        // Use html2canvas to capture the content of the wrapper
-        const wrapper = this.shadowRoot.querySelector('.wrapper');
-        html2canvas(wrapper, { backgroundColor: null }).then((canvas)=>{
-
-            let img = document.createElement('img');
-            img.onload=function(){
-                this.overlayImage = img;
-            };
-            img.src=canvas.toDataURL() ;
-        });
     }
- 
 
     init() {
         const recognition = new webkitSpeechRecognition();

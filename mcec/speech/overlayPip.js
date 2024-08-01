@@ -47,31 +47,81 @@ function setupPip(sourceQry,targetId,width,height,font,fgQuery,htmlClass) {
 
 	return togglePictureInPicture;
 	
- 
-   function refreshPIPFrame() {
-    /*if (togglePictureInPicture.lastContent === undefined) {
+	function refreshPIPFrame0() {
+		const str = togglePictureInPicture.content.transcript || togglePictureInPicture.content.textContent;
+		if ( togglePictureInPicture.lastContent!==str ) { 
+			ctx.fillStyle = getInheritedBackgroundColor(fgEl);
+			ctx.fillRect( 0, 0, source.width, source.height );
+			ctx.fillStyle = getInheritedColor(fgEl);
+			ctx.font = font;
+			ctx.fillText( str, source.width / 2, source.height / 2 );
+			togglePictureInPicture.lastContent = str;
+		}
+		waitNextFrame(  );
+	}
+	function refreshPIPFrame() {
+	
+    if ( togglePictureInPicture.lastContent === undefined) {
       ctx.fillStyle = getInheritedBackgroundColor(fgEl);
-      ctx.fillRect(0, 0, source.width, source.height);
+      ctx.fillRect( 0, 0, source.width, source.height );
       ctx.fillStyle = getInheritedColor(fgEl);
       ctx.font = font;
-      ctx.fillText(" overlay ", source.width / 2, source.height / 2);
+      ctx.fillText( " overlay ", source.width / 2, source.height / 2 );
       togglePictureInPicture.lastContent = "";
-      waitNextFrame();
+      waitNextFrame(  );
       return;
-    }*/
+    }
     const content = togglePictureInPicture.content;
     const str = content.transcript || content.textContent;
 
-    if (togglePictureInPicture.lastContent !== str && content.overlayImage) {
-      // Use html2canvas to render the content element to a canvas
-		const ctx = source.getContext('2d');
-		ctx.clearRect(0, 0, source.width, source.height);
-		ctx.drawImage(content.overlayImage, 0, 0, source.width, source.height);
-		togglePictureInPicture.lastContent = str;	  
+  	if ( togglePictureInPicture.lastContent!==str ) { 
+
+      const rect = content.getBoundingClientRect();
+       
+      html2canvas(content, {
+        backgroundColor: null
+      }).then(function(tempCanvas){
+         // Draw the content element onto the temporary canvas
+          tempCtx.drawImage(content, 0, 0, rect.width, rect.height);
+
+          // Now draw the temporary canvas onto the source canvas
+          const ctx = source.getContext('2d');
+          ctx.clearRect(0, 0, source.width, source.height);
+          ctx.drawImage(tempCanvas, 0, 0, source.width, source.height);
+          togglePictureInPicture.lastContent = str;
+          waitNextFrame(  );
+      });
+
+
+     
+		} else {
+      waitNextFrame(  );
+    }
+		
+	}
+
+  function refreshPIPFrame_chatgpt() {
+    const content = togglePictureInPicture.content;
+    if (content) {
+        const rect = content.getBoundingClientRect();
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rect.width;
+        tempCanvas.height = rect.height;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        // Draw the content element onto the temporary canvas
+        tempCtx.drawImage(content, 0, 0, rect.width, rect.height);
+
+        // Now draw the temporary canvas onto the source canvas
+        const ctx = source.getContext('2d');
+        ctx.clearRect(0, 0, source.width, source.height);
+        ctx.drawImage(tempCanvas, 0, 0, source.width, source.height);
+        
+        togglePictureInPicture.lastContent = content.innerHTML; // Assuming innerHTML changes reflect content changes
     }
     waitNextFrame();
-  }
- 
+}
+  
 	function togglePictureInPicture() {
 	  if (document.pictureInPictureElement) {
 		document.exitPictureInPicture();
