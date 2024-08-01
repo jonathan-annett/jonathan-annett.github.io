@@ -78,13 +78,13 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
     }
 
     // Rendering logic
-    async render() {
+    render() {
         this.shadowRoot.querySelector('.wrapper').textContent = `${this.transcript} ${this.interimTranscript}`;
 
         // Use html2canvas to capture the content of the wrapper
-        const wrapper = this.shadowRoot.querySelector('.wrapper');
-        const canvas = await html2canvas(wrapper, { backgroundColor: null });
-        this.overlayImage = canvas.toDataURL('image/png');
+      //  const wrapper = this.shadowRoot.querySelector('.wrapper');
+       // const canvas = await html2canvas(wrapper, { backgroundColor: null });
+       // this.overlayImage = canvas.toDataURL('image/png');
     }
 
     init() {

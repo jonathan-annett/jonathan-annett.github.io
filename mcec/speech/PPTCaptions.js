@@ -77,12 +77,12 @@ class PPTCaptions extends HTMLElement {
     }
 
     // Rendering logic
-    async render() {
+    render() {
         this.shadowRoot.querySelector('.wrapper').textContent = this.transcript;
         // Use html2canvas to capture the content of the wrapper
-        const wrapper = this.shadowRoot.querySelector('.wrapper');
-        const canvas = await html2canvas(wrapper, { backgroundColor: null });
-        this.overlayImage = canvas.toDataURL('image/png');
+        //const wrapper = this.shadowRoot.querySelector('.wrapper');
+        //const canvas = await html2canvas(wrapper, { backgroundColor: null });
+        //this.overlayImage = canvas.toDataURL('image/png');
     }
 
     init() {
