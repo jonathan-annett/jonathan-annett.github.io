@@ -142,7 +142,6 @@ class SilenceDetector {
 		this.firstCheck = true;
 		if (typeof getEnergyFunction === 'function') {
 			this.getEnergy = getEnergyFunction;
-			this.monitor();
 		} else {
 			const AC = window.AudioContext || window.webkitAudioContext;
 			this.audioContext = new AC();
