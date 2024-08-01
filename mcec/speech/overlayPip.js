@@ -60,8 +60,9 @@ function setupPip(sourceQry,targetId,width,height,font,fgQuery,htmlClass) {
 		waitNextFrame(  );
 	}
 	function refreshPIPFrame() {
-		const str = togglePictureInPicture.content.transcript || togglePictureInPicture.content.textContent;
-		if ( togglePictureInPicture.lastContent!==str ) { 
+	  const content = togglePictureInPicture.content;
+		const str = content.transcript || content.textContent;
+  	if ( togglePictureInPicture.lastContent!==str ) { 
       const rect = content.getBoundingClientRect();
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = rect.width;
