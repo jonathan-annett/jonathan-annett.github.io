@@ -89,7 +89,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
 
     // Rendering logic
     render() {
-        this.shadowRoot.querySelector('.wrapper').textContent = `${this.defferedTranscript || this.transcript}`;
+        this.shadowRoot.querySelector('.wrapper').textContent = `${this.interimTranscript}`;
     }
 
     init() {

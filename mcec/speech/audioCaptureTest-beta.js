@@ -11,7 +11,7 @@ const failoverMsec = 5000;
 document.addEventListener('CustomSpeechEvent',function(e){  
 	 // give priority to powerpoint if it is active 
 	 
-	 let transcript = e.detail.defferedTranscript || e.detail.transcript;
+	 let transcript = e.detail.interimTranscript || e.detail.transcript;
 
 	 
 	if  (!!lastSpeechEventTimeout && e.detail.provider === "powerpoint") {
