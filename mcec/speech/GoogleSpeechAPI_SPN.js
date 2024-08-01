@@ -82,9 +82,38 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
         this.shadowRoot.querySelector('.wrapper').textContent = `${this.transcript} ${this.interimTranscript}`;
 
         // Use html2canvas to capture the content of the wrapper
-      //  const wrapper = this.shadowRoot.querySelector('.wrapper');
-       // const canvas = await html2canvas(wrapper, { backgroundColor: null });
-       // this.overlayImage = canvas.toDataURL('image/png');
+        const wrapper = this.shadowRoot.querySelector('.wrapper');
+        html2canvas(wrapper, { backgroundColor: null }).then((canvas)=>{
+            if (this.overlayImage_URL) {
+                URL.revokeObjectURL(this.overlayImage_URL);
+                delete this.overlayImage_URL;
+            }
+            canvas.toBlob(function(blob){
+                delete this.overlayImage;
+                this.overlayImage_URL = URL.createObjectURL(blob);
+            });
+        });
+    }
+
+    getOverlayImage() {
+         return new Promise((resolve)=>{
+            if (this.overlayImage) {
+                return resolve(this.overlayImage);
+            }
+            if (this.overlayImage_URL) {                
+                    let img = document.createElement('img');
+                    img.onload=function(){
+                        this.overlayImage = img;
+                        URL.revokeObjectURL(this.overlayImage_URL);
+                        delete this.overlayImage_URL;
+                        resolve(img);
+                    };
+                    img.src=this.overlayImage_URL;
+            } else {
+                return resolve(null);
+            }
+        });
+      
     }
 
     init() {

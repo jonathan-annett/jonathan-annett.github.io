@@ -64,7 +64,8 @@ function setupPip(sourceQry,targetId,width,height,font,fgQuery,htmlClass) {
 
     if (togglePictureInPicture.lastContent !== str) {
       // Use html2canvas to render the content element to a canvas
-      const tempCanvas =  content.overlayImage ? content.overlayImage :  await html2canvas(content, {
+
+      const tempCanvas =  content.getOverlayImage ? await content.getOverlayImage() :  await html2canvas(content, {
         backgroundColor: null
       });
 
