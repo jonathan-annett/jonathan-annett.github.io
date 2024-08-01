@@ -872,8 +872,8 @@ const setCeilButton2 = document.getElementById('setCeil2');
 const micButtonLabel = document.getElementById('micLab');
 var lastStream;
 
-micButton.addEventListener( 'change',function(){
-  onMicToggle(micButton.checked);
+micButton.addEventListener( 'change',function(evt){
+  onMicToggle(micButton.checked,evt);
 });
 
 setCeilButton.addEventListener( 'change',onCeilButtonClick);
@@ -949,15 +949,17 @@ function getLiveAudioSource(cb){
     
 }
 
-function onMicToggle (micIsOn){
+function onMicToggle (micIsOn,evt){
   if (  micIsOn) {
+
+    let retain = evt;
       
     getLiveAudioSource(function(err,stream){
        if (err) {
            alert(err.message || err);
            return;
        } 
-       
+        
         // create stream using audioMotion audio context
         let micStream = audioMotion.audioCtx.createMediaStreamSource( stream );
         // connect microphone stream to analyzer
@@ -994,8 +996,15 @@ function onMicToggle (micIsOn){
 function docKeyDown(evt) {
     evt = evt || window.event;
     if (evt.code === "Space" ) {
-       micButton.checked = !micButton.checked;
-       onMicToggle(micButton.checked);
+       if (started) {
+          micButton.checked = !micButton.checked;
+          onMicToggle(micButton.checked,evt);
+        } else {
+          onMicToggle(false,evt);
+          micButton.checked = true;
+          onMicToggle(micButton.checked,evt);
+
+       }
     } else {
         
         if ((evt.code === "Enter") && started && (line5.style.display === "block")) {
