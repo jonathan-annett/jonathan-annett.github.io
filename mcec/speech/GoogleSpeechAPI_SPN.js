@@ -89,7 +89,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
 
     // Rendering logic
     render() {
-        this.shadowRoot.querySelector('.wrapper').textContent = `${this.defferedTranscript}`;
+        this.shadowRoot.querySelector('.wrapper').textContent = `${this.defferedTranscript || this.transcript}`;
     }
 
     init() {
@@ -177,7 +177,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
                     provider: 'google-spn',
                     transcript:  this.transcript,
                     interimTranscript: this.interimTranscript,
-                    defferedTranscript: this.defferedTranscript
+                    defferedTranscript: this.defferedTranscript || this.interimTranscript
                 }
             });
             document.dispatchEvent(customEvent);
