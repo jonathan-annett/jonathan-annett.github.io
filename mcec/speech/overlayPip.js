@@ -7,7 +7,7 @@
 global getInheritedBackgroundColor,getInheritedColor
 */
 
-function setupPip(sourceId,targetId,width,height,font,fgQuery,htmlClass) {
+function setupPip(sourceQry,targetId,width,height,font,fgQuery,htmlClass) {
 	const supported =  typeof document.exitPictureInPicture === 'function' || document.pictureInPictureElement===null;
 	if (!supported) return null;
 
@@ -17,7 +17,7 @@ function setupPip(sourceId,targetId,width,height,font,fgQuery,htmlClass) {
 	
 	const html = document.querySelector('html');
 	
-	togglePictureInPicture.content = document.getElementById(sourceId);
+	togglePictureInPicture.content = document.querySelector(sourceQry);
 	const fgEl =  togglePictureInPicture.content;
 	const bg = getInheritedBackgroundColor(fgEl);
 	togglePictureInPicture.lastContent = "";

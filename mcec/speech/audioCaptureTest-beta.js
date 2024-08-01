@@ -80,7 +80,7 @@ function pageReady() {
 
 	
 	const togglePIPMode = setupPip(
-		"captions",
+		"ppt-captions",
 		"captions_overlay",
 		window.innerWidth  - (parseInt( localStorage.getItem('--captions-left') )+ parseInt( localStorage.getItem('--captions-right')))  ,
 		parseInt( localStorage.getItem('--captions-height') ),
