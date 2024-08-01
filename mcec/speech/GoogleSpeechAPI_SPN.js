@@ -150,7 +150,6 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
                     final_transcript += event.results[i][0].transcript;
-                    this.transcript = final_transcript;
                 } else {
                     interim_transcript += event.results[i][0].transcript;
                     this.interimTranscript = interim_transcript;
@@ -161,10 +160,11 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             full_transcript[full_transcript.length - 1] = interim_transcript;
 
           
+            this.transcript = full_transcript.join('\n').substr(-1024)
             const customEvent = new CustomEvent('CustomSpeechEvent', {
                 detail: {
                     provider: 'google-spn',
-                    transcript: full_transcript.join('\n').substr(-1024)
+                    transcript:  this.transcript
                 }
             });
             document.dispatchEvent(customEvent);
