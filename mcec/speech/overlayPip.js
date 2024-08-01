@@ -59,7 +59,7 @@ function setupPip(sourceQry,targetId,width,height,font,fgQuery,htmlClass) {
 		}
 		waitNextFrame(  );
 	}
-	function refreshPIPFrame() {
+	function refreshPIPFrame1() {
 	
     if ( togglePictureInPicture.lastContent === undefined) {
       ctx.fillStyle = getInheritedBackgroundColor(fgEl);
@@ -99,6 +99,35 @@ function setupPip(sourceQry,targetId,width,height,font,fgQuery,htmlClass) {
     }
 		
 	}
+
+  async function refreshPIPFrame() {
+    if (togglePictureInPicture.lastContent === undefined) {
+      ctx.fillStyle = getInheritedBackgroundColor(fgEl);
+      ctx.fillRect(0, 0, source.width, source.height);
+      ctx.fillStyle = getInheritedColor(fgEl);
+      ctx.font = font;
+      ctx.fillText(" overlay ", source.width / 2, source.height / 2);
+      togglePictureInPicture.lastContent = "";
+      waitNextFrame();
+      return;
+    }
+    const content = togglePictureInPicture.content;
+    const str = content.transcript || content.textContent;
+
+    if (togglePictureInPicture.lastContent !== str) {
+      // Use html2canvas to render the content element to a canvas
+      const tempCanvas = await html2canvas(content, {
+        backgroundColor: null
+      });
+
+      // Now draw the temporary canvas onto the source canvas
+      const ctx = source.getContext('2d');
+      ctx.clearRect(0, 0, source.width, source.height);
+      ctx.drawImage(tempCanvas, 0, 0, source.width, source.height);
+      togglePictureInPicture.lastContent = str;
+    }
+    waitNextFrame();
+  }
 
   function refreshPIPFrame_chatgpt() {
     const content = togglePictureInPicture.content;
