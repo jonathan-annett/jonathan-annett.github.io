@@ -884,16 +884,16 @@ const audioSessionInfo = { audio: true,  video: false } ;
 document.onkeydown = docKeyDown;
 
 setTimeout(()=>{
+  micButton.checked = false;
   window.focus();
   micButton.focus();
-
-  // Using the function
+ 
   simulateKey(32);
   simulateKey(32, "press");
   simulateKey(32, "up");
 
 
-},500)();
+},500);
 
 
 function simulateKey (keyCode, type, modifiers) {
