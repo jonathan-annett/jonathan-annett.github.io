@@ -881,18 +881,6 @@ const audioSessionInfo = { audio: true,  video: false } ;
 
 document.addEventListener( 'keydown',onMicToggle);
 
-setTimeout(()=>{
-
-  micButton.checked = false;
-  window.focus();
-  micButton.focus();
- 
-  simulateKey(32);
-  simulateKey(32, "press");
-  simulateKey(32, "up");
-
-},500);
-
 
 function simulateKey (keyCode, type, modifiers) {
       var evtName = (typeof(type) === "string") ? "key" + type : "keydown";	
