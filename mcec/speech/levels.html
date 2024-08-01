@@ -857,16 +857,7 @@ function realTimeDisplayFunc(instance)  {
 } 
                  
 // instantiate analyzer
-const audioMotion = new AudioMotionAnalyzer(
-  null,
-  {
-    mode: 0,// discrete frequency mode
-    fftSize:8192,
-    useCanvas: false, // don't use the canvas
-  
-    onCanvasDraw: realTimeDisplayFunc
-  }
-);
+var  audioMotion; 
 
  
 
@@ -937,7 +928,20 @@ function onMicToggle (e){
        }
    }
   let micIsOn = micButton.checked; 
-  if (  micIsOn) {
+  if (  micIsOn ) {
+
+    if (!audioMotion) {
+      audioMotion = new AudioMotionAnalyzer(
+        null,
+        {
+          mode: 0,// discrete frequency mode
+          fftSize:8192,
+          useCanvas: false, // don't use the canvas
+        
+          onCanvasDraw: realTimeDisplayFunc
+        }
+      );
+    }
     
     getLiveAudioSource(function(err,stream){
        if (err) {
