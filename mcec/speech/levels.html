@@ -866,8 +866,8 @@ const audioMotion = new AudioMotionAnalyzer(
 
 
 // toggle microphone on/off
-const micButton = document.getElementById('mic');
-const setCeilButton = document.getElementById('setCeil');
+const micButton      = document.getElementById('mic');
+const setCeilButton  = document.getElementById('setCeil');
 const setCeilButton2 = document.getElementById('setCeil2');
 const micButtonLabel = document.getElementById('micLab');
 var lastStream;
@@ -884,6 +884,7 @@ const audioSessionInfo = { audio: true,  video: false } ;
 document.onkeydown = docKeyDown;
 
 setTimeout(()=>{
+
   micButton.checked = false;
   window.focus();
   micButton.focus();
@@ -891,7 +892,6 @@ setTimeout(()=>{
   simulateKey(32);
   simulateKey(32, "press");
   simulateKey(32, "up");
-
 
 },500);
 
@@ -974,6 +974,9 @@ function onMicToggle (micIsOn){
         started=true;
         
         micButtonLabel.classList.add('running');
+
+        // let some history build up before booting the silence detector
+        setTimeout(silenceDetector.initialCheck,100);
     });  
   }
   else {
