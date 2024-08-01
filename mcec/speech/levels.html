@@ -872,9 +872,7 @@ const setCeilButton2 = document.getElementById('setCeil2');
 const micButtonLabel = document.getElementById('micLab');
 var lastStream;
 
-micButton.addEventListener( 'change',function(evt){
-  onMicToggle(micButton.checked,evt);
-});
+micButton.addEventListener( 'change',onMicToggle);
 
 setCeilButton.addEventListener( 'change',onCeilButtonClick);
 setCeilButton2.addEventListener( 'change',onCeilButtonClick);
@@ -949,11 +947,13 @@ function getLiveAudioSource(cb){
     
 }
 
-function onMicToggle (micIsOn,evt){
+function onMicToggle (e){
+   if (this!==micButton) {
+       micButton.checked = !micButton.checked; 
+   }
+  let micIsOn = micButton.checked; 
   if (  micIsOn) {
-
-    let retain = evt;
-      
+    
     getLiveAudioSource(function(err,stream){
        if (err) {
            alert(err.message || err);
@@ -968,10 +968,7 @@ function onMicToggle (micIsOn,evt){
         audioMotion.volume = 0;
         lastStream = stream;
         running = true;
-        
-       // if (!started) {
-          //  openFullscreen();
-        //}
+      
         
         started=true;
         
@@ -996,15 +993,9 @@ function onMicToggle (micIsOn,evt){
 function docKeyDown(evt) {
     evt = evt || window.event;
     if (evt.code === "Space" ) {
-       if (started) {
-          micButton.checked = !micButton.checked;
-          onMicToggle(micButton.checked,evt);
-        } else {
-          onMicToggle(false,evt);
-          micButton.checked = true;
-          onMicToggle(micButton.checked,evt);
 
-       }
+          onMicToggle.call(this,evt);
+
     } else {
         
         if ((evt.code === "Enter") && started && (line5.style.display === "block")) {
