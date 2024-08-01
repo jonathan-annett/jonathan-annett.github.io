@@ -48,7 +48,7 @@ function setupPip(sourceQry,targetId,width,height,font,fgQuery,htmlClass) {
 	return togglePictureInPicture;
 	
  
-  async function refreshPIPFrame() {
+   function refreshPIPFrame() {
     /*if (togglePictureInPicture.lastContent === undefined) {
       ctx.fillStyle = getInheritedBackgroundColor(fgEl);
       ctx.fillRect(0, 0, source.width, source.height);
@@ -62,18 +62,12 @@ function setupPip(sourceQry,targetId,width,height,font,fgQuery,htmlClass) {
     const content = togglePictureInPicture.content;
     const str = content.transcript || content.textContent;
 
-    if (togglePictureInPicture.lastContent !== str) {
+    if (togglePictureInPicture.lastContent !== str && content.overlayImage) {
       // Use html2canvas to render the content element to a canvas
-
-      const tempCanvas =  content.getOverlayImage ? await content.getOverlayImage() :  await html2canvas(content, {
-        backgroundColor: null
-      });
-
-      // Now draw the temporary canvas onto the source canvas
-      const ctx = source.getContext('2d');
-      ctx.clearRect(0, 0, source.width, source.height);
-      ctx.drawImage(tempCanvas, 0, 0, source.width, source.height);
-      togglePictureInPicture.lastContent = str;
+		const ctx = source.getContext('2d');
+		ctx.clearRect(0, 0, source.width, source.height);
+		ctx.drawImage(content.overlayImage, 0, 0, source.width, source.height);
+		togglePictureInPicture.lastContent = str;	  
     }
     waitNextFrame();
   }
