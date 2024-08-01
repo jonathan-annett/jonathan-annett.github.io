@@ -702,6 +702,11 @@ function realTimeDisplayFunc(instance)  {
     // we are going to paint each bar gray, then overpaint the current max (hot zone) in red
     
     const value = realTimeDisplayFunc.value =  instance.getEnergy();
+
+    if (!silenceDetector.initialChecked) {
+      silenceDetector.initialChecked=true;
+      silenceDetector.initialCheck();
+    }
     
 
     if (value > ceilValue ) {
@@ -882,22 +887,7 @@ const audioSessionInfo = { audio: true,  video: false } ;
 document.addEventListener( 'keydown',onMicToggle);
 
 
-function simulateKey (keyCode, type, modifiers) {
-      var evtName = (typeof(type) === "string") ? "key" + type : "keydown";	
-      var modifier = (typeof(modifiers) === "object") ? modifier : {};
-
-      var event = document.createEvent("HTMLEvents");
-      event.initEvent(evtName, true, false);
-      event.keyCode = keyCode;
-      
-      for (var i in modifiers) {
-          event[i] = modifiers[i];
-      }
-
-      document.dispatchEvent(event);
-  }
-
-
+ 
 
 function onCeilButtonClick (ev){
    const lineEl = ev.target.parentElement.dataset.seconds == '5' ? line5:line60;
@@ -968,7 +958,7 @@ function onMicToggle (e){
         micButtonLabel.classList.add('running');
 
         // let some history build up before booting the silence detector
-        setTimeout(()=>silenceDetector.initialCheck(),100);
+       
     });  
   }
   else {
