@@ -1,3 +1,9 @@
+
+ 
+import AudioMotionAnalyzer from './audiomotion.js';
+
+async function Levels() {
+
 // constants purloined from https://www.engineeringtoolbox.com/octave-bands-frequency-limits-d_1602.html
 const barInfo = [/*
  low    center  high  */    
@@ -61,9 +67,6 @@ function freqStyle3 (info,ix){
   return  ks.replace(".","K");
 }
 
-
-// load module from Skypack CDN
-import AudioMotionAnalyzer from './audiomotion.js';
 
 
 var elem = document.documentElement;
@@ -665,3 +668,4 @@ function stopStream( stream ) {
 
 
  
+}

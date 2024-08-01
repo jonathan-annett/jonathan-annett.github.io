@@ -96,6 +96,8 @@ function pageReady() {
 	}
 */
 
+	Levels();
+
    (function () {
 	var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
 	var eventer = window[eventMethod];
