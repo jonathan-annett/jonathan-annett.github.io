@@ -496,8 +496,8 @@ window.addEventListener('silenceDetected', (event) => {
 
     updateTimeout = setTimeout(function dispSeconds(lastAudioSeenAt) {
         const elapsedMsec = Date.now() - lastAudioSeenAt;
-        const elapsed = (elapsedMsec / 1000).toFixed(1);
-        silenceInfo.innerHTML = `silent for ${elapsed} seconds`;
+        const elapsed = (elapsedMsec / 1000);
+        silenceInfo.innerHTML = isNaN(elapsed)  ? '' : `silent for ${elapsed.toFixed(1)} seconds`;
         updateTimeout = setTimeout(dispSeconds, 100,lastAudioSeenAt);
     }, 100, event.detail.lastAudioSeenAt);
 });
