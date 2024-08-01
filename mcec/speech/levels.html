@@ -879,7 +879,7 @@ setCeilButton2.addEventListener( 'change',onCeilButtonClick);
 
 const audioSessionInfo = { audio: true,  video: false } ;
 
-document.onkeydown = docKeyDown;
+document.addEventListener( 'keydown',onMicToggle);
 
 setTimeout(()=>{
 
@@ -948,8 +948,13 @@ function getLiveAudioSource(cb){
 }
 
 function onMicToggle (e){
-   if (this!==micButton) {
-       micButton.checked = !micButton.checked; 
+
+   if (e.type==="keydown") {
+       if (e.code==="Space") {
+          micButton.checked = !micButton.checked; 
+       } else {
+          return ;
+       }
    }
   let micIsOn = micButton.checked; 
   if (  micIsOn) {
@@ -990,21 +995,7 @@ function onMicToggle (e){
   }
 }
 
-function docKeyDown(evt) {
-    evt = evt || window.event;
-    if (evt.code === "Space" ) {
-
-          onMicToggle.call(this,evt);
-
-    } else {
-        
-        if ((evt.code === "Enter") && started && (line5.style.display === "block")) {
-            lineCeil.style.top = `${ Number.parseInt(line5.style.top)-4 }px`;
-            lineCeil.style.display = "block";
-	   	}
-    }
-
-};
+ 
 
 function stopStream( stream ) {
   stream.getTracks().forEach(function(track) {

@@ -178,10 +178,12 @@ class SilenceDetector {
 		const energy = this.getEnergy();
 		if (energy < this.threshold * this.thresholdWeight) {
 			this.isSilent = true;
-			this.emitEvent('silenceDetected', { silenceWasAt: Date.now(), audioDuration: 0, silenceDuration: 0 });
+			this.lastAudioSeenAt =  Date.now()
+			this.emitEvent('silenceDetected', { silenceWasAt: this.lastAudioSeenAt, audioDuration: 0, silenceDuration: 0 });
 		} else {
 			this.isSilent = false;
-			this.emitEvent('audioResumed', { audioResumedAt: Date.now(), previousSilenceDuration: 0, silenceWasAt: 0 });
+			this.lastAudioSeenAt =  Date.now();
+			this.emitEvent('audioResumed', { audioResumedAt:this.lastAudioSeenAt, previousSilenceDuration: 0, silenceWasAt: 0 });
 		}
 		this.monitor();
 	}
