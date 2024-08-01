@@ -993,7 +993,7 @@ function onMicToggle (micIsOn){
 
 function docKeyDown(evt) {
     evt = evt || window.event;
-    if (evt.code === "Space" && started) {
+    if (evt.code === "Space" ) {
        micButton.checked = !micButton.checked;
        onMicToggle(micButton.checked);
     } else {
