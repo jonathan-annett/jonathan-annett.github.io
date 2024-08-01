@@ -11,6 +11,8 @@ const failoverMsec = 5000;
 document.addEventListener('CustomSpeechEvent',function(e){  
 	 // give priority to powerpoint if it is active 
 	 
+	 let transcript = e.detail.defferedTranscript || e.detail.transcript;
+
 	 
 	if  (!!lastSpeechEventTimeout && e.detail.provider === "powerpoint") {
 		if (document.querySelector('#preferPowerpoint').checked && document.body.className !== 'muted') {
@@ -34,14 +36,14 @@ document.addEventListener('CustomSpeechEvent',function(e){
 			clearTimeout(lastSpeechEventTimeout);
 			lastSpeechEventTimeout = undefined;
 		}
-		localStorage.setItem('captions',e.detail.transcript || "");
+		localStorage.setItem('captions',transcript || "");
 
 	}  else {
 		if (!lastSpeechEventTimeout && document.body.className !== 'muted' ) {
 			lastSpeechEventTimeout = setTimeout(
 				function() {
 					document.body.className = e.detail.provider;
-					localStorage.setItem('captions',e.detail.transcript || "");
+					localStorage.setItem('captions',transcript || "");
 				},
 				failoverMsec
 			);

@@ -56,6 +56,16 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
         this.setAttribute('transcript', value);
     }
 
+    // Getter and Setter for transcript
+    get defferedTranscript() {
+        return this.getAttribute('deffered-transcript');
+    }
+
+    set defferedTranscript(value) {
+        this.setAttribute('deffered-transcript', value);
+    }
+
+
     // Getter and Setter for interimTranscript
     get interimTranscript() {
         return this.getAttribute('interim-transcript');
@@ -67,7 +77,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
 
     // Observed attributes
     static get observedAttributes() {
-        return ['transcript', 'interim-transcript'];
+        return ['transcript', 'interim-transcript','deffered-transcript'];
     }
 
     // Callback when observed attributes change
@@ -150,6 +160,8 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
                     final_transcript += event.results[i][0].transcript;
+                    this.defferedTranscript = final_transcript;
+            
                 } else {
                     interim_transcript += event.results[i][0].transcript;
                     this.interimTranscript = interim_transcript;
@@ -159,12 +171,13 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             full_transcript[full_transcript.length - 2] = final_transcript;
             full_transcript[full_transcript.length - 1] = interim_transcript;
 
-          
             this.transcript = full_transcript.join('\n').substr(-1024)
             const customEvent = new CustomEvent('CustomSpeechEvent', {
                 detail: {
                     provider: 'google-spn',
-                    transcript:  this.transcript
+                    transcript:  this.transcript,
+                    interimTranscript: this.interimTranscript,
+                    defferedTranscript: this.defferedTranscript
                 }
             });
             document.dispatchEvent(customEvent);
