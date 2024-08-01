@@ -152,7 +152,7 @@ function pageReady() {
 		html.classList.toggle('levels');
    });
 
-   document.querySelector('# toggleOverlay').addEventListener('click', function() {
+   document.querySelector('#toggleOverlay').addEventListener('click', function() {
 		togglePIPMode ();
 	});
 	
