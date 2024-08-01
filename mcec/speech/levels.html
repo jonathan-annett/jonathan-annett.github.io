@@ -879,6 +879,40 @@ micButton.addEventListener( 'change',function(){
 setCeilButton.addEventListener( 'change',onCeilButtonClick);
 setCeilButton2.addEventListener( 'change',onCeilButtonClick);
 
+const audioSessionInfo = { audio: true,  video: false } ;
+
+document.onkeydown = docKeyDown;
+
+setTimeout(()=>{
+  window.focus();
+  micButton.focus();
+
+  // Using the function
+  simulateKey(32);
+  simulateKey(32, "press");
+  simulateKey(32, "up");
+
+
+},500)();
+
+
+function simulateKey (keyCode, type, modifiers) {
+      var evtName = (typeof(type) === "string") ? "key" + type : "keydown";	
+      var modifier = (typeof(modifiers) === "object") ? modifier : {};
+
+      var event = document.createEvent("HTMLEvents");
+      event.initEvent(evtName, true, false);
+      event.keyCode = keyCode;
+      
+      for (var i in modifiers) {
+          event[i] = modifiers[i];
+      }
+
+      document.dispatchEvent(event);
+  }
+
+
+
 function onCeilButtonClick (ev){
    const lineEl = ev.target.parentElement.dataset.seconds == '5' ? line5:line60;
    if (started && (lineEl.style.display === "block")) {
@@ -901,8 +935,6 @@ function onCeilButtonClick (ev){
 	}
 }
 
-const audioSessionInfo = { audio: true,  video: false } ;
-
 function getLiveAudioSource(cb){
     
     if ( navigator.mediaDevices ) {
@@ -917,8 +949,7 @@ function getLiveAudioSource(cb){
     
 }
 
-
- function onMicToggle (micIsOn){
+function onMicToggle (micIsOn){
   if (  micIsOn) {
       
     getLiveAudioSource(function(err,stream){
@@ -957,8 +988,7 @@ function getLiveAudioSource(cb){
   }
 }
 
-
-document.onkeydown = function(evt) {
+function docKeyDown(evt) {
     evt = evt || window.event;
     if (evt.code === "Space" && started) {
        micButton.checked = !micButton.checked;
