@@ -77,21 +77,27 @@ function setupPip(sourceQry,targetId,width,height,font,fgQuery,htmlClass) {
   	if ( togglePictureInPicture.lastContent!==str ) { 
 
       const rect = content.getBoundingClientRect();
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = rect.width;
-      tempCanvas.height = rect.height;
-      const tempCtx = tempCanvas.getContext('2d');
+       
+      html2canvas(content, {
+        backgroundColor: null
+      }).then(function(tempCanvas){
+         // Draw the content element onto the temporary canvas
+          tempCtx.drawImage(content, 0, 0, rect.width, rect.height);
 
-      // Draw the content element onto the temporary canvas
-      tempCtx.drawImage(content, 0, 0, rect.width, rect.height);
+          // Now draw the temporary canvas onto the source canvas
+          const ctx = source.getContext('2d');
+          ctx.clearRect(0, 0, source.width, source.height);
+          ctx.drawImage(tempCanvas, 0, 0, source.width, source.height);
+          togglePictureInPicture.lastContent = str;
+          waitNextFrame(  );
+      });
 
-      // Now draw the temporary canvas onto the source canvas
-      const ctx = source.getContext('2d');
-      ctx.clearRect(0, 0, source.width, source.height);
-      ctx.drawImage(tempCanvas, 0, 0, source.width, source.height);
-			togglePictureInPicture.lastContent = str;
-		}
-		waitNextFrame(  );
+
+     
+		} else {
+      waitNextFrame(  );
+    }
+		
 	}
 
   function refreshPIPFrame_chatgpt() {
