@@ -60,19 +60,22 @@ function setupPip(sourceQry,targetId,width,height,font,fgQuery,htmlClass) {
 		waitNextFrame(  );
 	}
 	function refreshPIPFrame() {
-	  const content = togglePictureInPicture.content;
-		const str = content.transcript || content.textContent;
+	
+    if ( togglePictureInPicture.lastContent === undefined) {
+      ctx.fillStyle = getInheritedBackgroundColor(fgEl);
+      ctx.fillRect( 0, 0, source.width, source.height );
+      ctx.fillStyle = getInheritedColor(fgEl);
+      ctx.font = font;
+      ctx.fillText( " overlay ", source.width / 2, source.height / 2 );
+      togglePictureInPicture.lastContent = "";
+      waitNextFrame(  );
+      return;
+    }
+    const content = togglePictureInPicture.content;
+    const str = content.transcript || content.textContent;
+
   	if ( togglePictureInPicture.lastContent!==str ) { 
 
-      if ( togglePictureInPicture.lastContent === undefined) {
-        ctx.fillStyle = getInheritedBackgroundColor(fgEl);
-        ctx.fillRect( 0, 0, source.width, source.height );
-        ctx.fillStyle = getInheritedColor(fgEl);
-        ctx.font = font;
-        ctx.fillText( str, source.width / 2, source.height / 2 );
-        togglePictureInPicture.lastContent = str+" x ";
-        return;
-      }
       const rect = content.getBoundingClientRect();
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = rect.width;
