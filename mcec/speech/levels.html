@@ -976,7 +976,7 @@ function onMicToggle (micIsOn){
         micButtonLabel.classList.add('running');
 
         // let some history build up before booting the silence detector
-        setTimeout(silenceDetector.initialCheck,100);
+        setTimeout(()=>silenceDetector.initialCheck(),100);
     });  
   }
   else {
