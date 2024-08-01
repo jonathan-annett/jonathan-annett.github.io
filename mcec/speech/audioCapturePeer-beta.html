@@ -118,7 +118,7 @@
     }
 
 
-    #levelsDiv {
+    #levelsContainer {
 
 
 position: absolute;
@@ -139,7 +139,7 @@ width: 190px;
 overflow: hidden;
 }
 
-html.levels    #levelsDiv {
+html.levels    #levelsContainer {
     position: absolute;
     top: 0;
     left: 0;
@@ -175,6 +175,237 @@ height: 259px;
             display:none;
 
 }
+
+
+label {
+  background: #f0f0f0;
+  border: 1px solid #999;
+  border-radius: 5px;
+  cursor: pointer;
+  display: inline-block;
+  margin: 5px 0 0 10px;
+  padding: 5px 20px;
+}
+
+label input {
+  display: none;
+}
+
+body {
+    --VULevelHeight:214px;
+    background : black;
+}
+
+
+#VULevel {
+	
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  
+  display: block;
+  background-color:black;
+  color:#00ff00;
+  border:1px solid yellow;
+  position:absolute;
+  left:0;
+  width:100%;
+  top: 40px;
+  height:var(--VULevelHeight);
+}
+
+#GEQCanvas {
+    
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+      
+  display: block;
+  background-color:black;
+  color:#00ff00;
+  border:1px solid yellow;
+  position:absolute;
+  left:0;
+  width:100%;
+  top: calc(var(--VULevelHeight) + 120px);
+  height:calc(100vh - ( var(--VULevelHeight) + 190px ) );
+}
+
+#line5,#line60,#lineCeil {
+    position : absolute;
+    display : none;
+    top : 0px;
+    height : 4px;
+    left : 0;
+    right : 0;
+    background-color:red;
+    opacity : 0.25;
+    pointer-events: none;
+}
+#line60 {
+	background-color:lime;
+}
+#lineCeil {
+	background-color:blue;
+	opacity : 0.75;
+}
+
+
+
+#freqLab {
+  position:absolute;
+  left:-4px;
+  top:0;
+  cursor:handpoint;
+  height:14px;
+}
+
+#setCeilLab {
+  position:absolute;
+  left:74px;
+  top:0;
+  cursor:handpoint;
+  height:14px;
+}
+
+
+#setCeilLab2 {
+  position:absolute;
+  left:214px;
+  top:0;
+  cursor:handpoint;
+  height:14px;
+}
+
+#micLab {
+  position:absolute;
+  right:4px;
+  top:0;
+  cursor:handpoint;
+  height:14px;
+}
+
+
+
+#freqs, #freqs2 {
+  position:absolute;
+  line-height:25px;
+  color:white;
+  width : 60px;
+}
+
+.top-left {
+  transform-origin: top left;
+  left:0;
+  top:calc(var(--VULevelHeight) + 30px);
+  transform: rotate(-90deg) translateX(-100%);
+}
+
+.bottom-left {
+  transform-origin:bottom left;
+  left:0;
+  bottom:0;
+  transform: rotate(-90deg) translateY(100%);
+}
+
+
+.running {
+   
+  background : red ;
+}
+
+.slidecontainer {
+  width: 50vw;
+  position: absolute;
+  left : 360px;
+  top : 4px;
+}
+
+#scaleInfo {
+    position : absolute;
+    top : 0;
+    left : calc(50vw + 360px);
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 25px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+div.silent {
+    display:none;
+    z-index: 99999;
+    position: absolute;
+    background-color: red;
+    color: white;
+    font-size: 13pt;
+    right: 100px;
+    top: 4px;
+    padding: 5px;
+
+}
+
+div.overThreshold {
+    display:none;
+    z-index: 99999;
+    position: absolute;
+    background-color: green;
+    color: black;
+    font-size: 13pt;
+    right: 110px;
+    top: 4px;
+    padding: 5px;
+}
+
+
+.silenceInfo  {
+    z-index: 99999;
+    position: absolute;
+    color: silver;
+    font-size: 10pt;
+    right: 200px;
+    top: 4px;
+}
+
+body.overThreshold div.overThreshold {
+  background-color: lime;
+}
+
+
+
+body.silent div.silent,
+body.audio div.overThreshold {
+    display:block;
+}
+
     </style>
     <script src="/mcec/gatekeeper.js"></script>
     <script src="GoogleSpeechAPI_SPN.js"></script>
@@ -258,7 +489,61 @@ height: 259px;
 
         <div class="iframeWrap">
             <!--iframe  id="levelsDiv" allow="microphone" allowusermedia src="levels.html"> </iframe-->
-            <div id="levelsDiv"></div>
+            <div id="levelsContainer">
+
+
+                <div id="container">
+                </div>
+                
+                
+                <canvas id="VULevel"> </canvas>
+                <canvas id="GEQCanvas"> </canvas>
+                <div id="line5"></div>
+                <div id="line60"></div>
+                <div id="lineCeil"></div>
+                
+                
+                <!-- on/off button -->
+                <pre id="freqs" class="top-left"></pre>
+                
+                <pre id="freqs2" class="bottom-left"></pre>
+                
+                <label id="freqLab">
+                  <input type="checkbox" id="freqStyle">
+                  Style
+                </label>
+                
+                <label id="setCeilLab" data-seconds="5">
+                  <input type="checkbox" id="setCeil">
+                  Use 5 Sec Peak
+                </label>
+                
+                <label id="setCeilLab2" data-seconds="60">
+                  <input type="checkbox" id="setCeil2">
+                  Use 1 Min Peak
+                </label>
+                
+                <div class="slidecontainer">
+                  <input type="range" min="100" max="400" value="250" class="slider" id="scaleRange">
+                </div>
+                <label id="scaleInfo"></label>
+                
+                <div class="silenceInfo"></div>
+                
+                <div class="silent">
+                    SILENT
+                </div>
+                <div class="overThreshold">
+                  AUDIO
+                </div>
+                
+                <label id="micLab">
+                  <input type="checkbox" id="mic">
+                  ON/OFF
+                </label>
+                  
+                </div>
+                
         </div>
         
         <div id="Google_setup">
