@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VBAudioVBANReceptorSettings>
+<VBANReceptorDeviceConfiguration>
+	<OptionDev mme='1024' wdm='512' ks='512' asio='0' msA1='0' />
+	<OutputDev index='1' type='4' name="Headset Earphone (Poly Blackwire 3320 Series)" />
+	<InputDev index='1' type='4' name="Headset Microphone (Poly Blackwire 3320 Series)" />
+</VBANReceptorDeviceConfiguration>
+<VBANReceptorParameters>
+	<Strip index='1' mute='0' solo='0' mono='0' muc='0' busa='1' busb='1' dblevel='-2.50'  audibility_c='10.00' audibility_g='0.00'/>
+	<Strip index='1' EQGain1='-7.10' EQGain2='-2.80' EQGain3='7.00' />
+	<Bus index='1' mute='0' mono='0' BusMode='0' EQon='0' dblevel='0.00' />
+</VBANReceptorParameters>
+<VBANConfiguration>
+	<VBAN status='1' />
+	<VBANStreamIn index='1' name='Stream1' ip='10.1.18.226' port='6980' NQ='1' />
+	<VBANStreamOut index='1' name='MR101' ip='10.1.18.226' port='6980' SR='24000' ch='1' NQ='0' format='2' />
+	<VBANStreamOut index='2' name='Stream2' ip='' port='6980' SR='48000' ch='2' NQ='0' format='1' />
+</VBANConfiguration>
+</VBAudioVBANReceptorSettings>
