@@ -19,7 +19,8 @@ const masterKeys = [
     "fa3d4c767f239060c78487809b3be18f3fce4e5c2abfcabdd9ab8987c70c99b5", // spare3
     "d28ad1f40230e504c0081af29f931f025b4714a9bd081233cf1967313b5c7127",  // timer6 - pr
     "0d07f225962529295bcacb966b5c6f2eb270c3bfd0436891a68af079299ae379",  // timer6 -ta
-    "74e74a3632bfb9f9dd591349858efc4c8b24e4fde0aed413649f5a426260f6e1"   // lecsrv chrome
+    "74e74a3632bfb9f9dd591349858efc4c8b24e4fde0aed413649f5a426260f6e1",  // lecsrv chrome
+    "ee2591212e92dd78a8e35d70331da9f66f17b5f9e449013718cb8481e3cddb29"  // laptop home
 ];
 
 document.head.appendChild(gatekeeperStyle);
