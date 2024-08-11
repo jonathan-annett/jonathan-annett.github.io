@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VBAudioMatrixGridSettings>
+<VBAudioMatrixGridConfiguration>
+	<Point slotin='VBAN1' in='1' slotout='VAIO1' out='1' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN1' in='1' slotout='VAIO1' out='2' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN1' in='1' slotout='VBAN1' out='1' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN1' in='1' slotout='VBAN64' out='1' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN2' in='1' slotout='VAIO2' out='1' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN2' in='1' slotout='VAIO2' out='2' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN2' in='1' slotout='VBAN2' out='1' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN2' in='1' slotout='VBAN64' out='2' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN2' in='1' slotout='VASIO8' out='2' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN3' in='1' slotout='VAIO3' out='1' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN3' in='1' slotout='VAIO3' out='2' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN3' in='1' slotout='VBAN3' out='1' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN3' in='1' slotout='VBAN64' out='3' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN3' in='1' slotout='VASIO8' out='3' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN4' in='1' slotout='VAIO4' out='1' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN4' in='1' slotout='VAIO4' out='2' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN4' in='1' slotout='VBAN4' out='1' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN4' in='1' slotout='VBAN64' out='4' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN4' in='1' slotout='VASIO8' out='4' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN5' in='1' slotout='VBAN5' out='1' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN5' in='1' slotout='VBAN64' out='5' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN6' in='1' slotout='VBAN6' out='1' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN6' in='1' slotout='VBAN64' out='6' dBGain='0.00' mute='0' phase='0' />
+	<Point slotin='VBAN64' in='1' slotout='VASIO8' out='5' dBGain='0.00' mute='0' phase='0' />
+</VBAudioMatrixGridConfiguration>
+</VBAudioMatrixGridSettings>

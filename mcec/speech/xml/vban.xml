@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VBAudioMatrixVBANConfig>
+<VBANConfiguration>
+	<VBAN status="1" username="control" color="00AA9678" />
+	<VBANStreamIn index='1' status='1' name='Captions1' ip='192.168.110.1' port='6980' NQ='0' />
+	<VBANStreamIn index='2' status='1' name='Captions2' ip='192.168.110.1' port='6980' NQ='0' />
+	<VBANStreamIn index='3' status='1' name='Captions3' ip='192.168.110.1' port='6980' NQ='0' />
+	<VBANStreamIn index='4' status='1' name='Captions4' ip='192.168.110.1' port='6980' NQ='0' />
+	<VBANStreamIn index='5' status='0' name='Captions5' ip='192.168.110.1' port='6980' NQ='0' />
+	<VBANDataIn index='1' status='0' name='MIDI1' ip='' port='6980' />
+	<VBANCommandIn index='1' status='1' name='Command1' ip='' port='6980' />
+	<VBANStreamOut index='1' status='1' name='Captions1Monitor' ip='192.168.110.1' port='6980' SR='44100' ch='1' NQ='0' format='2' />
+	<VBANStreamOut index='2' status='1' name='Captions2Monitor' ip='192.168.110.1' port='6980' SR='44100' ch='1' NQ='0' format='2' />
+	<VBANStreamOut index='3' status='1' name='Captions3Monitor' ip='192.168.110.1' port='6980' SR='44100' ch='1' NQ='0' format='2' />
+	<VBANStreamOut index='4' status='1' name='Captions4Monitor' ip='192.168.110.1' port='6980' SR='44100' ch='1' NQ='0' format='2' />
+	<VBANStreamOut index='5' status='1' name='CaptionsMonitor' ip='192.168.110.1' port='6980' SR='44100' ch='8' NQ='0' format='2' />
+	<VBANDataOut index='1' source='0' status='0' name='MIDI1' ip='' port='6980' />
+</VBANConfiguration>
+</VBAudioMatrixVBANConfig>
