@@ -99,7 +99,6 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
         let recognizing = false;
         let ignore_onend = false;
         let final_transcript = '';
-        let first_time = true;
         const full_transcript = [final_transcript, ''];
 
         let start_timestamp;
@@ -109,7 +108,6 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
 
         const showInfo = (x) => {
             this.shadowRoot.querySelector('.wrapper').className = `wrapper ${x}`;
-            console.log(x);
         };
 
         recognition.onstart = () => {
@@ -117,15 +115,14 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             showInfo('info_speak_now');
         };
 
-        recognition.onaudiostart = () => {
-             console.log("recognition.onaudiostart");
-        };
-        recognition.onaudioend = () => {
-             console.log("recognition.onaudioend");
+        recognition.onaudioend = ()=> {
+            if ( this.reloadTimer) return;
+            this.reloadTimer = setTimeout(() =>{
+                 location.reload();
+            },60*1000);
         };
 
         recognition.onerror = (event) => {
-            console.log("recognition.onerror:",event.error);
             if (event.error === 'no-speech') {
                 showInfo('info_no_speech');
                 ignore_onend = true;
@@ -149,12 +146,9 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             if (ignore_onend) {
                 return;
             }
-            if (first_time) {
+            if (!final_transcript) {
                 showInfo('info_start');
-                first_time = false;
                 return;
-            } else {
-               showInfo('restarting');
             }
             this.restart();
         };
@@ -173,7 +167,6 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
                     final_transcript += event.results[i][0].transcript;
-                    first_time = false;
                     this.defferedTranscript = final_transcript;
             
                 } else {
@@ -186,6 +179,10 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             full_transcript[full_transcript.length - 1] = interim_transcript;
 
             this.transcript = full_transcript.join('\n').substr(-1024)
+          if ( this.reloadTimer){
+             clearTimeout(this.reloadTimer);
+             delete this.reloadTimer;
+          }
             const customEvent = new CustomEvent('CustomSpeechEvent', {
                 detail: {
                     provider: 'google-spn',
