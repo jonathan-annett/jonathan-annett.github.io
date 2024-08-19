@@ -107,6 +107,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
         recognition.interimResults = true;
 
         const showInfo = (x) => {
+             console.log (x);
             this.shadowRoot.querySelector('.wrapper').className = `wrapper ${x}`;
         };
 
@@ -123,6 +124,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
         };
 
         recognition.onerror = (event) => {
+             console.warn (event.error);
             if (event.error === 'no-speech') {
                 showInfo('info_no_speech');
                 ignore_onend = true;
@@ -148,7 +150,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             }
             if (!final_transcript) {
                 showInfo('info_start');
-                return;
+               // return;
             }
             this.restart();
         };
