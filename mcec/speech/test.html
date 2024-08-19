@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv='cache-control' content='no-cache'> 
+    <meta http-equiv='expires' content='0'> 
+    <meta http-equiv='pragma' content='no-cache'>
+    <title>Captioning Control Screen</title>
+
+    <style>
+
+    :root {
+        --font-family: Consolas;
+        --font-size: 38px;
+        --color-main-background: #000000;
+        --captions-color:  #000000;
+        --text-color: #ffffff;
+        --captions-height:238px;
+
+        --captions-left:1px;
+        --captions-right:1px;
+        --captions-bottom:1px;
+
+        --caption-disclaimer:"";
+        --caption-disclaimer-font-family: Arial;
+        --caption-disclaimer-font-size: 10px;
+        --caption-disclaimer-text-color: #dbc8c8;
+
+    }
+
+    h1 {
+        top: -15px;
+        position: relative;
+    }
+
+    #styleform {
+        position: relative;
+        top: -30px;
+    }
+
+    body {
+
+       background: #dbd7d7;
+       user-select: none;
+    }
+
+   
+    #Google_setup {
+        position :absolute;
+        left: 0;
+        right: 0;
+        bottom:70vh;
+        height:110px;
+        user-select: none;
+    }
+
+    #PPT_setup {
+        
+        position :absolute;
+        left: 0;
+        right: 0;
+        height : 140px;
+        bottom: calc( var(--captions-height) + 10px );
+        user-select: none;
+    }
+
+  
+    #mute_captions {
+        position: absolute;
+        left: Calc(var(--captions-left) + 260px);
+        right: var(--captions-right);
+        background-color: var(--captions-color);
+        color:#d69797;
+        top: 15vh;
+        height: 10vh;
+        user-select: none;
+        font-family: var(--font-family) !important;
+        font-size: var(--font-size) !important;
+         text-align: center;
+         vertical-align: bottom;
+         z-index:9999;
+    }
+
+    body.muted  #mute_captions, body.powerpoint ppt-captions, body.google-spn google-speech-spn {
+        outline: 10px dashed red;
+
+    }
+
+    body.muted  #mute_captions {
+            color: red;
+    }
+
+    google-speech-spn {
+       
+       position: absolute;
+       left:  var(--captions-left);
+       right: var(--captions-right);
+
+       top: 30vh;
+       user-select: none;
+    }
+
+    ppt-captions {
+     
+        position: absolute;
+        left:  var(--captions-left);
+        right: var(--captions-right);
+        bottom: 10px;
+        user-select: none;
+
+    }
+
+    body.muted  #mute_captions,
+    body.powerpoint ppt-captions,
+    body.google-spn google-speech-spn{
+        outline: 10px dashed red;
+        color : red;
+    }
+
+
+    #levelsContainer {
+
+
+        position: absolute;
+        top: 0;
+        left: -1653px;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999;
+}
+
+
+.iframeWrap  {
+    position: absolute;
+top: 5px;
+right: 2px;
+height: 43px;
+width: 190px;
+overflow: hidden;
+}
+
+html.levels    #levelsContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+
+html.levels  .iframeWrap  {
+position: absolute;
+top: 38px;
+left: 8px;
+right: 0;
+width: Calc(100vw - 30px);
+height: 259px;
+}
+
+
+#toggleLevels {
+             position: absolute;
+            position: absolute;
+            top: 4px;
+            right: 200px;
+
+}
+
+#toggleOverlay {
+             position: absolute;
+            position: absolute;
+            top: 4px;
+            right: 250px;
+            display:none;
+
+}
+
+
+label {
+  background: #f0f0f0;
+  border: 1px solid #999;
+  border-radius: 5px;
+  cursor: pointer;
+  display: inline-block;
+  margin: 5px 0 0 10px;
+  padding: 5px 20px;
+}
+
+label input {
+  display: none;
+}
+
+#levelsContainer {
+    --VULevelHeight:214px;
+    background : black;
+    font: 13px sans-serif;
+  margin: 0;
+
+  width: 100vw;
+  height: 100vh;
+  
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+
+}
+
+#VULevel {
+	
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  
+  display: block;
+  background-color:black;
+  color:#00ff00;
+  border:1px solid yellow;
+  position:absolute;
+  left:0;
+  width:100%;
+  top: 40px;
+  height:var(--VULevelHeight);
+}
+
+#GEQCanvas {
+    
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+      
+  display: block;
+  background-color:black;
+  color:#00ff00;
+  border:1px solid yellow;
+  position:absolute;
+  left:0;
+  width:100%;
+  top: calc(var(--VULevelHeight) + 120px);
+  height:calc(100vh - ( var(--VULevelHeight) + 190px ) );
+}
+
+#line5,#line60,#lineCeil {
+    position : absolute;
+    display : none;
+    top : 0px;
+    height : 4px;
+    left : 0;
+    right : 0;
+    background-color:red;
+    opacity : 0.25;
+    pointer-events: none;
+}
+#line60 {
+	background-color:lime;
+}
+#lineCeil {
+	background-color:blue;
+	opacity : 0.75;
+}
+
+
+
+#freqLab {
+  position:absolute;
+  left:-4px;
+  top:0;
+  cursor:handpoint;
+  height:14px;
+}
+
+#setCeilLab {
+  position:absolute;
+  left:74px;
+  top:0;
+  cursor:handpoint;
+  height:14px;
+}
+
+
+#setCeilLab2 {
+  position:absolute;
+  left:214px;
+  top:0;
+  cursor:handpoint;
+  height:14px;
+}
+
+#micLab {
+  position:absolute;
+  right:4px;
+  top:0;
+  cursor:handpoint;
+  height:14px;
+}
+
+
+
+#freqs, #freqs2 {
+  position:absolute;
+  line-height:25px;
+  color:white;
+  width : 60px;
+}
+
+.top-left {
+  transform-origin: top left;
+  left:0;
+  top:calc(var(--VULevelHeight) + 30px);
+  transform: rotate(-90deg) translateX(-100%);
+}
+
+.bottom-left {
+  transform-origin:bottom left;
+  left:0;
+  bottom:0;
+  transform: rotate(-90deg) translateY(100%);
+}
+
+
+.running {
+   
+  background : red ;
+}
+
+.slidecontainer {
+  width: 50vw;
+  position: absolute;
+  left : 360px;
+  top : 4px;
+}
+
+#scaleInfo {
+    position : absolute;
+    top : 0;
+    left : calc(50vw + 360px);
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 25px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+div.silent {
+    display:none;
+    z-index: 99999;
+    position: absolute;
+    background-color: red;
+    color: white;
+    font-size: 13pt;
+    right: 100px;
+    top: 4px;
+    padding: 5px;
+
+}
+
+div.overThreshold {
+    display:none;
+    z-index: 99999;
+    position: absolute;
+    background-color: green;
+    color: black;
+    font-size: 13pt;
+    right: 110px;
+    top: 4px;
+    padding: 5px;
+}
+
+
+.silenceInfo  {
+    z-index: 99999;
+    position: absolute;
+    color: silver;
+    font-size: 10pt;
+    right: 200px;
+    top: 4px;
+}
+
+body.overThreshold div.overThreshold {
+  background-color: lime;
+}
+
+
+
+body.silent div.silent,
+body.audio div.overThreshold {
+    display:block;
+}
+
+    </style>
+    <script src="/mcec/gatekeeper.js"></script>
+    <script src="GoogleSpeechAPI_SPN2.js"></script>
+    <script src="simple64Link.js"></script>
+    <script src="pptLink.js"></script>
+    <script src="PPTCaptions.js" defer></script>
+    <script src="audioMonitor.js"></script>
+    <script src="silenceDetect.js"></script>
+    <script src="elementColors.js"></script>
+    <script src="overlayPip.js"></script>
+    <script src="html2canvas.min.js"></script>
+    <script src="levels.js" type="module"></script>
+    <script src="audioCaptureTest-beta.js" defer></script>
+
+
+</head>
+<body class="google-spn" data-gatekeeperkeys="none" data-gatekeeper-redirect="/mcec/blank.html">
+    <h1>Captioning Control Screen</h1>
+    
+
+    <div class="gatekeeper">
+        This page is in beta testing. 
+    </div>
+    
+    <div class="gatekept">
+        <form id="styleForm">
+            <label for="fonts">Font Family:</label>
+            <select id="fonts" name="fonts" onchange="applyStyles()">
+                <option selected value="Consolas" style="font-family: 'Consolas';">Consolas</option>
+                <option value="Arial" style="font-family: Arial;">Arial</option>
+                <option value="Helvetica" style="font-family: Helvetica;">Helvetica</option>
+                <option value="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman</option>
+                <option value="Courier New" style="font-family: 'Courier New';">Courier New</option>
+                <option value="Verdana" style="font-family: Verdana;">Verdana</option>
+                <option value="Georgia" style="font-family: Georgia;">Georgia</option>
+                <option value="Palatino" style="font-family: Palatino;">Palatino</option>
+                <option value="Garamond" style="font-family: Garamond;">Garamond</option>
+                <option value="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS</option>
+                <option value="Trebuchet MS" style="font-family: 'Trebuchet MS';">Trebuchet MS</option>
+                <option value="Arial Black" style="font-family: 'Arial Black';">Arial Black</option>
+                <option value="Impact" style="font-family: Impact;">Impact</option>
+            </select>
+    
+            <label for="captionsHeight">Height:</label>
+            <input type="number" id="captionsHeight" name="captionsHeight" min="30" max="400" value="238" onblur="applyStyles()" onchange="applyStyles()"> px
+        
+    
+            <label for="captionsLeft">Left:</label>
+            <input type="number" id="captionsLeft" name="captionsLeft" min="0" max="100" value="1" onblur="applyStyles()" onchange="applyStyles()"> px
+        
+            <label for="captionsRight">Right:</label>
+            <input type="number" id="captionsRight" name="captionsRight" min="0" max="100" value="1" onblur="applyStyles()" onchange="applyStyles()"> px
+        
+            <label for="captionsBottom">Bottom:</label>
+            <input type="number" id="captionsBottom" name="captionsBottom" min="0" max="100" value="1" onblur="applyStyles()" onchange="applyStyles()"> px
+        
+    
+    
+            <label for="fontSize">Font size:</label>
+            <input type="number" id="fontSize" name="fontSize" min="8" max="72" value="38" onblur="applyStyles()" onchange="applyStyles()"> px
+        
+            <label for="pageColor">Page color:</label>
+            <input type="color" id="pageColor" name="pageColor" value="#000000" onchange="applyStyles()" oninput="applyStyles()">
+        
+    
+            <label for="captionsColor">Captions color:</label>
+            <input type="color" id="captionsColor" name="captionsColor" value="#000000" onchange="applyStyles()" oninput="applyStyles()">
+        
+            <label for="textColor">Text color:</label>
+            <input type="color" id="textColor" name="textColor" value="#ffffff" onchange="applyStyles()" oninput="applyStyles()"> 
+        
+            
+        </form>
+    
+        <div id="mute_captions">
+            Mute Captions
+        </div>
+
+        <button id="toggleLevels">Levels</button>
+        <button id="toggleOverlay">Overlay</button>
+
+        <div class="iframeWrap">
+            <!--iframe  id="levelsDiv" allow="microphone" allowusermedia src="levels.html"> </iframe-->
+            <div id="levelsContainer">
+
+
+                <div id="container">
+                </div>
+                
+                
+                <canvas id="VULevel"> </canvas>
+                <canvas id="GEQCanvas"> </canvas>
+                <div id="line5"></div>
+                <div id="line60"></div>
+                <div id="lineCeil"></div>
+                
+                
+                <!-- on/off button -->
+                <pre id="freqs" class="top-left"></pre>
+                
+                <pre id="freqs2" class="bottom-left"></pre>
+                
+                <label id="freqLab">
+                  <input type="checkbox" id="freqStyle">
+                  Style
+                </label>
+                
+                <label id="setCeilLab" data-seconds="5">
+                  <input type="checkbox" id="setCeil">
+                  Use 5 Sec Peak
+                </label>
+                
+                <label id="setCeilLab2" data-seconds="60">
+                  <input type="checkbox" id="setCeil2">
+                  Use 1 Min Peak
+                </label>
+                
+                <div class="slidecontainer">
+                  <input type="range" min="100" max="400" value="250" class="slider" id="scaleRange">
+                </div>
+                <label id="scaleInfo"></label>
+                
+                <div class="silenceInfo"></div>
+                
+                <div class="silent">
+                    SILENT
+                </div>
+                <div class="overThreshold">
+                  AUDIO
+                </div>
+                
+                <label id="micLab">
+                  <input type="checkbox" id="mic">
+                  ON/OFF
+                </label>
+                  
+                </div>
+                
+        </div>
+        
+        <div id="Google_setup">
+            <h2>Google Speech API</h2>
+            <button id="restartGoogle">Restart</button>
+        </div>
+        <div id="PPT_setup">
+            <h2>PowerPoint Speech API</h2>
+        <button disabled id="btnCopyPPTSignal">Copy PPT Request</button> <button disabled id="btnPastePPTSignal" >Paste PPT Reponse</button><br>
+        <input type="checkbox" value="checked" id="preferPowerpoint"> use PowerPoint whenever possible
+        </div>
+        <div style="display:none" >
+            <h2>Answer Signal</h2>
+            <textarea id="answerSignal" rows="10" cols="50"></textarea>
+            <button id="connect">Connect</button>
+        </div>
+
+        <google-speech-spn language="en-AU" transcript="" interim-transcript=""></google-speech-spn>
+
+        <video id="captions_overlay" muted autoplay></video>
+
+        <ppt-captions language="en-AU" transcript=""></ppt-captions>
+    
+    </div>
+     
+</body>
+</html>
