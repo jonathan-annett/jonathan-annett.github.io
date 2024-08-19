@@ -118,6 +118,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
         };
 
         recognition.onerror = (event) => {
+            console.log("recognition.onerror:",event.error);
             if (event.error === 'no-speech') {
                 showInfo('info_no_speech');
                 ignore_onend = true;
