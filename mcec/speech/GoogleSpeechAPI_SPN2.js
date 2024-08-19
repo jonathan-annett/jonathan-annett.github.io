@@ -117,17 +117,15 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
         };
 
         recognition.onaudioend = ()=> {
-            if ( this.reloadTimer) return;
-            this.reloadTimer = setTimeout(() =>{
-                 location.reload();
-            },60*1000);
+            console.log('on audio end');
         };
 
         recognition.onerror = (event) => {
              console.warn (event.error);
             if (event.error === 'no-speech') {
                 showInfo('info_no_speech');
-                ignore_onend = true;
+            
+                ignore_onend = false;
             }
             if (event.error === 'audio-capture') {
                 showInfo('info_no_microphone');
