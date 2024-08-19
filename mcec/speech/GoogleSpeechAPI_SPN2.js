@@ -99,6 +99,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
         let recognizing = false;
         let ignore_onend = false;
         let final_transcript = '';
+        let first_time = true;
         const full_transcript = [final_transcript, ''];
 
         let start_timestamp;
@@ -140,9 +141,12 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             if (ignore_onend) {
                 return;
             }
-            if (!final_transcript) {
+            if (first_time) {
                 showInfo('info_start');
+                first_time = false;
                 return;
+            } else {
+               showInfo('restarting');
             }
             this.restart();
         };
