@@ -108,6 +108,7 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
 
         const showInfo = (x) => {
             this.shadowRoot.querySelector('.wrapper').className = `wrapper ${x}`;
+            console.log(x);
         };
 
         recognition.onstart = () => {
