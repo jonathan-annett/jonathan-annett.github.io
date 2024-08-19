@@ -117,6 +117,13 @@ class GoogleSpeechAPI_SPN extends HTMLElement {
             showInfo('info_speak_now');
         };
 
+        recognition.onaudiostart = () => {
+             console.log("recognition.onaudiostart");
+        };
+        recognition.onaudioend = () => {
+             console.log("recognition.onaudioend");
+        };
+
         recognition.onerror = (event) => {
             console.log("recognition.onerror:",event.error);
             if (event.error === 'no-speech') {
