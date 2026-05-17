@@ -36,7 +36,7 @@ __export(extension_exports, {
 module.exports = __toCommonJS(extension_exports);
 
 // src/provider.ts
-var vscode = __toESM(require("vscode"));
+var vscode2 = __toESM(require("vscode"));
 
 // node_modules/fflate/esm/browser.js
 var u8 = Uint8Array;
@@ -853,6 +853,19 @@ function css() {
   `;
 }
 
+// src/log.ts
+var vscode = __toESM(require("vscode"));
+var channel;
+function initLog(context) {
+  channel = vscode.window.createOutputChannel("Pptx Info");
+  context.subscriptions.push(channel);
+}
+function log(message) {
+  const line = `[${(/* @__PURE__ */ new Date()).toISOString()}] ${message}`;
+  console.log("[pptx-viewer]", message);
+  channel?.appendLine(line);
+}
+
 // src/provider.ts
 var PptxDocument = class {
   constructor(uri) {
@@ -864,7 +877,7 @@ var PptxDocument = class {
 var PptxEditorProvider = class _PptxEditorProvider {
   static viewType = "pptxViewer.viewer";
   static register() {
-    return vscode.window.registerCustomEditorProvider(
+    return vscode2.window.registerCustomEditorProvider(
       _PptxEditorProvider.viewType,
       new _PptxEditorProvider(),
       {
@@ -878,20 +891,30 @@ var PptxEditorProvider = class _PptxEditorProvider {
   }
   async resolveCustomEditor(document, webviewPanel, _token) {
     webviewPanel.webview.options = { enableScripts: false };
+    const fileName = document.uri.path.split("/").pop() ?? "unknown.pptx";
+    log(`open: ${document.uri.toString()}`);
     try {
       const [bytes, stat] = await Promise.all([
-        vscode.workspace.fs.readFile(document.uri),
-        vscode.workspace.fs.stat(document.uri)
+        vscode2.workspace.fs.readFile(document.uri),
+        vscode2.workspace.fs.stat(document.uri)
       ]);
-      const fileName = document.uri.path.split("/").pop() ?? "unknown.pptx";
       const result = await parsePptx(bytes, {
         fileName,
         size: stat.size,
         mtime: stat.mtime
       });
+      const warnCount = [
+        result.flags.linkedMedia.ok,
+        result.flags.showType.ok,
+        result.flags.showMediaControls.ok
+      ].filter((ok) => !ok).length;
+      log(
+        `parsed: ${fileName} \u2014 ${result.size} bytes, ${result.slideCount} slides (${result.hiddenSlideCount} hidden), ${warnCount} warning(s)` + (result.parseError ? `, parseError: ${result.parseError}` : "")
+      );
       webviewPanel.webview.html = renderHtml(result);
     } catch (err2) {
       const message = err2 instanceof Error ? err2.message : String(err2);
+      log(`ERROR opening ${fileName}: ${message}`);
       webviewPanel.webview.html = renderError(document.uri.path, message);
     }
   }
@@ -899,8 +922,15 @@ var PptxEditorProvider = class _PptxEditorProvider {
 
 // src/extension.ts
 function activate(context) {
+  initLog(context);
+  log(`activate: pptx-viewer ${packageVersion(context)} loaded`);
   context.subscriptions.push(PptxEditorProvider.register());
+  log("activate: custom editor registered for *.pptx");
 }
 function deactivate() {
+  log("deactivate");
+}
+function packageVersion(context) {
+  return context.extension?.packageJSON?.version ?? "?";
 }
 //# sourceMappingURL=extension.js.map
