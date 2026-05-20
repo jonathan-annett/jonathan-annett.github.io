@@ -1,1 +1,97 @@
-.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Roster</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <meta name="color-scheme" content="dark">
+
+    <!-- PWA / iOS -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Roster">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+    <!-- Setup screen, shown if no config in localStorage -->
+    <section id="setup" hidden>
+        <h1>Roster</h1>
+        <p class="muted">First-time setup. These values stay on your device.</p>
+
+        <form id="setupForm">
+            <label>
+                <span class="label">Bin ID</span>
+                <input type="text" id="binIdInput" autocomplete="off" spellcheck="false"
+                       autocapitalize="off" required>
+            </label>
+            <label>
+                <span class="label">Passphrase</span>
+                <input type="password" id="passphraseInput" autocomplete="off"
+                       spellcheck="false" required>
+            </label>
+            <button type="submit">Save &amp; load</button>
+        </form>
+
+        <p id="setupError" class="error" hidden></p>
+    </section>
+
+    <!-- Main app, shown once config is in localStorage -->
+    <section id="app" hidden>
+        <header class="topbar">
+            <button class="iconbtn" id="refreshBtn" aria-label="Refresh">⟳</button>
+            <div class="meta">
+                <span id="updated" class="updated">—</span>
+            </div>
+            <button class="iconbtn" id="settingsBtn" aria-label="Settings">⚙</button>
+        </header>
+
+        <main>
+            <div id="loading" class="state">Loading…</div>
+            <div id="error" class="state error" hidden></div>
+
+            <div id="content" hidden>
+                <section class="countdown" id="countdown">
+                    <div class="countdown-label">NEXT SHIFT</div>
+                    <div class="countdown-value" id="countdownValue">—</div>
+                    <div class="countdown-detail" id="countdownDetail"></div>
+                </section>
+
+                <section class="horizon" id="horizon" aria-hidden="true"></section>
+
+                <section class="shifts">
+                    <h2>Upcoming</h2>
+                    <ol id="shiftList"></ol>
+                </section>
+            </div>
+        </main>
+    </section>
+
+    <!-- Settings panel (in-place overlay) -->
+    <section id="settings" class="modal" hidden>
+        <div class="modal-inner">
+            <h2>Settings</h2>
+            <dl>
+                <dt>Bin ID</dt>
+                <dd id="settingsBinId" class="mono">—</dd>
+                <dt>Last fetch</dt>
+                <dd id="settingsLastFetch">—</dd>
+                <dt>Bytes (envelope)</dt>
+                <dd id="settingsBytes">—</dd>
+                <dt>Shifts</dt>
+                <dd id="settingsShifts">—</dd>
+            </dl>
+            <div class="actions">
+                <button id="settingsClose">Close</button>
+                <button id="settingsForget" class="danger">Forget device</button>
+            </div>
+        </div>
+    </section>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
