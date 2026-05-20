@@ -3,7 +3,7 @@
 // itself (roster.json) is *always* fetched from the network and never
 // served from cache - otherwise we'd never see updated rosters.
 
-const CACHE = 'roster-shell-v2';
+const CACHE = 'roster-shell-v3';
 const DATA_FILE = 'roster.json';
 const SHELL = [
     './',

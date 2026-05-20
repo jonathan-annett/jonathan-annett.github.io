@@ -19,6 +19,11 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+/* [hidden] must beat element class rules that set display: flex / grid / etc.
+   Without this, .modal's display:flex wins and the dark overlay sits over
+   the setup screen from page load. */
+[hidden] { display: none !important; }
+
 html, body {
     margin: 0;
     padding: 0;
