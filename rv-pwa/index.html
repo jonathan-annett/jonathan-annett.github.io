@@ -21,14 +21,9 @@
     <!-- Setup screen, shown if no config in localStorage -->
     <section id="setup" hidden>
         <h1>Roster</h1>
-        <p class="muted">First-time setup. These values stay on your device.</p>
+        <p class="muted">First-time setup. Your passphrase stays on this device.</p>
 
         <form id="setupForm">
-            <label>
-                <span class="label">Bin ID</span>
-                <input type="text" id="binIdInput" autocomplete="off" spellcheck="false"
-                       autocapitalize="off" required>
-            </label>
             <label>
                 <span class="label">Passphrase</span>
                 <input type="password" id="passphraseInput" autocomplete="off"
@@ -76,8 +71,8 @@
         <div class="modal-inner">
             <h2>Settings</h2>
             <dl>
-                <dt>Bin ID</dt>
-                <dd id="settingsBinId" class="mono">—</dd>
+                <dt>Source</dt>
+                <dd id="settingsSource" class="mono">—</dd>
                 <dt>Last fetch</dt>
                 <dd id="settingsLastFetch">—</dd>
                 <dt>Bytes (envelope)</dt>

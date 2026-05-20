@@ -1,21 +1,24 @@
 // app.js - main PWA logic
 //
-// On load: read localStorage config, fetch the bin, decrypt, render.
+// On load: read passphrase from localStorage, fetch ./roster.json from
+// same origin (the github.io site we're served from), decrypt, render.
 // Setup flow on first visit. Manual refresh + auto-refresh when page
 // returns from background after a few minutes.
 
 import { decryptPayload } from './crypto-helper.js';
 
 const STORAGE = {
-    binId: 'roster.binId',
     passphrase: 'roster.passphrase',
-    payload: 'roster.payload',         // last decrypted payload (cache)
-    fetchedAt: 'roster.fetchedAt',
-    bytes: 'roster.bytes',
+    payload:    'roster.payload',     // last decrypted payload (cache)
+    fetchedAt:  'roster.fetchedAt',
+    bytes:      'roster.bytes',
 };
 
-const JSONBIN_BASE = 'https://jsonbin-zeta.vercel.app/api/bins';
-const AUTO_REFRESH_THRESHOLD_MS = 5 * 60 * 1000; // re-fetch if last view was >5min ago
+// Same-origin file written by the Chrome extension via the GitHub
+// Contents API. The cache-busting query string defeats Pages' CDN
+// keeping us on a stale copy after a push.
+const DATA_URL = './roster.json';
+const AUTO_REFRESH_THRESHOLD_MS = 5 * 60 * 1000;
 
 const $ = (id) => document.getElementById(id);
 
@@ -28,10 +31,8 @@ let currentPayload = null;
 (async function main() {
     registerServiceWorker();
 
-    const binId = localStorage.getItem(STORAGE.binId);
     const passphrase = localStorage.getItem(STORAGE.passphrase);
-
-    if (!binId || !passphrase) {
+    if (!passphrase) {
         showSetup();
         return;
     }
@@ -62,11 +63,10 @@ function showSetup() {
 
 async function onSetupSubmit(ev) {
     ev.preventDefault();
-    const binId = $('binIdInput').value.trim();
     const passphrase = $('passphraseInput').value;
     $('setupError').hidden = true;
 
-    if (!binId || !passphrase) return;
+    if (!passphrase) return;
 
     const btn = ev.target.querySelector('button[type="submit"]');
     btn.disabled = true;
@@ -74,14 +74,12 @@ async function onSetupSubmit(ev) {
 
     try {
         // Validate before saving by trying a full fetch+decrypt round.
-        const envelope = await fetchBin(binId);
+        const { envelope, bytes } = await fetchData();
         const payload = await decryptPayload(envelope, passphrase);
 
-        localStorage.setItem(STORAGE.binId, binId);
         localStorage.setItem(STORAGE.passphrase, passphrase);
-        writeCachedPayload(payload, JSON.stringify(envelope).length);
+        writeCachedPayload(payload, bytes);
 
-        // Re-bootstrap into the app view.
         currentPayload = payload;
         $('setup').hidden = true;
         $('app').hidden = false;
@@ -121,19 +119,18 @@ function wireEvents() {
 }
 
 async function refresh() {
-    const binId = localStorage.getItem(STORAGE.binId);
     const passphrase = localStorage.getItem(STORAGE.passphrase);
-    if (!binId || !passphrase) return;
+    if (!passphrase) return;
 
     const btn = $('refreshBtn');
     btn.classList.add('spinning');
     $('error').hidden = true;
 
     try {
-        const envelope = await fetchBin(binId);
+        const { envelope, bytes } = await fetchData();
         const payload = await decryptPayload(envelope, passphrase);
         currentPayload = payload;
-        writeCachedPayload(payload, JSON.stringify(envelope).length);
+        writeCachedPayload(payload, bytes);
         renderPayload(payload);
         $('loading').hidden = true;
         $('content').hidden = false;
@@ -163,7 +160,7 @@ function renderPayload(payload) {
         ...s,
         start: parseShiftDateTime(s.date, s.startTime),
         end: parseShiftDateTime(s.date, s.endTime, s.startTime),
-    })).filter(s => s.end > now); // hide shifts already finished
+    })).filter(s => s.end > now);
 
     shifts.sort((a, b) => a.start - b.start);
 
@@ -221,13 +218,12 @@ function renderHorizon(shifts) {
     el.innerHTML = '';
 
     const now = Date.now();
-    const horizonStart = now - 1 * 3600000;     // show 1 hour back
-    const horizonEnd = now + 47 * 3600000;      // 48 hours forward
+    const horizonStart = now - 1 * 3600000;
+    const horizonEnd = now + 47 * 3600000;
     const span = horizonEnd - horizonStart;
     const widthPct = (ms) => (ms / span) * 100;
     const leftPct = (t) => widthPct(t - horizonStart);
 
-    // Hour ticks
     for (let h = 0; h <= 48; h += 6) {
         const tick = document.createElement('div');
         tick.className = 'horizon-tick';
@@ -235,13 +231,11 @@ function renderHorizon(shifts) {
         el.appendChild(tick);
     }
 
-    // Each shift gets a colored slot + pre-shift warning bands
     shifts.forEach(s => {
         const startMs = s.start.getTime();
         const endMs = s.end.getTime();
         if (endMs < horizonStart || startMs > horizonEnd) return;
 
-        // 3hr, 2hr, 1hr warning bands (clipped to horizon)
         const bands = [
             { cls: 'horizon-warn3', from: startMs - 3 * 3600000, to: startMs - 2 * 3600000 },
             { cls: 'horizon-warn2', from: startMs - 2 * 3600000, to: startMs - 1 * 3600000 },
@@ -258,7 +252,6 @@ function renderHorizon(shifts) {
             el.appendChild(div);
         });
 
-        // The shift block itself
         const block = document.createElement('div');
         block.className = 'horizon-shift';
         if (now >= startMs && now < endMs) block.classList.add('now');
@@ -273,7 +266,6 @@ function renderHorizon(shifts) {
         el.appendChild(block);
     });
 
-    // 'Now' indicator line
     const nowLine = document.createElement('div');
     nowLine.className = 'horizon-now';
     nowLine.style.left = `${leftPct(now)}%`;
@@ -351,7 +343,7 @@ function applyNightMode() {
 
 function openSettings() {
     $('settings').hidden = false;
-    $('settingsBinId').textContent = localStorage.getItem(STORAGE.binId) || '—';
+    $('settingsSource').textContent = new URL(DATA_URL, location.href).pathname;
     $('settingsBytes').textContent = localStorage.getItem(STORAGE.bytes) || '—';
     $('settingsShifts').textContent = currentPayload && currentPayload.shifts
         ? String(currentPayload.shifts.length) : '—';
@@ -360,25 +352,32 @@ function openSettings() {
 }
 
 function forgetDevice() {
-    if (!confirm('Forget the bin ID and passphrase on this device?')) return;
+    if (!confirm('Forget the passphrase on this device?')) return;
     Object.values(STORAGE).forEach(k => localStorage.removeItem(k));
     location.reload();
 }
 
 // ---------- networking ----------
 
-async function fetchBin(binId) {
-    const res = await fetch(`${JSONBIN_BASE}/${encodeURIComponent(binId)}`, {
-        method: 'GET',
-        cache: 'no-store',
-    });
+async function fetchData() {
+    // Cache-bust against the Pages CDN. The service worker is also set up
+    // to network-first on roster.json, but the query string is belt-and-braces.
+    const url = `${DATA_URL}?v=${Date.now()}`;
+    const res = await fetch(url, { cache: 'no-store' });
     if (res.status === 404) {
-        throw new Error('Bin not found. Check the bin ID.');
+        throw new Error('roster.json not found yet. Push from the extension first.');
     }
     if (!res.ok) {
         throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
     }
-    return await res.json();
+    const text = await res.text();
+    let envelope;
+    try {
+        envelope = JSON.parse(text);
+    } catch (e) {
+        throw new Error('roster.json is not valid JSON.');
+    }
+    return { envelope, bytes: text.length };
 }
 
 // ---------- storage helpers ----------
@@ -414,8 +413,6 @@ function registerServiceWorker() {
 // ---------- formatting helpers ----------
 
 function parseShiftDateTime(dateStr, timeStr, startStr) {
-    // dateStr: 'YYYY-MM-DD', timeStr: 'HH:mm'. If this is an endTime that
-    // is earlier than startStr, the shift crosses midnight - add a day.
     const [y, m, d] = dateStr.split('-').map(Number);
     const [hh, mm] = timeStr.split(':').map(Number);
     let date = new Date(y, m - 1, d, hh, mm, 0, 0);
@@ -472,8 +469,9 @@ function escapeHtml(s) {
 
 function friendlyError(e) {
     const msg = (e && e.message) ? e.message : String(e);
-    if (/decryption failed/i.test(msg)) return 'Wrong passphrase, or the bin contains data from a different version.';
-    if (/bin not found/i.test(msg))     return 'Bin not found. Check the bin ID.';
-    if (/fetch failed|networkerror|failed to fetch/i.test(msg)) return 'Could not reach the bin server.';
+    if (/decryption failed/i.test(msg)) return 'Wrong passphrase, or the file contains data from a different version.';
+    if (/not found yet/i.test(msg))     return 'No roster file yet — push from the extension first.';
+    if (/not valid json/i.test(msg))    return 'The roster file is unreadable.';
+    if (/fetch failed|networkerror|failed to fetch/i.test(msg)) return 'Could not reach the server.';
     return msg;
 }

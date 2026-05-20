@@ -1,9 +1,10 @@
 // service-worker.js
-// Minimal service worker: caches the app shell so the PWA loads offline.
-// Bin data itself is fetched fresh on each open (cache: no-store) and cached
-// in localStorage by the app for offline read-only viewing.
+// Caches the app shell so the PWA loads offline. The roster data file
+// itself (roster.json) is *always* fetched from the network and never
+// served from cache - otherwise we'd never see updated rosters.
 
-const CACHE = 'roster-shell-v1';
+const CACHE = 'roster-shell-v2';
+const DATA_FILE = 'roster.json';
 const SHELL = [
     './',
     './index.html',
@@ -36,29 +37,50 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(req.url);
 
-    // Never serve bin data from cache - we want fresh on every fetch.
-    if (url.hostname.endsWith('jsonbin-zeta.vercel.app')) return;
+    // Never cache the roster data - always fetch fresh.
+    if (url.origin === self.location.origin && isRosterDataPath(url.pathname)) {
+        event.respondWith(fetchNoStore(req));
+        return;
+    }
 
-    // Same-origin: cache-first for the app shell.
+    // Same-origin shell: cache-first.
     if (url.origin === self.location.origin) {
-        event.respondWith((async () => {
-            const cached = await caches.match(req);
-            if (cached) return cached;
-            try {
-                const fresh = await fetch(req);
-                // Cache successful navigation/resource responses on the fly.
-                if (fresh.ok) {
-                    const cache = await caches.open(CACHE);
-                    cache.put(req, fresh.clone());
-                }
-                return fresh;
-            } catch (e) {
-                // Offline and not cached - last resort: shell index.
-                if (req.mode === 'navigate') {
-                    return caches.match('./index.html');
-                }
-                throw e;
-            }
-        })());
+        event.respondWith(shellCacheFirst(req));
     }
 });
+
+function isRosterDataPath(pathname) {
+    // Match the data file at any path depth (handles repo-name subdirectory on github.io)
+    return pathname.endsWith('/' + DATA_FILE) || pathname.endsWith(DATA_FILE);
+}
+
+async function fetchNoStore(req) {
+    try {
+        return await fetch(req, { cache: 'no-store' });
+    } catch (e) {
+        // Offline: surface a synthetic 503 so the app can detect it
+        return new Response(JSON.stringify({ error: 'offline' }), {
+            status: 503,
+            statusText: 'offline',
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+}
+
+async function shellCacheFirst(req) {
+    const cached = await caches.match(req);
+    if (cached) return cached;
+    try {
+        const fresh = await fetch(req);
+        if (fresh.ok) {
+            const cache = await caches.open(CACHE);
+            cache.put(req, fresh.clone());
+        }
+        return fresh;
+    } catch (e) {
+        if (req.mode === 'navigate') {
+            return caches.match('./index.html');
+        }
+        throw e;
+    }
+}
