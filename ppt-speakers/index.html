@@ -3590,6 +3590,7 @@ h1{font-size:22px;margin:0 0 4px}.meta{color:#667085;margin:0 0 2px;font-size:13
 .printmode .hint,.printmode .srow button,.printmode .split,.printmode #masterzip{display:none}
 .printmode .slidelink{color:inherit;text-decoration:none;cursor:default}
 .printmode .slidebox{display:none}
+.printmode .emptyslide{display:none}
 .printmode .sname{border-color:transparent;background:transparent}
 @media print{body{padding:0}#controlbar{display:none}.room{border:none;padding:0}.srow button,.split{display:none}.sname{border:none;padding-left:0}.slidebox{display:none}}`;
 
@@ -3656,7 +3657,7 @@ function render(){
         const hit=slideMap.get(slide);
         if(hit){ emit(hit.si,hit.group,slide,false); }
         else {
-          const rrow=el('div','cuebreak nospk-inline');
+          const rrow=el('div','cuebreak nospk-inline emptyslide');
           const label=el('span','cuelabel slidelink','Slide '+String(slide).padStart(2,'0'));label.title='Click to preview this slide';
           rrow.dataset.prev=d.hash+':'+slide;label.addEventListener('click',()=>togglePreview(d,slide,rrow));
           rrow.appendChild(label);rrow.appendChild(el('span','muted',' no speakers'));rrow.appendChild(el('span','rule'));
