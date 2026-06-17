@@ -556,13 +556,13 @@ footer a{color:var(--muted)}
     <div class="dropzone" id="drop" role="button" tabindex="0" aria-label="Choose or drop a .pptx file">
       <div class="dz-inner">
         <div class="dz-eyebrow">Load deck</div>
-        <p class="dz-title">Drop a .pptx here</p>
-        <p class="dz-sub">or <b>click to browse</b> for a PowerPoint file</p>
+        <p class="dz-title">Drop .pptx files here</p>
+        <p class="dz-sub">one, several, or a whole folder — or <b>click to browse</b></p>
         <p class="dz-note">parses in-browser · no upload · no install</p>
         <p class="err" id="err"></p>
       </div>
     </div>
-    <input type="file" id="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden>
+    <input type="file" id="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" multiple hidden>
 
     <section id="library" hidden>
       <div class="lib-head">
@@ -675,8 +675,8 @@ footer a{color:var(--muted)}
 <div class="drop-overlay" id="dropOverlay">
   <div class="do-inner">
     <div class="do-eyebrow">Load deck</div>
-    <p class="do-title">Drop to scan a new deck</p>
-    <p class="do-sub">release the .pptx anywhere on the page</p>
+    <p class="do-title">Drop to scan deck(s)</p>
+    <p class="do-sub">release one or more .pptx files — or a whole folder — anywhere on the page</p>
   </div>
 </div>
 
@@ -2107,7 +2107,7 @@ function setStatus(state, text){
 function browse(){ els.file.click(); }
 els.drop.addEventListener('click', browse);
 els.drop.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); browse(); }});
-els.file.addEventListener('change', e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); });
+els.file.addEventListener('change', e=>{ const fs=[...e.target.files]; e.target.value=''; if(fs.length) ingestMany(fs); });
 els.newBtn.addEventListener('click', resetApp);
 
 // Drag-and-drop works anywhere on the page, in any view — drop a .pptx over
@@ -2129,9 +2129,76 @@ window.addEventListener('dragleave', e=>{
 window.addEventListener('drop', e=>{
   if(!hasFiles(e)) return;
   e.preventDefault(); dragDepth=0; els.dropOverlay.classList.remove('show');
-  const f=[...e.dataTransfer.files].find(f=>/\.pptx$/i.test(f.name)) || e.dataTransfer.files[0];
-  if(f) handleFile(f);
+  // Snapshot the DataTransfer synchronously (it's only valid during this tick),
+  // then gather every .pptx — including inside dropped folders — and ingest.
+  const dt=e.dataTransfer;
+  const entries=[], plain=[];
+  if(dt.items && dt.items.length){
+    for(const it of dt.items){
+      if(it.kind!=='file') continue;
+      const en = it.webkitGetAsEntry && it.webkitGetAsEntry();
+      if(en) entries.push(en); else { const f=it.getAsFile&&it.getAsFile(); if(f) plain.push(f); }
+    }
+  } else if(dt.files){ for(const f of dt.files) plain.push(f); }
+  collectPptx(entries, plain).then(fs=>ingestMany(fs));
 });
+
+// Resolve dropped entries (files + recursively-walked folders) plus any plain
+// files into a flat list of .pptx File objects.
+async function collectPptx(entries, plain){
+  const out=[];
+  for(const en of entries) await walkEntry(en, out);
+  for(const f of plain) out.push(f);
+  return out.filter(f=>f && /\.pptx$/i.test(f.name));
+}
+async function walkEntry(entry, out){
+  if(!entry) return;
+  if(entry.isFile){
+    const f = await new Promise(res=>entry.file(res, ()=>res(null)));
+    if(f) out.push(f);
+  } else if(entry.isDirectory){
+    const reader = entry.createReader();
+    const read = ()=> new Promise(res=>reader.readEntries(res, ()=>res([])));
+    let batch;
+    do{ batch = await read(); for(const e of batch) await walkEntry(e, out); } while(batch.length);
+  }
+}
+
+// Save a deck to the Recent-decks library WITHOUT loading/rendering it: hash +
+// store bytes + a metadata record. Never clobbers an existing record (preserves
+// prior edits/room). Returns 'new' | 'known' | false. Used for the non-active
+// decks in a multi-file/folder drop.
+async function quickSave(file){
+  if(!/\.pptx$/i.test(file.name)) return false;
+  try{
+    const buf = await file.arrayBuffer();
+    const hash = hashBytes(buf);
+    const existing = await idbGet('file:'+hash).catch(()=>null);
+    if(!existing){
+      await idbSet('file:'+hash, { v:1, hash, filename:file.name, lastModified:file.lastModified,
+        ingestedAt:Date.now(), updatedAt:Date.now(), sid:0, sessions:null, room:'' });
+    }
+    if(!(await idbGet('deck:'+hash).catch(()=>null))) await idbSet('deck:'+hash, buf);
+    return existing ? 'known' : 'new';
+  }catch{ return false; }
+}
+
+// Intake for one-or-many: a single deck loads as today; with several, the first
+// loads + renders and the rest are saved to Recent decks in the background (ready
+// for the report / re-open).
+async function ingestMany(files){
+  if(typeof DecompressionStream==='undefined'){
+    toast('This browser cannot unzip files in-page. Use a recent Chrome, Edge, Firefox or Safari.', true); return;
+  }
+  const pptx = (files||[]).filter(f=>f && /\.pptx$/i.test(f.name));
+  if(!pptx.length){ toast('No .pptx files found — drop PowerPoint (.pptx) files or a folder of them.', true); return; }
+  if(pptx.length===1){ await handleFile(pptx[0]); return; }
+  await handleFile(pptx[0]);                          // load + render the first
+  let added=0;
+  for(let i=1;i<pptx.length;i++){ if(await quickSave(pptx[i])==='new') added++; }
+  renderLibrary();
+  toast('Loaded "'+pptx[0].name+'"'+(added?(' · added '+added+' more deck'+(added===1?'':'s')+' to Recent decks'):'')+'.');
+}
 
 let toastTimer=null;
 function toast(msg, isErr){
