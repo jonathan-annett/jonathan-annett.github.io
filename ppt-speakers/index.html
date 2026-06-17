@@ -270,6 +270,11 @@ body{
   text-transform:uppercase;color:var(--faint);
 }
 .name.is-review .who{color:var(--muted)}
+/* removed in the editor — lowlight + strike so the cue list mirrors the edit */
+.name.removed{opacity:.5}
+.name.removed .who{text-decoration:line-through;color:var(--muted)}
+.name.removed .sig{background:var(--faint)!important}
+.name.removed .tier{color:var(--faint)}
 
 /* review section */
 .reviewhead{
@@ -544,7 +549,7 @@ footer a{color:var(--muted)}
       </div>
       <button class="btn" id="copyBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy list</span></button>
       <button class="btn" id="dlBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg><span>Download .txt</span></button>
-      <button class="btn" id="sessBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 3 8l9 5 9-5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Sessions</span></button>
+      <button class="btn" id="sessBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg><span>Edit</span></button>
       <button class="btn" id="decksBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 3 8l9 5 9-5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Recent decks</span></button>
       <button class="btn ghost" id="newBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>New deck</span></button>
     </div>
@@ -1755,12 +1760,14 @@ function render(){
   prDisposeAll(prThumbHandles);              // drop handles for thumbs we're about to discard
   els.cues.innerHTML=''; els.reviewCues.innerHTML='';
 
+  const look = buildSessLookup();            // reflect editor state (removals/order) when sessions exist
   for(const {slide,names} of STATE.results){
+    names.forEach((n,i)=>{ n.nid=slide+'#'+i; });   // stable positional id, matches flattenSpeakers
     const main = names.filter(n=>bucket(n.score)!=='review');
     const rev  = names.filter(n=>bucket(n.score)==='review');
     if(main.length){
       slidesWithNames++;
-      els.cues.appendChild(cueCard(slide, main));
+      els.cues.appendChild(cueCard(slide, main, false, look));
       for(const n of main){ bucket(n.score)==='high'?nHigh++:nMed++; }
     }
     if(rev.length){
@@ -1799,12 +1806,27 @@ function render(){
   els.results.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function cueCard(slide, names, isReview){
+function cueCard(slide, names, isReview, look){
+  // Annotate each detected name with its current session state, then order to
+  // match the editor: active speakers first (in session order), removed/blanked
+  // ones struck through at the end. Without sessions (look=null) it's a no-op.
+  const ann = names.map((n,i)=>{
+    let sp=null;
+    if(look && !isReview){
+      sp = (n.nid!=null && look.bySrc.get(n.nid)) ||
+           look.byNC.get(slide+' '+(n.name||'').trim().toLowerCase()) || null;
+    }
+    const removed = (look && !isReview) ? (!sp || sp.blank) : false;
+    return { n, i, removed, display:(sp&&!sp.blank)?sp.name:n.name, order: sp?sp.order:Infinity };
+  });
+  if(look && !isReview) ann.sort((a,b)=> (a.removed-b.removed) || (a.order-b.order) || (a.i-b.i));
+  const activeCount = (look && !isReview) ? ann.filter(a=>!a.removed).length : names.length;
+
   const card=document.createElement('div'); card.className='cue';
   const rail=document.createElement('div'); rail.className='rail';
   rail.innerHTML='<span class="lbl">Cue</span>'+
     '<span class="num">'+String(slide).padStart(2,'0')+'</span>'+
-    '<span class="cnt">'+names.length+(names.length===1?' name':' names')+'</span>';
+    '<span class="cnt">'+activeCount+(activeCount===1?' name':' names')+'</span>';
 
   const thumb=document.createElement('div'); thumb.className='thumb';
   thumb.dataset.slide=slide;
@@ -1812,14 +1834,14 @@ function cueCard(slide, names, isReview){
   thumb.innerHTML='<span class="ph">slide '+String(slide).padStart(2,'0')+'</span>';
 
   const list=document.createElement('div'); list.className='names';
-  for(const n of names){
-    const tier=bucket(n.score);
+  for(const a of ann){
+    const tier=bucket(a.n.score);
     const row=document.createElement('div');
-    row.className='name'+(isReview?' is-review':'');
+    row.className='name'+(isReview?' is-review':'')+(a.removed?' removed':'');
     row.innerHTML='<span class="sig '+tier+'"></span>'+
       '<span class="who"></span>'+
-      '<span class="tier">'+tier+'</span>';
-    row.querySelector('.who').textContent=n.name;
+      '<span class="tier">'+(a.removed?'removed':tier)+'</span>';
+    row.querySelector('.who').textContent=a.display;
     list.appendChild(row);
   }
   card.appendChild(rail); card.appendChild(thumb); card.appendChild(list);
@@ -1964,12 +1986,29 @@ function flattenSpeakers(){
   // high + probable speakers, in slide order then in-slide order
   const out=[];
   for(const {slide,names} of STATE.results){
-    for(const n of names){
-      if(bucket(n.score)==='review') continue;
-      out.push({ id:'s'+(SID++), name:n.name, cue:slide });
-    }
+    names.forEach((n,i)=>{
+      if(bucket(n.score)==='review') return;
+      // srcId ties this speaker back to its detected name so the main list can
+      // reflect removals/reorders/renames. Positional + deterministic, so it
+      // stays valid across save/restore of the same deck.
+      out.push({ id:'s'+(SID++), name:n.name, cue:slide, srcId:slide+'#'+i });
+    });
   }
   return out;
+}
+// Index the current session model for the main list: maps a detected name to
+// its session speaker (by srcId, falling back to cue+name for older records),
+// recording display order and whether it was removed/blanked.
+function buildSessLookup(){
+  if(!SESS) return null;
+  const bySrc=new Map(), byNC=new Map(); let order=0;
+  for(const s of SESS) for(const sp of s.speakers){
+    const rec={ order:order++, name:sp.name, blank:!sp.name.trim() };
+    if(sp.srcId!=null && !bySrc.has(sp.srcId)) bySrc.set(sp.srcId, rec);
+    const nm=(sp.name||'').trim().toLowerCase();
+    if(nm){ const k=sp.cue+' '+nm; if(!byNC.has(k)) byNC.set(k, rec); }
+  }
+  return { bySrc, byNC };
 }
 function ensureSessions(){
   if(SESS) return;
@@ -1983,7 +2022,10 @@ els.sessBtn.addEventListener('click', ()=>{
   renderSessions();
   els.sessionPanel.scrollIntoView({behavior:'smooth',block:'start'});
 });
-els.sessBack.addEventListener('click', ()=> els.results.classList.remove('mode-sessions'));
+els.sessBack.addEventListener('click', ()=>{
+  els.results.classList.remove('mode-sessions');
+  render();   // reflect edits (removals, reorder, renames) in the cue list
+});
 els.sessReset.addEventListener('click', ()=>{
   if(!STATE.results.length) return;
   if(!confirm('Discard all edits for this deck and reset to the detected speaker names?')) return;
