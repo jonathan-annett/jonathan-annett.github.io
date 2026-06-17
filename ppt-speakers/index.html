@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpeakerScan — extract speaker names from a PowerPoint deck</title>
+<meta name="description" content="Drop a conference .pptx and get a clean, slide-by-slide list of speaker names. Runs entirely in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SpeakerScan — show-booth cue-sheet styling
+   Palette: graphite booth, tungsten amber action, signal-meter tiers
+   ============================================================ */
+:root{
+  --booth:#15171c;
+  --panel:#1d2027;
+  --card:#232730;
+  --card-2:#272c36;
+  --edge:#2e333f;
+  --edge-soft:#262b34;
+  --ink:#eceef1;
+  --muted:#8b92a0;
+  --faint:#5c6373;
+  --accent:#f4b45a;       /* tungsten lamp — brand + primary action */
+  --accent-deep:#c98a2f;
+  --high:#56c99a;         /* signal: confident */
+  --med:#e6a94c;          /* signal: probable */
+  --review:#727c8e;       /* signal: uncertain */
+  --radius:10px;
+  --rail:104px;
+  --maxw:920px;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --body:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --disp:"Archivo","IBM Plex Sans",system-ui,sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #1b1f27 0%, var(--booth) 60%) fixed,
+    var(--booth);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px 96px}
+
+/* ---- top bar -------------------------------------------------- */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:linear-gradient(180deg,rgba(21,23,28,.96),rgba(21,23,28,.82));
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--edge);
+}
+.topbar .row{
+  max-width:var(--maxw);margin:0 auto;padding:14px 20px;
+  display:flex;align-items:center;gap:16px;
+}
+.mark{
+  font-family:var(--disp);font-weight:800;letter-spacing:.14em;
+  text-transform:uppercase;font-size:16px;line-height:1;
+  display:flex;align-items:center;gap:.5ch;
+}
+.mark .slash{color:var(--accent)}
+.mark .sub{color:var(--muted);font-weight:600}
+.tag{
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+  color:var(--faint);text-transform:uppercase;
+}
+.status{
+  margin-left:auto;display:flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);
+}
+.status .lamp{
+  width:8px;height:8px;border-radius:50%;background:var(--faint);
+  box-shadow:0 0 0 0 transparent;transition:.3s;
+}
+.status[data-state="ready"] .lamp{background:var(--high);box-shadow:0 0 10px 1px rgba(86,201,154,.6)}
+.status[data-state="working"] .lamp{background:var(--accent);box-shadow:0 0 10px 1px rgba(244,180,90,.55);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.35}}
+
+/* ---- intro line ---------------------------------------------- */
+.intro{margin:34px 0 22px}
+.intro h1{
+  font-family:var(--disp);font-weight:800;font-size:clamp(28px,5vw,42px);
+  line-height:1.02;letter-spacing:-.01em;margin:0 0 10px;
+}
+.intro h1 em{font-style:normal;color:var(--accent)}
+.intro p{color:var(--muted);max-width:62ch;margin:0;font-size:15px}
+
+/* ---- drop zone (empty cue sheet) ----------------------------- */
+.dropzone{
+  position:relative;margin-top:26px;border-radius:14px;
+  border:1.5px dashed var(--edge);
+  background:
+    repeating-linear-gradient(0deg,transparent 0 37px,var(--edge-soft) 37px 38px),
+    linear-gradient(180deg,#1a1d24,#181b21);
+  min-height:340px;cursor:pointer;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  transition:border-color .18s,background .18s,transform .18s;
+}
+.dropzone:hover,.dropzone:focus-visible{border-color:#3c424f;outline:none}
+.dropzone.drag{
+  border-color:var(--accent);
+  background:
+    repeating-linear-gradient(0deg,transparent 0 37px,rgba(244,180,90,.07) 37px 38px),
+    linear-gradient(180deg,#20232b,#1c1f26);
+  transform:scale(.997);
+}
+/* scanner hairline — the one signature motion moment */
+.dropzone::after{
+  content:"";position:absolute;left:0;right:0;height:2px;top:0;
+  background:linear-gradient(90deg,transparent,rgba(244,180,90,.55),transparent);
+  animation:scan 4.2s cubic-bezier(.6,0,.4,1) infinite;
+  opacity:.0;
+}
+.dropzone:not(.busy)::after{opacity:1}
+@keyframes scan{0%{top:6%}50%{top:94%}100%{top:6%}}
+.dz-inner{position:relative;z-index:1;padding:30px}
+.dz-eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:14px;
+}
+.dz-title{font-family:var(--disp);font-weight:700;font-size:22px;margin:0 0 6px}
+.dz-sub{color:var(--muted);font-size:14px;margin:0}
+.dz-sub b{color:var(--ink);font-weight:600}
+.dz-note{margin-top:18px;font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.04em}
+
+/* ---- results toolbar ----------------------------------------- */
+.results{display:none}
+.results.show{display:block;animation:fade .3s ease both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+.toolbar{
+  display:flex;flex-wrap:wrap;align-items:center;gap:12px 14px;
+  margin:28px 0 14px;padding:14px 16px;
+  background:var(--panel);border:1px solid var(--edge);border-radius:var(--radius);
+}
+.deckmeta{display:flex;flex-direction:column;gap:3px;min-width:0;margin-right:auto}
+.deckmeta .fn{
+  font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:48ch;
+}
+.deckmeta .counts{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.03em}
+.deckmeta .counts b{color:var(--ink);font-weight:600}
+
+.btn{
+  appearance:none;border:1px solid var(--edge);background:var(--card-2);color:var(--ink);
+  font-family:var(--body);font-size:13px;font-weight:600;
+  padding:9px 14px;border-radius:8px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;transition:.15s;white-space:nowrap;
+}
+.btn:hover{border-color:#3c424f;background:#2b303a}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.primary{background:var(--accent);color:#231703;border-color:var(--accent)}
+.btn.primary:hover{background:#f7c074}
+.btn.ghost{background:transparent}
+.btn svg{width:15px;height:15px;flex:none}
+.btn.ok{border-color:var(--high);color:var(--high)}
+
+/* second toolbar row: legend + toggles */
+.subbar{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:0 2px 22px;
+  font-size:13px;color:var(--muted);
+}
+.legend{display:flex;gap:14px;align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+.dot{width:9px;height:9px;border-radius:2px;flex:none}
+.dot.high{background:var(--high)} .dot.med{background:var(--med)} .dot.review{background:var(--review)}
+
+.switch{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none}
+.switch input{position:absolute;opacity:0;width:0;height:0}
+.track{width:38px;height:21px;border-radius:11px;background:#31363f;position:relative;transition:.18s;flex:none;border:1px solid var(--edge)}
+.track::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:var(--muted);transition:.18s}
+.switch input:checked + .track{background:rgba(244,180,90,.28);border-color:var(--accent)}
+.switch input:checked + .track::after{transform:translateX(17px);background:var(--accent)}
+.switch input:focus-visible + .track{outline:2px solid var(--accent);outline-offset:2px}
+
+.booster{
+  margin-left:auto;display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--faint);
+}
+.booster b{color:var(--high)}
+
+/* ---- cue cards (signature) ----------------------------------- */
+.cue{
+  display:grid;grid-template-columns:var(--rail) 1fr;gap:0;
+  background:var(--card);border:1px solid var(--edge);border-radius:var(--radius);
+  margin-bottom:12px;overflow:hidden;
+  animation:cueIn .32s ease both;
+}
+@keyframes cueIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cue .rail{
+  position:relative;padding:16px 14px;
+  background:linear-gradient(180deg,#252a34,#1f232b);
+  border-right:1px solid var(--edge);
+  display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:4px;
+}
+.cue .rail::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.65}
+.rail .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--faint);text-transform:uppercase}
+.rail .num{font-family:var(--mono);font-size:30px;font-weight:600;line-height:1;color:var(--ink)}
+.rail .cnt{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+.names{padding:8px 4px}
+.name{
+  display:flex;align-items:center;gap:12px;padding:8px 14px;border-radius:7px;
+}
+.name + .name{border-top:1px solid var(--edge-soft)}
+.name .sig{width:3px;align-self:stretch;border-radius:2px;flex:none;min-height:20px}
+.name .sig.high{background:var(--high)} .name .sig.med{background:var(--med)} .name .sig.review{background:var(--review)}
+.name .who{font-size:15.5px;font-weight:500;letter-spacing:.005em}
+.name .tier{
+  margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);
+}
+.name.is-review .who{color:var(--muted)}
+
+/* review section */
+.reviewhead{
+  display:flex;align-items:center;gap:12px;margin:30px 2px 12px;color:var(--muted);
+}
+.reviewhead .line{flex:1;height:1px;background:var(--edge)}
+.reviewhead .t{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+.review-wrap{display:none}
+.review-wrap.show{display:block}
+
+.empty-msg{
+  border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);
+  padding:26px;color:var(--muted);text-align:center;
+}
+.empty-msg b{color:var(--ink)}
+
+footer{max-width:var(--maxw);margin:40px auto 0;padding:18px 20px;border-top:1px solid var(--edge);
+  font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.04em;line-height:1.7}
+footer a{color:var(--muted)}
+.err{color:#e88;font-family:var(--mono);font-size:12px;margin-top:10px}
+
+/* ---- responsive ---------------------------------------------- */
+@media (max-width:620px){
+  :root{--rail:auto}
+  .cue{grid-template-columns:1fr}
+  .cue .rail{
+    flex-direction:row;align-items:baseline;gap:10px;padding:10px 14px;
+    border-right:none;border-bottom:1px solid var(--edge);
+  }
+  .cue .rail::before{width:100%;height:3px;bottom:auto}
+  .rail .num{font-size:20px}
+  .deckmeta .fn{max-width:64vw}
+  .booster{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="row">
+    <div class="mark">Speaker<span class="slash">/</span><span class="sub">Scan</span></div>
+    <div class="tag">pptx → speaker list</div>
+    <div class="status" id="status" data-state="idle"><span class="lamp"></span><span class="txt">Idle</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="idle">
+    <div class="intro">
+      <h1>Pull every speaker name<br>out of a <em>conference deck</em>.</h1>
+      <p>Drop a PowerPoint master deck and get a clean, slide-by-slide list of presenter
+         names — ready to paste into your run sheet or turn into content folders. Everything
+         runs in this page; the file never leaves your machine.</p>
+    </div>
+
+    <div class="dropzone" id="drop" role="button" tabindex="0" aria-label="Choose or drop a .pptx file">
+      <div class="dz-inner">
+        <div class="dz-eyebrow">Load deck</div>
+        <p class="dz-title">Drop a .pptx here</p>
+        <p class="dz-sub">or <b>click to browse</b> for a PowerPoint file</p>
+        <p class="dz-note">parses in-browser · no upload · no install</p>
+        <p class="err" id="err"></p>
+      </div>
+    </div>
+    <input type="file" id="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden>
+  </section>
+
+  <section class="results" id="results">
+    <div class="toolbar">
+      <div class="deckmeta">
+        <span class="fn" id="fn"></span>
+        <span class="counts" id="counts"></span>
+      </div>
+      <button class="btn" id="copyBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy list</span></button>
+      <button class="btn" id="dlBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg><span>Download .txt</span></button>
+      <button class="btn ghost" id="newBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>New deck</span></button>
+    </div>
+
+    <div class="subbar">
+      <div class="legend">
+        <span><i class="dot high"></i>High</span>
+        <span><i class="dot med"></i>Probable</span>
+        <span><i class="dot review"></i>Review</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="revToggle">
+        <span class="track"></span>
+        <span>Show review candidates</span>
+      </label>
+      <span class="booster" id="booster">Name boost · built-in</span>
+      <label class="btn ghost" style="cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M5 21h14a2 2 0 0 0 2-2v-3"/><path d="M3 16v3a2 2 0 0 0 2 2"/></svg><span>Load name list</span>
+        <input type="file" id="boostFile" accept=".txt,.json,.csv" hidden></label>
+    </div>
+
+    <div id="cues"></div>
+
+    <div class="reviewhead" id="reviewHead" style="display:none">
+      <span class="t"></span><span class="line"></span>
+    </div>
+    <div class="review-wrap" id="reviewWrap"><div id="reviewCues"></div></div>
+  </section>
+</main>
+
+<footer>
+  SpeakerScan — names are detected by structure and language, not a fixed list, so unusual and
+  international names are found too. High &amp; Probable are real presenters; Review holds
+  borderline items (award titles, institutions) for a quick human glance.<br>
+  Tip: a "Review" name is one click away — toggle the candidates and copy what you keep.
+</footer>
+<script type="module">
+const COMMON_WORDS_DATA = ["the","of","and","to","a","in","for","is","on","that","by","this","with","i","you","it","not","or","be","are","from","at","as","your","all","have","new","more","an","was","we","will","home","can","us","about","if","page","my","has","search","free","but","our","one","other","do","no","information","time","they","site","he","up","may","what","which","their","news","out","use","any","there","see","only","so","his","when","contact","here","business","who","web","also","now","help","get","pm","view","online","c","e","first","am","been","would","how","were","me","s","services","some","these","click","its","like","service","x","than","find","price","date","back","top","people","had","list","name","just","over","state","year","day","into","email","two","health","n","world","re","next","used","go","b","work","last","most","products","music","buy","data","make","them","should","product","system","post","her","city","t","add","policy","number","such","please","available","copyright","support","message","after","best","software","then","jan","good","video","well","d","where","info","rights","public","books","high","school","through","m","each","links","she","review","years","order","very","privacy","book","items","company","r","read","group","need","many","user","said","de","does","set","under","general","research","university","january","mail","full","map","reviews","program","life","know","games","way","days","management","p","part","could","great","united","hotel","real","f","item","international","center","ebay","must","store","travel","comments","made","development","report","off","member","details","line","terms","before","hotels","did","send","right","type","because","local","those","using","results","office","education","national","car","design","take","posted","internet","address","community","within","states","area","want","phone","dvd","shipping","reserved","subject","between","forum","family","l","long","based","w","code","show","o","even","black","check","special","prices","website","index","being","women","much","sign","file","link","open","today","technology","south","case","project","same","pages","uk","version","section","own","found","sports","house","related","security","both","g","county","american","photo","game","members","power","while","care","network","down","computer","systems","three","total","place","end","following","download","h","him","without","per","access","think","north","resources","current","posts","big","media","law","control","water","history","pictures","size","art","personal","since","including","guide","shop","directory","board","location","change","white","text","small","rating","rate","government","children","during","usa","return","students","v","shopping","account","times","sites","level","digital","profile","previous","form","events","love","old","john","main","call","hours","image","department","title","description","non","k","y","insurance","another","why","shall","property","class","cd","still","money","quality","every","listing","content","country","private","little","visit","save","tools","low","reply","customer","december","compare","movies","include","college","value","article","york","man","card","jobs","provide","j","food","source","author","different","press","u","learn","sale","around","print","course","job","canada","process","teen","room","stock","training","too","credit","point","join","science","men","categories","advanced","west","sales","look","english","left","team","estate","box","conditions","select","windows","photos","gay","thread","week","category","note","live","large","gallery","table","register","however","june","october","november","market","library","really","action","start","series","model","features","air","industry","plan","human","provided","tv","yes","required","second","hot","accessories","cost","movie","forums","march","la","september","better","say","questions","july","yahoo","going","medical","test","friend","come","dec","server","pc","study","application","cart","staff","articles","san","feedback","again","play","looking","issues","april","never","users","complete","street","topic","comment","financial","things","working","against","standard","tax","person","below","mobile","less","got","blog","party","payment","equipment","login","student","let","programs","offers","legal","above","recent","park","stores","side","act","problem","red","give","memory","performance","social","q","august","quote","language","story","sell","options","experience","rates","create","key","body","young","america","important","field","few","east","paper","single","ii","age","activities","club","example","girls","additional","password","z","latest","something","road","gift","question","changes","night","ca","hard","texas","oct","pay","four","poker","status","browse","issue","range","building","seller","court","february","always","result","audio","light","write","war","nov","offer","blue","groups","al","easy","given","files","event","release","analysis","request","fax","china","making","picture","needs","possible","might","professional","yet","month","major","star","areas","future","space","committee","hand","sun","cards","problems","london","washington","meeting","rss","become","interest","id","child","keep","enter","california","share","similar","garden","schools","million","added","reference","companies","listed","baby","learning","energy","run","delivery","net","popular","term","film","stories","put","computers","journal","reports","co","try","welcome","central","images","president","notice","original","head","radio","until","cell","color","self","council","away","includes","track","australia","discussion","archive","once","others","entertainment","agreement","format","least","society","months","log","safety","friends","sure","faq","trade","edition","cars","messages","marketing","tell","further","updated","association","able","having","provides","david","fun","already","green","studies","close","common","drive","specific","several","gold","feb","living","sep","collection","called","short","arts","lot","ask","display","limited","powered","solutions","means","director","daily","beach","past","natural","whether","due","et","electronics","five","upon","period","planning","database","says","official","weather","mar","land","average","done","technical","window","france","pro","region","island","record","direct","microsoft","conference","environment","records","st","district","calendar","costs","style","url","front","statement","update","parts","aug","ever","downloads","early","miles","sound","resource","present","applications","either","ago","document","word","works","material","bill","apr","written","talk","federal","hosting","rules","final","adult","tickets","thing","centre","requirements","via","cheap","kids","finance","true","minutes","else","mark","third","rock","gifts","europe","reading","topics","bad","individual","tips","plus","auto","cover","usually","edit","together","videos","percent","fast","function","fact","unit","getting","global","tech","meet","far","economic","en","player","projects","lyrics","often","subscribe","submit","germany","amount","watch","included","feel","though","bank","risk","thanks","everything","deals","various","words","linux","jul","production","commercial","james","weight","town","heart","advertising","received","choose","treatment","newsletter","archives","points","knowledge","magazine","error","camera","jun","girl","currently","construction","toys","registered","clear","golf","receive","domain","methods","chapter","makes","protection","policies","loan","wide","beauty","manager","india","position","taken","sort","listings","models","michael","known","half","cases","step","engineering","florida","simple","quick","none","wireless","license","paul","friday","lake","whole","annual","published","later","basic","sony","shows","corporate","google","church","method","purchase","customers","active","response","practice","hardware","figure","materials","fire","holiday","chat","enough","designed","along","among","death","writing","speed","html","countries","loss","face","brand","discount","higher","effects","created","remember","standards","oil","bit","yellow","political","increase","advertise","kingdom","base","near","environmental","thought","stuff","french","storage","oh","japan","doing","loans","shoes","entry","stay","nature","orders","availability","africa","summary","turn","mean","growth","notes","agency","king","monday","european","activity","copy","although","drug","pics","western","income","force","cash","employment","overall","bay","river","commission","ad","package","contents","seen","players","engine","port","album","regional","stop","supplies","started","administration","bar","institute","views","plans","double","dog","build","screen","exchange","types","soon","sponsored","lines","electronic","continue","across","benefits","needed","season","apply","someone","held","ny","anything","printer","condition","effective","believe","organization","effect","asked","eur","mind","sunday","selection","casino","pdf","lost","tour","menu","volume","cross","anyone","mortgage","hope","silver","corporation","wish","inside","solution","mature","role","rather","weeks","addition","came","supply","nothing","certain","usr","executive","running","lower","necessary","union","jewelry","according","dc","clothing","mon","com","particular","fine","names","robert","homepage","hour","gas","skills","six","bush","islands","advice","career","military","rental","decision","leave","british","teens","pre","huge","sat","woman","facilities","zip","bid","kind","sellers","middle","move","cable","opportunities","taking","values","division","coming","tuesday","object","lesbian","appropriate","machine","logo","length","actually","nice","score","statistics","client","ok","returns","capital","follow","sample","investment","sent","shown","saturday","christmas","england","culture","band","flash","ms","lead","george","choice","went","starting","registration","fri","thursday","courses","consumer","hi","airport","foreign","artist","outside","furniture","levels","channel","letter","mode","phones","ideas","wednesday","structure","fund","summer","allow","degree","contract","button","releases","wed","homes","super","male","matter","custom","virginia","almost","took","located","multiple","asian","distribution","editor","inn","industrial","cause","potential","song","cnet","ltd","los","hp","focus","late","fall","featured","idea","rooms","female","responsible","inc","communications","win","associated","thomas","primary","cancer","numbers","reason","tool","browser","spring","foundation","answer","voice","eg","friendly","schedule","documents","communication","purpose","feature","bed","comes","police","everyone","independent","ip","approach","cameras","brown","physical","operating","hill","maps","medicine","deal","hold","ratings","chicago","forms","glass","happy","tue","smith","wanted","developed","thank","safe","unique","survey","prior","telephone","sport","ready","feed","animal","sources","mexico","population","pa","regular","secure","navigation","operations","therefore","simply","evidence","station","christian","round","paypal","favorite","understand","option","master","valley","recently","probably","thu","rentals","sea","built","publications","blood","cut","worldwide","improve","connection","publisher","hall","larger","anti","networks","earth","parents","nokia","impact","transfer","introduction","kitchen","strong","tel","carolina","wedding","properties","hospital","ground","overview","ship","accommodation","owners","disease","tx","excellent","paid","italy","perfect","hair","opportunity","kit","classic","basis","command","cities","william","express","award","distance","tree","peter","assessment","ensure","thus","wall","ie","involved","el","extra","especially","interface","partners","budget","rated","guides","success","maximum","ma","operation","existing","quite","selected","boy","amazon","patients","restaurants","beautiful","warning","wine","locations","horse","vote","forward","flowers","stars","significant","lists","technologies","owner","retail","animals","useful","directly","manufacturer","ways","est","son","providing","rule","mac","housing","takes","iii","gmt","bring","catalog","searches","max","trying","mother","authority","considered","told","xml","traffic","programme","joined","input","strategy","feet","agent","valid","bin","modern","senior","ireland","teaching","door","grand","testing","trial","charge","units","instead","canadian","cool","normal","wrote","enterprise","ships","entire","educational","md","leading","metal","positive","fl","fitness","chinese","opinion","mb","asia","football","abstract","uses","output","funds","mr","greater","likely","develop","employees","artists","alternative","processing","responsibility","resolution","java","guest","seems","publication","pass","relations","trust","van","contains","session","multi","photography","republic","fees","components","vacation","century","academic","assistance","completed","skin","graphics","indian","prev","ads","mary","il","expected","ring","grade","dating","pacific","mountain","organizations","pop","filter","mailing","vehicle","longer","consider","int","northern","behind","panel","floor","german","buying","match","proposed","default","require","iraq","boys","outdoor","deep","morning","otherwise","allows","rest","protein","plant","reported","hit","transportation","mm","pool","mini","politics","partner","disclaimer","authors","boards","faculty","parties","fish","membership","mission","eye","string","sense","modified","pack","released","stage","internal","goods","recommended","born","unless","richard","detailed","japanese","race","approved","background","target","except","character","usb","maintenance","ability","maybe","functions","ed","moving","brands","places","php","pretty","trademarks","phentermine","spain","southern","yourself","etc","winter","battery","youth","pressure","submitted","boston","debt","keywords","medium","television","interested","core","break","purposes","throughout","sets","dance","wood","msn","itself","defined","papers","playing","awards","fee","studio","reader","virtual","device","established","answers","rent","las","remote","dark","programming","external","apple","le","regarding","instructions","min","offered","theory","enjoy","remove","aid","surface","minimum","visual","host","variety","teachers","isbn","martin","manual","block","subjects","agents","increased","repair","fair","civil","steel","understanding","songs","fixed","wrong","beginning","hands","associates","finally","az","updates","desktop","classes","paris","ohio","gets","sector","capacity","requires","jersey","un","fat","fully","father","electric","saw","instruments","quotes","officer","driver","businesses","dead","respect","unknown","specified","restaurant","mike","trip","pst","worth","mi","procedures","poor","teacher","eyes","relationship","workers","farm","georgia","peace","traditional","campus","tom","showing","creative","coast","benefit","progress","funding","devices","lord","grant","sub","agree","fiction","hear","sometimes","watches","careers","beyond","goes","families","led","museum","themselves","fan","transport","interesting","blogs","wife","evaluation","accepted","former","implementation","ten","hits","zone","complex","th","cat","galleries","references","die","presented","jack","flat","flow","agencies","literature","respective","parent","spanish","michigan","columbia","setting","dr","scale","stand","economy","highest","helpful","monthly","critical","frame","musical","definition","secretary","angeles","networking","path","australian","employee","chief","gives","kb","bottom","magazines","packages","detail","francisco","laws","changed","pet","heard","begin","individuals","colorado","royal","clean","switch","russian","largest","african","guy","titles","relevant","guidelines","justice","connect","bible","dev","cup","basket","applied","weekly","vol","installation","described","demand","pp","suite","vegas","na","square","chris","attention","advance","skip","diet","army","auction","gear","lee","os","difference","allowed","correct","charles","nation","selling","lots","piece","sheet","firm","seven","older","illinois","regulations","elements","species","jump","cells","module","resort","facility","random","pricing","dvds","certificate","minister","motion","looks","fashion","directions","visitors","documentation","monitor","trading","forest","calls","whose","coverage","couple","giving","chance","vision","ball","ending","clients","actions","listen","discuss","accept","automotive","naked","goal","successful","sold","wind","communities","clinical","situation","sciences","markets","lowest","highly","publishing","appear","emergency","developing","lives","currency","leather","determine","temperature","palm","announcements","patient","actual","historical","stone","bob","commerce","ringtones","perhaps","persons","difficult","scientific","satellite","fit","tests","village","accounts","amateur","ex","met","pain","xbox","particularly","factors","coffee","www","settings","buyer","cultural","steve","easily","oral","ford","poster","edge","functional","root","au","fi","closed","holidays","ice","pink","zealand","balance","monitoring","graduate","replies","shot","nc","architecture","initial","label","thinking","scott","llc","sec","recommend","canon","league","waste","minute","bus","provider","optional","dictionary","cold","accounting","manufacturing","sections","chair","fishing","effort","phase","fields","bag","fantasy","po","letters","motor","va","professor","context","install","shirt","apparel","generally","continued","foot","mass","crime","count","breast","techniques","ibm","rd","johnson","sc","quickly","dollars","websites","religion","claim","driving","permission","surgery","patch","heat","wild","measures","generation","kansas","miss","chemical","doctor","task","reduce","brought","himself","nor","component","enable","exercise","bug","santa","mid","guarantee","leader","diamond","israel","se","processes","soft","servers","alone","meetings","seconds","jones","arizona","keyword","interests","flight","congress","fuel","username","walk","produced","italian","paperback","classifieds","wait","supported","pocket","saint","rose","freedom","argument","competition","creating","jim","drugs","joint","premium","providers","fresh","characters","attorney","upgrade","di","factor","growing","thousands","km","stream","apartments","pick","hearing","eastern","auctions","therapy","entries","dates","generated","signed","upper","administrative","serious","prime","samsung","limit","began","louis","steps","errors","shops","del","efforts","informed","ga","ac","thoughts","creek","ft","worked","quantity","urban","practices","sorted","reporting","essential","myself","tours","platform","load","affiliate","labor","immediately","admin","nursing","defense","machines","designated","tags","heavy","covered","recovery","joe","guys","integrated","configuration","merchant","comprehensive","expert","universal","protect","drop","solid","cds","presentation","languages","became","orange","compliance","vehicles","prevent","theme","rich","im","campaign","marine","improvement","vs","guitar","finding","pennsylvania","examples","ipod","saying","spirit","ar","claims","challenge","motorola","acceptance","strategies","mo","seem","affairs","touch","intended","towards","sa","goals","hire","election","suggest","branch","charges","serve","affiliates","reasons","magic","mount","smart","talking","gave","ones","latin","multimedia","xp","avoid","certified","manage","corner","rank","computing","oregon","element","birth","virus","abuse","interactive","requests","separate","quarter","procedure","leadership","tables","define","racing","religious","facts","breakfast","kong","column","plants","faith","chain","developer","identify","avenue","missing","died","approximately","domestic","sitemap","recommendations","moved","houston","reach","comparison","mental","viewed","moment","extended","sequence","inch","attack","sorry","centers","opening","damage","lab","reserve","recipes","cvs","gamma","plastic","produce","snow","placed","truth","counter","failure","follows","eu","weekend","dollar","camp","ontario","automatically","des","minnesota","films","bridge","native","fill","williams","movement","printing","baseball","owned","approval","draft","chart","played","contacts","cc","jesus","readers","clubs","lcd","wa","jackson","equal","adventure","matching","offering","shirts","profit","leaders","posters","institutions","assistant","variable","ave","dj","advertisement","expect","parking","headlines","yesterday","compared","determined","wholesale","workshop","russia","gone","codes","kinds","extension","seattle","statements","golden","completely","teams","fort","cm","wi","lighting","senate","forces","funny","brother","gene","turned","portable","tried","electrical","applicable","disc","returned","pattern","ct","boat","named","theatre","laser","earlier","manufacturers","sponsor","classical","icon","warranty","dedicated","indiana","direction","harry","basketball","objects","ends","delete","evening","assembly","nuclear","taxes","mouse","signal","criminal","issued","brain","sexual","wisconsin","powerful","dream","obtained","false","da","cast","flower","felt","personnel","passed","supplied","identified","falls","pic","soul","aids","opinions","promote","stated","stats","hawaii","professionals","appears","carry","flag","decided","nj","covers","hr","em","advantage","hello","designs","maintain","tourism","priority","newsletters","adults","clips","savings","iv","graphic","atom","payments","rw","estimated","binding","brief","ended","winning","eight","anonymous","iron","straight","script","served","wants","miscellaneous","prepared","void","dining","alert","integration","atlanta","dakota","tag","interview","mix","framework","disk","installed","queen","vhs","credits","clearly","fix","handle","sweet","desk","criteria","pubmed","dave","massachusetts","diego","hong","vice","associate","ne","truck","behavior","enlarge","ray","frequently","revenue","measure","changing","votes","du","duty","looked","discussions","bear","gain","festival","laboratory","ocean","flights","experts","signs","lack","depth","iowa","whatever","logged","laptop","vintage","train","exactly","dry","explore","maryland","spa","concept","nearly","eligible","checkout","reality","forgot","handling","origin","knew","gaming","feeds","billion","destination","scotland","faster","intelligence","dallas","bought","con","ups","nations","route","followed","specifications","broken","tripadvisor","frank","alaska","zoom","blow","battle","residential","anime","speak","decisions","industries","protocol","query","clip","partnership","editorial","nt","expression","es","equity","provisions","speech","wire","principles","suggestions","rural","shared","sounds","replacement","tape","strategic","judge","spam","economics","acid","bytes","cent","forced","compatible","fight","apartment","height","null","zero","speaker","filed","gb","netherlands","obtain","bc","consulting","recreation","offices","designer","remain","managed","pr","failed","marriage","roll","korea","banks","fr","participants","secret","bath","aa","kelly","leads","negative","austin","favorites","toronto","theater","springs","missouri","andrew","var","perform","healthy","translation","estimates","font","assets","injury","mt","joseph","ministry","drivers","lawyer","figures","married","protected","proposal","sharing","philadelphia","portal","waiting","birthday","beta","fail","gratis","banking","officials","brian","toward","won","slightly","assist","conduct","contained","lingerie","legislation","calling","parameters","jazz","serving","bags","profiles","miami","comics","matters","houses","doc","postal","relationships","tennessee","wear","controls","breaking","combined","ultimate","wales","representative","frequency","introduced","minor","finish","departments","residents","noted","displayed","mom","reduced","physics","rare","spent","performed","extreme","samples","davis","daniel","bars","reviewed","row","oz","forecast","removed","helps","singles","administrator","cycle","amounts","contain","accuracy","dual","rise","usd","sleep","mg","bird","pharmacy","brazil","creation","static","scene","hunter","addresses","lady","crystal","famous","writer","chairman","violence","fans","oklahoma","speakers","drink","academy","dynamic","gender","eat","permanent","agriculture","dell","cleaning","constitutes","portfolio","practical","delivered","collectibles","infrastructure","exclusive","seat","concerns","colour","vendor","originally","intel","utilities","philosophy","regulation","officers","reduction","aim","bids","referred","supports","nutrition","recording","regions","junior","toll","les","cape","ann","rings","meaning","tip","secondary","wonderful","mine","ladies","henry","ticket","announced","guess","agreed","prevention","whom","ski","soccer","math","import","posting","presence","instant","mentioned","automatic","healthcare","viewing","maintained","ch","increasing","majority","connected","christ","dan","dogs","sd","directors","aspects","austria","ahead","moon","participation","scheme","utility","preview","fly","manner","matrix","containing","combination","devel","amendment","despite","strength","guaranteed","turkey","libraries","proper","distributed","degrees","singapore","enterprises","delta","fear","seeking","inches","phoenix","rs","convention","shares","principal","daughter","standing","comfort","colors","wars","cisco","ordering","kept","alpha","appeal","cruise","bonus","certification","previously","hey","bookmark","buildings","specials","beat","disney","household","batteries","adobe","smoking","bbc","becomes","drives","arms","alabama","tea","improved","trees","avg","achieve","positions","dress","subscription","dealer","contemporary","sky","utah","nearby","rom","carried","happen","exposure","panasonic","hide","permalink","signature","gambling","refer","miller","provision","outdoors","clothes","caused","luxury","babes","frames","certainly","indeed","newspaper","toy","circuit","layer","printed","slow","removal","easier","src","liability","trademark","hip","printers","faqs","nine","adding","kentucky","mostly","eric","spot","taylor","trackback","prints","spend","factory","interior","revised","grow","americans","optical","promotion","relative","amazing","clock","dot","hiv","identity","suites","conversion","feeling","hidden","reasonable","victoria","serial","relief","revision","broadband","influence","ratio","pda","importance","rain","onto","dsl","planet","webmaster","copies","recipe","zum","permit","seeing","proof","dna","diff","tennis","bass","prescription","bedroom","empty","instance","hole","pets","ride","licensed","orlando","specifically","tim","bureau","maine","sql","represent","conservation","pair","ideal","specs","recorded","don","pieces","finished","parks","dinner","lawyers","sydney","stress","cream","ss","runs","trends","yeah","discover","ap","patterns","boxes","louisiana","hills","javascript","fourth","nm","advisor","mn","marketplace","nd","evil","aware","wilson","shape","evolution","irish","certificates","objectives","stations","suggested","gps","op","remains","acc","greatest","firms","concerned","euro","operator","structures","generic","encyclopedia","usage","cap","ink","charts","continuing","mixed","census","interracial","peak","tn","competitive","exist","wheel","transit","suppliers","salt","compact","poetry","lights","tracking","angel","bell","keeping","preparation","attempt","receiving","matches","accordance","width","noise","engines","forget","array","discussed","accurate","stephen","elizabeth","climate","reservations","pin","playstation","alcohol","greek","instruction","managing","annotation","sister","raw","differences","walking","explain","smaller","newest","establish","gnu","happened","expressed","jeff","extent","sharp","lesbians","ben","lane","paragraph","kill","mathematics","aol","compensation","ce","export","managers","aircraft","modules","sweden","conflict","conducted","versions","employer","occur","percentage","knows","mississippi","describe","concern","backup","requested","citizens","connecticut","heritage","personals","immediate","holding","trouble","spread","coach","kevin","agricultural","expand","supporting","audience","assigned","jordan","collections","ages","participate","plug","specialist","cook","affect","virgin","experienced","investigation","raised","hat","institution","directed","dealers","searching","sporting","helping","perl","affected","lib","bike","totally","plate","expenses","indicate","blonde","ab","proceedings","favourite","transmission","anderson","utc","characteristics","der","lose","organic","seek","experiences","albums","cheats","extremely","verzeichnis","contracts","guests","hosted","diseases","concerning","developers","equivalent","chemistry","tony","neighborhood","nevada","kits","thailand","variables","agenda","anyway","continues","tracks","advisory","cam","curriculum","logic","template","prince","circle","soil","grants","anywhere","psychology","responses","atlantic","wet","circumstances","edward","investor","identification","ram","leaving","wildlife","appliances","matt","elementary","cooking","speaking","sponsors","fox","unlimited","respond","sizes","plain","exit","entered","iran","arm","keys","launch","wave","checking","costa","belgium","printable","holy","acts","guidance","mesh","trail","enforcement","symbol","crafts","highway","buddy","hardcover","observed","dean","setup","poll","booking","glossary","fiscal","celebrity","styles","denver","unix","filled","bond","channels","ericsson","appendix","notify","blues","chocolate","pub","portion","scope","hampshire","supplier","cables","cotton","bluetooth","controlled","requirement","authorities","biology","dental","killed","border","ancient","debate","representatives","starts","pregnancy","causes","arkansas","biography","leisure","attractions","learned","transactions","notebook","explorer","historic","attached","opened","tm","husband","disabled","authorized","crazy","upcoming","britain","concert","retirement","scores","financing","efficiency","sp","comedy","adopted","efficient","weblog","linear","commitment","specialty","bears","jean","hop","carrier","edited","constant","visa","mouth","jewish","meter","linked","portland","interviews","concepts","nh","gun","reflect","pure","deliver","wonder","lessons","fruit","begins","qualified","reform","lens","alerts","treated","discovery","draw","mysql","classified","relating","assume","confidence","alliance","fm","confirm","warm","neither","lewis","howard","offline","leaves","engineer","lifestyle","consistent","replace","clearance","connections","inventory","converter","organisation","babe","checks","reached","becoming","safari","objective","indicated","sugar","crew","legs","sam","stick","securities","allen","pdt","relation","enabled","genre","slide","montana","volunteer","tested","rear","democratic","enhance","switzerland","exact","bound","parameter","adapter","processor","node","formal","dimensions","contribute","lock","hockey","storm","micro","colleges","laptops","mile","showed","challenges","editors","mens","threads","bowl","supreme","brothers","recognition","presents","ref","tank","submission","dolls","estimate","encourage","navy","kid","regulatory","inspection","consumers","cancel","limits","territory","transaction","manchester","weapons","paint","delay","pilot","outlet","contributions","continuous","db","czech","resulting","cambridge","initiative","novel","pan","execution","disability","increases","ultra","winner","idaho","contractor","ph","episode","examination","potter","dish","plays","bulletin","ia","pt","indicates","modify","oxford","adam","truly","epinions","painting","committed","extensive","affordable","universe","candidate","databases","patent","slot","psp","outstanding","ha","eating","perspective","planned","watching","lodge","messenger","mirror","tournament","consideration","ds","discounts","sterling","sessions","kernel","stocks","buyers","journals","gray","catalogue","ea","jennifer","antonio","charged","broad","taiwan","und","chosen","demo","greece","lg","swiss","sarah","clark","labour","hate","terminal","publishers","nights","behalf","caribbean","liquid","rice","nebraska","loop","salary","reservation","foods","gourmet","guard","properly","orleans","saving","nfl","remaining","empire","resume","twenty","newly","raise","prepare","avatar","gary","depending","illegal","expansion","vary","hundreds","rome","arab","lincoln","helped","premier","tomorrow","purchased","milk","decide","consent","drama","visiting","performing","downtown","keyboard","contest","collected","nw","bands","boot","suitable","ff","absolutely","millions","lunch","audit","push","chamber","guinea","findings","muscle","featuring","iso","implement","clicking","scheduled","polls","typical","tower","yours","sum","misc","calculator","significantly","chicken","temporary","attend","shower","alan","sending","jason","tonight","dear","sufficient","holdem","shell","province","catholic","oak","vat","awareness","vancouver","governor","beer","seemed","contribution","measurement","swimming","spyware","formula","constitution","packaging","solar","jose","catch","jane","pakistan","ps","reliable","consultation","northwest","sir","doubt","earn","finder","unable","periods","classroom","tasks","democracy","attacks","kim","wallpaper","merchandise","const","resistance","doors","symptoms","resorts","biggest","memorial","visitor","twin","forth","insert","baltimore","gateway","ky","dont","alumni","drawing","candidates","charlotte","ordered","biological","fighting","transition","happens","preferences","spy","romance","instrument","bruce","split","themes","powers","heaven","br","bits","pregnant","twice","classification","focused","egypt","physician","hollywood","bargain","wikipedia","cellular","norway","vermont","asking","blocks","normally","lo","spiritual","hunting","diabetes","suit","ml","shift","chip","res","sit","bodies","photographs","cutting","wow","simon","writers","marks","flexible","loved","favourites","mapping","numerous","relatively","birds","satisfaction","represents","char","indexed","pittsburgh","superior","preferred","saved","paying","cartoon","shots","intellectual","moore","granted","choices","carbon","spending","comfortable","magnetic","interaction","listening","effectively","registry","crisis","outlook","massive","denmark","employed","bright","treat","header","cs","poverty","formed","piano","echo","que","grid","sheets","patrick","experimental","puerto","revolution","consolidation","displays","plasma","allowing","earnings","voip","mystery","landscape","dependent","mechanical","journey","delaware","bidding","consultants","risks","banner","applicant","charter","fig","barbara","cooperation","counties","acquisition","ports","implemented","sf","directories","recognized","dreams","blogger","notification","kg","licensing","stands","teach","occurred","textbooks","rapid","pull","hairy","diversity","cleveland","ut","reverse","deposit","seminar","investments","latina","nasa","wheels","specify","accessibility","dutch","sensitive","templates","formats","tab","depends","boots","holds","router","concrete","si","editing","poland","folder","womens","css","completion","upload","pulse","universities","technique","contractors","voting","courts","notices","subscriptions","calculate","mc","detroit","alexander","broadcast","converted","metro","toshiba","anniversary","improvements","strip","specification","pearl","accident","nick","accessible","accessory","resident","plot","qty","possibly","airline","typically","representation","regard","pump","exists","arrangements","smooth","conferences","uniprotkb","strike","consumption","birmingham","flashing","lp","narrow","afternoon","threat","surveys","sitting","putting","consultant","controller","ownership","committees","legislative","researchers","vietnam","trailer","anne","castle","gardens","missed","malaysia","unsubscribe","antique","labels","willing","bio","molecular","acting","heads","stored","exam","logos","residence","attorneys","antiques","density","hundred","ryan","operators","strange","sustainable","philippines","statistical","beds","mention","innovation","pcs","employers","grey","parallel","honda","amended","operate","bills","bold","bathroom","stable","opera","definitions","von","doctors","lesson","cinema","asset","ag","scan","elections","drinking","reaction","blank","enhanced","entitled","severe","generate","stainless","newspapers","hospitals","vi","deluxe","humor","aged","monitors","exception","lived","duration","bulk","successfully","indonesia","pursuant","sci","fabric","edt","visits","primarily","tight","domains","capabilities","pmid","contrast","recommendation","flying","recruitment","sin","berlin","cute","organized","ba","para","siemens","adoption","improving","cr","expensive","meant","capture","pounds","buffalo","organisations","plane","pg","explained","seed","programmes","desire","expertise","mechanism","camping","ee","jewellery","meets","welfare","peer","caught","eventually","marked","driven","measured","medline","bottle","agreements","considering","innovative","marshall","massage","rubber","conclusion","closing","tampa","thousand","meat","legend","grace","susan","ing","ks","adams","python","monster","alex","bang","villa","bone","columns","disorders","bugs","collaboration","hamilton","detection","ftp","cookies","inner","formation","tutorial","med","engineers","entity","cruises","gate","holder","proposals","moderator","sw","tutorials","settlement","portugal","lawrence","roman","duties","valuable","tone","collectables","ethics","forever","dragon","busy","captain","fantastic","imagine","brings","heating","leg","neck","hd","wing","governments","purchasing","scripts","abc","stereo","appointed","taste","dealing","commit","tiny","operational","rail","airlines","liberal","livecam","jay","trips","gap","sides","tube","turns","corresponding","descriptions","cache","belt","jacket","determination","animation","oracle","er","matthew","lease","productions","aviation","hobbies","proud","excess","disaster","console","commands","jr","telecommunications","instructor","giant","achieved","injuries","shipped","seats","approaches","biz","alarm","voltage","anthony","nintendo","usual","loading","stamps","appeared","franklin","angle","rob","vinyl","highlights","mining","designers","melbourne","ongoing","worst","imaging","betting","scientists","liberty","wyoming","blackjack","argentina","era","convert","possibility","analyst","commissioner","dangerous","garage","exciting","reliability","thongs","gcc","unfortunately","respectively","volunteers","attachment","ringtone","finland","morgan","derived","pleasure","honor","asp","oriented","eagle","desktops","pants","columbus","nurse","prayer","appointment","workshops","hurricane","quiet","luck","postage","producer","represented","mortgages","dial","responsibilities","cheese","comic","carefully","jet","productivity","investors","crown","par","underground","diagnosis","maker","crack","principle","picks","vacations","gang","semester","calculated","fetish","applies","casinos","appearance","smoke","apache","filters","incorporated","nv","craft","cake","notebooks","apart","fellow","blind","lounge","mad","algorithm","semi","coins","andy","gross","strongly","cafe","valentine","hilton","ken","proteins","horror","su","exp","familiar","capable","douglas","debian","till","involving","pen","investing","christopher","admission","epson","shoe","elected","carrying","victory","sand","madison","terrorism","joy","editions","cpu","mainly","ethnic","ran","parliament","actor","finds","seal","situations","fifth","allocated","citizen","vertical","corrections","structural","municipal","describes","prize","sr","occurs","jon","absolute","disabilities","consists","anytime","substance","prohibited","addressed","lies","pipe","soldiers","nr","guardian","lecture","simulation","layout","initiatives","ill","concentration","classics","lbs","lay","interpretation","horses","lol","dirty","deck","wayne","donate","taught","bankruptcy","mp","worker","optimization","alive","temple","substances","prove","discovered","wings","breaks","genetic","restrictions","participating","waters","promise","thin","exhibition","prefer","ridge","cabinet","modem","harris","mph","bringing","sick","dose","evaluate","tiffany","tropical","collect","bet","composition","toyota","streets","nationwide","vector","definitely","shaved","turning","buffer","purple","existence","commentary","larry","limousines","developments","def","immigration","destinations","lets","mutual","pipeline","necessarily","syntax","li","attribute","prison","skill","chairs","nl","everyday","apparently","surrounding","mountains","moves","popularity","inquiry","ethernet","checked","exhibit","throw","trend","sierra","visible","cats","desert","postposted","ya","oldest","rhode","nba","coordinator","obviously","mercury","steven","handbook","greg","navigate","worse","summit","victims","epa","spaces","fundamental","burning","escape","coupons","somewhat","receiver","substantial","tr","progressive","cialis","bb","boats","glance","scottish","championship","arcade","richmond","sacramento","impossible","ron","russell","tells","obvious","fiber","depression","graph","covering","platinum","judgment","bedrooms","talks","filing","foster","modeling","passing","awarded","testimonials","trials","tissue","nz","memorabilia","clinton","masters","bonds","cartridge","alberta","explanation","folk","org","commons","cincinnati","subsection","fraud","electricity","permitted","spectrum","arrival","okay","pottery","emphasis","roger","aspect","workplace","awesome","mexican","confirmed","counts","priced","wallpapers","hist","crash","lift","desired","inter","closer","assumes","heights","shadow","riding","infection","firefox","lisa","expense","grove","eligibility","venture","clinic","korean","healing","princess","mall","entering","packet","spray","studios","involvement","dad","buttons","placement","observations","vbulletin","funded","thompson","winners","extend","roads","subsequent","pat","dublin","rolling","fell","motorcycle","yard","disclosure","establishment","memories","nelson","te","arrived","creates","faces","tourist","av","mayor","murder","sean","adequate","senator","yield","presentations","grades","cartoons","pour","digest","reg","lodging","tion","dust","hence","wiki","entirely","replaced","radar","rescue","undergraduate","losses","combat","reducing","stopped","occupation","lakes","donations","associations","citysearch","closely","radiation","diary","seriously","kings","shooting","kent","adds","nsw","ear","flags","pci","baker","launched","elsewhere","pollution","conservative","guestbook","shock","effectiveness","walls","abroad","ebony","tie","ward","drawn","arthur","ian","visited","roof","walker","demonstrate","atmosphere","suggests","kiss","beast","ra","operated","experiment","targets","overseas","purchases","dodge","counsel","federation","pizza","invited","yards","assignment","chemicals","gordon","mod","farmers","rc","queries","bmw","rush","ukraine","absence","nearest","cluster","vendors","mpeg","whereas","yoga","serves","woods","surprise","lamp","rico","partial","shoppers","phil","everybody","couples","nashville","ranking","jokes","cst","http","ceo","simpson","twiki","sublime","counseling","palace","acceptable","satisfied","glad","wins","measurements","verify","globe","trusted","copper","milwaukee","rack","medication","warehouse","shareware","ec","rep","dicke","kerry","receipt","supposed","ordinary","nobody","ghost","violation","configure","stability","mit","applying","southwest","boss","pride","institutional","expectations","independence","knowing","reporter","metabolism","keith","champion","cloudy","linda","ross","personally","chile","anna","plenty","solo","sentence","throat","ignore","maria","uniform","excellence","wealth","tall","rm","somewhere","vacuum","dancing","attributes","recognize","brass","writes","plaza","pdas","outcomes","survival","quest","publish","sri","screening","toe","thumbnail","trans","jonathan","whenever","nova","lifetime","api","pioneer","booty","forgotten","acrobat","plates","acres","venue","athletic","thermal","essays","behaviour","vital","telling","fairly","coastal","config","cf","charity","intelligent","edinburgh","vt","excel","modes","obligation","campbell","wake","stupid","harbor","hungary","traveler","urw","segment","realize","regardless","lan","enemy","puzzle","rising","aluminum","wells","wishlist","opens","insight","sms","restricted","republican","secrets","lucky","latter","merchants","thick","trailers","repeat","syndrome","philips","attendance","penalty","drum","glasses","enables","nec","iraqi","builder","vista","jessica","chips","terry","flood","foto","ease","arguments","amsterdam","arena","adventures","pupils","stewart","announcement","tabs","outcome","appreciate","expanded","casual","grown","polish","lovely","extras","gm","centres","jerry","clause","smile","lands","ri","troops","indoor","bulgaria","armed","broker","charger","regularly","believed","pine","cooling","tend","gulf","rt","rick","trucks","cp","mechanisms","divorce","laura","shopper","tokyo","partly","nikon","customize","tradition","candy","pills","tiger","donald","folks","sensor","exposed","telecom","hunt","angels","deputy","indicators","sealed","thai","emissions","physicians","loaded","fred","complaint","scenes","experiments","afghanistan","dd","boost","spanking","scholarship","governance","mill","founded","supplements","chronic","icons","moral","den","catering","aud","finger","keeps","pound","locate","camcorder","pl","trained","burn","implementing","roses","labs","ourselves","bread","tobacco","wooden","motors","tough","roberts","incident","gonna","dynamics","lie","crm","rf","conversation","decrease","chest","pension","billy","revenues","emerging","worship","capability","ak","fe","craig","herself","producing","churches","precision","damages","reserves","contributed","solve","shorts","reproduction","minority","td","diverse","amp","ingredients","sb","ah","johnny","sole","franchise","recorder","complaints","facing","sm","nancy","promotions","tones","passion","rehabilitation","maintaining","sight","laid","clay","defence","patches","weak","refund","usc","towns","environments","trembl","divided","blvd","reception","amd","wise","emails","cyprus","wv","odds","correctly","insider","seminars","consequences","makers","hearts","geography","appearing","integrity","worry","ns","discrimination","eve","carter","legacy","marc","pleased","danger","vitamin","widely","processed","phrase","genuine","raising","implications","functionality","paradise","hybrid","reads","roles","intermediate","emotional","sons","leaf","pad","glory","platforms","ja","bigger","billing","diesel","versus","combine","overnight","geographic","exceed","bs","rod","saudi","fault","cuba","hrs","preliminary","districts","introduce","silk","promotional","kate","chevrolet","babies","bi","karen","compiled","romantic","revealed","specialists","generator","albert","examine","jimmy","graham","suspension","bristol","margaret","compaq","sad","correction","wolf","slowly","authentication","communicate","rugby","supplement","showtimes","cal","portions","infant","promoting","sectors","samuel","fluid","grounds","fits","kick","regards","meal","ta","hurt","machinery","bandwidth","unlike","equation","baskets","probability","pot","dimension","wright","img","barry","proven","schedules","admissions","cached","warren","slip","studied","reviewer","involves","quarterly","rpm","profits","devil","grass","comply","marie","florist","illustrated","cherry","continental","alternate","deutsch","achievement","limitations","kenya","webcam","cuts","funeral","nutten","earrings","enjoyed","automated","chapters","pee","charlie","quebec","passenger","convenient","dennis","mars","francis","tvs","sized","manga","noticed","socket","silent","literary","egg","mhz","signals","caps","orientation","pill","theft","childhood","swing","symbols","lat","meta","humans","analog","facial","choosing","talent","dated","flexibility","seeker","wisdom","shoot","boundary","mint","packard","offset","payday","philip","elite","gi","spin","holders","believes","swedish","poems","deadline","jurisdiction","robot","displaying","witness","collins","equipped","stages","encouraged","sur","winds","powder","broadway","acquired","assess","wash","cartridges","stones","entrance","gnome","roots","declaration","losing","attempts","gadgets","noble","glasgow","automation","impacts","rev","gospel","advantages","shore","loves","induced","ll","knight","preparing","loose","aims","recipient","linking","extensions","appeals","cl","earned","illness","islamic","athletics","southeast","ieee","ho","alternatives","pending","parker","determining","lebanon","corp","personalized","kennedy","gt","sh","conditioning","teenage","soap","ae","triple","cooper","nyc","vincent","jam","secured","unusual","answered","partnerships","destruction","slots","increasingly","migration","disorder","routine","toolbar","basically","rocks","conventional","titans","applicants","wearing","axis","sought","genes","mounted","habitat","firewall","median","guns","scanner","herein","occupational","animated","judicial","rio","hs","adjustment","hero","integer","treatments","bachelor","attitude","camcorders","engaged","falling","basics","montreal","carpet","rv","struct","lenses","binary","genetics","attended","difficulty","punk","collective","coalition","pi","dropped","enrollment","duke","walter","ai","pace","besides","wage","producers","ot","collector","arc","hosts","interfaces","advertisers","moments","atlas","strings","dawn","representing","observation","feels","torture","carl","deleted","coat","mitchell","mrs","rica","restoration","convenience","returning","ralph","opposition","container","yr","defendant","warner","confirmation","app","embedded","inkjet","supervisor","wizard","corps","actors","liver","peripherals","liable","brochure","morris","bestsellers","petition","eminem","recall","antenna","picked","assumed","departure","minneapolis","belief","killing","bikini","memphis","shoulder","decor","lookup","texts","harvard","brokers","roy","ion","diameter","ottawa","doll","ic","podcast","seasons","peru","interactions","refine","bidder","singer","evans","herald","literacy","fails","aging","nike","intervention","fed","plugin","attraction","diving","invite","modification","alice","latinas","suppose","customized","reed","involve","moderate","terror","younger","thirty","mice","opposite","understood","rapidly","dealtime","ban","temp","intro","mercedes","zus","assurance","clerk","happening","vast","mills","outline","amendments","tramadol","holland","receives","jeans","metropolitan","compilation","verification","fonts","ent","odd","wrap","refers","mood","favor","veterans","quiz","mx","sigma","gr","attractive","xhtml","occasion","recordings","jefferson","victim","demands","sleeping","careful","ext","beam","gardening","obligations","arrive","orchestra","sunset","tracked","moreover","minimal","polyphonic","lottery","tops","framed","aside","outsourcing","licence","adjustable","allocation","michelle","essay","discipline","amy","ts","demonstrated","dialogue","identifying","alphabetical","camps","declared","dispatched","aaron","handheld","trace","disposal","shut","florists","packs","ge","installing","switches","romania","voluntary","ncaa","thou","consult","phd","greatly","blogging","mask","cycling","midnight","ng","commonly","pe","photographer","inform","turkish","coal","cry","messaging","pentium","quantum","murray","intent","tt","zoo","largely","pleasant","announce","constructed","additions","requiring","spoke","aka","arrow","engagement","sampling","rough","weird","tee","refinance","lion","inspired","holes","weddings","blade","suddenly","oxygen","cookie","meals","canyon","goto","meters","merely","calendars","arrangement","conclusions","passes","bibliography","pointer","compatibility","stretch","durham","furthermore","permits","cooperative","muslim","xl","neil","sleeve","netscape","cleaner","cricket","beef","feeding","stroke","township","rankings","measuring","cad","hats","robin","robinson","jacksonville","strap","headquarters","sharon","crowd","tcp","transfers","surf","olympic","transformation","remained","attachments","dv","dir","entities","customs","administrators","personality","rainbow","hook","roulette","decline","gloves","israeli","medicare","cord","skiing","cloud","facilitate","subscriber","valve","val","hewlett","explains","proceed","flickr","feelings","knife","jamaica","priorities","shelf","bookstore","timing","liked","parenting","adopt","denied","fotos","incredible","britney","freeware","donation","outer","crop","deaths","rivers","commonwealth","pharmaceutical","manhattan","tales","katrina","workforce","islam","nodes","tu","fy","thumbs","seeds","cited","lite","ghz","hub","targeted","organizational","skype","realized","twelve","founder","decade","gamecube","rr","dispute","portuguese","tired","titten","adverse","everywhere","excerpt","eng","steam","discharge","ef","drinks","ace","voices","acute","halloween","climbing","stood","sing","tons","perfume","carol","honest","albany","hazardous","restore","stack","methodology","somebody","sue","ep","housewares","reputation","resistant","democrats","recycling","hang","gbp","curve","creator","amber","qualifications","museums","coding","slideshow","tracker","variation","passage","transferred","trunk","hiking","lb","pierre","jelsoft","headset","photograph","oakland","colombia","waves","camel","distributor","lamps","underlying","hood","wrestling","suicide","archived","photoshop","jp","chi","bt","arabia","gathering","projection","juice","chase","mathematical","logical","sauce","fame","extract","specialized","diagnostic","panama","indianapolis","af","payable","corporations","courtesy","criticism","automobile","confidential","rfc","statutory","accommodations","athens","northeast","downloaded","judges","sl","seo","retired","isp","remarks","detected","decades","paintings","walked","arising","nissan","bracelet","ins","eggs","juvenile","injection","yorkshire","populations","protective","afraid","acoustic","railway","cassette","initially","indicator","pointed","hb","jpg","causing","mistake","norton","locked","eliminate","tc","fusion","mineral","sunglasses","ruby","steering","beads","fortune","preference","canvas","threshold","parish","claimed","screens","cemetery","planner","croatia","flows","stadium","venezuela","exploration","mins","fewer","sequences","coupon","nurses","ssl","stem","proxy","astronomy","lanka","opt","edwards","drew","contests","flu","translate","announces","mlb","costume","tagged","berkeley","voted","killer","bikes","gates","adjusted","rap","tune","bishop","pulled","corn","gp","shaped","compression","seasonal","establishing","farmer","counters","puts","constitutional","grew","perfectly","tin","slave","instantly","cultures","norfolk","coaching","examined","trek","encoding","litigation","submissions","oem","heroes","painted","lycos","ir","zdnet","broadcasting","horizontal","artwork","cosmetic","resulted","portrait","terrorist","informational","ethical","carriers","ecommerce","mobility","floral","builders","ties","struggle","schemes","suffering","neutral","fisher","rat","spears","prospective","bedding","ultimately","joining","heading","equally","artificial","bearing","spectacular","coordination","connector","brad","combo","seniors","worlds","guilty","affiliated","activation","naturally","haven","tablet","jury","dos","tail","subscribers","charm","lawn","violent","mitsubishi","underwear","basin","soup","potentially","ranch","constraints","crossing","inclusive","dimensional","cottage","drunk","considerable","crimes","resolved","mozilla","byte","toner","nose","latex","branches","anymore","oclc","delhi","holdings","alien","locator","selecting","processors","pantyhose","plc","broke","nepal","zimbabwe","difficulties","juan","complexity","msg","constantly","browsing","resolve","barcelona","presidential","documentary","cod","territories","melissa","moscow","thesis","thru","jews","nylon","palestinian","discs","rocky","bargains","frequent","trim","nigeria","ceiling","pixels","ensuring","hispanic","cv","cb","legislature","hospitality","gen","anybody","procurement","diamonds","espn","fleet","untitled","bunch","totals","marriott","singing","theoretical","afford","exercises","starring","referral","nhl","surveillance","optimal","quit","distinct","protocols","lung","highlight","substitute","inclusion","hopefully","brilliant","turner","sucking","cents","reuters","ti","fc","gel","todd","spoken","omega","evaluated","stayed","civic","assignments","fw","manuals","doug","sees","termination","watched","saver","thereof","grill","households","gs","redeem","rogers","grain","aaa","authentic","regime","wanna","wishes","bull","montgomery","architectural","louisville","depend","differ","macintosh","movements","ranging","monica","repairs","breath","amenities","virtually","cole","mart","candle","hanging","colored","authorization","tale","verified","lynn","formerly","projector","bp","situated","comparative","std","seeks","herbal","loving","strictly","routing","docs","stanley","psychological","surprised","retailer","vitamins","elegant","gains","renewal","vid","genealogy","opposed","deemed","scoring","expenditure","brooklyn","liverpool","sisters","critics","connectivity","spots","oo","algorithms","hacker","madrid","similarly","margin","coin","solely","fake","salon","collaborative","norman","fda","excluding","turbo","headed","voters","cure","madonna","commander","arch","ni","murphy","thinks","thats","suggestion","hdtv","soldier","phillips","asin","aimed","justin","bomb","harm","interval","mirrors","spotlight","tricks","reset","brush","investigate","thy","expansys","panels","repeated","assault","connecting","spare","logistics","deer","kodak","tongue","bowling","tri","danish","pal","monkey","proportion","filename","skirt","florence","invest","honey","um","analyses","drawings","significance","scenario","ye","fs","lovers","atomic","approx","symposium","arabic","gauge","essentials","junction","protecting","nn","faced","mat","rachel","solving","transmitted","weekends","screenshots","produces","oven","ted","intensive","chains","kingston","sixth","engage","deviant","noon","switching","quoted","adapters","correspondence","farms","imports","supervision","cheat","bronze","expenditures","sandy","separation","testimony","suspect","celebrities","macro","sender","mandatory","boundaries","crucial","syndication","gym","celebration","kde","adjacent","filtering","tuition","spouse","exotic","viewer","signup","threats","luxembourg","puzzles","reaching","vb","damaged","cams","receptor","laugh","joel","surgical","destroy","citation","pitch","autos","yo","premises","perry","proved","offensive","imperial","dozen","benjamin","deployment","teeth","cloth","studying","colleagues","stamp","lotus","salmon","olympus","separated","proc","cargo","tan","directive","fx","salem","mate","dl","starter","upgrades","likes","butter","pepper","weapon","luggage","burden","chef","tapes","zones","races","isle","stylish","slim","maple","luke","grocery","offshore","governing","retailers","depot","kenneth","comp","alt","pie","blend","harrison","ls","julie","occasionally","cbs","attending","emission","pete","spec","finest","realty","janet","bow","penn","recruiting","apparent","instructional","phpbb","autumn","traveling","probe","midi","permissions","biotechnology","toilet","ranked","jackets","routes","packed","excited","outreach","helen","mounting","recover","tied","lopez","balanced","prescribed","catherine","timely","talked","debug","delayed","chuck","reproduced","hon","dale","explicit","calculation","villas","ebook","consolidated","exclude","peeing","occasions","brooks","equations","newton","oils","sept","exceptional","anxiety","bingo","whilst","spatial","respondents","unto","lt","ceramic","prompt","precious","minds","annually","considerations","scanners","atm","xanax","eq","pays","fingers","sunny","ebooks","delivers","je","queensland","necklace","musicians","leeds","composite","unavailable","cedar","arranged","lang","theaters","advocacy","raleigh","stud","fold","essentially","designing","threaded","uv","qualify","blair","hopes","assessments","cms","mason","diagram","burns","pumps","footwear","sg","vic","beijing","peoples","victor","mario","pos","attach","licenses","utils","removing","advised","brunswick","spider","phys","ranges","pairs","sensitivity","trails","preservation","hudson","isolated","calgary","interim","assisted","divine","streaming","approve","chose","compound","intensity","technological","syndicate","abortion","dialog","venues","blast","wellness","calcium","newport","antivirus","addressing","pole","discounted","indians","shield","harvest","membrane","prague","previews","bangladesh","constitute","locally","concluded","pickup","desperate","mothers","nascar","iceland","demonstration","governmental","manufactured","candles","graduation","mega","bend","sailing","variations","moms","sacred","addiction","morocco","chrome","tommy","springfield","refused","brake","exterior","greeting","ecology","oliver","congo","glen","botswana","nav","delays","synthesis","olive","undefined","unemployment","cyber","verizon","scored","enhancement","newcastle","clone","velocity","lambda","relay","composed","tears","performances","oasis","baseline","cab","angry","fa","societies","silicon","brazilian","identical","petroleum","compete","ist","norwegian","lover","belong","honolulu","beatles","lips","retention","exchanges","pond","rolls","thomson","barnes","soundtrack","wondering","malta","daddy","lc","ferry","rabbit","profession","seating","dam","cnn","separately","physiology","lil","collecting","das","exports","omaha","tire","participant","scholarships","recreational","dominican","chad","electron","loads","friendship","heather","passport","motel","unions","treasury","warrant","sys","solaris","frozen","occupied","josh","royalty","scales","rally","observer","sunshine","strain","drag","ceremony","somehow","arrested","expanding","provincial","investigations","icq","ripe","yamaha","rely","medications","hebrew","gained","rochester","dying","laundry","stuck","solomon","placing","stops","homework","adjust","assessed","advertiser","enabling","encryption","filling","downloadable","sophisticated","imposed","silence","scsi","focuses","soviet","possession","cu","laboratories","treaty","vocal","trainer","organ","stronger","volumes","advances","vegetables","lemon","toxic","dns","thumbnails","darkness","pty","ws","nuts","nail","bizrate","vienna","implied","span","stanford","sox","stockings","joke","respondent","packing","statute","rejected","satisfy","destroyed","shelter","chapel","gamespot","manufacture","layers","wordpress","guided","vulnerability","accountability","celebrate","accredited","appliance","compressed","bahamas","powell","mixture","bench","univ","tub","rider","scheduling","radius","perspectives","mortality","logging","hampton","christians","borders","therapeutic","pads","butts","inns","bobby","impressive","sheep","accordingly","architect","railroad","lectures","challenging","wines","nursery","harder","cups","ash","microwave","cheapest","accidents","travesti","relocation","stuart","contributors","salvador","ali","salad","np","monroe","tender","violations","foam","temperatures","paste","clouds","competitions","discretion","tft","tanzania","preserve","jvc","poem","unsigned","staying","cosmetics","easter","theories","repository","praise","jeremy","venice","concentrations","estonia","christianity","veteran","streams","landing","signing","executed","katie","negotiations","realistic","dt","cgi","showcase","integral","asks","relax","namibia","generating","christina","congressional","synopsis","hardly","prairie","reunion","composer","bean","sword","absent","photographic","sells","ecuador","hoping","accessed","spirits","modifications","coral","pixel","float","colin","bias","imported","paths","bubble","por","acquire","contrary","millennium","tribune","vessel","acids","focusing","viruses","cheaper","admitted","dairy","admit","mem","fancy","equality","samoa","gc","achieving","tap","stickers","fisheries","exceptions","reactions","leasing","lauren","beliefs","ci","macromedia","companion","squad","analyze","ashley","scroll","relate","divisions","swim","wages","additionally","suffer","forests","fellowship","nano","invalid","concerts","martial","males","victorian","retain","colours","execute","tunnel","genres","cambodia","patents","copyrights","yn","chaos","lithuania","mastercard","wheat","chronicles","obtaining","beaver","updating","distribute","readings","decorative","kijiji","confused","compiler","enlargement","eagles","bases","vii","accused","bee","campaigns","unity","loud","conjunction","bride","rats","defines","airports","instances","indigenous","begun","cfr","brunette","packets","anchor","socks","validation","parade","corruption","stat","trigger","incentives","cholesterol","gathered","essex","slovenia","notified","differential","beaches","folders","dramatic","surfaces","terrible","routers","cruz","pendant","dresses","baptist","scientist","starsmerchant","hiring","clocks","arthritis","bios","females","wallace","nevertheless","reflects","taxation","fever","pmc","cuisine","surely","practitioners","transcript","myspace","theorem","inflation","thee","nb","ruth","pray","stylus","compounds","pope","drums","contracting","arnold","structured","reasonably","jeep","chicks","bare","hung","cattle","mba","radical","graduates","rover","recommends","controlling","treasure","reload","distributors","flame","levitra","tanks","assuming","monetary","elderly","pit","arlington","mono","particles","floating","extraordinary","tile","indicating","bolivia","spell","hottest","stevens","coordinate","kuwait","exclusively","emily","alleged","limitation","widescreen","compile","webster","struck","rx","illustration","plymouth","warnings","construct","apps","inquiries","bridal","annex","mag","gsm","inspiration","tribal","curious","affecting","freight","rebate","meetup","eclipse","sudan","ddr","downloading","rec","shuttle","aggregate","stunning","cycles","affects","forecasts","detect","actively","ciao","ampland","knee","prep","pb","complicated","chem","fastest","butler","shopzilla","injured","decorating","payroll","cookbook","expressions","ton","courier","uploaded","shakespeare","hints","collapse","americas","connectors","unlikely","oe","gif","pros","conflicts","techno","beverage","tribute","wired","elvis","immune","latvia","travelers","forestry","barriers","cant","jd","rarely","gpl","infected","offerings","martha","genesis","barrier","argue","incorrect","trains","metals","bicycle","furnishings","letting","arise","guatemala","celtic","thereby","irc","jamie","particle","perception","minerals","advise","humidity","bottles","boxing","wy","dm","bangkok","renaissance","pathology","sara","bra","ordinance","hughes","photographers","infections","jeffrey","chess","operates","brisbane","configured","survive","oscar","festivals","menus","joan","possibilities","duck","reveal","canal","amino","phi","contributing","herbs","clinics","mls","cow","manitoba","analytical","missions","watson","lying","costumes","strict","dive","saddam","circulation","drill","offense","bryan","cet","protest","assumption","jerusalem","hobby","tries","transexuales","invention","nickname","fiji","technician","inline","executives","enquiries","washing","audi","staffing","cognitive","exploring","trick","enquiry","closure","raid","ppc","timber","volt","intense","div","playlist","registrar","showers","supporters","ruling","steady","dirt","statutes","withdrawal","myers","drops","predicted","wider","saskatchewan","jc","cancellation","plugins","enrolled","sensors","screw","ministers","publicly","hourly","blame","geneva","freebsd","veterinary","acer","prostores","reseller","dist","handed","suffered","intake","informal","relevance","incentive","butterfly","tucson","mechanics","heavily","swingers","fifty","headers","mistakes","numerical","ons","geek","uncle","defining","counting","reflection","sink","accompanied","assure","invitation","devoted","princeton","jacob","sodium","randy","spirituality","hormone","meanwhile","proprietary","timothy","childrens","brick","grip","naval","thumbzilla","medieval","porcelain","avi","bridges","pichunter","captured","watt","thehun","decent","casting","dayton","translated","shortly","cameron","columnists","pins","carlos","reno","donna","andreas","warrior","diploma","cabin","innocent","scanning","ide","consensus","polo","valium","copying","rpg","delivering","cordless","patricia","horn","eddie","uganda","fired","journalism","pd","prot","trivia","adidas","perth","frog","grammar","intention","syria","disagree","klein","harvey","tires","logs","undertaken","tgp","hazard","retro","leo","statewide","semiconductor","gregory","episodes","boolean","circular","anger","diy","mainland","illustrations","suits","chances","interact","snap","happiness","arg","substantially","bizarre","glenn","ur","auckland","olympics","fruits","identifier","geo","ribbon","calculations","doe","jpeg","conducting","startup","suzuki","trinidad","ati","kissing","wal","handy","swap","exempt","crops","reduces","accomplished","calculators","geometry","impression","abs","slovakia","flip","guild","correlation","gorgeous","capitol","sim","dishes","rna","barbados","chrysler","nervous","refuse","extends","fragrance","mcdonald","replica","plumbing","brussels","tribe","neighbors","trades","superb","buzz","transparent","nuke","rid","trinity","charleston","handled","legends","boom","calm","champions","floors","selections","projectors","inappropriate","exhaust","comparing","shanghai","speaks","burton","vocational","davidson","copied","scotia","farming","gibson","pharmacies","fork","troy","ln","roller","introducing","batch","organize","appreciated","alter","nicole","latino","ghana","edges","uc","mixing","handles","skilled","fitted","albuquerque","harmony","distinguished","asthma","projected","assumptions","shareholders","twins","developmental","rip","zope","regulated","triangle","amend","anticipated","oriental","reward","windsor","zambia","completing","gmbh","buf","ld","hydrogen","webshots","sprint","comparable","chick","advocate","sims","confusion","copyrighted","tray","inputs","warranties","genome","escorts","documented","thong","medal","paperbacks","coaches","vessels","harbour","walks","sol","keyboards","sage","knives","eco","vulnerable","arrange","artistic","bat","honors","booth","indie","reflected","unified","bones","breed","detector","ignored","polar","fallen","precise","sussex","respiratory","notifications","msgid","transexual","mainstream","invoice","evaluating","lip","subcommittee","sap","gather","suse","maternity","backed","alfred","colonial","mf","carey","motels","forming","embassy","cave","journalists","danny","rebecca","slight","proceeds","indirect","amongst","wool","foundations","msgstr","arrest","volleyball","mw","adipex","horizon","nu","deeply","toolbox","ict","marina","liabilities","prizes","bosnia","browsers","decreased","patio","dp","tolerance","surfing","creativity","lloyd","describing","optics","pursue","lightning","overcome","eyed","ou","quotations","grab","inspector","attract","brighton","beans","bookmarks","ellis","disable","snake","succeed","leonard","lending","oops","reminder","xi","searched","behavioral","riverside","bathrooms","plains","sku","ht","raymond","insights","abilities","initiated","sullivan","za","midwest","karaoke","trap","lonely","fool","ve","nonprofit","lancaster","suspended","hereby","observe","julia","containers","attitudes","karl","berry","collar","simultaneously","racial","integrate","bermuda","amanda","sociology","mobiles","screenshot","exhibitions","kelkoo","confident","retrieved","exhibits","officially","consortium","dies","terrace","bacteria","pts","replied","seafood","novels","rh","rrp","recipients","ought","delicious","traditions","fg","jail","safely","finite","kidney","periodically","fixes","sends","durable","mazda","allied","throws","moisture","hungarian","roster","referring","symantec","spencer","wichita","nasdaq","uruguay","ooo","hz","transform","timer","tablets","tuning","gotten","educators","tyler","futures","vegetable","verse","highs","humanities","independently","wanting","custody","scratch","launches","ipaq","alignment","henderson","bk","britannica","comm","ellen","competitors","nhs","rocket","aye","bullet","towers","racks","lace","nasty","visibility","latitude","consciousness","ste","tumor","ugly","deposits","beverly","mistress","encounter","trustees","watts","duncan","reprints","hart","bernard","resolutions","ment","accessing","forty","tubes","attempted","col","midlands","priest","floyd","ronald","analysts","queue","dx","sk","trance","locale","nicholas","biol","yu","bundle","hammer","invasion","witnesses","runner","rows","administered","notion","sq","skins","mailed","oc","fujitsu","spelling","arctic","exams","rewards","beneath","strengthen","defend","aj","frederick","medicaid","treo","infrared","seventh","gods","une","welsh","belly","aggressive","tex","advertisements","quarters","stolen","cia","soonest","haiti","disturbed","determines","sculpture","poly","ears","dod","wp","fist","naturals","neo","motivation","lenders","pharmacology","fitting","fixtures","bloggers","mere","agrees","passengers","quantities","petersburg","consistently","powerpoint","cons","surplus","elder","sonic","obituaries","cheers","dig","taxi","punishment","appreciation","subsequently","om","belarus","nat","zoning","gravity","providence","thumb","restriction","incorporate","backgrounds","treasurer","guitars","essence","flooring","lightweight","ethiopia","tp","mighty","athletes","humanity","transcription","jm","holmes","complications","scholars","dpi","scripting","gis","remembered","galaxy","chester","snapshot","caring","loc","worn","synthetic","shaw","vp","segments","testament","expo","dominant","twist","specifics","itunes","stomach","partially","buried","cn","newbie","minimize","darwin","ranks","wilderness","debut","generations","tournaments","bradley","deny","anatomy","bali","judy","sponsorship","headphones","fraction","trio","proceeding","cube","defects","volkswagen","uncertainty","breakdown","milton","marker","reconstruction","subsidiary","strengths","clarity","rugs","sandra","adelaide","encouraging","furnished","monaco","settled","folding","emirates","terrorists","airfare","comparisons","beneficial","distributions","vaccine","belize","fate","viewpicture","promised","volvo","penny","robust","bookings","threatened","minolta","republicans","discusses","gui","porter","gras","jungle","ver","rn","responded","rim","abstracts","zen","ivory","alpine","dis","prediction","pharmaceuticals","andale","fabulous","remix","alias","thesaurus","individually","battlefield","literally","newer","kay","ecological","spice","oval","implies","cg","soma","ser","cooler","appraisal","consisting","maritime","periodic","submitting","overhead","ascii","prospect","shipment","breeding","citations","geographical","donor","mozambique","tension","href","benz","trash","shapes","wifi","tier","fwd","earl","manor","envelope","diane","homeland","disclaimers","championships","excluded","andrea","breeds","rapids","disco","sheffield","bailey","aus","endif","finishing","emotions","wellington","incoming","prospects","lexmark","cleaners","bulgarian","hwy","eternal","cashiers","guam","cite","aboriginal","remarkable","rotation","nam","preventing","productive","boulevard","eugene","ix","gdp","pig","metric","compliant","minus","penalties","bennett","imagination","hotmail","refurbished","joshua","armenia","varied","grande","closest","activated","actress","mess","conferencing","assign","armstrong","politicians","trackbacks","lit","accommodate","tigers","aurora","una","slides","milan","premiere","lender","villages","shade","chorus","christine","rhythm","digit","argued","dietary","symphony","clarke","sudden","accepting","precipitation","marilyn","lions","findlaw","ada","pools","tb","lyric","claire","isolation","speeds","sustained","matched","approximate","rope","carroll","rational","programmer","fighters","chambers","dump","greetings","inherited","warming","incomplete","vocals","chronicle","fountain","chubby","grave","legitimate","biographies","burner","yrs","foo","investigator","gba","plaintiff","finnish","gentle","bm","prisoners","deeper","muslims","hose","mediterranean","nightlife","footage","howto","worthy","reveals","architects","saints","entrepreneur","carries","sig","freelance","duo","excessive","devon","screensaver","helena","saves","regarded","valuation","unexpected","cigarette","fog","characteristic","marion","lobby","egyptian","tunisia","metallica","outlined","consequently","headline","treating","punch","appointments","str","gotta","cowboy","narrative","bahrain","enormous","karma","consist","betty","queens","academics","pubs","quantitative","lucas","screensavers","subdivision","tribes","vip","defeat","clicks","distinction","honduras","naughty","hazards","insured","harper","livestock","mardi","exemption","tenant","sustainability","cabinets","tattoo","shake","algebra","shadows","holly","formatting","silly","nutritional","yea","mercy","hartford","freely","marcus","sunrise","wrapping","mild","fur","nicaragua","weblogs","timeline","tar","belongs","rj","readily","affiliation","soc","fence","nudist","infinite","diana","ensures","relatives","lindsay","clan","legally","shame","satisfactory","revolutionary","bracelets","sync","civilian","telephony","mesa","fatal","remedy","realtors","breathing","briefly","thickness","adjustments","graphical","genius","discussing","aerospace","fighter","meaningful","flesh","retreat","adapted","barely","wherever","estates","rug","democrat","borough","maintains","failing","shortcuts","ka","retained","voyeurweb","pamela","andrews","marble","extending","jesse","specifies","hull","logitech","surrey","briefing","belkin","dem","accreditation","wav","blackberry","highland","meditation","modular","microphone","macedonia","combining","brandon","instrumental","giants","organizing","shed","balloon","moderators","winston","memo","ham","solved","tide","kazakhstan","hawaiian","standings","partition","invisible","gratuit","consoles","funk","fbi","qatar","magnet","translations","porsche","cayman","jaguar","reel","sheer","commodity","posing","kilometers","rp","bind","thanksgiving","rand","hopkins","urgent","guarantees","infants","gothic","cylinder","witch","buck","indication","eh","congratulations","tba","cohen","sie","usgs","puppy","kathy","acre","graphs","surround","cigarettes","revenge","expires","enemies","lows","controllers","aqua","chen","emma","consultancy","finances","accepts","enjoying","conventions","eva","patrol","smell","pest","hc","italiano","coordinates","rca","fp","carnival","roughly","sticker","promises","responding","reef","physically","divide","stakeholders","hydrocodone","gst","consecutive","cornell","satin","bon","deserve","attempting","mailto","promo","jj","representations","chan","worried","tunes","garbage","competing","combines","mas","beth","bradford","len","phrases","kai","peninsula","chelsea","boring","reynolds","dom","jill","accurately","speeches","reaches","schema","considers","sofa","catalogs","ministries","vacancies","quizzes","parliamentary","obj","prefix","lucia","savannah","barrel","typing","nerve","dans","planets","deficit","boulder","pointing","renew","coupled","viii","myanmar","metadata","harold","circuits","floppy","texture","handbags","jar","ev","somerset","incurred","acknowledge","thoroughly","antigua","nottingham","thunder","tent","caution","identifies","questionnaire","qualification","locks","modelling","namely","miniature","dept","hack","dare","euros","interstate","pirates","aerial","hawk","consequence","rebel","systematic","perceived","origins","hired","makeup","textile","lamb","madagascar","nathan","tobago","presenting","cos","troubleshooting","uzbekistan","indexes","pac","rl","erp","centuries","gl","magnitude","ui","richardson","hindu","dh","fragrances","vocabulary","licking","earthquake","vpn","fundraising","fcc","markers","weights","albania","geological","assessing","lasting","wicked","eds","introduces","kills","roommate","webcams","pushed","webmasters","ro","df","computational","acdbentity","participated","junk","handhelds","wax","lucy","answering","hans","impressed","slope","reggae","failures","poet","conspiracy","surname","theology","nails","evident","whats","rides","rehab","epic","saturn","organizer","nut","allergy","sake","twisted","combinations","preceding","merit","enzyme","cumulative","zshops","planes","edmonton","tackle","disks","condo","pokemon","amplifier","ambien","arbitrary","prominent","retrieve","lexington","vernon","sans","worldcat","titanium","irs","fairy","builds","contacted","shaft","lean","bye","cdt","recorders","occasional","leslie","casio","deutsche","ana","postings","innovations","kitty","postcards","dude","drain","monte","fires","algeria","blessed","luis","reviewing","cardiff","cornwall","favors","potato","panic","explicitly","sticks","leone","transsexual","ez","citizenship","excuse","reforms","basement","onion","strand","pf","sandwich","uw","lawsuit","alto","informative","girlfriend","bloomberg","cheque","hierarchy","influenced","banners","reject","eau","abandoned","bd","circles","italic","beats","merry","mil","scuba","gore","complement","cult","dash","passive","mauritius","valued","cage","checklist","requesting","courage","verde","lauderdale","scenarios","gazette","hitachi","divx","extraction","batman","elevation","hearings","coleman","hugh","lap","utilization","beverages","calibration","jake","eval","efficiently","anaheim","ping","textbook","dried","entertaining","prerequisite","luther","frontier","settle","stopping","refugees","knights","hypothesis","palmer","medicines","flux","derby","sao","peaceful","altered","pontiac","regression","doctrine","scenic","trainers","muze","enhancements","renewable","intersection","passwords","sewing","consistency","collectors","conclude","recognised","munich","oman","celebs","gmc","propose","hh","azerbaijan","lighter","rage","adsl","uh","prix","astrology","advisors","pavilion","tactics","trusts","occurring","supplemental","travelling","talented","annie","pillow","induction","derek","precisely","shorter","harley","spreading","provinces","relying","finals","paraguay","steal","parcel","refined","fd","bo","fifteen","widespread","incidence","fears","predict","boutique","acrylic","rolled","tuner","avon","incidents","peterson","rays","asn","shannon","toddler","enhancing","flavor","alike","walt","homeless","horrible","hungry","metallic","acne","blocked","interference","warriors","palestine","listprice","libs","undo","cadillac","atmospheric","malawi","wm","pk","sagem","knowledgestorm","dana","halo","ppm","curtis","parental","referenced","strikes","lesser","publicity","marathon","ant","proposition","gays","pressing","gasoline","apt","dressed","scout","belfast","exec","dealt","niagara","inf","eos","warcraft","charms","catalyst","trader","bucks","allowance","vcr","denial","uri","designation","thrown","prepaid","raises","gem","duplicate","electro","criterion","badge","wrist","civilization","analyzed","vietnamese","heath","tremendous","ballot","lexus","varying","remedies","validity","trustee","maui","weighted","angola","performs","plastics","realm","corrected","jenny","helmet","salaries","postcard","elephant","yemen","encountered","tsunami","scholar","nickel","internationally","surrounded","psi","buses","expedia","geology","pct","wb","creatures","coating","commented","wallet","cleared","smilies","vids","accomplish","boating","drainage","shakira","corners","broader","vegetarian","rouge","yeast","yale","newfoundland","sn","qld","pas","clearing","investigated","dk","ambassador","coated","intend","stephanie","contacting","vegetation","doom","findarticles","louise","kenny","specially","owen","routines","hitting","yukon","beings","bite","issn","aquatic","reliance","habits","striking","myth","infectious","podcasts","singh","gig","gilbert","sas","ferrari","continuity","brook","fu","outputs","phenomenon","ensemble","insulin","assured","biblical","weed","conscious","accent","mysimon","eleven","wives","ambient","utilize","mileage","oecd","prostate","adaptor","auburn","unlock","hyundai","pledge","vampire","angela","relates","nitrogen","xerox","dice","merger","softball","referrals","quad","dock","differently","firewire","mods","nextel","framing","organised","musician","blocking","rwanda","sorts","integrating","vsnet","limiting","dispatch","revisions","papua","restored","hint","armor","riders","chargers","remark","dozens","varies","msie","reasoning","wn","liz","rendered","picking","charitable","guards","annotated","ccd","sv","convinced","openings","buys","burlington","replacing","researcher","watershed","councils","occupations","acknowledged","kruger","pockets","granny","pork","zu","equilibrium","viral","inquire","pipes","characterized","laden","aruba","cottages","realtor","merge","privilege","edgar","develops","qualifying","chassis","dubai","estimation","barn","pushing","llp","fleece","pediatric","boc","fare","dg","asus","pierce","allan","dressing","techrepublic","sperm","vg","bald","filme","craps","fuji","frost","leon","institutes","mold","dame","fo","sally","yacht","tracy","prefers","drilling","brochures","herb","tmp","alot","ate","breach","whale","traveller","appropriations","suspected","tomatoes","benchmark","beginners","instructors","highlighted","bedford","stationery","idle","mustang","unauthorized","clusters","antibody","competent","momentum","fin","wiring","io","pastor","mud","calvin","uni","shark","contributor","demonstrates","phases","grateful","emerald","gradually","laughing","grows","cliff","desirable","tract","ul","ballet","ol","journalist","abraham","js","bumper","afterwards","webpage","religions","garlic","hostels","shine","senegal","explosion","pn","banned","wendy","briefs","signatures","diffs","cove","mumbai","ozone","disciplines","casa","mu","daughters","conversations","radios","tariff","nvidia","opponent","pasta","simplified","muscles","serum","wrapped","swift","motherboard","runtime","inbox","focal","bibliographic","eden","distant","incl","champagne","ala","decimal","hq","deviation","superintendent","propecia","dip","nbc","samba","hostel","housewives","employ","mongolia","penguin","magical","influences","inspections","irrigation","miracle","manually","reprint","reid","wt","hydraulic","centered","robertson","flex","yearly","penetration","wound","belle","rosa","conviction","hash","omissions","writings","hamburg","lazy","mv","mpg","retrieval","qualities","cindy","fathers","carb","charging","cas","marvel","lined","cio","dow","prototype","importantly","rb","petite","apparatus","upc","terrain","dui","pens","explaining","yen","strips","gossip","rangers","nomination","empirical","mh","rotary","worm","dependence","discrete","beginner","boxed","lid","sexuality","polyester","cubic","deaf","commitments","suggesting","sapphire","kinase","skirts","mats","remainder","crawford","labeled","privileges","televisions","specializing","marking","commodities","pvc","serbia","sheriff","griffin","declined","guyana","spies","blah","mime","neighbor","motorcycles","elect","highways","thinkpad","concentrate","intimate","reproductive","preston","deadly","feof","bunny","chevy","molecules","rounds","longest","refrigerator","tions","intervals","sentences","dentists","usda","exclusion","workstation","holocaust","keen","flyer","peas","dosage","receivers","urls","customise","disposition","variance","navigator","investigators","cameroon","baking","marijuana","adaptive","computed","needle","baths","enb","gg","cathedral","brakes","og","nirvana","ko","fairfield","owns","til","invision","sticky","destiny","generous","madness","emacs","climb","blowing","fascinating","landscapes","heated","lafayette","jackie","wto","computation","hay","cardiovascular","ww","sparc","cardiac","salvation","dover","adrian","predictions","accompanying","vatican","brutal","learners","gd","selective","arbitration","configuring","token","editorials","zinc","sacrifice","seekers","guru","isa","removable","convergence","yields","gibraltar","levy","suited","numeric","anthropology","skating","kinda","aberdeen","emperor","grad","malpractice","dylan","bras","belts","blacks","educated","rebates","reporters","burke","proudly","pix","necessity","rendering","mic","inserted","pulling","basename","kyle","obesity","curves","suburban","touring","clara","vertex","bw","hepatitis","nationally","tomato","andorra","waterproof","expired","mj","travels","flush","waiver","pale","specialties","hayes","humanitarian","invitations","functioning","delight","survivor","garcia","cingular","economies","alexandria","bacterial","moses","counted","undertake","declare","continuously","johns","valves","gaps","impaired","achievements","donors","tear","jewel","teddy","lf","convertible","ata","teaches","ventures","nil","bufing","stranger","tragedy","julian","nest","pam","dryer","painful","velvet","tribunal","ruled","nato","pensions","prayers","funky","secretariat","nowhere","cop","paragraphs","gale","joins","adolescent","nominations","wesley","dim","lately","cancelled","scary","mattress","mpegs","brunei","likewise","banana","introductory","slovak","cakes","stan","reservoir","occurrence","idol","mixer","remind","wc","worcester","sbjct","demographic","charming","mai","tooth","disciplinary","annoying","respected","stays","disclose","affair","drove","washer","upset","restrict","springer","beside","mines","portraits","rebound","logan","mentor","interpreted","evaluations","fought","baghdad","elimination","metres","hypothetical","immigrants","complimentary","helicopter","pencil","freeze","hk","performer","abu","titled","commissions","sphere","powerseller","moss","ratios","concord","graduated","endorsed","ty","surprising","walnut","lance","ladder","italia","unnecessary","dramatically","liberia","sherman","cork","maximize","cj","hansen","senators","workout","mali","yugoslavia","bleeding","characterization","colon","likelihood","lanes","purse","fundamentals","contamination","mtv","endangered","compromise","optimize","stating","dome","caroline","leu","expiration","namespace","align","peripheral","bless","engaging","negotiation","crest","opponents","triumph","nominated","confidentiality","electoral","changelog","welding","deferred","alternatively","heel","alloy","condos","plots","polished","yang","gently","greensboro","tulsa","locking","casey","controversial","draws","fridge","blanket","bloom","qc","simpsons","lou","elliott","recovered","fraser","justify","upgrading","blades","pgp","loops","surge","frontpage","trauma","aw","tahoe","advert","possess","demanding","defensive","sip","flashers","subaru","forbidden","tf","vanilla","programmers","pj","monitored","installations","deutschland","picnic","souls","arrivals","spank","cw","practitioner","motivated","wr","dumb","smithsonian","hollow","vault","securely","examining","fioricet","groove","revelation","rg","pursuit","delegation","wires","bl","dictionaries","mails","backing","greenhouse","sleeps","vc","blake","transparency","dee","travis","wx","endless","figured","orbit","currencies","niger","bacon","survivors","positioning","heater","colony","cannon","circus","promoted","forbes","mae","moldova","mel","descending","paxil","spine","trout","enclosed","feat","temporarily","ntsc","cooked","thriller","transmit","apnic","fatty","gerald","pressed","frequencies","scanned","reflections","hunger","mariah","sic","municipality","usps","joyce","detective","surgeon","cement","experiencing","fireplace","endorsement","bg","planners","disputes","textiles","missile","intranet","closes","seq","psychiatry","persistent","deborah","conf","marco","assists","summaries","glow","gabriel","auditor","wma","aquarium","violin","prophet","cir","bracket","looksmart","isaac","oxide","oaks","magnificent","erik","colleague","naples","promptly","modems","adaptation","hu","harmful","paintball","prozac","sexually","enclosure","acm","dividend","newark","kw","paso","glucose","phantom","norm","playback","supervisors","westminster","turtle","ips","distances","absorption","treasures","dsc","warned","neural","ware","fossil","mia","hometown","badly","transcripts","apollo","wan","disappointed","persian","continually","communist","collectible","handmade","greene","entrepreneurs","robots","grenada","creations","jade","scoop","acquisitions","foul","keno","gtk","earning","mailman","sanyo","nested","biodiversity","excitement","somalia","movers","verbal","blink","presently","seas","carlo","workflow","mysterious","novelty","bryant","tiles","voyuer","librarian","subsidiaries","switched","stockholm","tamil","garmin","ru","pose","fuzzy","indonesian","grams","therapist","richards","mrna","budgets","toolkit","promising","relaxation","goat","render","carmen","ira","sen","thereafter","hardwood","erotica","temporal","sail","forge","commissioners","dense","dts","brave","forwarding","qt","awful","nightmare","airplane","reductions","southampton","istanbul","impose","organisms","sega","telescope","viewers","asbestos","portsmouth","cdna","meyer","enters","pod","savage","advancement","wu","harassment","willow","resumes","bolt","gage","throwing","existed","generators","lu","wagon","barbie","dat","favour","soa","knock","urge","smtp","generates","potatoes","thorough","replication","inexpensive","kurt","receptors","peers","roland","optimum","neon","interventions","quilt","huntington","creature","ours","mounts","syracuse","internship","lone","refresh","aluminium","snowboard","beastality","webcast","michel","evanescence","subtle","coordinated","notre","shipments","maldives","stripes","firmware","antarctica","cope","shepherd","lm","canberra","cradle","chancellor","mambo","lime","kirk","flour","controversy","legendary","bool","sympathy","choir","avoiding","beautifully","blond","expects","cho","jumping","fabrics","antibodies","polymer","hygiene","wit","poultry","virtue","burst","examinations","surgeons","bouquet","immunology","promotes","mandate","wiley","departmental","bbs","spas","ind","corpus","johnston","terminology","gentleman","fibre","reproduce","convicted","shades","jets","indices","roommates","adware","qui","intl","threatening","spokesman","zoloft","activists","frankfurt","prisoner","daisy","halifax","encourages","ultram","cursor","assembled","earliest","donated","stuffed","restructuring","insects","terminals","crude","morrison","maiden","simulations","cz","sufficiently","examines","viking","myrtle","bored","cleanup","yarn","knit","conditional","mug","crossword","bother","budapest","conceptual","knitting","attacked","hl","bhutan","liechtenstein","mating","compute","redhead","arrives","translator","automobiles","tractor","allah","continent","ob","unwrap","fares","longitude","resist","challenged","telecharger","hoped","pike","safer","insertion","instrumentation","ids","hugo","wagner","constraint","groundwater","touched","strengthening","cologne","gzip","wishing","ranger","smallest","insulation","newman","marsh","ricky","ctrl","scared","theta","infringement","bent","laos","subjective","monsters","asylum","lightbox","robbie","stake","cocktail","outlets","swaziland","varieties","arbor","mediawiki","configurations","poison"];
+const BUILTIN_GIVEN = ["aaren","aarika","abagael","abagail","abbe","abbey","abbi","abbie","abby","abbye","abigael","abigail","abigale","abra","ada","adah","adaline","adan","adara","adda","addi","addia","addie","addy","adel","adela","adelaida","adelaide","adele","adelheid","adelice","adelina","adelind","adeline","adella","adelle","adena","adey","adi","adiana","adina","adora","adore","adoree","adorne","adrea","adria","adriaens","adrian","adriana","adriane","adrianna","adrianne","adriena","adrienne","aeriel","aeriela","aeriell","afton","ag","agace","agata","agatha","agathe","aggi","aggie","aggy","agna","agnella","agnes","agnese","agnesse","agneta","agnola","agretha","aida","aidan","aigneis","aila","aile","ailee","aileen","ailene","ailey","aili","ailina","ailis","ailsun","ailyn","aime","aimee","aimil","aindrea","ainslee","ainsley","ainslie","ajay","alaine","alameda","alana","alanah","alane","alanna","alayne","alberta","albertina","albertine","albina","alecia","aleda","aleece","aleen","alejandra","alejandrina","alena","alene","alessandra","aleta","alethea","alex","alexa","alexandra","alexandrina","alexi","alexia","alexina","alexine","alexis","alfi","alfie","alfreda","alfy","ali","alia","alica","alice","alicea","alicia","alida","alidia","alie","alika","alikee","alina","aline","alis","alisa","alisha","alison","alissa","alisun","alix","aliza","alla","alleen","allegra","allene","alli","allianora","allie","allina","allis","allison","allissa","allix","allsun","allx","ally","allyce","allyn","allys","allyson","alma","almeda","almeria","almeta","almira","almire","aloise","aloisia","aloysia","alta","althea","alvera","alverta","alvina","alvinia","alvira","alyce","alyda","alys","alysa","alyse","alysia","alyson","alyss","alyssa","amabel","amabelle","amalea","amalee","amaleta","amalia","amalie","amalita","amalle","amanda","amandi","amandie","amandy","amara","amargo","amata","amber","amberly","ambur","ame","amelia","amelie","amelina","ameline","amelita","ami","amie","amii","amil","amitie","amity","ammamaria","amy","amye","ana","anabal","anabel","anabella","anabelle","analiese","analise","anallese","anallise","anastasia","anastasie","anastassia","anatola","andee","andeee","anderea","andi","andie","andra","andrea","andreana","andree","andrei","andria","andriana","andriette","andromache","andy","anestassia","anet","anett","anetta","anette","ange","angel","angela","angele","angelia","angelica","angelika","angelina","angeline","angelique","angelita","angelle","angie","angil","angy","ania","anica","anissa","anita","anitra","anjanette","anjela","ann","ann-marie","anna","anna-diana","anna-diane","anna-maria","annabal","annabel","annabela","annabell","annabella","annabelle","annadiana","annadiane","annalee","annaliese","annalise","annamaria","annamarie","anne","anne-corinne","anne-marie","annecorinne","anneliese","annelise","annemarie","annetta","annette","anni","annice","annie","annis","annissa","annmaria","annmarie","annnora","annora","anny","anselma","ansley","anstice","anthe","anthea","anthia","anthiathia","antoinette","antonella","antonetta","antonia","antonie","antonietta","antonina","anya","appolonia","april","aprilette","ara","arabel","arabela","arabele","arabella","arabelle","arda","ardath","ardeen","ardelia","ardelis","ardella","ardelle","arden","ardene","ardenia","ardine","ardis","ardisj","ardith","ardra","ardyce","ardys","ardyth","aretha","ariadne","ariana","aridatha","ariel","ariela","ariella","arielle","arlana","arlee","arleen","arlen","arlena","arlene","arleta","arlette","arleyne","arlie","arliene","arlina","arlinda","arline","arluene","arly","arlyn","arlyne","aryn","ashely","ashia","ashien","ashil","ashla","ashlan","ashlee","ashleigh","ashlen","ashley","ashli","ashlie","ashly","asia","astra","astrid","astrix","atalanta","athena","athene","atlanta","atlante","auberta","aubine","aubree","aubrette","aubrey","aubrie","aubry","audi","audie","audra","audre","audrey","audrie","audry","audrye","audy","augusta","auguste","augustina","augustine","aundrea","aura","aurea","aurel","aurelea","aurelia","aurelie","auria","aurie","aurilia","aurlie","auroora","aurora","aurore","austin","austina","austine","ava","aveline","averil","averyl","avie","avis","aviva","avivah","avril","avrit","ayn","bab","babara","babb","babbette","babbie","babette","babita","babs","bambi","bambie","bamby","barb","barbabra","barbara","barbara-anne","barbaraanne","barbe","barbee","barbette","barbey","barbi","barbie","barbra","barby","bari","barrie","barry","basia","bathsheba","batsheva","bea","beatrice","beatrisa","beatrix","beatriz","bebe","becca","becka","becki","beckie","becky","bee","beilul","beitris","bekki","bel","belia","belicia","belinda","belita","bell","bella","bellanca","belle","bellina","belva","belvia","bendite","benedetta","benedicta","benedikta","benetta","benita","benni","bennie","benny","benoite","berenice","beret","berget","berna","bernadene","bernadette","bernadina","bernadine","bernardina","bernardine","bernelle","bernete","bernetta","bernette","berni","bernice","bernie","bernita","berny","berri","berrie","berry","bert","berta","berte","bertha","berthe","berti","bertie","bertina","bertine","berty","beryl","beryle","bess","bessie","bessy","beth","bethanne","bethany","bethena","bethina","betsey","betsy","betta","bette","bette-ann","betteann","betteanne","betti","bettina","bettine","betty","bettye","beulah","bev","beverie","beverlee","beverley","beverlie","beverly","bevvy","bianca","bianka","bibbie","bibby","bibbye","bibi","biddie","biddy","bidget","bili","bill","billi","billie","billy","billye","binni","binnie","binny","bird","birdie","birgit","birgitta","blair","blaire","blake","blakelee","blakeley","blanca","blanch","blancha","blanche","blinni","blinnie","blinny","bliss","blisse","blithe","blondell","blondelle","blondie","blondy","blythe","bobbe","bobbee","bobbette","bobbi","bobbie","bobby","bobbye","bobette","bobina","bobine","bobinette","bonita","bonnee","bonni","bonnibelle","bonnie","bonny","brana","brandais","brande","brandea","brandi","brandice","brandie","brandise","brandy","breanne","brear","bree","breena","bren","brena","brenda","brenn","brenna","brett","bria","briana","brianna","brianne","bride","bridget","bridgette","bridie","brier","brietta","brigid","brigida","brigit","brigitta","brigitte","brina","briney","brinn","brinna","briny","brit","brita","britney","britni","britt","britta","brittan","brittaney","brittani","brittany","britte","britteny","brittne","brittney","brittni","brook","brooke","brooks","brunhilda","brunhilde","bryana","bryn","bryna","brynn","brynna","brynne","buffy","bunni","bunnie","bunny","cacilia","cacilie","cahra","cairistiona","caitlin","caitrin","cal","calida","calla","calley","calli","callida","callie","cally","calypso","cam","camala","camel","camella","camellia","cami","camila","camile","camilla","camille","cammi","cammie","cammy","candace","candi","candice","candida","candide","candie","candis","candra","candy","caprice","cara","caralie","caren","carena","caresa","caressa","caresse","carey","cari","caria","carie","caril","carilyn","carin","carina","carine","cariotta","carissa","carita","caritta","carla","carlee","carleen","carlen","carlene","carley","carlie","carlin","carlina","carline","carlita","carlota","carlotta","carly","carlye","carlyn","carlynn","carlynne","carma","carmel","carmela","carmelia","carmelina","carmelita","carmella","carmelle","carmen","carmencita","carmina","carmine","carmita","carmon","caro","carol","carol-jean","carola","carolan","carolann","carole","carolee","carolin","carolina","caroline","caroljean","carolyn","carolyne","carolynn","caron","carree","carri","carrie","carrissa","carroll","carry","cary","caryl","caryn","casandra","casey","casi","casie","cass","cassandra","cassandre","cassandry","cassaundra","cassey","cassi","cassie","cassondra","cassy","catarina","cate","caterina","catha","catharina","catharine","cathe","cathee","catherin","catherina","catherine","cathi","cathie","cathleen","cathlene","cathrin","cathrine","cathryn","cathy","cathyleen","cati","catie","catina","catlaina","catlee","catlin","catrina","catriona","caty","caye","cayla","cecelia","cecil","cecile","ceciley","cecilia","cecilla","cecily","ceil","cele","celene","celesta","celeste","celestia","celestina","celestine","celestyn","celestyna","celia","celie","celina","celinda","celine","celinka","celisse","celka","celle","cesya","chad","chanda","chandal","chandra","channa","chantal","chantalle","charil","charin","charis","charissa","charisse","charita","charity","charla","charlean","charleen","charlena","charlene","charline","charlot","charlotta","charlotte","charmain","charmaine","charmane","charmian","charmine","charmion","charo","charyl","chastity","chelsae","chelsea","chelsey","chelsie","chelsy","cher","chere","cherey","cheri","cherianne","cherice","cherida","cherie","cherilyn","cherilynn","cherin","cherise","cherish","cherlyn","cherri","cherrita","cherry","chery","cherye","cheryl","cheslie","chiarra","chickie","chicky","chiquia","chiquita","chlo","chloe","chloette","chloris","chris","chrissie","chrissy","christa","christabel","christabella","christal","christalle","christan","christean","christel","christen","christi","christian","christiana","christiane","christie","christin","christina","christine","christy","christye","christyna","chrysa","chrysler","chrystal","chryste","chrystel","cicely","cicily","ciel","cilka","cinda","cindee","cindelyn","cinderella","cindi","cindie","cindra","cindy","cinnamon","cissiee","cissy","clair","claire","clara","clarabelle","clare","claresta","clareta","claretta","clarette","clarey","clari","claribel","clarice","clarie","clarinda","clarine","clarissa","clarisse","clarita","clary","claude","claudelle","claudetta","claudette","claudia","claudie","claudina","claudine","clea","clem","clemence","clementia","clementina","clementine","clemmie","clemmy","cleo","cleopatra","clerissa","clio","clo","cloe","cloris","clotilda","clovis","codee","codi","codie","cody","coleen","colene","coletta","colette","colleen","collen","collete","collette","collie","colline","colly","con","concettina","conchita","concordia","conni","connie","conny","consolata","constance","constancia","constancy","constanta","constantia","constantina","constantine","consuela","consuelo","cookie","cora","corabel","corabella","corabelle","coral","coralie","coraline","coralyn","cordelia","cordelie","cordey","cordi","cordie","cordula","cordy","coreen","corella","corenda","corene","coretta","corette","corey","cori","corie","corilla","corina","corine","corinna","corinne","coriss","corissa","corliss","corly","cornela","cornelia","cornelle","cornie","corny","correna","correy","corri","corrianne","corrie","corrina","corrine","corrinne","corry","cortney","cory","cosetta","cosette","costanza","courtenay","courtnay","courtney","crin","cris","crissie","crissy","crista","cristabel","cristal","cristen","cristi","cristie","cristin","cristina","cristine","cristionna","cristy","crysta","crystal","crystie","cthrine","cyb","cybil","cybill","cymbre","cynde","cyndi","cyndia","cyndie","cyndy","cynthea","cynthia","cynthie","cynthy","dacey","dacia","dacie","dacy","dael","daffi","daffie","daffy","dagmar","dahlia","daile","daisey","daisi","daisie","daisy","dale","dalenna","dalia","dalila","dallas","daloris","damara","damaris","damita","dana","danell","danella","danette","dani","dania","danica","danice","daniela","daniele","daniella","danielle","danika","danila","danit","danita","danna","danni","dannie","danny","dannye","danya","danyelle","danyette","daphene","daphna","daphne","dara","darb","darbie","darby","darcee","darcey","darci","darcie","darcy","darda","dareen","darell","darelle","dari","daria","darice","darla","darleen","darlene","darline","darlleen","daron","darrelle","darryl","darsey","darsie","darya","daryl","daryn","dasha","dasi","dasie","dasya","datha","daune","daveen","daveta","davida","davina","davine","davita","dawn","dawna","dayle","dayna","ddene","de","deana","deane","deanna","deanne","deb","debbi","debbie","debby","debee","debera","debi","debor","debora","deborah","debra","dede","dedie","dedra","dee","dee dee","deeann","deeanne","deedee","deena","deerdre","deeyn","dehlia","deidre","deina","deirdre","del","dela","delcina","delcine","delia","delila","delilah","delinda","dell","della","delly","delora","delores","deloria","deloris","delphine","delphinia","demeter","demetra","demetria","demetris","dena","deni","denice","denise","denna","denni","dennie","denny","deny","denys","denyse","deonne","desdemona","desirae","desiree","desiri","deva","devan","devi","devin","devina","devinne","devon","devondra","devonna","devonne","devora","di","diahann","dian","diana","diandra","diane","diane-marie","dianemarie","diann","dianna","dianne","diannne","didi","dido","diena","dierdre","dina","dinah","dinnie","dinny","dion","dione","dionis","dionne","dita","dix","dixie","dniren","dode","dodi","dodie","dody","doe","doll","dolley","dolli","dollie","dolly","dolores","dolorita","doloritas","domeniga","dominga","domini","dominica","dominique","dona","donella","donelle","donetta","donia","donica","donielle","donna","donnamarie","donni","donnie","donny","dora","doralia","doralin","doralyn","doralynn","doralynne","dore","doreen","dorelia","dorella","dorelle","dorena","dorene","doretta","dorette","dorey","dori","doria","dorian","dorice","dorie","dorine","doris","dorisa","dorise","dorita","doro","dorolice","dorolisa","dorotea","doroteya","dorothea","dorothee","dorothy","dorree","dorri","dorrie","dorris","dorry","dorthea","dorthy","dory","dosi","dot","doti","dotti","dottie","dotty","dre","dreddy","dredi","drona","dru","druci","drucie","drucill","drucy","drusi","drusie","drusilla","drusy","dulce","dulcea","dulci","dulcia","dulciana","dulcie","dulcine","dulcinea","dulcy","dulsea","dusty","dyan","dyana","dyane","dyann","dyanna","dyanne","dyna","dynah","eachelle","eada","eadie","eadith","ealasaid","eartha","easter","eba","ebba","ebonee","ebony","eda","eddi","eddie","eddy","ede","edee","edeline","eden","edi","edie","edin","edita","edith","editha","edithe","ediva","edna","edwina","edy","edyth","edythe","effie","eileen","eilis","eimile","eirena","ekaterina","elaina","elaine","elana","elane","elayne","elberta","elbertina","elbertine","eleanor","eleanora","eleanore","electra","eleen","elena","elene","eleni","elenore","eleonora","eleonore","elfie","elfreda","elfrida","elfrieda","elga","elianora","elianore","elicia","elie","elinor","elinore","elisa","elisabet","elisabeth","elisabetta","elise","elisha","elissa","elita","eliza","elizabet","elizabeth","elka","elke","ella","elladine","elle","ellen","ellene","ellette","elli","ellie","ellissa","elly","ellyn","ellynn","elmira","elna","elnora","elnore","eloisa","eloise","elonore","elora","elsa","elsbeth","else","elset","elsey","elsi","elsie","elsinore","elspeth","elsy","elva","elvera","elvina","elvira","elwira","elyn","elyse","elysee","elysha","elysia","elyssa","em","ema","emalee","emalia","emelda","emelia","emelina","emeline","emelita","emelyne","emera","emilee","emili","emilia","emilie","emiline","emily","emlyn","emlynn","emlynne","emma","emmalee","emmaline","emmalyn","emmalynn","emmalynne","emmeline","emmey","emmi","emmie","emmy","emmye","emogene","emyle","emylee","engracia","enid","enrica","enrichetta","enrika","enriqueta","eolanda","eolande","eran","erda","erena","erica","ericha","ericka","erika","erin","erina","erinn","erinna","erma","ermengarde","ermentrude","ermina","erminia","erminie","erna","ernaline","ernesta","ernestine","ertha","eryn","esma","esmaria","esme","esmeralda","essa","essie","essy","esta","estel","estele","estell","estella","estelle","ester","esther","estrella","estrellita","ethel","ethelda","ethelin","ethelind","etheline","ethelyn","ethyl","etta","etti","ettie","etty","eudora","eugenia","eugenie","eugine","eula","eulalie","eunice","euphemia","eustacia","eva","evaleen","evangelia","evangelin","evangelina","evangeline","evania","evanne","eve","eveleen","evelina","eveline","evelyn","evey","evie","evita","evonne","evvie","evvy","evy","eyde","eydie","ezmeralda","fae","faina","faith","fallon","fan","fanchette","fanchon","fancie","fancy","fanechka","fania","fanni","fannie","fanny","fanya","fara","farah","farand","farica","farra","farrah","farrand","faun","faunie","faustina","faustine","fawn","fawne","fawnia","fay","faydra","faye","fayette","fayina","fayre","fayth","faythe","federica","fedora","felecia","felicdad","felice","felicia","felicity","felicle","felipa","felisha","felita","feliza","fenelia","feodora","ferdinanda","ferdinande","fern","fernanda","fernande","fernandina","ferne","fey","fiann","fianna","fidela","fidelia","fidelity","fifi","fifine","filia","filide","filippa","fina","fiona","fionna","fionnula","fiorenze","fleur","fleurette","flo","flor","flora","florance","flore","florella","florence","florencia","florentia","florenza","florette","flori","floria","florida","florie","florina","florinda","floris","florri","florrie","florry","flory","flossi","flossie","flossy","flss","fran","francene","frances","francesca","francine","francisca","franciska","francoise","francyne","frank","frankie","franky","franni","frannie","franny","frayda","fred","freda","freddi","freddie","freddy","fredelia","frederica","fredericka","frederique","fredi","fredia","fredra","fredrika","freida","frieda","friederike","fulvia","gabbey","gabbi","gabbie","gabey","gabi","gabie","gabriel","gabriela","gabriell","gabriella","gabrielle","gabriellia","gabrila","gaby","gae","gael","gail","gale","galina","garland","garnet","garnette","gates","gavra","gavrielle","gay","gaye","gayel","gayla","gayle","gayleen","gaylene","gaynor","gelya","gena","gene","geneva","genevieve","genevra","genia","genna","genni","gennie","gennifer","genny","genovera","genvieve","george","georgeanna","georgeanne","georgena","georgeta","georgetta","georgette","georgia","georgiana","georgianna","georgianne","georgie","georgina","georgine","geralda","geraldine","gerda","gerhardine","geri","gerianna","gerianne","gerladina","germain","germaine","germana","gerri","gerrie","gerrilee","gerry","gert","gerta","gerti","gertie","gertrud","gertruda","gertrude","gertrudis","gerty","giacinta","giana","gianina","gianna","gigi","gilberta","gilberte","gilbertina","gilbertine","gilda","gilemette","gill","gillan","gilli","gillian","gillie","gilligan","gilly","gina","ginelle","ginevra","ginger","ginni","ginnie","ginnifer","ginny","giorgia","giovanna","gipsy","giralda","gisela","gisele","gisella","giselle","giuditta","giulia","giulietta","giustina","gizela","glad","gladi","gladys","gleda","glen","glenda","glenine","glenn","glenna","glennie","glennis","glori","gloria","gloriana","gloriane","glory","glyn","glynda","glynis","glynnis","gnni","godiva","golda","goldarina","goldi","goldia","goldie","goldina","goldy","grace","gracia","gracie","grata","gratia","gratiana","gray","grayce","grazia","greer","greta","gretal","gretchen","grete","gretel","grethel","gretna","gretta","grier","griselda","grissel","guendolen","guenevere","guenna","guglielma","gui","guillema","guillemette","guinevere","guinna","gunilla","gus","gusella","gussi","gussie","gussy","gusta","gusti","gustie","gusty","gwen","gwendolen","gwendolin","gwendolyn","gweneth","gwenette","gwenneth","gwenni","gwennie","gwenny","gwenora","gwenore","gwyn","gwyneth","gwynne","gypsy","hadria","hailee","haily","haleigh","halette","haley","hali","halie","halimeda","halley","halli","hallie","hally","hana","hanna","hannah","hanni","hannie","hannis","hanny","happy","harlene","harley","harli","harlie","harmonia","harmonie","harmony","harri","harrie","harriet","harriett","harrietta","harriette","harriot","harriott","hatti","hattie","hatty","hayley","hazel","heath","heather","heda","hedda","heddi","heddie","hedi","hedvig","hedvige","hedwig","hedwiga","hedy","heida","heidi","heidie","helaina","helaine","helen","helen-elizabeth","helena","helene","helenka","helga","helge","helli","heloise","helsa","helyn","hendrika","henka","henrie","henrieta","henrietta","henriette","henryetta","hephzibah","hermia","hermina","hermine","herminia","hermione","herta","hertha","hester","hesther","hestia","hetti","hettie","hetty","hilary","hilda","hildagard","hildagarde","hilde","hildegaard","hildegarde","hildy","hillary","hilliary","hinda","holli","hollie","holly","holly-anne","hollyanne","honey","honor","honoria","hope","horatia","hortense","hortensia","hulda","hyacinth","hyacintha","hyacinthe","hyacinthia","hyacinthie","hynda","ianthe","ibbie","ibby","ida","idalia","idalina","idaline","idell","idelle","idette","ileana","ileane","ilene","ilise","ilka","illa","ilsa","ilse","ilysa","ilyse","ilyssa","imelda","imogen","imogene","imojean","ina","indira","ines","inesita","inessa","inez","inga","ingaberg","ingaborg","inge","ingeberg","ingeborg","inger","ingrid","ingunna","inna","iolande","iolanthe","iona","iormina","ira","irena","irene","irina","iris","irita","irma","isa","isabel","isabelita","isabella","isabelle","isadora","isahella","iseabal","isidora","isis","isobel","issi","issie","issy","ivett","ivette","ivie","ivonne","ivory","ivy","izabel","jacenta","jacinda","jacinta","jacintha","jacinthe","jackelyn","jacki","jackie","jacklin","jacklyn","jackquelin","jackqueline","jacky","jaclin","jaclyn","jacquelin","jacqueline","jacquelyn","jacquelynn","jacquenetta","jacquenette","jacquetta","jacquette","jacqui","jacquie","jacynth","jada","jade","jaime","jaimie","jaine","jami","jamie","jamima","jammie","jan","jana","janaya","janaye","jandy","jane","janean","janeczka","janeen","janel","janela","janella","janelle","janene","janenna","janessa","janet","janeta","janetta","janette","janeva","janey","jania","janice","janie","janifer","janina","janine","janis","janith","janka","janna","jannel","jannelle","janot","jany","jaquelin","jaquelyn","jaquenetta","jaquenette","jaquith","jasmin","jasmina","jasmine","jayme","jaymee","jayne","jaynell","jazmin","jean","jeana","jeane","jeanelle","jeanette","jeanie","jeanine","jeanna","jeanne","jeannette","jeannie","jeannine","jehanna","jelene","jemie","jemima","jemimah","jemmie","jemmy","jen","jena","jenda","jenelle","jeni","jenica","jeniece","jenifer","jeniffer","jenilee","jenine","jenn","jenna","jennee","jennette","jenni","jennica","jennie","jennifer","jennilee","jennine","jenny","jeralee","jere","jeri","jermaine","jerrie","jerrilee","jerrilyn","jerrine","jerry","jerrylee","jess","jessa","jessalin","jessalyn","jessamine","jessamyn","jesse","jesselyn","jessi","jessica","jessie","jessika","jessy","jewel","jewell","jewelle","jill","jillana","jillane","jillayne","jilleen","jillene","jilli","jillian","jillie","jilly","jinny","jo","jo ann","jo-ann","jo-anne","joan","joana","joane","joanie","joann","joanna","joanne","joannes","jobey","jobi","jobie","jobina","joby","jobye","jobyna","jocelin","joceline","jocelyn","jocelyne","jodee","jodi","jodie","jody","joeann","joela","joelie","joell","joella","joelle","joellen","joelly","joellyn","joelynn","joete","joey","johanna","johannah","johna","johnath","johnette","johnna","joice","jojo","jolee","joleen","jolene","joletta","joli","jolie","joline","joly","jolyn","jolynn","jonell","joni","jonie","jonis","jordain","jordan","jordana","jordanna","jorey","jori","jorie","jorrie","jorry","joscelin","josee","josefa","josefina","josepha","josephina","josephine","josey","josi","josie","josselyn","josy","jourdan","joy","joya","joyan","joyann","joyce","joycelin","joye","jsandye","juana","juanita","judi","judie","judith","juditha","judy","judye","juieta","julee","juli","julia","juliana","juliane","juliann","julianna","julianne","julie","julienne","juliet","julieta","julietta","juliette","julina","juline","julissa","julita","june","junette","junia","junie","junina","justina","justine","justinn","jyoti","kacey","kacie","kacy","kaela","kai","kaia","kaila","kaile","kailey","kaitlin","kaitlyn","kaitlynn","kaja","kakalina","kala","kaleena","kali","kalie","kalila","kalina","kalinda","kalindi","kalli","kally","kameko","kamila","kamilah","kamillah","kandace","kandy","kania","kanya","kara","kara-lynn","karalee","karalynn","kare","karee","karel","karen","karena","kari","karia","karie","karil","karilynn","karin","karina","karine","kariotta","karisa","karissa","karita","karla","karlee","karleen","karlen","karlene","karlie","karlotta","karlotte","karly","karlyn","karmen","karna","karol","karola","karole","karolina","karoline","karoly","karon","karrah","karrie","karry","kary","karyl","karylin","karyn","kasey","kass","kassandra","kassey","kassi","kassia","kassie","kat","kata","katalin","kate","katee","katerina","katerine","katey","kath","katha","katharina","katharine","katharyn","kathe","katherina","katherine","katheryn","kathi","kathie","kathleen","kathlin","kathrine","kathryn","kathryne","kathy","kathye","kati","katie","katina","katine","katinka","katleen","katlin","katrina","katrine","katrinka","katti","kattie","katuscha","katusha","katy","katya","kay","kaycee","kaye","kayla","kayle","kaylee","kayley","kaylil","kaylyn","keeley","keelia","keely","kelcey","kelci","kelcie","kelcy","kelila","kellen","kelley","kelli","kellia","kellie","kellina","kellsie","kelly","kellyann","kelsey","kelsi","kelsy","kendra","kendre","kenna","keri","keriann","kerianne","kerri","kerrie","kerrill","kerrin","kerry","kerstin","kesley","keslie","kessia","kessiah","ketti","kettie","ketty","kevina","kevyn","ki","kiah","kial","kiele","kiersten","kikelia","kiley","kim","kimberlee","kimberley","kimberli","kimberly","kimberlyn","kimbra","kimmi","kimmie","kimmy","kinna","kip","kipp","kippie","kippy","kira","kirbee","kirbie","kirby","kiri","kirsten","kirsteni","kirsti","kirstin","kirstyn","kissee","kissiah","kissie","kit","kitti","kittie","kitty","kizzee","kizzie","klara","klarika","klarrisa","konstance","konstanze","koo","kora","koral","koralle","kordula","kore","korella","koren","koressa","kori","korie","korney","korrie","korry","kris","krissie","krissy","krista","kristal","kristan","kriste","kristel","kristen","kristi","kristien","kristin","kristina","kristine","kristy","kristyn","krysta","krystal","krystalle","krystle","krystyna","kyla","kyle","kylen","kylie","kylila","kylynn","kym","kynthia","kyrstin","la verne","lacee","lacey","lacie","lacy","ladonna","laetitia","laina","lainey","lana","lanae","lane","lanette","laney","lani","lanie","lanita","lanna","lanni","lanny","lara","laraine","lari","larina","larine","larisa","larissa","lark","laryssa","latashia","latia","latisha","latrena","latrina","laura","lauraine","laural","lauralee","laure","lauree","laureen","laurel","laurella","lauren","laurena","laurene","lauretta","laurette","lauri","laurianne","laurice","laurie","lauryn","lavena","laverna","laverne","lavina","lavinia","lavinie","layla","layne","layney","lea","leah","leandra","leann","leanna","leanor","leanora","lebbie","leda","lee","leeann","leeanne","leela","leelah","leena","leesa","leese","legra","leia","leigh","leigha","leila","leilah","leisha","lela","lelah","leland","lelia","lena","lenee","lenette","lenka","lenna","lenora","lenore","leodora","leoine","leola","leoline","leona","leonanie","leone","leonelle","leonie","leonora","leonore","leontine","leontyne","leora","leshia","lesley","lesli","leslie","lesly","lesya","leta","lethia","leticia","letisha","letitia","letizia","letta","letti","lettie","letty","lexi","lexie","lexine","lexis","lexy","leyla","lezlie","lia","lian","liana","liane","lianna","lianne","lib","libbey","libbi","libbie","libby","licha","lida","lidia","liesa","lil","lila","lilah","lilas","lilia","lilian","liliane","lilias","lilith","lilla","lilli","lillian","lillis","lilllie","lilly","lily","lilyan","lin","lina","lind","linda","lindi","lindie","lindsay","lindsey","lindsy","lindy","linea","linell","linet","linette","linn","linnea","linnell","linnet","linnie","linzy","lira","lisa","lisabeth","lisbeth","lise","lisetta","lisette","lisha","lishe","lissa","lissi","lissie","lissy","lita","liuka","liv","liva","livia","livvie","livvy","livvyy","livy","liz","liza","lizabeth","lizbeth","lizette","lizzie","lizzy","loella","lois","loise","lola","loleta","lolita","lolly","lona","lonee","loni","lonna","lonni","lonnie","lora","lorain","loraine","loralee","loralie","loralyn","loree","loreen","lorelei","lorelle","loren","lorena","lorene","lorenza","loretta","lorette","lori","loria","lorianna","lorianne","lorie","lorilee","lorilyn","lorinda","lorine","lorita","lorna","lorne","lorraine","lorrayne","lorri","lorrie","lorrin","lorry","lory","lotta","lotte","lotti","lottie","lotty","lou","louella","louisa","louise","louisette","loutitia","lu","luce","luci","lucia","luciana","lucie","lucienne","lucila","lucilia","lucille","lucina","lucinda","lucine","lucita","lucky","lucretia","lucy","ludovika","luella","luelle","luisa","luise","lula","lulita","lulu","lura","lurette","lurleen","lurlene","lurline","lusa","luz","lyda","lydia","lydie","lyn","lynda","lynde","lyndel","lyndell","lyndsay","lyndsey","lyndsie","lyndy","lynea","lynelle","lynett","lynette","lynn","lynna","lynne","lynnea","lynnell","lynnelle","lynnet","lynnett","lynnette","lynsey","lyssa","mab","mabel","mabelle","mable","mada","madalena","madalyn","maddalena","maddi","maddie","maddy","madel","madelaine","madeleine","madelena","madelene","madelin","madelina","madeline","madella","madelle","madelon","madelyn","madge","madlen","madlin","madonna","mady","mae","maegan","mag","magda","magdaia","magdalen","magdalena","magdalene","maggee","maggi","maggie","maggy","mahala","mahalia","maia","maible","maiga","maighdiln","mair","maire","maisey","maisie","maitilde","mala","malanie","malena","malia","malina","malinda","malinde","malissa","malissia","mallissa","mallorie","mallory","malorie","malory","malva","malvina","malynda","mame","mamie","manda","mandi","mandie","mandy","manon","manya","mara","marabel","marcela","marcelia","marcella","marcelle","marcellina","marcelline","marchelle","marci","marcia","marcie","marcile","marcille","marcy","mareah","maren","marena","maressa","marga","margalit","margalo","margaret","margareta","margarete","margaretha","margarethe","margaretta","margarette","margarita","margaux","marge","margeaux","margery","marget","margette","margi","margie","margit","margo","margot","margret","marguerite","margy","mari","maria","mariam","marian","mariana","mariann","marianna","marianne","maribel","maribelle","maribeth","marice","maridel","marie","marie-ann","marie-jeanne","marieann","mariejeanne","mariel","mariele","marielle","mariellen","marietta","mariette","marigold","marijo","marika","marilee","marilin","marillin","marilyn","marin","marina","marinna","marion","mariquilla","maris","marisa","mariska","marissa","marita","maritsa","mariya","marj","marja","marje","marji","marjie","marjorie","marjory","marjy","marketa","marla","marlane","marleah","marlee","marleen","marlena","marlene","marley","marlie","marline","marlo","marlyn","marna","marne","marney","marni","marnia","marnie","marquita","marrilee","marris","marrissa","marsha","marsiella","marta","martelle","martguerita","martha","marthe","marthena","marti","martica","martie","martina","martita","marty","martynne","mary","marya","maryann","maryanna","maryanne","marybelle","marybeth","maryellen","maryjane","maryjo","maryl","marylee","marylin","marylinda","marylou","marylynne","maryrose","marys","marysa","masha","matelda","mathilda","mathilde","matilda","matilde","matti","mattie","matty","maud","maude","maudie","maura","maure","maureen","maureene","maurene","maurine","maurise","maurita","maurizia","mavis","mavra","max","maxi","maxie","maxine","maxy","may","maybelle","maye","mead","meade","meagan","meaghan","meara","mechelle","meg","megan","megen","meggi","meggie","meggy","meghan","meghann","mehetabel","mei","mel","mela","melamie","melania","melanie","melantha","melany","melba","melesa","melessa","melicent","melina","melinda","melinde","melisa","melisande","melisandra","melisenda","melisent","melissa","melisse","melita","melitta","mella","melli","mellicent","mellie","mellisa","mellisent","melloney","melly","melodee","melodie","melody","melonie","melony","melosa","melva","mercedes","merci","mercie","mercy","meredith","meredithe","meridel","meridith","meriel","merilee","merilyn","meris","merissa","merl","merla","merle","merlina","merline","merna","merola","merralee","merridie","merrie","merrielle","merrile","merrilee","merrili","merrill","merrily","merry","mersey","meryl","meta","mia","micaela","michaela","michaelina","michaeline","michaella","michal","michel","michele","michelina","micheline","michell","michelle","micki","mickie","micky","midge","mignon","mignonne","miguela","miguelita","mikaela","mil","mildred","mildrid","milena","milicent","milissent","milka","milli","millicent","millie","millisent","milly","milzie","mimi","min","mina","minda","mindy","minerva","minetta","minette","minna","minnaminnie","minne","minni","minnie","minnnie","minny","minta","miof mela","miquela","mira","mirabel","mirabella","mirabelle","miran","miranda","mireielle","mireille","mirella","mirelle","miriam","mirilla","mirna","misha","missie","missy","misti","misty","mitzi","modesta","modestia","modestine","modesty","moina","moira","moll","mollee","molli","mollie","molly","mommy","mona","monah","monica","monika","monique","mora","moreen","morena","morgan","morgana","morganica","morganne","morgen","moria","morissa","morna","moselle","moyna","moyra","mozelle","muffin","mufi","mufinella","muire","mureil","murial","muriel","murielle","myra","myrah","myranda","myriam","myrilla","myrle","myrlene","myrna","myrta","myrtia","myrtice","myrtie","myrtle","nada","nadean","nadeen","nadia","nadine","nadiya","nady","nadya","nalani","nan","nana","nananne","nance","nancee","nancey","nanci","nancie","nancy","nanete","nanette","nani","nanice","nanine","nannette","nanni","nannie","nanny","nanon","naoma","naomi","nara","nari","nariko","nat","nata","natala","natalee","natalie","natalina","nataline","natalya","natasha","natassia","nathalia","nathalie","natividad","natka","natty","neala","neda","nedda","nedi","neely","neila","neile","neilla","neille","nelia","nelie","nell","nelle","nelli","nellie","nelly","nerissa","nerita","nert","nerta","nerte","nerti","nertie","nerty","nessa","nessi","nessie","nessy","nesta","netta","netti","nettie","nettle","netty","nevsa","neysa","nichol","nichole","nicholle","nicki","nickie","nicky","nicol","nicola","nicole","nicolea","nicolette","nicoli","nicolina","nicoline","nicolle","nikaniki","nike","niki","nikki","nikkie","nikoletta","nikolia","nina","ninetta","ninette","ninnetta","ninnette","ninon","nissa","nisse","nissie","nissy","nita","nixie","noami","noel","noelani","noell","noella","noelle","noellyn","noelyn","noemi","nola","nolana","nolie","nollie","nomi","nona","nonah","noni","nonie","nonna","nonnah","nora","norah","norean","noreen","norene","norina","norine","norma","norri","norrie","norry","novelia","nydia","nyssa","octavia","odele","odelia","odelinda","odella","odelle","odessa","odetta","odette","odilia","odille","ofelia","ofella","ofilia","ola","olenka","olga","olia","olimpia","olive","olivette","olivia","olivie","oliy","ollie","olly","olva","olwen","olympe","olympia","olympie","ondrea","oneida","onida","oona","opal","opalina","opaline","ophelia","ophelie","ora","oralee","oralia","oralie","oralla","oralle","orel","orelee","orelia","orelie","orella","orelle","oriana","orly","orsa","orsola","ortensia","otha","othelia","othella","othilia","othilie","ottilie","page","paige","paloma","pam","pamela","pamelina","pamella","pammi","pammie","pammy","pandora","pansie","pansy","paola","paolina","papagena","pat","patience","patrica","patrice","patricia","patrizia","patsy","patti","pattie","patty","paula","paule","pauletta","paulette","pauli","paulie","paulina","pauline","paulita","pauly","pavia","pavla","pearl","pearla","pearle","pearline","peg","pegeen","peggi","peggie","peggy","pen","penelopa","penelope","penni","pennie","penny","pepi","pepita","peri","peria","perl","perla","perle","perri","perrine","perry","persis","pet","peta","petra","petrina","petronella","petronia","petronilla","petronille","petunia","phaedra","phaidra","phebe","phedra","phelia","phil","philipa","philippa","philippe","philippine","philis","phillida","phillie","phillis","philly","philomena","phoebe","phylis","phyllida","phyllis","phyllys","phylys","pia","pier","pierette","pierrette","pietra","piper","pippa","pippy","polly","pollyanna","pooh","poppy","portia","pris","prisca","priscella","priscilla","prissie","pru","prudence","prudi","prudy","prue","queenie","quentin","querida","quinn","quinta","quintana","quintilla","quintina","rachael","rachel","rachele","rachelle","rae","raeann","raf","rafa","rafaela","rafaelia","rafaelita","rahal","rahel","raina","raine","rakel","ralina","ramona","ramonda","rana","randa","randee","randene","randi","randie","randy","ranee","rani","rania","ranice","ranique","ranna","raphaela","raquel","raquela","rasia","rasla","raven","ray","raychel","raye","rayna","raynell","rayshell","rea","reba","rebbecca","rebe","rebeca","rebecca","rebecka","rebeka","rebekah","rebekkah","ree","reeba","reena","reeta","reeva","regan","reggi","reggie","regina","regine","reiko","reina","reine","remy","rena","renae","renata","renate","rene","renee","renell","renelle","renie","rennie","reta","retha","revkah","rey","reyna","rhea","rheba","rheta","rhetta","rhiamon","rhianna","rhianon","rhoda","rhodia","rhodie","rhody","rhona","rhonda","riane","riannon","rianon","rica","ricca","rici","ricki","rickie","ricky","riki","rikki","rina","risa","rita","riva","rivalee","rivi","rivkah","rivy","roana","roanna","roanne","robbi","robbie","robbin","robby","robbyn","robena","robenia","roberta","robin","robina","robinet","robinett","robinetta","robinette","robinia","roby","robyn","roch","rochell","rochella","rochelle","rochette","roda","rodi","rodie","rodina","rois","romola","romona","romonda","romy","rona","ronalda","ronda","ronica","ronna","ronni","ronnica","ronnie","ronny","roobbie","rora","rori","rorie","rory","ros","rosa","rosabel","rosabella","rosabelle","rosaleen","rosalia","rosalie","rosalind","rosalinda","rosalinde","rosaline","rosalyn","rosalynd","rosamond","rosamund","rosana","rosanna","rosanne","rose","roseann","roseanna","roseanne","roselia","roselin","roseline","rosella","roselle","rosemaria","rosemarie","rosemary","rosemonde","rosene","rosetta","rosette","roshelle","rosie","rosina","rosita","roslyn","rosmunda","rosy","row","rowe","rowena","roxana","roxane","roxanna","roxanne","roxi","roxie","roxine","roxy","roz","rozalie","rozalin","rozamond","rozanna","rozanne","roze","rozele","rozella","rozelle","rozina","rubetta","rubi","rubia","rubie","rubina","ruby","ruperta","ruth","ruthann","ruthanne","ruthe","ruthi","ruthie","ruthy","ryann","rycca","saba","sabina","sabine","sabra","sabrina","sacha","sada","sadella","sadie","sadye","saidee","sal","salaidh","sallee","salli","sallie","sally","sallyann","sallyanne","saloma","salome","salomi","sam","samantha","samara","samaria","sammy","sande","sandi","sandie","sandra","sandy","sandye","sapphira","sapphire","sara","sara-ann","saraann","sarah","sarajane","saree","sarena","sarene","sarette","sari","sarina","sarine","sarita","sascha","sasha","sashenka","saudra","saundra","savina","sayre","scarlet","scarlett","sean","seana","seka","sela","selena","selene","selestina","selia","selie","selina","selinda","seline","sella","selle","selma","sena","sephira","serena","serene","shae","shaina","shaine","shalna","shalne","shana","shanda","shandee","shandeigh","shandie","shandra","shandy","shane","shani","shanie","shanna","shannah","shannen","shannon","shanon","shanta","shantee","shara","sharai","shari","sharia","sharity","sharl","sharla","sharleen","sharlene","sharline","sharon","sharona","sharron","sharyl","shaun","shauna","shawn","shawna","shawnee","shay","shayla","shaylah","shaylyn","shaylynn","shayna","shayne","shea","sheba","sheela","sheelagh","sheelah","sheena","sheeree","sheila","sheila-kathryn","sheilah","shel","shela","shelagh","shelba","shelbi","shelby","shelia","shell","shelley","shelli","shellie","shelly","shena","sher","sheree","sheri","sherie","sherill","sherilyn","sherline","sherri","sherrie","sherry","sherye","sheryl","shina","shir","shirl","shirlee","shirleen","shirlene","shirley","shirline","shoshana","shoshanna","siana","sianna","sib","sibbie","sibby","sibeal","sibel","sibella","sibelle","sibilla","sibley","sibyl","sibylla","sibylle","sidoney","sidonia","sidonnie","sigrid","sile","sileas","silva","silvana","silvia","silvie","simona","simone","simonette","simonne","sindee","siobhan","sioux","siouxie","sisely","sisile","sissie","sissy","siusan","sofia","sofie","sondra","sonia","sonja","sonni","sonnie","sonnnie","sonny","sonya","sophey","sophi","sophia","sophie","sophronia","sorcha","sosanna","stace","stacee","stacey","staci","stacia","stacie","stacy","stafani","star","starla","starlene","starlin","starr","stefa","stefania","stefanie","steffane","steffi","steffie","stella","stepha","stephana","stephani","stephanie","stephannie","stephenie","stephi","stephie","stephine","stesha","stevana","stevena","stoddard","storm","stormi","stormie","stormy","sue","suellen","sukey","suki","sula","sunny","sunshine","susan","susana","susanetta","susann","susanna","susannah","susanne","susette","susi","susie","susy","suzann","suzanna","suzanne","suzette","suzi","suzie","suzy","sybil","sybila","sybilla","sybille","sybyl","sydel","sydelle","sydney","sylvia","tabatha","tabbatha","tabbi","tabbie","tabbitha","tabby","tabina","tabitha","taffy","talia","tallia","tallie","tallou","tallulah","tally","talya","talyah","tamar","tamara","tamarah","tamarra","tamera","tami","tamiko","tamma","tammara","tammi","tammie","tammy","tamqrah","tamra","tana","tandi","tandie","tandy","tanhya","tani","tania","tanitansy","tansy","tanya","tara","tarah","tarra","tarrah","taryn","tasha","tasia","tate","tatiana","tatiania","tatum","tawnya","tawsha","ted","tedda","teddi","teddie","teddy","tedi","tedra","teena","teirtza","teodora","tera","teresa","terese","teresina","teresita","teressa","teri","teriann","terra","terri","terrie","terrijo","terry","terrye","tersina","terza","tess","tessa","tessi","tessie","tessy","thalia","thea","theadora","theda","thekla","thelma","theo","theodora","theodosia","theresa","therese","theresina","theresita","theressa","therine","thia","thomasa","thomasin","thomasina","thomasine","tiena","tierney","tiertza","tiff","tiffani","tiffanie","tiffany","tiffi","tiffie","tiffy","tilda","tildi","tildie","tildy","tillie","tilly","tim","timi","timmi","timmie","timmy","timothea","tina","tine","tiphani","tiphanie","tiphany","tish","tisha","tobe","tobey","tobi","toby","tobye","toinette","toma","tomasina","tomasine","tomi","tommi","tommie","tommy","toni","tonia","tonie","tony","tonya","tonye","tootsie","torey","tori","torie","torrie","tory","tova","tove","tracee","tracey","traci","tracie","tracy","trenna","tresa","trescha","tressa","tricia","trina","trish","trisha","trista","trix","trixi","trixie","trixy","truda","trude","trudey","trudi","trudie","trudy","trula","tuesday","twila","twyla","tybi","tybie","tyne","ula","ulla","ulrica","ulrika","ulrikaumeko","ulrike","umeko","una","ursa","ursala","ursola","ursula","ursulina","ursuline","uta","val","valaree","valaria","vale","valeda","valencia","valene","valenka","valentia","valentina","valentine","valera","valeria","valerie","valery","valerye","valida","valina","valli","vallie","vally","valma","valry","van","vanda","vanessa","vania","vanna","vanni","vannie","vanny","vanya","veda","velma","velvet","venita","venus","vera","veradis","vere","verena","verene","veriee","verile","verina","verine","verla","verna","vernice","veronica","veronika","veronike","veronique","vevay","vi","vicki","vickie","vicky","victoria","vida","viki","vikki","vikky","vilhelmina","vilma","vin","vina","vinita","vinni","vinnie","vinny","viola","violante","viole","violet","violetta","violette","virgie","virgina","virginia","virginie","vita","vitia","vitoria","vittoria","viv","viva","vivi","vivia","vivian","viviana","vivianna","vivianne","vivie","vivien","viviene","vivienne","viviyan","vivyan","vivyanne","vonni","vonnie","vonny","vyky","wallie","wallis","walliw","wally","waly","wanda","wandie","wandis","waneta","wanids","wenda","wendeline","wendi","wendie","wendy","wendye","wenona","wenonah","whitney","wileen","wilhelmina","wilhelmine","wilie","willa","willabella","willamina","willetta","willette","willi","willie","willow","willy","willyt","wilma","wilmette","wilona","wilone","wilow","windy","wini","winifred","winna","winnah","winne","winni","winnie","winnifred","winny","winona","winonah","wren","wrennie","wylma","wynn","wynne","wynnie","wynny","xaviera","xena","xenia","xylia","xylina","yalonda","yasmeen","yasmin","yelena","yetta","yettie","yetty","yevette","ynes","ynez","yoko","yolanda","yolande","yolane","yolanthe","yoshi","yoshiko","yovonnda","ysabel","yvette","yvonne","zabrina","zahara","zandra","zaneta","zara","zarah","zaria","zarla","zea","zelda","zelma","zena","zenia","zia","zilvia","zita","zitella","zoe","zola","zonda","zondra","zonnya","zora","zorah","zorana","zorina","zorine","zsa zsa","zsazsa","zulema","zuzana"];
+
+/* ---- extraction engine (runs identically here and in Node) ---- */
+// ===================================================================
+// Speaker-name extraction engine. Pure ES, runs identically in the
+// browser and in Node v18+ (uses native DecompressionStream + Response).
+// No external dependencies.
+// ===================================================================
+
+// ---- Lexicons -----------------------------------------------------
+
+// Hard stop / domain words: if a candidate name span CONTAINS one of these
+// tokens, the span is terminated there and the token is never part of a name.
+// High precision: these essentially never appear inside a real personal name.
+const HARD_STOP = new Set([
+  // institutions / org suffixes
+  'university','universities','institute','institutes','college','school','schools',
+  'hospital','health','pathology','laboratory','laboratories','lab','labs','clinic',
+  'ltd','pty','inc','llc','corp','co','company','gmbh','ag','plc','associates',
+  'centre','center','department','faculty','division','unit','group','team',
+  'society','committee','council','association','foundation','academy','board',
+  'branch','network','consortium','partnership','partnerships','program','programme',
+  'nation','nations','owners','elders',
+  // event / housekeeping
+  'sponsor','sponsors','exhibitor','exhibitors','award','awards','oration','orations',
+  'session','sessions','function','ceremony','conference','conferences','meeting',
+  'meetings','workshop','workshops','symposium','plenary','poster','posters','booth',
+  'breakfast','lunch','dinner','tea','coffee','break','welcome','objective','objectives',
+  'agenda','schedule','passport','prizes','prize','registration','keynote','panel',
+  'panels','seminar','lecture','tutorial','educon','clinicon','flashstory',
+  'gold','silver','bronze','platinum','educational','grant','grants','code','conduct',
+  'acknowledgement','acknowledgment','country','program','programme',
+  // domain
+  'microbiology','microbiologist','microbiologists','antimicrobial','resistance',
+  'genomics','genomic','vaccine','vaccines','diagnostic','diagnostics','bacteria',
+  'bacterial','viral','virus','viruses','pathogen','pathogens','microbiome','biofilm',
+  'biofilms','science','sciences','research','translation','evolution','infection',
+  'infections','biology','biological','synthetic','systems','functional','environmental',
+  'clinical','molecular','bioscience','immunity','immune',
+  // role / title words (never part of a personal name in this context)
+  'president','vice','director','directors','officer','manager','coordinator',
+  'secretary','treasurer','ambassador','ambassadors','elect','affairs','corporate',
+  'communications','engagement','edi','executive','fellow','fellows','member',
+  'members','professional','delegate','handbook','runners','mobile','vp','loc',
+  'local','organising','organizing','headshot','distinguished','industry',
+  // biography / misc leaders
+  'born','recruited','professor','education',
+  // schedule words (kill "Coming Up Tuesday" type fragments)
+  'coming','monday','tuesday','wednesday','thursday','friday','saturday','sunday',
+  'today','tomorrow','yesterday','morning','afternoon','evening'
+]);
+
+// Honorific / title prefixes (stripped from the FRONT of a line/chunk).
+const HONORIFICS = new Set([
+  'dr','dr.','prof','prof.','professor','a/prof','a/professor','assoc','assoc.',
+  'associate','adj','adj.','adjunct','emeritus','emer','mr','mr.','mrs','mrs.','ms',
+  'ms.','miss','mx','sir','dame','rev','rev.','hon','hon.','master'
+]);
+
+// Role labels that introduce one or more names (strong positive signal).
+// Matched at the start of a line, optionally followed by ':'.
+const ROLE_LABELS = new Set([
+  'chair','chairs','co-chair','cochair','co-chairs','vice','presenter','presenters',
+  'speaker','speakers','panel','panellist','panelist','panellists','panelists',
+  'moderator','facilitator','host','hosts','student','students','ecr','ecrs',
+  'winner','winners','recipient','recipients','presented','presenter'
+]);
+
+// Trailing post-nominal / credential tokens (stripped from the END of a name span).
+const POSTNOMINALS = new Set([
+  'phd','msc','bsc','ba','ma','mba','md','mbbs','dphil','dsc','llb','llm',
+  'masm','fasm','faa','frs','frsc','fraci','ranzcp','facd','gaicd','aicd','maicd',
+  'ac','ao','am','oam','cmg','mbe','obe','cbe','kbe','dbe','cso','ceo','cfo','coo',
+  'cto','jp','qc','sc','frcpa','fracp','franzcp','phd.','bvsc','dvm'
+]);
+
+// Lowercase name particles allowed inside a multi-token surname.
+const PARTICLES = new Set([
+  'van','von','der','den','de','del','della','di','da','dos','das','du','le','la',
+  'ter','ten','bin','binti','binte','ibn','al','el','mac','mc','vander','van\'t'
+]);
+
+// Function / connective words. A capitalised span that contains one of these
+// is a phrase ("Democracy In Action", "Future Of Microbiology"), never a name.
+// These reliably separate title-cased topic phrases from personal names
+// WITHOUT needing a positive name dictionary.
+const PHRASE_WORDS = new Set([
+  'the','a','an','and','or','of','in','on','at','to','for','from','by','with',
+  'into','onto','upon','via','per','about','as','than','then','so','but','if',
+  'our','your','their','its','his','her','my','we','you','they','it','this',
+  'that','these','those','how','why','what','when','where','who','which',
+  'is','are','was','were','be','been','being','do','does','did','can','will',
+  'all','new','more','most','using','toward','towards','within','without','over'
+]);
+
+// COMMON_WORDS is injected at load time (see common5000.json / inline blob).
+let COMMON_WORDS = new Set();
+function setCommonWords(arr){ COMMON_WORDS = new Set(arr.map(w=>w.toLowerCase())); }
+
+// Optional positive name dictionaries (given names / surnames). Boost only.
+let GIVEN_NAMES = null, SURNAMES = null;
+function setNameDb({given, surname}={}){
+  GIVEN_NAMES = given ? new Set(given.map(s=>s.toLowerCase())) : null;
+  SURNAMES   = surname ? new Set(surname.map(s=>s.toLowerCase())) : null;
+}
+function nameDbLoaded(){ return !!(GIVEN_NAMES || SURNAMES); }
+
+// ---- PPTX reading (ZIP via native DecompressionStream) ------------
+
+async function inflateRaw(u8){
+  const ds = new DecompressionStream('deflate-raw');
+  const writer = ds.writable.getWriter();
+  writer.write(u8); writer.close();
+  const ab = await new Response(ds.readable).arrayBuffer();
+  return new Uint8Array(ab);
+}
+
+function readU16(b,o){ return b[o] | (b[o+1]<<8); }
+function readU32(b,o){ return (b[o] | (b[o+1]<<8) | (b[o+2]<<16) | (b[o+3]<<24)) >>> 0; }
+
+// Returns Map<filename, Uint8Array> for entries matching `wanted(name)`.
+async function readZipEntries(arrayBuffer, wanted){
+  const b = new Uint8Array(arrayBuffer);
+  // locate EOCD (0x06054b50), scanning backwards (comment can be up to 64KB)
+  let eocd = -1;
+  for (let i = b.length - 22; i >= Math.max(0, b.length - 22 - 65536); i--){
+    if (readU32(b,i) === 0x06054b50){ eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error('Not a valid .pptx (no ZIP end record found).');
+  const cdCount  = readU16(b, eocd + 10);
+  const cdOffset = readU32(b, eocd + 16);
+  const out = new Map();
+  let p = cdOffset;
+  for (let i = 0; i < cdCount; i++){
+    if (readU32(b,p) !== 0x02014b50) break;
+    const method   = readU16(b, p + 10);
+    const compSize = readU32(b, p + 20);
+    const nameLen  = readU16(b, p + 28);
+    const extraLen = readU16(b, p + 30);
+    const commLen  = readU16(b, p + 32);
+    const localOff = readU32(b, p + 42);
+    const name = new TextDecoder().decode(b.subarray(p + 46, p + 46 + nameLen));
+    p += 46 + nameLen + extraLen + commLen;
+    if (!wanted(name)) continue;
+    // jump to local header to find real data offset
+    if (readU32(b, localOff) !== 0x04034b50) continue;
+    const lNameLen  = readU16(b, localOff + 26);
+    const lExtraLen = readU16(b, localOff + 28);
+    const dataStart = localOff + 30 + lNameLen + lExtraLen;
+    const comp = b.subarray(dataStart, dataStart + compSize);
+    let data;
+    if (method === 0) data = comp.slice();
+    else if (method === 8) data = await inflateRaw(comp);
+    else continue; // unsupported method
+    out.set(name, data);
+  }
+  return out;
+}
+
+const dec = new TextDecoder('utf-8');
+function decodeXmlEntities(s){
+  return s.replace(/&#x([0-9a-fA-F]+);/g, (_,h)=>String.fromCodePoint(parseInt(h,16)))
+          .replace(/&#(\d+);/g, (_,d)=>String.fromCodePoint(parseInt(d,10)))
+          .replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+          .replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
+}
+
+// slideXml -> array of paragraph "lines" (text of each <a:p>, runs joined).
+function slideXmlToLines(xml){
+  const lines = [];
+  const paras = xml.split(/<a:p[ >]/);
+  for (let k = 1; k < paras.length; k++){
+    const chunk = paras[k];
+    const end = chunk.indexOf('</a:p>');
+    let body = end >= 0 ? chunk.slice(0, end) : chunk;
+    // PowerPoint encodes tab stops / soft breaks as elements, not characters.
+    // Restore them so a "Name<tab>Topic" layout keeps its boundary.
+    body = body.replace(/<a:tab\s*\/?>/g, '\t').replace(/<a:br\s*\/?>/g, '\n');
+    let text = '';
+    // Walk text runs and the restored \t / \n in document order.
+    const re = /<a:t>([\s\S]*?)<\/a:t>|(\t)|(\n)/g; let m;
+    while ((m = re.exec(body))){
+      if (m[1] !== undefined) text += decodeXmlEntities(m[1]);
+      else text += m[2] || m[3];
+    }
+    if (text.trim()){
+      // a soft line break inside one paragraph still separates content
+      for (const part of text.split('\n')) if (part.trim() || part.includes('\t')) lines.push(part);
+    }
+  }
+  return lines;
+}
+
+// Parse a .pptx ArrayBuffer -> [{slide:Number, lines:[...] }, ...] in show order.
+async function parsePptx(arrayBuffer){
+  const want = (n)=> n === 'ppt/presentation.xml'
+                  || n === 'ppt/_rels/presentation.xml.rels'
+                  || /^ppt\/slides\/slide\d+\.xml$/.test(n);
+  const files = await readZipEntries(arrayBuffer, want);
+
+  const presXml = files.has('ppt/presentation.xml') ? dec.decode(files.get('ppt/presentation.xml')) : '';
+  const relsXml = files.has('ppt/_rels/presentation.xml.rels') ? dec.decode(files.get('ppt/_rels/presentation.xml.rels')) : '';
+
+  // r:id order from sldIdLst
+  const idOrder = [...presXml.matchAll(/<p:sldId\b[^>]*r:id="([^"]+)"/g)].map(m=>m[1]);
+  // r:id -> target slide file
+  const relMap = new Map();
+  for (const m of relsXml.matchAll(/<Relationship\b[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"[^>]*\/?>/g)){
+    relMap.set(m[1], m[2].replace(/^\/?(ppt\/)?/, 'ppt/').replace('ppt/ppt/','ppt/'));
+  }
+  let order = idOrder.map(id => relMap.get(id)).filter(t => t && /slide\d+\.xml$/.test(t));
+  // fallback: numeric sort of whatever slide files exist
+  if (!order.length){
+    order = [...files.keys()].filter(n=>/^ppt\/slides\/slide\d+\.xml$/.test(n))
+      .sort((a,b)=>(+a.match(/(\d+)/)[1]) - (+b.match(/(\d+)/)[1]));
+  }
+  const slides = [];
+  order.forEach((path, i) => {
+    const key = path.startsWith('ppt/') ? path : 'ppt/'+path;
+    const data = files.get(key) || files.get(path);
+    if (!data) return;
+    slides.push({ slide: i + 1, lines: slideXmlToLines(dec.decode(data)) });
+  });
+  return slides;
+}
+
+// ---- Name detection ----------------------------------------------
+
+const NAME_TOKEN = /^[\p{Lu}\p{Lo}][\p{L}\p{M}'’.\-]*$/u;   // Capitalised / non-cased-script token
+const INITIAL    = /^[\p{Lu}]\.?$/u;                          // "J" or "J."
+
+function clean(tok){ return tok.replace(/[.,;:]+$/,'').replace(/^[("']+|[)"']+$/g,''); }
+function lc(tok){ return clean(tok).toLowerCase().replace(/[’']/g,"'"); }
+
+function isNameToken(tok, atStart){
+  const c = clean(tok);
+  if (!c) return false;
+  if (HARD_STOP.has(c.toLowerCase())) return false;
+  if (INITIAL.test(c)) return true;
+  if (!atStart && PARTICLES.has(c.toLowerCase())) return true;
+  return NAME_TOKEN.test(c);
+}
+
+// Pull the maximal leading name span (array of cleaned tokens) from tokens[].
+function leadingSpan(tokens){
+  const span = [];
+  for (let i = 0; i < tokens.length; i++){
+    if (isNameToken(tokens[i], span.length === 0)) span.push(clean(tokens[i]));
+    else break;
+  }
+  // drop trailing particle/initial-only tail (e.g. ended on a stray particle)
+  while (span.length && PARTICLES.has(span[span.length-1].toLowerCase())) span.pop();
+  return span;
+}
+
+function stripPostnominals(span){
+  const s = span.slice();
+  while (s.length > 1){
+    const last = s[s.length-1].replace(/[.,]/g,'').toLowerCase();
+    if (POSTNOMINALS.has(last) || /^[A-Z]{2,5}$/.test(s[s.length-1].replace(/[.,]/g,''))) s.pop();
+    else break;
+  }
+  return s;
+}
+
+function allCommon(span){
+  return span.every(t => COMMON_WORDS.has(lc(t)) && !(GIVEN_NAMES&&GIVEN_NAMES.has(lc(t))) && !(SURNAMES&&SURNAMES.has(lc(t))));
+}
+
+// True if any token is a connective/function word -> the span is a phrase,
+// not a personal name. (Particles like "de"/"van" are handled separately and
+// are NOT treated as phrase words.)
+function containsPhraseWord(span){
+  return span.some(t => PHRASE_WORDS.has(lc(t)) && !PARTICLES.has(lc(t)));
+}
+
+// A line "looks like a bare name line" if, on its own, it yields exactly one
+// 2-4 token name candidate with no topic separator and no hard-stop words.
+// Used to detect runs of names (lists of fellows / award recipients / panels).
+function bareNameSpan(rawLine){
+  if (!rawLine || !rawLine.trim()) return null;
+  const { rest } = stripLead(rawLine);
+  const cands = candidatesFromLine(rest);
+  if (cands.length !== 1) return null;
+  const c = cands[0];
+  if (c.topic) return null;
+  const sp = c.span;
+  if (sp.length < 2 || sp.length > 4) return null;
+  if (isAllCaps(sp)) return null;
+  if (containsPhraseWord(sp)) return null;
+  if (sp.some(t => HARD_STOP.has(lc(t)))) return null;
+  if (sp.some(t => /\d/.test(t) || /[@#©]/.test(t))) return null;
+  return sp;
+}
+
+// From a (lead-stripped) line, produce candidate name token-spans.
+// Tab-aware: "Name<tab>Topic sentence" -> name only; "First<tab>Last" -> joined.
+function candidatesFromLine(rest){
+  const out = [];
+  rest = rest.replace(/\([^)]*\)/g, ' ');   // drop parentheticals e.g. "Wong (Fu)"
+  const tabSegs = rest.split('\t').map(s => s.trim()).filter(Boolean);
+  if (!tabSegs.length) return out;
+  const seg0 = tabSegs[0];
+  const hadTab = rest.includes('\t') && tabSegs.length > 1;
+
+  // multiple people listed in the first segment (e.g. "A Scott & B Manna")
+  const persons = seg0.split(/\s+&\s+|\s+and\s+|,|\/|;|•|\u2022/).map(s => s.trim()).filter(Boolean);
+  if (persons.length > 1){
+    for (const p of persons){
+      const sp = stripPostnominals(leadingSpan(p.split(/\s+/)));
+      if (sp.length >= 2) out.push({ span: sp, topic: false });
+    }
+    return out;
+  }
+
+  let sp = stripPostnominals(leadingSpan(seg0.split(/\s+/)));
+  if (sp.length >= 2){ out.push({ span: sp, topic: hadTab }); return out; }
+
+  // single leading token: maybe "First<tab>Surname" split across tab stops
+  if (sp.length === 1 && tabSegs[1]){
+    const seg1toks = tabSegs[1].split(/\s+/);
+    const seg1span = leadingSpan(seg1toks);
+    if (seg1span.length === 1 && seg1toks.length <= 2){
+      out.push({ span: sp.concat(seg1span), topic: false });
+      return out;
+    }
+  }
+  if (sp.length === 1) out.push({ span: sp, topic: hadTab, single: true });
+  return out;
+}
+
+function isAllCaps(span){
+  return span.every(t => t.length > 1 && t === t.toUpperCase() && /[\p{Lu}]/u.test(t));
+}
+
+// Detect a leading role label or honorific; return {rest, role, honorific}.
+// Operates on the string (NOT a whitespace split) so tab separators survive.
+function stripLead(line){
+  let s = line.replace(/^[\s]+/, '');
+  let role = false, honorific = false;
+  // role label, e.g. "Chair:", "Chairs:", "Co-Chairs:", "Student:"
+  const rm = s.match(/^([A-Za-z/\-]+)\s*:\s*/);
+  if (rm && ROLE_LABELS.has(rm[1].toLowerCase())){ role = true; s = s.slice(rm[0].length); }
+  // honorifics (possibly several), each followed by a space
+  let changed = true;
+  while (changed){
+    changed = false;
+    const hm = s.match(/^([A-Za-z/.\-]+?)\.?[ ]+/);
+    if (hm && HONORIFICS.has(hm[1].replace(/\.$/,'').toLowerCase())){
+      honorific = true; s = s.slice(hm[0].length); changed = true;
+    }
+  }
+  return { rest: s, role, honorific };
+}
+
+function titleCaseName(span){
+  // present nicely; collapse internal spacing around particles already fine
+  return span.join(' ').replace(/\s+/g,' ').trim();
+}
+
+// Main: given parsed slides, return per-slide candidate names with scores.
+function extractNames(slides){
+  const results = [];
+  const instRe = /\b(university|universities|institute|college|hospital|csiro|wehi|mcri|unsw|uq|rmit|anu|pathology|laboratory)\b/i;
+  for (const { slide, lines } of slides){
+    const found = []; const seen = new Set();
+    // Pre-pass: which lines are bare name lines? A name flanked by other bare
+    // names is part of a list (fellows / recipients / committee) -> boost.
+    const bareMask = lines.map(l => !!bareNameSpan(l.replace(/\s+$/,'')));
+    for (let li = 0; li < lines.length; li++){
+      const rawLine = lines[li].replace(/\s+$/,'');
+      if (!rawLine.trim()) continue;
+      const { rest, role, honorific } = stripLead(rawLine);
+      const startsLine = !role && !honorific;
+
+      for (const cand of candidatesFromLine(rest)){
+        let span = cand.span;
+        if (span.length < 2){
+          // single token kept only if strongly cued AND confirmed by given-name DB
+          if (!(span.length === 1 && (role || honorific) && GIVEN_NAMES && GIVEN_NAMES.has(lc(span[0])))) continue;
+        }
+        if (span.length > 5) continue;
+        if (isAllCaps(span)) continue;                 // acronym / heading e.g. "ASM EVENTS"
+        if (containsPhraseWord(span)) continue;         // topic phrase e.g. "Democracy In Action"
+        if (span.some(t => HARD_STOP.has(lc(t)))) continue;
+        if (span.some(t => /\d/.test(t) || /[@#©]/.test(t))) continue;
+
+        // ---- scoring ----
+        let score = 0; const why = [];
+        if (honorific){ score += 3; why.push('title'); }
+        if (role){ score += 3; why.push('role'); }
+        if (span.length >= 2 && span.length <= 3) score += 1;
+
+        const next = (lines[li+1] || '').trim();
+        const nextFirst = next ? next.split(/\s+/)[0].toLowerCase().replace(/[.,]/g,'') : '';
+        const afterSpan = rest.slice(rest.indexOf(span[span.length-1]) + span[span.length-1].length);
+        if ((next && (HARD_STOP.has(nextFirst) || instRe.test(next))) || instRe.test(afterSpan)){
+          score += 2; why.push('+institution');
+        }
+        if (cand.topic){ score += 2; why.push('+topic'); }
+        if (GIVEN_NAMES && GIVEN_NAMES.has(lc(span[0]))){ score += 2; why.push('+given'); }
+        if (SURNAMES && SURNAMES.has(lc(span[span.length-1]))){ score += 1; why.push('+surname'); }
+
+        // List context: a bare name line flanked by other bare name lines is
+        // almost certainly part of a people list (fellows / recipients / panel).
+        if (bareMask[li] && (bareMask[li-1] || bareMask[li+1])){ score += 2; why.push('+list'); }
+
+        // All tokens are dictionary words and nothing else vouched for it:
+        // could be a title-cased phrase. Keep it, but demote so the operator
+        // reviews it rather than dropping a possible real name outright.
+        if (allCommon(span) && !why.length){ score -= 2; why.push('-allcommon'); }
+
+        // award named after a person: span starts a heading line and "Award/Oration"
+        // follows on the same line or the next (titles often wrap across paragraphs).
+        if (startsLine && !cand.topic){
+          const tail = afterSpan + ' ' + next;
+          if (/\b(awards?|oration)\b/i.test(tail)) { score -= 5; why.push('-awardname'); }
+        }
+
+        const name = titleCaseName(span);
+        const norm = name.toLowerCase();
+        if (seen.has(norm)) continue;
+        seen.add(norm);
+        found.push({ name, score, why });
+      }
+    }
+    if (found.length) results.push({ slide, names: found.sort((a,b)=>b.score-a.score) });
+  }
+  return results;
+}
+
+function bucket(score){
+  if (score >= 3) return 'high';
+  if (score >= 1) return 'medium';
+  return 'review';
+}
+
+
+/* ---- boot: install the negative-filter words + built-in given names ---- */
+setCommonWords(COMMON_WORDS_DATA);
+setNameDb({ given: BUILTIN_GIVEN });
+
+/* ---- UI ---- */
+// ============================================================
+// SpeakerScan UI controller. Relies on engine fns already in scope:
+// parsePptx, extractNames, bucket, setNameDb, nameDbLoaded
+// ============================================================
+const $ = (s,r=document)=>r.querySelector(s);
+const SVG = {
+  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg>',
+  redo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 13 4 4L19 7"/></svg>',
+  load:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M5 21h14a2 2 0 0 0 2-2v-3"/><path d="M3 16v3a2 2 0 0 0 2 2"/></svg>',
+};
+
+const els = {
+  status:$('#status'), idle:$('#idle'), drop:$('#drop'), file:$('#file'),
+  results:$('#results'), cues:$('#cues'), reviewWrap:$('#reviewWrap'),
+  reviewCues:$('#reviewCues'), reviewHead:$('#reviewHead'),
+  fn:$('#fn'), counts:$('#counts'),
+  copyBtn:$('#copyBtn'), dlBtn:$('#dlBtn'), newBtn:$('#newBtn'),
+  revToggle:$('#revToggle'), boostFile:$('#boostFile'),
+  booster:$('#booster'), err:$('#err'),
+};
+
+let STATE = { name:'', slides:[], results:[] };
+
+function setStatus(state, text){
+  els.status.dataset.state = state;
+  els.status.querySelector('.txt').textContent = text;
+}
+
+// ---- file intake ---------------------------------------------
+function browse(){ els.file.click(); }
+els.drop.addEventListener('click', browse);
+els.drop.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); browse(); }});
+els.file.addEventListener('change', e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); });
+els.newBtn.addEventListener('click', resetApp);
+
+;['dragenter','dragover'].forEach(t=>els.drop.addEventListener(t,e=>{e.preventDefault();els.drop.classList.add('drag');}));
+;['dragleave','dragend'].forEach(t=>els.drop.addEventListener(t,e=>{e.preventDefault();els.drop.classList.remove('drag');}));
+els.drop.addEventListener('drop',e=>{
+  e.preventDefault(); els.drop.classList.remove('drag');
+  const f=[...e.dataTransfer.files].find(f=>/\.pptx$/i.test(f.name)) || e.dataTransfer.files[0];
+  if(f) handleFile(f);
+});
+
+async function handleFile(file){
+  els.err.textContent='';
+  if(typeof DecompressionStream==='undefined'){
+    els.err.textContent='This browser cannot unzip files in-page. Use a recent Chrome, Edge, Firefox or Safari.';
+    return;
+  }
+  if(!/\.pptx$/i.test(file.name)){
+    els.err.textContent='That is not a .pptx file. Export your deck as PowerPoint (.pptx) and try again.';
+    return;
+  }
+  setStatus('working','Reading deck');
+  els.drop.classList.add('busy');
+  try{
+    const buf = await file.arrayBuffer();
+    const slides = await parsePptx(buf);
+    const results = extractNames(slides);
+    STATE = { name:file.name, slides, results };
+    render();
+    setStatus('ready', slides.length+' slides');
+  }catch(err){
+    console.error(err);
+    setStatus('idle','Idle');
+    els.drop.classList.remove('busy');
+    els.err.textContent='Could not read that deck: '+(err.message||err)+'. The file may be corrupt or not a real .pptx.';
+  }
+}
+
+function resetApp(){
+  STATE={name:'',slides:[],results:[]};
+  els.results.classList.remove('show');
+  els.idle.style.display='';
+  els.drop.classList.remove('busy');
+  els.file.value='';
+  els.err.textContent='';
+  setStatus('idle','Idle');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ---- rendering ------------------------------------------------
+function tierName(score){ return bucket(score); } // 'high' | 'medium' | 'review'
+
+function render(){
+  const showReview = els.revToggle.checked;
+  let nHigh=0,nMed=0,nRev=0, slidesWithNames=0;
+  els.cues.innerHTML=''; els.reviewCues.innerHTML='';
+
+  for(const {slide,names} of STATE.results){
+    const main = names.filter(n=>bucket(n.score)!=='review');
+    const rev  = names.filter(n=>bucket(n.score)==='review');
+    if(main.length){
+      slidesWithNames++;
+      els.cues.appendChild(cueCard(slide, main));
+      for(const n of main){ bucket(n.score)==='high'?nHigh++:nMed++; }
+    }
+    if(rev.length){
+      els.reviewCues.appendChild(cueCard(slide, rev, true));
+      nRev+=rev.length;
+    }
+  }
+
+  // empty state
+  if(!nHigh && !nMed){
+    els.cues.innerHTML =
+      '<div class="empty-msg"><b>No speaker names detected.</b><br>'+
+      'This deck may be all sponsor, title or housekeeping slides — or the names sit in images. '+
+      'Loading a name list (below) can help borderline cases surface.</div>';
+  }
+
+  // review section visibility
+  const hasReview = nRev>0;
+  els.reviewHead.style.display = hasReview ? 'flex':'none';
+  els.reviewWrap.classList.toggle('show', hasReview && showReview);
+  els.reviewHead.querySelector('.t').textContent =
+    'Review · '+nRev+' uncertain '+(nRev===1?'candidate':'candidates')+(showReview?'':' (hidden)');
+
+  // meta line
+  els.fn.textContent = STATE.name;
+  const total = nHigh+nMed;
+  els.counts.innerHTML =
+    '<b>'+total+'</b> '+(total===1?'name':'names')+' across <b>'+slidesWithNames+'</b> '+
+    (slidesWithNames===1?'slide':'slides')+' · '+STATE.slides.length+' slides scanned'+
+    (hasReview?(' · <b>'+nRev+'</b> to review'):'');
+
+  els.results.classList.add('show');
+  els.idle.style.display='none';
+  els.results.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function cueCard(slide, names, isReview){
+  const card=document.createElement('div'); card.className='cue';
+  const rail=document.createElement('div'); rail.className='rail';
+  rail.innerHTML='<span class="lbl">Cue</span>'+
+    '<span class="num">'+String(slide).padStart(2,'0')+'</span>'+
+    '<span class="cnt">'+names.length+(names.length===1?' name':' names')+'</span>';
+  const list=document.createElement('div'); list.className='names';
+  for(const n of names){
+    const tier=bucket(n.score);
+    const row=document.createElement('div');
+    row.className='name'+(isReview?' is-review':'');
+    row.innerHTML='<span class="sig '+tier+'"></span>'+
+      '<span class="who"></span>'+
+      '<span class="tier">'+tier+'</span>';
+    row.querySelector('.who').textContent=n.name;
+    list.appendChild(row);
+  }
+  card.appendChild(rail); card.appendChild(list);
+  return card;
+}
+
+els.revToggle.addEventListener('change', ()=>{ if(STATE.results.length) render(); });
+
+// ---- export ---------------------------------------------------
+function buildText(){
+  const showReview = els.revToggle.checked;
+  const lines=[];
+  let total=0;
+  for(const {slide,names} of STATE.results){
+    const keep = names.filter(n=> showReview ? true : bucket(n.score)!=='review');
+    if(!keep.length) continue;
+    total+=keep.length;
+  }
+  lines.push(STATE.name);
+  lines.push(total+' speaker name'+(total===1?'':'s')+' · '+STATE.slides.length+' slides'+
+             (showReview?' (review candidates included)':''));
+  lines.push('');
+  for(const {slide,names} of STATE.results){
+    const keep = names.filter(n=> showReview ? true : bucket(n.score)!=='review');
+    if(!keep.length) continue;
+    lines.push('Slide '+slide);
+    for(const n of keep){
+      const mark = bucket(n.score)==='review' ? '  ? ' : '  ';
+      lines.push(mark+n.name);
+    }
+    lines.push('');
+  }
+  return lines.join('\n').trimEnd()+'\n';
+}
+
+els.copyBtn.addEventListener('click', async ()=>{
+  try{
+    await navigator.clipboard.writeText(buildText());
+    flash(els.copyBtn, 'Copied', SVG.check, true);
+  }catch{
+    // fallback for file:// where clipboard API may be blocked
+    const ta=document.createElement('textarea'); ta.value=buildText();
+    document.body.appendChild(ta); ta.select();
+    try{document.execCommand('copy'); flash(els.copyBtn,'Copied',SVG.check,true);}
+    catch{ els.err.textContent='Copy was blocked — use Download .txt instead.'; }
+    ta.remove();
+  }
+});
+
+els.dlBtn.addEventListener('click', ()=>{
+  const base = STATE.name.replace(/\.pptx$/i,'') || 'deck';
+  const blob = new Blob([buildText()], {type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=base+' — speakers.txt';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+});
+
+function flash(btn,label,icon,ok){
+  const html=btn.innerHTML;
+  btn.innerHTML=icon+'<span>'+label+'</span>';
+  if(ok) btn.classList.add('ok');
+  setTimeout(()=>{ btn.innerHTML=html; btn.classList.remove('ok'); },1400);
+}
+
+// ---- optional name-list booster (cached in IndexedDB) ---------
+const DB='speakerscan', STORE='kv';
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,1);
+  r.onupgradeneeded=()=>r.result.createObjectStore(STORE);
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);});}
+async function idbSet(k,v){const db=await idb();return new Promise((res,rej)=>{const t=db.transaction(STORE,'readwrite');t.objectStore(STORE).put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error);});}
+async function idbGet(k){const db=await idb();return new Promise((res,rej)=>{const t=db.transaction(STORE,'readonly');const q=t.objectStore(STORE).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+async function idbDel(k){const db=await idb();return new Promise((res)=>{const t=db.transaction(STORE,'readwrite');t.objectStore(STORE).delete(k);t.oncomplete=()=>res();});}
+
+function parseNameList(text, filename){
+  let names=[];
+  const trimmed=text.trim();
+  if(/\.json$/i.test(filename) || trimmed.startsWith('[') || trimmed.startsWith('{')){
+    try{
+      const j=JSON.parse(trimmed);
+      if(Array.isArray(j)) names=j;
+      else names=[].concat(j.given||[], j.surname||[], j.names||[]);
+    }catch{ names=[]; }
+  }
+  if(!names.length){
+    // newline / comma / tab separated; also split full names into tokens
+    names = trimmed.split(/[\n,;\t]+/);
+  }
+  // tokenise multi-word entries so both given and surname forms register
+  const set=new Set();
+  for(const raw of names){
+    const s=String(raw).trim(); if(!s) continue;
+    set.add(s.toLowerCase());
+    for(const tok of s.split(/\s+/)) if(tok.length>1) set.add(tok.toLowerCase());
+  }
+  return [...set];
+}
+
+function applyBooster(list, label){
+  setNameDb({ given:list, surname:list });
+  els.booster.innerHTML = list.length
+    ? 'Name boost · <b>'+list.length.toLocaleString()+'</b> terms <a href="#" id="clearBoost" style="margin-left:8px">clear</a>'
+    : 'Name boost · built-in';
+  const clr=$('#clearBoost');
+  if(clr) clr.addEventListener('click', async e=>{ e.preventDefault(); await clearBooster(); });
+  if(STATE.results.length){ STATE.results=extractNames(STATE.slides); render(); }
+}
+
+async function clearBooster(){
+  try{ await idbDel('namedb'); }catch{/* ignore */}
+  setNameDb({ given:BUILTIN_GIVEN });   // fall back to built-in given names
+  els.booster.innerHTML='Name boost · built-in';
+  if(STATE.results.length){ STATE.results=extractNames(STATE.slides); render(); }
+}
+
+els.boostFile.addEventListener('change', async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const text=await f.text();
+  const list=parseNameList(text, f.name);
+  if(!list.length){ els.err.textContent='That file had no readable names. Use a .txt with one name per line, or a JSON array.'; return; }
+  els.err.textContent='';
+  // merge with built-in given names so the boost only ever adds coverage
+  const merged=[...new Set([...BUILTIN_GIVEN, ...list])];
+  try{ await idbSet('namedb', { list:merged, label:f.name }); }
+  catch{/* file:// may block IndexedDB; boost still applies for this session */}
+  applyBooster(merged, f.name);
+  e.target.value='';
+});
+
+// restore cached booster on load
+(async()=>{
+  try{ const rec=await idbGet('namedb'); if(rec&&rec.list) applyBooster(rec.list, rec.label); }
+  catch{/* file:// may block IndexedDB in some browsers; built-in still works */}
+})();
+
+</script>
+</body>
+</html>
