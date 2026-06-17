@@ -427,6 +427,15 @@ footer a{color:var(--muted)}
 .sess-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:18px 0 14px}
 .sess-bar .spacer{flex:1}
 .sess-hint{color:var(--muted);font-size:13px;margin:0 2px 16px;line-height:1.55}
+/* deck-wide room prefix, above the session list */
+.room-bar{display:flex;align-items:center;gap:11px;margin:0 0 16px}
+.room-bar label{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);white-space:nowrap}
+.room-bar input{
+  flex:1;min-width:0;background:var(--card-2);border:1px solid var(--edge);color:var(--ink);
+  border-radius:8px;padding:8px 11px;font-family:var(--body);font-size:14px;
+}
+.room-bar input:focus{outline:none;border-color:var(--accent)}
+.room-bar input::placeholder{color:var(--faint)}
 .ph-opt{
   display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;font-size:13px;color:var(--muted);
   background:var(--panel);border:1px solid var(--edge);border-radius:10px;padding:12px 14px;margin-bottom:18px;
@@ -620,6 +629,10 @@ footer a{color:var(--muted)}
         <label class="link-opt" title="Also include a copy of the deck with each speaker name hyperlinked to its placeholder file"><input type="checkbox" id="linkDeck" checked> Hyperlinked deck copy</label>
       </div>
       <p class="sess-hint">Speakers are numbered in slide order within each session. Drag the handle to reorder (within or across sessions), click a name to fix it, or use “split” to start a new session here. Each session becomes a folder of numbered placeholder files like <code>Breakout A / Breakout A - 1 - Jane Doe.pptx</code>.</p>
+      <div class="room-bar">
+        <label for="roomName">Room</label>
+        <input id="roomName" type="text" spellcheck="false" placeholder="optional — e.g. Eureka 3; prefixes every file (leave blank for a single-room event)">
+      </div>
       <div id="sessionList"></div>
     </section>
   </section>
@@ -1994,6 +2007,7 @@ const els = {
   sessBtn:$('#sessBtn'), sessionPanel:$('#sessionPanel'),
   sessionList:$('#sessionList'), buildZip:$('#buildZip'),
   tplFile:$('#tplFile'), tplName:$('#tplName'), extField:$('#extField'), linkDeck:$('#linkDeck'),
+  roomName:$('#roomName'),
   revToggle:$('#revToggle'), thumbToggle:$('#thumbToggle'), boostFile:$('#boostFile'),
   booster:$('#booster'), err:$('#err'),
   lightbox:$('#lightbox'), lbFrame:$('#lbFrame'), lbCue:$('#lbCue'), lbWho:$('#lbWho'), lbFs:$('#lbFs'),
@@ -2004,6 +2018,7 @@ let STATE = { name:'', deck:null, slides:[], results:[] };
 let thumbIO = null;
 let SESS = null;                 // session model: [{name, speakers:[{id,name,cue}]}]
 let SID = 0;                     // running id for speaker rows
+let ROOM = '';                   // optional deck-wide room name; prefixes every placeholder filename
 let tplBytes = null, tplExt = '';
 let curHash = null;              // content hash of the loaded deck (IDB key); null until ingest
 let curMeta = null;              // {hash, filename, lastModified, ingestedAt} for the loaded deck
@@ -2156,15 +2171,17 @@ async function ingest(buf, meta){
     let restored = false;
     try{
       const rec = await idbGet('file:'+hash);
+      ROOM = (rec && typeof rec.room==='string') ? rec.room : '';   // deck-wide room prefix
       if(rec && rec.v===1 && Array.isArray(rec.sessions) && !isSessEmpty(rec.sessions)){
         SESS = rec.sessions; SID = nextSid(rec.sessions, rec.sid);
         if(rec.ingestedAt) curMeta.ingestedAt = rec.ingestedAt;
         restored = true;
       } else { SESS = null; SID = 0; }
-    }catch{ SESS = null; SID = 0; /* IDB blocked under file:// — fresh detection */ }
+    }catch{ SESS = null; SID = 0; ROOM = ''; /* IDB blocked under file:// — fresh detection */ }
+    if(els.roomName) els.roomName.value = ROOM;
 
     // Record this deck in the library (small metadata always; raw bytes if room).
-    try{ await idbSet('file:'+hash, { v:1, ...curMeta, updatedAt:Date.now(), sid:SID, sessions:SESS }); }catch{}
+    try{ await idbSet('file:'+hash, { v:1, ...curMeta, updatedAt:Date.now(), sid:SID, sessions:SESS, room:ROOM }); }catch{}
     try{
       if(!(await idbGet('deck:'+hash))) await idbSet('deck:'+hash, buf);
     }catch{ toast('Deck too large to cache for re-open; your edits are still saved — re-drop the file to continue later.', true); }
@@ -2188,7 +2205,8 @@ async function ingest(buf, meta){
 
 function resetApp(){
   STATE={name:'',deck:null,slides:[],results:[]};
-  SESS=null; curHash=null; curMeta=null; curDeckBytes=null;   // saved library records are kept — re-open restores them
+  SESS=null; ROOM=''; curHash=null; curMeta=null; curDeckBytes=null;   // saved library records are kept — re-open restores them
+  if(els.roomName) els.roomName.value='';
   prDestroy();
   els.results.classList.remove('mode-sessions');
   setEditMode(false);
@@ -2503,11 +2521,13 @@ els.sessBtn.addEventListener('click', ()=>{
 els.sessReset.addEventListener('click', ()=>{
   if(!STATE.results.length) return;
   if(!confirm('Discard all edits for this deck and reset to the detected speaker names?')) return;
-  SESS=null; SID=0;
+  SESS=null; SID=0;              // room is deck-level — left untouched by a name reset
   ensureSessions();              // rebuild fresh from flattenSpeakers()
   renderSessions(); persistSessions();   // overwrite the saved record with detected names
   toast('Reset to detected speakers.');
 });
+// Deck-wide room prefix (applies to all sessions in this deck — edited once).
+if(els.roomName) els.roomName.addEventListener('input', ()=>{ ROOM=els.roomName.value; persistSessions(); });
 
 // deterministic, well-separated colour per cue (golden-angle hue)
 function cueColor(cue){
@@ -2859,6 +2879,9 @@ function sanitizeName(s){
 // derivations diverged, the links would silently break).
 function placeholderEntries(ext){
   const out=[];
+  // Optional deck-wide room name, prefixed onto every filename (not the folder),
+  // so files stay identifiable when several rooms' outputs are merged.
+  const roomPfx = (ROOM||'').trim() ? sanitizeName(ROOM.trim())+' - ' : '';
   SESS.forEach((s,si)=>{
     // Only INCLUDED (checkbox on) named speakers get a placeholder — excluded
     // ones produce neither a file nor a hyperlink. Numbering follows suit.
@@ -2867,7 +2890,7 @@ function placeholderEntries(ext){
     const prefix=s.name.trim() || ('Session '+(si+1));
     const folder=sanitizeName(prefix);
     named.forEach((sp,i)=>{
-      const fname=`${folder}/${sanitizeName(prefix)} - ${i+1} - ${sanitizeName(sp.name.trim())}.${ext}`;
+      const fname=`${folder}/${roomPfx}${sanitizeName(prefix)} - ${i+1} - ${sanitizeName(sp.name.trim())}.${ext}`;
       out.push({ folder, fname, sp });
     });
   });
@@ -2900,19 +2923,13 @@ els.buildZip.addEventListener('click', async ()=>{
   const nFiles=ents.length;
   const nSess=SESS.filter(s=>s.speakers.some(sp=>sp.name.trim())).length;
 
-  // Bundle the original deck at the ZIP root (above the session folders) so the
-  // placeholders stay associated with the source deck when deploying.
-  let deckIncluded=false;
-  if(curDeckBytes && STATE.name){
-    files.unshift({ name:sanitizeName(STATE.name), data:curDeckBytes, store:true });
-    deckIncluded=true;
-  }
+  const base=(STATE.name||'deck').replace(/\.pptx$/i,'');
 
-  // Optional: a hyperlinked copy of the deck, alongside the original at the
-  // root, with each detected speaker name linked to its placeholder file. Built
-  // off the ORIGINAL detected names (via srcId) so the text matches the slide;
-  // the link target is the placeholder path from placeholderEntries above.
-  let linkedNote='';
+  // Optional: a hyperlinked copy of the deck, with each detected speaker name
+  // linked to its placeholder file. Built off the ORIGINAL detected names (via
+  // srcId) so the text matches the slide; targets are the placeholder paths
+  // above. Built first so we know whether to rename the root decks.
+  let linkedBytes=null, linkedNote='';
   if(els.linkDeck && els.linkDeck.checked && curDeckBytes){
     const links=[];
     for(const e of ents){
@@ -2924,22 +2941,36 @@ els.buildZip.addEventListener('click', async ()=>{
       toast('Building hyperlinked deck…');
       try{
         const { bytes, linkCount, slideCount }=await linkifyDeck(curDeckBytes, links);
-        const lbase=(STATE.name||'deck').replace(/\.pptx$/i,'');
-        files.splice(deckIncluded?1:0, 0, { name:sanitizeName(lbase+' - linked')+'.pptx', data:bytes, store:true });
-        linkedNote=' + a hyperlinked deck ('+linkCount+' link'+(linkCount===1?'':'s')+' across '+slideCount+' slide'+(slideCount===1?'':'s')+')';
+        linkedBytes=bytes;
+        linkedNote=' + a hyperlinked deck named as the original ('+linkCount+' link'+(linkCount===1?'':'s')+' across '+slideCount+' slide'+(slideCount===1?'':'s')+'); the source is kept as "…-unlinked"';
       }catch(err){ console.error(err); linkedNote=' (the hyperlinked deck could not be built — see console)'; }
     }
+  }
+
+  // Bundle the deck(s) at the ZIP root (above the session folders). When a linked
+  // copy exists it takes the ORIGINAL filename (it's the deck to open) and the
+  // untouched source is kept as "<base> - unlinked.pptx"; the linked one is listed
+  // first. Without a linked copy, the original keeps its name.
+  let deckIncluded=false;
+  if(curDeckBytes && STATE.name){
+    if(linkedBytes){
+      files.unshift({ name:sanitizeName(base+' - unlinked')+'.pptx', data:curDeckBytes, store:true });
+      files.unshift({ name:sanitizeName(STATE.name), data:linkedBytes, store:true });
+    }else{
+      files.unshift({ name:sanitizeName(STATE.name), data:curDeckBytes, store:true });
+    }
+    deckIncluded=true;
   }
 
   toast('Building ZIP…');
   try{
     const zip=await makeZip(files);
-    const base=(STATE.name||'deck').replace(/\.pptx$/i,'');
     const blob=new Blob([zip], {type:'application/zip'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
     a.download=base+' - placeholders.zip'; a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
-    toast('Built '+nFiles+' placeholder'+(nFiles>1?'s':'')+' across '+nSess+' session folder'+(nSess>1?'s':'')+(deckIncluded?', plus the original deck':'')+linkedNote+'.');
+    const deckPart = linkedBytes ? '' : (deckIncluded ? ', plus the original deck' : '');
+    toast('Built '+nFiles+' placeholder'+(nFiles>1?'s':'')+' across '+nSess+' session folder'+(nSess>1?'s':'')+deckPart+linkedNote+'.');
   }catch(err){ console.error(err); toast('Could not build the ZIP: '+(err.message||err), true); }
 });
 
@@ -3035,7 +3066,7 @@ function persistSessions(){
   if(!curHash || !SESS || isSessEmpty(SESS)) return;   // never clobber a good record with empty edits
   clearTimeout(_saveTimer);
   _saveTimer=setTimeout(async ()=>{
-    try{ await idbSet('file:'+curHash, { v:1, ...curMeta, updatedAt:Date.now(), sid:SID, sessions:SESS }); }
+    try{ await idbSet('file:'+curHash, { v:1, ...curMeta, updatedAt:Date.now(), sid:SID, sessions:SESS, room:ROOM }); }
     catch{/* file:// may block IndexedDB; edits still live for this session */}
   }, 400);
 }
