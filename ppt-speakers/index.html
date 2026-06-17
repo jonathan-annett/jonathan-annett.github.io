@@ -2881,7 +2881,7 @@ function placeholderEntries(ext){
   const out=[];
   // Optional deck-wide room name, prefixed onto every filename (not the folder),
   // so files stay identifiable when several rooms' outputs are merged.
-  const roomPfx = (ROOM||'').trim() ? sanitizeName(ROOM.trim())+' - ' : '';
+  const roomPfx = (ROOM||'').trim() ? sanitizeName(ROOM.trim())+' ' : '';
   SESS.forEach((s,si)=>{
     // Only INCLUDED (checkbox on) named speakers get a placeholder — excluded
     // ones produce neither a file nor a hyperlink. Numbering follows suit.
@@ -3017,12 +3017,59 @@ els.copyBtn.addEventListener('click', async ()=>{
   }
 });
 
+// Session groups for a report: the live SESS when present, else a read-only
+// default of all non-review detected names in slide order as a single session
+// (mirrors flattenSpeakers without mutating state).
+function reportSessions(){
+  if(SESS) return SESS;
+  const speakers=[];
+  for(const {slide,names} of STATE.results)
+    names.forEach(n=>{ if(bucket(n.score)!=='review') speakers.push({ name:n.name, cue:slide }); });
+  return [{ name:'', speakers }];
+}
+
+// The downloadable .txt report for one (master) deck: a collapsed by-slide list
+// (one line per slide) followed by the speakers grouped by session.
+function buildReport(){
+  const showReview = els.revToggle.checked;
+  const room=(ROOM||'').trim();
+  const out=[];
+  out.push(STATE.name + (room ? '   [room: '+room+']' : ''));
+
+  // collapse each slide to one line; dedupe a name repeated on the slide.
+  let total=0; const bySlide=[];
+  for(const {slide,names} of STATE.results){
+    const seen=new Set(), kept=[];
+    for(const n of names){
+      if(!showReview && bucket(n.score)==='review') continue;
+      const k=n.name.toLowerCase(); if(seen.has(k)) continue; seen.add(k); kept.push(n);
+    }
+    if(kept.length){ bySlide.push({ slide, kept }); total+=kept.length; }
+  }
+  out.push(total+' speaker name'+(total===1?'':'s')+' across '+bySlide.length+' slide'+(bySlide.length===1?'':'s')+
+           ' · '+STATE.slides.length+' slides scanned'+(showReview?' (review candidates included)':''));
+
+  out.push('', 'BY SLIDE');
+  for(const {slide,kept} of bySlide)
+    out.push('  Slide '+slide+': '+kept.map(n=>(bucket(n.score)==='review'?'? ':'')+n.name).join(', '));
+
+  out.push('', 'BY SESSION');
+  reportSessions().forEach((s,si)=>{
+    const named=s.speakers.filter(sp=>sp.name.trim() && !sp.off);
+    if(!named.length) return;
+    out.push('  '+(s.name.trim() || ('Session '+(si+1))));
+    named.forEach(sp=> out.push('    '+sp.name.trim()));
+  });
+
+  return out.join('\n').trimEnd()+'\n';
+}
+
 els.dlBtn.addEventListener('click', ()=>{
   const base = STATE.name.replace(/\.pptx$/i,'') || 'deck';
-  const blob = new Blob([buildText()], {type:'text/plain'});
+  const blob = new Blob([buildReport()], {type:'text/plain'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download=base+' — speakers.txt';
+  a.download=base+' — report.txt';
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1500);
 });
