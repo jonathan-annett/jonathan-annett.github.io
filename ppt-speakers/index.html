@@ -584,7 +584,6 @@ footer a{color:var(--muted)}
 
     <section id="sessionPanel">
       <div class="sess-bar">
-        <button class="btn ghost" id="sessBack">← Back to list</button>
         <button class="btn ghost" id="sessReset">Reset to detected names</button>
         <span class="spacer"></span>
         <button class="btn primary" id="buildZip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg><span>Download placeholder ZIP</span></button>
@@ -1529,6 +1528,7 @@ const SVG = {
   down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg>',
   redo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 13 4 4L19 7"/></svg>',
+  pencil:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>',
   load:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M5 21h14a2 2 0 0 0 2-2v-3"/><path d="M3 16v3a2 2 0 0 0 2 2"/></svg>',
 };
 
@@ -1541,7 +1541,7 @@ const els = {
   reviewCues:$('#reviewCues'), reviewHead:$('#reviewHead'),
   counts:$('#counts'),
   copyBtn:$('#copyBtn'), dlBtn:$('#dlBtn'), newBtn:$('#newBtn'),
-  sessBtn:$('#sessBtn'), sessBack:$('#sessBack'), sessionPanel:$('#sessionPanel'),
+  sessBtn:$('#sessBtn'), sessionPanel:$('#sessionPanel'),
   sessionList:$('#sessionList'), buildZip:$('#buildZip'),
   tplFile:$('#tplFile'), tplName:$('#tplName'), extField:$('#extField'),
   revToggle:$('#revToggle'), thumbToggle:$('#thumbToggle'), boostFile:$('#boostFile'),
@@ -1718,6 +1718,7 @@ async function ingest(buf, meta){
     }catch{ toast('Deck too large to cache for re-open; your edits are still saved — re-drop the file to continue later.', true); }
 
     els.results.classList.remove('mode-sessions');
+    setEditMode(false);
     // Spin up the high-fidelity renderer before drawing thumbnails so previews
     // mount faithfully from the first paint (falls back silently if it can't).
     await prLoad(buf);
@@ -1738,6 +1739,7 @@ function resetApp(){
   SESS=null; curHash=null; curMeta=null;   // saved library records are kept — re-open restores them
   prDestroy();
   els.results.classList.remove('mode-sessions');
+  setEditMode(false);
   if(thumbIO){ thumbIO.disconnect(); thumbIO=null; }
   els.results.classList.remove('show');
   els.topFn.hidden=true; els.topFn.textContent='';
@@ -2015,16 +2017,24 @@ function ensureSessions(){
   SESS=[{ name:'', speakers:flattenSpeakers() }];
 }
 
+// The toolbar button toggles the editor: "Edit" opens it; while editing it
+// becomes "Save edits", which returns to the cue list (edits already autosave).
+function setEditMode(editing){
+  els.sessBtn.innerHTML = (editing?SVG.check:SVG.pencil)+'<span>'+(editing?'Save edits':'Edit')+'</span>';
+}
 els.sessBtn.addEventListener('click', ()=>{
+  if(els.results.classList.contains('mode-sessions')){
+    els.results.classList.remove('mode-sessions');
+    setEditMode(false);
+    render();   // reflect edits (removals, reorder, renames) in the cue list
+    return;
+  }
   if(!STATE.results.length){ toast('Load a deck with speakers first.', true); return; }
   ensureSessions();
   els.results.classList.add('mode-sessions');
+  setEditMode(true);
   renderSessions();
   els.sessionPanel.scrollIntoView({behavior:'smooth',block:'start'});
-});
-els.sessBack.addEventListener('click', ()=>{
-  els.results.classList.remove('mode-sessions');
-  render();   // reflect edits (removals, reorder, renames) in the cue list
 });
 els.sessReset.addEventListener('click', ()=>{
   if(!STATE.results.length) return;
