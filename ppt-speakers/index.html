@@ -2954,35 +2954,85 @@ function sanitizeName(s){
 // reused for both the ZIP entry name and the hyperlink target, so a name on a
 // slide always resolves to the matching placeholder file (if the two
 // derivations diverged, the links would silently break).
-function placeholderEntries(ext){
+// Placeholder entries for ANY deck's sessions (parameterised). Only INCLUDED
+// (checkbox-on) named speakers get a placeholder; the room name is prefixed onto
+// every filename (not the folder) so files stay identifiable when merged.
+function placeholderEntriesFor(sessions, room, ext){
   const out=[];
-  // Optional deck-wide room name, prefixed onto every filename (not the folder),
-  // so files stay identifiable when several rooms' outputs are merged.
-  const roomPfx = (ROOM||'').trim() ? sanitizeName(ROOM.trim())+' ' : '';
-  SESS.forEach((s,si)=>{
-    // Only INCLUDED (checkbox on) named speakers get a placeholder — excluded
-    // ones produce neither a file nor a hyperlink. Numbering follows suit.
+  const roomPfx = (room||'').trim() ? sanitizeName(room.trim())+' ' : '';
+  (sessions||[]).forEach((s,si)=>{
     const named=s.speakers.filter(sp=>sp.name.trim() && !sp.off);
     if(!named.length) return;
     const prefix=s.name.trim() || ('Session '+(si+1));
     const folder=sanitizeName(prefix);
     named.forEach((sp,i)=>{
-      const fname=`${folder}/${roomPfx}${sanitizeName(prefix)} - ${i+1} - ${sanitizeName(sp.name.trim())}.${ext}`;
-      out.push({ folder, fname, sp });
+      out.push({ folder, fname:`${folder}/${roomPfx}${sanitizeName(prefix)} - ${i+1} - ${sanitizeName(sp.name.trim())}.${ext}`, sp });
     });
   });
   return out;
 }
+// The loaded deck's placeholder entries (SINGLE source of those paths — reused
+// for both the ZIP entry name and the hyperlink target, so they can't diverge).
+function placeholderEntries(ext){ return placeholderEntriesFor(SESS, ROOM, ext); }
 
 // Resolve a speaker's srcId ("slide#index") back to its ORIGINAL detected name
-// object on that slide — { name, occ, dup, ... }. The name string is what the
-// hyperlink injector must match (the session name may have been edited); `occ`
-// tells linkifyDeck which physical occurrence to link when the name repeats.
-function detectedBySrc(srcId){
-  if(srcId==null) return null;
+// object — { name, occ, dup, ... } — in the given extraction results.
+function detectedFromResults(results, srcId){
+  if(srcId==null || !results) return null;
   const [sl, idx] = String(srcId).split('#');
-  const r = STATE.results.find(r=>r.slide===+sl);
+  const r = results.find(r=>r.slide===+sl);
   return (r && r.names[+idx]) || null;
+}
+function detectedBySrc(srcId){ return detectedFromResults(STATE.results, srcId); }
+
+// Build the ZIP entry list for ONE deck (placeholders + original + hyperlinked
+// copy) — the same contents the single-deck "Download placeholder ZIP" produces.
+// Shared by that button and the master bulk export. The linked copy takes the
+// original filename; the source is kept as "<base> - unlinked.pptx".
+async function buildDeckZipEntries(o){
+  const ents=placeholderEntriesFor(o.sessions, o.room, o.ext||'pptx');
+  const files=ents.map(e=>({ name:e.fname, data:o.data||new Uint8Array(0) }));
+  const base=(o.filename||'deck').replace(/\.pptx$/i,'');
+  let linkedBytes=null;
+  if(o.includeLink && o.bytes){
+    const links=[];
+    for(const e of ents){
+      if(!e.sp.cue) continue;
+      const orig=detectedFromResults(o.results, e.sp.srcId);
+      if(orig) links.push({ cue:e.sp.cue, name:orig.name, occ:orig.occ||1, target:e.fname });
+    }
+    if(links.length){ try{ linkedBytes=(await linkifyDeck(o.bytes, links)).bytes; }catch(e){ console.error(e); } }
+  }
+  if(o.bytes){
+    if(linkedBytes){
+      files.unshift({ name:sanitizeName(base+' - unlinked')+'.pptx', data:o.bytes, store:true });
+      files.unshift({ name:sanitizeName(o.filename||'deck.pptx'), data:linkedBytes, store:true });
+    } else {
+      files.unshift({ name:sanitizeName(o.filename||'deck.pptx'), data:o.bytes, store:true });
+    }
+  }
+  return files;
+}
+
+// Bulk export: every saved deck's full placeholder-ZIP contents, each under a
+// folder named by its room (else filename, minus .pptx). Returns { zip, nDecks }.
+async function buildMasterExport(){
+  const recs = await getLibraryRecs();
+  const master=[]; let nDecks=0;
+  for(const rec of recs){
+    let bytes; try{ bytes=await idbGet('deck:'+rec.hash); }catch{}
+    if(!bytes) continue;
+    bytes = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    let sessions = (rec.sessions && !isSessEmpty(rec.sessions)) ? rec.sessions : await materializeDefault(rec.hash);
+    if(!sessions) continue;
+    let results; try{ results=(await reportDeckFor(rec.hash)).results; }catch{ continue; }
+    const folder = sanitizeName((rec.room&&rec.room.trim()) || (rec.filename||'deck').replace(/\.pptx$/i,''));
+    const entries = await buildDeckZipEntries({ bytes, filename:rec.filename||'deck.pptx', sessions, room:(rec.room||'').trim(), results, ext:'pptx', data:new Uint8Array(0), includeLink:true });
+    for(const e of entries) master.push({ name: folder+'/'+e.name, data:e.data, store:e.store });
+    nDecks++;
+  }
+  if(!master.length) throw new Error('no decks with cached files to export');
+  return { zip: await makeZip(master), nDecks };
 }
 
 els.buildZip.addEventListener('click', async ()=>{
@@ -3277,6 +3327,16 @@ if(bc) bc.onmessage = async (ev)=>{
   } else if(m.type==='slide-request'){
     try{ const r=await renderSlideForReport(m.hash, m.slide); bcPost({ type:'slide-result', reqId:m.reqId, ...r }); }
     catch(e){ console.error(e); bcPost({ type:'slide-error', reqId:m.reqId }); }
+  } else if(m.type==='master-export-request'){
+    bcPost({ type:'master-recv', reqId:m.reqId });           // presence ack
+    try{
+      const { zip, nDecks } = await buildMasterExport();
+      const blob=new Blob([zip], {type:'application/zip'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download='master decks export.zip'; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+      bcPost({ type:'master-done', reqId:m.reqId, nDecks });
+    }catch(e){ console.error(e); bcPost({ type:'master-error', reqId:m.reqId, error:String(e&&e.message||e) }); }
   } else if(m.type==='deck-edited'){
     if(m.hash===curHash) await reloadCurrentDeckSessions();
     refreshLibraryViews();
@@ -3523,7 +3583,15 @@ h1{font-size:22px;margin:0 0 4px}.meta{color:#667085;margin:0 0 2px;font-size:13
 .linkdec.on{border:2px dashed #d9a400;background:rgba(240,200,80,.12)}
 .linkdec.off{border:2px dashed #e0707a;background:rgba(224,112,122,.12)}
 .linkdec .linknum{position:absolute;right:100%;top:50%;transform:translateY(-50%);margin-right:2px;color:#b58600;font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:10px;line-height:1;text-shadow:0 0 2px #fff,0 0 2px #fff,0 0 2px #fff}
-@media print{body{padding:0}.room{border:none;padding:0}.srow button,.split{display:none}.sname{border:none;padding-left:0}.slidebox{display:none}}`;
+#controlbar{display:flex;gap:10px;margin:0 0 18px}
+#controlbar button{font-size:13px;padding:6px 12px;border:1px solid #d6dbe1;border-radius:7px;background:#f7f9fc;color:#1a1d22;cursor:pointer}
+#controlbar button:hover{border-color:#0350a7;color:#0350a7}
+#controlbar #status{align-self:center;font-size:12px;color:#667085}
+.printmode .hint,.printmode .srow button,.printmode .split,.printmode #masterzip{display:none}
+.printmode .slidelink{color:inherit;text-decoration:none;cursor:default}
+.printmode .slidebox{display:none}
+.printmode .sname{border-color:transparent;background:transparent}
+@media print{body{padding:0}#controlbar{display:none}.room{border:none;padding:0}.srow button,.split{display:none}.sname{border:none;padding-left:0}.slidebox{display:none}}`;
 
   const client = `
 const DECKS = ${data};
@@ -3627,6 +3695,12 @@ function pump(){
 }
 if(bc)bc.onmessage=(ev)=>{const m=ev.data||{};
   if((m.type==='slide-result'||m.type==='slide-error')&&slidePending.has(m.reqId)){slidePending.get(m.reqId)(m.type==='slide-result'?m:null);return;}
+  if(masterPending&&m.reqId===masterPending.reqId){
+    if(m.type==='master-recv')masterPending.onRecv();
+    else if(m.type==='master-done')masterPending.onDone(m.nDecks);
+    else if(m.type==='master-error')masterPending.onErr(m.error);
+    return;
+  }
   if(inflight&&m.reqId===inflight.reqId){
     if(m.type==='edit-recv')inflight.onRecv();
     else if(m.type==='edit-done')inflight.onDone();
@@ -3690,6 +3764,26 @@ async function selfApply(hash,op){
 async function reconcile(hash,op){
   try{const rec=await idbGet('file:'+hash);if(rec&&Array.isArray(rec.sessions)&&!sessOpReflected(rec.sessions,op)){sessApplyOp(rec.sessions,op);await idbSet('file:'+hash,Object.assign({},rec,{updatedAt:Date.now()}));bcPost({type:'deck-edited',hash:hash});}}catch(e){}
 }
+// ---- print view + master bulk export ----
+function setStatus(t){const s=document.getElementById('status');if(s)s.textContent=t||'';}
+function clearPreviews(){openKeys.clear();const ps=document.querySelectorAll('.slidebox');for(const p of ps)p.remove();}
+function togglePrint(){clearPreviews();const on=document.body.classList.toggle('printmode');const b=document.getElementById('printtoggle');if(b)b.textContent=on?'Exit print view':'Print view';if(on)setStatus('');}
+// The full bulk export (placeholders + linked decks) needs the engine, so the
+// app builds + downloads it; this just requests it and reports status.
+let masterPending=null;
+function requestMasterZip(){
+  if(!bc){setStatus('Master export needs the SpeakerScan tab open.');return;}
+  const reqId='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);let recvd=false;
+  setStatus('Requesting master export…');
+  masterPending={reqId:reqId,
+    onRecv:()=>{recvd=true;setStatus('Building master export… it will download from the SpeakerScan tab.');},
+    onDone:(n)=>{setStatus('Master export downloaded ('+(n||0)+' deck'+(n===1?'':'s')+').');masterPending=null;},
+    onErr:(e)=>{setStatus('Master export failed'+(e?(': '+e):'')+'.');masterPending=null;}};
+  bcPost({type:'master-export-request',reqId:reqId});
+  setTimeout(()=>{if(masterPending&&masterPending.reqId===reqId&&!recvd){setStatus('Master export needs the SpeakerScan tab open.');masterPending=null;}},600);
+}
+document.getElementById('printtoggle').addEventListener('click',togglePrint);
+document.getElementById('masterzip').addEventListener('click',requestMasterZip);
 render();
 `;
 
@@ -3697,6 +3791,7 @@ render();
     + `<title>Speaker Report</title><style>${css}</style></head><body>`
     + `<header><h1>Speaker Report</h1><p class="meta" id="meta"></p>`
     + `<p class="hint">Edits (remove, reorder, rename, split) save to this browser and sync to the SpeakerScan tab. Excluded names are hidden — restore them in the app.</p></header>`
+    + `<div id="controlbar"><button id="printtoggle">Print view</button><button id="masterzip">Download master ZIP</button><span id="status"></span></div>`
     + `<main id="report"></main><script>${client}<\/script></body></html>`;
 }
 
