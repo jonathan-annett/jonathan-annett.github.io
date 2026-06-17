@@ -1154,6 +1154,12 @@ async function renderThumbnail(deck, slideObj, opts={}){
   if (!deck._media) deck._media = new Map();          // media path -> dataURL|null
   const imgConv = opts.imgConv || defaultImgConv;
   const { w:W, h:H } = deck.size;
+  // Draw in a normalised ~1280px space. EMU coordinates produce font-sizes in
+  // the hundred-thousands, which browsers cap and refuse to paint (images are
+  // unaffected, which is why only text vanished). Scaling down keeps font-sizes
+  // in a normal range so text renders everywhere.
+  const VW = 1280, k = VW / W, VH = Math.round(H * k);
+  const S = v => +(v * k).toFixed(2);
 
   const xmlU8 = await inflateEntry(deck.zip, slideObj.xml);
   const xml = xmlU8 ? dec.decode(xmlU8) : '';
@@ -1165,8 +1171,8 @@ async function renderThumbnail(deck, slideObj, opts={}){
   }
 
   const shapes = extractShapes(xml);
-  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">`;
-  svg += `<rect width="${W}" height="${H}" fill="#ffffff"/>`;
+  let svg = `<svg viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">`;
+  svg += `<rect width="${VW}" height="${VH}" fill="#ffffff"/>`;
 
   for (const s of shapes){
     if (s.kind === 'pic' && s.embed && rid.has(s.embed)){
@@ -1179,30 +1185,36 @@ async function renderThumbnail(deck, slideObj, opts={}){
         deck._media.set(path, url);
       }
       if (url){
-        svg += `<image x="${s.x}" y="${s.y}" width="${s.cx}" height="${s.cy}" `
+        svg += `<image x="${S(s.x)}" y="${S(s.y)}" width="${S(s.cx)}" height="${S(s.cy)}" `
              + `preserveAspectRatio="xMidYMid slice" href="${url}"/>`;
       } else {
-        svg += `<rect x="${s.x}" y="${s.y}" width="${s.cx}" height="${s.cy}" fill="#eef0f3" stroke="#dfe3e8" stroke-width="2000"/>`;
+        svg += `<rect x="${S(s.x)}" y="${S(s.y)}" width="${S(s.cx)}" height="${S(s.cy)}" fill="#eef0f3" stroke="#dfe3e8" stroke-width="1"/>`;
       }
       continue;
     }
     if (s.kind === 'sp'){
       if (s.fill){
-        svg += `<rect x="${s.x}" y="${s.y}" width="${s.cx}" height="${s.cy}" rx="20000" fill="${s.fill}"/>`;
+        svg += `<rect x="${S(s.x)}" y="${S(s.y)}" width="${S(s.cx)}" height="${S(s.cy)}" rx="2" fill="${s.fill}"/>`;
       }
       if (s.lines && s.lines.length){
-        const fe = (s.sz || 1600) * 127;              // hundredths-pt -> EMU
-        const lh = fe * 1.18;
-        const maxChars = Math.max(6, Math.floor(s.cx / (fe * 0.52)));
-        const color = s.color || (s.fill ? pickInk(s.fill) : '#23272e');
-        let ty = s.y + fe;
-        for (const raw of s.lines.slice(0, 7)){
-          const line = raw.length > maxChars ? raw.slice(0, maxChars-1)+'…' : raw;
-          svg += `<text x="${s.x + fe*0.12}" y="${ty}" font-size="${fe}" fill="${color}"`
-               + (s.bold ? ' font-weight="700"' : '')
-               + ` font-family="ui-sans-serif,system-ui,Segoe UI,Roboto,sans-serif">${xmlEsc(line)}</text>`;
-          ty += lh;
-          if (ty > s.y + s.cy + lh) break;
+        const fe = S((s.sz || 1600) * 127);           // hundredths-pt -> EMU -> px
+        if (fe >= 1){
+          const lh = fe * 1.18;
+          const boxW = S(s.cx), boxH = S(s.cy), bx = S(s.x), by = S(s.y);
+          const maxChars = Math.max(6, Math.floor(boxW / (fe * 0.52)));
+          const color = s.color || (s.fill ? pickInk(s.fill) : '#23272e');
+          const halo = haloFor(color);
+          const sw = (fe * 0.13).toFixed(2);
+          let ty = by + fe;
+          for (const raw of s.lines.slice(0, 7)){
+            const line = raw.length > maxChars ? raw.slice(0, maxChars-1)+'…' : raw;
+            svg += `<text x="${(bx + fe*0.12).toFixed(2)}" y="${ty.toFixed(2)}" font-size="${fe}" fill="${color}"`
+                 + ` paint-order="stroke" stroke="${halo}" stroke-width="${sw}" stroke-linejoin="round"`
+                 + (s.bold ? ' font-weight="700"' : '')
+                 + ` font-family="ui-sans-serif, system-ui, 'Segoe UI', Roboto, Arial, sans-serif">${xmlEsc(line)}</text>`;
+            ty += lh;
+            if (ty > by + boxH + lh) break;
+          }
         }
       }
     }
@@ -1210,6 +1222,13 @@ async function renderThumbnail(deck, slideObj, opts={}){
   svg += '</svg>';
   deck._thumb.set(slideObj.n, svg);
   return svg;
+}
+
+// contrast outline colour for legibility on any background
+function haloFor(hex){
+  const m=/^#?([0-9a-f]{6})$/i.exec(hex); if(!m) return 'rgba(255,255,255,.85)';
+  const n=parseInt(m[1],16), r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  return (0.299*r+0.587*g+0.114*b) > 140 ? 'rgba(0,0,0,.55)' : 'rgba(255,255,255,.85)';
 }
 
 // Synchronously return a previously-rendered thumbnail SVG (or null).
