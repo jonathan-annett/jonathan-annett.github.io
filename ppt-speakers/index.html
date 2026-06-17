@@ -2238,7 +2238,11 @@ async function ingest(buf, meta){
     STATE = { name:meta.name, deck, slides:deck.slides, results };
     const hash = hashBytes(buf);
     curHash = hash;
-    curMeta = { hash, filename:meta.name, lastModified:meta.lastModified, ingestedAt:Date.now() };
+    // `slides` (count) + `speakerSlides` (slide numbers with ≥1 detected name)
+    // ride along in curMeta so every record write keeps them — the report uses
+    // them to list slides that have NO speakers without re-parsing the deck.
+    curMeta = { hash, filename:meta.name, lastModified:meta.lastModified, ingestedAt:Date.now(),
+                slides:deck.slides.length, speakerSlides:results.map(r=>r.slide) };
     curDeckBytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);   // for the ZIP root
 
     // Restore previously-saved session edits for this exact deck.
@@ -2374,7 +2378,7 @@ function cueCard(slide, names, isReview, look){
 
   const card=document.createElement('div'); card.className='cue';
   const rail=document.createElement('div'); rail.className='rail';
-  rail.innerHTML='<span class="lbl">Cue</span>'+
+  rail.innerHTML='<span class="lbl">Slide</span>'+
     '<span class="num">'+String(slide).padStart(2,'0')+'</span>'+
     '<span class="cnt">'+activeCount+(activeCount===1?' name':' names')+'</span>';
 
@@ -2494,7 +2498,7 @@ async function mountLbPreview(){
 async function showSlide(cue, who){
   if(!STATE.deck) return;
   lbCue=cue;
-  els.lbCue.textContent='Cue '+String(cue).padStart(2,'0');
+  els.lbCue.textContent='Slide '+String(cue).padStart(2,'0');
   els.lbWho.textContent=who||'';
   els.lightbox.classList.add('show');
   await mountLbPreview();
@@ -2812,10 +2816,10 @@ function renderSessions(){
         mk.style.setProperty('--cc',col.line);
         mk.style.setProperty('--cfg',col.fg);
         const th=document.createElement('div'); th.className='cue-thumb';
-        if(sp.cue){ th.dataset.slide=sp.cue; th.innerHTML='<span class="ph">cue '+String(sp.cue).padStart(2,'0')+'</span>'; }
+        if(sp.cue){ th.dataset.slide=sp.cue; th.innerHTML='<span class="ph">slide '+String(sp.cue).padStart(2,'0')+'</span>'; }
         else { th.innerHTML='<span class="ph">manual</span>'; }
         const lab=document.createElement('span'); lab.className='clabel';
-        lab.textContent=sp.cue?('Cue '+String(sp.cue).padStart(2,'0')):'Added manually';
+        lab.textContent=sp.cue?('Slide '+String(sp.cue).padStart(2,'0')):'Added manually';
         const dash=document.createElement('span'); dash.className='cdash';
         mk.append(th, lab, dash);
         // A split is only valid on a slide boundary (a slide never spans
@@ -2859,7 +2863,7 @@ function renderSessions(){
       }
       const cue=document.createElement('button');
       cue.className='cue-tag'+(sp.cue?'':' none');
-      cue.textContent=sp.cue?('cue '+String(sp.cue).padStart(2,'0')):'manual';
+      cue.textContent=sp.cue?('slide '+String(sp.cue).padStart(2,'0')):'manual';
       if(sp.cue) cue.addEventListener('click', ()=> showSlide(sp.cue, sp.name));
       row.append(grip, inc, no, txt);
       if(occBadge) row.append(occBadge);
@@ -3270,11 +3274,52 @@ if(bc) bc.onmessage = async (ev)=>{
     bcPost({ type:'edit-recv', reqId:m.reqId });             // fast presence ack
     try{ await applyEditToDeck(m.hash, m.op); bcPost({ type:'edit-done', reqId:m.reqId, hash:m.hash }); }
     catch(e){ console.error(e); bcPost({ type:'edit-error', reqId:m.reqId }); }
+  } else if(m.type==='slide-request'){
+    try{ const r=await renderSlideForReport(m.hash, m.slide); bcPost({ type:'slide-result', reqId:m.reqId, ...r }); }
+    catch(e){ console.error(e); bcPost({ type:'slide-error', reqId:m.reqId }); }
   } else if(m.type==='deck-edited'){
     if(m.hash===curHash) await reloadCurrentDeckSessions();
     refreshLibraryViews();
   }
 };
+
+// Render one slide (approximate SVG) + its current link-decoration boxes for the
+// report tab, which has no renderer of its own. Parsed decks are cached so
+// repeated previews don't re-parse. Decorations reflect the CURRENT session state.
+const _reportDeck = new Map();   // hash -> { deck, results }
+async function reportDeckFor(hash){
+  if(curHash===hash && STATE.deck) return { deck:STATE.deck, results:STATE.results };
+  if(_reportDeck.has(hash)) return _reportDeck.get(hash);
+  const buf = await idbGet('deck:'+hash); if(!buf) throw new Error('deck not cached');
+  const deck = await parseDeck(buf); const results = extractNames(deck.slides);
+  const v = { deck, results }; _reportDeck.set(hash, v); return v;
+}
+async function renderSlideForReport(hash, slide){
+  const { deck, results } = await reportDeckFor(hash);
+  const so = deck.order.find(o=>o.n===slide); if(!so) throw new Error('no such slide');
+  const svg = await renderThumbnail(deck, so);
+  // Build link targets for this slide from the deck's CURRENT sessions (live if
+  // loaded, else the stored record), resolving original detected name + occ via srcId.
+  let sessions = (curHash===hash && SESS) ? SESS : null;
+  if(!sessions){ const rec=await idbGet('file:'+hash); sessions = rec && rec.sessions; }
+  const det = new Map();   // srcId -> {name, occ, dup}
+  for(const r of results) r.names.forEach((n,idx)=> det.set(r.slide+'#'+idx, n));
+  const order = orderMapFor(sessions);
+  const targets=[];
+  if(Array.isArray(sessions)) for(const s of sessions) for(const sp of s.speakers){
+    if(sp.cue!==slide || !sp.name || !sp.name.trim() || sp.off) continue;
+    const d = sp.srcId!=null ? det.get(sp.srcId) : null;
+    if(d) targets.push({ name:d.name, occ:d.occ||1, included:true, num:order.get(sp.id) });
+  }
+  const boxes = await linkDecorations(deck, slide, targets);
+  return { svg, boxes, w:deck.size.w, h:deck.size.h };
+}
+// id -> 1-based per-session number (named + included), matching placeholderEntries.
+function orderMapFor(sessions){
+  const m=new Map(); if(!Array.isArray(sessions)) return m;
+  for(const s of sessions){ let n=0; for(const sp of s.speakers) if(sp.name && sp.name.trim() && !sp.off){ n++; m.set(sp.id, n); } }
+  return m;
+}
 
 // Apply an edit op to a deck: the live model if it's the loaded deck (so the
 // editor stays consistent — no clobber), otherwise the stored record.
@@ -3412,7 +3457,16 @@ async function reportDecks(){
         if(sessions) await idbSet('file:'+rec.hash, { ...rec, sessions, sid:nextSid(sessions, rec.sid), updatedAt:Date.now() });
       }catch{/* unreadable/uncached — listed with a note */}
     }
-    out.push({ hash:rec.hash, room:(rec.room||'').trim(), filename:rec.filename||'(unnamed deck)', sessions });
+    // Slides with NO detected names (so they never reach a session) — listed in
+    // the report. Needs the stored slide info (present once a deck is opened);
+    // null when unknown (e.g. a deck only quick-saved via multi-drop).
+    let noSpeaker = null;
+    if(typeof rec.slides==='number' && Array.isArray(rec.speakerSlides)){
+      const has=new Set(rec.speakerSlides); noSpeaker=[];
+      for(let n=1;n<=rec.slides;n++) if(!has.has(n)) noSpeaker.push(n);
+    }
+    out.push({ hash:rec.hash, room:(rec.room||'').trim(), filename:rec.filename||'(unnamed deck)',
+               sessions, slides:(typeof rec.slides==='number'?rec.slides:null), noSpeaker });
   }
   return out;
 }
@@ -3442,7 +3496,20 @@ h1{font-size:22px;margin:0 0 4px}.meta{color:#667085;margin:0 0 2px;font-size:13
 .srow button{background:transparent;border:1px solid transparent;border-radius:5px;cursor:pointer;color:#98a2b3;font-size:12px;line-height:1;padding:3px 6px;flex:none}
 .srow button:hover:not(:disabled){color:#222;background:#f0f2f5}.srow button:disabled{opacity:.3;cursor:default}.srow .del:hover{color:#c0392b}
 .note{color:#98a2b3;font-style:italic;margin:6px 0}
-@media print{body{padding:0}.room{border:none;padding:0}.srow button,.split{display:none}.sname{border:none;padding-left:0}}`;
+.slidelink{cursor:pointer;color:#0350a7;text-decoration:underline dotted;text-underline-offset:2px}
+.slidelink:hover{color:#02307a}
+.nospk{margin:12px 0 2px}
+.nospk .lbl{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#98a2b3}
+.nospk-row{margin:3px 0 3px 2px}.nospk .muted{color:#b6bcc6;font-size:12px}
+.slidebox{margin:6px 0 10px 2px;cursor:zoom-out}
+.slidebox .ph{font-size:12px;color:#98a2b3;font-style:italic;padding:4px 0}
+.slideframe{position:relative;width:480px;max-width:100%;border:1px solid #e3e6ea;border-radius:6px;overflow:hidden;background:#fff}
+.slideframe svg{display:block;width:100%;height:auto}
+.linkdec{position:absolute;pointer-events:none;box-sizing:border-box;border-radius:3px}
+.linkdec.on{border:2px dashed #d9a400;background:rgba(240,200,80,.12)}
+.linkdec.off{border:2px dashed #e0707a;background:rgba(224,112,122,.12)}
+.linkdec .linknum{position:absolute;right:100%;top:50%;transform:translateY(-50%);margin-right:2px;color:#b58600;font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:10px;line-height:1;text-shadow:0 0 2px #fff,0 0 2px #fff,0 0 2px #fff}
+@media print{body{padding:0}.room{border:none;padding:0}.srow button,.split{display:none}.sname{border:none;padding-left:0}.slidebox{display:none}}`;
 
   const client = `
 const DECKS = ${data};
@@ -3476,7 +3543,10 @@ function render(){
         sess.appendChild(nameI);
         const wrap=el('div','speakers');let n=0;
         cueGroups(inc).forEach((g,gi)=>{
-          const cb=el('div','cuebreak');cb.appendChild(el('span','cuelabel',g.cue?('Slide '+String(g.cue).padStart(2,'0')):'Manual'));cb.appendChild(el('span','rule'));
+          const cb=el('div','cuebreak');
+          const label=g.cue?el('span','cuelabel slidelink','Slide '+String(g.cue).padStart(2,'0')):el('span','cuelabel','Manual');
+          if(g.cue){cb.dataset.prev=d.hash+':'+g.cue;label.title='Click to preview this slide';label.addEventListener('click',()=>togglePreview(d,g.cue,cb));}
+          cb.appendChild(label);cb.appendChild(el('span','rule'));
           if(gi>0&&g.cue){const sb=el('button','split','↳ split session here');sb.addEventListener('click',()=>doEdit(d,{kind:'split',id:g.items[0].id}));cb.appendChild(sb);}
           wrap.appendChild(cb);
           g.items.forEach((sp,ii)=>{
@@ -3493,10 +3563,23 @@ function render(){
         });
         sess.appendChild(wrap);sec.appendChild(sess);
       });
+      // slides with no detected speakers — listed + previewable
+      if(d.noSpeaker&&d.noSpeaker.length){
+        const ns=el('div','nospk');ns.appendChild(el('span','lbl','Slides with no speakers'));
+        d.noSpeaker.forEach(num=>{
+          const rrow=el('div','nospk-row');rrow.dataset.prev=d.hash+':'+num;
+          const lk=el('span','slidelink','Slide '+String(num).padStart(2,'0'));lk.title='Click to preview this slide';
+          lk.addEventListener('click',()=>togglePreview(d,num,rrow));
+          rrow.appendChild(lk);rrow.appendChild(el('span','muted',' — no speakers'));
+          ns.appendChild(rrow);
+        });
+        sec.appendChild(ns);
+      }
     }
     root.appendChild(sec);
   }
   document.getElementById('meta').textContent=nR+' room'+(nR===1?'':'s')+' · '+nS+' session'+(nS===1?'':'s')+' · '+nSp+' speaker'+(nSp===1?'':'s')+' · generated '+new Date().toLocaleString();
+  for(const a of document.querySelectorAll('[data-prev]')) if(openKeys.has(a.dataset.prev)) materializeAfter(a,a.dataset.prev);
 }
 function moveInGroup(d,si,inc,g,ii,dir){
   const j=ii+dir;if(j<0||j>=g.items.length)return;
@@ -3521,6 +3604,7 @@ function pump(){
   const t2=setTimeout(()=>{if(!settled)reconcile(job.hash,job.op).then(settle);},2600);
 }
 if(bc)bc.onmessage=(ev)=>{const m=ev.data||{};
+  if((m.type==='slide-result'||m.type==='slide-error')&&slidePending.has(m.reqId)){slidePending.get(m.reqId)(m.type==='slide-result'?m:null);return;}
   if(inflight&&m.reqId===inflight.reqId){
     if(m.type==='edit-recv')inflight.onRecv();
     else if(m.type==='edit-done')inflight.onDone();
@@ -3529,6 +3613,51 @@ if(bc)bc.onmessage=(ev)=>{const m=ev.data||{};
   }
   if(m.type==='deck-edited'&&byHash.has(m.hash))reread(m.hash);
 };
+
+// ---- slide previews: ask the app to render (it has the renderer), cache the
+// SVG (the image never changes); decorations come fresh each time so edits are
+// always reflected — nothing to invalidate.
+const openKeys=new Set();
+const slidePending=new Map();
+function togglePreview(d,slide,anchor){
+  const key=d.hash+':'+slide;
+  if(openKeys.has(key)){openKeys.delete(key);const nx=anchor.nextElementSibling;if(nx&&nx.classList.contains('slidebox'))nx.remove();return;}
+  openKeys.add(key);materializeAfter(anchor,key);
+}
+function materializeAfter(anchor,key){
+  if(anchor.nextElementSibling&&anchor.nextElementSibling.classList.contains('slidebox'))return;
+  const holder=el('div','slidebox');anchor.insertAdjacentElement('afterend',holder);
+  holder.addEventListener('click',()=>{openKeys.delete(key);holder.remove();});
+  const i=key.indexOf(':');showInto(holder,key.slice(0,i),+key.slice(i+1));
+}
+async function showInto(holder,hash,slide){
+  holder.innerHTML='';const cached=await cacheGet(hash,slide);
+  if(cached&&cached.svg)paint(holder,cached.svg,[]);else holder.appendChild(el('div','ph','rendering…'));
+  const fresh=await slideReq(hash,slide);
+  if(fresh&&fresh.svg){cacheSet(hash,slide,{svg:fresh.svg,w:fresh.w,h:fresh.h});paint(holder,fresh.svg,fresh.boxes||[]);}
+  else if(!(cached&&cached.svg)){holder.innerHTML='';holder.appendChild(el('div','ph','Preview needs the SpeakerScan tab open.'));}
+}
+function paint(holder,svg,boxes){
+  holder.innerHTML='';const fr=el('div','slideframe');fr.innerHTML=svg;
+  for(const b of (boxes||[])){
+    const dd=el('div','linkdec'+(b.included?' on':' off'));
+    dd.style.cssText='left:'+(b.x*100).toFixed(2)+'%;top:'+(b.y*100).toFixed(2)+'%;width:'+(b.w*100).toFixed(2)+'%;height:'+(b.h*100).toFixed(2)+'%';
+    if(b.included&&b.num!=null)dd.appendChild(el('span','linknum',String(b.num)));
+    fr.appendChild(dd);
+  }
+  holder.appendChild(fr);
+}
+function slideReq(hash,slide){
+  return new Promise(res=>{
+    if(!bc){res(null);return;}
+    const reqId='s'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);let done=false;
+    slidePending.set(reqId,(r)=>{if(done)return;done=true;slidePending.delete(reqId);res(r);});
+    bcPost({type:'slide-request',reqId:reqId,hash:hash,slide:slide});
+    setTimeout(()=>{if(!done){done=true;slidePending.delete(reqId);res(null);}},1500);
+  });
+}
+function cacheGet(hash,slide){return idbGet('slidesvg:'+hash+':'+slide).catch(()=>null);}
+function cacheSet(hash,slide,v){return idbSet('slidesvg:'+hash+':'+slide,v).catch(()=>{});}
 async function reread(hash){
   try{const rec=await idbGet('file:'+hash);const d=byHash.get(hash);if(d&&rec){if(Array.isArray(rec.sessions))d.sessions=rec.sessions;if(typeof rec.room==='string')d.room=rec.room;}}catch(e){}
   render();
