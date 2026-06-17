@@ -1988,6 +1988,11 @@ els.sessionList.addEventListener('click', e=>{
 });
 
 function renderSessions(){
+  // Rebuilding the list wholesale collapses page height for an instant, which
+  // makes the browser clamp the scroll position to the top. Capture and restore
+  // it so edits (delete, drag, etc.) don't yank the user back up.
+  const sc=document.scrollingElement||document.documentElement;
+  const keepScroll=sc.scrollTop;
   prDisposeAll(prMiniHandles);              // drop minis from the previous render pass
   const list=els.sessionList; list.innerHTML='';
   SESS.forEach((sess, si)=>{
@@ -2073,6 +2078,7 @@ function renderSessions(){
     list.appendChild(sec);
   });
   wireDnD();
+  sc.scrollTop=keepScroll;                  // restore after the rebuild
 }
 
 // ---- drag to reorder (within and across sessions) ------------
