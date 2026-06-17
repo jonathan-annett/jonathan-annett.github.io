@@ -419,12 +419,29 @@ footer a{color:var(--muted)}
 .sname-txt:focus{outline:none;border-color:var(--accent);background:var(--card-2)}
 .sname-txt::placeholder{color:var(--faint)}
 .cue-tag{
-  background:var(--card-2);border:1px solid var(--edge);color:var(--muted);border-radius:5px;
-  padding:3px 7px;font-family:var(--mono);font-size:10px;cursor:pointer;white-space:nowrap;flex:none;
+  background:var(--cbg,var(--card-2));border:1px solid var(--cc,var(--edge));color:var(--cfg,var(--muted));
+  border-radius:5px;padding:3px 7px;font-family:var(--mono);font-size:10px;cursor:pointer;white-space:nowrap;flex:none;
 }
-.cue-tag:hover{color:var(--ink);border-color:var(--accent)}
-.cue-tag.none{cursor:default;opacity:.5}
-.cue-tag.none:hover{color:var(--muted);border-color:var(--edge)}
+.cue-tag:hover{filter:brightness(1.25)}
+.cue-tag.none{cursor:default;opacity:.5;background:var(--card-2);border-color:var(--edge);color:var(--muted)}
+.cue-tag.none:hover{filter:none}
+
+/* cue boundary marker inside a session */
+.cue-marker{display:flex;align-items:center;gap:11px;margin:12px 6px 5px;padding-top:9px}
+.cue-marker:first-child{margin-top:4px}
+.cue-marker .cue-thumb{
+  width:108px;aspect-ratio:16/9;border-radius:5px;overflow:hidden;flex:none;
+  background:#0f1117;border:1px solid var(--cc,var(--edge));cursor:zoom-in;
+  display:flex;align-items:center;justify-content:center;
+}
+.cue-marker .cue-thumb svg{width:100%;height:100%;display:block}
+.cue-marker .cue-thumb .ph{font-family:var(--mono);font-size:9px;color:var(--faint)}
+.cue-marker.manual .cue-thumb{cursor:default;width:auto;aspect-ratio:auto;padding:4px 8px;background:var(--card-2)}
+.cue-marker .clabel{
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--cfg,var(--muted));white-space:nowrap;font-weight:600;
+}
+.cue-marker .cdash{flex:1;border-top:2px dashed var(--cc,var(--edge));opacity:.65;height:0}
 .srow .act{
   background:transparent;border:none;color:var(--faint);cursor:pointer;padding:5px 7px;
   border-radius:5px;font-size:12px;white-space:nowrap;flex:none;
@@ -1195,6 +1212,11 @@ async function renderThumbnail(deck, slideObj, opts={}){
   return svg;
 }
 
+// Synchronously return a previously-rendered thumbnail SVG (or null).
+function cachedThumbnail(deck, n){
+  return deck && deck._thumb ? (deck._thumb.get(n) || null) : null;
+}
+
 // choose readable ink for text drawn on a coloured pill
 function pickInk(hex){
   const m = /^#?([0-9a-f]{6})$/i.exec(hex); if(!m) return '#23272e';
@@ -1583,6 +1605,26 @@ els.sessBtn.addEventListener('click', ()=>{
 });
 els.sessBack.addEventListener('click', ()=> els.results.classList.remove('mode-sessions'));
 
+// deterministic, well-separated colour per cue (golden-angle hue)
+function cueColor(cue){
+  if(!cue) return { line:'var(--edge)', bg:'var(--card-2)', fg:'var(--muted)' };
+  const h=(cue*137.508)%360;
+  return { line:`hsl(${h} 58% 56%)`, bg:`hsl(${h} 42% 21%)`, fg:`hsl(${h} 72% 74%)` };
+}
+async function fillMini(el, cue){
+  const cached=cachedThumbnail(STATE.deck, cue);
+  if(cached){ el.innerHTML=cached; el.classList.add('ready'); return; }
+  const so=STATE.deck && STATE.deck.order.find(o=>o.n===cue);
+  if(!so){ el.innerHTML='<span class="ph">n/a</span>'; return; }
+  try{ el.innerHTML=await renderThumbnail(STATE.deck, so); el.classList.add('ready'); }
+  catch{ el.innerHTML='<span class="ph">n/a</span>'; }
+}
+// click a cue-marker thumbnail to enlarge that slide
+els.sessionList.addEventListener('click', e=>{
+  const th=e.target.closest('.cue-thumb.ready'); if(!th||!th.dataset.slide) return;
+  showSlide(+th.dataset.slide, '');
+});
+
 function renderSessions(){
   const list=els.sessionList; list.innerHTML='';
   SESS.forEach((sess, si)=>{
@@ -1605,11 +1647,32 @@ function renderSessions(){
     head.append(idx, nameI, cnt, merge);
 
     const spk=document.createElement('div'); spk.className='speakers'; spk.dataset.si=si;
-    let num=0;
+    let num=0, lastCue;
     sess.speakers.forEach(sp=>{
+      // cue boundary marker: dashed colored line + mini thumbnail when the cue changes
+      if(sp.cue!==lastCue){
+        lastCue=sp.cue;
+        const col=cueColor(sp.cue);
+        const mk=document.createElement('div');
+        mk.className='cue-marker'+(sp.cue?'':' manual');
+        mk.style.setProperty('--cc',col.line);
+        mk.style.setProperty('--cfg',col.fg);
+        const th=document.createElement('div'); th.className='cue-thumb';
+        if(sp.cue){ th.dataset.slide=sp.cue; th.innerHTML='<span class="ph">cue '+String(sp.cue).padStart(2,'0')+'</span>'; }
+        else { th.innerHTML='<span class="ph">manual</span>'; }
+        const lab=document.createElement('span'); lab.className='clabel';
+        lab.textContent=sp.cue?('Cue '+String(sp.cue).padStart(2,'0')):'Added manually';
+        const dash=document.createElement('span'); dash.className='cdash';
+        mk.append(th, lab, dash);
+        spk.appendChild(mk);
+        if(sp.cue) fillMini(th, sp.cue);
+      }
+
       const named = !!sp.name.trim();
       if(named) num++;
+      const col=cueColor(sp.cue);
       const row=document.createElement('div'); row.className='srow'; row.dataset.id=sp.id; row.draggable=true;
+      if(sp.cue){ row.style.setProperty('--cc',col.line); row.style.setProperty('--cbg',col.bg); row.style.setProperty('--cfg',col.fg); }
 
       const grip=document.createElement('span'); grip.className='grip'; grip.textContent='⠿'; grip.title='Drag to reorder';
       const no=document.createElement('span'); no.className='snum'; no.textContent=named?num:'–';
@@ -1624,11 +1687,10 @@ function renderSessions(){
       const split=document.createElement('button'); split.className='act'; split.textContent='split';
       split.title='Start a new session at this speaker';
       split.addEventListener('click', ()=>{
-        const i=sess.speakers.indexOf(sp); if(i<=0 && si===0 && SESS.length===1 && i===0){ /* no-op at very top */ }
+        const i=sess.speakers.indexOf(sp);
         const moved=sess.speakers.slice(i);
         sess.speakers=sess.speakers.slice(0,i);
         SESS.splice(si+1,0,{ name:'', speakers:moved });
-        if(!sess.speakers.length){ /* keep empty session so user sees the split */ }
         renderSessions();
       });
       const del=document.createElement('button'); del.className='act del'; del.textContent='✕'; del.title='Remove';
