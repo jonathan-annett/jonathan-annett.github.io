@@ -133,6 +133,24 @@ body{
 .dz-sub b{color:var(--ink);font-weight:600}
 .dz-note{margin-top:18px;font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.04em}
 
+/* ---- recent-decks library ------------------------------------ */
+#library{margin-top:30px}
+#library[hidden]{display:none}
+.lib-head{display:flex;align-items:center;gap:14px;margin-bottom:4px}
+.lib-head h2{font-family:var(--disp);font-size:16px;font-weight:700;margin:0}
+.lib-head .btn{margin-left:auto}
+.lib-note{color:var(--muted);font-size:13px;margin:0 0 14px}
+.lib-row{
+  display:flex;align-items:center;gap:12px;
+  background:var(--card);border:1px solid var(--edge);border-radius:var(--radius);
+  padding:11px 13px;margin-bottom:8px;
+}
+.lib-meta{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.lib-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lib-date{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.03em}
+.lib-del{color:var(--muted);padding:9px 11px}
+.lib-del:hover{color:var(--ink)}
+
 /* ---- results toolbar ----------------------------------------- */
 .results{display:none}
 .results.show{display:block;animation:fade .3s ease both}
@@ -496,6 +514,15 @@ footer a{color:var(--muted)}
       </div>
     </div>
     <input type="file" id="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden>
+
+    <section id="library" hidden>
+      <div class="lib-head">
+        <h2>Recent decks</h2>
+        <button class="btn ghost" id="libWipe">Clear all saved decks</button>
+      </div>
+      <p class="lib-note">Re-open a deck to restore your session edits. Decks are stored only in this browser.</p>
+      <div id="libList"></div>
+    </section>
   </section>
 
   <section class="results" id="results">
@@ -541,6 +568,7 @@ footer a{color:var(--muted)}
     <section id="sessionPanel">
       <div class="sess-bar">
         <button class="btn ghost" id="sessBack">← Back to list</button>
+        <button class="btn ghost" id="sessReset">Reset to detected names</button>
         <span class="spacer"></span>
         <button class="btn primary" id="buildZip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg><span>Download placeholder ZIP</span></button>
       </div>
@@ -1384,6 +1412,20 @@ function crc32(u8){
   for(let i=0;i<u8.length;i++) c=_crcTable[(c^u8[i])&0xFF]^(c>>>8);
   return (c^0xFFFFFFFF)>>>0;
 }
+// Content hash for associating saved session edits with a specific file. Pure
+// JS and deterministic in EVERY context (file://, localhost, https, node) — we
+// deliberately do not use crypto.subtle, which is undefined on file:// since it
+// is not a secure context. Two seeded 32-bit FNV-1a passes (via Math.imul, no
+// BigInt) concatenated and prefixed with the byte length: full-content so any
+// edit to the deck yields a different key, ~64 effective bits + length so two
+// genuinely different decks never collide in practice. Accepts Uint8Array or
+// ArrayBuffer. Sub-second over a ~46 MB deck; runs once per ingest.
+function hashBytes(bytes){
+  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  const fnv = seed => { let h=seed>>>0; for(let i=0;i<u8.length;i++){ h^=u8[i]; h=Math.imul(h,0x01000193)>>>0; } return h>>>0; };
+  const a=fnv(0x811c9dc5), b=fnv(0x7a3c5e9d);
+  return u8.length.toString(16)+'-'+a.toString(16).padStart(8,'0')+b.toString(16).padStart(8,'0');
+}
 async function deflateRaw(u8){
   const cs=new CompressionStream('deflate-raw');
   const w=cs.writable.getWriter(); w.write(u8); w.close();
@@ -1463,6 +1505,7 @@ const SVG = {
 
 const els = {
   status:$('#status'), idle:$('#idle'), drop:$('#drop'), file:$('#file'),
+  library:$('#library'), libList:$('#libList'), libWipe:$('#libWipe'), sessReset:$('#sessReset'),
   results:$('#results'), cues:$('#cues'), reviewWrap:$('#reviewWrap'),
   reviewCues:$('#reviewCues'), reviewHead:$('#reviewHead'),
   fn:$('#fn'), counts:$('#counts'),
@@ -1481,6 +1524,8 @@ let thumbIO = null;
 let SESS = null;                 // session model: [{name, speakers:[{id,name,cue}]}]
 let SID = 0;                     // running id for speaker rows
 let tplBytes = null, tplExt = '';
+let curHash = null;              // content hash of the loaded deck (IDB key); null until ingest
+let curMeta = null;              // {hash, filename, lastModified, ingestedAt} for the loaded deck
 
 // ============================================================
 // High-fidelity preview engine (@aiden0z/pptx-renderer, exposed as
@@ -1607,20 +1652,48 @@ async function handleFile(file){
     toast('That is not a .pptx file. Export your deck as PowerPoint (.pptx) and try again.', true);
     return;
   }
+  const buf = await file.arrayBuffer();
+  await ingest(buf, { name:file.name, lastModified:file.lastModified });
+}
+
+// Shared ingest path for both freshly-dropped files and decks re-opened from
+// the saved library. `meta` = {name, lastModified}.
+async function ingest(buf, meta){
   setStatus('working','Reading deck');
   els.drop.classList.add('busy');
   try{
-    const buf = await file.arrayBuffer();
     const deck = await parseDeck(buf);
     const results = extractNames(deck.slides);
-    STATE = { name:file.name, deck, slides:deck.slides, results };
-    SESS = null;
+    STATE = { name:meta.name, deck, slides:deck.slides, results };
+    const hash = hashBytes(buf);
+    curHash = hash;
+    curMeta = { hash, filename:meta.name, lastModified:meta.lastModified, ingestedAt:Date.now() };
+
+    // Restore previously-saved session edits for this exact deck.
+    let restored = false;
+    try{
+      const rec = await idbGet('file:'+hash);
+      if(rec && rec.v===1 && Array.isArray(rec.sessions) && !isSessEmpty(rec.sessions)){
+        SESS = rec.sessions; SID = nextSid(rec.sessions, rec.sid);
+        if(rec.ingestedAt) curMeta.ingestedAt = rec.ingestedAt;
+        restored = true;
+      } else { SESS = null; SID = 0; }
+    }catch{ SESS = null; SID = 0; /* IDB blocked under file:// — fresh detection */ }
+
+    // Record this deck in the library (small metadata always; raw bytes if room).
+    try{ await idbSet('file:'+hash, { v:1, ...curMeta, updatedAt:Date.now(), sid:SID, sessions:SESS }); }catch{}
+    try{
+      if(!(await idbGet('deck:'+hash))) await idbSet('deck:'+hash, buf);
+    }catch{ toast('Deck too large to cache for re-open; your edits are still saved — re-drop the file to continue later.', true); }
+
     els.results.classList.remove('mode-sessions');
     // Spin up the high-fidelity renderer before drawing thumbnails so previews
     // mount faithfully from the first paint (falls back silently if it can't).
     await prLoad(buf);
     render();
     setStatus('ready', deck.slides.length+' slides');
+    if(restored) toast('Restored your saved edits for this deck.');
+    renderLibrary();
   }catch(err){
     console.error(err);
     setStatus('idle','Idle');
@@ -1631,7 +1704,7 @@ async function handleFile(file){
 
 function resetApp(){
   STATE={name:'',deck:null,slides:[],results:[]};
-  SESS=null;
+  SESS=null; curHash=null; curMeta=null;   // saved library records are kept — re-open restores them
   prDestroy();
   els.results.classList.remove('mode-sessions');
   if(thumbIO){ thumbIO.disconnect(); thumbIO=null; }
@@ -1881,6 +1954,14 @@ els.sessBtn.addEventListener('click', ()=>{
   els.sessionPanel.scrollIntoView({behavior:'smooth',block:'start'});
 });
 els.sessBack.addEventListener('click', ()=> els.results.classList.remove('mode-sessions'));
+els.sessReset.addEventListener('click', ()=>{
+  if(!STATE.results.length) return;
+  if(!confirm('Discard all edits for this deck and reset to the detected speaker names?')) return;
+  SESS=null; SID=0;
+  ensureSessions();              // rebuild fresh from flattenSpeakers()
+  renderSessions(); persistSessions();   // overwrite the saved record with detected names
+  toast('Reset to detected speakers.');
+});
 
 // deterministic, well-separated colour per cue (golden-angle hue)
 function cueColor(cue){
@@ -1918,13 +1999,13 @@ function renderSessions(){
     const nameI=document.createElement('input'); nameI.className='sname';
     nameI.placeholder='Session name / file prefix (e.g. Breakout Session A)';
     nameI.value=sess.name;
-    nameI.addEventListener('input', ()=>{ sess.name=nameI.value; });
+    nameI.addEventListener('input', ()=>{ sess.name=nameI.value; persistSessions(); });
     const cnt=document.createElement('span'); cnt.className='scount';
     cnt.textContent=named+(named===1?' speaker':' speakers');
     const merge=document.createElement('button'); merge.className='merge-up'; merge.textContent='⌃ merge up';
     merge.disabled = si===0;
     merge.addEventListener('click', ()=>{
-      SESS[si-1].speakers.push(...sess.speakers); SESS.splice(si,1); renderSessions();
+      SESS[si-1].speakers.push(...sess.speakers); SESS.splice(si,1); renderSessions(); persistSessions();
     });
     head.append(idx, nameI, cnt, merge);
 
@@ -1960,8 +2041,8 @@ function renderSessions(){
       const no=document.createElement('span'); no.className='snum'; no.textContent=named?num:'–';
       const txt=document.createElement('input'); txt.className='sname-txt'; txt.value=sp.name;
       txt.placeholder='speaker name'; txt.spellcheck=false;
-      txt.addEventListener('input', ()=>{ sp.name=txt.value; });
-      txt.addEventListener('change', ()=> renderSessions());   // refresh numbering when a blank gets filled
+      txt.addEventListener('input', ()=>{ sp.name=txt.value; persistSessions(); });
+      txt.addEventListener('change', ()=>{ renderSessions(); persistSessions(); });   // refresh numbering when a blank gets filled
       const cue=document.createElement('button');
       cue.className='cue-tag'+(sp.cue?'':' none');
       cue.textContent=sp.cue?('cue '+String(sp.cue).padStart(2,'0')):'manual';
@@ -1973,11 +2054,11 @@ function renderSessions(){
         const moved=sess.speakers.slice(i);
         sess.speakers=sess.speakers.slice(0,i);
         SESS.splice(si+1,0,{ name:'', speakers:moved });
-        renderSessions();
+        renderSessions(); persistSessions();
       });
       const del=document.createElement('button'); del.className='act del'; del.textContent='✕'; del.title='Remove';
       del.addEventListener('click', ()=>{
-        sess.speakers=sess.speakers.filter(x=>x!==sp); renderSessions();
+        sess.speakers=sess.speakers.filter(x=>x!==sp); renderSessions(); persistSessions();
       });
       row.append(grip, no, txt, cue, split, del);
       spk.appendChild(row);
@@ -1985,7 +2066,7 @@ function renderSessions(){
 
     const add=document.createElement('button'); add.className='addspk'; add.textContent='+ add speaker';
     add.addEventListener('click', ()=>{
-      sess.speakers.push({ id:'s'+(SID++), name:'', cue:null }); renderSessions();
+      sess.speakers.push({ id:'s'+(SID++), name:'', cue:null }); renderSessions(); persistSessions();
     });
 
     sec.append(head, spk, add);
@@ -2006,7 +2087,7 @@ function wireDnD(){
     row.addEventListener('dragend', ()=>{
       row.classList.remove('dragging');
       els.sessionList.querySelectorAll('.speakers.dragover').forEach(c=>c.classList.remove('dragover'));
-      draggedEl=null; rebuildSessionsFromDOM(); renderSessions();
+      draggedEl=null; rebuildSessionsFromDOM(); renderSessions(); persistSessions();
     });
   });
   els.sessionList.querySelectorAll('.speakers').forEach(cont=>{
@@ -2163,6 +2244,86 @@ function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,1);
 async function idbSet(k,v){const db=await idb();return new Promise((res,rej)=>{const t=db.transaction(STORE,'readwrite');t.objectStore(STORE).put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error);});}
 async function idbGet(k){const db=await idb();return new Promise((res,rej)=>{const t=db.transaction(STORE,'readonly');const q=t.objectStore(STORE).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
 async function idbDel(k){const db=await idb();return new Promise((res)=>{const t=db.transaction(STORE,'readwrite');t.objectStore(STORE).delete(k);t.oncomplete=()=>res();});}
+async function idbKeys(){const db=await idb();return new Promise((res,rej)=>{const t=db.transaction(STORE,'readonly');const q=t.objectStore(STORE).getAllKeys();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error);});}
+
+// ---- persistent session edits, keyed by deck content hash -----
+// Record shape at 'file:'+hash : {v,hash,filename,lastModified,ingestedAt,updatedAt,sid,sessions}
+// Raw deck bytes live separately at 'deck:'+hash (loaded lazily on re-open).
+function isSessEmpty(sessions){
+  return !sessions || !sessions.some(s =>
+    (s.name && s.name.trim()) || s.speakers.some(sp => sp.name && sp.name.trim()));
+}
+// Restore SID past every saved id so newly-added speakers can't collide (drag
+// reorder maps rows by id; duplicates would corrupt order).
+function nextSid(sessions, savedSid){
+  let mx=-1;
+  for(const s of sessions) for(const sp of s.speakers){
+    const n=parseInt(String(sp.id).replace(/^s/,''),10);
+    if(Number.isFinite(n)&&n>mx) mx=n;
+  }
+  return Math.max(savedSid|0, mx+1);
+}
+let _saveTimer=null;
+function persistSessions(){
+  if(!curHash || !SESS || isSessEmpty(SESS)) return;   // never clobber a good record with empty edits
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(async ()=>{
+    try{ await idbSet('file:'+curHash, { v:1, ...curMeta, updatedAt:Date.now(), sid:SID, sessions:SESS }); }
+    catch{/* file:// may block IndexedDB; edits still live for this session */}
+  }, 400);
+}
+
+// ---- recent-decks library (landing screen) -------------------
+function fmtDate(ms){ try{ return ms ? new Date(ms).toLocaleString() : ''; }catch{ return ''; } }
+async function renderLibrary(){
+  if(!els.library) return;
+  let recs=[];
+  try{
+    const keys=(await idbKeys()).filter(k=>typeof k==='string' && k.startsWith('file:'));
+    recs=(await Promise.all(keys.map(k=>idbGet(k).catch(()=>null)))).filter(r=>r&&r.hash);
+  }catch{ recs=[]; /* IDB blocked under file:// */ }
+  recs.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  els.library.hidden = recs.length===0;
+  els.libList.innerHTML='';
+  for(const rec of recs){
+    const row=document.createElement('div'); row.className='lib-row';
+    const meta=document.createElement('div'); meta.className='lib-meta';
+    const nm=document.createElement('span'); nm.className='lib-name'; nm.textContent=rec.filename||'(unnamed deck)';
+    const dt=document.createElement('span'); dt.className='lib-date';
+    const edited = rec.sessions && !isSessEmpty(rec.sessions);
+    dt.textContent=(rec.lastModified?fmtDate(rec.lastModified):'')+(edited?' · edited':'');
+    meta.append(nm, dt);
+    const open=document.createElement('button'); open.className='btn ghost'; open.textContent='↻ open';
+    open.addEventListener('click', ()=> openFromLibrary(rec.hash));
+    const del=document.createElement('button'); del.className='btn ghost lib-del'; del.textContent='✕'; del.title='Remove from list';
+    del.addEventListener('click', async ()=>{
+      if(!confirm('Remove "'+(rec.filename||'this deck')+'" and its saved edits?')) return;
+      try{ await idbDel('file:'+rec.hash); await idbDel('deck:'+rec.hash); }catch{}
+      renderLibrary();
+    });
+    row.append(meta, open, del);
+    els.libList.appendChild(row);
+  }
+}
+async function openFromLibrary(hash){
+  let buf=null;
+  try{ buf=await idbGet('deck:'+hash); }catch{}
+  if(!buf){ toast("That deck's file isn't cached — drop the .pptx again to re-open it.", true); return; }
+  let meta={ name:'deck.pptx', lastModified:0 };
+  try{ const rec=await idbGet('file:'+hash); if(rec){ meta={ name:rec.filename, lastModified:rec.lastModified }; } }catch{}
+  await ingest(buf, meta);
+}
+if(els.libWipe) els.libWipe.addEventListener('click', async ()=>{
+  if(!confirm('Clear every saved deck and all session edits from this browser? This cannot be undone.')) return;
+  try{
+    const keys=(await idbKeys()).filter(k=>typeof k==='string' && (k.startsWith('file:')||k.startsWith('deck:')));
+    for(const k of keys) await idbDel(k);
+  }catch{}
+  renderLibrary();
+  toast('Cleared all saved decks.');
+});
+// populate the list on first load (mirrors the booster restore below)
+renderLibrary();
 
 function parseNameList(text, filename){
   let names=[];
