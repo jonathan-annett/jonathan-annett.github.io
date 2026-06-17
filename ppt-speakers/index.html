@@ -2183,21 +2183,21 @@ async function quickSave(file){
   }catch{ return false; }
 }
 
-// Intake for one-or-many: a single deck loads as today; with several, the first
-// loads + renders and the rest are saved to Recent decks in the background (ready
-// for the report / re-open).
+// Intake for one-or-many. A SINGLE deck loads + opens as today. SEVERAL decks
+// (or a folder) are only saved to Recent decks in the background — no deck is
+// auto-opened — so a bulk import for the report doesn't disturb the current view.
 async function ingestMany(files){
   if(typeof DecompressionStream==='undefined'){
     toast('This browser cannot unzip files in-page. Use a recent Chrome, Edge, Firefox or Safari.', true); return;
   }
   const pptx = (files||[]).filter(f=>f && /\.pptx$/i.test(f.name));
   if(!pptx.length){ toast('No .pptx files found — drop PowerPoint (.pptx) files or a folder of them.', true); return; }
-  if(pptx.length===1){ await handleFile(pptx[0]); return; }
-  await handleFile(pptx[0]);                          // load + render the first
-  let added=0;
-  for(let i=1;i<pptx.length;i++){ if(await quickSave(pptx[i])==='new') added++; }
+  if(pptx.length===1){ await handleFile(pptx[0]); return; }   // single → load + open
+  let added=0, known=0;
+  for(const f of pptx){ const r=await quickSave(f); if(r==='new') added++; else if(r==='known') known++; }
   renderLibrary();
-  toast('Loaded "'+pptx[0].name+'"'+(added?(' · added '+added+' more deck'+(added===1?'':'s')+' to Recent decks'):'')+'.');
+  const bits=[]; if(added) bits.push('added '+added+' deck'+(added===1?'':'s')); if(known) bits.push(known+' already saved');
+  toast('Recent decks: '+(bits.join(' · ')||'nothing new')+'. Open one from the list to edit.');
 }
 
 let toastTimer=null;
