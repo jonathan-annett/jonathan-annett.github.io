@@ -409,6 +409,12 @@ footer a{color:var(--muted)}
 .linkdec{position:absolute;pointer-events:none;box-sizing:border-box;border-radius:3px;z-index:2}
 .linkdec.on{border:2px dashed var(--accent);background:rgba(240,200,80,.10);box-shadow:0 0 0 1px rgba(0,0,0,.3)}
 .linkdec.off{border:2px dashed #e0707a;background:rgba(224,112,122,.12);box-shadow:0 0 0 1px rgba(0,0,0,.3)}
+/* speaker order number, sitting just left of an active link box */
+.linkdec .linknum{
+  position:absolute;right:100%;top:50%;transform:translateY(-50%);margin-right:3px;
+  color:var(--accent);font-family:var(--mono);font-weight:700;line-height:1;white-space:nowrap;
+  text-shadow:0 0 2px #000,0 0 2px #000,0 0 2px #000;
+}
 
 /* ---- session builder ----------------------------------------- */
 .results.mode-sessions .subbar,
@@ -1951,7 +1957,7 @@ async function linkDecorations(deck, cue, targets){
     const arr = matchesFor(t.name);
     if(!arr.length) continue;
     const hit = arr[Math.min((t.occ || 1) - 1, arr.length - 1)];
-    if(hit && hit.rect) out.push({ ...hit.rect, included: !!t.included, occ: t.occ || 1 });
+    if(hit && hit.rect) out.push({ ...hit.rect, included: !!t.included, occ: t.occ || 1, num: t.num });
   }
   return out;
 }
@@ -2522,22 +2528,41 @@ async function fillMini(el, cue){
   catch{ el.innerHTML='<span class="ph">n/a</span>'; }
 }
 
+// srcId -> 1-based order number within its session (counting only included,
+// named speakers, reset per session) — the same number shown in the editor row
+// and used as the placeholder file index. Used to label the slide decorations.
+function speakerOrderMap(){
+  const m=new Map();
+  if(!SESS) return m;
+  SESS.forEach(s=>{
+    let num=0;
+    s.speakers.forEach(sp=>{
+      if(sp.name.trim() && !sp.off){ num++; if(sp.srcId!=null) m.set(sp.srcId, num); }
+    });
+  });
+  return m;
+}
+
 // Which detected names on `cue` carry a hyperlink decision, given the current
-// session state: included+named → linked (solid box); a session speaker that's
-// been excluded or blanked → shown as "removed" (visible box) so the operator
-// can see which occurrence is NOT linked. Names that aren't session speakers get
-// nothing. With no session yet, every detected name links by default.
+// session state: included+named → linked (solid box, tagged with its session
+// order number); a session speaker that's been excluded or blanked → shown as
+// "removed" (visible box) so the operator can see which occurrence is NOT linked.
+// Names that aren't session speakers get nothing. With no session yet, every
+// detected name links by default.
 function linkTargetsForCue(cue){
   const slideRes = STATE.results.find(r=>r.slide===cue);
   if(!slideRes) return [];
   const look = buildSessLookup();
+  const order = speakerOrderMap();
   const targets=[];
   slideRes.names.forEach((n,i)=>{
     if(bucket(n.score)==='review') return;          // review names are never linked
+    const nid = cue+'#'+i;
     if(!look){ targets.push({ name:n.name, occ:n.occ||1, included:true }); return; }
-    const rec = look.bySrc.get(cue+'#'+i) || look.byNC.get(cue+' '+(n.name||'').trim().toLowerCase());
+    const rec = look.bySrc.get(nid) || look.byNC.get(cue+' '+(n.name||'').trim().toLowerCase());
     if(!rec) return;                                 // not a session speaker → no decoration
-    targets.push({ name:n.name, occ:n.occ||1, included: !rec.off && !rec.blank });
+    const included = !rec.off && !rec.blank;
+    targets.push({ name:n.name, occ:n.occ||1, included, num: included ? order.get(nid) : undefined });
   });
   return targets;
 }
@@ -2608,7 +2633,7 @@ function measureDomBoxes(el, targets){
     const r = w && rangeRect(runs, w);
     if(!r || !r.width || !r.height){ missing.push(t); continue; }
     boxes.push({ x:(r.left-host.left)/host.width, y:(r.top-host.top)/host.height,
-                 w:r.width/host.width, h:r.height/host.height, included:!!t.included });
+                 w:r.width/host.width, h:r.height/host.height, included:!!t.included, num:t.num });
   }
   return { boxes, missing };
 }
@@ -2628,13 +2653,25 @@ async function decorateLinks(el, cue){
     boxes = m.boxes;
     if(m.missing.length) boxes = boxes.concat(await linkDecorations(STATE.deck, cue, m.missing));
   }catch{ return; }
+  const hostH=el.clientHeight||0;
+  const numbered=[];
   for(const b of boxes){
     const d=document.createElement('div');
     d.className='linkdec'+(b.included?' on':' off');
     d.style.cssText=`left:${(b.x*100).toFixed(2)}%;top:${(b.y*100).toFixed(2)}%;`
       +`width:${(b.w*100).toFixed(2)}%;height:${(b.h*100).toFixed(2)}%`;
+    // Speaker order number (yellow), just left of the box. Scaled to the name's
+    // height; dropped below if it would spill past the slide's left edge.
+    if(b.included && b.num!=null){
+      const lab=document.createElement('span'); lab.className='linknum'; lab.textContent=b.num;
+      if(hostH) lab.style.fontSize=Math.max(7, Math.min(b.h*hostH*0.95, 26)).toFixed(1)+'px';
+      d.appendChild(lab); numbered.push(lab);
+    }
     el.appendChild(d);
   }
+  // Omit any number that doesn't fit to the left of its box (would clip off-slide).
+  const left=el.getBoundingClientRect().left;
+  for(const lab of numbered){ if(lab.getBoundingClientRect().left < left) lab.remove(); }
 }
 // click a cue-marker thumbnail to enlarge that slide
 els.sessionList.addEventListener('click', e=>{
