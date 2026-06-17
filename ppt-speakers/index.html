@@ -419,8 +419,9 @@ footer a{color:var(--muted)}
   background:var(--panel);border:1px solid var(--edge);border-radius:10px;padding:12px 14px;margin-bottom:18px;
 }
 .ph-opt label{display:inline-flex;align-items:center;gap:7px;cursor:pointer;color:var(--ink)}
-.ph-opt input[type=radio]{accent-color:var(--accent);width:15px;height:15px}
+.ph-opt input[type=radio],.ph-opt input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px}
 .ph-opt .ext{margin-left:auto;color:var(--muted)}
+.ph-opt .link-opt{color:var(--ink)}
 .ph-opt .ext input{
   width:70px;background:var(--card-2);border:1px solid var(--edge);color:var(--ink);
   border-radius:6px;padding:6px 9px;font-family:var(--mono);font-size:12px;margin-left:6px;
@@ -594,6 +595,7 @@ footer a{color:var(--muted)}
         <label><input type="radio" name="phtype" value="template"> Template: <span id="tplName">choose file…</span></label>
         <input type="file" id="tplFile" hidden>
         <span class="ext">File type<input id="extField" value="pptx" spellcheck="false"></span>
+        <label class="link-opt" title="Also include a copy of the deck with each speaker name hyperlinked to its placeholder file"><input type="checkbox" id="linkDeck" checked> Hyperlinked deck copy</label>
       </div>
       <p class="sess-hint">Speakers are numbered in slide order within each session. Drag the handle to reorder (within or across sessions), click a name to fix it, or use “split” to start a new session here. Each session becomes a folder of numbered placeholder files like <code>Breakout A / Breakout A - 1 - Jane Doe.pptx</code>.</p>
       <div id="sessionList"></div>
@@ -880,9 +882,10 @@ function readU16(b,o){ return b[o] | (b[o+1]<<8); }
 function readU32(b,o){ return (b[o] | (b[o+1]<<8) | (b[o+2]<<16) | (b[o+3]<<24)) >>> 0; }
 
 // Index the central directory WITHOUT inflating anything. Returns
-// { raw, entries: Map<name,{method,compSize,localOff}> } so individual
-// entries (slide XML, a single image) can be inflated on demand. This keeps
-// memory low even for very large decks.
+// { raw, entries: Map<name,{method,compSize,uncompSize,crc,localOff}> } so
+// individual entries (slide XML, a single image) can be inflated on demand —
+// and so unmodified entries can be copied verbatim into a rebuilt ZIP
+// (rezipReplace) without re-deflating. Keeps memory low on very large decks.
 function indexZip(arrayBuffer){
   const b = new Uint8Array(arrayBuffer);
   let eocd = -1;
@@ -896,17 +899,30 @@ function indexZip(arrayBuffer){
   let p = cdOffset;
   for (let i = 0; i < cdCount; i++){
     if (readU32(b,p) !== 0x02014b50) break;
-    const method   = readU16(b, p + 10);
-    const compSize = readU32(b, p + 20);
+    const method     = readU16(b, p + 10);
+    const crc        = readU32(b, p + 16);
+    const compSize   = readU32(b, p + 20);
+    const uncompSize = readU32(b, p + 24);
     const nameLen  = readU16(b, p + 28);
     const extraLen = readU16(b, p + 30);
     const commLen  = readU16(b, p + 32);
     const localOff = readU32(b, p + 42);
     const name = new TextDecoder().decode(b.subarray(p + 46, p + 46 + nameLen));
     p += 46 + nameLen + extraLen + commLen;
-    entries.set(name, { method, compSize, localOff });
+    entries.set(name, { method, crc, compSize, uncompSize, localOff });
   }
   return { raw: b, entries };
+}
+
+// Return the raw (still-compressed) body bytes of an entry, exactly as stored
+// in the ZIP, with no inflation. Used to copy unmodified entries verbatim.
+function rawEntryBody(zip, e){
+  const b = zip.raw;
+  if (readU32(b, e.localOff) !== 0x04034b50) return null;
+  const lNameLen  = readU16(b, e.localOff + 26);
+  const lExtraLen = readU16(b, e.localOff + 28);
+  const dataStart = e.localOff + 30 + lNameLen + lExtraLen;
+  return b.subarray(dataStart, dataStart + e.compSize);
 }
 
 // Inflate a single named entry -> Uint8Array (or null if absent/unsupported).
@@ -996,21 +1012,15 @@ function slideXmlToLines(xml){
   return lines;
 }
 
-// Parse a .pptx ArrayBuffer -> rich deck object for the app:
-//   { slides:[{slide,lines}], order:[{n,xml,rels}], size:{w,h}, zip }
-// The zip handle + slide-size let the UI build approximate thumbnails later
-// without re-reading the file.
-async function parseDeck(arrayBuffer){
-  const zip = indexZip(arrayBuffer);
+// Resolve the slide XML paths in 1-based show order from an indexed zip.
+// Returns [{ n, xml:'ppt/slides/slideN.xml', rels:'ppt/slides/_rels/slideN.xml.rels' }].
+// Reads presentation.xml's <p:sldId> order via the rels map, falling back to a
+// numeric sort of the slide files if that mapping is unavailable. Shared by
+// parseDeck (names/thumbnails) and linkifyDeck (hyperlink injection).
+async function slidePaths(zip){
   const dq = async (n)=> { const u=await inflateEntry(zip,n); return u?dec.decode(u):''; };
-
   const presXml = await dq('ppt/presentation.xml');
   const relsXml = await dq('ppt/_rels/presentation.xml.rels');
-
-  // slide canvas size in EMU (default to 16:9 if absent)
-  const szm = presXml.match(/<p:sldSz[^>]*\bcx="(\d+)"[^>]*\bcy="(\d+)"/);
-  const size = { w: szm ? +szm[1] : 12192000, h: szm ? +szm[2] : 6858000 };
-
   const idOrder = [...presXml.matchAll(/<p:sldId\b[^>]*r:id="([^"]+)"/g)].map(m=>m[1]);
   const relMap = new Map();
   for (const m of relsXml.matchAll(/<Relationship\b[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"[^>]*\/?>/g)){
@@ -1021,17 +1031,33 @@ async function parseDeck(arrayBuffer){
     paths = [...zip.entries.keys()].filter(n=>/^ppt\/slides\/slide\d+\.xml$/.test(n))
       .sort((a,b)=>(+a.match(/(\d+)/)[1]) - (+b.match(/(\d+)/)[1]));
   }
+  return paths.map((path, i)=>{
+    const xml = path.startsWith('ppt/') ? path : 'ppt/'+path;
+    const base = xml.replace(/^.*\//,'');                       // slideN.xml
+    return { n: i + 1, xml, rels: 'ppt/slides/_rels/' + base + '.rels' };
+  });
+}
 
-  const slides = [], order = [];
-  for (let i = 0; i < paths.length; i++){
-    const xmlName = paths[i].startsWith('ppt/') ? paths[i] : 'ppt/'+paths[i];
-    const xml = await dq(xmlName);
+// Parse a .pptx ArrayBuffer -> rich deck object for the app:
+//   { slides:[{slide,lines}], order:[{n,xml,rels}], size:{w,h}, zip }
+// The zip handle + slide-size let the UI build approximate thumbnails later
+// without re-reading the file.
+async function parseDeck(arrayBuffer){
+  const zip = indexZip(arrayBuffer);
+  const dq = async (n)=> { const u=await inflateEntry(zip,n); return u?dec.decode(u):''; };
+
+  const presXml = await dq('ppt/presentation.xml');
+
+  // slide canvas size in EMU (default to 16:9 if absent)
+  const szm = presXml.match(/<p:sldSz[^>]*\bcx="(\d+)"[^>]*\bcy="(\d+)"/);
+  const size = { w: szm ? +szm[1] : 12192000, h: szm ? +szm[2] : 6858000 };
+
+  const order = await slidePaths(zip);
+  const slides = [];
+  for (const o of order){
+    const xml = await dq(o.xml);
     if (!xml) continue;
-    const n = i + 1;
-    const base = xmlName.replace(/^.*\//,'');                  // slideN.xml
-    const rels = 'ppt/slides/_rels/' + base + '.rels';
-    slides.push({ slide: n, lines: slideXmlToLines(xml) });
-    order.push({ n, xml: xmlName, rels });
+    slides.push({ slide: o.n, lines: slideXmlToLines(xml) });
   }
   return { slides, order, size, zip };
 }
@@ -1514,6 +1540,307 @@ async function makeZip(entries, {compress=true}={}){
   return out;
 }
 
+// ===================================================================
+// Hyperlink injection. Produces a modified copy of the uploaded .pptx in which
+// each speaker's name on a slide becomes a clickable hyperlink to that
+// speaker's placeholder file (a relative external link, resolved when the deck
+// sits alongside the session folders). All-pure string surgery on the slide
+// XML — no DOM parser — so it runs identically in node and the browser.
+//
+// Rule (per product spec):
+//   • a paragraph holding ONE speaker name  -> the whole paragraph is one link
+//   • a paragraph holding MULTIPLE names    -> one link per name (runs split so
+//                                              only the name text is wrapped)
+// ===================================================================
+
+const HLINK_TYPE = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink';
+
+// Relative file path -> a URL-encoded relationship Target (spaces -> %20 etc.),
+// per-segment so the '/' separators survive.
+function encodeRelTarget(relPath){
+  return String(relPath).split('/').map(s=>encodeURIComponent(s)).join('/');
+}
+
+function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+
+// Find a name within a paragraph's concatenated text, tolerant of the
+// whitespace/honorifics around it. Returns [start,end) of the name span (the
+// earliest match, i.e. the name as it sits at the paragraph start) or null.
+function locateName(text, name){
+  const toks = String(name).trim().split(/\s+/).filter(Boolean).map(escRe);
+  if(!toks.length) return null;
+  const re = new RegExp(toks.join('\\s+'), 'i');
+  const m = re.exec(text);
+  return m ? [m.index, m.index + m[0].length] : null;
+}
+
+// Walk a slide's <a:p> paragraphs and their <a:r> runs, returning for each
+// paragraph its absolute [pStart,pEnd) offsets in `xml`, the concatenated text
+// (with <a:br> as '\n' and <a:tab/> as '\t'), and the runs — each carrying its
+// absolute [rStart,rEnd) run span, decoded text, and [charStart,charEnd) within
+// the paragraph text. Offsets are absolute so edits can be spliced into `xml`.
+function parseParagraphs(xml){
+  const out = [];
+  const pRe = /<a:p\b[^>]*>([\s\S]*?)<\/a:p>|<a:p\s*\/>/g;
+  let pm;
+  while((pm = pRe.exec(xml))){
+    const pStart = pm.index, pEnd = pStart + pm[0].length;
+    if(pm[1] === undefined){ out.push({ pStart, pEnd, runs:[], text:'' }); continue; }
+    const innerStart = pStart + pm[0].indexOf('>') + 1;
+    const inner = pm[1];
+    const runs = []; let text = '';
+    const cRe = /<a:r\b[^>]*>[\s\S]*?<\/a:r>|<a:br\b(?:[^>]*\/>|[^>]*>[\s\S]*?<\/a:br>)|<a:tab\b[^>]*\/?>|<a:fld\b[^>]*>[\s\S]*?<\/a:fld>/g;
+    let cm;
+    while((cm = cRe.exec(inner))){
+      const tok = cm[0];
+      const absStart = innerStart + cm.index, absEnd = absStart + tok.length;
+      if(/^<a:r\b/.test(tok)){
+        const rtext = [...tok.matchAll(/<a:t\b[^>]*>([\s\S]*?)<\/a:t>/g)].map(m=>decodeXmlEntities(m[1])).join('');
+        const charStart = text.length; text += rtext;
+        runs.push({ rStart:absStart, rEnd:absEnd, xml:tok, text:rtext, charStart, charEnd:text.length });
+      } else if(/^<a:br\b/.test(tok)){ text += '\n'; }
+      else if(/^<a:tab\b/.test(tok)){ text += '\t'; }
+      else if(/^<a:fld\b/.test(tok)){
+        text += [...tok.matchAll(/<a:t\b[^>]*>([\s\S]*?)<\/a:t>/g)].map(m=>decodeXmlEntities(m[1])).join('');
+      }
+    }
+    out.push({ pStart, pEnd, runs, text });
+  }
+  return out;
+}
+
+const hlinkTag = rId => `<a:hlinkClick r:id="${rId}"/>`;
+
+// Add <a:hlinkClick> as the last child of a run's (or standalone) <a:rPr>,
+// honouring the schema (before <a:extLst> if present). Handles a self-closing
+// <a:rPr .../> and a run with no rPr at all. Idempotent.
+function injectHlinkIntoRpr(runXml, rId){
+  if(/<a:hlinkClick\b/.test(runXml)) return runXml;
+  const tag = hlinkTag(rId);
+  const sc = runXml.match(/<a:rPr\b[^>]*\/>/);
+  if(sc){
+    return runXml.replace(sc[0], sc[0].replace(/\/>$/, '>') + tag + '</a:rPr>');
+  }
+  const close = runXml.indexOf('</a:rPr>');
+  if(close >= 0){
+    const ext = runXml.indexOf('<a:extLst', runXml.indexOf('<a:rPr'));
+    const at = (ext >= 0 && ext < close) ? ext : close;
+    return runXml.slice(0, at) + tag + runXml.slice(at);
+  }
+  const open = runXml.match(/<a:r\b[^>]*>/);
+  if(open){
+    const at = open.index + open[0].length;
+    return runXml.slice(0, at) + `<a:rPr>${tag}</a:rPr>` + runXml.slice(at);
+  }
+  return runXml;
+}
+
+// Pull the <a:r ...> open tag and the rPr block (self-closing or paired, or '')
+// out of a run, so split pieces can reuse identical formatting.
+function runParts(runXml){
+  const openM = runXml.match(/<a:r\b[^>]*>/);
+  const openTag = openM ? openM[0] : '<a:r>';
+  let rPrXml = '';
+  const sc = runXml.match(/<a:rPr\b[^>]*\/>/);
+  if(sc) rPrXml = sc[0];
+  else {
+    const o = runXml.indexOf('<a:rPr'), c = runXml.indexOf('</a:rPr>');
+    if(o >= 0 && c >= 0) rPrXml = runXml.slice(o, c + 8);
+  }
+  return { openTag, rPrXml };
+}
+
+function buildRun(openTag, rPrXml, text, rId){
+  let rpr = rPrXml || '';
+  if(rId) rpr = rpr ? injectHlinkIntoRpr(rpr, rId) : `<a:rPr>${hlinkTag(rId)}</a:rPr>`;
+  return openTag + rpr + `<a:t xml:space="preserve">${xmlEsc(text)}</a:t></a:r>`;
+}
+
+// Split one run into pieces so that the given (sorted, non-overlapping,
+// run-local) ranges each become their own linked run; gaps stay unlinked. All
+// pieces clone the original run's open tag + rPr.
+function splitRunMulti(runXml, runText, ranges){
+  const { openTag, rPrXml } = runParts(runXml);
+  const pieces = []; let pos = 0;
+  for(const r of ranges){
+    if(r.ls > pos) pieces.push(buildRun(openTag, rPrXml, runText.slice(pos, r.ls)));
+    pieces.push(buildRun(openTag, rPrXml, runText.slice(r.ls, r.le), r.id));
+    pos = r.le;
+  }
+  if(pos < runText.length) pieces.push(buildRun(openTag, rPrXml, runText.slice(pos)));
+  return pieces.join('');
+}
+
+// Single-range convenience wrapper (used by tests).
+function splitRunAtRange(runXml, runText, s, e, rId){
+  return splitRunMulti(runXml, runText, [{ ls:s, le:e, id:rId }]);
+}
+
+// Highest numeric rId in a .rels file (0 if none / empty).
+function maxRelId(relsXml){
+  let mx = 0;
+  for(const m of String(relsXml||'').matchAll(/Id="rId(\d+)"/g)){ const n = +m[1]; if(n > mx) mx = n; }
+  return mx;
+}
+function nextRelId(relsXml){ return 'rId' + (maxRelId(relsXml) + 1); }
+
+// Append external-hyperlink relationships, creating a valid root if the file is
+// empty/absent. `rels` = [{id, target}] with target already URL-encoded.
+function addRelationships(relsXml, rels){
+  const add = rels.map(r =>
+    `<Relationship Id="${r.id}" Type="${HLINK_TYPE}" Target="${r.target}" TargetMode="External"/>`).join('');
+  if(!relsXml || !/<Relationships\b/.test(relsXml)){
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+      + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+      + add + '</Relationships>';
+  }
+  return relsXml.replace('</Relationships>', add + '</Relationships>');
+}
+
+// Build a modified .pptx (Uint8Array) with hyperlinks injected.
+//   links: [{ cue:Number, name:String /*original detected text*/,
+//             target:String /*relative placeholder path*/ }]
+// Returns { bytes, linkCount, slideCount } — counts are for the operator's toast.
+async function linkifyDeck(arrayBuffer, links){
+  const zip = indexZip(arrayBuffer);
+  const order = await slidePaths(zip);
+  const cueToPath = new Map(order.map(o => [o.n, o]));
+
+  const byCue = new Map();
+  for(const l of (links||[])){
+    if(!cueToPath.has(l.cue) || !l.name || !l.target) continue;
+    if(!byCue.has(l.cue)) byCue.set(l.cue, []);
+    byCue.get(l.cue).push(l);
+  }
+
+  const replacements = new Map();        // entry name -> Uint8Array (uncompressed)
+  let linkCount = 0, slideCount = 0;
+
+  for(const [cue, group] of byCue){
+    const o = cueToPath.get(cue);
+    const xmlU8 = await inflateEntry(zip, o.xml);
+    let xml = xmlU8 ? dec.decode(xmlU8) : '';
+    if(!xml) continue;
+    const relU8 = await inflateEntry(zip, o.rels);
+    let relsXml = relU8 ? dec.decode(relU8) : '';
+
+    const paras = parseParagraphs(xml);
+
+    // Locate each link in the first paragraph whose text contains the name.
+    const byPara = new Map();
+    for(const l of group){
+      for(let pi = 0; pi < paras.length; pi++){
+        const span = locateName(paras[pi].text, l.name);
+        if(span){ if(!byPara.has(pi)) byPara.set(pi, []); byPara.get(pi).push({ l, span }); break; }
+      }
+    }
+    if(!byPara.size) continue;
+
+    let rid = maxRelId(relsXml);
+    const newRels = [], edits = [];
+    for(const [pi, items] of byPara){
+      const para = paras[pi];
+      if(items.length === 1){
+        // one name on the line -> whole-paragraph link (all runs share one id)
+        const id = 'rId' + (++rid);
+        newRels.push({ id, target: encodeRelTarget(items[0].l.target) });
+        for(const run of para.runs)
+          edits.push({ start: run.rStart, end: run.rEnd, repl: injectHlinkIntoRpr(run.xml, id) });
+        linkCount++;
+      } else {
+        // multiple names -> per-name spans; collect ranges per run, then split
+        const perRun = new Map();
+        for(const it of items){
+          const id = 'rId' + (++rid);
+          newRels.push({ id, target: encodeRelTarget(it.l.target) });
+          const [S, E] = it.span;
+          para.runs.forEach((run, ri) => {
+            if(run.charEnd <= S || run.charStart >= E) return;
+            const ls = Math.max(S, run.charStart) - run.charStart;
+            const le = Math.min(E, run.charEnd) - run.charStart;
+            if(!perRun.has(ri)) perRun.set(ri, []);
+            perRun.get(ri).push({ ls, le, id });
+          });
+          linkCount++;
+        }
+        for(const [ri, ranges] of perRun){
+          ranges.sort((a, b) => a.ls - b.ls);
+          const run = para.runs[ri];
+          edits.push({ start: run.rStart, end: run.rEnd, repl: splitRunMulti(run.xml, run.text, ranges) });
+        }
+      }
+    }
+    if(!edits.length) continue;
+
+    // Splice run replacements right-to-left so earlier offsets stay valid.
+    edits.sort((a, b) => b.start - a.start);
+    for(const ed of edits) xml = xml.slice(0, ed.start) + ed.repl + xml.slice(ed.end);
+    relsXml = addRelationships(relsXml, newRels);
+    replacements.set(o.xml, _enc.encode(xml));
+    replacements.set(o.rels, _enc.encode(relsXml));
+    slideCount++;
+  }
+
+  const bytes = await rezipReplace(zip, replacements);
+  return { bytes, linkCount, slideCount };
+}
+
+// Rebuild a .pptx from an indexed zip, swapping in `replacements`
+// (Map<entryName, Uint8Array uncompressed>) and copying every other entry's
+// compressed body VERBATIM — so a 44 MB image-heavy deck is repackaged without
+// re-deflating its media.
+async function rezipReplace(zip, replacements){
+  const { time, date } = dosDateTime();
+  const chunks = [], central = []; let offset = 0;
+  const canDeflate = typeof CompressionStream !== 'undefined';
+  for(const [name, e] of zip.entries){
+    const nameBytes = _enc.encode(name);
+    let method, body, crc, uncomp;
+    if(replacements.has(name)){
+      const data = replacements.get(name);
+      crc = crc32(data); uncomp = data.length; method = 0; body = data;
+      if(canDeflate && data.length > 0){
+        const def = await deflateRaw(data);
+        if(def.length < data.length){ method = 8; body = def; }
+      }
+    } else {
+      body = rawEntryBody(zip, e);
+      if(!body) continue;                 // entry unreadable; drop (should not happen)
+      method = e.method; crc = e.crc >>> 0; uncomp = e.uncompSize;
+    }
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0,true);
+    lh.setUint16(8,method,true); lh.setUint16(10,time,true); lh.setUint16(12,date,true);
+    lh.setUint32(14,crc,true); lh.setUint32(18,body.length,true); lh.setUint32(22,uncomp,true);
+    lh.setUint16(26,nameBytes.length,true); lh.setUint16(28,0,true);
+    chunks.push(new Uint8Array(lh.buffer), nameBytes, body);
+    central.push({ nameBytes, crc, method, comp:body.length, uncomp, offset, time, date });
+    offset += 30 + nameBytes.length + body.length;
+  }
+  const cdStart = offset; const cdChunks = [];
+  for(const c of central){
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true);
+    ch.setUint16(8,0,true); ch.setUint16(10,c.method,true); ch.setUint16(12,c.time,true);
+    ch.setUint16(14,c.date,true); ch.setUint32(16,c.crc,true); ch.setUint32(20,c.comp,true);
+    ch.setUint32(24,c.uncomp,true); ch.setUint16(28,c.nameBytes.length,true);
+    ch.setUint16(30,0,true); ch.setUint16(32,0,true); ch.setUint16(34,0,true);
+    ch.setUint16(36,0,true); ch.setUint32(38,0,true); ch.setUint32(42,c.offset,true);
+    cdChunks.push(new Uint8Array(ch.buffer), c.nameBytes);
+    offset += 46 + c.nameBytes.length;
+  }
+  const cdSize = offset - cdStart;
+  const eo = new DataView(new ArrayBuffer(22));
+  eo.setUint32(0,0x06054b50,true); eo.setUint16(4,0,true); eo.setUint16(6,0,true);
+  eo.setUint16(8,central.length,true); eo.setUint16(10,central.length,true);
+  eo.setUint32(12,cdSize,true); eo.setUint32(16,cdStart,true); eo.setUint16(20,0,true);
+  const all = [...chunks, ...cdChunks, new Uint8Array(eo.buffer)];
+  let total = 0; for(const a of all) total += a.length;
+  const out = new Uint8Array(total); let p = 0;
+  for(const a of all){ out.set(a, p); p += a.length; }
+  return out;
+}
+
 
 /* ---- boot: install the negative-filter words + built-in given names ---- */
 setCommonWords(COMMON_WORDS_DATA);
@@ -1545,7 +1872,7 @@ const els = {
   copyBtn:$('#copyBtn'), dlBtn:$('#dlBtn'), newBtn:$('#newBtn'),
   sessBtn:$('#sessBtn'), sessionPanel:$('#sessionPanel'),
   sessionList:$('#sessionList'), buildZip:$('#buildZip'),
-  tplFile:$('#tplFile'), tplName:$('#tplName'), extField:$('#extField'),
+  tplFile:$('#tplFile'), tplName:$('#tplName'), extField:$('#extField'), linkDeck:$('#linkDeck'),
   revToggle:$('#revToggle'), thumbToggle:$('#thumbToggle'), boostFile:$('#boostFile'),
   booster:$('#booster'), err:$('#err'),
   lightbox:$('#lightbox'), lbFrame:$('#lbFrame'), lbCue:$('#lbCue'), lbWho:$('#lbWho'), lbFs:$('#lbFs'),
@@ -2233,6 +2560,36 @@ function sanitizeName(s){
   return (s||'').replace(/[\\\/:*?"<>|\u0000-\u001f]/g,'-')
                 .replace(/\s+/g,' ').trim().replace(/[. ]+$/,'') || 'untitled';
 }
+// Compute every named speaker's placeholder entry: the folder + relative
+// filename, in session/slide order. This is the SINGLE source of those paths —
+// reused for both the ZIP entry name and the hyperlink target, so a name on a
+// slide always resolves to the matching placeholder file (if the two
+// derivations diverged, the links would silently break).
+function placeholderEntries(ext){
+  const out=[];
+  SESS.forEach((s,si)=>{
+    const named=s.speakers.filter(sp=>sp.name.trim());
+    if(!named.length) return;
+    const prefix=s.name.trim() || ('Session '+(si+1));
+    const folder=sanitizeName(prefix);
+    named.forEach((sp,i)=>{
+      const fname=`${folder}/${sanitizeName(prefix)} - ${i+1} - ${sanitizeName(sp.name.trim())}.${ext}`;
+      out.push({ folder, fname, sp });
+    });
+  });
+  return out;
+}
+
+// Resolve a speaker's srcId ("slide#index") back to the ORIGINAL detected name
+// text on that slide — the string physically present in the deck, which is what
+// the hyperlink injector must match (the session name may have been edited).
+function detectedNameBySrc(srcId){
+  if(srcId==null) return null;
+  const [sl, idx] = String(srcId).split('#');
+  const r = STATE.results.find(r=>r.slide===+sl);
+  return r && r.names[+idx] ? r.names[+idx].name : null;
+}
+
 els.buildZip.addEventListener('click', async ()=>{
   rebuildSessionsFromDOM();
   const phType=([...document.querySelectorAll('input[name=phtype]')].find(r=>r.checked)||{}).value||'empty';
@@ -2242,20 +2599,12 @@ els.buildZip.addEventListener('click', async ()=>{
     if(!tplBytes){ toast('Choose a template file first, or switch to Empty.', true); return; }
     data=tplBytes; if(tplExt) ext=tplExt;
   }
-  const files=[]; let nFiles=0, nSess=0;
-  SESS.forEach((s,si)=>{
-    const named=s.speakers.filter(sp=>sp.name.trim());
-    if(!named.length) return;
-    nSess++;
-    const prefix=s.name.trim() || ('Session '+(si+1));
-    const folder=sanitizeName(prefix);
-    named.forEach((sp,i)=>{
-      const fname=`${folder}/${sanitizeName(prefix)} - ${i+1} - ${sanitizeName(sp.name.trim())}.${ext}`;
-      files.push({ name:fname, data });
-      nFiles++;
-    });
-  });
-  if(!nFiles){ toast('No named speakers to export — add names or check your sessions.', true); return; }
+  const ents=placeholderEntries(ext);
+  if(!ents.length){ toast('No named speakers to export — add names or check your sessions.', true); return; }
+  const files=ents.map(e=>({ name:e.fname, data }));
+  const nFiles=ents.length;
+  const nSess=SESS.filter(s=>s.speakers.some(sp=>sp.name.trim())).length;
+
   // Bundle the original deck at the ZIP root (above the session folders) so the
   // placeholders stay associated with the source deck when deploying.
   let deckIncluded=false;
@@ -2263,6 +2612,30 @@ els.buildZip.addEventListener('click', async ()=>{
     files.unshift({ name:sanitizeName(STATE.name), data:curDeckBytes, store:true });
     deckIncluded=true;
   }
+
+  // Optional: a hyperlinked copy of the deck, alongside the original at the
+  // root, with each detected speaker name linked to its placeholder file. Built
+  // off the ORIGINAL detected names (via srcId) so the text matches the slide;
+  // the link target is the placeholder path from placeholderEntries above.
+  let linkedNote='';
+  if(els.linkDeck && els.linkDeck.checked && curDeckBytes){
+    const links=[];
+    for(const e of ents){
+      if(!e.sp.cue) continue;                       // manual speaker — no slide to link
+      const orig=detectedNameBySrc(e.sp.srcId);
+      if(orig) links.push({ cue:e.sp.cue, name:orig, target:e.fname });
+    }
+    if(links.length){
+      toast('Building hyperlinked deck…');
+      try{
+        const { bytes, linkCount, slideCount }=await linkifyDeck(curDeckBytes, links);
+        const lbase=(STATE.name||'deck').replace(/\.pptx$/i,'');
+        files.splice(deckIncluded?1:0, 0, { name:sanitizeName(lbase+' - linked')+'.pptx', data:bytes, store:true });
+        linkedNote=' + a hyperlinked deck ('+linkCount+' link'+(linkCount===1?'':'s')+' across '+slideCount+' slide'+(slideCount===1?'':'s')+')';
+      }catch(err){ console.error(err); linkedNote=' (the hyperlinked deck could not be built — see console)'; }
+    }
+  }
+
   toast('Building ZIP…');
   try{
     const zip=await makeZip(files);
@@ -2271,7 +2644,7 @@ els.buildZip.addEventListener('click', async ()=>{
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
     a.download=base+' - placeholders.zip'; a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
-    toast('Built '+nFiles+' placeholder'+(nFiles>1?'s':'')+' across '+nSess+' session folder'+(nSess>1?'s':'')+(deckIncluded?', plus the original deck':'')+'.');
+    toast('Built '+nFiles+' placeholder'+(nFiles>1?'s':'')+' across '+nSess+' session folder'+(nSess>1?'s':'')+(deckIncluded?', plus the original deck':'')+linkedNote+'.');
   }catch(err){ console.error(err); toast('Could not build the ZIP: '+(err.message||err), true); }
 });
 
