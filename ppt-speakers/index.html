@@ -567,6 +567,7 @@ footer a{color:var(--muted)}
     <section id="library" hidden>
       <div class="lib-head">
         <h2>Recent decks</h2>
+        <button class="btn ghost" id="libReport">Report</button>
         <button class="btn ghost" id="libWipe">Clear all saved decks</button>
       </div>
       <p class="lib-note">Re-open a deck to restore your session edits. Decks are stored only in this browser.</p>
@@ -662,6 +663,7 @@ footer a{color:var(--muted)}
   <div class="frame">
     <div class="lib-head">
       <h2>Recent decks</h2>
+      <button class="btn ghost" id="pickerReport">Report</button>
       <button class="btn ghost" id="pickerWipe">Clear all saved decks</button>
       <button class="x" type="button" id="pickerClose">Close</button>
     </div>
@@ -1997,9 +1999,9 @@ const SVG = {
 
 const els = {
   status:$('#status'), idle:$('#idle'), drop:$('#drop'), file:$('#file'),
-  library:$('#library'), libList:$('#libList'), libWipe:$('#libWipe'), sessReset:$('#sessReset'),
+  library:$('#library'), libList:$('#libList'), libWipe:$('#libWipe'), libReport:$('#libReport'), sessReset:$('#sessReset'),
   topFn:$('#topFn'), decksBtn:$('#decksBtn'),
-  deckPicker:$('#deckPicker'), pickerList:$('#pickerList'), pickerWipe:$('#pickerWipe'), pickerClose:$('#pickerClose'),
+  deckPicker:$('#deckPicker'), pickerList:$('#pickerList'), pickerWipe:$('#pickerWipe'), pickerReport:$('#pickerReport'), pickerClose:$('#pickerClose'),
   results:$('#results'), cues:$('#cues'), reviewWrap:$('#reviewWrap'),
   reviewCues:$('#reviewCues'), reviewHead:$('#reviewHead'),
   counts:$('#counts'),
@@ -3193,8 +3195,96 @@ async function wipeAllDecks(){
   refreshLibraryViews();
   toast('Cleared all saved decks.');
 }
+
+// ---- event-wide HTML report (Room → Session → numbered speakers) ----
+function htmlEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Per saved deck, resolve its sessions: the saved edits when present, else
+// re-derive a default single session from the cached deck (detected names).
+async function reportDecks(){
+  const recs = await getLibraryRecs();
+  const out = [];
+  for(const rec of recs){
+    let sessions = null;
+    if(rec.sessions && !isSessEmpty(rec.sessions)){
+      sessions = rec.sessions;
+    } else {
+      try{
+        const buf = await idbGet('deck:'+rec.hash);
+        if(buf){
+          const deck = await parseDeck(buf);
+          const speakers = [];
+          for(const {slide,names} of extractNames(deck.slides))
+            names.forEach(n=>{ if(bucket(n.score)!=='review') speakers.push({ name:n.name, cue:slide }); });
+          sessions = [{ name:'', speakers }];
+        }
+      }catch{/* unreadable/uncached — listed with a note */}
+    }
+    out.push({ room:(rec.room||'').trim(), filename:rec.filename||'(unnamed deck)', sessions });
+  }
+  return out;
+}
+
+async function buildEventReportHTML(){
+  const decks = await reportDecks();
+  const roomOf = d => d.room || (d.filename||'').replace(/\.pptx$/i,'') || '(unnamed)';
+  const groups = new Map();
+  for(const d of decks){ const h=roomOf(d); if(!groups.has(h)) groups.set(h,[]); groups.get(h).push(d); }
+  const headings = [...groups.keys()].sort((a,b)=>a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'}));
+
+  let nSpeakers=0, nSessions=0;
+  const sections=[];
+  for(const h of headings){
+    const ds=groups.get(h); const parts=[`<section class="room"><h2>${htmlEsc(h)}</h2>`];
+    for(const d of ds){
+      if(ds.length>1) parts.push(`<p class="deckcap">${htmlEsc(d.filename)}</p>`);
+      if(!d.sessions){ parts.push('<p class="note">No saved speakers — re-open this deck to include it.</p>'); continue; }
+      d.sessions.forEach((s,si)=>{
+        const named=s.speakers.filter(sp=>sp.name && sp.name.trim() && !sp.off);
+        if(!named.length) return;
+        nSessions++;
+        parts.push(`<h3>${htmlEsc(s.name && s.name.trim() ? s.name.trim() : ('Session '+(si+1)))}</h3>`);
+        parts.push('<ol class="spk">');
+        named.forEach(sp=>{ nSpeakers++; parts.push(`<li>${htmlEsc(sp.name.trim())}</li>`); });
+        parts.push('</ol>');
+      });
+    }
+    parts.push('</section>'); sections.push(parts.join('\n'));
+  }
+
+  const css = `*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1a1d22;background:#fff;margin:0;padding:32px;line-height:1.5}
+h1{font-size:22px;margin:0 0 4px}.meta{color:#667085;margin:0 0 26px;font-size:13px}
+.room{break-inside:avoid;margin:0 0 24px;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px}
+.room>h2{font-size:18px;margin:0 0 10px;color:#0350a7;border-bottom:2px solid #eef1f4;padding-bottom:6px}
+.deckcap{font-size:12px;color:#889;font-style:italic;margin:10px 0 0}
+.room h3{font-size:14px;margin:14px 0 4px}
+ol.spk{margin:0 0 10px;padding-left:28px}ol.spk li{margin:2px 0}
+.note{color:#98a2b3;font-style:italic;margin:6px 0}
+@media print{body{padding:0}.room{border:none;padding:0;margin-bottom:16px}}`;
+  const meta = `${headings.length} room${headings.length===1?'':'s'} · ${nSessions} session${nSessions===1?'':'s'} · ${nSpeakers} speaker${nSpeakers===1?'':'s'} · generated ${htmlEsc(new Date().toLocaleString())}`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">`
+    + `<title>Speaker Report</title><style>${css}</style></head><body>`
+    + `<header><h1>Speaker Report</h1><p class="meta">${meta}</p></header>`
+    + (sections.length ? sections.join('\n') : '<p class="note">No saved decks with speakers yet.</p>')
+    + `</body></html>`;
+}
+
+async function openEventReport(){
+  if(!(await getLibraryRecs()).length){ toast('No saved decks to report yet.', true); return; }
+  toast('Building report…');
+  let html;
+  try{ html = await buildEventReportHTML(); }
+  catch(e){ console.error(e); toast('Could not build the report: '+(e.message||e), true); return; }
+  const url = URL.createObjectURL(new Blob([html], {type:'text/html'}));
+  const w = window.open(url, '_blank');
+  if(!w){ const a=document.createElement('a'); a.href=url; a.download='speaker-report.html'; a.click(); }
+  setTimeout(()=>URL.revokeObjectURL(url), 60000);
+}
+
 if(els.libWipe) els.libWipe.addEventListener('click', wipeAllDecks);
 if(els.pickerWipe) els.pickerWipe.addEventListener('click', wipeAllDecks);
+if(els.libReport) els.libReport.addEventListener('click', openEventReport);
+if(els.pickerReport) els.pickerReport.addEventListener('click', openEventReport);
 if(els.decksBtn) els.decksBtn.addEventListener('click', openDeckPicker);
 if(els.deckPicker) els.deckPicker.addEventListener('click', e=>{
   if(e.target===els.deckPicker || e.target.closest('.x')) closeDeckPicker();
