@@ -73,6 +73,12 @@ body{
   font-family:var(--mono);font-size:11px;letter-spacing:.06em;
   color:var(--faint);text-transform:uppercase;
 }
+.topbar-fn{
+  flex:1 1 auto;min-width:0;
+  font-family:var(--mono);font-size:12px;color:var(--ink);letter-spacing:.02em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.topbar-fn[hidden]{display:none}
 .status{
   margin-left:auto;display:flex;align-items:center;gap:8px;
   font-family:var(--mono);font-size:11px;letter-spacing:.08em;
@@ -162,10 +168,6 @@ body{
   background:var(--panel);border:1px solid var(--edge);border-radius:var(--radius);
 }
 .deckmeta{display:flex;flex-direction:column;gap:3px;min-width:0;margin-right:auto}
-.deckmeta .fn{
-  font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  max-width:48ch;
-}
 .deckmeta .counts{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.03em}
 .deckmeta .counts b{color:var(--ink);font-weight:600}
 
@@ -302,7 +304,7 @@ footer a{color:var(--muted)}
   .rail .cnt{margin-top:0}
   .thumb{width:auto;align-self:stretch;justify-self:stretch;margin:12px 14px 4px}
   .cue .names{border-left:none}
-  .deckmeta .fn{max-width:64vw}
+  .tag{display:none}                 /* free up the top bar for the filename */
   .booster{margin-left:0}
 }
 @media (prefers-reduced-motion:reduce){
@@ -333,6 +335,15 @@ footer a{color:var(--muted)}
   border-radius:6px;padding:5px 11px;font-family:var(--body);font-size:12px;
 }
 .lightbox .x:hover{color:var(--ink);border-color:#3c424f}
+
+/* ---- recent-decks picker overlay (reuses .lightbox backdrop) -- */
+#deckPicker .frame{
+  width:min(640px,94vw);max-height:84vh;overflow:auto;padding:20px 22px;
+  background:var(--panel);
+}
+#deckPicker .lib-head{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+#deckPicker .lib-head .x{margin-left:0;cursor:pointer}   /* wipe already takes the auto margin */
+#deckPicker #pickerList{margin-top:14px}
 
 /* ---- full-window drop target + toast ------------------------- */
 .drop-overlay{
@@ -491,6 +502,7 @@ footer a{color:var(--muted)}
   <div class="row">
     <div class="mark">Speaker<span class="slash">/</span><span class="sub">Scan</span></div>
     <div class="tag">pptx → speaker list</div>
+    <div class="topbar-fn" id="topFn" hidden></div>
     <div class="status" id="status" data-state="idle"><span class="lamp"></span><span class="txt">Idle</span></div>
   </div>
 </header>
@@ -528,12 +540,12 @@ footer a{color:var(--muted)}
   <section class="results" id="results">
     <div class="toolbar">
       <div class="deckmeta">
-        <span class="fn" id="fn"></span>
         <span class="counts" id="counts"></span>
       </div>
       <button class="btn" id="copyBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy list</span></button>
       <button class="btn" id="dlBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg><span>Download .txt</span></button>
       <button class="btn" id="sessBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 3 8l9 5 9-5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Sessions</span></button>
+      <button class="btn" id="decksBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 3 8l9 5 9-5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Recent decks</span></button>
       <button class="btn ghost" id="newBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>New deck</span></button>
     </div>
 
@@ -602,6 +614,18 @@ footer a{color:var(--muted)}
       <button class="fs" id="lbFs" type="button">⛶ Fullscreen</button>
       <button class="x" type="button">Close</button>
     </div>
+  </div>
+</div>
+
+<div class="lightbox deck-picker" id="deckPicker" role="dialog" aria-modal="true" aria-label="Recent decks">
+  <div class="frame">
+    <div class="lib-head">
+      <h2>Recent decks</h2>
+      <button class="btn ghost" id="pickerWipe">Clear all saved decks</button>
+      <button class="x" type="button" id="pickerClose">Close</button>
+    </div>
+    <p class="lib-note">Re-open a deck to restore your session edits. Decks are stored only in this browser.</p>
+    <div id="pickerList"></div>
   </div>
 </div>
 
@@ -1506,9 +1530,11 @@ const SVG = {
 const els = {
   status:$('#status'), idle:$('#idle'), drop:$('#drop'), file:$('#file'),
   library:$('#library'), libList:$('#libList'), libWipe:$('#libWipe'), sessReset:$('#sessReset'),
+  topFn:$('#topFn'), decksBtn:$('#decksBtn'),
+  deckPicker:$('#deckPicker'), pickerList:$('#pickerList'), pickerWipe:$('#pickerWipe'), pickerClose:$('#pickerClose'),
   results:$('#results'), cues:$('#cues'), reviewWrap:$('#reviewWrap'),
   reviewCues:$('#reviewCues'), reviewHead:$('#reviewHead'),
-  fn:$('#fn'), counts:$('#counts'),
+  counts:$('#counts'),
   copyBtn:$('#copyBtn'), dlBtn:$('#dlBtn'), newBtn:$('#newBtn'),
   sessBtn:$('#sessBtn'), sessBack:$('#sessBack'), sessionPanel:$('#sessionPanel'),
   sessionList:$('#sessionList'), buildZip:$('#buildZip'),
@@ -1709,7 +1735,10 @@ function resetApp(){
   els.results.classList.remove('mode-sessions');
   if(thumbIO){ thumbIO.disconnect(); thumbIO=null; }
   els.results.classList.remove('show');
+  els.topFn.hidden=true; els.topFn.textContent='';
+  closeDeckPicker();
   els.idle.style.display='';
+  renderLibrary();                        // reflect any decks added/edited this session
   els.drop.classList.remove('busy');
   els.file.value='';
   // (reset)
@@ -1755,8 +1784,9 @@ function render(){
   els.reviewHead.querySelector('.t').textContent =
     'Review · '+nRev+' uncertain '+(nRev===1?'candidate':'candidates')+(showReview?'':' (hidden)');
 
-  // meta line
-  els.fn.textContent = STATE.name;
+  // meta line — filename lives in the sticky top bar so it stays visible while scrolling
+  els.topFn.textContent = STATE.name;
+  els.topFn.hidden = false;
   const total = nHigh+nMed;
   els.counts.innerHTML =
     '<b>'+total+'</b> '+(total===1?'name':'names')+' across <b>'+slidesWithNames+'</b> '+
@@ -2279,37 +2309,63 @@ function persistSessions(){
   }, 400);
 }
 
-// ---- recent-decks library (landing screen) -------------------
+// ---- recent-decks library ------------------------------------
+// Two views share one row builder: the landing-page list (#libList, shown when
+// no deck is open) and the "Recent decks" overlay (#pickerList, reachable from
+// the toolbar while a deck is open).
 function fmtDate(ms){ try{ return ms ? new Date(ms).toLocaleString() : ''; }catch{ return ''; } }
-async function renderLibrary(){
-  if(!els.library) return;
+async function getLibraryRecs(){
   let recs=[];
   try{
     const keys=(await idbKeys()).filter(k=>typeof k==='string' && k.startsWith('file:'));
     recs=(await Promise.all(keys.map(k=>idbGet(k).catch(()=>null)))).filter(r=>r&&r.hash);
   }catch{ recs=[]; /* IDB blocked under file:// */ }
   recs.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  return recs;
+}
+function libRow(rec){
+  const row=document.createElement('div'); row.className='lib-row';
+  const meta=document.createElement('div'); meta.className='lib-meta';
+  const nm=document.createElement('span'); nm.className='lib-name'; nm.textContent=rec.filename||'(unnamed deck)';
+  const dt=document.createElement('span'); dt.className='lib-date';
+  const edited = rec.sessions && !isSessEmpty(rec.sessions);
+  dt.textContent=(rec.lastModified?fmtDate(rec.lastModified):'')+(edited?' · edited':'');
+  meta.append(nm, dt);
+  const cur = rec.hash===curHash;
+  const open=document.createElement('button'); open.className='btn ghost'; open.textContent= cur ? '● current' : '↻ open';
+  open.disabled = cur;
+  open.addEventListener('click', ()=>{ closeDeckPicker(); openFromLibrary(rec.hash); });
+  const del=document.createElement('button'); del.className='btn ghost lib-del'; del.textContent='✕'; del.title='Remove from list';
+  del.addEventListener('click', async ()=>{
+    if(!confirm('Remove "'+(rec.filename||'this deck')+'" and its saved edits?')) return;
+    try{ await idbDel('file:'+rec.hash); await idbDel('deck:'+rec.hash); }catch{}
+    refreshLibraryViews();
+  });
+  row.append(meta, open, del);
+  return row;
+}
+async function renderLibrary(){
+  if(!els.library) return;
+  const recs=await getLibraryRecs();
   els.library.hidden = recs.length===0;
   els.libList.innerHTML='';
-  for(const rec of recs){
-    const row=document.createElement('div'); row.className='lib-row';
-    const meta=document.createElement('div'); meta.className='lib-meta';
-    const nm=document.createElement('span'); nm.className='lib-name'; nm.textContent=rec.filename||'(unnamed deck)';
-    const dt=document.createElement('span'); dt.className='lib-date';
-    const edited = rec.sessions && !isSessEmpty(rec.sessions);
-    dt.textContent=(rec.lastModified?fmtDate(rec.lastModified):'')+(edited?' · edited':'');
-    meta.append(nm, dt);
-    const open=document.createElement('button'); open.className='btn ghost'; open.textContent='↻ open';
-    open.addEventListener('click', ()=> openFromLibrary(rec.hash));
-    const del=document.createElement('button'); del.className='btn ghost lib-del'; del.textContent='✕'; del.title='Remove from list';
-    del.addEventListener('click', async ()=>{
-      if(!confirm('Remove "'+(rec.filename||'this deck')+'" and its saved edits?')) return;
-      try{ await idbDel('file:'+rec.hash); await idbDel('deck:'+rec.hash); }catch{}
-      renderLibrary();
-    });
-    row.append(meta, open, del);
-    els.libList.appendChild(row);
+  for(const rec of recs) els.libList.appendChild(libRow(rec));
+}
+async function openDeckPicker(){
+  const recs=await getLibraryRecs();
+  els.pickerList.innerHTML='';
+  if(!recs.length){
+    const p=document.createElement('p'); p.className='lib-note'; p.style.margin='0';
+    p.textContent='No saved decks yet — drop a .pptx to get started.';
+    els.pickerList.appendChild(p);
   }
+  for(const rec of recs) els.pickerList.appendChild(libRow(rec));
+  els.deckPicker.classList.add('show');
+}
+function closeDeckPicker(){ if(els.deckPicker) els.deckPicker.classList.remove('show'); }
+function refreshLibraryViews(){
+  renderLibrary();
+  if(els.deckPicker && els.deckPicker.classList.contains('show')) openDeckPicker();
 }
 async function openFromLibrary(hash){
   let buf=null;
@@ -2319,14 +2375,23 @@ async function openFromLibrary(hash){
   try{ const rec=await idbGet('file:'+hash); if(rec){ meta={ name:rec.filename, lastModified:rec.lastModified }; } }catch{}
   await ingest(buf, meta);
 }
-if(els.libWipe) els.libWipe.addEventListener('click', async ()=>{
+async function wipeAllDecks(){
   if(!confirm('Clear every saved deck and all session edits from this browser? This cannot be undone.')) return;
   try{
     const keys=(await idbKeys()).filter(k=>typeof k==='string' && (k.startsWith('file:')||k.startsWith('deck:')));
     for(const k of keys) await idbDel(k);
   }catch{}
-  renderLibrary();
+  refreshLibraryViews();
   toast('Cleared all saved decks.');
+}
+if(els.libWipe) els.libWipe.addEventListener('click', wipeAllDecks);
+if(els.pickerWipe) els.pickerWipe.addEventListener('click', wipeAllDecks);
+if(els.decksBtn) els.decksBtn.addEventListener('click', openDeckPicker);
+if(els.deckPicker) els.deckPicker.addEventListener('click', e=>{
+  if(e.target===els.deckPicker || e.target.closest('.x')) closeDeckPicker();
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && els.deckPicker && els.deckPicker.classList.contains('show')) closeDeckPicker();
 });
 // populate the list on first load (mirrors the booster restore below)
 renderLibrary();
