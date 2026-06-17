@@ -3513,9 +3513,8 @@ h1{font-size:22px;margin:0 0 4px}.meta{color:#667085;margin:0 0 2px;font-size:13
 .note{color:#98a2b3;font-style:italic;margin:6px 0}
 .slidelink{cursor:pointer;color:#0350a7;text-decoration:underline dotted;text-underline-offset:2px}
 .slidelink:hover{color:#02307a}
-.nospk{margin:12px 0 2px}
-.nospk .lbl{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#98a2b3}
-.nospk-row{margin:3px 0 3px 2px}.nospk .muted{color:#b6bcc6;font-size:12px}
+.cuebreak.nospk-inline .cuelabel{color:#b6bcc6}
+.cuebreak .muted{color:#b6bcc6;font-size:11px;font-style:italic;white-space:nowrap}
 .slidebox{margin:6px 0 10px 2px;cursor:zoom-out}
 .slidebox .ph{font-size:12px;color:#98a2b3;font-style:italic;padding:4px 0}
 .slideframe{position:relative;width:480px;max-width:100%;border:1px solid #e3e6ea;border-radius:6px;overflow:hidden;background:#fff}
@@ -3549,47 +3548,55 @@ function render(){
     for(const d of ds){
       if(ds.length>1)sec.appendChild(el('p','deckcap',d.filename));
       if(!d.sessions){sec.appendChild(el('p','note','No saved speakers — open this deck in the app to include it.'));continue;}
-      d.sessions.forEach((s,si)=>{
-        const inc=s.speakers.filter(sp=>sp.name&&sp.name.trim()&&!sp.off);
-        if(!inc.length)return;nS++;
-        const sess=el('div','session');
+      // Walk the deck in SLIDE order: each speaker slide under its session (a
+      // session header appears when the session changes), each no-speaker slide
+      // inline at its position. Numbers come from the per-session placeholder
+      // index (numById), independent of display order. cue==null (manual) groups
+      // are appended after the slides.
+      const sessInc=d.sessions.map(s=>s.speakers.filter(sp=>sp.name&&sp.name.trim()&&!sp.off));
+      const numById=new Map();
+      sessInc.forEach(list=>{let k=0;for(const sp of list){k++;numById.set(sp.id,k);}});
+      const slideMap=new Map();const manual=[];
+      d.sessions.forEach((s,si)=>{cueGroups(sessInc[si]).forEach(g=>{ if(g.cue!=null)slideMap.set(g.cue,{si:si,group:g}); else manual.push({si:si,group:g}); });});
+      let maxN=d.slides||0; if(!maxN){ for(const k of slideMap.keys()) if(k>maxN)maxN=k; }
+      const body=el('div','deckbody');let lastSi=-1;const seenFirst=new Set(),counted=new Set();
+      const header=(si)=>{ if(si===lastSi)return; const s=d.sessions[si];
         const nameI=document.createElement('input');nameI.className='sname';nameI.value=s.name||'';nameI.placeholder='Session '+(si+1);
         nameI.addEventListener('change',()=>doEdit(d,{kind:'rename',si:si,name:nameI.value}));
-        sess.appendChild(nameI);
-        const wrap=el('div','speakers');let n=0;
-        cueGroups(inc).forEach((g,gi)=>{
-          const cb=el('div','cuebreak');
-          const label=g.cue?el('span','cuelabel slidelink','Slide '+String(g.cue).padStart(2,'0')):el('span','cuelabel','Manual');
-          if(g.cue){cb.dataset.prev=d.hash+':'+g.cue;label.title='Click to preview this slide';label.addEventListener('click',()=>togglePreview(d,g.cue,cb));}
-          cb.appendChild(label);cb.appendChild(el('span','rule'));
-          if(gi>0&&g.cue){const sb=el('button','split','↳ split session here');sb.addEventListener('click',()=>doEdit(d,{kind:'split',id:g.items[0].id}));cb.appendChild(sb);}
-          wrap.appendChild(cb);
-          g.items.forEach((sp,ii)=>{
-            nSp++;n++;const row=el('div','srow');
-            row.appendChild(el('span','num',String(n)));row.appendChild(el('span','nm',sp.name.trim()));
-            const up=el('button','mv','▲');up.disabled=ii===0;up.title='Move up';
-            const dn=el('button','mv','▼');dn.disabled=ii===g.items.length-1;dn.title='Move down';
-            up.addEventListener('click',()=>moveInGroup(d,si,inc,g,ii,-1));
-            dn.addEventListener('click',()=>moveInGroup(d,si,inc,g,ii,1));
-            const del=el('button','del','✕');del.title='Remove (exclude) this speaker';
-            del.addEventListener('click',()=>doEdit(d,{kind:'delete',id:sp.id}));
-            row.append(up,dn,del);wrap.appendChild(row);
-          });
+        body.appendChild(nameI);lastSi=si; if(!counted.has(si)){counted.add(si);nS++;} };
+      const emit=(si,group,slide,isManual)=>{
+        header(si);
+        const cb=el('div','cuebreak'+(isManual?' nospk-inline':''));
+        if(isManual){ cb.appendChild(el('span','cuelabel','Manually added')); }
+        else { const label=el('span','cuelabel slidelink','Slide '+String(slide).padStart(2,'0'));
+          cb.dataset.prev=d.hash+':'+slide;label.title='Click to preview this slide';label.addEventListener('click',()=>togglePreview(d,slide,cb));cb.appendChild(label); }
+        cb.appendChild(el('span','rule'));
+        if(!isManual && seenFirst.has(si)){ const sb=el('button','split','↳ split session here');sb.addEventListener('click',()=>doEdit(d,{kind:'split',id:group.items[0].id}));cb.appendChild(sb); }
+        seenFirst.add(si);body.appendChild(cb);
+        group.items.forEach((sp,ii)=>{ nSp++; const row=el('div','srow');
+          row.appendChild(el('span','num',String(numById.get(sp.id)||'')));row.appendChild(el('span','nm',sp.name.trim()));
+          const up=el('button','mv','▲');up.disabled=ii===0;up.title='Move up';
+          const dn=el('button','mv','▼');dn.disabled=ii===group.items.length-1;dn.title='Move down';
+          up.addEventListener('click',()=>moveInGroup(d,si,sessInc[si],group,ii,-1));
+          dn.addEventListener('click',()=>moveInGroup(d,si,sessInc[si],group,ii,1));
+          const del=el('button','del','✕');del.title='Remove (exclude) this speaker';
+          del.addEventListener('click',()=>doEdit(d,{kind:'delete',id:sp.id}));
+          row.append(up,dn,del);body.appendChild(row);
         });
-        sess.appendChild(wrap);sec.appendChild(sess);
-      });
-      // slides with no detected speakers — listed + previewable
-      if(d.noSpeaker&&d.noSpeaker.length){
-        const ns=el('div','nospk');ns.appendChild(el('span','lbl','Slides with no speakers'));
-        d.noSpeaker.forEach(num=>{
-          const rrow=el('div','nospk-row');rrow.dataset.prev=d.hash+':'+num;
-          const lk=el('span','slidelink','Slide '+String(num).padStart(2,'0'));lk.title='Click to preview this slide';
-          lk.addEventListener('click',()=>togglePreview(d,num,rrow));
-          rrow.appendChild(lk);rrow.appendChild(el('span','muted',' — no speakers'));
-          ns.appendChild(rrow);
-        });
-        sec.appendChild(ns);
+      };
+      for(let slide=1;slide<=maxN;slide++){
+        const hit=slideMap.get(slide);
+        if(hit){ emit(hit.si,hit.group,slide,false); }
+        else {
+          const rrow=el('div','cuebreak nospk-inline');
+          const label=el('span','cuelabel slidelink','Slide '+String(slide).padStart(2,'0'));label.title='Click to preview this slide';
+          rrow.dataset.prev=d.hash+':'+slide;label.addEventListener('click',()=>togglePreview(d,slide,rrow));
+          rrow.appendChild(label);rrow.appendChild(el('span','muted',' no speakers'));rrow.appendChild(el('span','rule'));
+          body.appendChild(rrow);
+        }
       }
+      for(const m of manual) emit(m.si,m.group,null,true);
+      sec.appendChild(body);
     }
     root.appendChild(sec);
   }
