@@ -3451,22 +3451,37 @@ async function reportDecks(){
   const out = [];
   for(const rec of recs){
     let sessions = (rec.sessions && !isSessEmpty(rec.sessions)) ? rec.sessions : null;
-    if(!sessions){
+    let slides = (typeof rec.slides==='number') ? rec.slides : null;
+    let speakerSlides = Array.isArray(rec.speakerSlides) ? rec.speakerSlides : null;
+    // Parse the deck once if we must materialize sessions OR backfill slide info
+    // (records saved before slides/speakerSlides existed, or quick-saved decks).
+    // Persisted back so it's a one-time cost per deck.
+    if(!sessions || slides===null || speakerSlides===null){
       try{
-        sessions = await materializeDefault(rec.hash);       // detected names + ids (or null if uncached)
-        if(sessions) await idbSet('file:'+rec.hash, { ...rec, sessions, sid:nextSid(sessions, rec.sid), updatedAt:Date.now() });
+        const buf = await idbGet('deck:'+rec.hash);
+        if(buf){
+          const deck = await parseDeck(buf); const results = extractNames(deck.slides);
+          if(slides===null) slides = deck.slides.length;
+          if(speakerSlides===null) speakerSlides = results.map(r=>r.slide);
+          if(!sessions){
+            let n=0; const sp=[];
+            for(const {slide,names} of results) names.forEach((nm,idx)=>{
+              if(bucket(nm.score)!=='review') sp.push({ id:'s'+(n++), name:nm.name, cue:slide, srcId:slide+'#'+idx, off:false });
+            });
+            sessions = [{ name:'', speakers:sp }];
+          }
+          await idbSet('file:'+rec.hash, { ...rec, sessions, slides, speakerSlides, sid:nextSid(sessions, rec.sid), updatedAt:Date.now() });
+        }
       }catch{/* unreadable/uncached — listed with a note */}
     }
-    // Slides with NO detected names (so they never reach a session) — listed in
-    // the report. Needs the stored slide info (present once a deck is opened);
-    // null when unknown (e.g. a deck only quick-saved via multi-drop).
+    // Slides with NO detected names (so they never reach a session) — listed in the report.
     let noSpeaker = null;
-    if(typeof rec.slides==='number' && Array.isArray(rec.speakerSlides)){
-      const has=new Set(rec.speakerSlides); noSpeaker=[];
-      for(let n=1;n<=rec.slides;n++) if(!has.has(n)) noSpeaker.push(n);
+    if(typeof slides==='number' && Array.isArray(speakerSlides)){
+      const has=new Set(speakerSlides); noSpeaker=[];
+      for(let n=1;n<=slides;n++) if(!has.has(n)) noSpeaker.push(n);
     }
     out.push({ hash:rec.hash, room:(rec.room||'').trim(), filename:rec.filename||'(unnamed deck)',
-               sessions, slides:(typeof rec.slides==='number'?rec.slides:null), noSpeaker });
+               sessions, slides, noSpeaker });
   }
   return out;
 }
