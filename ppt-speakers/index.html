@@ -493,7 +493,16 @@ footer a{color:var(--muted)}
   border-radius:5px;font-size:12px;white-space:nowrap;flex:none;
 }
 .srow .act:hover{color:var(--ink);background:var(--card-2)}
-.srow .del:hover{color:#e88}
+/* include toggle (replaces the old delete button) */
+.srow .inc{accent-color:var(--accent);width:16px;height:16px;flex:none;cursor:pointer}
+/* an excluded speaker: dimmed + struck through, but still present to re-include */
+.srow.off{opacity:.5}
+.srow.off .sname-txt{text-decoration:line-through;color:var(--muted)}
+.srow.off .snum{color:var(--faint)}
+/* occurrence marker for a name that repeats on its slide (John Smith ¹ / ²) */
+.occ{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--accent);
+  vertical-align:super;line-height:0;margin-left:1px}
+.srow .occ{flex:none;margin:0 2px 0 -2px}
 .addspk{
   margin:4px 6px 2px;background:transparent;border:1px dashed var(--edge);color:var(--muted);
   border-radius:7px;padding:8px;width:calc(100% - 12px);cursor:pointer;font-size:13px;
@@ -1206,7 +1215,7 @@ function extractNames(slides){
   const results = [];
   const instRe = /\b(university|universities|institute|college|hospital|csiro|wehi|mcri|unsw|uq|rmit|anu|pathology|laboratory)\b/i;
   for (const { slide, lines } of slides){
-    const found = []; const seen = new Set();
+    const found = []; const occN = new Map();   // norm -> occurrence count on this slide
     // Pre-pass: which lines are bare name lines? A name flanked by other bare
     // names is part of a list (fellows / recipients / committee) -> boost.
     const bareMask = lines.map(l => !!bareNameSpan(l.replace(/\s+$/,'')));
@@ -1262,11 +1271,18 @@ function extractNames(slides){
 
         const name = titleCaseName(span);
         const norm = name.toLowerCase();
-        if (seen.has(norm)) continue;
-        seen.add(norm);
-        found.push({ name, score, why });
+        // Keep EVERY occurrence (a name can legitimately appear twice on one
+        // slide — e.g. as a session chair and again as a speaker). Each gets an
+        // `occ` ordinal in textual order so the UI can disambiguate them and
+        // linkifyDeck can target the right physical instance. Counts/exports
+        // still dedupe downstream; only hyperlinking needs the distinction.
+        const occ = (occN.get(norm) || 0) + 1;
+        occN.set(norm, occ);
+        found.push({ name, score, why, occ });
       }
     }
+    // Flag occurrences whose name repeats on the slide (drives the (1)/(2) marker).
+    for (const f of found) f.dup = (occN.get(f.name.toLowerCase()) || 1) > 1;
     if (found.length) results.push({ slide, names: found.sort((a,b)=>b.score-a.score) });
   }
   return results;
@@ -1699,7 +1715,10 @@ function addRelationships(relsXml, rels){
 
 // Build a modified .pptx (Uint8Array) with hyperlinks injected.
 //   links: [{ cue:Number, name:String /*original detected text*/,
+//             occ:Number /*1-based occurrence on the slide, default 1*/,
 //             target:String /*relative placeholder path*/ }]
+// `occ` disambiguates a name that appears more than once on the slide (e.g. the
+// same person as chair AND speaker): occ N links the N-th textual occurrence.
 // Returns { bytes, linkCount, slideCount } — counts are for the operator's toast.
 async function linkifyDeck(arrayBuffer, links){
   const zip = indexZip(arrayBuffer);
@@ -1726,13 +1745,33 @@ async function linkifyDeck(arrayBuffer, links){
 
     const paras = parseParagraphs(xml);
 
-    // Locate each link in the first paragraph whose text contains the name.
-    const byPara = new Map();
-    for(const l of group){
+    // For each distinct name, the ordered list of paragraphs it occurs in (at
+    // most one hit per paragraph — the common chair/speaker case puts the two
+    // occurrences in different paragraphs). occ selects which one to link.
+    const occByName = new Map();
+    const matchesFor = nm => {
+      const key = nm.toLowerCase();
+      if(occByName.has(key)) return occByName.get(key);
+      const arr = [];
       for(let pi = 0; pi < paras.length; pi++){
-        const span = locateName(paras[pi].text, l.name);
-        if(span){ if(!byPara.has(pi)) byPara.set(pi, []); byPara.get(pi).push({ l, span }); break; }
+        const span = locateName(paras[pi].text, nm);
+        if(span) arr.push({ pi, span });
       }
+      occByName.set(key, arr); return arr;
+    };
+
+    // Assign each link to its occ-th paragraph occurrence; skip if two links
+    // resolve to the very same span (avoids overlapping run edits).
+    const byPara = new Map(), usedLoc = new Set();
+    for(const l of group){
+      const arr = matchesFor(l.name);
+      if(!arr.length) continue;
+      const hit = arr[Math.min((l.occ || 1) - 1, arr.length - 1)];
+      const key = hit.pi + ':' + hit.span[0];
+      if(usedLoc.has(key)) continue;
+      usedLoc.add(key);
+      if(!byPara.has(hit.pi)) byPara.set(hit.pi, []);
+      byPara.get(hit.pi).push({ l, span: hit.span });
     }
     if(!byPara.size) continue;
 
@@ -2101,11 +2140,15 @@ function render(){
     if(main.length){
       slidesWithNames++;
       els.cues.appendChild(cueCard(slide, main, false, look));
-      for(const n of main){ bucket(n.score)==='high'?nHigh++:nMed++; }
+      // Header totals stay deduped: count each name once per slide even when it
+      // appears more than once (the cue card still shows every occurrence).
+      const seenM=new Set();
+      for(const n of main){ const k=n.name.toLowerCase(); if(seenM.has(k)) continue; seenM.add(k); bucket(n.score)==='high'?nHigh++:nMed++; }
     }
     if(rev.length){
       els.reviewCues.appendChild(cueCard(slide, rev, true));
-      nRev+=rev.length;
+      const seenR=new Set();
+      for(const n of rev){ const k=n.name.toLowerCase(); if(!seenR.has(k)){ seenR.add(k); nRev++; } }
     }
   }
 
@@ -2149,7 +2192,7 @@ function cueCard(slide, names, isReview, look){
       sp = (n.nid!=null && look.bySrc.get(n.nid)) ||
            look.byNC.get(slide+' '+(n.name||'').trim().toLowerCase()) || null;
     }
-    const removed = (look && !isReview) ? (!sp || sp.blank) : false;
+    const removed = (look && !isReview) ? (!sp || sp.blank || sp.off) : false;
     return { n, i, removed, display:(sp&&!sp.blank)?sp.name:n.name, order: sp?sp.order:Infinity };
   });
   if(look && !isReview) ann.sort((a,b)=> (a.removed-b.removed) || (a.order-b.order) || (a.i-b.i));
@@ -2174,7 +2217,11 @@ function cueCard(slide, names, isReview, look){
     row.innerHTML='<span class="sig '+tier+'"></span>'+
       '<span class="who"></span>'+
       '<span class="tier">'+(a.removed?'removed':tier)+'</span>';
-    row.querySelector('.who').textContent=a.display;
+    const who=row.querySelector('.who');
+    who.textContent=a.display;
+    // Disambiguate a name that appears more than once on the slide with its
+    // textual occurrence number (e.g. John Smith ¹ vs ²).
+    if(a.n.dup){ const sub=document.createElement('sub'); sub.className='occ'; sub.textContent=a.n.occ; who.appendChild(sub); }
     list.appendChild(row);
   }
   card.appendChild(rail); card.appendChild(thumb); card.appendChild(list);
@@ -2336,7 +2383,7 @@ function buildSessLookup(){
   if(!SESS) return null;
   const bySrc=new Map(), byNC=new Map(); let order=0;
   for(const s of SESS) for(const sp of s.speakers){
-    const rec={ order:order++, name:sp.name, blank:!sp.name.trim() };
+    const rec={ order:order++, name:sp.name, blank:!sp.name.trim(), off:!!sp.off };
     if(sp.srcId!=null && !bySrc.has(sp.srcId)) bySrc.set(sp.srcId, rec);
     const nm=(sp.name||'').trim().toLowerCase();
     if(nm){ const k=sp.cue+' '+nm; if(!byNC.has(k)) byNC.set(k, rec); }
@@ -2409,7 +2456,7 @@ function renderSessions(){
   prDisposeAll(prMiniHandles);              // drop minis from the previous render pass
   const list=els.sessionList; list.innerHTML='';
   SESS.forEach((sess, si)=>{
-    const named=sess.speakers.filter(s=>s.name.trim()).length;
+    const named=sess.speakers.filter(s=>s.name.trim() && !s.off).length;
     const sec=document.createElement('div'); sec.className='session'; sec.dataset.si=si;
 
     const head=document.createElement('div'); head.className='session-head';
@@ -2449,18 +2496,33 @@ function renderSessions(){
         if(sp.cue) fillMini(th, sp.cue);
       }
 
-      const named = !!sp.name.trim();
-      if(named) num++;
+      const active = !!sp.name.trim() && !sp.off;   // included AND named -> gets a numbered placeholder
+      if(active) num++;
       const col=cueColor(sp.cue);
-      const row=document.createElement('div'); row.className='srow'; row.dataset.id=sp.id; row.draggable=true;
+      const row=document.createElement('div'); row.className='srow'+(sp.off?' off':''); row.dataset.id=sp.id; row.draggable=true;
       if(sp.cue){ row.style.setProperty('--cc',col.line); row.style.setProperty('--cbg',col.bg); row.style.setProperty('--cfg',col.fg); }
 
       const grip=document.createElement('span'); grip.className='grip'; grip.textContent='⠿'; grip.title='Drag to reorder';
-      const no=document.createElement('span'); no.className='snum'; no.textContent=named?num:'–';
+      // Include toggle (replaces the old destructive ✕): unticking excludes this
+      // speaker — no placeholder file and no hyperlink — but keeps the row so it
+      // can be re-included. Every INCLUDED named speaker gets both a placeholder
+      // and a matching hyperlink.
+      const inc=document.createElement('input'); inc.type='checkbox'; inc.className='inc'; inc.checked=!sp.off;
+      inc.title=sp.off?'Excluded — no placeholder or hyperlink. Tick to include.':'Included — gets a placeholder file and a hyperlink. Untick to exclude.';
+      inc.addEventListener('change', ()=>{ sp.off=!inc.checked; renderSessions(); persistSessions(); });
+      const no=document.createElement('span'); no.className='snum'; no.textContent=active?num:'–';
       const txt=document.createElement('input'); txt.className='sname-txt'; txt.value=sp.name;
       txt.placeholder='speaker name'; txt.spellcheck=false;
       txt.addEventListener('input', ()=>{ sp.name=txt.value; persistSessions(); });
       txt.addEventListener('change', ()=>{ renderSessions(); persistSessions(); });   // refresh numbering when a blank gets filled
+      // Occurrence marker: when this detected name repeats on its slide, show the
+      // textual occurrence number so the two rows are distinguishable.
+      const det=detectedBySrc(sp.srcId);
+      let occBadge=null;
+      if(det && det.dup){
+        occBadge=document.createElement('sub'); occBadge.className='occ'; occBadge.textContent=det.occ;
+        occBadge.title='Occurrence '+det.occ+' of this name on the slide';
+      }
       const cue=document.createElement('button');
       cue.className='cue-tag'+(sp.cue?'':' none');
       cue.textContent=sp.cue?('cue '+String(sp.cue).padStart(2,'0')):'manual';
@@ -2474,11 +2536,9 @@ function renderSessions(){
         SESS.splice(si+1,0,{ name:'', speakers:moved });
         renderSessions(); persistSessions();
       });
-      const del=document.createElement('button'); del.className='act del'; del.textContent='✕'; del.title='Remove';
-      del.addEventListener('click', ()=>{
-        sess.speakers=sess.speakers.filter(x=>x!==sp); renderSessions(); persistSessions();
-      });
-      row.append(grip, no, txt, cue, split, del);
+      row.append(grip, inc, no, txt);
+      if(occBadge) row.append(occBadge);
+      row.append(cue, split);
       spk.appendChild(row);
     });
 
@@ -2568,7 +2628,9 @@ function sanitizeName(s){
 function placeholderEntries(ext){
   const out=[];
   SESS.forEach((s,si)=>{
-    const named=s.speakers.filter(sp=>sp.name.trim());
+    // Only INCLUDED (checkbox on) named speakers get a placeholder — excluded
+    // ones produce neither a file nor a hyperlink. Numbering follows suit.
+    const named=s.speakers.filter(sp=>sp.name.trim() && !sp.off);
     if(!named.length) return;
     const prefix=s.name.trim() || ('Session '+(si+1));
     const folder=sanitizeName(prefix);
@@ -2580,14 +2642,15 @@ function placeholderEntries(ext){
   return out;
 }
 
-// Resolve a speaker's srcId ("slide#index") back to the ORIGINAL detected name
-// text on that slide — the string physically present in the deck, which is what
-// the hyperlink injector must match (the session name may have been edited).
-function detectedNameBySrc(srcId){
+// Resolve a speaker's srcId ("slide#index") back to its ORIGINAL detected name
+// object on that slide — { name, occ, dup, ... }. The name string is what the
+// hyperlink injector must match (the session name may have been edited); `occ`
+// tells linkifyDeck which physical occurrence to link when the name repeats.
+function detectedBySrc(srcId){
   if(srcId==null) return null;
   const [sl, idx] = String(srcId).split('#');
   const r = STATE.results.find(r=>r.slide===+sl);
-  return r && r.names[+idx] ? r.names[+idx].name : null;
+  return (r && r.names[+idx]) || null;
 }
 
 els.buildZip.addEventListener('click', async ()=>{
@@ -2622,8 +2685,8 @@ els.buildZip.addEventListener('click', async ()=>{
     const links=[];
     for(const e of ents){
       if(!e.sp.cue) continue;                       // manual speaker — no slide to link
-      const orig=detectedNameBySrc(e.sp.srcId);
-      if(orig) links.push({ cue:e.sp.cue, name:orig, target:e.fname });
+      const orig=detectedBySrc(e.sp.srcId);
+      if(orig) links.push({ cue:e.sp.cue, name:orig.name, occ:orig.occ||1, target:e.fname });
     }
     if(links.length){
       toast('Building hyperlinked deck…');
