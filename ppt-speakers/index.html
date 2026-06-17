@@ -510,6 +510,11 @@ footer a{color:var(--muted)}
   color:var(--cfg,var(--muted));white-space:nowrap;font-weight:600;
 }
 .cue-marker .cdash{flex:1;border-top:2px dashed var(--cc,var(--edge));opacity:.65;height:0}
+.cue-marker .split-here{
+  background:transparent;border:1px solid var(--cc,var(--edge));color:var(--cfg,var(--muted));
+  border-radius:5px;padding:3px 8px;font-size:10px;font-family:var(--mono);cursor:pointer;white-space:nowrap;flex:none;
+}
+.cue-marker .split-here:hover{filter:brightness(1.3)}
 .srow .act{
   background:transparent;border:none;color:var(--faint);cursor:pointer;padding:5px 7px;
   border-radius:5px;font-size:12px;white-space:nowrap;flex:none;
@@ -2796,11 +2801,11 @@ function renderSessions(){
     head.append(idx, nameI, cnt, merge);
 
     const spk=document.createElement('div'); spk.className='speakers'; spk.dataset.si=si;
-    let num=0, lastCue;
+    let num=0, lastCue, groups=0;
     sess.speakers.forEach(sp=>{
       // cue boundary marker: dashed colored line + mini thumbnail when the cue changes
       if(sp.cue!==lastCue){
-        lastCue=sp.cue;
+        lastCue=sp.cue; groups++;
         const col=cueColor(sp.cue);
         const mk=document.createElement('div');
         mk.className='cue-marker'+(sp.cue?'':' manual');
@@ -2813,6 +2818,14 @@ function renderSessions(){
         lab.textContent=sp.cue?('Cue '+String(sp.cue).padStart(2,'0')):'Added manually';
         const dash=document.createElement('span'); dash.className='cdash';
         mk.append(th, lab, dash);
+        // A split is only valid on a slide boundary (a slide never spans
+        // sessions), so the control lives on internal cue markers — not per row.
+        if(groups>1){
+          const splitBtn=document.createElement('button'); splitBtn.className='act split-here'; splitBtn.textContent='↳ split session here';
+          splitBtn.title='Start a new session at this slide';
+          splitBtn.addEventListener('click', ()=>{ if(sessApplyOp(SESS,{kind:'split', id:sp.id})){ renderSessions(); persistSessions(); } });
+          mk.append(splitBtn);
+        }
         spk.appendChild(mk);
         if(sp.cue) fillMini(th, sp.cue);
       }
@@ -2848,18 +2861,9 @@ function renderSessions(){
       cue.className='cue-tag'+(sp.cue?'':' none');
       cue.textContent=sp.cue?('cue '+String(sp.cue).padStart(2,'0')):'manual';
       if(sp.cue) cue.addEventListener('click', ()=> showSlide(sp.cue, sp.name));
-      const split=document.createElement('button'); split.className='act'; split.textContent='split';
-      split.title='Start a new session at this speaker';
-      split.addEventListener('click', ()=>{
-        const i=sess.speakers.indexOf(sp);
-        const moved=sess.speakers.slice(i);
-        sess.speakers=sess.speakers.slice(0,i);
-        SESS.splice(si+1,0,{ name:'', speakers:moved });
-        renderSessions(); persistSessions();
-      });
       row.append(grip, inc, no, txt);
       if(occBadge) row.append(occBadge);
-      row.append(cue, split);
+      row.append(cue);
       spk.appendChild(row);
     });
 
@@ -3177,14 +3181,142 @@ function nextSid(sessions, savedSid){
   }
   return Math.max(savedSid|0, mx+1);
 }
+// Write the loaded deck's record now (no debounce) and notify other tabs.
+async function writeCurrentRecord(){
+  if(!curHash || !SESS) return;
+  try{ await idbSet('file:'+curHash, { v:1, ...curMeta, updatedAt:Date.now(), sid:SID, sessions:SESS, room:ROOM }); }
+  catch{/* file:// may block IndexedDB; edits still live for this session */}
+  bcPost({ type:'deck-edited', hash:curHash });
+}
 let _saveTimer=null;
 function persistSessions(){
   if(!curHash || !SESS || isSessEmpty(SESS)) return;   // never clobber a good record with empty edits
   clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(async ()=>{
-    try{ await idbSet('file:'+curHash, { v:1, ...curMeta, updatedAt:Date.now(), sid:SID, sessions:SESS, room:ROOM }); }
-    catch{/* file:// may block IndexedDB; edits still live for this session */}
-  }, 400);
+  _saveTimer=setTimeout(writeCurrentRecord, 400);
+}
+
+// ---- session edit ops (shared by the editor, the cross-tab listener, and the
+// report). Pure: mutate the given `sessions` array; return true if it changed.
+// Kept idempotent where possible so a duplicated apply is harmless. The report
+// embeds an identical copy — keep the two in sync (the record shape is the
+// contract). ----
+function sessApplyOp(sessions, op){
+  if(!Array.isArray(sessions) || !op) return false;
+  if(op.kind==='delete'){                                    // exclude a speaker
+    for(const s of sessions) for(const sp of s.speakers)
+      if(sp.id===op.id){ if(sp.off) return false; sp.off=true; return true; }
+    return false;
+  }
+  if(op.kind==='restore'){
+    for(const s of sessions) for(const sp of s.speakers)
+      if(sp.id===op.id){ if(!sp.off) return false; sp.off=false; return true; }
+    return false;
+  }
+  if(op.kind==='rename'){                                     // set a session name
+    const s=sessions[op.si]; if(!s || s.name===op.name) return false; s.name=op.name; return true;
+  }
+  if(op.kind==='reorder'){                                    // declarative order for session si
+    const s=sessions[op.si]; if(!s) return false;
+    const byId=new Map(s.speakers.map(sp=>[sp.id,sp]));
+    const next=op.orderedIds.map(id=>byId.get(id)).filter(Boolean);
+    for(const sp of s.speakers) if(!next.includes(sp)) next.push(sp);   // keep any unlisted
+    if(next.length!==s.speakers.length) return false;
+    if(!s.speakers.some((sp,i)=>sp!==next[i])) return false;
+    s.speakers=next; return true;
+  }
+  if(op.kind==='split'){                                      // new session starting at speaker op.id
+    for(let si=0; si<sessions.length; si++){
+      const i=sessions[si].speakers.findIndex(sp=>sp.id===op.id);
+      if(i<0) continue;
+      if(i===0) return false;                                 // already a session start → no-op
+      const moved=sessions[si].speakers.slice(i);
+      sessions[si].speakers=sessions[si].speakers.slice(0,i);
+      sessions.splice(si+1, 0, { name:'', speakers:moved });
+      return true;
+    }
+    return false;
+  }
+  return false;
+}
+
+// True if `op` is already reflected in `sessions` — used to decide whether a
+// reconcile self-apply is still needed after a timeout.
+function sessOpReflected(sessions, op){
+  if(!Array.isArray(sessions) || !op) return true;
+  if(op.kind==='delete' || op.kind==='restore'){
+    for(const s of sessions) for(const sp of s.speakers) if(sp.id===op.id) return op.kind==='delete' ? !!sp.off : !sp.off;
+    return true;                                              // gone entirely → treat as done
+  }
+  if(op.kind==='rename'){ const s=sessions[op.si]; return !s || s.name===op.name; }
+  if(op.kind==='reorder'){ const s=sessions[op.si]; if(!s) return true;
+    return op.orderedIds.every((id,i)=> s.speakers[i] && s.speakers[i].id===id); }
+  if(op.kind==='split'){
+    for(const s of sessions) if(s.speakers[0] && s.speakers[0].id===op.id) return true;
+    return false;
+  }
+  return true;
+}
+
+// ---- cross-tab edit sync (BroadcastChannel) ------------------
+// The report (a same-origin blob tab) sends edit requests here; this tab is the
+// authoritative writer when it's open. Protocol: request → immediate `edit-recv`
+// (presence) → `edit-done` once persisted. `deck-edited` is a plain notice that
+// some tab changed a deck (so we reload the loaded one).
+const bc = (typeof BroadcastChannel!=='undefined') ? new BroadcastChannel('speakerscan') : null;
+function bcPost(msg){ try{ bc && bc.postMessage(msg); }catch{} }
+if(bc) bc.onmessage = async (ev)=>{
+  const m = ev.data || {};
+  if(m.type==='edit-request'){
+    bcPost({ type:'edit-recv', reqId:m.reqId });             // fast presence ack
+    try{ await applyEditToDeck(m.hash, m.op); bcPost({ type:'edit-done', reqId:m.reqId, hash:m.hash }); }
+    catch(e){ console.error(e); bcPost({ type:'edit-error', reqId:m.reqId }); }
+  } else if(m.type==='deck-edited'){
+    if(m.hash===curHash) await reloadCurrentDeckSessions();
+    refreshLibraryViews();
+  }
+};
+
+// Apply an edit op to a deck: the live model if it's the loaded deck (so the
+// editor stays consistent — no clobber), otherwise the stored record.
+async function applyEditToDeck(hash, op){
+  if(curHash===hash && SESS){
+    sessApplyOp(SESS, op);
+    await writeCurrentRecord();                              // persists + re-broadcasts deck-edited
+    if(els.results.classList.contains('mode-sessions')) renderSessions(); else render();
+    return;
+  }
+  const rec = await idbGet('file:'+hash);
+  if(!rec) throw new Error('deck not in library');
+  let sessions = (rec.sessions && !isSessEmpty(rec.sessions)) ? rec.sessions : (await materializeDefault(hash));
+  if(!sessions) throw new Error('no speakers to edit');
+  sessApplyOp(sessions, op);
+  await idbSet('file:'+hash, { ...rec, sessions, updatedAt:Date.now() });
+  refreshLibraryViews();
+}
+
+// Re-read the loaded deck's sessions/room from IDB (after another tab edited it).
+async function reloadCurrentDeckSessions(){
+  if(!curHash) return;
+  try{
+    const rec = await idbGet('file:'+curHash);
+    if(!rec || !Array.isArray(rec.sessions)) return;
+    SESS = rec.sessions; SID = nextSid(rec.sessions, rec.sid);
+    if(typeof rec.room==='string'){ ROOM=rec.room; if(els.roomName) els.roomName.value=ROOM; }
+    if(els.results.classList.contains('mode-sessions')) renderSessions(); else if(STATE.results.length) render();
+  }catch{}
+}
+
+// Build a deck's default session model from detection (cached bytes), assigning
+// stable speaker ids — so an unedited deck becomes uniformly editable.
+async function materializeDefault(hash){
+  let buf; try{ buf=await idbGet('deck:'+hash); }catch{}
+  if(!buf) return null;
+  const deck=await parseDeck(buf); const results=extractNames(deck.slides);
+  let n=0; const speakers=[];
+  for(const {slide,names} of results) names.forEach((nm,idx)=>{
+    if(bucket(nm.score)!=='review') speakers.push({ id:'s'+(n++), name:nm.name, cue:slide, srcId:slide+'#'+idx, off:false });
+  });
+  return [{ name:'', speakers }];
 }
 
 // ---- recent-decks library ------------------------------------
@@ -3266,74 +3398,155 @@ async function wipeAllDecks(){
 // ---- event-wide HTML report (Room → Session → numbered speakers) ----
 function htmlEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// Per saved deck, resolve its sessions: the saved edits when present, else
-// re-derive a default single session from the cached deck (detected names).
+// Per saved deck, resolve its sessions for the report. Decks already edited use
+// their saved model; unedited ones are MATERIALIZED (default session with stable
+// ids written back to the record) so the report can edit every deck uniformly.
 async function reportDecks(){
   const recs = await getLibraryRecs();
   const out = [];
   for(const rec of recs){
-    let sessions = null;
-    if(rec.sessions && !isSessEmpty(rec.sessions)){
-      sessions = rec.sessions;
-    } else {
+    let sessions = (rec.sessions && !isSessEmpty(rec.sessions)) ? rec.sessions : null;
+    if(!sessions){
       try{
-        const buf = await idbGet('deck:'+rec.hash);
-        if(buf){
-          const deck = await parseDeck(buf);
-          const speakers = [];
-          for(const {slide,names} of extractNames(deck.slides))
-            names.forEach(n=>{ if(bucket(n.score)!=='review') speakers.push({ name:n.name, cue:slide }); });
-          sessions = [{ name:'', speakers }];
-        }
+        sessions = await materializeDefault(rec.hash);       // detected names + ids (or null if uncached)
+        if(sessions) await idbSet('file:'+rec.hash, { ...rec, sessions, sid:nextSid(sessions, rec.sid), updatedAt:Date.now() });
       }catch{/* unreadable/uncached — listed with a note */}
     }
-    out.push({ room:(rec.room||'').trim(), filename:rec.filename||'(unnamed deck)', sessions });
+    out.push({ hash:rec.hash, room:(rec.room||'').trim(), filename:rec.filename||'(unnamed deck)', sessions });
   }
   return out;
 }
 
 async function buildEventReportHTML(){
   const decks = await reportDecks();
-  const roomOf = d => d.room || (d.filename||'').replace(/\.pptx$/i,'') || '(unnamed)';
-  const groups = new Map();
-  for(const d of decks){ const h=roomOf(d); if(!groups.has(h)) groups.set(h,[]); groups.get(h).push(d); }
-  const headings = [...groups.keys()].sort((a,b)=>a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'}));
+  const data = JSON.stringify(decks).replace(/</g,'\\u003c');
+  // Reuse the app's exact ops in the report by serialising them — no drift.
+  const opsSrc = sessApplyOp.toString()+'\n'+sessOpReflected.toString();
 
-  let nSpeakers=0, nSessions=0;
-  const sections=[];
-  for(const h of headings){
-    const ds=groups.get(h); const parts=[`<section class="room"><h2>${htmlEsc(h)}</h2>`];
+  const css = `*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1a1d22;background:#fff;margin:0;padding:28px;line-height:1.5}
+h1{font-size:22px;margin:0 0 4px}.meta{color:#667085;margin:0 0 2px;font-size:13px}.hint{color:#98a2b3;margin:0 0 22px;font-size:12px}
+.room{margin:0 0 22px;border:1px solid #e3e6ea;border-radius:10px;padding:14px 18px}
+.room>h2{font-size:18px;margin:0 0 8px;color:#0350a7;border-bottom:2px solid #eef1f4;padding-bottom:6px}
+.deckcap{font-size:12px;color:#889;font-style:italic;margin:8px 0 0}
+.session{margin:10px 0 4px}
+.sname{font-size:14px;font-weight:600;color:#222;border:1px solid transparent;border-radius:6px;padding:4px 7px;width:60%;max-width:420px;background:transparent}
+.sname:hover{border-color:#dde1e6}.sname:focus{outline:none;border-color:#0350a7;background:#f7f9fc}
+.cuebreak{display:flex;align-items:center;gap:8px;margin:9px 0 3px}
+.cuelabel{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#98a2b3}
+.rule{flex:1;border-top:1px dashed #e3e6ea;height:0}
+.split{background:transparent;border:1px solid #d6dbe1;color:#667085;border-radius:5px;font-size:10px;padding:2px 7px;cursor:pointer}
+.split:hover{border-color:#0350a7;color:#0350a7}
+.srow{display:flex;align-items:center;gap:8px;padding:3px 0 3px 8px}
+.srow .num{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#0350a7;width:22px;text-align:right;flex:none}
+.srow .nm{flex:1}
+.srow button{background:transparent;border:1px solid transparent;border-radius:5px;cursor:pointer;color:#98a2b3;font-size:12px;line-height:1;padding:3px 6px;flex:none}
+.srow button:hover:not(:disabled){color:#222;background:#f0f2f5}.srow button:disabled{opacity:.3;cursor:default}.srow .del:hover{color:#c0392b}
+.note{color:#98a2b3;font-style:italic;margin:6px 0}
+@media print{body{padding:0}.room{border:none;padding:0}.srow button,.split{display:none}.sname{border:none;padding-left:0}}`;
+
+  const client = `
+const DECKS = ${data};
+${opsSrc}
+const DB='speakerscan', STORE='kv';
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{try{r.result.createObjectStore(STORE)}catch(e){}};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+function idbGet(k){return idb().then(db=>new Promise((res,rej)=>{const t=db.transaction(STORE,'readonly');const q=t.objectStore(STORE).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);}));}
+function idbSet(k,v){return idb().then(db=>new Promise((res,rej)=>{const t=db.transaction(STORE,'readwrite');t.objectStore(STORE).put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error);}));}
+const byHash=new Map(DECKS.map(d=>[d.hash,d]));
+const bc=(typeof BroadcastChannel!=='undefined')?new BroadcastChannel('speakerscan'):null;
+function bcPost(m){try{bc&&bc.postMessage(m);}catch(e){}}
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+function roomOf(d){return (d.room&&d.room.trim())||(d.filename||'').replace(/\\.pptx$/i,'')||'(unnamed)';}
+function cueGroups(sp){const g=[];let c=null;for(const s of sp){if(!c||c.cue!==s.cue){c={cue:s.cue,items:[]};g.push(c);}c.items.push(s);}return g;}
+function render(){
+  const root=document.getElementById('report');root.innerHTML='';
+  let nR=0,nS=0,nSp=0;const rm=new Map();
+  for(const d of DECKS){const h=roomOf(d);if(!rm.has(h))rm.set(h,[]);rm.get(h).push(d);}
+  const heads=[...rm.keys()].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));
+  for(const h of heads){
+    nR++;const sec=el('section','room');sec.appendChild(el('h2',null,h));const ds=rm.get(h);
     for(const d of ds){
-      if(ds.length>1) parts.push(`<p class="deckcap">${htmlEsc(d.filename)}</p>`);
-      if(!d.sessions){ parts.push('<p class="note">No saved speakers — re-open this deck to include it.</p>'); continue; }
+      if(ds.length>1)sec.appendChild(el('p','deckcap',d.filename));
+      if(!d.sessions){sec.appendChild(el('p','note','No saved speakers — open this deck in the app to include it.'));continue;}
       d.sessions.forEach((s,si)=>{
-        const named=s.speakers.filter(sp=>sp.name && sp.name.trim() && !sp.off);
-        if(!named.length) return;
-        nSessions++;
-        parts.push(`<h3>${htmlEsc(s.name && s.name.trim() ? s.name.trim() : ('Session '+(si+1)))}</h3>`);
-        parts.push('<ol class="spk">');
-        named.forEach(sp=>{ nSpeakers++; parts.push(`<li>${htmlEsc(sp.name.trim())}</li>`); });
-        parts.push('</ol>');
+        const inc=s.speakers.filter(sp=>sp.name&&sp.name.trim()&&!sp.off);
+        if(!inc.length)return;nS++;
+        const sess=el('div','session');
+        const nameI=document.createElement('input');nameI.className='sname';nameI.value=s.name||'';nameI.placeholder='Session '+(si+1);
+        nameI.addEventListener('change',()=>doEdit(d,{kind:'rename',si:si,name:nameI.value}));
+        sess.appendChild(nameI);
+        const wrap=el('div','speakers');let n=0;
+        cueGroups(inc).forEach((g,gi)=>{
+          const cb=el('div','cuebreak');cb.appendChild(el('span','cuelabel',g.cue?('Slide '+String(g.cue).padStart(2,'0')):'Manual'));cb.appendChild(el('span','rule'));
+          if(gi>0&&g.cue){const sb=el('button','split','↳ split session here');sb.addEventListener('click',()=>doEdit(d,{kind:'split',id:g.items[0].id}));cb.appendChild(sb);}
+          wrap.appendChild(cb);
+          g.items.forEach((sp,ii)=>{
+            nSp++;n++;const row=el('div','srow');
+            row.appendChild(el('span','num',String(n)));row.appendChild(el('span','nm',sp.name.trim()));
+            const up=el('button','mv','▲');up.disabled=ii===0;up.title='Move up';
+            const dn=el('button','mv','▼');dn.disabled=ii===g.items.length-1;dn.title='Move down';
+            up.addEventListener('click',()=>moveInGroup(d,si,inc,g,ii,-1));
+            dn.addEventListener('click',()=>moveInGroup(d,si,inc,g,ii,1));
+            const del=el('button','del','✕');del.title='Remove (exclude) this speaker';
+            del.addEventListener('click',()=>doEdit(d,{kind:'delete',id:sp.id}));
+            row.append(up,dn,del);wrap.appendChild(row);
+          });
+        });
+        sess.appendChild(wrap);sec.appendChild(sess);
       });
     }
-    parts.push('</section>'); sections.push(parts.join('\n'));
+    root.appendChild(sec);
   }
+  document.getElementById('meta').textContent=nR+' room'+(nR===1?'':'s')+' · '+nS+' session'+(nS===1?'':'s')+' · '+nSp+' speaker'+(nSp===1?'':'s')+' · generated '+new Date().toLocaleString();
+}
+function moveInGroup(d,si,inc,g,ii,dir){
+  const j=ii+dir;if(j<0||j>=g.items.length)return;
+  const order=inc.map(sp=>sp.id);const a=inc.indexOf(g.items[ii]),b=inc.indexOf(g.items[j]);
+  const t=order[a];order[a]=order[b];order[b]=t;
+  doEdit(d,{kind:'reorder',si:si,orderedIds:order});
+}
+function doEdit(d,op){sessApplyOp(d.sessions,op);render();sendEdit(d.hash,op);}
+let inflight=null;const queue=[];
+function sendEdit(hash,op){queue.push({hash:hash,op:op});pump();}
+function pump(){
+  if(inflight||!queue.length)return;
+  const job=queue.shift();const reqId='r'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  let recvd=false,settled=false;
+  const settle=()=>{if(settled)return;settled=true;clearTimeout(t1);clearTimeout(t2);inflight=null;pump();};
+  inflight={reqId:reqId,
+    onRecv:()=>{recvd=true;clearTimeout(t1);},
+    onDone:()=>{settle();},
+    onErr:()=>{reconcile(job.hash,job.op).then(settle);}};
+  bcPost({type:'edit-request',reqId:reqId,hash:job.hash,op:job.op});
+  const t1=setTimeout(()=>{if(!recvd&&!settled)selfApply(job.hash,job.op).then(settle);},280);
+  const t2=setTimeout(()=>{if(!settled)reconcile(job.hash,job.op).then(settle);},2600);
+}
+if(bc)bc.onmessage=(ev)=>{const m=ev.data||{};
+  if(inflight&&m.reqId===inflight.reqId){
+    if(m.type==='edit-recv')inflight.onRecv();
+    else if(m.type==='edit-done')inflight.onDone();
+    else if(m.type==='edit-error')inflight.onErr();
+    return;
+  }
+  if(m.type==='deck-edited'&&byHash.has(m.hash))reread(m.hash);
+};
+async function reread(hash){
+  try{const rec=await idbGet('file:'+hash);const d=byHash.get(hash);if(d&&rec){if(Array.isArray(rec.sessions))d.sessions=rec.sessions;if(typeof rec.room==='string')d.room=rec.room;}}catch(e){}
+  render();
+}
+async function selfApply(hash,op){
+  try{const rec=await idbGet('file:'+hash);if(rec&&Array.isArray(rec.sessions)){sessApplyOp(rec.sessions,op);await idbSet('file:'+hash,Object.assign({},rec,{sessions:rec.sessions,updatedAt:Date.now()}));bcPost({type:'deck-edited',hash:hash});}}catch(e){}
+}
+async function reconcile(hash,op){
+  try{const rec=await idbGet('file:'+hash);if(rec&&Array.isArray(rec.sessions)&&!sessOpReflected(rec.sessions,op)){sessApplyOp(rec.sessions,op);await idbSet('file:'+hash,Object.assign({},rec,{updatedAt:Date.now()}));bcPost({type:'deck-edited',hash:hash});}}catch(e){}
+}
+render();
+`;
 
-  const css = `*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1a1d22;background:#fff;margin:0;padding:32px;line-height:1.5}
-h1{font-size:22px;margin:0 0 4px}.meta{color:#667085;margin:0 0 26px;font-size:13px}
-.room{break-inside:avoid;margin:0 0 24px;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px}
-.room>h2{font-size:18px;margin:0 0 10px;color:#0350a7;border-bottom:2px solid #eef1f4;padding-bottom:6px}
-.deckcap{font-size:12px;color:#889;font-style:italic;margin:10px 0 0}
-.room h3{font-size:14px;margin:14px 0 4px}
-ol.spk{margin:0 0 10px;padding-left:28px}ol.spk li{margin:2px 0}
-.note{color:#98a2b3;font-style:italic;margin:6px 0}
-@media print{body{padding:0}.room{border:none;padding:0;margin-bottom:16px}}`;
-  const meta = `${headings.length} room${headings.length===1?'':'s'} · ${nSessions} session${nSessions===1?'':'s'} · ${nSpeakers} speaker${nSpeakers===1?'':'s'} · generated ${htmlEsc(new Date().toLocaleString())}`;
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">`
     + `<title>Speaker Report</title><style>${css}</style></head><body>`
-    + `<header><h1>Speaker Report</h1><p class="meta">${meta}</p></header>`
-    + (sections.length ? sections.join('\n') : '<p class="note">No saved decks with speakers yet.</p>')
-    + `</body></html>`;
+    + `<header><h1>Speaker Report</h1><p class="meta" id="meta"></p>`
+    + `<p class="hint">Edits (remove, reorder, rename, split) save to this browser and sync to the SpeakerScan tab. Excluded names are hidden — restore them in the app.</p></header>`
+    + `<main id="report"></main><script>${client}<\/script></body></html>`;
 }
 
 async function openEventReport(){
