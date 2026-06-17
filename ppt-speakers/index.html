@@ -1475,7 +1475,9 @@ async function makeZip(entries, {compress=true}={}){
     const data=(ent.data&&ent.data.length)?ent.data:new Uint8Array(0);
     const crc=crc32(data);
     let method=0, body=data;
-    if(canDeflate && data.length>0){
+    // ent.store skips deflate for already-compressed payloads (e.g. a bundled
+    // .pptx) — it wouldn't shrink and the CPU pass is pure waste.
+    if(canDeflate && data.length>0 && !ent.store){
       const def=await deflateRaw(data);
       if(def.length<data.length){ method=8; body=def; }
     }
@@ -1557,6 +1559,7 @@ let SID = 0;                     // running id for speaker rows
 let tplBytes = null, tplExt = '';
 let curHash = null;              // content hash of the loaded deck (IDB key); null until ingest
 let curMeta = null;              // {hash, filename, lastModified, ingestedAt} for the loaded deck
+let curDeckBytes = null;         // raw bytes of the loaded deck, for bundling into the placeholder ZIP
 
 // ============================================================
 // High-fidelity preview engine (@aiden0z/pptx-renderer, exposed as
@@ -1699,6 +1702,7 @@ async function ingest(buf, meta){
     const hash = hashBytes(buf);
     curHash = hash;
     curMeta = { hash, filename:meta.name, lastModified:meta.lastModified, ingestedAt:Date.now() };
+    curDeckBytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);   // for the ZIP root
 
     // Restore previously-saved session edits for this exact deck.
     let restored = false;
@@ -1736,7 +1740,7 @@ async function ingest(buf, meta){
 
 function resetApp(){
   STATE={name:'',deck:null,slides:[],results:[]};
-  SESS=null; curHash=null; curMeta=null;   // saved library records are kept — re-open restores them
+  SESS=null; curHash=null; curMeta=null; curDeckBytes=null;   // saved library records are kept — re-open restores them
   prDestroy();
   els.results.classList.remove('mode-sessions');
   setEditMode(false);
@@ -2252,6 +2256,13 @@ els.buildZip.addEventListener('click', async ()=>{
     });
   });
   if(!nFiles){ toast('No named speakers to export — add names or check your sessions.', true); return; }
+  // Bundle the original deck at the ZIP root (above the session folders) so the
+  // placeholders stay associated with the source deck when deploying.
+  let deckIncluded=false;
+  if(curDeckBytes && STATE.name){
+    files.unshift({ name:sanitizeName(STATE.name), data:curDeckBytes, store:true });
+    deckIncluded=true;
+  }
   toast('Building ZIP…');
   try{
     const zip=await makeZip(files);
@@ -2260,7 +2271,7 @@ els.buildZip.addEventListener('click', async ()=>{
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
     a.download=base+' - placeholders.zip'; a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
-    toast('Built '+nFiles+' placeholder'+(nFiles>1?'s':'')+' across '+nSess+' session folder'+(nSess>1?'s':'')+'.');
+    toast('Built '+nFiles+' placeholder'+(nFiles>1?'s':'')+' across '+nSess+' session folder'+(nSess>1?'s':'')+(deckIncluded?', plus the original deck':'')+'.');
   }catch(err){ console.error(err); toast('Could not build the ZIP: '+(err.message||err), true); }
 });
 
