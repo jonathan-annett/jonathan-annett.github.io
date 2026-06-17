@@ -2542,26 +2542,70 @@ function linkTargetsForCue(cue){
   return targets;
 }
 
-// Measure the ACTUAL rendered run elements in a hi-fi thumbnail. The renderer
-// emits each text run as its own <span>/<a> with the run text as textContent, so
-// we can find the span for a name (its bold run) and read its real bounding box
-// — pixel-accurate, and correct even when the slide is letterboxed in the frame.
-// Returns { boxes, missing }; `missing` targets fall back to the approximate path.
+// Measure the ACTUAL rendered text in a hi-fi thumbnail. The renderer emits each
+// text run as its own <span>/<a> (run text in a single text node), so we locate a
+// name's character span across consecutive same-line runs and read its exact
+// rectangle via a DOM Range — pixel-accurate, and correct even when the name is
+// split across runs ("Kefyalew"+" Alene"), two names share a run ("… & Nenad"),
+// or the slide is letterboxed. Returns { boxes, missing }; missing → approx path.
+function uniteRect(a, b){
+  const left=Math.min(a.left,b.left), top=Math.min(a.top,b.top);
+  const right=Math.max(a.right,b.right), bottom=Math.max(a.bottom,b.bottom);
+  return { left, top, right, bottom, width:right-left, height:bottom-top };
+}
+// Exact rect of a name match spanning runs[i..j] at concat offsets [s,e), via a
+// text Range; falls back to the union of the spanned run rects.
+function rangeRect(runs, w){
+  let base=0, a=-1, b=-1, aoff=0, boff=0;
+  for(let k=w.i; k<=w.j; k++){
+    const len=runs[k].text.length;
+    if(a<0 && w.s < base+len){ a=k; aoff=w.s-base; }
+    if(w.e <= base+len){ b=k; boff=w.e-base; break; }
+    base+=len;
+  }
+  if(a<0 || b<0) return null;
+  const na=runs[a].node, nb=runs[b].node;
+  if(na && na.nodeType===3 && nb && nb.nodeType===3){
+    try{
+      const rg=document.createRange();
+      rg.setStart(na, Math.min(aoff, na.length));
+      rg.setEnd(nb, Math.min(boff, nb.length));
+      const rr=rg.getBoundingClientRect();
+      if(rr.width && rr.height) return rr;
+    }catch{}
+  }
+  let r=runs[a].rect; for(let k=a+1;k<=b;k++) r=uniteRect(r, runs[k].rect); return r;
+}
 function measureDomBoxes(el, targets){
   const host = el.getBoundingClientRect();
   const boxes=[], missing=[];
   if(!host.width || !host.height) return { boxes, missing:targets.slice() };
-  const norm = s => (s||'').replace(/\s+/g,' ').trim();
-  const runs = [...el.querySelectorAll('span,a')].filter(n => !n.querySelector('span,a') && norm(n.textContent));
+  const runs = [...el.querySelectorAll('span,a')]
+    .filter(n => !n.querySelector('span,a'))
+    .map(n => ({ el:n, node:n.firstChild, text:n.textContent||'', rect:n.getBoundingClientRect() }))
+    .filter(it => it.text.length && it.rect.width && it.rect.height);
+  // Minimal consecutive same-line run windows whose concatenated text contains
+  // the name (in document order = occurrence order). `s/e` are concat offsets,
+  // which map directly onto run text-node offsets (textContent is verbatim).
   const cache = new Map();
-  const matchesFor = nm => {
+  const winsFor = nm => {
     const k=nm.toLowerCase();
-    if(!cache.has(k)) cache.set(k, runs.filter(n => locateName(norm(n.textContent), nm)));
-    return cache.get(k);
+    if(cache.has(k)) return cache.get(k);
+    const out=[];
+    for(let i=0;i<runs.length;i++){
+      let concat='';
+      for(let j=i; j<runs.length && j<i+6; j++){
+        if(j>i && Math.abs(runs[j].rect.top-runs[i].rect.top) > Math.max(2, runs[i].rect.height*0.7)) break;
+        concat += runs[j].text;
+        const span = locateName(concat, nm);
+        if(span){ out.push({ i, j, s:span[0], e:span[1] }); i=j; break; }
+      }
+    }
+    cache.set(k, out); return out;
   };
   for(const t of targets){
-    const hit = matchesFor(t.name)[(t.occ||1)-1];
-    const r = hit && hit.getBoundingClientRect();
+    const w = winsFor(t.name)[(t.occ||1)-1];
+    const r = w && rangeRect(runs, w);
     if(!r || !r.width || !r.height){ missing.push(t); continue; }
     boxes.push({ x:(r.left-host.left)/host.width, y:(r.top-host.top)/host.height,
                  w:r.width/host.width, h:r.height/host.height, included:!!t.included });
