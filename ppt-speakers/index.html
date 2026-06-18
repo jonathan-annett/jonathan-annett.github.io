@@ -79,6 +79,9 @@ body{
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .topbar-fn[hidden]{display:none}
+.topbar-close{padding:5px 10px;font-size:12px;flex:none}
+.topbar-close[hidden]{display:none}
+.topbar-close svg{width:15px;height:15px}
 .status{
   margin-left:auto;display:flex;align-items:center;gap:8px;
   font-family:var(--mono);font-size:11px;letter-spacing:.08em;
@@ -555,6 +558,7 @@ footer a{color:var(--muted)}
     <div class="tag">pptx → speaker list</div>
     <div class="topbar-fn" id="topFn" hidden></div>
     <div class="status" id="status" data-state="idle"><span class="lamp"></span><span class="txt">Idle</span></div>
+    <button class="btn ghost topbar-close" id="closeBtn" title="Close this deck" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Close</span></button>
   </div>
 </header>
 
@@ -598,7 +602,6 @@ footer a{color:var(--muted)}
       <button class="btn" id="dlBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg><span>Download .txt</span></button>
       <button class="btn" id="sessBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg><span>Edit</span></button>
       <button class="btn" id="decksBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 3 8l9 5 9-5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Recent decks</span></button>
-      <button class="btn ghost" id="newBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>New deck</span></button>
     </div>
 
     <div class="subbar">
@@ -644,10 +647,10 @@ footer a{color:var(--muted)}
         <span class="ext">File type<input id="extField" value="pptx" spellcheck="false"></span>
         <label class="link-opt" title="Also include a copy of the deck with each speaker name hyperlinked to its placeholder file"><input type="checkbox" id="linkDeck" checked> Hyperlinked deck copy</label>
       </div>
-      <p class="sess-hint">Speakers are numbered in slide order within each session. Drag the handle to reorder (within or across sessions), click a name to fix it, or use “split” to start a new session here. Each session becomes a folder of numbered placeholder files like <code>Breakout A / Breakout A - 1 - Jane Doe.pptx</code>.</p>
+      <p class="sess-hint">Speakers are numbered in slide order within each session. Drag the handle to reorder (within or across sessions), click a name to fix it, or use “split” to start a new session here. Each session becomes a folder of numbered placeholder files like <code>Session 1 / Session 1 - 1 - Speaker Name.pptx</code>.</p>
       <div class="room-bar">
         <label for="roomName">Room</label>
-        <input id="roomName" type="text" spellcheck="false" placeholder="optional — e.g. Eureka 3; prefixes every file (leave blank for a single-room event)">
+        <input id="roomName" type="text" spellcheck="false" placeholder="optional — e.g. Room 1; prefixes every file (leave blank for a single-room event)">
       </div>
       <div id="sessionList"></div>
     </section>
@@ -2069,7 +2072,7 @@ const els = {
   results:$('#results'), cues:$('#cues'), reviewWrap:$('#reviewWrap'),
   reviewCues:$('#reviewCues'), reviewHead:$('#reviewHead'),
   counts:$('#counts'),
-  copyBtn:$('#copyBtn'), dlBtn:$('#dlBtn'), newBtn:$('#newBtn'),
+  copyBtn:$('#copyBtn'), dlBtn:$('#dlBtn'), closeBtn:$('#closeBtn'),
   sessBtn:$('#sessBtn'), sessionPanel:$('#sessionPanel'),
   sessionList:$('#sessionList'), buildZip:$('#buildZip'),
   tplFile:$('#tplFile'), tplName:$('#tplName'), extField:$('#extField'), linkDeck:$('#linkDeck'),
@@ -2178,7 +2181,7 @@ function browse(){ els.file.click(); }
 els.drop.addEventListener('click', browse);
 els.drop.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); browse(); }});
 els.file.addEventListener('change', e=>{ const fs=[...e.target.files]; e.target.value=''; if(fs.length) ingestMany(fs); });
-els.newBtn.addEventListener('click', resetApp);
+els.closeBtn.addEventListener('click', resetApp);
 
 // Drag-and-drop works anywhere on the page, in any view — drop a .pptx over
 // the results and it loads straight away, no need to reset first.
@@ -2365,6 +2368,7 @@ function resetApp(){
   if(thumbIO){ thumbIO.disconnect(); thumbIO=null; }
   els.results.classList.remove('show');
   els.topFn.hidden=true; els.topFn.textContent='';
+  els.closeBtn.hidden=true;
   closeDeckPicker();
   els.idle.style.display='';
   renderLibrary();                        // reflect any decks added/edited this session
@@ -2422,6 +2426,7 @@ function render(){
   // meta line — filename lives in the sticky top bar so it stays visible while scrolling
   els.topFn.textContent = STATE.name;
   els.topFn.hidden = false;
+  els.closeBtn.hidden = false;
   const total = nHigh+nMed;
   els.counts.innerHTML =
     '<b>'+total+'</b> '+(total===1?'name':'names')+' across <b>'+slidesWithNames+'</b> '+
@@ -2881,7 +2886,7 @@ function renderSessions(){
     const head=document.createElement('div'); head.className='session-head';
     const idx=document.createElement('span'); idx.className='sidx'; idx.textContent='Session '+(si+1);
     const nameI=document.createElement('input'); nameI.className='sname';
-    nameI.placeholder='Session name / file prefix (e.g. Breakout Session A)';
+    nameI.placeholder='Session name / file prefix (e.g. Morning Session)';
     nameI.value=sess.name;
     nameI.addEventListener('input', ()=>{ sess.name=nameI.value; persistSessions(); });
     const cnt=document.createElement('span'); cnt.className='scount';
