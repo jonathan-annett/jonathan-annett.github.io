@@ -499,12 +499,15 @@ footer a{color:var(--muted)}
 .cue-marker{display:flex;align-items:center;gap:11px;margin:12px 6px 5px;padding-top:9px}
 .cue-marker:first-child{margin-top:4px}
 .cue-marker .cue-thumb{
-  /* width here must match SESS_MINI_W in ui.js (the library renders at a fixed
-     pixel width); ~420px reads as roughly half the session-editor column. */
-  width:420px;max-width:100%;aspect-ratio:16/9;border-radius:5px;overflow:hidden;flex:none;
+  /* width tracks SESS_MINI_W in ui.js via --mini-w (the library renders at a
+     fixed pixel width, so box and render width must agree). Adjust with the
+     Preview slider in the session bar. */
+  width:var(--mini-w,420px);max-width:100%;aspect-ratio:16/9;border-radius:5px;overflow:hidden;flex:none;
   background:#0f1117;border:1px solid var(--cc,var(--edge));cursor:zoom-in;
   display:flex;align-items:center;justify-content:center;position:relative;
 }
+.mini-size{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.mini-size input[type=range]{accent-color:var(--accent);width:120px;cursor:pointer}
 .cue-marker .cue-thumb svg{width:100%;height:100%;display:block}
 .cue-marker .cue-thumb .ph{font-family:var(--mono);font-size:9px;color:var(--faint)}
 .cue-marker.manual .cue-thumb{cursor:default;width:auto;aspect-ratio:auto;padding:4px 8px;background:var(--card-2)}
@@ -626,6 +629,7 @@ footer a{color:var(--muted)}
     <section id="sessionPanel">
       <div class="sess-bar">
         <button class="btn ghost" id="sessReset">Reset to detected names</button>
+        <label class="mini-size" title="Slide preview size">Preview <input type="range" id="miniSize" min="280" max="1100" step="20" value="420"></label>
         <span class="spacer"></span>
         <button class="btn primary" id="buildZip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg><span>Download placeholder ZIP</span></button>
       </div>
@@ -2066,7 +2070,7 @@ const els = {
   sessBtn:$('#sessBtn'), sessionPanel:$('#sessionPanel'),
   sessionList:$('#sessionList'), buildZip:$('#buildZip'),
   tplFile:$('#tplFile'), tplName:$('#tplName'), extField:$('#extField'), linkDeck:$('#linkDeck'),
-  roomName:$('#roomName'),
+  roomName:$('#roomName'), miniSize:$('#miniSize'),
   revToggle:$('#revToggle'), thumbToggle:$('#thumbToggle'), boostFile:$('#boostFile'),
   booster:$('#booster'), err:$('#err'),
   lightbox:$('#lightbox'), lbFrame:$('#lbFrame'), lbCue:$('#lbCue'), lbWho:$('#lbWho'), lbFs:$('#lbFs'),
@@ -2101,10 +2105,16 @@ let lbHandle = null;             // live SlideHandle for the lightbox (single)
 
 function prAvailable(){ return !!prViewer; }
 
-// Render width (px) for the session-editor cue-marker previews. Must match the
-// .cue-marker .cue-thumb width in style.css — the library mounts a fixed-pixel
-// preview, so the CSS box and this value have to agree.
-const SESS_MINI_W = 420;
+// Render width (px) for the session-editor slide previews. User-adjustable via
+// the size slider; the CSS box width tracks it through the --mini-w variable, so
+// the (fixed-pixel) library preview and the CSS box stay in agreement.
+let SESS_MINI_W = 420;
+const SESS_MINI_MIN = 280, SESS_MINI_MAX = 1100;
+function setMiniW(w){
+  SESS_MINI_W = Math.max(SESS_MINI_MIN, Math.min(SESS_MINI_MAX, w|0));
+  document.documentElement.style.setProperty('--mini-w', SESS_MINI_W+'px');
+  try{ localStorage.setItem('speakerscan:miniW', String(SESS_MINI_W)); }catch{}
+}
 
 // Build a viewer for a freshly loaded deck. Parses the file a second time
 // (the engine already parsed it for names) — acceptable; lazyMedia/lazySlides
@@ -2658,6 +2668,21 @@ els.sessReset.addEventListener('click', ()=>{
 });
 // Deck-wide room prefix (applies to all sessions in this deck — edited once).
 if(els.roomName) els.roomName.addEventListener('input', ()=>{ ROOM=els.roomName.value; persistSessions(); });
+
+// Slide-preview size: restore the saved width, then re-render minis at the new
+// width when the slider is released (re-render rather than CSS-stretch, since the
+// library mounts a fixed-pixel preview).
+(function initMiniSize(){
+  let w=420; try{ const s=localStorage.getItem('speakerscan:miniW'); if(s) w=+s; }catch{}
+  setMiniW(w);
+  if(els.miniSize){
+    els.miniSize.value=String(SESS_MINI_W);
+    els.miniSize.addEventListener('change', ()=>{
+      setMiniW(+els.miniSize.value);
+      if(els.results.classList.contains('mode-sessions')) renderSessions();
+    });
+  }
+})();
 
 // deterministic, well-separated colour per cue (golden-angle hue)
 function cueColor(cue){
