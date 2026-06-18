@@ -3611,8 +3611,9 @@ async function wipeAllDecks(){
     const keys=(await idbKeys()).filter(k=>typeof k==='string' && (k.startsWith('file:')||k.startsWith('deck:')));
     for(const k of keys) await idbDel(k);
   }catch{}
-  refreshLibraryViews();
-  toast('Cleared all saved decks.');
+  // Reload for a guaranteed blank slate — this also drops any deck still open in
+  // the view (whose in-memory state now points at cleared data).
+  location.reload();
 }
 
 // ---- event-wide HTML report (Room → Session → numbered speakers) ----
