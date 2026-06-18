@@ -495,9 +495,11 @@ footer a{color:var(--muted)}
 .cue-tag.none{cursor:default;opacity:.5;background:var(--card-2);border-color:var(--edge);color:var(--muted)}
 .cue-tag.none:hover{filter:none}
 
-/* cue boundary marker inside a session */
-.cue-marker{display:flex;align-items:center;gap:11px;margin:12px 6px 5px;padding-top:9px}
+/* slide boundary marker inside a session — header row (label + split) above the
+   preview, so a widened preview never crowds out the split button */
+.cue-marker{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:12px 6px 5px;padding-top:9px}
 .cue-marker:first-child{margin-top:4px}
+.cue-marker .cue-head{display:flex;align-items:center;gap:11px;width:var(--mini-w,420px);max-width:100%}
 .cue-marker .cue-thumb{
   /* width tracks SESS_MINI_W in ui.js via --mini-w (the library renders at a
      fixed pixel width, so box and render width must agree). Adjust with the
@@ -511,6 +513,7 @@ footer a{color:var(--muted)}
 .cue-marker .cue-thumb svg{width:100%;height:100%;display:block}
 .cue-marker .cue-thumb .ph{font-family:var(--mono);font-size:9px;color:var(--faint)}
 .cue-marker.manual .cue-thumb{cursor:default;width:auto;aspect-ratio:auto;padding:4px 8px;background:var(--card-2)}
+.cue-marker.manual .cue-head{width:auto}
 .cue-marker .clabel{
   font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--cfg,var(--muted));white-space:nowrap;font-weight:600;
@@ -2892,21 +2895,25 @@ function renderSessions(){
         mk.className='cue-marker'+(sp.cue?'':' manual');
         mk.style.setProperty('--cc',col.line);
         mk.style.setProperty('--cfg',col.fg);
-        const th=document.createElement('div'); th.className='cue-thumb';
-        if(sp.cue){ th.dataset.slide=sp.cue; th.innerHTML='<span class="ph">slide '+String(sp.cue).padStart(2,'0')+'</span>'; }
-        else { th.innerHTML='<span class="ph">manual</span>'; }
+        // Header row (label + split) ABOVE the preview, so a widened preview
+        // can't push the split button off-screen.
+        const chead=document.createElement('div'); chead.className='cue-head';
         const lab=document.createElement('span'); lab.className='clabel';
         lab.textContent=sp.cue?('Slide '+String(sp.cue).padStart(2,'0')):'Added manually';
         const dash=document.createElement('span'); dash.className='cdash';
-        mk.append(th, lab, dash);
+        chead.append(lab, dash);
         // A split is only valid on a slide boundary (a slide never spans
         // sessions), so the control lives on internal cue markers — not per row.
         if(groups>1){
           const splitBtn=document.createElement('button'); splitBtn.className='act split-here'; splitBtn.textContent='↳ split session here';
           splitBtn.title='Start a new session at this slide';
           splitBtn.addEventListener('click', ()=>{ if(sessApplyOp(SESS,{kind:'split', id:sp.id})){ renderSessions(); persistSessions(); } });
-          mk.append(splitBtn);
+          chead.append(splitBtn);
         }
+        const th=document.createElement('div'); th.className='cue-thumb';
+        if(sp.cue){ th.dataset.slide=sp.cue; th.innerHTML='<span class="ph">slide '+String(sp.cue).padStart(2,'0')+'</span>'; }
+        else { th.innerHTML='<span class="ph">manual</span>'; }
+        mk.append(chead, th);
         spk.appendChild(mk);
         if(sp.cue) fillMini(th, sp.cue);
       }
