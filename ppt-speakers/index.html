@@ -151,6 +151,9 @@ body{
   background:var(--card);border:1px solid var(--edge);border-radius:var(--radius);
   padding:11px 13px;margin-bottom:8px;
 }
+.lib-row.dragging{opacity:.4}
+.lib-grip{cursor:grab;color:var(--faint);font-size:15px;user-select:none;line-height:1;flex:none}
+.lib-grip:active{cursor:grabbing}
 .lib-meta{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
 .lib-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lib-date{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.03em}
@@ -1054,6 +1057,45 @@ function slideXmlToLines(xml){
   return lines;
 }
 
+// Same lines as slideXmlToLines, but each carries an approximate slide position
+// { x, y } (EMU) taken from its containing shape's <a:off> (+ a per-line vertical
+// offset within the shape). Used to order detected names in reading order
+// (top→bottom, left→right) rather than XML/z-order. pos[i] is null when the
+// shape has no explicit geometry (inherited placeholder). The line SEQUENCE is
+// identical to slideXmlToLines, so name detection is unaffected.
+function slideXmlToLinesPos(xml){
+  const lines = [], pos = [];
+  const tIdx = xml.indexOf('<p:spTree');
+  const tree = tIdx >= 0 ? xml.slice(tIdx) : xml;
+  const chunks = tree.split(/(?=<p:sp\b|<p:pic\b|<p:graphicFrame\b|<p:grpSp\b)/);
+  for (const c of chunks){
+    if (!/^<p:(sp|graphicFrame|grpSp)\b/.test(c)) continue;     // text-bearing shapes only
+    const off = c.match(/<a:off\s+x="(-?\d+)"\s+y="(-?\d+)"\s*\/>/);
+    const sx = off ? +off[1] : 0, sy = off ? +off[2] : 0;
+    const szm = c.match(/\bsz="(\d+)"/);
+    const lh = (szm ? +szm[1] : 1800) * 127;                    // ≈ font height in EMU
+    let li = 0;
+    const paras = c.split(/<a:p[ >]/);
+    for (let k = 1; k < paras.length; k++){
+      const chunk = paras[k];
+      const end = chunk.indexOf('</a:p>');
+      let body = end >= 0 ? chunk.slice(0, end) : chunk;
+      body = body.replace(/<a:tab\s*\/?>/g, '\t').replace(/<a:br\s*\/?>/g, '\n');
+      let text = '';
+      const re = /<a:t>([\s\S]*?)<\/a:t>|(\t)|(\n)/g; let m;
+      while ((m = re.exec(body))){ if (m[1] !== undefined) text += decodeXmlEntities(m[1]); else text += m[2] || m[3]; }
+      if (text.trim()){
+        for (const part of text.split('\n')) if (part.trim() || part.includes('\t')){
+          lines.push(part);
+          pos.push(off ? { x:sx, y:sy + li*lh } : null);
+          li++;
+        }
+      }
+    }
+  }
+  return { lines, pos };
+}
+
 // Resolve the slide XML paths in 1-based show order from an indexed zip.
 // Returns [{ n, xml:'ppt/slides/slideN.xml', rels:'ppt/slides/_rels/slideN.xml.rels' }].
 // Reads presentation.xml's <p:sldId> order via the rels map, falling back to a
@@ -1099,7 +1141,8 @@ async function parseDeck(arrayBuffer){
   for (const o of order){
     const xml = await dq(o.xml);
     if (!xml) continue;
-    slides.push({ slide: o.n, lines: slideXmlToLines(xml) });
+    const { lines, pos } = slideXmlToLinesPos(xml);
+    slides.push({ slide: o.n, lines, pos });
   }
   return { slides, order, size, zip };
 }
@@ -1247,7 +1290,7 @@ function titleCaseName(span){
 function extractNames(slides){
   const results = [];
   const instRe = /\b(university|universities|institute|college|hospital|csiro|wehi|mcri|unsw|uq|rmit|anu|pathology|laboratory)\b/i;
-  for (const { slide, lines } of slides){
+  for (const { slide, lines, pos } of slides){
     const found = []; const occN = new Map();   // norm -> occurrence count on this slide
     // Pre-pass: which lines are bare name lines? A name flanked by other bare
     // names is part of a list (fellows / recipients / committee) -> boost.
@@ -1311,12 +1354,21 @@ function extractNames(slides){
         // still dedupe downstream; only hyperlinking needs the distinction.
         const occ = (occN.get(norm) || 0) + 1;
         occN.set(norm, occ);
-        found.push({ name, score, why, occ });
+        // _p = slide position of the source line; _o = detection order (tiebreak).
+        found.push({ name, score, why, occ, _p:(pos && pos[li]) || null, _o:found.length });
       }
     }
     // Flag occurrences whose name repeats on the slide (drives the (1)/(2) marker).
     for (const f of found) f.dup = (occN.get(f.name.toLowerCase()) || 1) > 1;
-    if (found.length) results.push({ slide, names: found.sort((a,b)=>b.score-a.score) });
+    // Order in READING order — top→bottom, then left→right — using the source
+    // shape's position, not XML/z-order or confidence. Names without a position
+    // (inherited-layout shapes) keep detection order, after the positioned ones.
+    found.sort((a,b)=>{
+      const pa=a._p, pb=b._p;
+      if(pa && pb) return (pa.y-pb.y) || (pa.x-pb.x) || (a._o-b._o);
+      if(pa) return -1; if(pb) return 1; return a._o-b._o;
+    });
+    if (found.length) results.push({ slide, names: found });
   }
   return results;
 }
@@ -3435,11 +3487,47 @@ async function getLibraryRecs(){
     const keys=(await idbKeys()).filter(k=>typeof k==='string' && k.startsWith('file:'));
     recs=(await Promise.all(keys.map(k=>idbGet(k).catch(()=>null)))).filter(r=>r&&r.hash);
   }catch{ recs=[]; /* IDB blocked under file:// */ }
-  recs.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  // Manual order (drag in the Recent-decks list) when set, else newest first.
+  // This is the single iteration source, so the order flows to the report and
+  // the master export too.
+  recs.sort((a,b)=>{
+    const ao=(typeof a.order==='number')?a.order:Infinity, bo=(typeof b.order==='number')?b.order:Infinity;
+    return ao!==bo ? ao-bo : (b.updatedAt||0)-(a.updatedAt||0);
+  });
   return recs;
 }
+// Persist the dragged order of the Recent-decks list (by hash) onto each record.
+async function saveLibOrder(hashes){
+  for(let i=0;i<hashes.length;i++){
+    try{ const rec=await idbGet('file:'+hashes[i]); if(rec){ rec.order=i; await idbSet('file:'+hashes[i], rec); } }catch{}
+  }
+  refreshLibraryViews();
+}
+let libDragged=null;
+function libDragAfter(list,y){
+  let best=null,bo=-Infinity;
+  for(const r of list.querySelectorAll('.lib-row:not(.dragging)')){
+    const box=r.getBoundingClientRect(); const off=y-(box.top+box.height/2);
+    if(off<0 && off>bo){ bo=off; best=r; }
+  }
+  return best;
+}
+function wireLibDnD(list){
+  list.querySelectorAll('.lib-row').forEach(row=>{
+    row.addEventListener('dragstart', e=>{ libDragged=row; row.classList.add('dragging'); try{ e.dataTransfer.effectAllowed='move'; }catch{} });
+    row.addEventListener('dragend', ()=>{ row.classList.remove('dragging'); libDragged=null; saveLibOrder([...list.querySelectorAll('.lib-row')].map(r=>r.dataset.hash)); });
+  });
+  if(!list._dnd){ list._dnd=true;
+    list.addEventListener('dragover', e=>{
+      if(!libDragged || libDragged.parentNode!==list) return; e.preventDefault();
+      const after=libDragAfter(list, e.clientY);
+      if(after==null) list.appendChild(libDragged); else list.insertBefore(libDragged, after);
+    });
+  }
+}
 function libRow(rec){
-  const row=document.createElement('div'); row.className='lib-row';
+  const row=document.createElement('div'); row.className='lib-row'; row.draggable=true; row.dataset.hash=rec.hash;
+  const grip=document.createElement('span'); grip.className='lib-grip'; grip.textContent='⠿'; grip.title='Drag to reorder';
   const meta=document.createElement('div'); meta.className='lib-meta';
   const nm=document.createElement('span'); nm.className='lib-name'; nm.textContent=rec.filename||'(unnamed deck)';
   const dt=document.createElement('span'); dt.className='lib-date';
@@ -3456,7 +3544,7 @@ function libRow(rec){
     try{ await idbDel('file:'+rec.hash); await idbDel('deck:'+rec.hash); }catch{}
     refreshLibraryViews();
   });
-  row.append(meta, open, del);
+  row.append(grip, meta, open, del);
   return row;
 }
 async function renderLibrary(){
@@ -3465,6 +3553,7 @@ async function renderLibrary(){
   els.library.hidden = recs.length===0;
   els.libList.innerHTML='';
   for(const rec of recs) els.libList.appendChild(libRow(rec));
+  wireLibDnD(els.libList);
 }
 async function openDeckPicker(){
   const recs=await getLibraryRecs();
@@ -3475,6 +3564,7 @@ async function openDeckPicker(){
     els.pickerList.appendChild(p);
   }
   for(const rec of recs) els.pickerList.appendChild(libRow(rec));
+  wireLibDnD(els.pickerList);
   els.deckPicker.classList.add('show');
 }
 function closeDeckPicker(){ if(els.deckPicker) els.deckPicker.classList.remove('show'); }
@@ -3611,7 +3701,7 @@ function render(){
   const root=document.getElementById('report');root.innerHTML='';
   let nR=0,nS=0,nSp=0;const rm=new Map();
   for(const d of DECKS){const h=roomOf(d);if(!rm.has(h))rm.set(h,[]);rm.get(h).push(d);}
-  const heads=[...rm.keys()].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));
+  const heads=[...rm.keys()];   // rooms in the saved deck order (Recent-decks drag order)
   for(const h of heads){
     nR++;const sec=el('section','room');sec.appendChild(el('h2',null,h));const ds=rm.get(h);
     for(const d of ds){
