@@ -2310,6 +2310,15 @@ async function ingest(buf, meta){
                 slides:deck.slides.length, speakerSlides:results.map(r=>r.slide) };
     curDeckBytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);   // for the ZIP root
 
+    // Recent-decks position: a re-opened deck keeps its spot; a brand-new drop
+    // appends to the END so the list reflects drop order. Editing never moves it
+    // (order rides in curMeta, written on every persist).
+    try{
+      const recs = await getLibraryRecs();
+      const ex = recs.find(r=>r.hash===hash);
+      curMeta.order = (ex && typeof ex.order==='number') ? ex.order : recs.length;
+    }catch{ curMeta.order = 0; }
+
     // Restore previously-saved session edits for this exact deck.
     let restored = false;
     try{
@@ -3519,19 +3528,25 @@ async function getLibraryRecs(){
     const keys=(await idbKeys()).filter(k=>typeof k==='string' && k.startsWith('file:'));
     recs=(await Promise.all(keys.map(k=>idbGet(k).catch(()=>null)))).filter(r=>r&&r.hash);
   }catch{ recs=[]; /* IDB blocked under file:// */ }
-  // Manual order (drag in the Recent-decks list) when set, else newest first.
-  // This is the single iteration source, so the order flows to the report and
-  // the master export too.
+  // Drop order: sort by the explicit `order` (drag / drop sequence); records
+  // without one fall back to ingest time (oldest drop first). This is the single
+  // iteration source, so the order flows to the report and the master export too.
   recs.sort((a,b)=>{
     const ao=(typeof a.order==='number')?a.order:Infinity, bo=(typeof b.order==='number')?b.order:Infinity;
-    return ao!==bo ? ao-bo : (b.updatedAt||0)-(a.updatedAt||0);
+    return ao!==bo ? ao-bo : (a.ingestedAt||0)-(b.ingestedAt||0);
   });
+  // One-time migration: lock every record's position with a contiguous `order`,
+  // so editing never reshuffles and new drops can append after the rest.
+  if(recs.some(r=>typeof r.order!=='number')){
+    for(let i=0;i<recs.length;i++){ if(recs[i].order!==i){ recs[i].order=i; try{ await idbSet('file:'+recs[i].hash, recs[i]); }catch{} } }
+  }
   return recs;
 }
 // Persist the dragged order of the Recent-decks list (by hash) onto each record.
 async function saveLibOrder(hashes){
   for(let i=0;i<hashes.length;i++){
     try{ const rec=await idbGet('file:'+hashes[i]); if(rec){ rec.order=i; await idbSet('file:'+hashes[i], rec); } }catch{}
+    if(hashes[i]===curHash && curMeta) curMeta.order=i;   // keep the open deck's order from being reverted on the next edit
   }
   refreshLibraryViews();
 }
