@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Understreet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0706; --bone:#efe4cf; --dim:#a8977c; --amber:#ffb84d; --teal:#5df0c0; --rock:#c08c5c;
+  --font:"Barlow Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--ink);color:var(--bone);font-family:var(--font);
+  overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
+#view{position:fixed;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated}
+#vig{position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 55%,transparent 45%,rgba(0,0,0,.55) 100%)}
+.hud{position:fixed;pointer-events:none;z-index:2}
+#plate{top:12px;left:12px;max-width:calc(100% - 150px)}
+#plate .lbl{font-size:11px;letter-spacing:.22em;color:var(--dim);font-weight:600}
+#street{display:inline-block;margin-top:3px;padding:3px 10px 4px;border:2px solid var(--bone);border-radius:4px;
+  font-size:21px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:1.05;
+  background:rgba(10,7,6,.55);text-wrap:balance}
+#fed{margin-top:9px;width:150px}
+#fed .row{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.2em;color:var(--dim);font-weight:600}
+#bar{height:6px;margin-top:3px;border-radius:3px;background:rgba(239,228,207,.16);overflow:hidden}
+#bar i{display:block;height:100%;width:100%;background:var(--amber);border-radius:3px;transition:width .3s,background .3s}
+#stats{margin-top:8px;font-size:15px;font-weight:600;letter-spacing:.04em;color:var(--bone);
+  font-variant-numeric:tabular-nums;text-shadow:0 1px 3px #000}
+#stats b{color:var(--teal);font-weight:700}
+#mini{top:12px;right:12px;width:112px;height:112px;border-radius:8px;border:2px solid rgba(239,228,207,.5);
+  background:rgba(10,7,6,.7);pointer-events:auto;image-rendering:pixelated}
+#menuBtn{top:134px;right:12px;pointer-events:auto;width:44px;height:44px;border-radius:8px;
+  border:2px solid rgba(239,228,207,.5);background:rgba(10,7,6,.7);color:var(--bone);font:700 20px var(--font)}
+#scent{left:50%;bottom:22px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;
+  padding:7px 14px 7px 9px;border-radius:999px;background:rgba(10,7,6,.72);border:1px solid rgba(93,240,192,.45);
+  font-size:17px;font-weight:600;letter-spacing:.03em;white-space:nowrap;font-variant-numeric:tabular-nums}
+#arrow{width:26px;height:26px;display:grid;place-items:center;border-radius:50%;background:var(--teal);
+  color:var(--ink);font-size:17px;font-weight:700;line-height:1}
+#toast{left:50%;bottom:76px;transform:translateX(-50%);width:max-content;max-width:86%;text-align:center;
+  padding:9px 16px;border-radius:8px;background:rgba(10,7,6,.85);border:1px solid rgba(255,184,77,.5);
+  font-size:18px;font-weight:600;line-height:1.2;opacity:0;transition:opacity .35s;text-wrap:balance}
+#toast.on{opacity:1}
+#hint{left:50%;top:58%;transform:translate(-50%,-50%);text-align:center;font-size:20px;font-weight:600;
+  letter-spacing:.05em;line-height:1.5;text-shadow:0 2px 6px #000;transition:opacity .6s}
+#hint span{color:var(--amber)}
+.overlay{position:fixed;inset:0;z-index:5;display:none;align-items:center;justify-content:center;
+  background:rgba(10,7,6,.9);padding:22px;touch-action:auto;overflow:auto}
+.overlay.on{display:flex}
+#start{background:
+  radial-gradient(ellipse at 50% 120%,rgba(255,184,77,.16),transparent 60%),
+  repeating-linear-gradient(0deg,rgba(239,228,207,.035) 0 1px,transparent 1px 34px),
+  repeating-linear-gradient(90deg,rgba(239,228,207,.035) 0 1px,transparent 1px 34px),var(--ink)}
+.card{width:100%;max-width:400px}
+h1{margin:0;font-size:clamp(38px,12vw,64px);font-weight:700;letter-spacing:.04em;line-height:.9;text-transform:uppercase}
+h1 em{display:block;font-style:normal;color:var(--amber);transform:scaleY(-1);opacity:.5;height:.5em;overflow:hidden;
+  -webkit-mask-image:linear-gradient(#000,transparent);mask-image:linear-gradient(#000,transparent)}
+h2{margin:0 0 4px;font-size:30px;letter-spacing:.06em;text-transform:uppercase}
+.pitch{margin:12px 0 22px;font-size:20px;line-height:1.3;color:var(--bone);font-weight:500;text-wrap:pretty}
+.pitch b{color:var(--amber);font-weight:600}
+button.big{display:block;width:100%;margin:10px 0;padding:14px 16px;border-radius:8px;border:2px solid var(--bone);
+  background:transparent;color:var(--bone);font:700 21px var(--font);letter-spacing:.1em;text-transform:uppercase;
+  text-align:left;cursor:pointer}
+button.big small{display:block;margin-top:2px;font-size:14px;font-weight:500;letter-spacing:.03em;text-transform:none;color:var(--dim)}
+button.big.primary{background:var(--amber);border-color:var(--amber);color:var(--ink)}
+button.big.primary small{color:rgba(10,7,6,.7)}
+button.big:disabled{opacity:.45;cursor:default}
+button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.fine{margin-top:14px;font-size:14px;line-height:1.35;color:var(--dim);font-weight:500;text-wrap:pretty}
+.fine a{color:var(--dim)}
+#status{min-height:1.4em;margin-top:12px;font-size:17px;font-weight:600;color:var(--teal);letter-spacing:.03em}
+#bigmap .card{max-width:560px;text-align:center}
+#big{width:100%;aspect-ratio:1;border-radius:8px;border:2px solid rgba(239,228,207,.5);background:#120d0a;image-rendering:pixelated}
+#bigmap p{margin:8px 0 0;font-size:16px;color:var(--dim);font-weight:500}
+@media (prefers-reduced-motion:reduce){#toast,#hint,#bar i{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+<div id="vig"></div>
+
+<div id="plate" class="hud">
+  <div class="lbl">BENEATH</div>
+  <div id="street">—</div>
+  <div id="fed"><div class="row"><span>FED</span><span id="fedPct">100%</span></div><div id="bar"><i></i></div></div>
+  <div id="stats"></div>
+</div>
+<canvas id="mini" class="hud" width="112" height="112" role="button" aria-label="Open map"></canvas>
+<button id="menuBtn" class="hud" aria-label="Menu">☰</button>
+<div id="hint" class="hud">Swipe <span>up</span> to walk<br>Drag <span>sideways</span> to turn</div>
+<div id="toast" class="hud" role="status"></div>
+<div id="scent" class="hud"><div id="arrow">↑</div><span id="scentTxt"></span></div>
+
+<div id="start" class="overlay on">
+  <div class="card">
+    <h1>Understreet<em aria-hidden="true">Understreet</em></h1>
+    <p class="pitch">Your neighbourhood, turned inside out. <b>Streets are tunnels.</b> <b>Buildings are bottomless pits.</b> Dinner is in a cave.</p>
+    <button class="big primary" id="btnLoc">Dig under my streets<small>Builds the maze from the real map around you</small></button>
+    <button class="big" id="btnInv">Invent a city<small>A made-up town, different every time</small></button>
+    <button class="big" id="btnBack" style="display:none">Back to current maze</button>
+    <div id="status" role="status"></div>
+    <p class="fine" id="locNote">Using your streets asks for your location once. It is rounded to roughly 100&nbsp;m and sent only to OpenStreetMap's public map service to fetch nearby streets. Nothing is saved.</p>
+  </div>
+</div>
+
+<div id="menu" class="overlay">
+  <div class="card">
+    <h2 id="menuTitle">Paused</h2>
+    <p class="fine" id="menuInfo" style="margin:0 0 14px;font-size:17px"></p>
+    <button class="big primary" id="btnResume">Keep exploring</button>
+    <button class="big" id="btnNew">Change map<small>Use your real streets, or invent a new city</small></button>
+    <button class="big" id="btnSound">Sound: on</button>
+    <p class="fine" id="attrib"></p>
+  </div>
+</div>
+
+<div id="bigmap" class="overlay">
+  <div class="card">
+    <h2 id="bigTitle">Map</h2>
+    <canvas id="big" width="576" height="576"></canvas>
+    <p id="bigInfo"></p>
+    <button class="big primary" id="btnMapClose" style="text-align:center;margin-top:14px">Close map</button>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+/* ---------- constants ---------- */
+const N = 192, CELL_M = 3;                 // grid size, metres per cell
+const ROCK = 0, TUN = 1, PIT = 2, CAVE = 3;
+const EYE = 0.5, CEIL = 1.15, DEPTH = 7, MAXD = 42, TS = 64;
+const $ = id => document.getElementById(id);
+
+/* ---------- small utilities ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);
+  t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hash(n){n=Math.imul(n^(n>>>16),0x45d9f3b);n=Math.imul(n^(n>>>16),0x45d9f3b);n^=n>>>16;return(n>>>0)/4294967296}
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const pick=(r,a)=>a[(r()*a.length)|0];
+
+/* ---------- procedural textures ---------- */
+function vnoise(x,y,per,seed){
+  const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi;
+  const h=(i,j)=>hash((((i%per)+per)%per)*374761+(((j%per)+per)%per)*668265+seed*9973);
+  const u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
+  return (h(xi,yi)*(1-u)+h(xi+1,yi)*u)*(1-v)+(h(xi,yi+1)*(1-u)+h(xi+1,yi+1)*u)*v;
+}
+function fbm(x,y,seed){return vnoise(x/16,y/16,4,seed)*.5+vnoise(x/8,y/8,8,seed+1)*.3+vnoise(x/3,y/3,21,seed+2)*.2}
+function makeTex(fn){
+  const R=new Uint8Array(TS*TS),G=new Uint8Array(TS*TS),B=new Uint8Array(TS*TS);
+  for(let y=0;y<TS;y++)for(let x=0;x<TS;x++){const c=fn(x,y),i=y*TS+x;R[i]=clamp(c[0],0,255);G[i]=clamp(c[1],0,255);B[i]=clamp(c[2],0,255)}
+  return {R,G,B};
+}
+const texRock=makeTex((x,y)=>{
+  const n=fbm(x,y,1), strata=Math.sin((y+n*26)/4.2)*.09, crack=Math.abs(fbm(x+40,y+11,7)-.5)<.012?.72:1;
+  const k=(.62+.5*n+strata)*crack;
+  return [214*k,156*k,100*k];
+});
+const texFloor=makeTex((x,y)=>{
+  const n=fbm(x,y,3), sp=hash(x*131+y*977)>.93?.75:1;
+  const off=(y>>5)&1?16:0, seam=((x+off)&31)<1||(y&31)<1?.6:1;
+  const k=(.55+.6*n)*sp*seam;
+  return [150*k,118*k,88*k];
+});
+
+/* ---------- world state ---------- */
+let W=null;            // current world
+const P={x:0,y:0,a:0,v:0,tilt:0,bobT:0};
+let energy=1, running=false, walked=0, stepAcc=0, lowWarned=false, doneWarned=false;
+
+/* ---------- world building (shared by real + invented maps) ---------- */
+function buildWorld(src){
+  const cells=new Uint8Array(N*N), nameIdx=new Uint16Array(N*N), names=['the rock'];
+  const inb=(x,y)=>x>=1&&y>=1&&x<N-1&&y<N-1;
+  // roads -> tunnels
+  for(const rd of src.roads){
+    let ni=names.indexOf(rd.name); if(ni<0){ni=names.length;names.push(rd.name)}
+    const w=rd.w, pts=rd.pts;
+    for(let i=0;i<pts.length-1;i++){
+      const ax=pts[i][0],ay=pts[i][1],bx=pts[i+1][0],by=pts[i+1][1];
+      if((ax<-4&&bx<-4)||(ay<-4&&by<-4)||(ax>N+4&&bx>N+4)||(ay>N+4&&by>N+4))continue;
+      const len=Math.hypot(bx-ax,by-ay), steps=Math.max(1,Math.ceil(len*2.5));
+      for(let s=0;s<=steps;s++){
+        const cx=ax+(bx-ax)*s/steps, cy=ay+(by-ay)*s/steps;
+        const x0=Math.round(cx-w/2), y0=Math.round(cy-w/2);
+        for(let yy=y0;yy<y0+w;yy++)for(let xx=x0;xx<x0+w;xx++)
+          if(inb(xx,yy)){const k=yy*N+xx; if(cells[k]!==TUN||w>=2)nameIdx[k]=ni; cells[k]=TUN}
+      }
+    }
+  }
+  // buildings -> pits (scanline polygon fill)
+  for(const poly of src.buildings){
+    let minY=1e9,maxY=-1e9; for(const p of poly){if(p[1]<minY)minY=p[1];if(p[1]>maxY)maxY=p[1]}
+    const y0=Math.max(1,Math.floor(minY)), y1=Math.min(N-2,Math.ceil(maxY));
+    for(let y=y0;y<=y1;y++){
+      const sy=y+.5, xs=[];
+      for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+        const a=poly[i],b=poly[j];
+        if((a[1]>sy)!==(b[1]>sy))xs.push(a[0]+(sy-a[1])/(b[1]-a[1])*(b[0]-a[0]));
+      }
+      xs.sort((a,b)=>a-b);
+      for(let k=0;k+1<xs.length;k+=2){
+        const xa=Math.max(1,Math.ceil(xs[k]-.5)), xb=Math.min(N-2,Math.floor(xs[k+1]-.5));
+        for(let x=xa;x<=xb;x++)if(cells[y*N+x]===ROCK)cells[y*N+x]=PIT;
+      }
+    }
+  }
+  // break thin rock between tunnel and pit so tunnels open onto the pits
+  const base=cells.slice(), D4=[[1,0],[-1,0],[0,1],[0,-1]];
+  for(let y=1;y<N-1;y++)for(let x=1;x<N-1;x++){
+    if(base[y*N+x]!==TUN)continue;
+    for(const d of D4){
+      for(let k=1;k<=3;k++){
+        const xx=x+d[0]*k,yy=y+d[1]*k; if(!inb(xx,yy))break;
+        const c=base[yy*N+xx];
+        if(c===PIT){
+          if(k>1&&hash(x*7349+y*9157+d[0]*31+d[1]*57)<.62)
+            for(let m=1;m<k;m++){const q=(y+d[1]*m)*N+x+d[0]*m;cells[q]=TUN;nameIdx[q]=nameIdx[y*N+x]}
+          break;
+        }
+        if(c!==ROCK)break;
+      }
+    }
+  }
+  // start: nearest tunnel to centre
+  let sx=-1,sy=-1,best=1e9;
+  for(let y=1;y<N-1;y++)for(let x=1;x<N-1;x++)if(cells[y*N+x]===TUN){
+    const d=(x-N/2)**2+(y-N/2)**2; if(d<best){best=d;sx=x;sy=y}}
+  if(sx<0)return null;
+  // food caves
+  const caves=[], caveAt=new Map();
+  function carveCave(px,py,info,radius){
+    let cand=[];
+    const r=radius, x0=Math.max(1,Math.floor(px-r)),x1=Math.min(N-2,Math.ceil(px+r));
+    const y0=Math.max(1,Math.floor(py-r)),y1=Math.min(N-2,Math.ceil(py+r));
+    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(cells[y*N+x]===TUN){
+      const d=(x+.5-px)**2+(y+.5-py)**2; if(d<=r*r)cand.push([d,x,y])}
+    cand.sort((a,b)=>a[0]-b[0]);
+    for(const c of cand){
+      const dirs=D4.slice().sort((a,b)=>((px-c[1]-.5)*b[0]+(py-c[2]-.5)*b[1])-((px-c[1]-.5)*a[0]+(py-c[2]-.5)*a[1]));
+      for(const d of dirs){
+        const xx=c[1]+d[0],yy=c[2]+d[1]; if(xx<2||yy<2||xx>N-3||yy>N-3)continue;
+        const k=yy*N+xx; if(cells[k]!==ROCK)continue;
+        let near=false; for(const e of D4)if(cells[k+e[1]*N+e[0]]===CAVE)near=true;
+        if(near)continue;
+        cells[k]=CAVE; nameIdx[k]=nameIdx[c[2]*N+c[1]];
+        const cv=Object.assign({x:xx,y:yy,idx:k,found:false},info); caves.push(cv); caveAt.set(k,cv); return cv;
+      }
+    }
+    return null;
+  }
+  for(const p of src.pois){ if(caves.length>=40)break; if(p.x>2&&p.y>2&&p.x<N-3&&p.y<N-3)carveCave(p.x,p.y,p,9); }
+  // reachability from start
+  const reach=new Uint8Array(N*N);
+  function flood(){
+    reach.fill(0); const st=[sy*N+sx]; reach[sy*N+sx]=1;
+    while(st.length){const k=st.pop();
+      for(const o of [1,-1,N,-N]){const q=k+o;if(!reach[q]&&(cells[q]===TUN||cells[q]===CAVE)){reach[q]=1;st.push(q)}}}
+  }
+  flood();
+  // make sure there is always something to eat: wild grottos
+  const rng=mulberry32(src.seed||12345);
+  let live=caves.filter(c=>reach[c.idx]);
+  const tun=[]; for(let k=0;k<N*N;k++)if(reach[k]&&cells[k]===TUN)tun.push(k);
+  let guard=0;
+  while(live.length<7&&guard++<600&&tun.length){
+    const k=tun[(rng()*tun.length)|0], x=k%N, y=(k/N)|0;
+    if(Math.hypot(x-sx,y-sy)<10)continue;
+    if(live.some(c=>Math.hypot(c.x-x,c.y-y)<16))continue;
+    const g=GROTTOS[guard%GROTTOS.length];
+    const cv=carveCave(x+.5,y+.5,{name:g[0],emoji:g[1],blurb:g[2],wild:true},1.5);
+    if(cv){reach[cv.idx]=1;live.push(cv)}
+  }
+  let total=0; for(let k=0;k<N*N;k++)if(reach[k])total++;
+  // glow from caves
+  const glow=new Float32Array(N*N);
+  for(const c of live)for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){
+    const x=c.x+dx,y=c.y+dy; if(!inb(x,y))continue;
+    const g=1-Math.hypot(dx,dy)/4.6; if(g>glow[y*N+x])glow[y*N+x]=g;
+  }
+  // facing: longest open run
+  let ang=0,run=-1;
+  D4.forEach((d,i)=>{let n=0;while(n<60&&cells[(sy+d[1]*(n+1))*N+sx+d[0]*(n+1)]===TUN)n++;
+    if(n>run){run=n;ang=Math.atan2(d[1],d[0])}});
+  return {cells,nameIdx,names,glow,caves:live,caveAt,reach,total,seen:new Uint8Array(N*N),seenCount:0,
+    start:{x:sx+.5,y:sy+.5,a:ang},title:src.title,real:!!src.real,found:0};
+}
+
+const GROTTOS=[
+  ['Glowcap grotto','🍄','Wild mushrooms, faintly luminous. Delicious.'],
+  ['Root cellar','🥕','Somebody left the good carrots.'],
+  ['Honey seep','🍯','It drips straight out of the wall.'],
+  ['Drip-fed berry patch','🫐','Sweet, cold, and slightly gritty.'],
+  ['Forgotten picnic','🧺','Still fresh. Best not to ask.'],
+];
+const FOOD_KIND={
+  restaurant:['🍜','kitchen cave'], cafe:['☕','brew hollow'], fast_food:['🍔','fry den'], pub:['🍺','ale cellar'],
+  bar:['🍸','sip nook'], food_court:['🍱','feast cavern'], ice_cream:['🍨','frost pocket'], biergarten:['🍺','ale cellar'],
+  bakery:['🥐','oven nook'], pastry:['🧁','oven nook'], deli:['🥪','larder'], confectionery:['🍬','sugar crack'],
+};
+const CUISINE=[[/pizza/,'🍕'],[/burger/,'🍔'],[/sushi|japanese|ramen/,'🍣'],[/chinese|dumpling|dim_sum/,'🥟'],[/indian|curry/,'🍛'],
+  [/mexican|taco/,'🌮'],[/thai|vietnamese|noodle|pho/,'🍜'],[/coffee/,'☕'],[/kebab|turkish|lebanese|greek/,'🥙'],[/chicken/,'🍗'],
+  [/ice_cream|gelato/,'🍨'],[/italian|pasta/,'🍝'],[/fish|seafood/,'🐟'],[/sandwich/,'🥪'],[/steak|bbq|barbecue/,'🥩'],
+  [/donut|doughnut/,'🍩'],[/korean/,'🍲'],[/bubble_tea|tea/,'🧋'],[/breakfast|pancake/,'🥞'],[/cake|dessert/,'🍰']];
+function foodInfo(kind,cuisine,name){
+  const fk=FOOD_KIND[kind]||FOOD_KIND.restaurant; let emoji=fk[0];
+  const cu=(cuisine||'').toLowerCase(); for(const c of CUISINE)if(c[0].test(cu)){emoji=c[1];break}
+  return {name:name||('Nameless '+fk[1]),emoji,blurb:'A '+fk[1]+'. You eat well.'};
+}
+
+/* ---------- invented city ---------- */
+function inventCity(seed){
+  const r=mulberry32(seed), th=(r()-.5)*1.0, ct=Math.cos(th), st=Math.sin(th);
+  const rot=(x,y)=>[x*ct-y*st+N/2, x*st+y*ct+N/2];
+  const line=()=>{const a=[];let x=-150+r()*12;while(x<150){a.push(x);x+=15+r()*17}return a};
+  const xs=line(), ys=line(), nx=xs.length, ny=ys.length;
+  const used=new Set(), sname=()=>{let s,i=0;do{s=pick(r,ST_A)+' '+pick(r,ST_B)}while(used.has(s)&&i++<20);used.add(s);return s};
+  const mid=a=>{let b=0;a.forEach((v,i)=>{if(Math.abs(v)<Math.abs(a[b]))b=i});return b};
+  const artX=new Set([mid(xs)]), artY=new Set([mid(ys)]);
+  if(r()<.7)artX.add(clamp(mid(xs)+(r()<.5?-3:3),0,nx-1));
+  if(r()<.5)artY.add(clamp(mid(ys)+(r()<.5?-3:3),0,ny-1));
+  const node=[]; for(let i=0;i<nx;i++){node.push([]);for(let j=0;j<ny;j++)node[i].push(rot(xs[i]+(r()-.5)*3.5,ys[j]+(r()-.5)*3.5))}
+  const roads=[];
+  for(let i=0;i<nx;i++){const art=artX.has(i),w=art?3:(r()<.8?2:1),name=sname();let cur=[];
+    for(let j=0;j<ny;j++){cur.push(node[i][j]); if(j===ny-1||(!art&&r()<.17)){if(cur.length>1)roads.push({pts:cur,w,name});cur=[]}}}
+  for(let j=0;j<ny;j++){const art=artY.has(j),w=art?3:(r()<.8?2:1),name=sname();let cur=[];
+    for(let i=0;i<nx;i++){cur.push(node[i][j]); if(i===nx-1||(!art&&r()<.17)){if(cur.length>1)roads.push({pts:cur,w,name});cur=[]}}}
+  // one wandering diagonal avenue
+  {const pts=[];let y=(r()-.5)*120;const sl=(r()-.5)*1.4;
+    for(let x=-150;x<=150;x+=25){pts.push(rot(x,y));y+=sl*25+(r()-.5)*14}
+    roads.push({pts,w:3,name:pick(r,ST_A)+' Parade'})}
+  const buildings=[],pois=[];
+  const rect=(x0,y0,x1,y1)=>[rot(x0,y0),rot(x1,y0),rot(x1,y1),rot(x0,y1)];
+  for(let i=0;i<nx-1;i++)for(let j=0;j<ny-1;j++){
+    const m=2.3, X0=xs[i]+m,X1=xs[i+1]-m,Y0=ys[j]+m,Y1=ys[j+1]-m; if(X1-X0<5||Y1-Y0<5)continue;
+    const busy=artX.has(i)||artX.has(i+1)||artY.has(j)||artY.has(j+1), t=r();
+    if(t<.09)continue;                                    // park: solid rock
+    const addPoi=(x,y)=>{ if(r()<(busy?.3:.05)){const k=pick(r,INV_KINDS),nm=inventName(r,k[0]);
+      const f=foodInfo(k[0],k[1],nm); const p=rot(x,y); pois.push(Object.assign({x:p[0],y:p[1]},f))}};
+    if(t<.2){ buildings.push(rect(X0+r()*2,Y0+r()*2,X1-r()*2,Y1-r()*2)); addPoi(X0-1,(Y0+Y1)/2); addPoi((X0+X1)/2,Y0-1); continue; }
+    const gap=t<.6?0:.8+r()*1.4;
+    const dep=()=>3+r()*2.5;
+    for(let x=X0;x<X1-2.5;){const bw=Math.min(3+r()*3.5,X1-x);
+      if(r()>.1){const d=dep();buildings.push(rect(x,Y0,x+bw,Y0+d));addPoi(x+bw/2,Y0-1)}
+      if(r()>.1){const d=dep();buildings.push(rect(x,Y1-d,x+bw,Y1));addPoi(x+bw/2,Y1+1)}
+      x+=bw+gap}
+    for(let y=Y0+6;y<Y1-8;){const bw=Math.min(3+r()*3.5,Y1-6-y);
+      if(r()>.1){const d=dep();buildings.push(rect(X0,y,X0+d,y+bw));addPoi(X0-1,y+bw/2)}
+      if(r()>.1){const d=dep();buildings.push(rect(X1-d,y,X1,y+bw));addPoi(X1+1,y+bw/2)}
+      y+=bw+gap}
+  }
+  // spread POIs so they are not all in one corner
+  for(let i=pois.length-1;i>0;i--){const j=(r()*(i+1))|0;[pois[i],pois[j]]=[pois[j],pois[i]]}
+  const town=pick(r,TOWN_A)+pick(r,TOWN_B);
+  return {roads,buildings,pois:pois.filter(p=>p.x>4&&p.y>4&&p.x<N-5&&p.y<N-5).slice(0,20),title:town,seed,real:false};
+}
+const ST_A=['Marrow','Tallow','Gantry','Quill','Cinder','Wren','Saltbush','Pike','Hollow','Copper','Lantern','Mallee','Bluegum','Tanner','Ferry','Abbot','Kiln','Larder','Wattle','Mason','Orchard','Signal','Drover','Candle','Anchor','Thistle','Ironbark','Gull','Paper','Cooper'];
+const ST_B=['Street','Street','Street','Road','Road','Lane','Avenue','Row','Way','Crescent','Place','Terrace'];
+const TOWN_A=['Marrow','Thistle','Ember','Quill','Cobble','Wren','Saltern','Dun','Pike','Harrow','Tallow','Under'];
+const TOWN_B=['by','wick','ford','stead','ham','mouth','field','bridge','mere','combe'];
+const INV_KINDS=[['restaurant','pizza'],['restaurant','thai'],['restaurant','indian'],['restaurant','italian'],['restaurant','chinese'],['restaurant','mexican'],
+  ['cafe','coffee'],['cafe','coffee'],['fast_food','burger'],['fast_food','kebab'],['fast_food','chicken'],['pub',''],['pub',''],['bakery',''],['ice_cream','']];
+const NM_P=['Sal','Nonna','Dot','Bao','Mina','Otto','Ruby','Kip','Theo','Luz','Anwar','Pia','Gus','Mei','Jorge','Edie'];
+const NM_ADJ=['Crooked','Golden','Sleepy','Brass','Salty','Lucky','Little','Red','Blue','Hungry','Quiet','Smoky'];
+const NM_N=['Ladle','Lantern','Magpie','Anchor','Kettle','Fig','Whisk','Lemon','Goose','Pepper','Spoon','Wombat'];
+function inventName(r,kind){
+  const p=pick(r,NM_P), an=pick(r,NM_ADJ)+' '+pick(r,NM_N);
+  if(kind==='pub')return 'The '+an; if(kind==='cafe')return r()<.5?'Café '+pick(r,NM_N):p+"'s Espresso";
+  if(kind==='bakery')return p+"'s Bakehouse"; if(kind==='ice_cream')return an+' Gelato';
+  if(kind==='fast_food')return r()<.5?p+"'s Takeaway":an+' Grill';
+  return r()<.5?p+"'s Kitchen":'The '+an;
+}
+
+/* ---------- real map from OpenStreetMap ---------- */
+const FOOD_RE='^(restaurant|cafe|fast_food|pub|bar|food_court|ice_cream|biergarten)$', SHOP_RE='^(bakery|pastry|deli|confectionery)$';
+const ROAD_W={motorway:3,trunk:3,primary:3,secondary:3,motorway_link:2,trunk_link:2,primary_link:2,secondary_link:2,
+  tertiary:2,tertiary_link:2,residential:2,unclassified:2,living_street:2,pedestrian:2,road:2,busway:2};
+const ROAD_LBL={footway:'a footpath',path:'a footpath',steps:'a stairway',service:'a back lane',cycleway:'a cycle path',
+  track:'a dirt track',pedestrian:'a walkway',bridleway:'a bridle path',corridor:'a corridor'};
+function osmToSrc(els,lat0,lon0){
+  const kx=Math.cos(lat0*Math.PI/180)*111320/CELL_M, ky=110540/CELL_M;
+  const toC=g=>[(g.lon-lon0)*kx+N/2, -(g.lat-lat0)*ky+N/2];
+  const roads=[],buildings=[],pois=[],seen=new Set();
+  const poi=(t,x,y)=>{const kind=t.amenity&&FOOD_KIND[t.amenity]?t.amenity:t.shop; if(!FOOD_KIND[kind])return;
+    const key=(t.name||'')+'|'+Math.round(x)+'|'+Math.round(y); if(seen.has(key))return; seen.add(key);
+    pois.push(Object.assign({x,y},foodInfo(kind,t.cuisine,t.name)))};
+  for(const el of els){
+    const t=el.tags||{};
+    if(el.type==='node'){ if(el.lat!=null){const c=toC(el);poi(t,c[0],c[1])} continue; }
+    if(el.type!=='way'||!el.geometry||el.geometry.length<2)continue;
+    const pts=el.geometry.filter(Boolean).map(toC);
+    if(t.highway){
+      if(/proposed|construction|abandoned|razed|platform|rest_area|elevator/.test(t.highway)||t.area==='yes')continue;
+      roads.push({pts,w:ROAD_W[t.highway]||1,name:t.name||ROAD_LBL[t.highway]||'an unnamed street'});
+    }else if(t.building){ if(pts.length>=3)buildings.push(pts); }
+    if(t.amenity||t.shop){let x=0,y=0;for(const p of pts){x+=p[0];y+=p[1]}poi(t,x/pts.length,y/pts.length)}
+  }
+  // nearest POIs first, so the caves close to the player always make the cut
+  pois.sort((a,b)=>((a.x-N/2)**2+(a.y-N/2)**2)-((b.x-N/2)**2+(b.y-N/2)**2));
+  return {roads,buildings,pois,title:'your streets',seed:(Math.abs(lat0*1e3)|0)*7919+(Math.abs(lon0*1e3)|0),real:true};
+}
+async function fetchOSM(lat,lon){
+  const R=380, a=`(around:${R},${lat},${lon})`;
+  const q=`[out:json][timeout:25];(way[highway]${a};way[building]${a};node[amenity~"${FOOD_RE}"]${a};way[amenity~"${FOOD_RE}"]${a};node[shop~"${SHOP_RE}"]${a};way[shop~"${SHOP_RE}"]${a};);out geom qt;`;
+  let lastErr;
+  for(const url of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']){
+    const ac=new AbortController(), tm=setTimeout(()=>ac.abort(),28000);
+    try{
+      const res=await fetch(url,{method:'POST',body:'data='+encodeURIComponent(q),
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ac.signal});
+      if(!res.ok)throw new Error('map service said '+res.status);
+      const j=await res.json(); clearTimeout(tm); return j.elements||[];
+    }catch(e){lastErr=e}finally{clearTimeout(tm)}
+  }
+  throw lastErr||new Error('map service unreachable');
+}
+function locationBlocked(){
+  if(!('geolocation' in navigator)||!window.isSecureContext)return true;
+  try{const fp=document.permissionsPolicy||document.featurePolicy;
+    if(fp&&fp.allowsFeature&&!fp.allowsFeature('geolocation'))return true}catch(e){}
+  return false;
+}
+function getPosition(){
+  return new Promise((ok,no)=>navigator.geolocation.getCurrentPosition(ok,no,{enableHighAccuracy:false,timeout:15000,maximumAge:600000}));
+}
+
+/* ---------- canvases ---------- */
+const view=$('view'), vctx=view.getContext('2d');
+const off=document.createElement('canvas'), octx=off.getContext('2d');
+let RW=240,RH=400,PLANE=.5,img=null,buf32=null,zbuf=null,CW=0,CH=0;
+function resize(){
+  const cw=Math.max(200,window.innerWidth), ch=Math.max(200,window.innerHeight), dpr=Math.min(2,window.devicePixelRatio||1);
+  view.width=CW=Math.round(cw*dpr); view.height=CH=Math.round(ch*dpr);
+  const asp=cw/ch;
+  RW=Math.min(380,Math.round(Math.sqrt(105000*asp))); RH=Math.round(RW/asp);
+  PLANE=clamp(.36+.2*asp,.47,.72);
+  off.width=RW; off.height=RH;
+  img=octx.createImageData(RW,RH); buf32=new Uint32Array(img.data.buffer); zbuf=new Float32Array(RW);
+}
+const mapCv=document.createElement('canvas'); mapCv.width=mapCv.height=N;
+const mapCtx=mapCv.getContext('2d'); let mapImg=mapCtx.createImageData(N,N), map32=new Uint32Array(mapImg.data.buffer), mapDirty=true;
+
+/* ---------- renderer ---------- */
+let fogK=.16;
+function pitPix(u,dp,d,seed,side,fk){
+  const deep=dp>=DEPTH?0:1-dp/DEPTH;
+  const col=(u*2)|0, row=(dp*1.35)|0, fu=u*2-col, fv=dp*1.35-row;
+  if(fu>.24&&fu<.76&&fv>.28&&fv<.74){
+    const h=hash(seed*31+col*7919+row*104729);
+    if(h>.52){
+      const e=(.3+.7*deep)*(.35+.65/(1+d*.07));
+      return h>.9 ? 0xff000000|((235*e)<<16)|((200*e)<<8)|(150*e) : 0xff000000|((70*e)<<16)|((172*e)<<8)|(255*e);
+    }
+    return 0xff000000|((20*deep)<<16)|((13*deep)<<8)|(10*deep);
+  }
+  let c=(.22+.78*deep)/(1+d*d*fk*.6)*(side?.78:1); if(dp<.07)c*=1.9;
+  return 0xff000000|((62*c)<<16)|((66*c)<<8)|(78*c);
+}
+function render3D(){
+  const cells=W.cells, glow=W.glow, buf=buf32;
+  buf.fill(0xff050304);
+  const px=P.x, py=P.y, dirX=Math.cos(P.a), dirY=Math.sin(P.a), plX=-dirY*PLANE, plY=dirX*PLANE;
+  const s=RW/(2*PLANE), bob=Math.sin(P.bobT*Math.PI*2)*RH*.006;
+  const hor=Math.round(RH/2+P.tilt+bob), eyeS=EYE*s, ceilS=(CEIL-EYE)*s, fk=fogK*fogK;
+  const rR=texRock.R,rG=texRock.G,rB=texRock.B,fR=texFloor.R,fG=texFloor.G,fB=texFloor.B;
+  for(let x=0;x<RW;x++){
+    const camX=2*(x+.5)/RW-1, rdx=dirX+plX*camX, rdy=dirY+plY*camX;
+    let mx=px|0, my=py|0;
+    const ddx=rdx===0?1e30:Math.abs(1/rdx), ddy=rdy===0?1e30:Math.abs(1/rdy);
+    let sx,sy,sdx,sdy;
+    if(rdx<0){sx=-1;sdx=(px-mx)*ddx}else{sx=1;sdx=(mx+1-px)*ddx}
+    if(rdy<0){sy=-1;sdy=(py-my)*ddy}else{sy=1;sdy=(my+1-py)*ddy}
+    let clipY=RH, dIn=0, curIdx=my*N+mx, cur=cells[curIdx], side=0, wallTop=hor, dOut=0;
+    zbuf[x]=MAXD;
+    for(let it=0;it<200;it++){
+      if(sdx<sdy){dOut=sdx;sdx+=ddx;mx+=sx;side=0}else{dOut=sdy;sdy+=ddy;my+=sy;side=1}
+      if(dOut<1e-4)dOut=1e-4;
+      if(cur!==PIT){                                      // floor of this cell
+        const yF=Math.ceil(hor+eyeS/dOut);
+        let y1=dIn>0?Math.ceil(hor+eyeS/dIn):RH; if(y1>clipY)y1=clipY;
+        const y0=yF<0?0:yF;
+        if(y0<y1){
+          const g=glow[curIdx], cave=cur===CAVE;
+          for(let y=y0;y<y1;y++){
+            const d=eyeS/(y+.5-hor), wx=px+rdx*d, wy=py+rdy*d;
+            const ti=(((wy*TS)&63)<<6)|((wx*TS)&63);
+            const br=1/(1+d*d*fk);
+            let r=fR[ti]*(br+g*.12), gg=fG[ti]*(br+g*.75), b=fB[ti]*(br+g*.6);
+            if(cave){r*=.7;gg*=1.25;b*=1.1}
+            buf[y*RW+x]=0xff000000|((b>255?255:b)<<16)|((gg>255?255:gg)<<8)|(r>255?255:r);
+          }
+        }
+        if(yF<clipY)clipY=yF;
+      }
+      const ni=my*N+mx, nxt=cells[ni];
+      if(nxt===ROCK){                                     // solid wall ends the ray
+        const top=Math.ceil(hor-ceilS/dOut);
+        let y1=Math.ceil(hor+(cur===PIT?EYE+DEPTH:EYE)*s/dOut); if(y1>clipY)y1=clipY;
+        const wh=side===0?py+dOut*rdy:px+dOut*rdx, u=wh-Math.floor(wh), tx=(u*TS)&63;
+        const br=1/(1+dOut*dOut*fk)*(side?.76:1), g=glow[curIdx], inv=dOut/s;
+        const kr=br+g*.12, kg=br+g*.75, kb=br+g*.6;
+        for(let y=top<0?0:top;y<y1;y++){
+          const h=EYE-(y+.5-hor)*inv;
+          if(h>=0){
+            const ti=((((CEIL-h)*TS)&63)<<6)|tx;
+            const r=rR[ti]*kr, gg=rG[ti]*kg, b=rB[ti]*kb;
+            buf[y*RW+x]=0xff000000|((b>255?255:b)<<16)|((gg>255?255:gg)<<8)|(r>255?255:r);
+          }else buf[y*RW+x]=pitPix(u,-h,dOut,ni,side,fk);
+        }
+        zbuf[x]=dOut; wallTop=top; break;
+      }
+      if(cur===PIT&&nxt!==PIT){                           // far lip of a pit, below floor level
+        const top=Math.ceil(hor+eyeS/dOut);
+        let y1=Math.ceil(hor+(EYE+DEPTH)*s/dOut); if(y1>clipY)y1=clipY;
+        const wh=side===0?py+dOut*rdy:px+dOut*rdx, u=wh-Math.floor(wh), inv=dOut/s;
+        for(let y=top<0?0:top;y<y1;y++)buf[y*RW+x]=pitPix(u,(y+.5-hor)*inv-EYE,dOut,ni,side,fk);
+        if(top<clipY)clipY=top;
+      }
+      cur=nxt; curIdx=ni; dIn=dOut;
+      if(dOut>MAXD){wallTop=hor;break}
+    }
+    let yc=wallTop<hor?wallTop:hor; if(yc>RH)yc=RH;       // ceiling
+    for(let y=0;y<yc;y++){
+      const d=ceilS/(hor-y-.5); if(d>MAXD)continue;
+      const wx=px+rdx*d, wy=py+rdy*d, ti=(((wy*TS)&63)<<6)|((wx*TS)&63);
+      const g=glow[(wy|0)*N+(wx|0)]||0, br=.62/(1+d*d*fk);
+      const r=rR[ti]*(br+g*.08), gg=rG[ti]*(br+g*.5), b=rB[ti]*(br+g*.4);
+      buf[y*RW+x]=0xff000000|((b>255?255:b)<<16)|((gg>255?255:gg)<<8)|(r>255?255:r);
+    }
+  }
+  octx.putImageData(img,0,0);
+  vctx.imageSmoothingEnabled=false;
+  vctx.drawImage(off,0,0,CW,CH);
+  // food sprites
+  const k=CW/RW, invDet=1/(plX*dirY-dirX*plY), t=performance.now()/1000;
+  const list=[];
+  for(const c of W.caves){
+    const dx=c.x+.5-px, dy=c.y+.5-py; if(dx*dx+dy*dy>900)continue;
+    const tx=invDet*(dirY*dx-dirX*dy), tz=invDet*(-plY*dx+plX*dy);
+    if(tz<.25)continue;
+    const scx=(RW/2)*(1+tx/tz), col=scx|0;
+    if(col<0||col>=RW||zbuf[col]<tz-.45)continue;
+    list.push([tz,scx,c]);
+  }
+  list.sort((a,b)=>b[0]-a[0]);
+  vctx.textAlign='center'; vctx.textBaseline='middle';
+  for(const [tz,scx,c] of list){
+    const size=s/tz*.34*k, X=scx*k, Y=(hor+(EYE-.4)*s/tz)*(CH/RH)+Math.sin(t*2+c.idx)*size*.06;
+    const al=clamp(1.5/(1+tz*tz*fogK*fogK*.5),0,1);
+    vctx.globalAlpha=al*(c.found?.55:1);
+    const gr=vctx.createRadialGradient(X,Y,0,X,Y,size*1.5);
+    gr.addColorStop(0,'rgba(93,240,192,.55)'); gr.addColorStop(1,'rgba(93,240,192,0)');
+    vctx.fillStyle=gr; vctx.fillRect(X-size*1.5,Y-size*1.5,size*3,size*3);
+    vctx.globalAlpha=al; vctx.fillStyle='#fff';
+    vctx.font=`${Math.max(6,size)|0}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+    vctx.fillText(c.emoji,X,Y);
+  }
+  vctx.globalAlpha=1;
+}
+
+/* ---------- maps ---------- */
+const MAPCOL={[TUN]:0xff82bee2,[PIT]:0xff2a3446,[CAVE]:0xffc0f05d};   // ABGR
+function reveal(){
+  const cx=P.x|0, cy=P.y|0, R=5, w=W;
+  for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){
+    if(dx*dx+dy*dy>R*R+2)continue;
+    const x=cx+dx,y=cy+dy; if(x<0||y<0||x>=N||y>=N)continue;
+    const k=y*N+x, c=w.cells[k]; if(c===ROCK||w.seen[k])continue;
+    w.seen[k]=1; map32[k]=MAPCOL[c]; mapDirty=true; if(w.reach[k])w.seenCount++;
+  }
+}
+function flushMap(){ if(mapDirty){mapCtx.putImageData(mapImg,0,0);mapDirty=false} }
+const mini=$('mini'), mctx=mini.getContext('2d');
+function arrowPath(ctx,x,y,a,sz){
+  ctx.save();ctx.translate(x,y);ctx.rotate(a+Math.PI/2);ctx.beginPath();
+  ctx.moveTo(0,-sz);ctx.lineTo(sz*.7,sz*.8);ctx.lineTo(0,sz*.35);ctx.lineTo(-sz*.7,sz*.8);ctx.closePath();
+  ctx.fillStyle='#ffb84d';ctx.strokeStyle='#0a0706';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();ctx.restore();
+}
+function drawMini(){
+  flushMap(); const S=112,k=S/38;
+  mctx.setTransform(1,0,0,1,0,0); mctx.fillStyle='#120d0a'; mctx.fillRect(0,0,S,S);
+  mctx.imageSmoothingEnabled=false;
+  mctx.setTransform(k,0,0,k,S/2-P.x*k,S/2-P.y*k); mctx.drawImage(mapCv,0,0);
+  mctx.setTransform(1,0,0,1,0,0); arrowPath(mctx,S/2,S/2,P.a,7);
+}
+function drawBig(){
+  flushMap(); const cv=$('big'), ctx=cv.getContext('2d'), S=cv.width, k=S/N;
+  ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle='#120d0a'; ctx.fillRect(0,0,S,S);
+  ctx.imageSmoothingEnabled=false; ctx.drawImage(mapCv,0,0,S,S);
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='20px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  for(const c of W.caves)if(c.found)ctx.fillText(c.emoji,(c.x+.5)*k,(c.y+.5)*k);
+  arrowPath(ctx,P.x*k,P.y*k,P.a,11);
+  $('bigTitle').textContent=W.real?'Under your streets':'Under '+W.title;
+  $('bigInfo').textContent=`North is up · ${pct()}% mapped · ${W.found} of ${W.caves.length} food caves found`+(W.real?' · Map data © OpenStreetMap contributors':'');
+}
+const pct=()=>Math.min(100,Math.round(100*W.seenCount/Math.max(1,W.total)));
+
+/* ---------- sound ---------- */
+let AC=null, soundOn=true;
+function tone(f,dur,vol,type,when){
+  if(!soundOn||!AC)return;
+  try{const t=AC.currentTime+(when||0),o=AC.createOscillator(),g=AC.createGain();
+    o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+dur+.02)}catch(e){}
+}
+function wakeAudio(){ try{AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume()}catch(e){} }
+
+/* ---------- HUD ---------- */
+let toastT=0;
+function toast(msg,ms){const el=$('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),ms||3200)}
+let lastCell=-1,lastHud=0;
+function updateHud(now){
+  const k=(P.y|0)*N+(P.x|0);
+  if(k!==lastCell){lastCell=k;reveal();$('street').textContent=W.names[W.nameIdx[k]]||'the rock'}
+  if(now-lastHud<200)return; lastHud=now;
+  const e=Math.round(energy*100);
+  $('fedPct').textContent=e+'%'; const bar=$('bar').firstElementChild; bar.style.width=e+'%'; bar.style.background=energy<.25?'#ff6a4d':'';
+  $('stats').innerHTML=`<b>${W.found}/${W.caves.length}</b> caves · ${pct()}% mapped`;
+  let best=null,bd=1e9; const all=W.found>=W.caves.length;
+  for(const c of W.caves){ if(c.found&&!all)continue; const d=Math.hypot(c.x+.5-P.x,c.y+.5-P.y); if(d<bd){bd=d;best=c} }
+  if(best){
+    const rel=Math.atan2(best.y+.5-P.y,best.x+.5-P.x)-P.a;
+    $('arrow').style.transform=`rotate(${rel+Math.PI/2-Math.PI/2}rad)`;
+    $('scentTxt').textContent=`${all?best.emoji:'Something tasty'} · ${Math.round(bd*CELL_M/5)*5} m`;
+  }
+}
+
+/* ---------- movement ---------- */
+const walkable=c=>c===TUN||c===CAVE;
+function free(x,y){const r=.3,c=W.cells;
+  return walkable(c[((y-r)|0)*N+((x-r)|0)])&&walkable(c[((y-r)|0)*N+((x+r)|0)])&&walkable(c[((y+r)|0)*N+((x-r)|0)])&&walkable(c[((y+r)|0)*N+((x+r)|0)])}
+function advance(dist){
+  const n=Math.ceil(Math.abs(dist)/.12)||1, st=dist/n, cx=Math.cos(P.a), cy=Math.sin(P.a); let moved=0;
+  for(let i=0;i<n;i++){
+    const ox=P.x,oy=P.y, nx=P.x+cx*st, ny=P.y+cy*st;
+    if(free(nx,P.y))P.x=nx; if(free(P.x,ny))P.y=ny;
+    moved+=Math.hypot(P.x-ox,P.y-oy);
+  }
+  return moved;
+}
+const keys={}; let pendingWalk=0;
+function update(dt){
+  let turn=0,fwd=0;
+  if(keys.ArrowLeft||keys.a)turn-=1; if(keys.ArrowRight||keys.d)turn+=1;
+  if(keys.ArrowUp||keys.w)fwd+=1; if(keys.ArrowDown||keys.s)fwd-=1;
+  P.a+=turn*2.4*dt;
+  const slow=energy<=0?.6:1, vmax=13*slow;
+  if(fwd)P.v=fwd*5.5*slow;
+  let want=P.v*dt;
+  if(pendingWalk){const m=clamp(pendingWalk,-vmax*dt,vmax*dt);pendingWalk-=m;want+=m*slow;if(Math.abs(pendingWalk)<.001)pendingWalk=0}
+  P.v*=Math.exp(-(fwd?9:1.9)*dt); if(Math.abs(P.v)<.05)P.v=0;
+  if(want){
+    const moved=advance(want);
+    if(moved<Math.abs(want)*.25){P.v*=.5;pendingWalk*=.5}
+    if(moved>0){
+      walked+=moved; P.bobT+=moved*.55; stepAcc+=moved;
+      energy=Math.max(0,energy-moved/380);
+      if(stepAcc>.95){stepAcc=0;tone(62+Math.random()*16,.07,.05,'triangle')}
+      if($('hint').style.opacity!=='0'&&walked>2)$('hint').style.opacity='0';
+    }
+  }
+  // look down when a pit is near ahead
+  const cx=Math.cos(P.a),cy=Math.sin(P.a); let near=0;
+  for(let d=.7;d<=3.2;d+=.5){const c=W.cells[((P.y+cy*d)|0)*N+((P.x+cx*d)|0)]; if(c===PIT){near=1-d/4;break} if(c===ROCK)break}
+  P.tilt+=(-near*RH*.2-P.tilt)*Math.min(1,dt*3.5);
+  // hunger dims the lamp
+  const target=.32-.16*Math.sqrt(energy); fogK+=(target-fogK)*Math.min(1,dt*2);
+  if(energy<.25&&!lowWarned){lowWarned=true;toast('Hungry. Your lamp is fading — follow the scent.',4200)}
+  if(energy>.5)lowWarned=false;
+  // food
+  const cv=W.caveAt.get((P.y|0)*N+(P.x|0));
+  if(cv&&(energy<.98||!cv.found)){
+    energy=1;
+    if(!cv.found){cv.found=true;W.found++;toast(`${cv.emoji} ${cv.name}. ${cv.blurb}`,4200);[523,659,784].forEach((f,i)=>tone(f,.25,.07,'sine',i*.09));
+      if(W.found===W.caves.length&&!doneWarned){doneWarned=true;setTimeout(()=>toast(`Every cave found. You have eaten your way under ${W.real?'your whole neighbourhood':W.title}.`,6000),4300)}}
+    else {toast(`${cv.emoji} Seconds at ${cv.name}.`,2200);tone(659,.2,.06)}
+  }
+}
+
+/* ---------- touch / mouse ---------- */
+let ptr=null;
+view.addEventListener('pointerdown',e=>{
+  if(!running)return; wakeAudio();
+  ptr={id:e.pointerId,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,mode:null,vy:0,t:performance.now()};
+  P.v=0; try{view.setPointerCapture(e.pointerId)}catch(_){}
+  e.preventDefault();
+});
+view.addEventListener('pointermove',e=>{
+  if(!ptr||e.pointerId!==ptr.id)return;
+  const dx=e.clientX-ptr.x, dy=e.clientY-ptr.y, now=performance.now(), dt=Math.max(1,now-ptr.t)/1000;
+  ptr.x=e.clientX; ptr.y=e.clientY; ptr.t=now;
+  if(!ptr.mode){
+    const tx=Math.abs(e.clientX-ptr.sx), ty=Math.abs(e.clientY-ptr.sy);
+    if(tx<8&&ty<8)return; ptr.mode=tx>ty*1.15?'turn':'walk';
+  }
+  const h=window.innerHeight, w=window.innerWidth;
+  if(ptr.mode==='turn'){P.a+=dx/w*2.6}
+  else{
+    const d=-dy/h*11; pendingWalk+=d; ptr.vy=ptr.vy*.6+(d/dt)*.4;
+    P.a+=dx/w*.9;
+  }
+  e.preventDefault();
+});
+function endPtr(e){
+  if(!ptr||e.pointerId!==ptr.id)return;
+  if(ptr.mode==='walk'&&performance.now()-ptr.t<120)P.v=clamp(ptr.vy*.8,-6,12);
+  ptr=null;
+}
+view.addEventListener('pointerup',endPtr); view.addEventListener('pointercancel',endPtr);
+view.addEventListener('contextmenu',e=>e.preventDefault());
+window.addEventListener('keydown',e=>{keys[e.key.length===1?e.key.toLowerCase():e.key]=true;
+  if(running&&/^Arrow/.test(e.key))e.preventDefault(); if(e.key==='m'&&running)openMap(); if(e.key==='Escape'){if($('bigmap').classList.contains('on'))closeMap();else if(running)openMenu()}});
+window.addEventListener('keyup',e=>{keys[e.key.length===1?e.key.toLowerCase():e.key]=false});
+window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
+
+/* ---------- loop ---------- */
+let lastT=0;
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt=Math.min(.05,(now-lastT)/1000||0); lastT=now;
+  if(!W)return;
+  if(running){update(dt);updateHud(now)}
+  render3D(); drawMini();
+}
+
+/* ---------- screens ---------- */
+function show(id,on){$(id).classList.toggle('on',on)}
+function startWorld(src,msg){
+  const w=buildWorld(src); if(!w||w.total<60)return false;
+  W=w; P.x=w.start.x;P.y=w.start.y;P.a=w.start.a;P.v=0;P.tilt=0;pendingWalk=0;
+  energy=1;walked=0;lowWarned=false;doneWarned=false;lastCell=-1;fogK=.16;
+  map32.fill(0);mapDirty=true;
+  $('hint').style.opacity='1'; $('status').textContent='';
+  show('start',false);show('menu',false);show('bigmap',false); running=true;
+  toast(msg||(w.real?'You are under your own streets.':`Welcome to the underside of ${w.title}.`),3600);
+  return true;
+}
+function invent(note){ let ok=false,tries=0; while(!ok&&tries++<5)ok=startWorld(inventCity((Math.random()*2**31)|0),note?note+' Here is an invented city instead.':null); }
+async function useLocation(){
+  const st=$('status'); $('btnLoc').disabled=$('btnInv').disabled=true;
+  try{
+    st.textContent='Asking your browser where you are…';
+    let pos; try{pos=await getPosition()}catch(e){invent(e&&e.code===1?'No location shared.':'Couldn\'t get a location.');return}
+    const lat=Math.round(pos.coords.latitude*1000)/1000, lon=Math.round(pos.coords.longitude*1000)/1000;
+    st.textContent='Digging under your streets…';
+    let els; try{els=await fetchOSM(lat,lon)}catch(e){invent('The map service didn\'t answer.');return}
+    if(!startWorld(osmToSrc(els,lat,lon)))invent('Not enough streets mapped around here.');
+  }finally{ $('btnLoc').disabled=locationBlocked(); $('btnInv').disabled=false; }
+}
+function openStart(){
+  running=false; show('menu',false); show('start',true);
+  $('btnBack').style.display=W?'block':'none'; $('status').textContent='';
+  if(locationBlocked()){$('btnLoc').disabled=true;
+    $('locNote').textContent='Real-street mazes need the game opened at its own web address: this embedded preview is not allowed to see your location or reach the map service. Invented cities work everywhere.'}
+}
+function openMenu(){ if(!W)return; running=false;
+  $('menuTitle').textContent=W.real?'Under your streets':'Under '+W.title;
+  $('menuInfo').textContent=`${W.found} of ${W.caves.length} food caves found · ${pct()}% mapped · ${Math.round(walked*CELL_M)} m walked`;
+  $('attrib').textContent=W.real?'Map data © OpenStreetMap contributors.':'This town is invented. Any resemblance to real streets is a coincidence.';
+  show('menu',true) }
+function openMap(){ if(!W)return; running=false; drawBig(); show('bigmap',true) }
+function closeMap(){ show('bigmap',false); running=true }
+$('btnLoc').onclick=()=>{wakeAudio();useLocation()};
+$('btnInv').onclick=()=>{wakeAudio();invent()};
+$('btnBack').onclick=()=>{show('start',false);running=true};
+$('btnResume').onclick=()=>{show('menu',false);running=true};
+$('btnNew').onclick=openStart;
+$('btnSound').onclick=()=>{soundOn=!soundOn;$('btnSound').textContent='Sound: '+(soundOn?'on':'off')};
+$('menuBtn').onclick=openMenu;
+mini.onclick=openMap;
+$('btnMapClose').onclick=closeMap;
+window.addEventListener('resize',resize);
+document.addEventListener('visibilitychange',()=>{if(document.hidden){P.v=0;pendingWalk=0}});
+
+resize(); openStart(); requestAnimationFrame(frame);
+// test hooks
+window.__us={P,get W(){return W},inventCity,osmToSrc,startWorld,buildWorld};
+})();
+</script>
+</body>
+</html>
