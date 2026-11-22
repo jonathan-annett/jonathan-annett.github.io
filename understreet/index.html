@@ -226,8 +226,14 @@ function buildWorld(src){
     }
   }
   // start: nearest tunnel to centre
+  const comp=new Int32Array(N*N); let nComp=0,bigId=0,bigSize=0;
+  for(let k0=0;k0<N*N;k0++){ if(cells[k0]!==TUN||comp[k0])continue;
+    const id=++nComp, st=[k0]; comp[k0]=id; let size=0;
+    while(st.length){const k=st.pop();size++;for(const o of [1,-1,N,-N]){const q=k+o;if(cells[q]===TUN&&!comp[q]){comp[q]=id;st.push(q)}}}
+    if(size>bigSize){bigSize=size;bigId=id}
+  }
   let sx=-1,sy=-1,best=1e9;
-  for(let y=1;y<N-1;y++)for(let x=1;x<N-1;x++)if(cells[y*N+x]===TUN){
+  for(let y=1;y<N-1;y++)for(let x=1;x<N-1;x++)if(comp[y*N+x]===bigId&&bigId){
     const d=(x-N/2)**2+(y-N/2)**2; if(d<best){best=d;sx=x;sy=y}}
   if(sx<0)return null;
   // food caves
@@ -402,18 +408,21 @@ function osmToSrc(els,lat0,lon0){
   pois.sort((a,b)=>((a.x-N/2)**2+(a.y-N/2)**2)-((b.x-N/2)**2+(b.y-N/2)**2));
   return {roads,buildings,pois,title:'your streets',seed:(Math.abs(lat0*1e3)|0)*7919+(Math.abs(lon0*1e3)|0),real:true};
 }
-async function fetchOSM(lat,lon){
+async function fetchOSM(lat,lon,onTry){
   const R=380, a=`(around:${R},${lat},${lon})`;
   const q=`[out:json][timeout:25];(way[highway]${a};way[building]${a};node[amenity~"${FOOD_RE}"]${a};way[amenity~"${FOOD_RE}"]${a};node[shop~"${SHOP_RE}"]${a};way[shop~"${SHOP_RE}"]${a};);out geom qt;`;
   let lastErr;
-  for(const url of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']){
-    const ac=new AbortController(), tm=setTimeout(()=>ac.abort(),28000);
+  for(const url of ['https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter']){
+    const ac=new AbortController(), tm=setTimeout(()=>ac.abort(),22000);
+    if(onTry)onTry(new URL(url).hostname);
     try{
       const res=await fetch(url,{method:'POST',body:'data='+encodeURIComponent(q),
         headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ac.signal});
-      if(!res.ok)throw new Error('map service said '+res.status);
-      const j=await res.json(); clearTimeout(tm); return j.elements||[];
-    }catch(e){lastErr=e}finally{clearTimeout(tm)}
+      if(!res.ok)throw new Error(res.status===429?'busy (429)':'error '+res.status);
+      const j=await res.json(); const els=j.elements||[];
+      if(!els.length&&j.remark)throw new Error('query failed');
+      return els;
+    }catch(e){lastErr=new Error(new URL(url).hostname+': '+(e&&e.name==='AbortError'?'timed out':(e&&e.message)||'unreachable'))}finally{clearTimeout(tm)}
   }
   throw lastErr||new Error('map service unreachable');
 }
@@ -609,7 +618,7 @@ function tone(f,dur,vol,type,when){
 function wakeAudio(){ try{AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume()}catch(e){} }
 
 /* ---------- HUD ---------- */
-let toastT=0;
+let toastT=0,lastNote='';
 function toast(msg,ms){const el=$('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),ms||3200)}
 let lastCell=-1,lastHud=0;
 function updateHud(now){
@@ -735,7 +744,7 @@ function startWorld(src,msg){
   map32.fill(0);mapDirty=true;
   $('hint').style.opacity='1'; $('status').textContent='';
   show('start',false);show('menu',false);show('bigmap',false); running=true;
-  toast(msg||(w.real?'You are under your own streets.':`Welcome to the underside of ${w.title}.`),3600);
+  lastNote=msg||''; toast(msg||(w.real?'You are under your own streets.':`Welcome to the underside of ${w.title}.`),msg?9000:3600);
   return true;
 }
 function invent(note){ let ok=false,tries=0; while(!ok&&tries++<5)ok=startWorld(inventCity((Math.random()*2**31)|0),note?note+' Here is an invented city instead.':null); }
@@ -746,8 +755,11 @@ async function useLocation(){
     let pos; try{pos=await getPosition()}catch(e){invent(e&&e.code===1?'No location shared.':'Couldn\'t get a location.');return}
     const lat=Math.round(pos.coords.latitude*1000)/1000, lon=Math.round(pos.coords.longitude*1000)/1000;
     st.textContent='Digging under your streets…';
-    let els; try{els=await fetchOSM(lat,lon)}catch(e){invent('The map service didn\'t answer.');return}
-    if(!startWorld(osmToSrc(els,lat,lon)))invent('Not enough streets mapped around here.');
+    let els; try{els=await fetchOSM(lat,lon,h=>{st.textContent='Digging under your streets… (asking '+h+')'})}
+    catch(e){invent('The map service didn\'t answer ('+e.message+').');return}
+    let ok=false,why='';
+    try{const src=osmToSrc(els,lat,lon); why=`only ${src.roads.length} streets came back`; ok=startWorld(src)}catch(e){why='map error: '+e.message}
+    if(!ok)invent('Couldn\'t build your streets ('+why+').');
   }finally{ $('btnLoc').disabled=locationBlocked(); $('btnInv').disabled=false; }
 }
 function openStart(){
@@ -759,7 +771,7 @@ function openStart(){
 function openMenu(){ if(!W)return; running=false;
   $('menuTitle').textContent=W.real?'Under your streets':'Under '+W.title;
   $('menuInfo').textContent=`${W.found} of ${W.caves.length} food caves found · ${pct()}% mapped · ${Math.round(walked*CELL_M)} m walked`;
-  $('attrib').textContent=W.real?'Map data © OpenStreetMap contributors.':'This town is invented. Any resemblance to real streets is a coincidence.';
+  $('attrib').textContent=W.real?'Map data © OpenStreetMap contributors.':(lastNote||'This town is invented. Any resemblance to real streets is a coincidence.');
   show('menu',true) }
 function openMap(){ if(!W)return; running=false; drawBig(); show('bigmap',true) }
 function closeMap(){ show('bigmap',false); running=true }
