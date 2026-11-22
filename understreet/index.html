@@ -408,23 +408,37 @@ function osmToSrc(els,lat0,lon0){
   pois.sort((a,b)=>((a.x-N/2)**2+(a.y-N/2)**2)-((b.x-N/2)**2+(b.y-N/2)**2));
   return {roads,buildings,pois,title:'your streets',seed:(Math.abs(lat0*1e3)|0)*7919+(Math.abs(lon0*1e3)|0),real:true};
 }
+function osmApiToEls(j){           // main OSM API gives ways as node-id lists: join them up
+  const nodes=new Map(), out=[];
+  for(const e of j.elements||[])if(e.type==='node'){nodes.set(e.id,e); if(e.tags)out.push(e)}
+  for(const e of j.elements||[])if(e.type==='way'&&e.nodes)
+    out.push({type:'way',tags:e.tags,geometry:e.nodes.map(id=>nodes.get(id)).filter(Boolean)});
+  return out;
+}
+async function getJSON(url,opts,ms){
+  const ac=new AbortController(), tm=setTimeout(()=>ac.abort(),ms), host=new URL(url).hostname;
+  try{
+    const res=await fetch(url,Object.assign({signal:ac.signal},opts));
+    if(!res.ok)throw new Error(res.status===429?'busy (429)':'error '+res.status);
+    return await res.json();
+  }catch(e){throw new Error(host+': '+(e&&e.name==='AbortError'?'timed out':(e&&e.message)||'unreachable'))}
+  finally{clearTimeout(tm)}
+}
 async function fetchOSM(lat,lon,onTry){
-  const R=380, a=`(around:${R},${lat},${lon})`;
-  const q=`[out:json][timeout:25];(way[highway]${a};way[building]${a};node[amenity~"${FOOD_RE}"]${a};way[amenity~"${FOOD_RE}"]${a};node[shop~"${SHOP_RE}"]${a};way[shop~"${SHOP_RE}"]${a};);out geom qt;`;
-  let lastErr;
-  for(const url of ['https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter']){
-    const ac=new AbortController(), tm=setTimeout(()=>ac.abort(),22000);
-    if(onTry)onTry(new URL(url).hostname);
-    try{
-      const res=await fetch(url,{method:'POST',body:'data='+encodeURIComponent(q),
-        headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ac.signal});
-      if(!res.ok)throw new Error(res.status===429?'busy (429)':'error '+res.status);
-      const j=await res.json(); const els=j.elements||[];
-      if(!els.length&&j.remark)throw new Error('query failed');
-      return els;
-    }catch(e){lastErr=new Error(new URL(url).hostname+': '+(e&&e.name==='AbortError'?'timed out':(e&&e.message)||'unreachable'))}finally{clearTimeout(tm)}
-  }
-  throw lastErr||new Error('map service unreachable');
+  const dLat=290/110540, dLon=290/(111320*Math.cos(lat*Math.PI/180));
+  const S=(lat-dLat).toFixed(5),Nn=(lat+dLat).toFixed(5),Wd=(lon-dLon).toFixed(5),E=(lon+dLon).toFixed(5);
+  // 1. Overpass (a bounding box is far cheaper for the server than a radius search); ask two servers at once
+  const q=`[out:json][timeout:15][bbox:${S},${Wd},${Nn},${E}];(way[highway];way[building];node[amenity~"${FOOD_RE}"];way[amenity~"${FOOD_RE}"];node[shop~"${SHOP_RE}"];way[shop~"${SHOP_RE}"];);out geom qt;`;
+  const ask=url=>getJSON(url,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'}},16000)
+    .then(j=>{const els=j.elements||[]; if(!els.length)throw new Error(new URL(url).hostname+': empty answer'); return els});
+  if(onTry)onTry('the map servers');
+  let err;
+  try{ return await Promise.any(['https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter','https://overpass.kumi.systems/api/interpreter'].map(ask)); }
+  catch(e){ err=(e.errors&&e.errors[0])||e; }
+  // 2. Fall back to OpenStreetMap's own API, which is steadier
+  if(onTry)onTry('openstreetmap.org directly');
+  try{ return osmApiToEls(await getJSON(`https://api.openstreetmap.org/api/0.6/map.json?bbox=${Wd},${S},${E},${Nn}`,{},25000)); }
+  catch(e2){ throw new Error(err.message+'; '+e2.message); }
 }
 function locationBlocked(){
   if(!('geolocation' in navigator)||!window.isSecureContext)return true;
@@ -755,7 +769,7 @@ async function useLocation(){
     let pos; try{pos=await getPosition()}catch(e){invent(e&&e.code===1?'No location shared.':'Couldn\'t get a location.');return}
     const lat=Math.round(pos.coords.latitude*1000)/1000, lon=Math.round(pos.coords.longitude*1000)/1000;
     st.textContent='Digging under your streets…';
-    let els; try{els=await fetchOSM(lat,lon,h=>{st.textContent='Digging under your streets… (asking '+h+')'})}
+    let els; try{els=await fetchOSM(lat,lon,h=>{st.textContent='Digging under your streets… asking '+h})}
     catch(e){invent('The map service didn\'t answer ('+e.message+').');return}
     let ok=false,why='';
     try{const src=osmToSrc(els,lat,lon); why=`only ${src.roads.length} streets came back`; ok=startWorld(src)}catch(e){why='map error: '+e.message}
@@ -789,7 +803,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){P.v=0;pend
 
 resize(); openStart(); requestAnimationFrame(frame);
 // test hooks
-window.__us={P,get W(){return W},inventCity,osmToSrc,startWorld,buildWorld};
+window.__us={osmApiToEls,P,get W(){return W},inventCity,osmToSrc,startWorld,buildWorld};
 })();
 </script>
 </body>
