@@ -50,7 +50,7 @@
   .row button.on { background: #0f6e56; border-color: #5dcaa5; }
   .note { font-size: 13px; line-height: 1.4; margin: 8px 0 0; }
   .warn { color: #f09595; }
-  #map { display: block; width: 100%; height: 170px; background: #000; border-radius: 8px; }
+  #map { display: block; width: 100%; height: 220px; background: #000; border-radius: 8px; touch-action: none; }
   .room { border-top: 1px solid #444; margin-top: 10px; padding-top: 8px; }
   .room b { font-weight: 500; font-size: 15px; }
   .room span { font-size: 13px; color: #aaa; margin-left: 6px; }
@@ -63,6 +63,7 @@
 
 <div id="roomsPanel" class="sheet" hidden>
   <canvas id="map"></canvas>
+  <p class="note">Drag a corner dot on the map to correct it.</p>
   <p id="gps" class="note">Location is off.</p>
 
   <div id="idle">
@@ -508,6 +509,7 @@
   }
 
   // ---------- top-down map ----------
+  var view = null, dragPt = null;
   function drawMap() {
     var map = $('map'), w = map.clientWidth, h = map.clientHeight, dpr = window.devicePixelRatio || 1;
     if (!w) return;
@@ -520,10 +522,13 @@
     rooms.forEach(function (r) { pts = pts.concat(r.corners); });
     if (mapping) pts = pts.concat(mapping.corners);
     if (lastFix) pts.push(lastFix);
-    var minX = Infinity, minZ = Infinity, maxX = -Infinity, maxZ = -Infinity;
-    pts.forEach(function (p) { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z); });
-    var scale = Math.min((w - 30) / Math.max(maxX - minX, 4), (h - 30) / Math.max(maxZ - minZ, 4));
-    var cx = (minX + maxX) / 2, cz = (minZ + maxZ) / 2;
+    if (!dragPt || !view) {   // keep the view still while a corner is being dragged
+      var minX = Infinity, minZ = Infinity, maxX = -Infinity, maxZ = -Infinity;
+      pts.forEach(function (p) { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z); });
+      view = { scale: Math.min((w - 40) / Math.max(maxX - minX, 4), (h - 40) / Math.max(maxZ - minZ, 4)),
+               cx: (minX + maxX) / 2, cz: (minZ + maxZ) / 2 };
+    }
+    var scale = view.scale, cx = view.cx, cz = view.cz;
     function X(v) { return w / 2 + (v - cx) * scale; }
     function Y(v) { return h / 2 + (v - cz) * scale; }
 
@@ -537,6 +542,10 @@
       var c = centroid(r.corners);
       g.fillStyle = '#aaa'; g.textAlign = 'center'; g.fillText(r.name, X(c.x), Y(c.z) + 4);
       if (r.tv) { var t = tvPoint(r); g.fillStyle = '#ef9f27'; g.fillRect(X(t.x) - 4, Y(t.z) - 4, 8, 8); }
+      if (r !== DEMO) r.corners.forEach(function (p) {   // drag handles
+        g.beginPath(); g.arc(X(p.x), Y(p.z), p === dragPt ? 8 : 5, 0, 6.3);
+        g.fillStyle = p === dragPt ? '#5dcaa5' : '#ddd'; g.fill();
+      });
     });
     if (mapping && mapping.corners.length) {
       g.beginPath();
@@ -556,6 +565,44 @@
     g.restore();
     g.fillStyle = '#888'; g.textAlign = 'left'; g.fillText('N ↑', 8, 16);
   }
+
+  // Drag a corner on the map to fix a bad location lock.
+  (function () {
+    var map = $('map');
+    function at(e) { var r = map.getBoundingClientRect(); return { px: e.clientX - r.left, py: e.clientY - r.top, w: r.width, h: r.height }; }
+    map.addEventListener('pointerdown', function (e) {
+      if (cap || !view) return;
+      var m = at(e), best = null, all = [];
+      data.rooms.forEach(function (r) { all = all.concat(r.corners); });
+      if (mapping) all = all.concat(mapping.corners);
+      all.forEach(function (p) {
+        var d = Math.hypot(m.w / 2 + (p.x - view.cx) * view.scale - m.px, m.h / 2 + (p.z - view.cz) * view.scale - m.py);
+        if (d < 26 && (!best || d < best.d)) best = { p: p, d: d };
+      });
+      if (!best) return;
+      dragPt = best.p;
+      map.setPointerCapture(e.pointerId);
+      e.preventDefault();
+      drawMap();
+    });
+    map.addEventListener('pointermove', function (e) {
+      if (!dragPt) return;
+      var m = at(e);
+      dragPt.x = view.cx + (m.px - m.w / 2) / view.scale;
+      dragPt.z = view.cz + (m.py - m.h / 2) / view.scale;
+      drawMap();
+    });
+    function drop() {
+      if (!dragPt) return;
+      dragPt = null;
+      saveData();
+      buildScene();
+      drawMap();
+      capMsg.textContent = 'Corner moved.';
+    }
+    map.addEventListener('pointerup', drop);
+    map.addEventListener('pointercancel', drop);
+  })();
 
   // ---------- stream URL panel ----------
   var urlTarget = null;   // null = default stream, otherwise a room index
