@@ -71,7 +71,11 @@ input[type=range] { width: 100%; accent-color: var(--red); height: 28px; margin:
 section > * + * { margin-top: 10px; }
 section > h2 + * { margin-top: 0; }
 #wave { width: 100%; height: 56px; display: block; background: var(--key); border: 1px solid var(--key-edge); border-radius: 4px; cursor: pointer; }
-#wave[hidden], #marks[hidden], #range[hidden], #partsbox[hidden] { display: none; }
+#wave { touch-action: pan-y; }
+#wave[hidden], #marks[hidden], #range[hidden], #partsbox[hidden], #scrubrow[hidden] { display: none; }
+#scrubrow { flex-wrap: nowrap; }
+#scrubrow input { flex: 1 1 auto; min-width: 0; }
+#scrubt { font-family: var(--display); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
 #parts { display: flex; flex-direction: column; gap: 6px; }
 #parts:not(:empty) { margin-top: 10px; }
 .part { display: flex; gap: 6px; align-items: stretch; }
@@ -141,9 +145,13 @@ section > h2 + * { margin-top: 0; }
       <button id="demo" type="button">LOAD DAISY BELL DEMO</button>
     </div>
     <div id="clipinfo">NO CLIP LOADED. THE DEMO NEEDS NONE.</div>
-    <canvas id="wave" width="560" height="56" hidden aria-label="Clip overview. Tap to play from that point"></canvas>
+    <canvas id="wave" width="560" height="56" hidden aria-label="Song overview. Drag to move through the song"></canvas>
+    <div class="row" id="scrubrow" hidden>
+      <input id="scrub" type="range" min="0" max="1" step="0.05" value="0" aria-label="Position in the song">
+      <output id="scrubt">0.0 S</output>
+    </div>
     <div class="row" id="marks" hidden>
-      <button id="play" type="button">PLAY CLIP</button>
+      <button id="play" type="button">PLAY</button>
       <button id="mfrom" type="button">MARK START</button>
       <button id="mto" type="button">MARK END</button>
     </div>
@@ -165,7 +173,7 @@ section > h2 + * { margin-top: 0; }
       </select>
     </div>
     <button id="analyse" type="button" disabled>FIND THE TUNE AND THE WORDS</button>
-    <p class="note">Play the song, mark a part for the robot and add it. Add as many parts as you like: a chorus, a line here and there, half of a duet. Only those parts are analysed. Each part is sung with the original singer unless you switch it to replace them. Slow songs with one clear, unprocessed voice in the middle of a stereo mix work best. Everything runs in your browser, and the speech model downloads once.</p>
+    <p class="note">Play the song or drag through it to find a part, mark its start and end, and add it. Add as many parts as you like: a chorus, a line here and there, half of a duet. Only those parts are analysed. Each part is sung with the original singer unless you switch it to replace them. Slow songs with one clear, unprocessed voice in the middle of a stereo mix work best. Everything runs in your browser, and the speech model downloads once.</p>
   </section>
 
   <section>
@@ -828,7 +836,8 @@ function stopAll(msg) {
   timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf);
   if (voice) voice.stop();
   if (musicSrc) { try { musicSrc.stop(); } catch (e) {} musicSrc = null; }
-  playing = null; cancelAnimationFrame(waveRaf); drawWave();
+  if (clip && playing) clip.pos = clipPos();
+  playing = null; cancelAnimationFrame(waveRaf); stopBlip(); drawWave();
   flatScope(); readout.querySelectorAll('span').forEach(s => s.classList.remove('on'));
   if (msg) say(msg);
 }
@@ -886,15 +895,16 @@ async function loadFile(file) {
     const sr = full.sampleRate, n = Math.min(full.length, Math.floor(MAX_CLIP * sr));
     const L = full.getChannelData(0).slice(0, n), R = full.numberOfChannels > 1 ? full.getChannelData(1).slice(0, n) : null;
     const origBuf = ctx.createBuffer(2, n, sr); origBuf.copyToChannel(L, 0); origBuf.copyToChannel(R || L, 1);
-    clip = { name: file.name, sr, dur: n / sr, L, R, origBuf, from: 0, to: Math.min(n / sr, 20), peaks: null, parts: [], sel: -1, mix: null, mixKey: '' };
+    clip = { name: file.name, sr, dur: n / sr, L, R, origBuf, from: 0, to: Math.min(n / sr, 20), pos: 0, peaks: null, parts: [], sel: -1, mix: null, mixKey: '' };
     const cols = 280, per = Math.max(1, Math.floor(n / cols)); clip.peaks = new Float32Array(cols);
     for (let c = 0; c < cols; c++) { let m = 0; for (let i = c * per, e = Math.min(n, i + per); i < e; i += 16) { const a = Math.abs(L[i]); if (a > m) m = a; } clip.peaks[c] = m; }
-    ['wave', 'marks', 'range', 'partsbox'].forEach(id => { $(id).hidden = false; });
+    ['wave', 'scrubrow', 'marks', 'range', 'partsbox'].forEach(id => { $(id).hidden = false; });
+    $('scrub').max = clip.dur.toFixed(2);
     setRegion(clip.from, clip.to); renderParts();
     $('score').value = ''; $('lyrics').value = ''; readout.textContent = '';
     $('analyse').disabled = false;
     $('clipinfo').textContent = file.name + '  ' + clip.dur.toFixed(1) + ' S' + (R ? '  STEREO' : '  MONO') + (full.length > n ? '  (FIRST ' + MAX_CLIP + ' S ONLY)' : '');
-    say('SONG LOADED. PLAY IT, MARK A PART, THEN ADD IT');
+    say('SONG LOADED. PLAY OR DRAG TO FIND A PART, MARK IT, THEN ADD IT');
   } catch (e) { say('COULD NOT READ THAT FILE AS AUDIO'); }
 }
 let asrCache = {};
@@ -1022,7 +1032,7 @@ function mixBuffer() {
 function loadDemo() {
   stopAll(); clip = null;
   $('clipinfo').textContent = 'NO CLIP LOADED. THE DEMO NEEDS NONE.';
-  ['wave', 'marks', 'range', 'partsbox'].forEach(id => { $(id).hidden = true; });
+  ['wave', 'scrubrow', 'marks', 'range', 'partsbox'].forEach(id => { $(id).hidden = true; });
   $('analyse').disabled = true;
   $('lyrics').value = DAISY_WORDS; $('score').value = daisyScore();
   showWords(parseScore($('score').value).words);
@@ -1031,7 +1041,12 @@ function loadDemo() {
 
 // ---------- marking the part to sing ----------
 let waveRaf = 0;
-function clipPos() { return playing && ctx ? Math.min(clip ? clip.dur : 0, playing.offset + Math.max(0, ctx.currentTime - playing.at)) : null; }
+// Where we are in the song: the playhead while music runs, otherwise the cursor left by the scrubber.
+function clipPos() {
+  if (!clip) return null;
+  return playing && ctx ? Math.min(clip.dur, playing.offset + Math.max(0, ctx.currentTime - playing.at)) : clip.pos;
+}
+const mmss = t => { const m = Math.floor(t / 60); return (m ? m + ':' + String(Math.floor(t % 60)).padStart(2, '0') : Math.floor(t % 60)) + '.' + Math.floor(t * 10 % 10) + ' S'; };
 function setRegion(a, b) {
   if (!clip) return;
   a = Math.max(0, Math.min(clip.dur, a)); b = Math.max(0, Math.min(clip.dur, b));
@@ -1054,7 +1069,10 @@ function drawWave() {
   }
   g.strokeStyle = '#f1efe8'; g.lineWidth = 2; g.strokeRect(px(clip.from) + 1, 1, Math.max(3, px(clip.to) - px(clip.from) - 2), H - 2);   // the marker
   const p = clipPos();
-  if (p !== null) { g.fillStyle = '#f1efe8'; g.fillRect(p / clip.dur * W - 1, 0, 2, H); }
+  g.fillStyle = '#f1efe8'; g.fillRect(p / clip.dur * W - 1, 0, 3, H);
+  if (document.activeElement !== $('scrub') || playing) $('scrub').value = p;
+  $('scrubt').textContent = mmss(p);
+  $('play').textContent = playing ? 'PAUSE' : 'PLAY';
 }
 function runPlayhead() { cancelAnimationFrame(waveRaf); const loop = () => { drawWave(); if (playing) waveRaf = requestAnimationFrame(loop); }; loop(); }
 function previewFrom(offset) {
@@ -1064,9 +1082,49 @@ function previewFrom(offset) {
   musicSrc = ctx.createBufferSource(); musicSrc.buffer = clip.origBuf; musicSrc.connect(musicGain);
   const at = ctx.currentTime + 0.05; musicSrc.start(at, offset);
   playing = { at, offset }; runPlayhead();
-  say('PLAYING THE CLIP. MARK START AND MARK END AS IT GOES');
-  timers.push(setTimeout(() => stopAll('READY'), (clip.dur - offset + 0.3) * 1000));
+  say('PLAYING. MARK START AND MARK END AS IT GOES');
+  timers.push(setTimeout(() => { stopAll('END OF THE SONG'); clip.pos = 0; drawWave(); }, (clip.dur - offset + 0.3) * 1000));
 }
+// Scrubbing: moving the cursor plays a short burst at that spot, so you can hear where you are.
+let blipSrc = null, blipAt = 0, resumeAfterScrub = false;
+function stopBlip() { if (blipSrc) { try { blipSrc.stop(); } catch (e) {} blipSrc = null; } }
+function scrubTo(t) {
+  if (!clip) return;
+  if (playing) { resumeAfterScrub = true; stopAll(); }
+  clip.pos = Math.max(0, Math.min(clip.dur - 0.05, t));
+  drawWave(); say('AT ' + mmss(clip.pos));
+  const now = performance.now();
+  if (now - blipAt > 110 && ensureAudio()) {
+    blipAt = now; stopBlip(); applyMix();
+    blipSrc = ctx.createBufferSource(); blipSrc.buffer = clip.origBuf; blipSrc.connect(musicGain);
+    blipSrc.start(ctx.currentTime, clip.pos, 0.22);
+  }
+}
+function scrubEnd() { if (resumeAfterScrub) { resumeAfterScrub = false; previewFrom(clip.pos); } }
+$('scrub').addEventListener('input', e => scrubTo(parseFloat(e.target.value)));
+$('scrub').addEventListener('change', scrubEnd);
+let dragging = false;
+const waveTime = e => { const r = $('wave').getBoundingClientRect(); return (e.clientX - r.left) / r.width * clip.dur; };
+$('wave').addEventListener('pointerdown', e => { dragging = true; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {} scrubTo(waveTime(e)); });
+$('wave').addEventListener('pointermove', e => { if (dragging) scrubTo(waveTime(e)); });
+const dragEnd = () => { if (dragging) { dragging = false; scrubEnd(); } };
+$('wave').addEventListener('pointerup', dragEnd);
+$('wave').addEventListener('pointercancel', dragEnd);
+$('play').addEventListener('click', () => {
+  if (playing) { stopAll(); say('PAUSED AT ' + mmss(clip.pos)); }
+  else previewFrom(clip.pos >= clip.dur - 0.2 ? 0 : clip.pos);
+});
+$('mfrom').addEventListener('click', () => {
+  const p = clipPos();
+  setRegion(p, clip.to > p + 0.5 ? clip.to : Math.min(clip.dur, p + 15)); say('START MARKED AT ' + mmss(clip.from));
+});
+$('mto').addEventListener('click', () => {
+  const p = clipPos();
+  setRegion(clip.from < p - 0.5 ? clip.from : Math.max(0, p - 15), p); say('END MARKED AT ' + mmss(clip.to) + '. ' + (clip.to - clip.from).toFixed(1) + ' S TO SING');
+});
+$('from').addEventListener('change', () => setRegion(parseFloat($('from').value) || 0, clip.to));
+$('to').addEventListener('change', () => setRegion(clip.from, parseFloat($('to').value) || clip.dur));
+
 function renderParts() {
   const box = $('parts'); box.textContent = '';
   if (!clip) return;
@@ -1100,19 +1158,6 @@ function addPart() {
   return true;
 }
 $('addpart').addEventListener('click', addPart);
-$('play').addEventListener('click', () => previewFrom(Math.max(0, clip.from - 2)));
-$('wave').addEventListener('click', e => { const r = e.currentTarget.getBoundingClientRect(); previewFrom((e.clientX - r.left) / r.width * clip.dur); });
-$('mfrom').addEventListener('click', () => {
-  const p = clipPos(); if (p === null) { say('PLAY THE CLIP FIRST, THEN MARK AS IT PLAYS'); return; }
-  setRegion(p, clip.to > p + 0.5 ? clip.to : Math.min(clip.dur, p + 15)); say('START MARKED AT ' + clip.from.toFixed(1) + ' S');
-});
-$('mto').addEventListener('click', () => {
-  const p = clipPos(); if (p === null) { say('PLAY THE CLIP FIRST, THEN MARK AS IT PLAYS'); return; }
-  setRegion(clip.from < p - 0.5 ? clip.from : Math.max(0, p - 15), p); say('END MARKED AT ' + clip.to.toFixed(1) + ' S. ' + (clip.to - clip.from).toFixed(1) + ' S TO SING');
-});
-$('from').addEventListener('change', () => setRegion(parseFloat($('from').value) || 0, clip.to));
-$('to').addEventListener('change', () => setRegion(clip.from, parseFloat($('to').value) || clip.dur));
-
 $('sing').addEventListener('click', singNow);
 $('stop').addEventListener('click', () => stopAll('STOPPED'));
 $('vrobot').addEventListener('input', applyMix);
