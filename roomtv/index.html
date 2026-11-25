@@ -86,8 +86,10 @@
 </div>
 
 <script>
-  // Change this to your camera's stream. Append ?src=URL to the page address to override it.
-  var STREAM_URL = 'https://filesamples.com/samples/video/mjpeg/sample_1280x720.mjpeg';
+  // Built-in sample: a raw MJPEG file in this folder (320x180, 60 frames).
+  // Use the gear button, or append ?src=URL to the page address, to show a live stream instead.
+  var SAMPLE_FILE = 'sample.mjpeg';
+  var SAMPLE_FPS = 10;
 
   var PERSPECTIVE = 500;   // must match #viewport perspective
   var LIMIT = 320;         // how far the camera may move from the room centre
@@ -167,22 +169,69 @@
     requestAnimationFrame(drawStandIn);
   }
 
+  var player = null, token = 0;
+  function stopPlayer() {
+    if (!player) return;
+    clearInterval(player.timer);
+    player.urls.forEach(function (u) { URL.revokeObjectURL(u); });
+    player = null;
+  }
+
   function fallback() {
     if (fellBack) return;
+    stopPlayer();
     fellBack = true;
     tv.replaceChild(standIn, feed);
     statusEl.textContent = 'Stream did not load, showing a stand-in.' + HINT;
     requestAnimationFrame(drawStandIn);
   }
 
-  function setSource(url, label) {
+  function resetTv(label) {
     clearTimeout(loadTimer);
+    stopPlayer();
+    token++;
     if (fellBack) { fellBack = false; tv.replaceChild(feed, standIn); }
     statusEl.textContent = label + HINT;
     feed.removeAttribute('src');
+  }
+
+  // A live stream: the browser plays multipart MJPEG in the <img> by itself.
+  function setSource(url, label) {
+    resetTv(label);
     feed.src = url;
     loadTimer = setTimeout(function () { if (!feed.naturalWidth) fallback(); }, 6000);
   }
+
+  // A raw .mjpeg file is just JPEGs back to back. Static hosting can't stream it,
+  // so split it at the JPEG start/end markers and show the frames in the same <img>.
+  function splitJpegs(bytes) {
+    var frames = [], start = -1;
+    for (var i = 0; i < bytes.length - 1; i++) {
+      if (bytes[i] !== 0xFF) continue;
+      if (bytes[i + 1] === 0xD8 && start < 0) start = i;
+      else if (bytes[i + 1] === 0xD9 && start >= 0) { frames.push(bytes.subarray(start, i + 2)); start = -1; }
+    }
+    return frames;
+  }
+
+  function playFile(url, fps, label) {
+    resetTv(label);
+    var mine = token;
+    fetch(url).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.arrayBuffer();
+    }).then(function (buf) {
+      if (mine !== token) return;
+      var urls = splitJpegs(new Uint8Array(buf)).map(function (f) {
+        return URL.createObjectURL(new Blob([f], { type: 'image/jpeg' }));
+      });
+      if (!urls.length) throw new Error('no frames');
+      var i = 0;
+      feed.src = urls[0];
+      player = { urls: urls, timer: setInterval(function () { i = (i + 1) % urls.length; feed.src = urls[i]; }, 1000 / fps) };
+    }).catch(function () { if (mine === token) fallback(); });
+  }
+
   feed.addEventListener('error', fallback);
 
   // A pasted URL is kept in this browser's localStorage only, never in the repo.
@@ -195,7 +244,7 @@
     var saved = getSaved();
     if (fromQuery) setSource(fromQuery, 'Stream from the page address.');
     else if (saved) setSource(saved, 'Your saved stream.');
-    else setSource(STREAM_URL, 'Sample stream.');
+    else playFile(SAMPLE_FILE, SAMPLE_FPS, 'Sample MJPEG file.');
   }
 
   var panel = document.getElementById('panel');
