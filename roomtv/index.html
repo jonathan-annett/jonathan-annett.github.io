@@ -63,7 +63,7 @@
 
 <div id="roomsPanel" class="sheet" hidden>
   <canvas id="map"></canvas>
-  <p class="note">Drag a corner dot on the map to correct it.</p>
+  <p class="note">On the map, drag a corner dot to correct it, or the orange square to move a TV.</p>
   <p id="gps" class="note">Location is off.</p>
 
   <div id="idle">
@@ -497,6 +497,14 @@
         });
       }));
       if (room.tv) row.appendChild(button('Stream', function () { openUrl(i); }));
+      else row.appendChild(button('TV on map', function () {
+        // Put it on the longest wall; from there it can be dragged anywhere on the map.
+        var c = room.corners, longest = 0, len = 0;
+        c.forEach(function (a, k) { var b = c[(k + 1) % c.length], l = Math.hypot(b.x - a.x, b.z - a.z); if (l > len) { len = l; longest = k; } });
+        room.tv = { wall: longest, t: 0.5, url: null };
+        saveData(); buildScene(); goTo(room); renderList(); drawMap();
+        capMsg.textContent = 'TV added to ' + room.name + '. Drag the orange square on the map to the right wall.';
+      }));
       row.appendChild(button('Delete', function (b) {
         if (b.textContent !== 'Tap again to delete') { b.textContent = 'Tap again to delete'; return; }
         data.rooms.splice(i, 1);
@@ -509,7 +517,7 @@
   }
 
   // ---------- top-down map ----------
-  var view = null, dragPt = null;
+  var view = null, dragPt = null, dragTv = null;
   function drawMap() {
     var map = $('map'), w = map.clientWidth, h = map.clientHeight, dpr = window.devicePixelRatio || 1;
     if (!w) return;
@@ -541,11 +549,14 @@
       g.strokeStyle = '#ddd'; g.lineWidth = 1.5; g.stroke();
       var c = centroid(r.corners);
       g.fillStyle = '#aaa'; g.textAlign = 'center'; g.fillText(r.name, X(c.x), Y(c.z) + 4);
-      if (r.tv) { var t = tvPoint(r); g.fillStyle = '#ef9f27'; g.fillRect(X(t.x) - 4, Y(t.z) - 4, 8, 8); }
       if (r !== DEMO) r.corners.forEach(function (p) {   // drag handles
         g.beginPath(); g.arc(X(p.x), Y(p.z), p === dragPt ? 8 : 5, 0, 6.3);
         g.fillStyle = p === dragPt ? '#5dcaa5' : '#ddd'; g.fill();
       });
+      if (r.tv) {
+        var t = tvPoint(r), half = r === dragTv ? 8 : 6;
+        g.fillStyle = '#ef9f27'; g.fillRect(X(t.x) - half, Y(t.z) - half, half * 2, half * 2);
+      }
     });
     if (mapping && mapping.corners.length) {
       g.beginPath();
@@ -579,8 +590,17 @@
         var d = Math.hypot(m.w / 2 + (p.x - view.cx) * view.scale - m.px, m.h / 2 + (p.z - view.cz) * view.scale - m.py);
         if (d < 26 && (!best || d < best.d)) best = { p: p, d: d };
       });
-      if (!best) return;
-      dragPt = best.p;
+      // A TV marker wins over a corner when both are in reach.
+      var tvBest = null;
+      data.rooms.forEach(function (r) {
+        if (!r.tv) return;
+        var t = tvPoint(r);
+        var d = Math.hypot(m.w / 2 + (t.x - view.cx) * view.scale - m.px, m.h / 2 + (t.z - view.cz) * view.scale - m.py);
+        if (d < 26 && (!tvBest || d < tvBest.d)) tvBest = { room: r, d: d };
+      });
+      if (tvBest && (!best || tvBest.d <= best.d)) { dragTv = tvBest.room; dragPt = dragTv.tv; }
+      else if (best) dragPt = best.p;
+      else return;
       map.setPointerCapture(e.pointerId);
       e.preventDefault();
       drawMap();
@@ -588,17 +608,22 @@
     map.addEventListener('pointermove', function (e) {
       if (!dragPt) return;
       var m = at(e);
-      dragPt.x = view.cx + (m.px - m.w / 2) / view.scale;
-      dragPt.z = view.cz + (m.py - m.h / 2) / view.scale;
+      var wx = view.cx + (m.px - m.w / 2) / view.scale, wz = view.cz + (m.py - m.h / 2) / view.scale;
+      if (dragTv) {   // a TV slides along whichever wall of its room is nearest the finger
+        var w = nearestWall({ x: wx, z: wz }, dragTv.corners);
+        if (w) { dragTv.tv.wall = w.wall; dragTv.tv.t = w.t; }
+      } else { dragPt.x = wx; dragPt.z = wz; }
       drawMap();
     });
     function drop() {
       if (!dragPt) return;
-      dragPt = null;
+      var room = dragTv;
+      dragPt = null; dragTv = null;
       saveData();
       buildScene();
+      if (room) goTo(room);
       drawMap();
-      capMsg.textContent = 'Corner moved.';
+      capMsg.textContent = room ? 'TV moved.' : 'Corner moved.';
     }
     map.addEventListener('pointerup', drop);
     map.addEventListener('pointercancel', drop);
