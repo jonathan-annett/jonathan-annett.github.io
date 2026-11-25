@@ -120,6 +120,15 @@ section > h2 + * { margin-top: 0; }
       <button id="ring" type="button" aria-pressed="false">RING MODULATOR</button>
     </div>
     <div class="row">
+      <label for="hold" style="margin:0">Longest held note</label>
+      <select id="hold" style="width:auto;flex:1 1 140px">
+        <option value="0.6">0.6 seconds</option>
+        <option value="1">1 second</option>
+        <option value="2" selected>2 seconds</option>
+        <option value="0">No limit</option>
+      </select>
+    </div>
+    <div class="row">
       <label for="span" style="margin:0">Play</label>
       <select id="span" style="width:auto;flex:1 1 140px">
         <option value="all">The whole song</option>
@@ -659,6 +668,17 @@ function medianPitch(midi, hopSec, t0, t1) {
   a.sort((x, y) => x - y);
   return Math.round(a[a.length >> 1]);
 }
+// Where the voice actually sounds inside a time span: from its first voiced moment to the first real gap after it.
+// Speech models often stretch a word's end across a pause; this pulls it back. Returns null if no voice is found.
+function voicedSpan(midi, hopSec, t0, t1, gap = 0.18) {
+  const a = Math.max(0, Math.floor(t0 / hopSec)), b = Math.min(midi.length, Math.ceil(t1 / hopSec));
+  let first = -1, last = -1;
+  for (let f = a; f < b; f++) {
+    if (!isNaN(midi[f])) { if (first < 0) first = f; last = f; }
+    else if (first >= 0 && (f - last) * hopSec >= gap) break;
+  }
+  return first < 0 ? null : { start: first * hopSec, end: (last + 1) * hopSec };
+}
 function resampleTo(x, sr, target) {
   const ratio = sr / target, n = Math.floor(x.length / ratio), out = new Float32Array(n), w = Math.max(1, Math.round(ratio));
   for (let i = 0; i < n; i++) {
@@ -714,7 +734,12 @@ function fitTimedWords(timed, midi, hopSec, offset = 0) {
   for (const w of timed) {
     const word = cleanWord(w.text); if (!word) continue;
     const n = Math.max(1, syllables(soundsOf(word)).length);
-    const t0 = w.t0, t1 = Math.max(w.t1, w.t0 + 0.12 * n), each = (t1 - t0) / n, parts = [];
+    let t0 = w.t0, t1 = w.t1;
+    const v = voicedSpan(midi, hopSec, t0, t1);
+    if (!v) t1 = Math.min(t1, t0 + 0.3 * n);               // no voice heard there: keep it short
+    else { if (v.start > t0 + 0.1) t0 = v.start; if (v.end < t1 - 0.1) t1 = v.end; }
+    t1 = Math.max(t1, t0 + 0.12 * n);
+    const each = (t1 - t0) / n, parts = [];
     for (let i = 0; i < n; i++) {
       let p = medianPitch(midi, hopSec, t0 + i * each, t0 + (i + 1) * each);
       if (p === null) p = medianPitch(midi, hopSec, t0 + i * each - 0.25, t0 + (i + 1) * each + 0.25);
@@ -853,7 +878,8 @@ function singNow() {
   if (!words.length) { say(bad.length ? 'SCORE LINE ' + bad[0] + ' IS NOT RIGHT' : 'THE SCORE IS EMPTY. LOAD THE DEMO OR A CLIP'); return; }
   if (!ensureAudio()) return;
   stopAll(); applyMix(); showWords(words);
-  const events = scoreToEvents(words), oct = pickOctave(events);
+  const events = scoreToEvents(words), oct = pickOctave(events), cap = +$('hold').value;
+  if (cap) events.forEach(e => { if (e.dur > cap) { e.dur = cap; e.bends = e.bends.filter(b => b.at < cap - 0.05); } });
   const at = ctx.currentTime + 0.15;
   let playFrom = 0, playLen = 0;
   if (clip) {
