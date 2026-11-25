@@ -71,7 +71,13 @@ input[type=range] { width: 100%; accent-color: var(--red); height: 28px; margin:
 section > * + * { margin-top: 10px; }
 section > h2 + * { margin-top: 0; }
 #wave { width: 100%; height: 56px; display: block; background: var(--key); border: 1px solid var(--key-edge); border-radius: 4px; cursor: pointer; }
-#wave[hidden], #marks[hidden], #range[hidden] { display: none; }
+#wave[hidden], #marks[hidden], #range[hidden], #partsbox[hidden] { display: none; }
+#parts { display: flex; flex-direction: column; gap: 6px; }
+#parts:not(:empty) { margin-top: 10px; }
+.part { display: flex; gap: 6px; align-items: stretch; }
+.part button { font-size: 11px; padding: 10px; }
+.part .sel { flex: 1 1 auto; min-width: 0; text-align: left; }
+.part.cur .sel { border-color: var(--ink); }
 #clipinfo { font-family: var(--display); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 @media (prefers-reduced-motion: reduce) { button:active, .filebtn:active { transform: none; } }
 </style>
@@ -107,8 +113,14 @@ section > h2 + * { margin-top: 0; }
       </div>
     </div>
     <div class="row">
-      <button id="vocals" type="button" aria-pressed="false" disabled>REMOVE ORIGINAL VOCALS</button>
       <button id="ring" type="button" aria-pressed="false">RING MODULATOR</button>
+    </div>
+    <div class="row">
+      <label for="span" style="margin:0">Play</label>
+      <select id="span" style="width:auto;flex:1 1 140px">
+        <option value="all">The whole song</option>
+        <option value="parts">Just the sung parts</option>
+      </select>
     </div>
     <div class="row">
       <label for="octave" style="margin:0">Robot octave</label>
@@ -139,6 +151,10 @@ section > h2 + * { margin-top: 0; }
       <div><label for="from">Robot sings from, seconds</label><input id="from" type="number" min="0" step="0.1" inputmode="decimal"></div>
       <div><label for="to">Until, seconds</label><input id="to" type="number" min="0" step="0.1" inputmode="decimal"></div>
     </div>
+    <div id="partsbox" hidden>
+      <button id="addpart" type="button">ADD THIS PART</button>
+      <div id="parts"></div>
+    </div>
     <div class="row">
       <label for="model" style="margin:0">Speech model</label>
       <select id="model" style="width:auto;flex:1 1 200px">
@@ -149,14 +165,14 @@ section > h2 + * { margin-top: 0; }
       </select>
     </div>
     <button id="analyse" type="button" disabled>FIND THE TUNE AND THE WORDS</button>
-    <p class="note">Play the clip and mark the part the robot should sing, such as one chorus line. Only that part is analysed, and the original vocals are only removed there. It works best with one clear singer in the middle of a stereo mix. Everything runs in your browser. The speech model downloads once, then is kept by the browser.</p>
+    <p class="note">Play the song, mark a part for the robot and add it. Add as many parts as you like: a chorus, a line here and there, half of a duet. Only those parts are analysed. Each part is sung with the original singer unless you switch it to replace them. Slow songs with one clear, unprocessed voice in the middle of a stereo mix work best. Everything runs in your browser, and the speech model downloads once.</p>
   </section>
 
   <section>
     <h2><b>2</b>WORDS</h2>
-    <label for="lyrics">Words to sing. Type or correct them here</label>
+    <label for="lyrics">Words for the selected part. Type or correct them here</label>
     <textarea id="lyrics" rows="4" spellcheck="false"></textarea>
-    <button id="fit" type="button">FIT THESE WORDS TO THE TUNE</button>
+    <button id="fit" type="button">FIT THESE WORDS TO THE PART'S TUNE</button>
   </section>
 
   <section>
@@ -762,8 +778,7 @@ const $ = id => document.getElementById(id);
 const statusEl = $('statustext'), readout = $('readout');
 const say = t => { statusEl.textContent = t; };
 let ctx = null, voice = null, analyser = null, musicGain = null, musicSrc = null, timers = [], raf = 0;
-let clip = null;      // { name, sr, dur, L, R, origBuf, instBuf, split, midi, notes, from, to, peaks }
-let removeVocals = false;
+let clip = null;      // { name, sr, dur, L, R, origBuf, from, to, peaks, parts: [{ from, to, remove, done, stereo, centre, midi, hopSec, notes, text, words }], sel, mix, mixKey }
 let playing = null;   // { at, offset } while music is running, for the playhead
 const MAX_REGION = 90;
 
@@ -832,17 +847,19 @@ function singNow() {
   const events = scoreToEvents(words), oct = pickOctave(events);
   const at = ctx.currentTime + 0.15;
   let playFrom = 0, playLen = 0;
-  if (clip) {                                             // two seconds of lead-in and tail around the sung part
-    const first = Math.min(clip.from, events[0].start), lastEv = events[events.length - 1];
-    playFrom = Math.max(0, first - 2);
-    playLen = Math.min(clip.dur, Math.max(clip.to, lastEv.start + lastEv.dur) + 2) - playFrom;
+  if (clip) {
+    if ($('span').value === 'all') { playFrom = 0; playLen = clip.dur; }
+    else {                                                // two seconds of lead-in and tail around the sung parts
+      const lastEv = events[events.length - 1], ps = clip.parts;
+      const a = Math.min(events[0].start, ps.length ? ps[0].from : Infinity), b = Math.max(lastEv.start + lastEv.dur, ps.length ? ps[ps.length - 1].to : 0);
+      playFrom = Math.max(0, a - 2); playLen = Math.min(clip.dur, b + 2) - playFrom;
+    }
     events.forEach(e => { e.start -= playFrom; });
   }
   const r = voice.sing(events, { at, transpose: Math.pow(2, oct) });
   let total = r.dur;
   if (clip) {
-    const buf = removeVocals && clip.instBuf ? clip.instBuf : clip.origBuf;
-    musicSrc = ctx.createBufferSource(); musicSrc.buffer = buf; musicSrc.connect(musicGain); musicSrc.start(at, playFrom, playLen);
+    musicSrc = ctx.createBufferSource(); musicSrc.buffer = mixBuffer(); musicSrc.connect(musicGain); musicSrc.start(at, playFrom, playLen);
     playing = { at, offset: playFrom }; runPlayhead();
     total = Math.max(total, playLen);
   }
@@ -869,31 +886,31 @@ async function loadFile(file) {
     const sr = full.sampleRate, n = Math.min(full.length, Math.floor(MAX_CLIP * sr));
     const L = full.getChannelData(0).slice(0, n), R = full.numberOfChannels > 1 ? full.getChannelData(1).slice(0, n) : null;
     const origBuf = ctx.createBuffer(2, n, sr); origBuf.copyToChannel(L, 0); origBuf.copyToChannel(R || L, 1);
-    clip = { name: file.name, sr, dur: n / sr, L, R, origBuf, instBuf: null, split: null, midi: null, notes: null, from: 0, to: Math.min(n / sr, 30), peaks: null };
+    clip = { name: file.name, sr, dur: n / sr, L, R, origBuf, from: 0, to: Math.min(n / sr, 20), peaks: null, parts: [], sel: -1, mix: null, mixKey: '' };
     const cols = 280, per = Math.max(1, Math.floor(n / cols)); clip.peaks = new Float32Array(cols);
     for (let c = 0; c < cols; c++) { let m = 0; for (let i = c * per, e = Math.min(n, i + per); i < e; i += 16) { const a = Math.abs(L[i]); if (a > m) m = a; } clip.peaks[c] = m; }
-    ['wave', 'marks', 'range'].forEach(id => { $(id).hidden = false; });
-    setRegion(clip.from, clip.to);
-    removeVocals = false; $('vocals').setAttribute('aria-pressed', 'false'); $('vocals').disabled = true;
+    ['wave', 'marks', 'range', 'partsbox'].forEach(id => { $(id).hidden = false; });
+    setRegion(clip.from, clip.to); renderParts();
+    $('score').value = ''; $('lyrics').value = ''; readout.textContent = '';
     $('analyse').disabled = false;
     $('clipinfo').textContent = file.name + '  ' + clip.dur.toFixed(1) + ' S' + (R ? '  STEREO' : '  MONO') + (full.length > n ? '  (FIRST ' + MAX_CLIP + ' S ONLY)' : '');
-    say('CLIP LOADED. PLAY IT AND MARK THE PART TO SING');
+    say('SONG LOADED. PLAY IT, MARK A PART, THEN ADD IT');
   } catch (e) { say('COULD NOT READ THAT FILE AS AUDIO'); }
 }
 let asrCache = {};
-async function transcribe(audio16k, modelId) {
-  say('LOADING THE SPEECH LIBRARY');
+async function transcribe(audio16k, modelId, tag = '') {
+  say(tag + 'LOADING THE SPEECH LIBRARY');
   const T = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1');
   T.env.allowLocalModels = false;
   try { T.env.backends.onnx.wasm.proxy = true; } catch (e) {}
   if (!asrCache[modelId]) {
     asrCache[modelId] = await T.pipeline('automatic-speech-recognition', modelId, {
       dtype: 'q8',
-      progress_callback: p => { if (p && p.status === 'progress' && p.total) say('DOWNLOADING SPEECH MODEL ' + Math.round(p.progress) + '%'); }
+      progress_callback: p => { if (p && p.status === 'progress' && p.total) say(tag + 'DOWNLOADING SPEECH MODEL ' + Math.round(p.progress) + '%'); }
     });
   }
   const asr = asrCache[modelId];
-  say('LISTENING FOR THE WORDS. THIS CAN TAKE A MINUTE');
+  say(tag + 'LISTENING FOR THE WORDS. THIS CAN TAKE A MINUTE');
   await tick();
   const base = { chunk_length_s: 30, stride_length_s: 5 };
   let out, level = 'word';
@@ -914,68 +931,99 @@ async function transcribe(audio16k, modelId) {
   });
   return { text, timed, level };
 }
+function setScoreRange(a, b, text) {                   // swaps the score lines between two times for new ones
+  const keep = $('score').value.split('\n').filter(l => { const t = parseFloat(l); return l.trim() && (isNaN(t) || t < a || t >= b); });
+  const all = keep.concat(text ? text.split('\n') : []).sort((x, y) => (parseFloat(x) || 0) - (parseFloat(y) || 0));
+  $('score').value = all.join('\n');
+  showWords(parseScore($('score').value).words);
+}
+async function analysePart(p, tag, modelId) {
+  const sr = clip.sr, i0 = Math.floor(p.from * sr), i1 = Math.min(clip.L.length, Math.floor(p.to * sr)), off = p.from;
+  say(tag + 'SPLITTING OFF THE VOCALS 0%'); await tick();
+  const sp = await splitClip(clip.L.subarray(i0, i1), clip.R ? clip.R.subarray(i0, i1) : null, sr, x => say(tag + 'SPLITTING OFF THE VOCALS ' + Math.round(x * 100) + '%'));
+  p.stereo = sp.stereo; p.centre = sp.stereo ? sp.centre : null; if (!sp.stereo) p.remove = false;
+  say(tag + 'FOLLOWING THE TUNE'); await tick();
+  p.midi = trackPitch(sp.sal, sp.frames); p.hopSec = sp.hopSec;
+  p.notes = notesFromTrack(p.midi, sp.hopSec).map(x => ({ start: x.start + off, midi: x.midi, dur: x.dur }));
+  let heard = null, why = '';
+  if (modelId) {
+    try { heard = await transcribe(resampleTo(sp.centre, sr, 16000), modelId, tag); }
+    catch (e) { why = String(e && e.message || e).slice(0, 70).toUpperCase(); }
+  }
+  p.done = true; clip.mixKey = '';
+  if (heard && heard.text && heard.timed.length) {
+    p.text = heard.text; p.words = heard.timed.length;
+    setScoreRange(p.from, p.to, fitTimedWords(heard.timed, p.midi, sp.hopSec, off));
+    return p.words + ' WORDS';
+  }
+  if (!p.notes.length) { p.text = ''; p.words = 0; setScoreRange(p.from, p.to, ''); return 'NO TUNE FOUND'; }
+  if (heard && heard.text) {
+    p.text = heard.text; const ws = heard.text.split(/\s+/).map(cleanWord).filter(Boolean), r = fitWordsToNotes(ws, p.notes);
+    p.words = r.usedWords; setScoreRange(p.from, p.to, r.text);
+    return p.words + ' WORDS, TIMING GUESSED';
+  }
+  p.text = ''; p.words = 0;
+  setScoreRange(p.from, p.to, fitWordsToNotes(p.notes.map(() => 'la'), p.notes).text);
+  return p.notes.length + ' NOTES, ' + (why ? 'SPEECH MODEL FAILED: ' + why : modelId ? 'NO WORDS HEARD' : 'NO WORDS YET');
+}
 async function analyse() {
   if (!clip) return;
+  if (!clip.parts.length && !addPart()) return;
+  let todo = clip.parts.filter(p => !p.done);
+  if (!todo.length) {
+    if (clip.sel < 0) { say('EVERY PART IS DONE. SELECT ONE TO DO IT AGAIN'); return; }
+    todo = [clip.parts[clip.sel]];
+  }
   stopAll(); $('analyse').disabled = true;
-  try {
-    say('SPLITTING OFF THE VOCALS 0%'); await tick();
-    if (clip.to - clip.from > MAX_REGION) { say('MARK A SHORTER PART, ' + MAX_REGION + ' SECONDS AT MOST'); $('analyse').disabled = false; return; }
-    const sr = clip.sr, i0 = Math.floor(clip.from * sr), i1 = Math.min(clip.L.length, Math.floor(clip.to * sr)), off = clip.from;
-    const sp = await splitClip(clip.L.subarray(i0, i1), clip.R ? clip.R.subarray(i0, i1) : null, sr, p => say('SPLITTING OFF THE VOCALS ' + Math.round(p * 100) + '%'));
-    clip.split = sp;
-    if (sp.stereo) {                                      // vocals are removed only inside the marked part, with a short fade at each edge
-      const il = clip.L.slice(), ir = clip.R.slice(), fade = Math.min(Math.floor(.03 * sr), (i1 - i0) >> 1);
-      for (let j = 0; j < i1 - i0; j++) {
-        const w = Math.min(1, j / fade, (i1 - i0 - 1 - j) / fade);
-        il[i0 + j] = clip.L[i0 + j] * (1 - w) + sp.instL[j] * w; ir[i0 + j] = clip.R[i0 + j] * (1 - w) + sp.instR[j] * w;
-      }
-      clip.instBuf = ctx.createBuffer(2, clip.L.length, sr);
-      clip.instBuf.copyToChannel(il, 0); clip.instBuf.copyToChannel(ir, 1);
-      $('vocals').disabled = false;
-    }
-    say('FOLLOWING THE TUNE'); await tick();
-    clip.midi = trackPitch(sp.sal, sp.frames);
-    clip.notes = notesFromTrack(clip.midi, sp.hopSec).map(x => ({ start: x.start + off, midi: x.midi, dur: x.dur }));
-    const modelId = $('model').value;
-    let heard = null, why = '';
-    if (modelId) {
-      try { heard = await transcribe(resampleTo(sp.centre, sr, 16000), modelId); }
-      catch (e) { why = String(e && e.message || e).slice(0, 90); }
-    }
-    const tail = sp.stereo ? '' : ' MONO CLIP, SO VOCALS CANNOT BE REMOVED.';
-    if (heard && heard.text) {
-      $('lyrics').value = heard.text;
-      if (heard.timed.length) {
-        $('score').value = fitTimedWords(heard.timed, clip.midi, sp.hopSec, off);
-        say('FOUND ' + heard.timed.length + ' WORDS, TIMED BY ' + heard.level.toUpperCase() + '. CHECK THEM, THEN SING.' + tail);
-      } else { fitTyped(); say('FOUND THE WORDS BUT NOT THEIR TIMING. FITTED IN ORDER.' + tail); }
-    } else if (clip.notes.length) {
-      const typed = $('lyrics').value.trim();
-      if (typed) fitTyped();
-      else $('score').value = fitWordsToNotes(clip.notes.map(() => 'la'), clip.notes).text;
-      say((modelId ? (why ? 'SPEECH MODEL FAILED: ' + why.toUpperCase() + '. ' : 'NO WORDS HEARD. ') : '') + 'FOUND ' + clip.notes.length + ' NOTES. TYPE THE WORDS, THEN FIT THEM.' + tail);
-    } else say('COULD NOT FIND A TUNE IN THIS CLIP.' + tail);
-  } catch (e) { say('ANALYSIS FAILED: ' + String(e && e.message || e).slice(0, 80).toUpperCase()); }
+  const results = [];
+  for (const p of todo) {
+    const tag = 'PART ' + (clip.parts.indexOf(p) + 1) + ': ';
+    try { results.push(tag + await analysePart(p, tag, $('model').value)); }
+    catch (e) { results.push(tag + 'FAILED, ' + String(e && e.message || e).slice(0, 60).toUpperCase()); }
+    renderParts();
+  }
+  if (clip.sel >= 0) $('lyrics').value = clip.parts[clip.sel].text || '';
   $('analyse').disabled = false;
+  say(results.join('. ') + '. CHECK THE WORDS, THEN SING');
 }
 function fitTyped() {
   const words = $('lyrics').value.split(/\s+/).map(cleanWord).filter(Boolean);
   if (!words.length) { say('TYPE SOME WORDS FIRST'); return false; }
-  let notes = clip && clip.notes && clip.notes.length ? clip.notes : null;
-  if (!notes) {                                           // no clip analysed: reuse the tune already in the score
-    notes = []; parseScore($('score').value).words.forEach(w => { let t = w.start; w.notes.forEach(x => { notes.push({ start: t, midi: x.midi, dur: x.dur }); t += x.dur; }); });
+  if (clip) {
+    const p = clip.parts[clip.sel];
+    if (!p || !p.done) { say('SELECT A PART THAT HAS BEEN ANALYSED FIRST'); return false; }
+    if (!p.notes.length) { say('NO TUNE WAS FOUND IN THAT PART'); return false; }
+    const r = fitWordsToNotes(words, p.notes);
+    p.text = $('lyrics').value; p.words = r.usedWords; setScoreRange(p.from, p.to, r.text); renderParts();
+    say('FITTED ' + r.usedWords + ' OF ' + words.length + ' WORDS TO ' + r.usedNotes + ' OF ' + p.notes.length + ' NOTES');
+    return true;
   }
+  const notes = [];                                       // no song loaded: reuse the tune already in the score
+  parseScore($('score').value).words.forEach(w => { let t = w.start; w.notes.forEach(x => { notes.push({ start: t, midi: x.midi, dur: x.dur }); t += x.dur; }); });
   if (!notes.length) { say('THERE IS NO TUNE YET TO FIT THE WORDS TO'); return false; }
   const r = fitWordsToNotes(words, notes);
-  $('score').value = r.text;
+  $('score').value = r.text; showWords(parseScore(r.text).words);
   say('FITTED ' + r.usedWords + ' OF ' + words.length + ' WORDS TO ' + r.usedNotes + ' OF ' + notes.length + ' NOTES');
   return true;
+}
+// The song with the original singer taken out of every part set to replace them.
+function mixBuffer() {
+  const on = p => p.done && p.stereo && p.remove && p.centre, key = clip.parts.map(p => (on(p) ? 'x' : '-') + p.from).join('');
+  if (!clip.parts.some(on)) return clip.origBuf;
+  if (clip.mix && clip.mixKey === key) return clip.mix;
+  const sr = clip.sr, il = clip.L.slice(), ir = clip.R.slice();
+  clip.parts.filter(on).forEach(p => {
+    const i0 = Math.floor(p.from * sr), len = p.centre.length, fade = Math.max(1, Math.min(Math.floor(.03 * sr), len >> 1));
+    for (let j = 0; j < len; j++) { const c = p.centre[j] * Math.min(1, j / fade, (len - 1 - j) / fade); il[i0 + j] -= c; ir[i0 + j] -= c; }
+  });
+  clip.mix = ctx.createBuffer(2, il.length, sr); clip.mix.copyToChannel(il, 0); clip.mix.copyToChannel(ir, 1); clip.mixKey = key;
+  return clip.mix;
 }
 function loadDemo() {
   stopAll(); clip = null;
   $('clipinfo').textContent = 'NO CLIP LOADED. THE DEMO NEEDS NONE.';
-  ['wave', 'marks', 'range'].forEach(id => { $(id).hidden = true; });
-  $('analyse').disabled = true; $('vocals').disabled = true; $('vocals').setAttribute('aria-pressed', 'false'); removeVocals = false;
+  ['wave', 'marks', 'range', 'partsbox'].forEach(id => { $(id).hidden = true; });
+  $('analyse').disabled = true;
   $('lyrics').value = DAISY_WORDS; $('score').value = daisyScore();
   showWords(parseScore($('score').value).words);
   say('DAISY BELL LOADED. PRESS SING');
@@ -997,13 +1045,14 @@ function drawWave() {
   const cv = $('wave'); if (!clip || !clip.peaks || cv.hidden) return;
   const g = cv.getContext('2d'), W = cv.width, H = cv.height, n = clip.peaks.length, bw = W / n;
   g.clearRect(0, 0, W, H);
-  const x0 = clip.from / clip.dur * W, x1 = clip.to / clip.dur * W;
-  g.fillStyle = 'rgba(229,56,45,.22)'; g.fillRect(x0, 0, Math.max(2, x1 - x0), H);
+  const px = t => t / clip.dur * W, inPart = x => clip.parts.some(q => x + bw > px(q.from) && x < px(q.to));
+  clip.parts.forEach((q, i) => { g.fillStyle = i === clip.sel ? 'rgba(229,56,45,.34)' : 'rgba(229,56,45,.2)'; g.fillRect(px(q.from), 0, Math.max(2, px(q.to) - px(q.from)), H); });
   let top = 0; for (let c = 0; c < n; c++) if (clip.peaks[c] > top) top = clip.peaks[c];
   for (let c = 0; c < n; c++) {
-    const x = c * bw, inside = x + bw > x0 && x < x1, h = Math.max(1, clip.peaks[c] / (top || 1) * (H - 6));
-    g.fillStyle = inside ? '#e5382d' : '#6c6c76'; g.fillRect(x, (H - h) / 2, Math.max(1, bw - 1), h);
+    const x = c * bw, h = Math.max(1, clip.peaks[c] / (top || 1) * (H - 6));
+    g.fillStyle = inPart(x) ? '#e5382d' : '#6c6c76'; g.fillRect(x, (H - h) / 2, Math.max(1, bw - 1), h);
   }
+  g.strokeStyle = '#f1efe8'; g.lineWidth = 2; g.strokeRect(px(clip.from) + 1, 1, Math.max(3, px(clip.to) - px(clip.from) - 2), H - 2);   // the marker
   const p = clipPos();
   if (p !== null) { g.fillStyle = '#f1efe8'; g.fillRect(p / clip.dur * W - 1, 0, 2, H); }
 }
@@ -1018,6 +1067,39 @@ function previewFrom(offset) {
   say('PLAYING THE CLIP. MARK START AND MARK END AS IT GOES');
   timers.push(setTimeout(() => stopAll('READY'), (clip.dur - offset + 0.3) * 1000));
 }
+function renderParts() {
+  const box = $('parts'); box.textContent = '';
+  if (!clip) return;
+  clip.parts.forEach((p, i) => {
+    const row = document.createElement('div'); row.className = 'part' + (i === clip.sel ? ' cur' : '');
+    const sel = document.createElement('button'); sel.type = 'button'; sel.className = 'sel'; sel.id = 'part-' + i;
+    sel.textContent = 'PART ' + (i + 1) + '  ' + p.from.toFixed(1) + ' TO ' + p.to.toFixed(1) + ' S  ' + (!p.done ? 'NOT ANALYSED' : p.words ? p.words + ' WORDS' : p.notes.length + ' NOTES');
+    sel.addEventListener('click', () => { clip.sel = i; setRegion(p.from, p.to); $('lyrics').value = p.text || ''; renderParts(); say('PART ' + (i + 1) + ' SELECTED'); });
+    const mode = document.createElement('button'); mode.type = 'button'; mode.id = 'mode-' + i;
+    mode.textContent = p.remove ? 'REPLACES SINGER' : 'WITH SINGER'; mode.setAttribute('aria-pressed', String(!!p.remove));
+    mode.disabled = !clip.R || (p.done && !p.stereo);
+    mode.addEventListener('click', () => { p.remove = !p.remove; clip.mixKey = ''; renderParts(); say('PART ' + (i + 1) + (p.remove ? ': THE ROBOT REPLACES THE SINGER' : ': THE ROBOT SINGS WITH THE SINGER')); });
+    const del = document.createElement('button'); del.type = 'button'; del.textContent = 'X'; del.setAttribute('aria-label', 'Remove part ' + (i + 1));
+    del.addEventListener('click', () => {
+      setScoreRange(p.from, p.to, ''); clip.parts.splice(i, 1); clip.sel = Math.min(clip.sel, clip.parts.length - 1); clip.mixKey = '';
+      renderParts(); say('PART REMOVED');
+    });
+    row.append(sel, mode, del); box.append(row);
+  });
+  drawWave();
+}
+function addPart() {
+  const a = clip.from, b = clip.to;
+  if (b - a > MAX_REGION) { say('MARK A SHORTER PART, ' + MAX_REGION + ' SECONDS AT MOST'); return false; }
+  const hit = clip.parts.findIndex(p => a < p.to && b > p.from);
+  if (hit >= 0) { say('THIS OVERLAPS PART ' + (hit + 1) + '. MOVE THE MARKS FIRST'); return false; }
+  const part = { from: a, to: b, remove: false, done: false, stereo: !!clip.R, centre: null, midi: null, hopSec: 0, notes: [], text: '', words: 0 };
+  clip.parts.push(part); clip.parts.sort((x, y) => x.from - y.from); clip.sel = clip.parts.indexOf(part);
+  $('lyrics').value = ''; renderParts();
+  say('PART ' + (clip.sel + 1) + ' ADDED. ADD MORE, OR FIND THE TUNE AND THE WORDS');
+  return true;
+}
+$('addpart').addEventListener('click', addPart);
 $('play').addEventListener('click', () => previewFrom(Math.max(0, clip.from - 2)));
 $('wave').addEventListener('click', e => { const r = e.currentTarget.getBoundingClientRect(); previewFrom((e.clientX - r.left) / r.width * clip.dur); });
 $('mfrom').addEventListener('click', () => {
@@ -1036,10 +1118,6 @@ $('stop').addEventListener('click', () => stopAll('STOPPED'));
 $('vrobot').addEventListener('input', applyMix);
 $('vmusic').addEventListener('input', applyMix);
 $('ring').addEventListener('click', e => { const b = e.currentTarget; b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); applyMix(); });
-$('vocals').addEventListener('click', e => {
-  removeVocals = !removeVocals; e.currentTarget.setAttribute('aria-pressed', String(removeVocals));
-  say(removeVocals ? 'ORIGINAL VOCALS REMOVED FROM THE NEXT PLAY' : 'ORIGINAL VOCALS KEPT');
-});
 $('file').addEventListener('change', e => loadFile(e.target.files[0]));
 $('analyse').addEventListener('click', analyse);
 $('fit').addEventListener('click', fitTyped);
