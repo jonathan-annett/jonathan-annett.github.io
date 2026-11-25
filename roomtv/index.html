@@ -3,119 +3,303 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CSS 3D room with a live TV</title>
+<title>CSS 3D rooms with live TVs</title>
 <style>
   html, body { margin: 0; height: 100%; background: #111; color: #ddd; font-family: system-ui, sans-serif; overflow: hidden; }
+  button { font-family: inherit; touch-action: manipulation; }
 
   /* The "camera lens": perspective sets the field of view. */
   #viewport { position: fixed; inset: 0; perspective: 500px; overflow: hidden; touch-action: none; cursor: grab; }
   #viewport:active { cursor: grabbing; }
 
-  /* Everything in the room hangs off this element; moving it moves the camera. */
+  /* Everything in the world hangs off this element; moving it moves the camera. */
   #camera { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
 
-  /* Room is 800 wide x 400 high x 800 deep, centred on the origin. */
-  .wall { position: absolute; width: 800px; height: 400px; margin: -200px 0 0 -400px;
-          background-color: #5f5e5a;
-          background-image: linear-gradient(#444441 2px, transparent 2px), linear-gradient(90deg, #444441 2px, transparent 2px);
-          background-size: 100px 50px; }
-  .wall.side { background-color: #4a4946; }
-  .slab { position: absolute; width: 800px; height: 800px; margin: -400px 0 0 -400px; }
+  .wall { position: absolute; left: 0; top: 0; transform-style: preserve-3d;
+          background-image: linear-gradient(#0003 2px, transparent 2px), linear-gradient(90deg, #0003 2px, transparent 2px);
+          background-size: 100px 52px; }
+  .slab { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
   .floor { background-color: #412402;
            background-image: linear-gradient(#633806 2px, transparent 2px), linear-gradient(90deg, #633806 2px, transparent 2px);
-           background-size: 80px 80px; }
+           background-size: 50px 50px; }
   .ceiling { background-color: #2c2c2a; }
 
-  /* The TV is an ordinary child of the back wall. */
-  .tv { position: absolute; left: 240px; top: 90px; width: 320px; height: 180px;
-        background: #000; border: 10px solid #1a1a1a; border-radius: 6px; box-shadow: 0 0 40px rgba(120, 170, 255, 0.25); }
-  .tv img, .tv canvas { display: block; width: 100%; height: 100%; object-fit: cover; }
+  /* A TV is an ordinary child of its wall. */
+  .tv { position: absolute; box-sizing: border-box; background: #000; border: 6px solid #1a1a1a; border-radius: 4px;
+        transform: translateZ(1px); }   /* own layer, so the wall isn't repainted on every video frame */
+  .tv img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
   #hud { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
-         display: flex; align-items: center; justify-content: space-between; gap: 12px; pointer-events: none; }
-  #status { font-size: 13px; line-height: 1.4; background: rgba(0, 0, 0, 0.55); padding: 8px 10px; border-radius: 8px; max-width: 60%; }
-  #pad { display: flex; gap: 8px; pointer-events: auto; }
-  #pad button { width: 52px; height: 52px; font-size: 22px; color: #ddd; background: rgba(0, 0, 0, 0.55);
-                border: 1px solid #666; border-radius: 10px; touch-action: manipulation; }
+         display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; pointer-events: none; }
+  #status { font-size: 13px; line-height: 1.4; background: rgba(0, 0, 0, 0.55); padding: 8px 10px; border-radius: 8px; min-width: 0; }
+  #pad { display: flex; gap: 6px; pointer-events: auto; flex-shrink: 0; }
+  #pad button { width: 46px; height: 46px; font-size: 20px; color: #ddd; background: rgba(0, 0, 0, 0.55);
+                border: 1px solid #666; border-radius: 10px; }
   #pad button:active { background: rgba(255, 255, 255, 0.2); }
 
-  #panel { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px; right: 12px; max-width: 480px; margin: 0 auto;
-           background: rgba(20, 20, 20, 0.95); border: 1px solid #666; border-radius: 10px; padding: 14px; z-index: 2; }
-  #panel[hidden] { display: none; }
-  #panel label { display: block; font-size: 14px; margin-bottom: 8px; }
-  #panel input { width: 100%; box-sizing: border-box; height: 44px; padding: 0 10px; font-size: 16px; color: #eee;
+  .sheet { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px; right: 12px; max-width: 480px; margin: 0 auto;
+           background: rgba(20, 20, 20, 0.95); border: 1px solid #666; border-radius: 10px; padding: 12px; z-index: 2;
+           max-height: calc(100% - 110px); overflow-y: auto; box-sizing: border-box; }
+  .sheet[hidden], [hidden] { display: none !important; }
+  .sheet label { display: block; font-size: 14px; margin-bottom: 8px; }
+  .sheet input { width: 100%; box-sizing: border-box; height: 44px; padding: 0 10px; font-size: 16px; color: #eee;
                  background: #000; border: 1px solid #666; border-radius: 8px; }
-  #urlMsg { font-size: 13px; color: #f09595; min-height: 18px; margin: 6px 0; }
-  #panel .row { display: flex; gap: 8px; }
-  #panel .row button { flex: 1; height: 44px; font-size: 15px; color: #ddd; background: #2c2c2a; border: 1px solid #666; border-radius: 8px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .row button { flex: 1 1 auto; min-height: 44px; padding: 0 10px; font-size: 15px; color: #ddd; background: #2c2c2a;
+                border: 1px solid #666; border-radius: 8px; }
+  .row button.on { background: #0f6e56; border-color: #5dcaa5; }
+  .note { font-size: 13px; line-height: 1.4; margin: 8px 0 0; }
+  .warn { color: #f09595; }
+  #map { display: block; width: 100%; height: 170px; background: #000; border-radius: 8px; }
+  .room { border-top: 1px solid #444; margin-top: 10px; padding-top: 8px; }
+  .room b { font-weight: 500; font-size: 15px; }
+  .room span { font-size: 13px; color: #aaa; margin-left: 6px; }
+  .room .row button { min-height: 40px; font-size: 14px; }
 </style>
 </head>
 <body>
 
-<div id="viewport">
-  <div id="camera">
-    <div class="wall" style="transform: translateZ(-400px)">
-      <div class="tv" id="tv"><img id="feed" alt="Live stream"></div>
+<div id="viewport"><div id="camera"></div></div>
+
+<div id="roomsPanel" class="sheet" hidden>
+  <canvas id="map"></canvas>
+  <p id="gps" class="note">Location is off.</p>
+
+  <div id="idle">
+    <div class="row">
+      <button id="newRoom">New room</button>
+      <button id="follow">Follow me: off</button>
+      <button id="closeRooms">Close</button>
     </div>
-    <div class="wall side" style="transform: rotateY(90deg) translateZ(-400px)"></div>
-    <div class="wall side" style="transform: rotateY(-90deg) translateZ(-400px)"></div>
-    <div class="wall" style="transform: rotateY(180deg) translateZ(-400px)"></div>
-    <div class="slab floor" style="transform: rotateX(90deg) translateZ(-200px)"></div>
-    <div class="slab ceiling" style="transform: rotateX(-90deg) translateZ(-200px)"></div>
+    <div id="list"></div>
   </div>
+
+  <div id="mapper" hidden>
+    <label for="roomName" style="margin-top: 10px">Room name</label>
+    <input id="roomName" type="text" autocomplete="off" placeholder="Living room">
+    <p id="mapInfo" class="note"></p>
+    <div class="row">
+      <button id="mark">Mark corner</button>
+      <button id="undo">Undo corner</button>
+    </div>
+    <div class="row">
+      <button id="finish">Finish room</button>
+      <button id="cancel">Cancel</button>
+    </div>
+  </div>
+
+  <p id="capMsg" class="note"></p>
 </div>
 
-<div id="panel" hidden>
-  <label for="url">Stream URL (saved in this browser only)</label>
+<div id="urlPanel" class="sheet" hidden>
+  <label for="url" id="urlLabel">Stream URL</label>
   <input id="url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="http://192.168.0.50:8080/video">
-  <div id="urlMsg"></div>
+  <p id="urlMsg" class="note warn"></p>
   <div class="row">
     <button id="save">Save</button>
-    <button id="reset">Use sample</button>
-    <button id="close">Close</button>
+    <button id="reset">Clear</button>
+    <button id="closeUrl">Close</button>
   </div>
 </div>
 
 <div id="hud">
-  <div id="status">Drag to look. Arrow keys or WASD to move.</div>
+  <div id="status">Drag to look. Arrows or WASD to move.</div>
   <div id="pad">
-    <button id="gear" aria-label="Stream settings">&#9881;</button>
+    <button id="gear" aria-label="Default stream settings">&#9881;</button>
+    <button id="roomsBtn" aria-label="Rooms and mapping">&#9776;</button>
     <button id="back" aria-label="Step back">&#8595;</button>
     <button id="fwd" aria-label="Step forward">&#8593;</button>
   </div>
 </div>
 
 <script>
-  // Built-in sample: a raw MJPEG file in this folder (320x180, 60 frames).
-  // Use the gear button, or append ?src=URL to the page address, to show a live stream instead.
-  var SAMPLE_FILE = 'sample.mjpeg';
-  var SAMPLE_FPS = 10;
+  // ---------- constants ----------
+  var S = 100;             // pixels per metre
+  var H = 2.6;             // wall height in metres
+  var P = 500;             // must match #viewport perspective
+  var SAMPLE_FILE = 'sample.mjpeg', SAMPLE_FPS = 10;
+  var KEY_ROOMS = 'roomtv.rooms', KEY_SRC = 'roomtv.src';
+  var CAPTURE_SECONDS = 4;
 
-  var PERSPECTIVE = 500;   // must match #viewport perspective
-  var LIMIT = 320;         // how far the camera may move from the room centre
+  // Shown until you map a room of your own. Coordinates are metres: x = east, z = south.
+  var DEMO = { name: 'Demo room', corners: [{ x: -4, z: -4 }, { x: 4, z: -4 }, { x: 4, z: 4 }, { x: -4, z: 4 }],
+               tv: { wall: 0, t: 0.5, url: null } };
 
-  var camera = document.getElementById('camera');
-  var viewport = document.getElementById('viewport');
-  var statusEl = document.getElementById('status');
-  var feed = document.getElementById('feed');
+  function $(id) { return document.getElementById(id); }
+  var camera = $('camera'), viewport = $('viewport'), statusEl = $('status');
+  var HINT = 'Drag to look. Arrows or WASD to move.';
 
-  var yaw = 20, x = 0, z = 120;   // degrees, px, px
+  // ---------- storage (this browser only) ----------
+  function readStore(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function writeStore(key, v) { try { if (v == null) localStorage.removeItem(key); else localStorage.setItem(key, v); return true; } catch (e) { return false; } }
 
-  function render() {
-    camera.style.transform =
-      'translateZ(' + PERSPECTIVE + 'px) rotateY(' + yaw + 'deg) translate3d(' + (-x) + 'px, 0, ' + (-z) + 'px)';
+  var data = (function () {
+    try { var d = JSON.parse(readStore(KEY_ROOMS)); if (d && Array.isArray(d.rooms)) return d; } catch (e) {}
+    return { origin: null, rooms: [] };
+  })();
+  function saveData() { writeStore(KEY_ROOMS, JSON.stringify(data)); }
+  function shownRooms() { return data.rooms.length ? data.rooms : [DEMO]; }
+  function defaultUrl() { return new URLSearchParams(location.search).get('src') || readStore(KEY_SRC) || null; }
+
+  // ---------- geometry ----------
+  function insidePoly(px, pz, c) {
+    var inside = false;
+    for (var i = 0, j = c.length - 1; i < c.length; j = i++) {
+      if ((c[i].z > pz) !== (c[j].z > pz) && px < (c[j].x - c[i].x) * (pz - c[i].z) / (c[j].z - c[i].z) + c[i].x) inside = !inside;
+    }
+    return inside;
+  }
+  function centroid(c) {
+    var x = 0, z = 0;
+    c.forEach(function (p) { x += p.x; z += p.z; });
+    return { x: x / c.length, z: z / c.length };
+  }
+  // Closest wall to a point: returns the wall index and how far along it (0..1).
+  function nearestWall(p, c) {
+    var best = null;
+    for (var i = 0; i < c.length; i++) {
+      var a = c[i], b = c[(i + 1) % c.length], dx = b.x - a.x, dz = b.z - a.z, len2 = dx * dx + dz * dz;
+      if (len2 < 0.0025) continue;
+      var t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.z - a.z) * dz) / len2));
+      var d = Math.hypot(p.x - (a.x + dx * t), p.z - (a.z + dz * t));
+      if (!best || d < best.d) best = { wall: i, t: t, d: d };
+    }
+    return best;
+  }
+  function tvPoint(room) {
+    var a = room.corners[room.tv.wall], b = room.corners[(room.tv.wall + 1) % room.corners.length];
+    return { x: a.x + (b.x - a.x) * room.tv.t, z: a.z + (b.z - a.z) * room.tv.t };
   }
 
-  function clamp(v) { return Math.max(-LIMIT, Math.min(LIMIT, v)); }
+  // ---------- sample MJPEG file player ----------
+  // A raw .mjpeg file is JPEGs back to back. Static hosting can't stream it, so split it
+  // at the JPEG start/end markers and cycle the frames through every TV that needs them.
+  var frames = [], frameIndex = 0, sampleImgs = [];
+  function splitJpegs(bytes) {
+    var out = [], start = -1;
+    for (var i = 0; i < bytes.length - 1; i++) {
+      if (bytes[i] !== 0xFF) continue;
+      if (bytes[i + 1] === 0xD8 && start < 0) start = i;
+      else if (bytes[i + 1] === 0xD9 && start >= 0) { out.push(bytes.subarray(start, i + 2)); start = -1; }
+    }
+    return out;
+  }
+  fetch(SAMPLE_FILE).then(function (r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }).then(function (buf) {
+    frames = splitJpegs(new Uint8Array(buf)).map(function (f) { return URL.createObjectURL(new Blob([f], { type: 'image/jpeg' })); });
+  }).catch(function () { statusEl.textContent = 'The sample file did not load. ' + HINT; });
+  setInterval(function () {
+    if (!frames.length) return;
+    frameIndex = (frameIndex + 1) % frames.length;
+    sampleImgs = sampleImgs.filter(function (img) { return img.isConnected; });
+    sampleImgs.forEach(function (img) { img.src = frames[frameIndex]; });
+  }, 1000 / SAMPLE_FPS);
 
+  function useSample(img, failed) {
+    img.dataset.mode = 'sample';
+    sampleImgs.push(img);
+    if (frames.length) img.src = frames[frameIndex];
+    if (failed) statusEl.textContent = 'A stream did not load, so that TV shows the sample. ' + HINT;
+  }
+  // A live stream: the browser plays multipart MJPEG in the <img> by itself.
+  function attachStream(img, url) {
+    if (!url) { useSample(img, false); return; }
+    img.dataset.mode = 'live';
+    img.addEventListener('error', function () { if (img.dataset.mode === 'live') useSample(img, true); });
+    img.src = url;
+    setTimeout(function () { if (img.isConnected && img.dataset.mode === 'live' && !img.naturalWidth) useSample(img, true); }, 6000);
+  }
+
+  // ---------- building the 3D world ----------
+  function addRoom(room) {
+    var c = room.corners, n = c.length, hp = H * S;
+    var minX = Infinity, minZ = Infinity, maxX = -Infinity, maxZ = -Infinity;
+    c.forEach(function (p) { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z); });
+
+    // Floor and ceiling: one flat slab each, clipped to the room's outline.
+    var clip = 'polygon(' + c.map(function (p) { return ((p.x - minX) * S).toFixed(1) + 'px ' + ((p.z - minZ) * S).toFixed(1) + 'px'; }).join(',') + ')';
+    [['floor', hp / 2], ['ceiling', -hp / 2]].forEach(function (s) {
+      var el = document.createElement('div');
+      el.className = 'slab ' + s[0];
+      el.style.width = ((maxX - minX) * S) + 'px';
+      el.style.height = ((maxZ - minZ) * S) + 'px';
+      el.style.clipPath = clip;
+      el.style.transform = 'translate3d(' + (minX * S) + 'px,' + s[1] + 'px,' + (minZ * S) + 'px) rotateX(90deg)';
+      camera.appendChild(el);
+    });
+
+    // One wall per edge, turned so its front faces into the room.
+    for (var i = 0; i < n; i++) {
+      var a = c[i], b = c[(i + 1) % n], dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz);
+      if (len < 0.05) continue;
+      var ang = Math.atan2(dz, dx), mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
+      var flipped = !insidePoly(mx - Math.sin(ang) * 0.05, mz + Math.cos(ang) * 0.05, c);
+      if (flipped) ang += Math.PI;
+
+      var wall = document.createElement('div');
+      wall.className = 'wall';
+      wall.style.width = (len * S) + 'px';
+      wall.style.height = hp + 'px';
+      wall.style.margin = (-hp / 2) + 'px 0 0 ' + (-len * S / 2) + 'px';
+      wall.style.backgroundColor = 'hsl(40,3%,' + Math.round(30 + 12 * Math.abs(Math.cos(ang))) + '%)';
+      wall.style.transform = 'translate3d(' + (mx * S) + 'px,0,' + (mz * S) + 'px) rotateY(' + (-ang) + 'rad)';
+
+      if (room.tv && room.tv.wall === i) {
+        var tvW = Math.min(Math.max(len * 0.4, 0.8), 3.2, len * 0.9), tvH = tvW * 9 / 16;
+        var along = (flipped ? 1 - room.tv.t : room.tv.t) * len;
+        var left = Math.max(0, Math.min(len - tvW, along - tvW / 2));
+        var tv = document.createElement('div');
+        tv.className = 'tv';
+        tv.style.width = (tvW * S) + 'px';
+        tv.style.height = (tvH * S) + 'px';
+        tv.style.left = (left * S) + 'px';
+        tv.style.top = ((H - tvH) / 2 * S - 10) + 'px';
+        var img = document.createElement('img');
+        img.alt = 'TV in ' + room.name;
+        tv.appendChild(img);
+        wall.appendChild(tv);
+        attachStream(img, room.tv.url || defaultUrl());
+      }
+      camera.appendChild(wall);
+    }
+  }
+  function buildScene() {
+    camera.textContent = '';
+    sampleImgs = [];
+    shownRooms().forEach(addRoom);
+  }
+
+  // ---------- camera ----------
+  var yaw = 20, x = 0, z = 1.2;      // degrees clockwise from north, metres east, metres south
+  var follow = false, heading = null;
+  function render() {
+    camera.style.transform = 'translateZ(' + P + 'px) rotateY(' + yaw + 'deg) translate3d(' + (-x * S) + 'px,0,' + (-z * S) + 'px)';
+  }
   function move(forward, strafe) {
     var r = yaw * Math.PI / 180;
-    x = clamp(x + Math.sin(r) * forward + Math.cos(r) * strafe);
-    z = clamp(z - Math.cos(r) * forward + Math.sin(r) * strafe);
+    x += Math.sin(r) * forward + Math.cos(r) * strafe;
+    z += -Math.cos(r) * forward + Math.sin(r) * strafe;
+    render();
+  }
+  // A spot to stand in: the middle if that's inside the room, otherwise (L-shapes and
+  // the like) whichever candidate inside the outline is furthest from a wall.
+  function standPoint(corners) {
+    var n = corners.length, cands = [centroid(corners)], best = null;
+    for (var i = 0; i < n; i++) cands.push(centroid([corners[i], corners[(i + 1) % n], corners[(i + 2) % n]]));
+    cands.forEach(function (p) {
+      if (!insidePoly(p.x, p.z, corners)) return;
+      var w = nearestWall(p, corners), d = w ? w.d : 0;
+      if (!best || d > best.d) best = { x: p.x, z: p.z, d: d };
+    });
+    return best || cands[0];
+  }
+  function goTo(room) {
+    var c = standPoint(room.corners);
+    x = c.x; z = c.z;
+    if (room.tv) { var t = tvPoint(room); yaw = Math.atan2(t.x - x, -(t.z - z)) * 180 / Math.PI; }
+    setFollow(false);
     render();
   }
 
-  // Drag to look
   var dragging = false, lastX = 0;
   viewport.addEventListener('pointerdown', function (e) { dragging = true; lastX = e.clientX; viewport.setPointerCapture(e.pointerId); });
   viewport.addEventListener('pointermove', function (e) {
@@ -127,153 +311,296 @@
   viewport.addEventListener('pointerup', function () { dragging = false; });
   viewport.addEventListener('pointercancel', function () { dragging = false; });
 
-  // Keyboard: held keys move smoothly
   var keys = {};
   window.addEventListener('keydown', function (e) { if (e.target.tagName === 'INPUT') return; keys[e.key.toLowerCase()] = true; });
   window.addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
+  $('fwd').addEventListener('click', function () { move(0.6, 0); });
+  $('back').addEventListener('click', function () { move(-0.6, 0); });
+
+  var frameCount = 0;
   function tick() {
     var f = 0, s = 0, turn = 0;
-    if (keys['w'] || keys['arrowup']) f += 6;
-    if (keys['s'] || keys['arrowdown']) f -= 6;
-    if (keys['a']) s -= 6;
-    if (keys['d']) s += 6;
+    if (keys['w'] || keys['arrowup']) f += 0.06;
+    if (keys['s'] || keys['arrowdown']) f -= 0.06;
+    if (keys['a']) s -= 0.06;
+    if (keys['d']) s += 0.06;
     if (keys['arrowleft']) turn -= 2;
     if (keys['arrowright']) turn += 2;
     if (turn) { yaw += turn; render(); }
     if (f || s) move(f, s);
+    if (follow) {
+      // Ease towards the phone's position and compass heading.
+      if (lastFix) { x += (lastFix.x - x) * 0.08; z += (lastFix.z - z) * 0.08; }
+      if (heading != null && !dragging) yaw += (((heading - yaw) % 360 + 540) % 360 - 180) * 0.15;
+      render();
+    }
+    if (!$('roomsPanel').hidden && ++frameCount % 10 === 0) drawMap();
     requestAnimationFrame(tick);
   }
-  requestAnimationFrame(tick);
 
-  // Touch buttons
-  document.getElementById('fwd').addEventListener('click', function () { move(60, 0); });
-  document.getElementById('back').addEventListener('click', function () { move(-60, 0); });
+  // ---------- phone location ----------
+  var watchId = null, lastFix = null, cap = null;
+  var gpsEl = $('gps'), capMsg = $('capMsg');
 
-  // If the stream can't be shown, draw a stand-in so the TV isn't blank.
-  var tv = document.getElementById('tv');
-  var standIn = document.createElement('canvas');
-  standIn.width = 320; standIn.height = 180;
-  var fellBack = false, loadTimer = null;
-  var HINT = ' Drag to look, arrows or WASD to move.';
-
-  function drawStandIn(t) {
-    if (!fellBack) return;
-    var g = standIn.getContext('2d');
-    var bars = ['#d3d1c7', '#ef9f27', '#5dcaa5', '#97c459', '#d4537e', '#e24b4a', '#378add'];
-    for (var i = 0; i < 7; i++) { g.fillStyle = bars[i]; g.fillRect(i * 320 / 7, 0, 320 / 7 + 1, 180); }
-    g.fillStyle = '#000';
-    g.fillRect(((t || 0) / 8) % 400 - 80, 0, 60, 180);
-    g.fillRect(0, 130, 320, 50);
-    g.fillStyle = '#fff'; g.font = '20px monospace';
-    g.fillText('NO SIGNAL ' + new Date().toLocaleTimeString(), 14, 162);
-    requestAnimationFrame(drawStandIn);
+  function toLocal(lat, lon) {
+    var o = data.origin;
+    return { x: (lon - o.lon) * 111320 * Math.cos(o.lat * Math.PI / 180), z: -(lat - o.lat) * 110540 };
+  }
+  function startGeo() {
+    if (watchId != null) return;
+    if (!navigator.geolocation) { gpsEl.textContent = 'This browser has no location support.'; gpsEl.className = 'note warn'; return; }
+    gpsEl.textContent = 'Waiting for a location fix…';
+    watchId = navigator.geolocation.watchPosition(function (pos) {
+      if (!data.origin) { data.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude }; saveData(); }
+      var p = toLocal(pos.coords.latitude, pos.coords.longitude);
+      lastFix = { x: p.x, z: p.z, acc: pos.coords.accuracy };
+      if (cap) cap.samples.push(lastFix);
+      var rough = lastFix.acc > 5;
+      gpsEl.textContent = 'Location accuracy ±' + Math.round(lastFix.acc) + ' m.' + (rough ? ' Room shapes will be rough at this accuracy.' : '');
+      gpsEl.className = rough ? 'note warn' : 'note';
+    }, function (err) {
+      gpsEl.textContent = err.code === 1 ? 'Location permission was declined. Allow it in the browser settings to map rooms.'
+                                         : 'No location fix yet. Still trying…';
+      gpsEl.className = 'note warn';
+    }, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
   }
 
-  var player = null, token = 0;
-  function stopPlayer() {
-    if (!player) return;
-    clearInterval(player.timer);
-    player.urls.forEach(function (u) { URL.revokeObjectURL(u); });
-    player = null;
+  // Stand still for a few seconds and average the fixes, trusting the accurate ones most.
+  function capture(label, done) {
+    if (cap) return;
+    if (!lastFix) { capMsg.textContent = 'No location fix yet. Wait a moment, then try again.'; return; }
+    var left = CAPTURE_SECONDS;
+    cap = { samples: [lastFix] };
+    capMsg.textContent = label + ' Hold still… ' + left;
+    cap.timer = setInterval(function () {
+      left--;
+      if (left > 0) { capMsg.textContent = label + ' Hold still… ' + left; return; }
+      clearInterval(cap.timer);
+      var sw = 0, sx = 0, sz = 0, sa = 0;
+      cap.samples.forEach(function (f) { var w = 1 / Math.pow(Math.max(f.acc, 1), 2); sw += w; sx += f.x * w; sz += f.z * w; sa += f.acc * w; });
+      cap = null;
+      done({ x: sx / sw, z: sz / sw, acc: sa / sw });
+    }, 1000);
   }
+  function cancelCapture() { if (cap) { clearInterval(cap.timer); cap = null; } }
 
-  function fallback() {
-    if (fellBack) return;
-    stopPlayer();
-    fellBack = true;
-    tv.replaceChild(standIn, feed);
-    statusEl.textContent = 'Stream did not load, showing a stand-in.' + HINT;
-    requestAnimationFrame(drawStandIn);
+  // Compass heading for "Follow me".
+  function onOrient(e) {
+    if (typeof e.webkitCompassHeading === 'number') heading = e.webkitCompassHeading;
+    else if (e.absolute && e.alpha != null) heading = 360 - e.alpha;
   }
-
-  function resetTv(label) {
-    clearTimeout(loadTimer);
-    stopPlayer();
-    token++;
-    if (fellBack) { fellBack = false; tv.replaceChild(feed, standIn); }
-    statusEl.textContent = label + HINT;
-    feed.removeAttribute('src');
-  }
-
-  // A live stream: the browser plays multipart MJPEG in the <img> by itself.
-  function setSource(url, label) {
-    resetTv(label);
-    feed.src = url;
-    loadTimer = setTimeout(function () { if (!feed.naturalWidth) fallback(); }, 6000);
-  }
-
-  // A raw .mjpeg file is just JPEGs back to back. Static hosting can't stream it,
-  // so split it at the JPEG start/end markers and show the frames in the same <img>.
-  function splitJpegs(bytes) {
-    var frames = [], start = -1;
-    for (var i = 0; i < bytes.length - 1; i++) {
-      if (bytes[i] !== 0xFF) continue;
-      if (bytes[i + 1] === 0xD8 && start < 0) start = i;
-      else if (bytes[i + 1] === 0xD9 && start >= 0) { frames.push(bytes.subarray(start, i + 2)); start = -1; }
+  var orientOn = false;
+  function startCompass() {
+    if (orientOn) return;
+    function listen() {
+      orientOn = true;
+      window.addEventListener('deviceorientationabsolute', onOrient);
+      window.addEventListener('deviceorientation', onOrient);
     }
-    return frames;
+    if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission().then(function (r) { if (r === 'granted') listen(); }).catch(function () {});
+    } else listen();
+  }
+  function setFollow(on) {
+    follow = on;
+    $('follow').textContent = 'Follow me: ' + (on ? 'on' : 'off');
+    $('follow').className = on ? 'on' : '';
+    if (on) { startGeo(); startCompass(); }
+  }
+  $('follow').addEventListener('click', function () { setFollow(!follow); });
+
+  // ---------- mapping rooms ----------
+  var mapping = null;
+  function updateMapper() {
+    $('idle').hidden = !!mapping;
+    $('mapper').hidden = !mapping;
+    if (mapping) {
+      var n = mapping.corners.length;
+      $('mapInfo').textContent = n + (n === 1 ? ' corner' : ' corners') + ' marked. Walk the walls in order and mark every corner, as many as the room has.';
+    }
+    drawMap();
+  }
+  $('newRoom').addEventListener('click', function () {
+    startGeo();
+    mapping = { corners: [] };
+    $('roomName').value = '';
+    capMsg.textContent = 'Stand in the first corner and tap Mark corner.';
+    updateMapper();
+  });
+  $('mark').addEventListener('click', function () {
+    capture('Marking corner.', function (pt) {
+      if (!mapping) return;
+      mapping.corners.push(pt);
+      capMsg.textContent = 'Corner ' + mapping.corners.length + ' saved (±' + Math.round(pt.acc) + ' m). Walk to the next one.';
+      updateMapper();
+    });
+  });
+  $('undo').addEventListener('click', function () {
+    if (cap || !mapping.corners.length) return;
+    mapping.corners.pop();
+    capMsg.textContent = 'Last corner removed.';
+    updateMapper();
+  });
+  $('finish').addEventListener('click', function () {
+    if (cap) return;
+    if (mapping.corners.length < 3) { capMsg.textContent = 'Mark at least 3 corners first.'; return; }
+    var room = { name: $('roomName').value.trim() || 'Room ' + (data.rooms.length + 1),
+                 corners: mapping.corners.map(function (p) { return { x: p.x, z: p.z }; }), tv: null };
+    data.rooms.push(room);
+    saveData();
+    mapping = null;
+    buildScene();
+    goTo(room);
+    renderList();
+    capMsg.textContent = room.name + ' saved. Stand next to its TV and tap TV here.';
+    updateMapper();
+  });
+  $('cancel').addEventListener('click', function () {
+    cancelCapture();
+    mapping = null;
+    capMsg.textContent = '';
+    updateMapper();
+  });
+
+  function button(label, onClick) {
+    var b = document.createElement('button');
+    b.textContent = label;
+    b.addEventListener('click', function () { onClick(b); });
+    return b;
+  }
+  function renderList() {
+    var list = $('list');
+    list.textContent = '';
+    if (!data.rooms.length) {
+      var p = document.createElement('p');
+      p.className = 'note';
+      p.textContent = 'No rooms mapped yet, so the demo room is shown. Tap New room, then walk to each corner.';
+      list.appendChild(p);
+      return;
+    }
+    data.rooms.forEach(function (room, i) {
+      var box = document.createElement('div'); box.className = 'room';
+      var name = document.createElement('b'); name.textContent = room.name;
+      var info = document.createElement('span'); info.textContent = room.corners.length + ' corners, ' + (room.tv ? 'TV placed' : 'no TV yet');
+      var row = document.createElement('div'); row.className = 'row';
+      row.appendChild(button('Go', function () { goTo(room); drawMap(); }));
+      row.appendChild(button(room.tv ? 'Move TV here' : 'TV here', function () {
+        startGeo();
+        capture('Placing the TV.', function (pt) {
+          var w = nearestWall(pt, room.corners);
+          if (!w) { capMsg.textContent = 'This room has no usable walls.'; return; }
+          room.tv = { wall: w.wall, t: w.t, url: room.tv ? room.tv.url : null };
+          saveData(); buildScene(); goTo(room); renderList();
+          capMsg.textContent = 'TV placed on the nearest wall of ' + room.name + '.';
+          openUrl(i);
+        });
+      }));
+      if (room.tv) row.appendChild(button('Stream', function () { openUrl(i); }));
+      row.appendChild(button('Delete', function (b) {
+        if (b.textContent !== 'Tap again to delete') { b.textContent = 'Tap again to delete'; return; }
+        data.rooms.splice(i, 1);
+        if (!data.rooms.length) { data.origin = null; lastFix = null; x = 0; z = 1.2; yaw = 20; setFollow(false); render(); }
+        saveData(); buildScene(); renderList(); drawMap();
+      }));
+      box.appendChild(name); box.appendChild(info); box.appendChild(row);
+      list.appendChild(box);
+    });
   }
 
-  function playFile(url, fps, label) {
-    resetTv(label);
-    var mine = token;
-    fetch(url).then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.arrayBuffer();
-    }).then(function (buf) {
-      if (mine !== token) return;
-      var urls = splitJpegs(new Uint8Array(buf)).map(function (f) {
-        return URL.createObjectURL(new Blob([f], { type: 'image/jpeg' }));
-      });
-      if (!urls.length) throw new Error('no frames');
-      var i = 0;
-      feed.src = urls[0];
-      player = { urls: urls, timer: setInterval(function () { i = (i + 1) % urls.length; feed.src = urls[i]; }, 1000 / fps) };
-    }).catch(function () { if (mine === token) fallback(); });
+  // ---------- top-down map ----------
+  function drawMap() {
+    var map = $('map'), w = map.clientWidth, h = map.clientHeight, dpr = window.devicePixelRatio || 1;
+    if (!w) return;
+    if (map.width !== Math.round(w * dpr)) { map.width = Math.round(w * dpr); map.height = Math.round(h * dpr); }
+    var g = map.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+
+    var rooms = shownRooms(), pts = [{ x: x, z: z }];
+    rooms.forEach(function (r) { pts = pts.concat(r.corners); });
+    if (mapping) pts = pts.concat(mapping.corners);
+    if (lastFix) pts.push(lastFix);
+    var minX = Infinity, minZ = Infinity, maxX = -Infinity, maxZ = -Infinity;
+    pts.forEach(function (p) { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z); });
+    var scale = Math.min((w - 30) / Math.max(maxX - minX, 4), (h - 30) / Math.max(maxZ - minZ, 4));
+    var cx = (minX + maxX) / 2, cz = (minZ + maxZ) / 2;
+    function X(v) { return w / 2 + (v - cx) * scale; }
+    function Y(v) { return h / 2 + (v - cz) * scale; }
+
+    g.font = '12px system-ui, sans-serif';
+    rooms.forEach(function (r) {
+      g.beginPath();
+      r.corners.forEach(function (p, i) { if (i) g.lineTo(X(p.x), Y(p.z)); else g.moveTo(X(p.x), Y(p.z)); });
+      g.closePath();
+      g.fillStyle = 'rgba(255,255,255,0.08)'; g.fill();
+      g.strokeStyle = '#ddd'; g.lineWidth = 1.5; g.stroke();
+      var c = centroid(r.corners);
+      g.fillStyle = '#aaa'; g.textAlign = 'center'; g.fillText(r.name, X(c.x), Y(c.z) + 4);
+      if (r.tv) { var t = tvPoint(r); g.fillStyle = '#ef9f27'; g.fillRect(X(t.x) - 4, Y(t.z) - 4, 8, 8); }
+    });
+    if (mapping && mapping.corners.length) {
+      g.beginPath();
+      mapping.corners.forEach(function (p, i) { if (i) g.lineTo(X(p.x), Y(p.z)); else g.moveTo(X(p.x), Y(p.z)); });
+      g.setLineDash([4, 4]); g.strokeStyle = '#f0997b'; g.stroke(); g.setLineDash([]);
+      g.fillStyle = '#f0997b';
+      mapping.corners.forEach(function (p) { g.beginPath(); g.arc(X(p.x), Y(p.z), 4, 0, 6.3); g.fill(); });
+    }
+    if (lastFix) {   // where the phone thinks it is, with its error circle
+      g.beginPath(); g.arc(X(lastFix.x), Y(lastFix.z), lastFix.acc * scale, 0, 6.3);
+      g.fillStyle = 'rgba(55,138,221,0.15)'; g.fill();
+      g.beginPath(); g.arc(X(lastFix.x), Y(lastFix.z), 4, 0, 6.3); g.fillStyle = '#378add'; g.fill();
+    }
+    var r = yaw * Math.PI / 180;   // the 3D camera, as an arrow
+    g.save(); g.translate(X(x), Y(z)); g.rotate(r);
+    g.beginPath(); g.moveTo(0, -9); g.lineTo(6, 6); g.lineTo(-6, 6); g.closePath(); g.fillStyle = '#5dcaa5'; g.fill();
+    g.restore();
+    g.fillStyle = '#888'; g.textAlign = 'left'; g.fillText('N ↑', 8, 16);
   }
 
-  feed.addEventListener('error', fallback);
-
-  // A pasted URL is kept in this browser's localStorage only, never in the repo.
-  var KEY = 'roomtv.src';
-  function getSaved() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
-  function putSaved(v) { try { if (v) localStorage.setItem(KEY, v); else localStorage.removeItem(KEY); return true; } catch (e) { return false; } }
-
-  function loadCurrent() {
-    var fromQuery = new URLSearchParams(location.search).get('src');
-    var saved = getSaved();
-    if (fromQuery) setSource(fromQuery, 'Stream from the page address.');
-    else if (saved) setSource(saved, 'Your saved stream.');
-    else playFile(SAMPLE_FILE, SAMPLE_FPS, 'Sample MJPEG file.');
+  // ---------- stream URL panel ----------
+  var urlTarget = null;   // null = default stream, otherwise a room index
+  function openUrl(target) {
+    urlTarget = target;
+    var room = target == null ? null : data.rooms[target];
+    $('urlLabel').textContent = room ? 'Stream URL for the TV in ' + room.name + ' (saved in this browser only)'
+                                     : 'Default stream URL for TVs without their own (saved in this browser only)';
+    $('url').value = (room ? room.tv.url : readStore(KEY_SRC)) || '';
+    $('reset').textContent = room ? 'Use default' : 'Use sample';
+    $('urlMsg').textContent = '';
+    $('roomsPanel').hidden = true;
+    $('urlPanel').hidden = false;
   }
+  function applyUrl(v) {
+    if (urlTarget == null) writeStore(KEY_SRC, v);
+    else { data.rooms[urlTarget].tv.url = v; saveData(); }
+    $('urlPanel').hidden = true;
+    statusEl.textContent = HINT;
+    buildScene();
+  }
+  $('gear').addEventListener('click', function () { if ($('urlPanel').hidden) openUrl(null); else $('urlPanel').hidden = true; });
+  $('save').addEventListener('click', function () {
+    var v = $('url').value.trim();
+    if (!/^https?:\/\//i.test(v)) { $('urlMsg').textContent = 'Enter a URL starting with http:// or https://'; return; }
+    applyUrl(v);
+  });
+  $('reset').addEventListener('click', function () { applyUrl(null); });
+  $('closeUrl').addEventListener('click', function () { $('urlPanel').hidden = true; });
+  $('url').addEventListener('input', function () { $('urlMsg').textContent = ''; });
+  $('url').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('save').click(); });
 
-  var panel = document.getElementById('panel');
-  var urlInput = document.getElementById('url');
-  var urlMsg = document.getElementById('urlMsg');
-
-  document.getElementById('gear').addEventListener('click', function () {
+  $('roomsBtn').addEventListener('click', function () {
+    var panel = $('roomsPanel');
     panel.hidden = !panel.hidden;
-    if (!panel.hidden) { urlInput.value = getSaved() || ''; urlMsg.textContent = ''; urlInput.focus(); }
+    $('urlPanel').hidden = true;
+    if (!panel.hidden) { renderList(); updateMapper(); }
   });
-  document.getElementById('close').addEventListener('click', function () { panel.hidden = true; });
-  document.getElementById('save').addEventListener('click', function () {
-    var v = urlInput.value.trim();
-    if (!/^https?:\/\//i.test(v)) { urlMsg.textContent = 'Enter a URL starting with http:// or https://'; return; }
-    var kept = putSaved(v);
-    setSource(v, kept ? 'Your saved stream.' : 'Stream set for this visit only (storage is unavailable).');
-    panel.hidden = true;
-  });
-  document.getElementById('reset').addEventListener('click', function () {
-    putSaved(null);
-    urlInput.value = '';
-    panel.hidden = true;
-    loadCurrent();
-  });
-  urlInput.addEventListener('input', function () { urlMsg.textContent = ''; });
-  urlInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('save').click(); });
+  $('closeRooms').addEventListener('click', function () { $('roomsPanel').hidden = true; });
 
-  loadCurrent();
+  // ---------- start ----------
+  buildScene();
+  if (data.rooms.length) goTo(data.rooms[0]);
   render();
+  requestAnimationFrame(tick);
 </script>
 </body>
 </html>
