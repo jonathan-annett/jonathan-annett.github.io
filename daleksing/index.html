@@ -1,1 +1,1051 @@
-coming soon
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Box Sing-Along</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one black ZX81-style slab. Pale TV screen shows the lyric being sung; below it the
+   transport, a small mixer, then the three working steps (music, words, score). Single theme by choice. */
+:root {
+  color-scheme: dark;
+  --case: #141417;
+  --key: #202026;
+  --key-edge: #34343c;
+  --ink: #f1efe8;
+  --muted: #9a9aa3;
+  --red: #e5382d;
+  --screen: #d8d8cf;
+  --screen-ink: #121212;
+  --display: "Silkscreen", "Courier New", monospace;
+  --body: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--case); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.4; }
+main { max-width: 600px; margin: 0 auto; padding: 20px 16px 48px; display: flex; flex-direction: column; gap: 20px; }
+header { display: flex; flex-direction: column; gap: 6px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: 24px; letter-spacing: 1px; margin: 0; text-wrap: balance; }
+h1 span { color: var(--red); }
+h2 { font-family: var(--display); font-weight: 400; font-size: 15px; letter-spacing: 1px; margin: 0 0 10px; }
+h2 b { color: var(--red); font-weight: 400; margin-right: 8px; }
+.stripe { height: 4px; background: var(--red); }
+.sub, .note { color: var(--muted); font-size: 15px; margin: 0; }
+label, .label { font-size: 13px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 6px; }
+textarea, select, input[type=number] {
+  width: 100%; background: var(--key); color: var(--ink); border: 1px solid var(--key-edge);
+  border-radius: 4px; padding: 10px 12px; font-family: var(--body); font-size: 17px; line-height: 1.35;
+}
+textarea { resize: vertical; }
+#score { font-family: var(--display); font-size: 12px; line-height: 1.7; white-space: pre; overflow-x: auto; }
+button, .filebtn {
+  font-family: var(--display); cursor: pointer; border-radius: 4px; border: 1px solid var(--key-edge);
+  background: var(--key); color: var(--ink); font-size: 13px; padding: 12px 14px; letter-spacing: 1px;
+  display: inline-block; text-align: center;
+}
+button:active, .filebtn:active { transform: translateY(1px); background: #2b2b33; }
+button:disabled { opacity: .45; cursor: default; }
+button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--case); }
+textarea:focus-visible, select:focus-visible, button:focus-visible, input:focus-visible, .filebtn:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
+.filebtn input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.screen {
+  background: var(--screen); color: var(--screen-ink); border-radius: 10px; padding: 12px 14px 14px;
+  font-family: var(--display); font-size: 14px; line-height: 1.75; display: flex; flex-direction: column; gap: 8px;
+}
+#scope { width: 100%; height: 48px; display: block; image-rendering: pixelated; }
+#readout { min-height: 74px; max-height: 170px; overflow-y: auto; word-spacing: 3px; text-transform: uppercase; }
+#readout span { padding: 0 2px; }
+#readout span.on { background: var(--screen-ink); color: var(--screen); }
+#status { border-top: 2px solid var(--screen-ink); padding-top: 6px; font-size: 12px; overflow-wrap: anywhere; }
+.cursor { background: var(--screen-ink); color: var(--screen); padding: 0 3px; margin-right: 6px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.big { font-size: 17px; padding: 14px 18px; flex: 1 1 110px; }
+#sing { background: var(--red); border-color: var(--red); color: #fff; flex: 3 1 200px; }
+#sing:active { background: #c42c22; }
+.dials { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+.dials output { color: var(--ink); font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--red); height: 28px; margin: 0; }
+section > * + * { margin-top: 10px; }
+section > h2 + * { margin-top: 0; }
+#wave { width: 100%; height: 56px; display: block; background: var(--key); border: 1px solid var(--key-edge); border-radius: 4px; cursor: pointer; }
+#wave[hidden], #marks[hidden], #range[hidden] { display: none; }
+#clipinfo { font-family: var(--display); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { button:active, .filebtn:active { transform: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>VOICE BOX <span>SING-ALONG</span></h1>
+    <div class="stripe"></div>
+    <p class="sub">A 1980s-style speech synthesiser that sings. Load a music clip and it will try to find the tune and the words, then sing along.</p>
+  </header>
+
+  <section class="screen">
+    <canvas id="scope" width="140" height="24" aria-hidden="true"></canvas>
+    <div id="readout"></div>
+    <div id="status"><span class="cursor">K</span><span id="statustext">READY</span></div>
+  </section>
+
+  <div class="row">
+    <button id="sing" class="big" type="button">SING</button>
+    <button id="stop" class="big" type="button">STOP</button>
+  </div>
+
+  <section>
+    <div class="dials">
+      <div>
+        <label for="vrobot">Robot volume <output id="vrobotv">100</output></label>
+        <input id="vrobot" type="range" min="0" max="150" step="1" value="100">
+      </div>
+      <div>
+        <label for="vmusic">Music volume <output id="vmusicv">70</output></label>
+        <input id="vmusic" type="range" min="0" max="150" step="1" value="70">
+      </div>
+    </div>
+    <div class="row">
+      <button id="vocals" type="button" aria-pressed="false" disabled>REMOVE ORIGINAL VOCALS</button>
+      <button id="ring" type="button" aria-pressed="false">RING MODULATOR</button>
+    </div>
+    <div class="row">
+      <label for="octave" style="margin:0">Robot octave</label>
+      <select id="octave" style="width:auto;flex:1 1 140px">
+        <option value="auto">Auto</option>
+        <option value="1">Up one</option>
+        <option value="0">As written</option>
+        <option value="-1">Down one</option>
+        <option value="-2">Down two</option>
+      </select>
+    </div>
+  </section>
+
+  <section>
+    <h2><b>1</b>MUSIC</h2>
+    <div class="row">
+      <label class="filebtn" style="margin:0;color:var(--ink);font-weight:400">CHOOSE A MUSIC CLIP<input id="file" type="file" accept="audio/*"></label>
+      <button id="demo" type="button">LOAD DAISY BELL DEMO</button>
+    </div>
+    <div id="clipinfo">NO CLIP LOADED. THE DEMO NEEDS NONE.</div>
+    <canvas id="wave" width="560" height="56" hidden aria-label="Clip overview. Tap to play from that point"></canvas>
+    <div class="row" id="marks" hidden>
+      <button id="play" type="button">PLAY CLIP</button>
+      <button id="mfrom" type="button">MARK START</button>
+      <button id="mto" type="button">MARK END</button>
+    </div>
+    <div class="dials" id="range" hidden>
+      <div><label for="from">Robot sings from, seconds</label><input id="from" type="number" min="0" step="0.1" inputmode="decimal"></div>
+      <div><label for="to">Until, seconds</label><input id="to" type="number" min="0" step="0.1" inputmode="decimal"></div>
+    </div>
+    <div class="row">
+      <label for="model" style="margin:0">Speech model</label>
+      <select id="model" style="width:auto;flex:1 1 200px">
+        <option value="Xenova/whisper-tiny.en">Tiny, about 40 MB, quickest</option>
+        <option value="Xenova/whisper-base.en" selected>Base, about 80 MB</option>
+        <option value="Xenova/whisper-small.en">Small, about 250 MB, best and slow</option>
+        <option value="">None. I will type the words</option>
+      </select>
+    </div>
+    <button id="analyse" type="button" disabled>FIND THE TUNE AND THE WORDS</button>
+    <p class="note">Play the clip and mark the part the robot should sing, such as one chorus line. Only that part is analysed, and the original vocals are only removed there. It works best with one clear singer in the middle of a stereo mix. Everything runs in your browser. The speech model downloads once, then is kept by the browser.</p>
+  </section>
+
+  <section>
+    <h2><b>2</b>WORDS</h2>
+    <label for="lyrics">Words to sing. Type or correct them here</label>
+    <textarea id="lyrics" rows="4" spellcheck="false"></textarea>
+    <button id="fit" type="button">FIT THESE WORDS TO THE TUNE</button>
+  </section>
+
+  <section>
+    <h2><b>3</b>SCORE</h2>
+    <label for="score">One word per line: start time in seconds, word, then a note and its length for each syllable</label>
+    <textarea id="score" rows="9" spellcheck="false" autocapitalize="off"></textarea>
+    <p class="note">Edit any line to fix a note, a time or a word, then press SING. Notes run from C2 to C6, sharps as F#4. Extra notes on a line are slurred on the last syllable.</p>
+  </section>
+</main>
+
+<script>
+// ---------- voice engine and English-to-sounds ----------
+// t: v vowel, d diphthong, l liquid/glide, n nasal, f fricative, z voiced fricative,
+//    h aspirate, s stop, b voiced stop, a affricate, p pause
+const PH = [
+  {n:'IY', t:'v', f:[270,2290,3010], d:150, ex:'sEE'},
+  {n:'IH', t:'v', f:[390,1990,2550], d:100, ex:'sIt'},
+  {n:'EH', t:'v', f:[530,1840,2480], d:110, ex:'bEd'},
+  {n:'AE', t:'v', f:[660,1720,2410], d:150, ex:'cAt'},
+  {n:'AA', t:'v', f:[730,1090,2440], d:150, ex:'hOt'},
+  {n:'AO', t:'v', f:[570,840,2410],  d:150, ex:'sAW'},
+  {n:'UH', t:'v', f:[440,1020,2240], d:100, ex:'pUt'},
+  {n:'UW', t:'v', f:[300,870,2240],  d:150, ex:'tOO'},
+  {n:'AH', t:'v', f:[640,1190,2390], d:110, ex:'cUp'},
+  {n:'AX', t:'v', f:[500,1500,2500], d:80,  ex:'About'},
+  {n:'ER', t:'v', f:[490,1350,1690], d:150, ex:'hER'},
+  {n:'EY', t:'d', f:[480,1950,2600], g:[310,2200,2850], d:200, ex:'dAY'},
+  {n:'AY', t:'d', f:[730,1150,2440], g:[360,2050,2600], d:220, ex:'mY'},
+  {n:'OY', t:'d', f:[560,850,2400],  g:[360,2000,2600], d:230, ex:'bOY'},
+  {n:'OW', t:'d', f:[560,950,2400],  g:[340,820,2250],  d:200, ex:'gO'},
+  {n:'AW', t:'d', f:[730,1150,2440], g:[400,900,2250],  d:220, ex:'nOW'},
+  {n:'W',  t:'l', f:[300,610,2200],  d:75, ex:'We'},
+  {n:'Y',  t:'l', f:[260,2200,3000], d:75, ex:'Yes'},
+  {n:'R',  t:'l', f:[420,1300,1600], d:85, ex:'Red'},
+  {n:'L',  t:'l', f:[380,1050,2700], d:85, ex:'Let'},
+  {n:'M',  t:'n', f:[280,1000,2200], d:90, ex:'Me'},
+  {n:'N',  t:'n', f:[280,1700,2600], d:85, ex:'No'},
+  {n:'NG', t:'n', f:[280,2300,2750], d:95, ex:'siNG'},
+  {n:'S',  t:'f', q:[5000,2.5], a:.35, d:115, ex:'See'},
+  {n:'SH', t:'f', q:[2700,2],   a:.4,  d:120, ex:'SHe'},
+  {n:'F',  t:'f', q:[4200,.6],  a:.11, d:95,  ex:'Fee'},
+  {n:'TH', t:'f', q:[5200,.8],  a:.09, d:95,  ex:'THin'},
+  {n:'HH', t:'h', d:70, ex:'He'},
+  {n:'Z',  t:'z', f:[250,1700,2600], q:[5000,2.5], a:.2,  d:85, ex:'Zoo'},
+  {n:'ZH', t:'z', f:[250,1900,2500], q:[2700,2],   a:.22, d:90, ex:'viSion'},
+  {n:'V',  t:'z', f:[250,1100,2300], q:[4200,.6],  a:.06, d:75, ex:'Van'},
+  {n:'DH', t:'z', f:[250,1400,2500], q:[5200,.8],  a:.05, d:65, ex:'THe'},
+  {n:'P',  t:'s', q:[700,.7],  a:.5,  ex:'Pie'},
+  {n:'T',  t:'s', q:[4300,1.2],a:.55, ex:'Tie'},
+  {n:'K',  t:'s', q:[2000,2],  a:.6,  ex:'Key'},
+  {n:'B',  t:'b', f:[200,900,2300],  q:[700,.7],   a:.3,  ex:'Bee'},
+  {n:'D',  t:'b', f:[200,1700,2700], q:[4000,1.2], a:.3,  ex:'Do'},
+  {n:'G',  t:'b', f:[200,2100,2400], q:[2000,2],   a:.35, ex:'Go'},
+  {n:'CH', t:'a', v:0,  q:[2700,2], a:.4,  ex:'CHip'},
+  {n:'JH', t:'a', v:.3, q:[2700,2], a:.25, f:[250,1900,2500], ex:'Jam'},
+  {n:'PA',  t:'p', d:40,  ex:'word gap  /'},
+  {n:'PA1', t:'p', d:160, ex:'short pause  ,'},
+  {n:'PA2', t:'p', d:380, ex:'long pause  .'}
+];
+const CODE = {}; PH.forEach((p, i) => CODE[p.n] = i);
+CODE['/'] = CODE.PA; CODE[','] = CODE.PA1; CODE['.'] = CODE.PA2;
+
+function createVoice(ctx) {
+  const sr = ctx.sampleRate;
+  const nb = ctx.createBuffer(1, sr * 2, sr), ch = nb.getChannelData(0);
+  for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource(); noise.buffer = nb; noise.loop = true;
+  const osc = ctx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.value = 110;
+  const vg = ctx.createGain(), ag = ctx.createGain(), fg = ctx.createGain(), mix = ctx.createGain();
+  vg.gain.value = 0; ag.gain.value = 0; fg.gain.value = 0;
+  const ff = ctx.createBiquadFilter(); ff.type = 'bandpass';
+  const F = [0, 1, 2].map(i => {
+    const b = ctx.createBiquadFilter(); b.type = 'bandpass';
+    b.Q.value = [6, 9, 11][i]; b.frequency.value = [500, 1500, 2500][i];
+    const g = ctx.createGain(); g.gain.value = [1, .8, .45][i];
+    vg.connect(b); ag.connect(b); b.connect(g); g.connect(mix);
+    return b;
+  });
+  osc.connect(vg); noise.connect(ag); noise.connect(ff); ff.connect(fg); fg.connect(mix);
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 6000;
+  const out = ctx.createGain(); out.gain.value = 1.6;
+  // ring modulator: multiplies the voice by a 30 Hz sine, the classic 1960s TV robot effect
+  const ring = ctx.createGain(); ring.gain.value = 1;
+  const ringOsc = ctx.createOscillator(); ringOsc.frequency.value = 30;
+  const ringDepth = ctx.createGain(); ringDepth.gain.value = 0;
+  ringOsc.connect(ringDepth); ringDepth.connect(ring.gain);
+  const comp = ctx.createDynamicsCompressor();
+  mix.connect(lp); lp.connect(out); out.connect(ring); ring.connect(comp); comp.connect(ctx.destination);
+  osc.start(); noise.start(); ringOsc.start();
+
+  const params = [vg.gain, ag.gain, fg.gain, ff.frequency, ff.Q, osc.frequency, ...F.map(b => b.frequency)];
+  const form = (f, t, tau) => F.forEach((b, i) => b.frequency.setTargetAtTime(f[i], t, tau));
+  const voice = (g, t, tau = .012) => vg.gain.setTargetAtTime(g, t, tau);
+  const asp = (g, t, tau = .01) => ag.gain.setTargetAtTime(g, t, tau);
+  const fric = (g, t, tau = .01) => fg.gain.setTargetAtTime(g, t, tau);
+  const fset = (q, t) => { ff.frequency.setValueAtTime(q[0], t); ff.Q.setValueAtTime(q[1], t); };
+
+  function stop() {
+    const now = ctx.currentTime;
+    params.forEach(p => { p.cancelScheduledValues(now); p.setValueAtTime(p.value, now); });
+    [vg, ag, fg].forEach(g => g.gain.setTargetAtTime(0, now, .005));
+  }
+  // Schedules one sound at time t lasting d seconds (stops ignore d). k below 1 squeezes it. Returns the end time.
+  function one(p, nx, t, d, k) {
+    const c = .055 * k;
+    switch (p.t) {
+      case 'v': form(p.f, t, .022 * k); voice(1, t); asp(0, t); fric(0, t); return t + d;
+      case 'd': {
+        const glide = d > .3 ? d - .14 : d * .4;                     // when held, the glide comes late, as sung
+        form(p.f, t, .022 * k); form(p.g, t + glide, Math.min(d * .2, .04)); voice(1, t); asp(0, t); fric(0, t); return t + d;
+      }
+      case 'l': form(p.f, t, .028 * k); voice(.8, t); asp(0, t); fric(0, t); return t + d;
+      case 'n': form(p.f, t, .015 * k); voice(.5, t); asp(0, t); fric(0, t); return t + d;
+      case 'f': voice(0, t, .008); asp(0, t); fset(p.q, t); fric(p.a, t); return t + d;
+      case 'z': form(p.f, t, .02 * k); voice(.45, t); asp(0, t); fset(p.q, t); fric(p.a, t); return t + d;
+      case 'h': if (nx && nx.f) form(nx.f, t, .01); voice(0, t, .008); fric(0, t); asp(1.4, t); return t + d;
+      case 's': {
+        voice(0, t, .005); asp(0, t, .005); fric(0, t, .005);
+        const tb = t + c; fset(p.q, tb);
+        fric(p.a, tb, .002); fric(0, tb + .012, .006);
+        asp(0.9, tb + .012, .005); asp(0, tb + .04, .008);
+        return tb + .05;
+      }
+      case 'b': {
+        form(p.f, t, .012); voice(.14, t, .006); asp(0, t, .005); fric(0, t, .005);
+        const tb = t + c; fset(p.q, tb);
+        fric(p.a, tb, .002); fric(0, tb + .008, .005);
+        return tb + .016;
+      }
+      case 'a': {
+        if (p.f) form(p.f, t, .012);
+        voice(p.v ? .14 : 0, t, .005); asp(0, t, .005); fric(0, t, .005);
+        const tb = t + c; fset(p.q, tb);
+        fric(p.a, tb, .003); voice(p.v, tb, .01);
+        return tb + .085 * k;
+      }
+      default: voice(0, t, .01); asp(0, t); fric(0, t); return t + d;
+    }
+  }
+  const plainDur = p => p.t === 's' ? .105 : p.t === 'b' ? .071 : p.t === 'a' ? .14 : (p.d || 0) / 1000;
+
+  // Plain speech. seq: array of sound codes.
+  function speak(seq, opt = {}) {
+    stop();
+    const k = 1 / (opt.speed || 1), t0 = ctx.currentTime + .06;
+    let t = t0; const times = [];
+    osc.frequency.setValueAtTime(opt.pitch || 110, t0);
+    for (let i = 0; i < seq.length; i++) {
+      const p = PH[seq[i]]; if (!p) continue;
+      times.push(t - t0);
+      t = one(p, PH[seq[i + 1]], t, (p.d || 0) * k / 1000, k);
+    }
+    voice(0, t, .015); asp(0, t); fric(0, t);
+    return { times, dur: t - t0 + .08 };
+  }
+
+  // Singing. events: [{ seq, start, dur, f, bends:[{at, f}] }], one per syllable, times in seconds.
+  // The vowel is stretched to fill the note; consonants keep their length, squeezed only on short notes.
+  function sing(events, opt = {}) {
+    stop();
+    const t0 = opt.at != null ? opt.at : ctx.currentTime + .1, tr = opt.transpose || 1;
+    let t = t0; const times = [];
+    for (const ev of events) {
+      const st = t0 + ev.start, en = st + ev.dur;
+      if (st > t + .02) { voice(0, t, .015); asp(0, t); fric(0, t); t = st; }      // a rest
+      times.push(t - t0);
+      osc.frequency.setTargetAtTime(ev.f * tr, Math.max(t0, t - .01), .012);
+      (ev.bends || []).forEach(b => osc.frequency.setTargetAtTime(b.f * tr, st + b.at, .02));
+      const ps = ev.seq.map(c => PH[c]).filter(p => p && p.t !== 'p');
+      let ni = ps.findIndex(p => p.t === 'v' || p.t === 'd');
+      if (ni < 0) ni = ps.findIndex(p => p.t === 'l' || p.t === 'n' || p.t === 'z');
+      const avail = Math.max(.05, en - t);
+      const fixed = ps.reduce((a, p, i) => a + (i === ni ? 0 : plainDur(p)), 0);
+      const k = fixed > 0 ? Math.min(1, avail * (ni < 0 ? 1 : .6) / fixed) : 1;
+      const coda = ni < 0 ? 0 : ps.slice(ni + 1).reduce((a, p) => a + plainDur(p), 0) * k;
+      ps.forEach((p, i) => {
+        const d = i === ni ? Math.max(.04, en - t - coda) : (p.d || 0) * k / 1000;
+        t = one(p, ps[i + 1], t, d, k);
+      });
+    }
+    voice(0, t, .03); asp(0, t); fric(0, t);
+    return { t0, times, dur: t - t0 + .1 };
+  }
+  return {
+    speak, sing, stop, tap: comp,
+    setVolume: v => out.gain.setTargetAtTime(1.6 * v, ctx.currentTime, .02),
+    setRing: on => { ring.gain.setTargetAtTime(on ? 0 : 1, ctx.currentTime, .01); ringDepth.gain.setTargetAtTime(on ? 1.4 : 0, ctx.currentTime, .01); }
+  };
+}
+
+// ---------- English to sounds ----------
+const DICT = {};
+(`the DH AX|a AX|an AE N|and AE N D|of AH V|to T UW|too T UW|two T UW|i AY|im AY M|you Y UW|your Y AO R|youre Y AO R
+are AA R|is IH Z|was W AH Z|as AE Z|his HH IH Z|has HH AE Z|have HH AE V|having HH AE V IH NG|do D UW|does D AH Z
+doing D UW IH NG|done D AH N|dont D OW N T|one W AH N|once W AH N S|four F AO R|fourteen F AO R T IY N|eight EY T
+ninety N AY N T IY|nineteen N AY N T IY N|eleven IH L EH V AX N|hundred HH AH N D R AX D|thousand TH AW Z AX N D
+said S EH D|says S EH Z|what W AH T|who HH UW|where W EH R|there DH EH R|their DH EH R|they DH EY|them DH EH M
+then DH EH N|than DH AE N|that DH AE T|this DH IH S|these DH IY Z|those DH OW Z|with W IH DH|other AH DH ER
+mother M AH DH ER|father F AA DH ER|brother B R AH DH ER|could K UH D|would W UH D|should SH UH D
+hello HH EH L OW|computer K AX M P Y UW T ER|computers K AX M P Y UW T ER Z|claude K L AO D|from F R AH M
+some S AH M|come K AH M|coming K AH M IH NG|any EH N IY|many M EH N IY|people P IY P AX L|because B IH K AH Z
+been B IH N|were W ER|want W AA N T|water W AO T ER|world W ER L D|work W ER K|word W ER D|words W ER D Z
+know N OW|now N AW|how HH AW|only OW N L IY|love L AH V|give G IH V|live L IH V|here HH IY R|sure SH UH R
+friend F R EH N D|machine M AX SH IY N|human HH Y UW M AX N|voice V OY S|ok OW K EY|okay OW K EY|hi HH AY
+oh OW|get G EH T|good G UH D|great G R EY T|today T AX D EY|yes Y EH S|us AH S|put P UH T|into IH N T UW
+over OW V ER|very V EH R IY|every EH V R IY|ever EH V ER|never N EH V ER|about AX B AW T|again AX G EH N
+also AO L S OW|robot R OW B AA T|data D EY T AX|ready R EH D IY|program P R OW G R AE M|memory M EH M ER IY
+error EH R ER|system S IH S T AX M|through TH R UW|though DH OW|zero Z IY R OW|girl G ER L|begin B IH G IH N
+together T AX G EH DH ER|forget F ER G EH T|sorry S AA R IY|dave D EY V|cannot K AE N AA T|open OW P AX N
+door D AO R|doors D AO R Z|game G EY M|play P L EY|chatterbox CH AE T ER B AA K S|sinclair S IH N K L EH R
+talk T AO K|speak S P IY K|speech S P IY CH|think TH IH NG K|thing TH IH NG|something S AH M TH IH NG
+our AW ER|hour AW ER|year Y IY R|years Y IY R Z|new N Y UW|day D EY|be B IY|me M IY|we W IY|he HH IY|she SH IY
+no N OW|go G OW|so S OW|my M AY|by B AY|why W AY|if IH F|it IH T|its IH T S|in IH N|on AA N|at AE T|or AO R
+for F AO R|not N AA T|but B AH T|can K AE N|will W IH L|am AE M|up AH P|out AW T|like L AY K|time T AY M`)
+  .split(/[|\n]/).forEach(e => { const p = e.trim().split(' '); if (p[0]) DICT[p[0]] = p.slice(1); });
+const LETTER = {};
+(`a EY|b B IY|c S IY|d D IY|e IY|f EH F|g JH IY|h EY CH|i AY|j JH EY|k K EY|l EH L|m EH M|n EH N|o OW|p P IY|q K Y UW
+r AA R|s EH S|t T IY|u Y UW|v V IY|w D AH B AX L Y UW|x EH K S|y W AY|z Z EH D`)
+  .split(/[|\n]/).forEach(e => { const p = e.trim().split(' '); LETTER[p[0]] = p.slice(1); });
+
+const ONES = 'zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen'.split(' ');
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+function numWords(n) {
+  if (n < 20) return ONES[n];
+  if (n < 100) return TENS[n / 10 | 0] + (n % 10 ? ' ' + ONES[n % 10] : '');
+  if (n < 1000) return ONES[n / 100 | 0] + ' hundred' + (n % 100 ? ' ' + numWords(n % 100) : '');
+  return String(n).split('').map(d => ONES[+d]).join(' ');
+}
+function expandNumbers(s) {
+  return s
+    .replace(/(\d\d)([2-9])0s\b/g, (m, a, b) => ' ' + numWords(+a) + ' ' + TENS[+b].slice(0, -1) + 'ies ')
+    .replace(/\b([2-9])0s\b/g, (m, b) => ' ' + TENS[+b].slice(0, -1) + 'ies ')
+    .replace(/\b(1\d|20)(\d\d)\b/g, (m, a, b) => ' ' + numWords(+a) + ' ' + (+b === 0 ? 'hundred' : +b < 10 ? 'oh ' + ONES[+b] : numWords(+b)) + ' ')
+    .replace(/\d+/g, m => ' ' + (m.length > 1 && m[0] === '0' ? m.split('').map(d => ONES[+d]).join(' ') : numWords(+m)) + ' ');
+}
+
+const VOW = 'aeiou';
+const isV = c => !!c && VOW.includes(c);
+const isC = c => !!c && /[a-z]/.test(c) && !VOW.includes(c);
+// [letters, sounds, where] where: 's' start, 'e' end, 'm' not at start, 'c' next letter is not a vowel
+const GRAPH = [
+  ['tion','SH AX N','m'], ['sion','ZH AX N','m'], ['ture','CH ER','me'], ['ment','M AX N T','me'], ['ness','N AX S','me'],
+  ['able','AX B AX L','me'], ['ible','AX B AX L','me'], ['tive','T IH V','me'], ['ous','AX S','me'], ['age','IH JH','me'],
+  ['ful','F AX L','me'], ['ight','AY T'], ['ough','AO'], ['augh','AO'], ['eigh','EY'], ['igh','AY'], ['tch','CH'],
+  ['dge','JH'], ['nge','N JH','e'], ['ing','IH NG','e'], ['ind','AY N D','e'], ['old','OW L D'], ['all','AO L'], ['alk','AO K'],
+  ['air','EH R'], ['ear','IY R'], ['eer','IY R'], ['are','EH R','me'], ['ore','AO R'], ['oor','AO R'], ['our','AW ER'],
+  ['kn','N','s'], ['wr','R','s'], ['mb','M','e'], ['le','AX L','me'], ['en','AX N','me'], ['el','AX L','me'], ['al','AX L','me'],
+  ['ch','CH'], ['sh','SH'], ['ph','F'], ['th','TH'], ['wh','W'], ['ck','K'], ['qu','K W'], ['ng','NG'], ['nk','NG K'], ['gh',''],
+  ['ee','IY'], ['ea','IY'], ['oo','UW'], ['ou','AW'], ['oi','OY'], ['oy','OY'], ['ai','EY'], ['ay','EY'], ['au','AO'],
+  ['aw','AO'], ['oa','OW'], ['ie','IY'], ['ei','EY'], ['ey','IY','e'], ['ew','Y UW'], ['ue','UW','e'],
+  ['ar','AA R','c'], ['or','AO R'], ['er','ER','c'], ['ir','ER','c'], ['ur','ER','c']
+];
+const LONG = { a: 'EY', e: 'IY', i: 'AY', o: 'OW', u: 'Y UW' };
+const SHORT = { a: 'AE', e: 'EH', i: 'IH', o: 'AA', u: 'AH' };
+const CONS = { b:'B', d:'D', f:'F', h:'HH', j:'JH', k:'K', l:'L', m:'M', n:'N', p:'P', q:'K', r:'R', t:'T', v:'V', w:'W', x:'K S', z:'Z' };
+
+function wordToSounds(w) {
+  if (DICT[w]) return DICT[w].slice();
+  if (w.length === 1) return (LETTER[w] || []).slice();
+  if (!/[aeiouy]/.test(w) && w.length <= 5) return w.split('').flatMap(c => LETTER[c] || []);
+  const n = w.length, out = [];
+  const add = s => { if (s) out.push(...s.split(' ')); };
+  const vowelBefore = i => /[aeiouy]/.test(w.slice(0, i));
+  let i = 0;
+  outer: while (i < n) {
+    const c = w[i], nx = w[i + 1] || '', n2 = w[i + 2] || '', pv = w[i - 1] || '', rest = w.slice(i);
+    // word endings
+    if (rest === 'ed' && isC(pv) && vowelBefore(i - 1)) { add('td'.includes(pv) ? 'IH D' : 'pkfsxh'.includes(pv) ? 'T' : 'D'); break; }
+    if (rest === 'es' && vowelBefore(i)) { add('sxzcgh'.includes(pv) ? 'IH Z' : 'ptkf'.includes(pv) ? 'S' : 'Z'); break; }
+    for (const [g, s, wh = ''] of GRAPH) {
+      if (!rest.startsWith(g)) continue;
+      if (wh.includes('s') && i !== 0) continue;
+      if (wh.includes('m') && (i === 0 || !vowelBefore(i))) continue;
+      if (wh.includes('e') && i + g.length !== n) continue;
+      if (wh.includes('c') && isV(w[i + g.length])) continue;
+      add(s); i += g.length; continue outer;
+    }
+    if (isV(c)) {
+      const tail = w.slice(i + 2);
+      const magic = isC(nx) && !'xw'.includes(nx) && (tail === 'e' || tail === 'es' || tail === 'ed' || tail === 'ing');
+      if (magic) add(c === 'u' && 'rlj'.includes(pv) ? 'UW' : LONG[c]);
+      else if (c === 'e' && i === n - 1) { if (!vowelBefore(i)) add('IY'); }
+      else if (c === 'a' && i === n - 1) add('AX');
+      else if (c === 'o' && i === n - 1) add('OW');
+      else if (c === 'i' && i === n - 1) add('IY');
+      else add(SHORT[c]);
+      i++; continue;
+    }
+    if (c === nx && c !== 'c') { i++; continue; }            // doubled consonant
+    if (c === 'c') add('eiy'.includes(nx) && nx ? 'S' : 'K');
+    else if (c === 'g') add('eiy'.includes(nx) && nx ? 'JH' : 'G');
+    else if (c === 's') {
+      if (i === n - 1) add(isC(pv) && !'ptkfs'.includes(pv) || 'ey'.includes(pv) ? 'Z' : 'S');
+      else add(isV(pv) && isV(nx) ? 'Z' : 'S');
+    }
+    else if (c === 'y') add(i === 0 ? 'Y' : i === n - 1 ? (vowelBefore(i) ? 'IY' : 'AY') : 'IH');
+    else if (c === 'h') { if (!(i === n - 1 && isV(pv))) add('HH'); }
+    else add(CONS[c] || '');
+    i++;
+  }
+  return out;
+}
+
+// Returns a string such as "HH EH L OW . AY / AE M"
+function textToCodes(text) {
+  const s = expandNumbers(text.toLowerCase().replace(/[’']/g, ''));
+  const parts = [];
+  const re = /([a-z]+)|([.!?]+)|([,;:—–()\n-]+)/g;
+  let m, last = '';
+  while ((m = re.exec(s))) {
+    if (m[1]) {
+      const ph = wordToSounds(m[1]);
+      if (!ph.length) continue;
+      if (last === 'w') parts.push('/');
+      parts.push(ph.join(' ')); last = 'w';
+    } else if (last === 'w') { parts.push(m[2] ? '.' : ','); last = 'p'; }
+  }
+  return parts.join(' ');
+}
+function parseCodes(str) {
+  const seq = [], bad = [];
+  str.toUpperCase().replace(/([/,.])/g, ' $1 ').split(/\s+/).forEach(tok => {
+    if (!tok) return;
+    if (/^\d+$/.test(tok) && PH[+tok]) seq.push(+tok);
+    else if (tok in CODE) seq.push(CODE[tok]);
+    else bad.push(tok);
+  });
+  return { seq, bad };
+}
+
+// ---------- signal processing (no page access, so it can be tested on its own) ----------
+/*DSP*/
+function makeFFT(N) {
+  const rev = new Uint32Array(N), cos = new Float64Array(N / 2), sin = new Float64Array(N / 2);
+  let bits = 0; while ((1 << bits) < N) bits++;
+  for (let i = 0; i < N; i++) { let r = 0; for (let b = 0; b < bits; b++) r |= ((i >> b) & 1) << (bits - 1 - b); rev[i] = r; }
+  for (let i = 0; i < N / 2; i++) { cos[i] = Math.cos(2 * Math.PI * i / N); sin[i] = Math.sin(2 * Math.PI * i / N); }
+  return function fft(re, im, inverse) {
+    for (let i = 0; i < N; i++) { const r = rev[i]; if (r > i) { let t = re[i]; re[i] = re[r]; re[r] = t; t = im[i]; im[i] = im[r]; im[r] = t; } }
+    for (let size = 2; size <= N; size <<= 1) {
+      const half = size >> 1, step = N / size;
+      for (let s = 0; s < N; s += size) for (let j = 0, k = 0; j < half; j++, k += step) {
+        const wr = cos[k], wi = inverse ? sin[k] : -sin[k];
+        const a = s + j, b = a + half, xr = re[b] * wr - im[b] * wi, xi = re[b] * wi + im[b] * wr;
+        re[b] = re[a] - xr; im[b] = im[a] - xi; re[a] += xr; im[a] += xi;
+      }
+    }
+    if (inverse) for (let i = 0; i < N; i++) { re[i] /= N; im[i] /= N; }
+  };
+}
+const MIDI_LO = 40, MIDI_HI = 84, STEPS = 4;                       // pitch candidates, quarter-semitone grid
+const NCAND = (MIDI_HI - MIDI_LO) * STEPS + 1;
+const midiHz = m => 440 * Math.pow(2, (m - 69) / 12);
+const hzMidi = f => 69 + 12 * Math.log2(f / 440);
+const tick = () => new Promise(r => setTimeout(r, 0));
+
+// Splits a stereo clip into "centre" (what is identical in both ears: usually the lead vocal) and the rest.
+// Returns the centre audio, the music with the centre removed, and a pitch-salience table for the centre.
+async function splitClip(L, R, sr, onProgress) {
+  const n = L.length;
+  let diff = 0, tot = 0;
+  if (R) for (let i = 0; i < n; i += 7) { const d = L[i] - R[i]; diff += d * d; tot += L[i] * L[i] + R[i] * R[i]; }
+  const stereo = !!R && tot > 0 && diff / tot > 1e-4;
+  const N = sr > 30000 ? 4096 : 2048, hop = N / 4, fft = makeFFT(N), half = N / 2;
+  const win = new Float64Array(N); for (let i = 0; i < N; i++) win[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / N);
+  const frames = Math.max(1, Math.ceil((n - N) / hop) + 1);
+  const centre = new Float32Array(n), norm = new Float32Array(n);
+  const sal = new Float32Array(frames * NCAND);
+  const lr = new Float64Array(N), li = new Float64Array(N), rr = new Float64Array(N), ri = new Float64Array(N);
+  const mag = new Float32Array(half + 1);
+  const binHz = sr / N, loCut = 110 / binHz, loFull = 190 / binHz;
+  const candBin = new Float32Array(NCAND);
+  for (let c = 0; c < NCAND; c++) candBin[c] = midiHz(MIDI_LO + c / STEPS) / binHz;
+  const HW = [1, .85, .72, .61, .52, .44, .37, .32], maxBin = Math.min(half - 1, 5000 / binHz);
+  for (let f = 0; f < frames; f++) {
+    const off = f * hop;
+    for (let i = 0; i < N; i++) {
+      const j = off + i, w = win[i];
+      lr[i] = j < n ? L[j] * w : 0; li[i] = 0;
+      rr[i] = j < n ? (stereo ? R[j] : L[j]) * w : 0; ri[i] = 0;
+    }
+    fft(lr, li, false);
+    if (stereo) fft(rr, ri, false);
+    for (let k = 0; k <= half; k++) {
+      let cr, ci;
+      if (stereo) {
+        const a = lr[k], b = li[k], c = rr[k], d = ri[k];
+        const pw = a * a + b * b + c * c + d * d;
+        let sim = pw > 1e-18 ? 2 * (a * c + b * d) / pw : 0;        // 1 when both ears match exactly
+        if (sim < 0) sim = 0;
+        const m = sim * sim * sim * sim;
+        cr = m * (a + c) / 2; ci = m * (b + d) / 2;
+      } else { cr = lr[k]; ci = li[k]; }
+      const band = k <= loCut ? 0 : k >= loFull ? 1 : (k - loCut) / (loFull - loCut);   // leave the bass alone
+      cr *= band; ci *= band;
+      mag[k] = Math.sqrt(Math.sqrt(cr * cr + ci * ci));              // compressed, so loud partials do not swamp
+      lr[k] = cr; li[k] = ci;
+      if (k > 0 && k < half) { lr[N - k] = cr; li[N - k] = -ci; }
+    }
+    // pitch salience: add up the centre's energy at each candidate note's harmonics
+    for (let c = 0; c < NCAND; c++) {
+      let s = 0;
+      for (let h = 1; h <= 8; h++) {
+        const x = candBin[c] * h; if (x >= maxBin) break;
+        const i0 = x | 0, fr = x - i0;
+        s += HW[h - 1] * (mag[i0] * (1 - fr) + mag[i0 + 1] * fr);
+      }
+      sal[f * NCAND + c] = s;
+    }
+    fft(lr, li, true);
+    for (let i = 0; i < N; i++) { const j = off + i; if (j < n) { centre[j] += lr[i] * win[i]; norm[j] += win[i] * win[i]; } }
+    if (onProgress && f % 60 === 0) { onProgress(f / frames); await tick(); }
+  }
+  for (let j = 0; j < n; j++) if (norm[j] > 1e-6) centre[j] /= norm[j];
+  let instL = L, instR = R || L;
+  if (stereo) {
+    instL = new Float32Array(n); instR = new Float32Array(n);
+    for (let j = 0; j < n; j++) { instL[j] = L[j] - centre[j]; instR[j] = R[j] - centre[j]; }
+  }
+  return { stereo, centre, instL, instR, sal, frames, hopSec: hop / sr };
+}
+
+// Picks the most likely tune through the salience table: prefers loud, steady notes and small steps.
+function trackPitch(sal, frames) {
+  const fmax = new Float32Array(frames);
+  for (let f = 0; f < frames; f++) { let m = 0; for (let c = 0; c < NCAND; c++) if (sal[f * NCAND + c] > m) m = sal[f * NCAND + c]; fmax[f] = m; }
+  const g = Float32Array.from(fmax).sort()[Math.floor(frames * 0.9)] || 1;
+  const UNV = NCAND, S = NCAND + 1, W = 3 * STEPS;
+  const STEP = 0.035, JUMP = 0.55, SILENT = 0.62, SWITCH = 0.35;
+  let prev = new Float32Array(S), cur = new Float32Array(S);
+  const back = new Int16Array(frames * S);
+  for (let f = 0; f < frames; f++) {
+    let bestPrev = 0;
+    for (let c = 1; c < NCAND; c++) if (prev[c] < prev[bestPrev]) bestPrev = c;
+    for (let c = 0; c < NCAND; c++) {
+      let best = prev[bestPrev] + JUMP, bi = bestPrev;
+      const lo = Math.max(0, c - W), hi = Math.min(NCAND - 1, c + W);
+      for (let p = lo; p <= hi; p++) { const v = prev[p] + STEP * Math.abs(p - c); if (v < best) { best = v; bi = p; } }
+      if (prev[UNV] + SWITCH < best) { best = prev[UNV] + SWITCH; bi = UNV; }
+      cur[c] = best + (1 - Math.min(1, sal[f * NCAND + c] / g));
+      back[f * S + c] = bi;
+    }
+    let best = prev[UNV], bi = UNV;
+    if (prev[bestPrev] + SWITCH < best) { best = prev[bestPrev] + SWITCH; bi = bestPrev; }
+    cur[UNV] = best + SILENT; back[f * S + UNV] = bi;
+    const t = prev; prev = cur; cur = t;
+  }
+  let s = 0; for (let c = 1; c < S; c++) if (prev[c] < prev[s]) s = c;
+  const midi = new Float32Array(frames);
+  for (let f = frames - 1; f >= 0; f--) { midi[f] = s === UNV ? NaN : MIDI_LO + s / STEPS; s = back[f * S + s]; }
+  return midi;
+}
+
+// Turns the frame-by-frame tune into notes of a whole semitone each.
+function notesFromTrack(midi, hopSec, minLen = 0.09) {
+  const notes = []; let cur = null;
+  for (let f = 0; f <= midi.length; f++) {
+    const m = f < midi.length && !isNaN(midi[f]) ? Math.round(midi[f]) : null;
+    if (cur && m === cur.midi) continue;
+    if (cur) { cur.dur = f * hopSec - cur.start; if (cur.dur >= minLen) notes.push(cur); cur = null; }
+    if (m !== null) cur = { start: f * hopSec, midi: m, dur: 0 };
+  }
+  // join a note to its neighbour when a short blip split them
+  const out = [];
+  for (const nt of notes) {
+    const last = out[out.length - 1];
+    if (last && last.midi === nt.midi && nt.start - (last.start + last.dur) < 0.08) last.dur = nt.start + nt.dur - last.start;
+    else out.push(nt);
+  }
+  return out;
+}
+function medianPitch(midi, hopSec, t0, t1) {
+  const a = [];
+  for (let f = Math.max(0, Math.floor(t0 / hopSec)); f < Math.min(midi.length, Math.ceil(t1 / hopSec)); f++) if (!isNaN(midi[f])) a.push(midi[f]);
+  if (!a.length) return null;
+  a.sort((x, y) => x - y);
+  return Math.round(a[a.length >> 1]);
+}
+function resampleTo(x, sr, target) {
+  const ratio = sr / target, n = Math.floor(x.length / ratio), out = new Float32Array(n), w = Math.max(1, Math.round(ratio));
+  for (let i = 0; i < n; i++) {
+    const c = Math.floor(i * ratio); let s = 0, k = 0;
+    for (let j = c; j < c + w && j < x.length; j++) { s += x[j]; k++; }
+    out[i] = k ? s / k : 0;
+  }
+  return out;
+}
+
+// ---------- words, syllables and the score ----------
+const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const noteName = m => NOTE_NAMES[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
+function noteMidi(s) {
+  const m = /^([A-Ga-g])([#b]?)(-?\d)$/.exec(s); if (!m) return null;
+  const base = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1].toUpperCase()];
+  return base + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0) + (+m[3] + 1) * 12;
+}
+const isNucleus = c => PH[c] && (PH[c].t === 'v' || PH[c].t === 'd');
+// Splits a word's sounds into syllables, one vowel each.
+function syllables(seq) {
+  const nuc = []; seq.forEach((c, i) => { if (isNucleus(c)) nuc.push(i); });
+  if (nuc.length < 2) return seq.length ? [seq] : [];
+  const out = []; let start = 0;
+  for (let k = 1; k < nuc.length; k++) {
+    const between = nuc[k] - nuc[k - 1] - 1;
+    const cut = between === 0 ? nuc[k] : nuc[k] - 1;      // the last consonant starts the next syllable
+    out.push(seq.slice(start, cut)); start = cut;
+  }
+  out.push(seq.slice(start));
+  return out;
+}
+const cleanWord = w => String(w).toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9]/g, '');
+function soundsOf(word) {
+  const codes = textToCodes(word).replace(/[\/,.]/g, ' ');
+  return parseCodes(codes).seq.filter(c => PH[c].t !== 'p');
+}
+const r2 = x => (Math.round(x * 100) / 100).toFixed(2);
+// One syllable per note, in order. Notes left over at the end are dropped; words left over are too.
+function fitWordsToNotes(words, notes) {
+  const lines = []; let ni = 0;
+  for (const w of words) {
+    const n = Math.max(1, syllables(soundsOf(w)).length);
+    if (ni >= notes.length) break;
+    const mine = notes.slice(ni, ni + n); ni += n;
+    lines.push(r2(mine[0].start) + ' ' + w + ' ' + mine.map(x => noteName(x.midi) + ':' + r2(x.dur)).join(' '));
+  }
+  return { text: lines.join('\n'), usedNotes: Math.min(ni, notes.length), usedWords: lines.length };
+}
+// Words with their own start and end times (from the speech model) take their pitch straight from the tune.
+function fitTimedWords(timed, midi, hopSec, offset = 0) {
+  const lines = []; let lastPitch = 57;
+  for (const w of timed) {
+    const word = cleanWord(w.text); if (!word) continue;
+    const n = Math.max(1, syllables(soundsOf(word)).length);
+    const t0 = w.t0, t1 = Math.max(w.t1, w.t0 + 0.12 * n), each = (t1 - t0) / n, parts = [];
+    for (let i = 0; i < n; i++) {
+      let p = medianPitch(midi, hopSec, t0 + i * each, t0 + (i + 1) * each);
+      if (p === null) p = medianPitch(midi, hopSec, t0 + i * each - 0.25, t0 + (i + 1) * each + 0.25);
+      if (p === null) p = lastPitch;
+      lastPitch = p; parts.push(noteName(p) + ':' + r2(each));
+    }
+    lines.push(r2(t0 + offset) + ' ' + word + ' ' + parts.join(' '));
+  }
+  return lines.join('\n');
+}
+function parseScore(text) {
+  const words = [], bad = [];
+  text.split('\n').forEach((line, ln) => {
+    line = line.trim(); if (!line || line[0] === '#') return;
+    const p = line.split(/\s+/), start = parseFloat(p[0]), notes = [];
+    for (const tok of p.slice(2)) {
+      const m = tok.split(':'), midi = noteMidi(m[0]), dur = parseFloat(m[1]);
+      if (midi === null || !(dur > 0)) { notes.length = 0; break; }
+      notes.push({ midi, dur });
+    }
+    if (isNaN(start) || !p[1] || !notes.length) { bad.push(ln + 1); return; }
+    words.push({ start, word: p[1], notes });
+  });
+  return { words, bad };
+}
+// Score to singing events: one per syllable, with any extra notes slurred on the last syllable.
+function scoreToEvents(words) {
+  const events = [];
+  words.forEach((w, wi) => {
+    const syl = syllables(soundsOf(w.word)); if (!syl.length) return;
+    const n = syl.length, k = w.notes.length; let t = w.start;
+    for (let i = 0; i < n; i++) {
+      let f, dur, bends = [];
+      if (i < Math.min(n, k) - 1 || (i === n - 1 && k === n)) { f = midiHz(w.notes[i].midi); dur = w.notes[i].dur; }
+      else if (k > n && i === n - 1) {
+        f = midiHz(w.notes[i].midi); dur = 0;
+        w.notes.slice(i).forEach((x, j) => { if (j) bends.push({ at: dur, f: midiHz(x.midi) }); dur += x.dur; });
+      } else { const last = w.notes[k - 1]; f = midiHz(last.midi); dur = last.dur / (n - k + 1); }
+      events.push({ seq: syl[i], start: t, dur, f, bends, wi });
+      t += dur;
+    }
+  });
+  return events;
+}
+/*ENDDSP*/
+
+// ---------- demo: Daisy Bell (Harry Dacre, 1892), the first song a computer ever sang, in 1961 ----------
+Object.assign(DICT, {
+  daisy: ['D','EY','Z','IY'], crazy: ['K','R','EY','Z','IY'], answer: ['AE','N','S','ER'], stylish: ['S','T','AY','L','IH','SH'],
+  marriage: ['M','AE','R','IH','JH'], carriage: ['K','AE','R','IH','JH'], afford: ['AX','F','AO','R','D'], upon: ['AX','P','AA','N'],
+  bicycle: ['B','AY','S','IH','K','AX','L'], built: ['B','IH','L','T'], wont: ['W','OW','N','T'], cant: ['K','AA','N','T'],
+  youll: ['Y','UW','L'], half: ['HH','AA','F'], sweet: ['S','W','IY','T'], seat: ['S','IY','T'], look: ['L','UH','K']
+});
+const DAISY_WORDS = "Daisy Daisy give me your answer do I'm half crazy all for the love of you It won't be a stylish marriage I can't afford a carriage But you'll look sweet upon the seat of a bicycle built for two";
+const DAISY_TUNE = 'D5 3 B4 3 G4 3 D4 3 E4 1 F#4 1 G4 1 E4 2 G4 1 D4 5 R 1 A4 3 D5 3 B4 3 G4 3 E4 1 F#4 1 G4 1 A4 2 B4 1 A4 5 B4 1 ' +
+  'C5 1 B4 1 A4 1 D5 2 B4 1 A4 1 G4 1 A4 1 B4 2 G4 1 E4 2 G4 1 E4 1 D4 1 D4 1 G4 2 B4 1 A4 2 D4 1 G4 2 B4 1 A4 1 B4 1 C5 1 D5 1 B4 1 G4 1 A4 2 D4 1 G4 5';
+function daisyScore() {
+  const beat = 0.3, p = DAISY_TUNE.split(' '), notes = []; let t = 0.2;
+  for (let i = 0; i < p.length; i += 2) {
+    const d = +p[i + 1] * beat;
+    if (p[i] !== 'R') notes.push({ start: t, midi: noteMidi(p[i]), dur: d * 0.96 });
+    t += d;
+  }
+  return fitWordsToNotes(DAISY_WORDS.split(' ').map(cleanWord), notes).text;
+}
+
+// ---------- page ----------
+const $ = id => document.getElementById(id);
+const statusEl = $('statustext'), readout = $('readout');
+const say = t => { statusEl.textContent = t; };
+let ctx = null, voice = null, analyser = null, musicGain = null, musicSrc = null, timers = [], raf = 0;
+let clip = null;      // { name, sr, dur, L, R, origBuf, instBuf, split, midi, notes, from, to, peaks }
+let removeVocals = false;
+let playing = null;   // { at, offset } while music is running, for the playhead
+const MAX_REGION = 90;
+
+function ensureAudio() {
+  if (!ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { say('THIS BROWSER HAS NO WEB AUDIO'); return false; }
+    ctx = new AC(); voice = createVoice(ctx);
+    analyser = ctx.createAnalyser(); analyser.fftSize = 1024; voice.tap.connect(analyser);
+    musicGain = ctx.createGain(); musicGain.connect(ctx.destination);
+    applyMix();
+  }
+  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+  return true;
+}
+function applyMix() {
+  $('vrobotv').textContent = $('vrobot').value; $('vmusicv').textContent = $('vmusic').value;
+  if (!ctx) return;
+  voice.setVolume(+$('vrobot').value / 100);
+  voice.setRing($('ring').getAttribute('aria-pressed') === 'true');
+  musicGain.gain.setTargetAtTime(+$('vmusic').value / 100, ctx.currentTime, .02);
+}
+function flatScope() {
+  const cv = $('scope'), g = cv.getContext('2d');
+  g.clearRect(0, 0, cv.width, cv.height); g.fillStyle = '#121212';
+  for (let x = 0; x < cv.width; x += 2) g.fillRect(x, cv.height / 2, 1, 1);
+}
+function drawScope() {
+  const cv = $('scope'), g = cv.getContext('2d'), buf = new Uint8Array(analyser.fftSize);
+  const loop = () => {
+    analyser.getByteTimeDomainData(buf);
+    g.clearRect(0, 0, cv.width, cv.height); g.fillStyle = '#121212';
+    for (let x = 0; x < cv.width; x += 2) {
+      const v = (buf[Math.floor(x / cv.width * 600)] - 128) / 128;
+      const y = Math.round(cv.height / 2 - v * cv.height * .9);
+      g.fillRect(x, Math.min(y, cv.height / 2), 1, Math.max(1, Math.abs(y - cv.height / 2)));
+    }
+    raf = requestAnimationFrame(loop);
+  };
+  loop();
+}
+function showWords(words) {
+  readout.textContent = '';
+  words.forEach(w => { const sp = document.createElement('span'); sp.textContent = w.word; readout.append(sp, ' '); });
+}
+function stopAll(msg) {
+  timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf);
+  if (voice) voice.stop();
+  if (musicSrc) { try { musicSrc.stop(); } catch (e) {} musicSrc = null; }
+  playing = null; cancelAnimationFrame(waveRaf); drawWave();
+  flatScope(); readout.querySelectorAll('span').forEach(s => s.classList.remove('on'));
+  if (msg) say(msg);
+}
+function pickOctave(events) {
+  const v = $('octave').value;
+  if (v !== 'auto') return +v;
+  const f = events.map(e => e.f).sort((a, b) => a - b), med = f[f.length >> 1] || 220;
+  let o = 0; while (med * Math.pow(2, o) > 250) o--; while (med * Math.pow(2, o) < 105) o++;
+  return o;
+}
+function singNow() {
+  const { words, bad } = parseScore($('score').value);
+  if (!words.length) { say(bad.length ? 'SCORE LINE ' + bad[0] + ' IS NOT RIGHT' : 'THE SCORE IS EMPTY. LOAD THE DEMO OR A CLIP'); return; }
+  if (!ensureAudio()) return;
+  stopAll(); applyMix(); showWords(words);
+  const events = scoreToEvents(words), oct = pickOctave(events);
+  const at = ctx.currentTime + 0.15;
+  let playFrom = 0, playLen = 0;
+  if (clip) {                                             // two seconds of lead-in and tail around the sung part
+    const first = Math.min(clip.from, events[0].start), lastEv = events[events.length - 1];
+    playFrom = Math.max(0, first - 2);
+    playLen = Math.min(clip.dur, Math.max(clip.to, lastEv.start + lastEv.dur) + 2) - playFrom;
+    events.forEach(e => { e.start -= playFrom; });
+  }
+  const r = voice.sing(events, { at, transpose: Math.pow(2, oct) });
+  let total = r.dur;
+  if (clip) {
+    const buf = removeVocals && clip.instBuf ? clip.instBuf : clip.origBuf;
+    musicSrc = ctx.createBufferSource(); musicSrc.buffer = buf; musicSrc.connect(musicGain); musicSrc.start(at, playFrom, playLen);
+    playing = { at, offset: playFrom }; runPlayhead();
+    total = Math.max(total, playLen);
+  }
+  const spans = readout.querySelectorAll('span');
+  events.forEach((e, i) => timers.push(setTimeout(() => {
+    spans.forEach(s => s.classList.remove('on'));
+    if (spans[e.wi]) { spans[e.wi].classList.add('on'); spans[e.wi].scrollIntoView({ block: 'nearest' }); }
+  }, (r.times[i] + 0.15) * 1000)));
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) drawScope();
+  say('SINGING' + (bad.length ? '. SKIPPED LINE ' + bad[0] : '') + (oct ? '. OCTAVE ' + (oct > 0 ? '+' : '') + oct : ''));
+  timers.push(setTimeout(() => stopAll('READY'), (total + 0.4) * 1000));
+}
+
+// ---------- clip loading and analysis ----------
+function decode(ab) {
+  return new Promise((res, rej) => { const p = ctx.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(rej); });
+}
+const MAX_CLIP = 600;
+async function loadFile(file) {
+  if (!file || !ensureAudio()) return;
+  stopAll('READING ' + file.name.toUpperCase());
+  try {
+    const full = await decode(await file.arrayBuffer());
+    const sr = full.sampleRate, n = Math.min(full.length, Math.floor(MAX_CLIP * sr));
+    const L = full.getChannelData(0).slice(0, n), R = full.numberOfChannels > 1 ? full.getChannelData(1).slice(0, n) : null;
+    const origBuf = ctx.createBuffer(2, n, sr); origBuf.copyToChannel(L, 0); origBuf.copyToChannel(R || L, 1);
+    clip = { name: file.name, sr, dur: n / sr, L, R, origBuf, instBuf: null, split: null, midi: null, notes: null, from: 0, to: Math.min(n / sr, 30), peaks: null };
+    const cols = 280, per = Math.max(1, Math.floor(n / cols)); clip.peaks = new Float32Array(cols);
+    for (let c = 0; c < cols; c++) { let m = 0; for (let i = c * per, e = Math.min(n, i + per); i < e; i += 16) { const a = Math.abs(L[i]); if (a > m) m = a; } clip.peaks[c] = m; }
+    ['wave', 'marks', 'range'].forEach(id => { $(id).hidden = false; });
+    setRegion(clip.from, clip.to);
+    removeVocals = false; $('vocals').setAttribute('aria-pressed', 'false'); $('vocals').disabled = true;
+    $('analyse').disabled = false;
+    $('clipinfo').textContent = file.name + '  ' + clip.dur.toFixed(1) + ' S' + (R ? '  STEREO' : '  MONO') + (full.length > n ? '  (FIRST ' + MAX_CLIP + ' S ONLY)' : '');
+    say('CLIP LOADED. PLAY IT AND MARK THE PART TO SING');
+  } catch (e) { say('COULD NOT READ THAT FILE AS AUDIO'); }
+}
+let asrCache = {};
+async function transcribe(audio16k, modelId) {
+  say('LOADING THE SPEECH LIBRARY');
+  const T = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1');
+  T.env.allowLocalModels = false;
+  try { T.env.backends.onnx.wasm.proxy = true; } catch (e) {}
+  if (!asrCache[modelId]) {
+    asrCache[modelId] = await T.pipeline('automatic-speech-recognition', modelId, {
+      dtype: 'q8',
+      progress_callback: p => { if (p && p.status === 'progress' && p.total) say('DOWNLOADING SPEECH MODEL ' + Math.round(p.progress) + '%'); }
+    });
+  }
+  const asr = asrCache[modelId];
+  say('LISTENING FOR THE WORDS. THIS CAN TAKE A MINUTE');
+  await tick();
+  const base = { chunk_length_s: 30, stride_length_s: 5 };
+  let out, level = 'word';
+  try { out = await asr(audio16k, Object.assign({ return_timestamps: 'word' }, base)); }
+  catch (e) {
+    level = 'phrase';
+    try { out = await asr(audio16k, Object.assign({ return_timestamps: true }, base)); }
+    catch (e2) { level = 'none'; out = await asr(audio16k, base); }
+  }
+  const junk = /[\[(♪].*?[\])♪]|♪/g;
+  const text = String(out.text || '').replace(junk, ' ').replace(/\s+/g, ' ').trim();
+  const timed = [];
+  (out.chunks || []).forEach(c => {
+    const ts = c.timestamp || [], t0 = ts[0], t1 = ts[1] == null ? t0 + 0.4 : ts[1];
+    if (t0 == null || isNaN(t0)) return;
+    const ws = String(c.text || '').replace(junk, ' ').trim().split(/\s+/).filter(cleanWord);
+    ws.forEach((w, i) => timed.push({ text: w, t0: t0 + (t1 - t0) * i / ws.length, t1: t0 + (t1 - t0) * (i + 1) / ws.length }));
+  });
+  return { text, timed, level };
+}
+async function analyse() {
+  if (!clip) return;
+  stopAll(); $('analyse').disabled = true;
+  try {
+    say('SPLITTING OFF THE VOCALS 0%'); await tick();
+    if (clip.to - clip.from > MAX_REGION) { say('MARK A SHORTER PART, ' + MAX_REGION + ' SECONDS AT MOST'); $('analyse').disabled = false; return; }
+    const sr = clip.sr, i0 = Math.floor(clip.from * sr), i1 = Math.min(clip.L.length, Math.floor(clip.to * sr)), off = clip.from;
+    const sp = await splitClip(clip.L.subarray(i0, i1), clip.R ? clip.R.subarray(i0, i1) : null, sr, p => say('SPLITTING OFF THE VOCALS ' + Math.round(p * 100) + '%'));
+    clip.split = sp;
+    if (sp.stereo) {                                      // vocals are removed only inside the marked part, with a short fade at each edge
+      const il = clip.L.slice(), ir = clip.R.slice(), fade = Math.min(Math.floor(.03 * sr), (i1 - i0) >> 1);
+      for (let j = 0; j < i1 - i0; j++) {
+        const w = Math.min(1, j / fade, (i1 - i0 - 1 - j) / fade);
+        il[i0 + j] = clip.L[i0 + j] * (1 - w) + sp.instL[j] * w; ir[i0 + j] = clip.R[i0 + j] * (1 - w) + sp.instR[j] * w;
+      }
+      clip.instBuf = ctx.createBuffer(2, clip.L.length, sr);
+      clip.instBuf.copyToChannel(il, 0); clip.instBuf.copyToChannel(ir, 1);
+      $('vocals').disabled = false;
+    }
+    say('FOLLOWING THE TUNE'); await tick();
+    clip.midi = trackPitch(sp.sal, sp.frames);
+    clip.notes = notesFromTrack(clip.midi, sp.hopSec).map(x => ({ start: x.start + off, midi: x.midi, dur: x.dur }));
+    const modelId = $('model').value;
+    let heard = null, why = '';
+    if (modelId) {
+      try { heard = await transcribe(resampleTo(sp.centre, sr, 16000), modelId); }
+      catch (e) { why = String(e && e.message || e).slice(0, 90); }
+    }
+    const tail = sp.stereo ? '' : ' MONO CLIP, SO VOCALS CANNOT BE REMOVED.';
+    if (heard && heard.text) {
+      $('lyrics').value = heard.text;
+      if (heard.timed.length) {
+        $('score').value = fitTimedWords(heard.timed, clip.midi, sp.hopSec, off);
+        say('FOUND ' + heard.timed.length + ' WORDS, TIMED BY ' + heard.level.toUpperCase() + '. CHECK THEM, THEN SING.' + tail);
+      } else { fitTyped(); say('FOUND THE WORDS BUT NOT THEIR TIMING. FITTED IN ORDER.' + tail); }
+    } else if (clip.notes.length) {
+      const typed = $('lyrics').value.trim();
+      if (typed) fitTyped();
+      else $('score').value = fitWordsToNotes(clip.notes.map(() => 'la'), clip.notes).text;
+      say((modelId ? (why ? 'SPEECH MODEL FAILED: ' + why.toUpperCase() + '. ' : 'NO WORDS HEARD. ') : '') + 'FOUND ' + clip.notes.length + ' NOTES. TYPE THE WORDS, THEN FIT THEM.' + tail);
+    } else say('COULD NOT FIND A TUNE IN THIS CLIP.' + tail);
+  } catch (e) { say('ANALYSIS FAILED: ' + String(e && e.message || e).slice(0, 80).toUpperCase()); }
+  $('analyse').disabled = false;
+}
+function fitTyped() {
+  const words = $('lyrics').value.split(/\s+/).map(cleanWord).filter(Boolean);
+  if (!words.length) { say('TYPE SOME WORDS FIRST'); return false; }
+  let notes = clip && clip.notes && clip.notes.length ? clip.notes : null;
+  if (!notes) {                                           // no clip analysed: reuse the tune already in the score
+    notes = []; parseScore($('score').value).words.forEach(w => { let t = w.start; w.notes.forEach(x => { notes.push({ start: t, midi: x.midi, dur: x.dur }); t += x.dur; }); });
+  }
+  if (!notes.length) { say('THERE IS NO TUNE YET TO FIT THE WORDS TO'); return false; }
+  const r = fitWordsToNotes(words, notes);
+  $('score').value = r.text;
+  say('FITTED ' + r.usedWords + ' OF ' + words.length + ' WORDS TO ' + r.usedNotes + ' OF ' + notes.length + ' NOTES');
+  return true;
+}
+function loadDemo() {
+  stopAll(); clip = null;
+  $('clipinfo').textContent = 'NO CLIP LOADED. THE DEMO NEEDS NONE.';
+  ['wave', 'marks', 'range'].forEach(id => { $(id).hidden = true; });
+  $('analyse').disabled = true; $('vocals').disabled = true; $('vocals').setAttribute('aria-pressed', 'false'); removeVocals = false;
+  $('lyrics').value = DAISY_WORDS; $('score').value = daisyScore();
+  showWords(parseScore($('score').value).words);
+  say('DAISY BELL LOADED. PRESS SING');
+}
+
+// ---------- marking the part to sing ----------
+let waveRaf = 0;
+function clipPos() { return playing && ctx ? Math.min(clip ? clip.dur : 0, playing.offset + Math.max(0, ctx.currentTime - playing.at)) : null; }
+function setRegion(a, b) {
+  if (!clip) return;
+  a = Math.max(0, Math.min(clip.dur, a)); b = Math.max(0, Math.min(clip.dur, b));
+  if (b < a + 0.5) b = Math.min(clip.dur, a + 0.5);
+  if (b < a + 0.5) a = Math.max(0, b - 0.5);
+  clip.from = a; clip.to = b;
+  $('from').value = a.toFixed(1); $('to').value = b.toFixed(1);
+  drawWave();
+}
+function drawWave() {
+  const cv = $('wave'); if (!clip || !clip.peaks || cv.hidden) return;
+  const g = cv.getContext('2d'), W = cv.width, H = cv.height, n = clip.peaks.length, bw = W / n;
+  g.clearRect(0, 0, W, H);
+  const x0 = clip.from / clip.dur * W, x1 = clip.to / clip.dur * W;
+  g.fillStyle = 'rgba(229,56,45,.22)'; g.fillRect(x0, 0, Math.max(2, x1 - x0), H);
+  let top = 0; for (let c = 0; c < n; c++) if (clip.peaks[c] > top) top = clip.peaks[c];
+  for (let c = 0; c < n; c++) {
+    const x = c * bw, inside = x + bw > x0 && x < x1, h = Math.max(1, clip.peaks[c] / (top || 1) * (H - 6));
+    g.fillStyle = inside ? '#e5382d' : '#6c6c76'; g.fillRect(x, (H - h) / 2, Math.max(1, bw - 1), h);
+  }
+  const p = clipPos();
+  if (p !== null) { g.fillStyle = '#f1efe8'; g.fillRect(p / clip.dur * W - 1, 0, 2, H); }
+}
+function runPlayhead() { cancelAnimationFrame(waveRaf); const loop = () => { drawWave(); if (playing) waveRaf = requestAnimationFrame(loop); }; loop(); }
+function previewFrom(offset) {
+  if (!clip || !ensureAudio()) return;
+  stopAll(); applyMix();
+  offset = Math.max(0, Math.min(clip.dur - 0.05, offset));
+  musicSrc = ctx.createBufferSource(); musicSrc.buffer = clip.origBuf; musicSrc.connect(musicGain);
+  const at = ctx.currentTime + 0.05; musicSrc.start(at, offset);
+  playing = { at, offset }; runPlayhead();
+  say('PLAYING THE CLIP. MARK START AND MARK END AS IT GOES');
+  timers.push(setTimeout(() => stopAll('READY'), (clip.dur - offset + 0.3) * 1000));
+}
+$('play').addEventListener('click', () => previewFrom(Math.max(0, clip.from - 2)));
+$('wave').addEventListener('click', e => { const r = e.currentTarget.getBoundingClientRect(); previewFrom((e.clientX - r.left) / r.width * clip.dur); });
+$('mfrom').addEventListener('click', () => {
+  const p = clipPos(); if (p === null) { say('PLAY THE CLIP FIRST, THEN MARK AS IT PLAYS'); return; }
+  setRegion(p, clip.to > p + 0.5 ? clip.to : Math.min(clip.dur, p + 15)); say('START MARKED AT ' + clip.from.toFixed(1) + ' S');
+});
+$('mto').addEventListener('click', () => {
+  const p = clipPos(); if (p === null) { say('PLAY THE CLIP FIRST, THEN MARK AS IT PLAYS'); return; }
+  setRegion(clip.from < p - 0.5 ? clip.from : Math.max(0, p - 15), p); say('END MARKED AT ' + clip.to.toFixed(1) + ' S. ' + (clip.to - clip.from).toFixed(1) + ' S TO SING');
+});
+$('from').addEventListener('change', () => setRegion(parseFloat($('from').value) || 0, clip.to));
+$('to').addEventListener('change', () => setRegion(clip.from, parseFloat($('to').value) || clip.dur));
+
+$('sing').addEventListener('click', singNow);
+$('stop').addEventListener('click', () => stopAll('STOPPED'));
+$('vrobot').addEventListener('input', applyMix);
+$('vmusic').addEventListener('input', applyMix);
+$('ring').addEventListener('click', e => { const b = e.currentTarget; b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); applyMix(); });
+$('vocals').addEventListener('click', e => {
+  removeVocals = !removeVocals; e.currentTarget.setAttribute('aria-pressed', String(removeVocals));
+  say(removeVocals ? 'ORIGINAL VOCALS REMOVED FROM THE NEXT PLAY' : 'ORIGINAL VOCALS KEPT');
+});
+$('file').addEventListener('change', e => loadFile(e.target.files[0]));
+$('analyse').addEventListener('click', analyse);
+$('fit').addEventListener('click', fitTyped);
+$('demo').addEventListener('click', loadDemo);
+$('score').addEventListener('change', () => showWords(parseScore($('score').value).words));
+loadDemo(); flatScope();
+</script>
+</body>
+</html>
