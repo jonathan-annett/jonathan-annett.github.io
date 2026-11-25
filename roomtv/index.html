@@ -38,6 +38,16 @@
   #pad button { width: 52px; height: 52px; font-size: 22px; color: #ddd; background: rgba(0, 0, 0, 0.55);
                 border: 1px solid #666; border-radius: 10px; touch-action: manipulation; }
   #pad button:active { background: rgba(255, 255, 255, 0.2); }
+
+  #panel { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px; right: 12px; max-width: 480px; margin: 0 auto;
+           background: rgba(20, 20, 20, 0.95); border: 1px solid #666; border-radius: 10px; padding: 14px; z-index: 2; }
+  #panel[hidden] { display: none; }
+  #panel label { display: block; font-size: 14px; margin-bottom: 8px; }
+  #panel input { width: 100%; box-sizing: border-box; height: 44px; padding: 0 10px; font-size: 16px; color: #eee;
+                 background: #000; border: 1px solid #666; border-radius: 8px; }
+  #urlMsg { font-size: 13px; color: #f09595; min-height: 18px; margin: 6px 0; }
+  #panel .row { display: flex; gap: 8px; }
+  #panel .row button { flex: 1; height: 44px; font-size: 15px; color: #ddd; background: #2c2c2a; border: 1px solid #666; border-radius: 8px; }
 </style>
 </head>
 <body>
@@ -55,9 +65,21 @@
   </div>
 </div>
 
+<div id="panel" hidden>
+  <label for="url">Stream URL (saved in this browser only)</label>
+  <input id="url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="http://192.168.0.50:8080/video">
+  <div id="urlMsg"></div>
+  <div class="row">
+    <button id="save">Save</button>
+    <button id="reset">Use sample</button>
+    <button id="close">Close</button>
+  </div>
+</div>
+
 <div id="hud">
   <div id="status">Drag to look. Arrow keys or WASD to move.</div>
   <div id="pad">
+    <button id="gear" aria-label="Stream settings">&#9881;</button>
     <button id="back" aria-label="Step back">&#8595;</button>
     <button id="fwd" aria-label="Step forward">&#8593;</button>
   </div>
@@ -105,7 +127,7 @@
 
   // Keyboard: held keys move smoothly
   var keys = {};
-  window.addEventListener('keydown', function (e) { keys[e.key.toLowerCase()] = true; });
+  window.addEventListener('keydown', function (e) { if (e.target.tagName === 'INPUT') return; keys[e.key.toLowerCase()] = true; });
   window.addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
   function tick() {
     var f = 0, s = 0, turn = 0;
@@ -126,32 +148,82 @@
   document.getElementById('back').addEventListener('click', function () { move(-60, 0); });
 
   // If the stream can't be shown, draw a stand-in so the TV isn't blank.
-  var fellBack = false;
+  var tv = document.getElementById('tv');
+  var standIn = document.createElement('canvas');
+  standIn.width = 320; standIn.height = 180;
+  var fellBack = false, loadTimer = null;
+  var HINT = ' Drag to look, arrows or WASD to move.';
+
+  function drawStandIn(t) {
+    if (!fellBack) return;
+    var g = standIn.getContext('2d');
+    var bars = ['#d3d1c7', '#ef9f27', '#5dcaa5', '#97c459', '#d4537e', '#e24b4a', '#378add'];
+    for (var i = 0; i < 7; i++) { g.fillStyle = bars[i]; g.fillRect(i * 320 / 7, 0, 320 / 7 + 1, 180); }
+    g.fillStyle = '#000';
+    g.fillRect(((t || 0) / 8) % 400 - 80, 0, 60, 180);
+    g.fillRect(0, 130, 320, 50);
+    g.fillStyle = '#fff'; g.font = '20px monospace';
+    g.fillText('NO SIGNAL ' + new Date().toLocaleTimeString(), 14, 162);
+    requestAnimationFrame(drawStandIn);
+  }
+
   function fallback() {
     if (fellBack) return;
     fellBack = true;
-    var c = document.createElement('canvas');
-    c.width = 320; c.height = 180;
-    document.getElementById('tv').replaceChild(c, feed);
-    statusEl.textContent = 'Stream did not load, showing a stand-in. Drag to look, arrows or WASD to move.';
-    var g = c.getContext('2d');
-    var bars = ['#d3d1c7', '#ef9f27', '#5dcaa5', '#97c459', '#d4537e', '#e24b4a', '#378add'];
-    (function draw(t) {
-      for (var i = 0; i < 7; i++) { g.fillStyle = bars[i]; g.fillRect(i * 320 / 7, 0, 320 / 7 + 1, 180); }
-      g.fillStyle = '#000';
-      g.fillRect(((t || 0) / 8) % 400 - 80, 0, 60, 180);
-      g.fillRect(0, 130, 320, 50);
-      g.fillStyle = '#fff'; g.font = '20px monospace';
-      g.fillText('NO SIGNAL ' + new Date().toLocaleTimeString(), 14, 162);
-      requestAnimationFrame(draw);
-    })();
+    tv.replaceChild(standIn, feed);
+    statusEl.textContent = 'Stream did not load, showing a stand-in.' + HINT;
+    requestAnimationFrame(drawStandIn);
   }
 
-  var override = new URLSearchParams(location.search).get('src');
+  function setSource(url, label) {
+    clearTimeout(loadTimer);
+    if (fellBack) { fellBack = false; tv.replaceChild(feed, standIn); }
+    statusEl.textContent = label + HINT;
+    feed.removeAttribute('src');
+    feed.src = url;
+    loadTimer = setTimeout(function () { if (!feed.naturalWidth) fallback(); }, 6000);
+  }
   feed.addEventListener('error', fallback);
-  feed.src = override || STREAM_URL;
-  setTimeout(function () { if (!feed.naturalWidth) fallback(); }, 6000);
 
+  // A pasted URL is kept in this browser's localStorage only, never in the repo.
+  var KEY = 'roomtv.src';
+  function getSaved() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function putSaved(v) { try { if (v) localStorage.setItem(KEY, v); else localStorage.removeItem(KEY); return true; } catch (e) { return false; } }
+
+  function loadCurrent() {
+    var fromQuery = new URLSearchParams(location.search).get('src');
+    var saved = getSaved();
+    if (fromQuery) setSource(fromQuery, 'Stream from the page address.');
+    else if (saved) setSource(saved, 'Your saved stream.');
+    else setSource(STREAM_URL, 'Sample stream.');
+  }
+
+  var panel = document.getElementById('panel');
+  var urlInput = document.getElementById('url');
+  var urlMsg = document.getElementById('urlMsg');
+
+  document.getElementById('gear').addEventListener('click', function () {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) { urlInput.value = getSaved() || ''; urlMsg.textContent = ''; urlInput.focus(); }
+  });
+  document.getElementById('close').addEventListener('click', function () { panel.hidden = true; });
+  document.getElementById('save').addEventListener('click', function () {
+    var v = urlInput.value.trim();
+    if (!/^https?:\/\//i.test(v)) { urlMsg.textContent = 'Enter a URL starting with http:// or https://'; return; }
+    var kept = putSaved(v);
+    setSource(v, kept ? 'Your saved stream.' : 'Stream set for this visit only (storage is unavailable).');
+    panel.hidden = true;
+  });
+  document.getElementById('reset').addEventListener('click', function () {
+    putSaved(null);
+    urlInput.value = '';
+    panel.hidden = true;
+    loadCurrent();
+  });
+  urlInput.addEventListener('input', function () { urlMsg.textContent = ''; });
+  urlInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('save').click(); });
+
+  loadCurrent();
   render();
 </script>
 </body>
