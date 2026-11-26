@@ -70,7 +70,8 @@ textarea:focus-visible, select:focus-visible, button:focus-visible, input:focus-
 .dials output { color: var(--ink); font-variant-numeric: tabular-nums; }
 input[type=range] { width: 100%; accent-color: var(--red); height: 28px; margin: 0; }
 input[type=text] { background: var(--key); color: var(--ink); border: 1px solid var(--key-edge); border-radius: 4px; padding: 10px 12px; font-family: var(--body); font-size: 17px; }
-input[type=text]:disabled { opacity: .5; }
+input[type=text]:disabled, input[type=number]:disabled { opacity: .5; }
+#edlen { background: var(--key); color: var(--ink); border: 1px solid var(--key-edge); border-radius: 4px; padding: 10px 8px; font-family: var(--display); font-size: 14px; font-variant-numeric: tabular-nums; }
 section > * + * { margin-top: 10px; }
 section > h2 + * { margin-top: 0; }
 #wave { width: 100%; height: 56px; display: block; background: var(--key); border: 1px solid var(--key-edge); border-radius: 4px; cursor: pointer; }
@@ -269,6 +270,11 @@ fieldset:disabled { opacity: .5; }
         <button id="ednext" type="button" disabled>ADD NEXT WORD</button>
         <button id="edall" type="button">SELECT ALL</button>
       </div>
+      <div class="row" id="edlenrow">
+        <label for="edlen" style="margin:0">Syllable length, s</label>
+        <input id="edlen" type="number" min="0.05" max="5" step="0.01" inputmode="decimal" disabled style="width:110px">
+        <button id="edlisten2" type="button" disabled>LISTEN</button>
+      </div>
       <div class="row">
         <button id="edplay" type="button">PLAY FROM CURSOR</button>
         <select id="edlisten" style="width:auto;flex:1 1 170px" aria-label="What to hear">
@@ -283,7 +289,7 @@ fieldset:disabled { opacity: .5; }
         <button id="edfit" type="button">WHOLE PART</button>
         <button id="edundo" type="button" disabled>UNDO</button>
       </div>
-      <p class="note">Drag a syllable sideways to move it, drag its right edge to change its length, or drag it up or down to change its note. Syllables that touch within a word stay joined: moving one slides the join and its neighbour stretches to fit. Drag a word in the word row to move the whole word. To move a phrase, select a syllable, press SELECT WORD, then add the words before or after it (or shift-click words in the word row), and drag any part of the selection. Tap the waveform to set the cursor, drag it to scroll, and pinch or use the zoom buttons. The faint line is the singer's pitch, and the waveform is their voice split from the music.</p>
+      <p class="note">Drag a syllable sideways to move it, drag its right edge to change its length, or drag it up or down to change its note. Syllables that touch within a word stay joined: moving one slides the join and its neighbour stretches to fit. Drag a word in the word row to move the whole word. To move a phrase, select a syllable, press SELECT WORD, then add the words before or after it (or shift-click words in the word row), and drag any part of the selection. LISTEN plays just the selection. With one syllable selected, the length box sets its length to the hundredth of a second. Tap the waveform to set the cursor, drag it to scroll, and pinch or use the zoom buttons. The faint line is the singer's pitch, and the waveform is their voice split from the music.</p>
     </div>
   </section>
 
@@ -851,24 +857,35 @@ function fitWordsToNotes(words, notes) {
 }
 // Words with their own start and end times (from the speech model) take their pitch straight from the tune.
 function fitTimedWords(timed, midi, hopSec, offset = 0) {
-  const lines = []; let lastPitch = 57;
-  for (const w of timed) {
-    const word = cleanWord(w.text); if (!word) continue;
-    const n = Math.max(1, syllables(soundsOf(word)).length);
-    let t0 = w.t0, t1 = w.t1;
+  const ws = timed.map(w => ({ word: cleanWord(w.text), t0: w.t0, t1: w.t1 })).filter(w => w.word);
+  // where the singer's notes begin: a voice starting, or the pitch moving by a semitone or more
+  const onsets = []; let prev = NaN;
+  for (let f = 0; f < midi.length; f++) { const m = midi[f]; if (!isNaN(m) && (isNaN(prev) || Math.abs(Math.round(m) - Math.round(prev)) >= 1)) onsets.push(f * hopSec); prev = m; }
+  const lines = []; let lastPitch = 57, floor = 0;
+  ws.forEach((w, i) => {
+    const word = w.word, n = Math.max(1, syllables(soundsOf(word)).length), next = ws[i + 1];
+    let t0 = Math.max(w.t0, floor), t1 = Math.max(w.t1, t0 + 0.05);
     const v = voicedSpan(midi, hopSec, t0, t1);
-    if (!v) t1 = Math.min(t1, t0 + 0.3 * n);               // no voice heard there: keep it short
-    else { if (v.start > t0 + 0.1) t0 = v.start; if (v.end < t1 - 0.1) t1 = v.end; }
+    if (!v) {
+      // speech models often put a word, especially the first, before the singing starts: look ahead for the voice
+      const look = voicedSpan(midi, hopSec, t0, Math.max(next ? next.t1 : t1 + 1.5, t1 + 0.5));
+      if (look) { const d = t1 - t0; t0 = look.start; t1 = Math.min(look.end, t0 + Math.max(d, 0.25 * n)); }
+      else t1 = Math.min(t1, t0 + 0.3 * n);               // no voice anywhere near: keep it short
+    } else { if (v.start > t0 + 0.05) t0 = v.start; if (v.end < t1 - 0.1) t1 = v.end; }
+    let snap = null;                                       // start on a note that begins close by
+    for (const o of onsets) if (o >= floor && Math.abs(o - t0) <= 0.12 && (snap === null || Math.abs(o - t0) < Math.abs(snap - t0))) snap = o;
+    if (snap !== null) t0 = snap;
     t1 = Math.max(t1, t0 + 0.12 * n);
+    floor = t1;
     const each = (t1 - t0) / n, parts = [];
-    for (let i = 0; i < n; i++) {
-      let p = medianPitch(midi, hopSec, t0 + i * each, t0 + (i + 1) * each);
-      if (p === null) p = medianPitch(midi, hopSec, t0 + i * each - 0.25, t0 + (i + 1) * each + 0.25);
-      if (p === null) p = lastPitch;
-      lastPitch = p; parts.push(noteName(p) + ':' + r2(each));
+    for (let k = 0; k < n; k++) {
+      let pm = medianPitch(midi, hopSec, t0 + k * each, t0 + (k + 1) * each);
+      if (pm === null) pm = medianPitch(midi, hopSec, t0 + k * each - 0.25, t0 + (k + 1) * each + 0.25);
+      if (pm === null) pm = lastPitch;
+      lastPitch = pm; parts.push(noteName(pm) + ':' + r2(each));
     }
     lines.push(r2(t0 + offset) + ' ' + word + ' ' + parts.join(' '));
-  }
+  });
   return lines.join('\n');
 }
 function parseScore(text) {
@@ -1111,7 +1128,9 @@ function windowFor(prep, opts = {}) {
     from = Math.max(0, a - 2); to = Math.min(clip.dur, b + 2);
   }
   if (opts.from != null) from = Math.max(from, opts.from);
-  const events = ev.filter(e => e.start >= from - 0.01 && e.start < to && (!opts.part || e.part === opts.part));
+  if (opts.to != null) to = Math.min(to, opts.to);
+  const evA = opts.evFrom != null ? opts.evFrom : from - 0.01, evB = opts.evTo != null ? opts.evTo : to;   // LISTEN: only the selected syllables
+  const events = ev.filter(e => e.start >= evA && e.start < evB && (!opts.part || e.part === opts.part));
   return { from, to, events };
 }
 // Schedules the robots singing the events (times relative to `at`) in any audio context.
@@ -1650,6 +1669,14 @@ function drawWave() {
   if (document.activeElement !== $('scrub') || playing) $('scrub').value = p;
   $('scrubt').textContent = mmss(p);
   $('play').textContent = playing ? 'PAUSE' : 'PLAY';
+  playLabels();
+}
+// HEAR, PLAY FROM CURSOR and LISTEN read STOP while their own playback runs.
+function playLabels() {
+  const o = playing && playing.opts;
+  if (clip) clip.parts.forEach((p, i) => { const b = $('hear-' + i); if (b) b.textContent = o && o.part === p && !o.ed ? 'STOP' : 'HEAR'; });
+  $('edplay').textContent = o && o.ed && !o.sel ? 'STOP' : 'PLAY FROM CURSOR';
+  $('edlisten2').textContent = o && o.sel && o.sel === JSON.stringify(ed.sel) ? 'STOP' : 'LISTEN';
 }
 function runPlayhead() { cancelAnimationFrame(waveRaf); const loop = () => { drawWave(); edDraw(); if (playing) waveRaf = requestAnimationFrame(loop); }; loop(); }
 function previewFrom(offset) {
@@ -1724,7 +1751,10 @@ function renderParts() {
     sel.addEventListener('click', () => { clip.sel = i; setRegion(p.from, p.to); $('lyrics').value = p.text || ''; renderParts(); say('PART ' + (i + 1) + ' SELECTED'); });
     const hear = document.createElement('button'); hear.type = 'button'; hear.id = 'hear-' + i; hear.textContent = 'HEAR';
     hear.setAttribute('aria-label', 'Hear part ' + (i + 1) + ' with the robot');
-    hear.addEventListener('click', () => { clip.sel = i; renderParts(); singNow({ part: p }); });
+    hear.addEventListener('click', () => {
+      if (playing && playing.opts && playing.opts.part === p && !playing.opts.ed) { stopAll('STOPPED'); return; }
+      clip.sel = i; renderParts(); singNow({ part: p });
+    });
     const del = document.createElement('button'); del.type = 'button'; del.textContent = 'X'; del.setAttribute('aria-label', 'Remove part ' + (i + 1));
     del.addEventListener('click', () => {
       pushUndo();
@@ -1967,7 +1997,7 @@ function edDraw() {
     if (pos > ed.v1 && ed.v1 < p.to) { const span = ed.v1 - ed.v0; ed.v0 += span * 0.85; ed.v1 = ed.v0 + span; edClamp(); }
     g.fillStyle = COL.ink; g.fillRect(X(pos) - 1, 0, 2, H);
   }
-  $('edplay').textContent = playing && playing.opts && playing.opts.ed ? 'STOP' : 'PLAY FROM CURSOR';
+  playLabels();
 }
 function edInfo() {
   if (!edOn()) return;
@@ -1985,6 +2015,10 @@ function edInfo() {
   $('ednext').disabled = !(s0 && selEnd(s0) < ed.words.length - 1);
   $('edall').disabled = !ed.words.length;
   if (document.activeElement !== $('edtext')) edFillText();
+  const one = s0 && s0.j >= 0 ? ed.words[s0.w].notes[s0.j] : null;
+  $('edlen').disabled = !one;
+  if (document.activeElement !== $('edlen')) $('edlen').value = one ? one.dur.toFixed(2) : '';
+  $('edlisten2').disabled = !s0;
 }
 function edSelect(sel) { ed.sel = sel; edDraw(); edInfo(); }
 // The words box text follows the selection, so it can be retyped in place.
@@ -2102,9 +2136,36 @@ function edKey(e) {
   edDraw(); edInfo();
 }
 function edPlay() {
-  if (playing && playing.opts && playing.opts.ed) { stopAll('STOPPED'); return; }
+  if (playing && playing.opts && playing.opts.ed && !playing.opts.sel) { stopAll('STOPPED'); return; }
   const mode = $('edlisten').value;
   singNow({ part: ed.p, from: ed.cursor != null ? ed.cursor : undefined, music: mode === 'song' ? 'song' : 'voice', robot: mode !== 'solo', ed: true });
+}
+// The selection's stretch of time.
+function edSelSpan() {
+  const s0 = ed.sel; if (!s0) return null;
+  if (s0.j >= 0) { const x = ed.words[s0.w].notes[s0.j]; return { a: x.at, b: x.at + x.dur }; }
+  return { a: ed.words[s0.w].notes[0].at, b: wordEnd(ed.words[selEnd(s0)]) };
+}
+// Plays just the selection, with a breath either side, in the chosen listening mode.
+function edListen() {
+  const key = JSON.stringify(ed.sel);
+  if (playing && playing.opts && playing.opts.sel === key) { stopAll('STOPPED'); return; }   // same selection: stop; a new one: play that
+  const sp = edSelSpan(); if (!edOn() || !sp) return;
+  const mode = $('edlisten').value;
+  singNow({ part: ed.p, from: Math.max(ed.p.from - 1.5, sp.a - 0.25), to: sp.b + 0.25, evFrom: sp.a - 0.01, evTo: sp.b - 0.005,
+    music: mode === 'song' ? 'song' : 'voice', robot: mode !== 'solo', ed: true, sel: key });
+}
+// The length box: sets the selected syllable's length; a joined next syllable starts where it now ends.
+function edSetLen() {
+  const s0 = ed.sel; if (!edOn() || !s0 || s0.j < 0) return;
+  const v = parseFloat($('edlen').value), x = ed.words[s0.w].notes[s0.j];
+  if (!(v > 0)) { $('edlen').value = x.dur.toFixed(2); return; }
+  const before = $('score').value;
+  edApply(s0, 'size', v - x.dur, edOrig(s0));
+  edWrite(); if ($('score').value !== before) pushUndo(before);
+  $('edlen').value = x.dur.toFixed(2);
+  if (Math.abs(x.dur - v) > 0.005) say('LONGEST IT CAN BE HERE IS ' + x.dur.toFixed(2) + ' S');
+  edDraw(); edInfo();
 }
 (function edWire() {
   const cv = $('ed');
@@ -2123,6 +2184,9 @@ function edPlay() {
   $('edfit').addEventListener('click', () => { ed.v0 = ed.p.from; ed.v1 = ed.p.to; edClamp(); edDraw(); });
   $('edundo').addEventListener('click', undo);
   $('edapply').addEventListener('click', edRetype);
+  $('edlisten2').addEventListener('click', edListen);
+  $('edlen').addEventListener('change', edSetLen);
+  $('edlen').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); edSetLen(); } });
   $('edtext').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); edRetype(); } });
   $('edword').addEventListener('click', () => { if (ed.sel && ed.sel.j >= 0) edSelect({ w: ed.sel.w, w1: ed.sel.w, j: -1 }); });
   $('edprev').addEventListener('click', () => { if (ed.sel && ed.sel.w > 0) edSelect({ w: ed.sel.w - 1, w1: selEnd(ed.sel), j: -1 }); });
