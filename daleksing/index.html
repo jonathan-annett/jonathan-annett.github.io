@@ -87,11 +87,19 @@ section > h2 + * { margin-top: 0; }
 .prow input[type=range], .voice input[type=range] { flex: 1 1 auto; min-width: 60px; }
 .mini { font-family: var(--display); font-size: 11px; color: var(--muted); white-space: nowrap; margin: 0; letter-spacing: 0; font-weight: 400; text-transform: none; min-width: 34px; font-variant-numeric: tabular-nums; }
 .voice select { width: auto; flex: 0 1 150px; padding: 8px; font-size: 15px; }
+#stems { display: flex; flex-direction: column; gap: 6px; }
+.stem { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px; border: 1px solid var(--key-edge); border-radius: 4px; }
+.stem .nm { flex: 1 1 100%; font-family: var(--display); font-size: 11px; overflow-wrap: anywhere; }
+.stem.vocal { border-color: var(--red); }
+.stem select { width: auto; flex: 1 1 150px; padding: 8px; font-size: 15px; }
+.stem input[type=range] { flex: 1 1 90px; min-width: 60px; }
+.check { display: flex; gap: 8px; align-items: center; font-family: var(--display); font-size: 12px; letter-spacing: 1px; color: var(--ink); cursor: pointer; margin: 0; text-transform: none; font-weight: 400; }
+.check input { width: 20px; height: 20px; accent-color: var(--red); margin: 0; }
 #voices, #saved { display: flex; flex-direction: column; gap: 6px; }
 .saved .info { font-family: var(--body); font-size: 15px; letter-spacing: 0; line-height: 1.3; }
 .saved .info small { display: block; font-family: var(--display); font-size: 10px; color: var(--muted); }
 .saved.cur .info { border-color: var(--ink); }
-#savedbox[hidden], #keyrow[hidden], #ownsound[hidden], #timing[hidden] { display: none; }
+#savedbox[hidden], #stemsbox[hidden], #keyrow[hidden], #ownsound[hidden], #timing[hidden] { display: none; }
 fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 fieldset:disabled { opacity: .5; }
 #ed { width: 100%; height: 320px; display: block; background: var(--key); border: 1px solid var(--key-edge); border-radius: 4px; touch-action: none; cursor: default; }
@@ -191,7 +199,7 @@ fieldset:disabled { opacity: .5; }
   <section>
     <h2><b>1</b>MUSIC</h2>
     <div class="row">
-      <label class="filebtn" style="margin:0;color:var(--ink);font-weight:400">CHOOSE A MUSIC CLIP<input id="file" type="file" accept="audio/*"></label>
+      <label class="filebtn" style="margin:0;color:var(--ink);font-weight:400">CHOOSE A SONG OR ITS STEMS<input id="file" type="file" accept="audio/*" multiple></label>
       <button id="demo" type="button">LOAD DAISY BELL DEMO</button>
     </div>
     <div id="savedbox" hidden>
@@ -199,6 +207,10 @@ fieldset:disabled { opacity: .5; }
       <div id="saved"></div>
     </div>
     <div id="clipinfo">NO CLIP LOADED. THE DEMO NEEDS NONE.</div>
+    <div id="stemsbox" hidden>
+      <span class="label">Stems. Mark the vocals the robot should copy</span>
+      <div id="stems"></div>
+    </div>
     <canvas id="wave" width="560" height="56" hidden aria-label="Song overview. Drag to move through the song"></canvas>
     <div class="row" id="scrubrow" hidden>
       <input id="scrub" type="range" min="0" max="1" step="0.05" value="0" aria-label="Position in the song">
@@ -227,7 +239,7 @@ fieldset:disabled { opacity: .5; }
       </select>
     </div>
     <button id="analyse" type="button" disabled>FIND THE SELECTED PART AGAIN</button>
-    <p class="note">Play the song or drag through it to find a part, mark its start and end, and add it. Add as many parts as you like: a chorus, a line here and there, half of a duet. Each part's tune and words are found as soon as you add it; only those parts are analysed. HEAR plays one part with the robot, and each part has its own robot volume. Each part is sung with the original singer unless you switch it to replace them. Songs are saved in this browser as you work. Slow songs with one clear, unprocessed voice in the middle of a stereo mix work best. Everything runs in your browser, and the speech model downloads once.</p>
+    <p class="note">Play the song or drag through it to find a part, mark its start and end, and add it. Add as many parts as you like: a chorus, a line here and there, half of a duet. Each part's tune and words are found as soon as you add it; only those parts are analysed. HEAR plays one part with the robot, and each part has its own robot volume. Each part is sung with the original singer unless you switch it to replace them. Songs are saved in this browser as you work. Choose several files at once to load time-aligned stems, such as a Suno stem export: the robot copies the stems marked as vocals, and replacing the singer simply leaves those out. With a single mixed file, slow songs with one clear, unprocessed voice in the middle of a stereo mix work best. Everything runs in your browser, and the speech model downloads once.</p>
   </section>
 
   <section>
@@ -281,7 +293,8 @@ fieldset:disabled { opacity: .5; }
       <button id="dlmix" type="button">DOWNLOAD THE MIX</button>
       <button id="dlrobots" type="button">ROBOTS ONLY</button>
     </div>
-    <p class="note">Makes a WAV file using the mixer settings and the Play setting above. ROBOTS ONLY keeps the same timing with silence where the music was, ready to line up in an audio editor. Three minutes of song is about 30 MB.</p>
+    <label class="check" for="mp3"><input id="mp3" type="checkbox"> DOWNLOAD AS MP3 (192 KBPS)</label>
+    <p class="note">Makes a WAV file, or an MP3 if ticked, using the mixer settings and the Play setting above. ROBOTS ONLY keeps the same timing with silence where the music was, ready to line up in an audio editor. Three minutes of song is about 30 MB as WAV, or about 4 MB as MP3. The MP3 encoder downloads the first time you use it.</p>
   </section>
 </main>
 
@@ -1001,14 +1014,14 @@ function makeLimiter(c) {
 }
 function liveVoice(i) { while (pool.length <= i) pool.push(createVoice(ctx, robotBus)); return pool[i]; }
 function settings() {
-  return { vrobot: +$('vrobot').value, vmusic: +$('vmusic').value, span: $('span').value, model: $('model').value, base: copySound(baseSound) };
+  return { vrobot: +$('vrobot').value, vmusic: +$('vmusic').value, span: $('span').value, model: $('model').value, mp3: $('mp3').checked, base: copySound(baseSound) };
 }
 function applySettings(st) {
   if (!st) return;
   const setSel = (id, v) => { if (v != null && [...$(id).options].some(o => o.value === String(v))) $(id).value = String(v); };
   if (st.vrobot != null) $('vrobot').value = st.vrobot;
   if (st.vmusic != null) $('vmusic').value = st.vmusic;
-  setSel('span', st.span); setSel('model', st.model);
+  setSel('span', st.span); setSel('model', st.model); if (st.mp3 != null) $('mp3').checked = !!st.mp3;
   // songs saved before sounds existed kept these settings at the top level
   baseSound = cleanSound(st.base || { voices: st.voices, ring: st.ring, octave: st.octave, key: st.key, hold: st.hold });
   scopeRef = null; renderScope(); renderSound(); applyMix();
@@ -1218,18 +1231,118 @@ function setupClip(full, name, id) {
   const sr = full.sampleRate, n = Math.min(full.length, Math.floor(MAX_CLIP * sr));
   const L = full.getChannelData(0).slice(0, n), R = full.numberOfChannels > 1 ? full.getChannelData(1).slice(0, n) : null;
   const origBuf = ctx.createBuffer(2, n, sr); origBuf.copyToChannel(L, 0); origBuf.copyToChannel(R || L, 1);
-  clip = { id, name, sr, dur: n / sr, L, R, origBuf, from: 0, to: Math.min(n / sr, 20), pos: 0, peaks: null, parts: [], sel: -1, mix: null, mixKey: '' };
+  finishSetup({ id, name, sr, n, L, R, origBuf, stems: null, vocal: null, cut: full.length > n });
+}
+function finishSetup(o) {
+  clip = { id: o.id, name: o.name, sr: o.sr, dur: o.n / o.sr, L: o.L, R: o.R, origBuf: o.origBuf, stems: o.stems, vocal: o.vocal,
+    from: 0, to: Math.min(o.n / o.sr, 20), pos: 0, peaks: null, parts: [], sel: -1, mix: null, mixKey: '' };
   scopeRef = null; scoreUndo = []; ed.p = null;
-  const cols = 280, per = Math.max(1, Math.floor(n / cols)); clip.peaks = new Float32Array(cols);
-  for (let c = 0; c < cols; c++) { let m = 0; for (let i = c * per, e = Math.min(n, i + per); i < e; i += 16) { const a = Math.abs(L[i]); if (a > m) m = a; } clip.peaks[c] = m; }
+  makePeaks();
   ['wave', 'scrubrow', 'marks', 'range', 'partsbox'].forEach(k => { $(k).hidden = false; });
   $('scrub').max = clip.dur.toFixed(2);
   $('score').value = ''; $('lyrics').value = ''; readout.textContent = '';
-  setRegion(clip.from, clip.to); renderParts(); renderScope(); renderSound();
-  $('clipinfo').textContent = name + '  ' + clip.dur.toFixed(1) + ' S' + (R ? '  STEREO' : '  MONO') + (full.length > n ? '  (FIRST ' + MAX_CLIP + ' S ONLY)' : '');
+  setRegion(clip.from, clip.to); renderParts(); renderScope(); renderSound(); renderStems();
+  $('clipinfo').textContent = o.name + '  ' + clip.dur.toFixed(1) + ' S' + (o.stems ? '  ' + o.stems.length + ' STEMS' : o.R ? '  STEREO' : '  MONO') + (o.cut ? '  (FIRST ' + MAX_CLIP + ' S ONLY)' : '');
+}
+function makePeaks() {
+  const n = clip.L.length, cols = 280, per = Math.max(1, Math.floor(n / cols)); clip.peaks = new Float32Array(cols);
+  for (let c = 0; c < cols; c++) { let m = 0; for (let i = c * per, e = Math.min(n, i + per); i < e; i += 16) { const a = Math.abs(clip.L[i]); if (a > m) m = a; } clip.peaks[c] = m; }
+}
+
+// ---------- stems: several time-aligned files, some marked as the vocals the robot copies ----------
+// Suno names stems like "Song (Vocals).wav", "Song (Instrumental).wav", "Song (Backing Vocals).wav".
+const guessVocal = nm => /vocal|vox|voice|sing/i.test(nm) && !/backing|instrumental|no.?vocal|karaoke|accomp/i.test(nm);
+function stemRoles(list, saved) {
+  list.forEach(st => {
+    const k = saved && saved.find(x => x.name === st.name);
+    st.role = k ? k.role : guessVocal(st.name) ? 'vocal' : 'music';
+    st.lvl = k && k.lvl != null ? k.lvl : 100;
+  });
+}
+// Adds the stems into L and R at their levels. env, when given, scales the vocal stems sample by sample (0 = left out).
+function stemSum(stems, L, R, env) {
+  L.fill(0); R.fill(0);
+  stems.forEach(st => {
+    const g = st.lvl / 100, a = st.buf.getChannelData(0), b = st.buf.numberOfChannels > 1 ? st.buf.getChannelData(1) : a;
+    const m = Math.min(L.length, a.length), voc = env && st.role === 'vocal';
+    if (!g) return;
+    for (let i = 0; i < m; i++) { const k = voc ? g * env[i] : g; L[i] += a[i] * k; R[i] += b[i] * k; }
+  });
+}
+// The vocal stems as one mono track, at full level, for analysis and the editor.
+function vocalSum(stems, n) {
+  const v = stems.filter(st => st.role === 'vocal'); if (!v.length) return null;
+  const out = new Float32Array(n);
+  v.forEach(st => {
+    const a = st.buf.getChannelData(0), b = st.buf.numberOfChannels > 1 ? st.buf.getChannelData(1) : a, m = Math.min(n, a.length);
+    for (let i = 0; i < m; i++) out[i] += (a[i] + b[i]) / 2;
+  });
+  return out;
+}
+function setupStems(list, name, id) {
+  const sr = ctx.sampleRate, longest = Math.max(...list.map(st => st.buf.length)), n = Math.min(longest, Math.floor(MAX_CLIP * sr));
+  const origBuf = ctx.createBuffer(2, n, sr), L = origBuf.getChannelData(0), R = origBuf.getChannelData(1);
+  stemSum(list, L, R, null);
+  finishSetup({ id, name, sr, n, L, R, origBuf, stems: list, vocal: vocalSum(list, n), cut: longest > n });
+}
+// After a stem's role or level changes: remix, and if the vocals changed, find the parts again.
+function restem(rolesChanged) {
+  stopAll();
+  stemSum(clip.stems, clip.L, clip.R, null);
+  clip.mix = null; clip.mixKey = '';
+  if (rolesChanged) {
+    clip.vocal = vocalSum(clip.stems, clip.L.length);
+    clip.parts.forEach(p => { p.done = false; p.failed = false; p.centre = null; p._vb = null; p._pk = null; });
+  }
+  makePeaks(); drawWave(); renderStems(); renderParts(); markDirty();
+  if (rolesChanged && clip.parts.length) { say(clip.vocal ? 'VOCALS CHANGED. FINDING THE PARTS AGAIN' : 'NO STEM IS MARKED AS VOCALS. USING THE MIX INSTEAD'); runQueue(); }
+}
+function renderStems() {
+  const box = $('stems'); box.textContent = '';
+  $('stemsbox').hidden = !(clip && clip.stems);
+  if (!clip || !clip.stems) return;
+  clip.stems.forEach((st, i) => {
+    const row = document.createElement('div'); row.className = 'stem' + (st.role === 'vocal' ? ' vocal' : '');
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = st.name;
+    const sel = document.createElement('select'); sel.id = 'stemrole-' + i; sel.setAttribute('aria-label', st.name + ' is');
+    [['vocal', 'Vocal: the robot copies it'], ['music', 'Music']].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; if (v === st.role) o.selected = true; sel.append(o); });
+    sel.addEventListener('change', () => { st.role = sel.value; restem(true); });
+    const lv = document.createElement('input'); lv.type = 'range'; lv.min = 0; lv.max = 150; lv.step = 1; lv.value = st.lvl; lv.id = 'stemlvl-' + i;
+    lv.setAttribute('aria-label', st.name + ' level');
+    const out = document.createElement('output'); out.className = 'mini'; out.textContent = st.lvl;
+    lv.addEventListener('input', () => { st.lvl = +lv.value; out.textContent = st.lvl; });
+    lv.addEventListener('change', () => restem(false));
+    row.append(nm, sel, lv, out); box.append(row);
+  });
+}
+const stemsName = files => { const b = files[0].name.replace(/\.[^.]+$/, '').replace(/\s*[\(\[][^\)\]]*[\)\]]\s*$/, '').trim() || files[0].name; return b + ' (' + files.length + ' stems)'; };
+async function loadFiles(files) {
+  if (!files.length) return;
+  if (files.length === 1) return loadFile(files[0]);
+  if (!ensureAudio()) return;
+  stopAll('READING ' + files.length + ' STEMS');
+  const id = 'stems|' + files.map(f => f.name + ':' + f.size + ':' + f.lastModified).sort().join('|');
+  const list = [], keep = [];
+  for (const f of files) {
+    try {
+      const ab = await f.arrayBuffer(); keep.push({ name: f.name, data: ab.slice(0) });
+      list.push({ name: f.name, buf: await decode(ab) });
+    } catch (e) { say('COULD NOT READ ' + f.name.toUpperCase() + ' AS AUDIO'); return; }
+  }
+  let saved = null; try { saved = await dbGet('work', id); } catch (e) {}
+  stemRoles(list, saved && saved.stems);
+  setupStems(list, stemsName(files), id);
+  let restored = false;
+  try { restored = !!saved && await restoreWork(id); } catch (e) {}
+  if (restored) { say('WELCOME BACK. YOUR SAVED WORK FOR THESE STEMS IS RESTORED'); renderSaved(); runQueue(); return; }
+  const voc = list.filter(st => st.role === 'vocal').length;
+  say(files.length + ' STEMS LOADED AND SAVED. ' + (voc ? voc + ' MARKED AS VOCALS' : 'MARK THE VOCAL STEMS BELOW') + '. NOW MARK A PART AND ADD IT');
+  saveWork([['audio', id, { stems: keep }]]);
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
 }
 async function loadFile(file) {
   if (!file || !ensureAudio()) return;
+  $('stemsbox').hidden = true;
   stopAll('READING ' + file.name.toUpperCase());
   const id = file.name + '|' + file.size + '|' + file.lastModified;
   let full, keep;
@@ -1288,16 +1401,20 @@ function setScoreRange(a, b, text) {                   // swaps the score lines 
 }
 async function analysePart(p, tag, modelId) {
   const sr = clip.sr, i0 = Math.floor(p.from * sr), i1 = Math.min(clip.L.length, Math.floor(p.to * sr)), off = p.from;
-  say(tag + 'SPLITTING OFF THE VOCALS 0%'); await tick();
-  const sp = await splitClip(clip.L.subarray(i0, i1), clip.R ? clip.R.subarray(i0, i1) : null, sr, x => say(tag + 'SPLITTING OFF THE VOCALS ' + Math.round(x * 100) + '%'));
+  const stemVoc = clip.vocal;                            // vocal stems: analyse those directly, no splitting needed
+  say(tag + (stemVoc ? 'READING THE VOCAL STEM 0%' : 'SPLITTING OFF THE VOCALS 0%')); await tick();
+  const sp = stemVoc
+    ? await splitClip(stemVoc.subarray(i0, i1), null, sr, x => say(tag + 'READING THE VOCAL STEM ' + Math.round(x * 100) + '%'))
+    : await splitClip(clip.L.subarray(i0, i1), clip.R ? clip.R.subarray(i0, i1) : null, sr, x => say(tag + 'SPLITTING OFF THE VOCALS ' + Math.round(x * 100) + '%'));
   if (!clip || !clip.parts.includes(p)) return 'REMOVED';
-  p.stereo = sp.stereo; p.centre = sp.stereo ? sp.centre : null; if (!sp.stereo) p.remove = false;
+  if (stemVoc) { p.stereo = true; p.centre = stemVoc.slice(i0, i1); }
+  else { p.stereo = sp.stereo; p.centre = sp.stereo ? sp.centre : null; if (!sp.stereo) p.remove = false; }
   say(tag + 'FOLLOWING THE TUNE'); await tick();
   p.midi = trackPitch(sp.sal, sp.frames); p.hopSec = sp.hopSec;
   p.notes = notesFromTrack(p.midi, sp.hopSec).map(x => ({ start: x.start + off, midi: x.midi, dur: x.dur }));
   let heard = null, why = '';
   if (modelId) {
-    try { heard = await transcribe(resampleTo(sp.centre, sr, 16000), modelId, tag); }
+    try { heard = await transcribe(resampleTo(stemVoc ? p.centre : sp.centre, sr, 16000), modelId, tag); }
     catch (e) { why = String(e && e.message || e).slice(0, 70).toUpperCase(); }
   }
   if (!clip || !clip.parts.includes(p)) return 'REMOVED';
@@ -1380,8 +1497,24 @@ function fitTyped(auto, respread) {
   say('SPREAD ' + r.usedWords + ' OF ' + words.length + ' WORDS OVER ' + r.usedNotes + ' OF ' + notes.length + ' NOTES. UNDO PUTS IT BACK');
   return true;
 }
+// With stems: the vocal stems fade out of every part set to replace the singer. Exact, nothing else is touched.
+function stemMixBuffer() {
+  const on = p => p.done && p.remove, key = 'S' + clip.parts.map(p => (on(p) ? 'x' : '-') + p.from + '-' + p.to).join('') + clip.stems.map(st => st.role[0] + st.lvl).join('');
+  if (!clip.parts.some(on)) return clip.origBuf;
+  if (clip.mix && clip.mixKey === key) return clip.mix;
+  const sr = clip.sr, n = clip.L.length, env = new Float32Array(n).fill(1), fade = Math.floor(.03 * sr);
+  clip.parts.filter(on).forEach(p => {
+    const i0 = Math.max(0, Math.floor(p.from * sr)), i1 = Math.min(n, Math.floor(p.to * sr));
+    for (let i = i0; i < i1; i++) env[i] = 1 - Math.min(1, (i - i0) / fade, (i1 - 1 - i) / fade);
+  });
+  const b = ctx.createBuffer(2, n, sr);
+  stemSum(clip.stems, b.getChannelData(0), b.getChannelData(1), env);
+  clip.mix = b; clip.mixKey = key;
+  return b;
+}
 // The song with the original singer taken out of every part set to replace them.
 function mixBuffer() {
+  if (clip.stems && clip.vocal) return stemMixBuffer();
   const on = p => p.done && p.stereo && p.remove && p.centre, key = clip.parts.map(p => (on(p) ? 'x' : '-') + p.from).join('');
   if (!clip.parts.some(on)) return clip.origBuf;
   if (clip.mix && clip.mixKey === key) return clip.mix;
@@ -1394,7 +1527,7 @@ function mixBuffer() {
   return clip.mix;
 }
 function loadDemo() {
-  stopAll(); clip = null; scopeRef = null; scoreUndo = [];
+  stopAll(); clip = null; scopeRef = null; scoreUndo = []; renderStems();
   $('clipinfo').textContent = 'NO CLIP LOADED. THE DEMO NEEDS NONE.';
   ['wave', 'scrubrow', 'marks', 'range', 'partsbox'].forEach(id => { $(id).hidden = true; });
   $('analyse').disabled = true;
@@ -1940,7 +2073,8 @@ async function saveWork(extra = []) {
   const id = clip.id;
   const work = {
     parts: clip.parts.map(p => ({ from: p.from, to: p.to, remove: !!p.remove, done: !!p.done, stereo: !!p.stereo, midi: p.midi, hopSec: p.hopSec, notes: p.notes, text: p.text, words: p.words, level: p.level != null ? p.level : 100, sound: p.sound ? copySound(p.sound) : null })),
-    score: $('score').value, lyrics: $('lyrics').value, from: clip.from, to: clip.to, pos: clip.pos, sel: clip.sel, settings: settings()
+    score: $('score').value, lyrics: $('lyrics').value, from: clip.from, to: clip.to, pos: clip.pos, sel: clip.sel, settings: settings(),
+    stems: clip.stems ? clip.stems.map(st => ({ name: st.name, role: st.role, lvl: st.lvl })) : null
   };
   const meta = { id, name: clip.name, dur: clip.dur, parts: clip.parts.length, savedAt: Date.now() };
   try { await dbPutMany([['meta', id, meta], ['work', id, work], ...extra]); renderSaved(); }
@@ -1956,6 +2090,7 @@ async function restoreWork(id) {
   clip.parts = (w.parts || []).map(p => Object.assign({ centre: null, midi: null, hopSec: 0, notes: [], text: '', words: 0, level: 100 }, p, { sound: p.sound ? cleanSound(p.sound) : null }));
   for (const p of clip.parts) {
     if (!(p.done && p.stereo)) continue;
+    if (clip.vocal) { p.centre = clip.vocal.slice(Math.floor(p.from * clip.sr), Math.min(clip.L.length, Math.floor(p.to * clip.sr))); continue; }
     p.centre = (await dbGet('vocals', vocalKey(id, p)).catch(() => null)) || null;
     if (!p.centre && clip.R) {                              // missing: split it off again
       say('RESTORING THE VOCALS FOR PART ' + (clip.parts.indexOf(p) + 1));
@@ -1979,8 +2114,16 @@ async function openSaved(id) {
     const meta = await dbGet('meta', id);
     let ab = await dbGet('audio', id);
     if (!meta || !ab) { say('THE AUDIO FOR THIS SONG IS MISSING. LOAD THE FILE AGAIN'); return; }
-    if (ab instanceof Blob) ab = await ab.arrayBuffer();
-    setupClip(await decode(ab.slice(0)), meta.name, id);
+    if (ab && ab.stems) {
+      const list = [];
+      for (const st of ab.stems) list.push({ name: st.name, buf: await decode(st.data.slice(0)) });
+      const w = await dbGet('work', id).catch(() => null);
+      stemRoles(list, w && w.stems);
+      setupStems(list, meta.name, id);
+    } else {
+      if (ab instanceof Blob) ab = await ab.arrayBuffer();
+      setupClip(await decode(ab.slice(0)), meta.name, id);
+    }
     await restoreWork(id);
     say('OPENED ' + meta.name.toUpperCase() + '. ' + clip.parts.length + ' PARTS');
     renderSaved(); runQueue();
@@ -2024,6 +2167,34 @@ function wavBlob(b) {
   for (let c = 0; c < ch; c++) { const d = b.getChannelData(c); for (let i = 0, o = c; i < n; i++, o += ch) { const x = d[i] < -1 ? -1 : d[i] > 1 ? 1 : d[i]; pcm[o] = x < 0 ? x * 32768 : x * 32767; } }
   return new Blob([hd, pcm], { type: 'audio/wav' });
 }
+// MP3 encoding runs in the page with lamejs, loaded the first time it is needed.
+let lameP = null;
+function loadLame() {
+  if (window.lamejs && window.lamejs.Mp3Encoder) return Promise.resolve(window.lamejs);
+  if (!lameP) lameP = new Promise((res, rej) => {
+    const sc = document.createElement('script');
+    sc.src = 'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js';
+    sc.onload = () => (window.lamejs && window.lamejs.Mp3Encoder ? res(window.lamejs) : rej(new Error('THE MP3 ENCODER DID NOT START')));
+    sc.onerror = () => { lameP = null; rej(new Error('COULD NOT LOAD THE MP3 ENCODER. CHECK THE CONNECTION')); };
+    document.head.appendChild(sc);
+  });
+  return lameP;
+}
+async function mp3Blob(b) {
+  say('LOADING THE MP3 ENCODER');
+  const lame = await loadLame(), enc = new lame.Mp3Encoder(2, b.sampleRate, 192);
+  const L = b.getChannelData(0), R = b.getChannelData(1), n = b.length, B = 1152, li = new Int16Array(B), ri = new Int16Array(B), out = [];
+  const s16 = x => (x < -1 ? -32768 : x > 1 ? 32767 : x < 0 ? x * 32768 : x * 32767);
+  for (let i = 0, k = 0; i < n; i += B, k++) {
+    const m = Math.min(B, n - i);
+    for (let j = 0; j < m; j++) { li[j] = s16(L[i + j]); ri[j] = s16(R[i + j]); }
+    const chunk = enc.encodeBuffer(m < B ? li.subarray(0, m) : li, m < B ? ri.subarray(0, m) : ri);
+    if (chunk.length) out.push(new Uint8Array(chunk));
+    if (k % 300 === 0) { say('MAKING THE MP3 ' + Math.round(i / n * 100) + '%'); await tick(); }
+  }
+  const end = enc.flush(); if (end.length) out.push(new Uint8Array(end));
+  return new Blob(out, { type: 'audio/mpeg' });
+}
 async function downloadMix(withMusic) {
   if (rendering) return;
   const prep = prepare();
@@ -2031,7 +2202,8 @@ async function downloadMix(withMusic) {
   if (!ensureAudio()) return;
   stopAll(); rendering = true; $('dlmix').disabled = $('dlrobots').disabled = true;
   try {
-    const st = settings(), w = windowFor(prep), sr = clip ? clip.sr : 44100;
+    const st = settings(), w = windowFor(prep), mp3 = $('mp3').checked;
+    const sr = mp3 && ![32000, 44100, 48000].includes(clip ? clip.sr : 44100) ? 44100 : clip ? clip.sr : 44100;   // MP3 allows only some rates
     const events = w.events.map(e => Object.assign({}, e, { start: e.start - w.from }));
     const lastEnd = events.reduce((m, e) => Math.max(m, e.start + e.dur), 0);
     const len = Math.max(clip ? w.to - w.from : 0, lastEnd + 0.6) + 0.1;
@@ -2054,10 +2226,10 @@ async function downloadMix(withMusic) {
     let peak = 0;
     for (let c = 0; c < 2; c++) { const d = out.getChannelData(c); for (let i = 0; i < d.length; i++) { const a = d[i] < 0 ? -d[i] : d[i]; if (a > peak) peak = a; } }
     if (peak > 0.97) for (let c = 0; c < 2; c++) { const d = out.getChannelData(c), k = 0.97 / peak; for (let i = 0; i < d.length; i++) d[i] *= k; }
-    const blob = wavBlob(out);
-    const base = (clip ? clip.name.replace(/\.[^.]+$/, '') : 'daisy-bell').replace(/[^\w .-]+/g, '').trim() || 'song';
+    const blob = mp3 ? await mp3Blob(out) : wavBlob(out), ext = mp3 ? '.mp3' : '.wav';
+    const base = (clip ? (clip.stems ? clip.name : clip.name.replace(/\.[^.]+$/, '')) : 'daisy-bell').replace(/[^\w .()-]+/g, '').trim() || 'song';
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = base + (withMusic && clip ? ' - robot mix.wav' : ' - robots.wav');
+    a.href = URL.createObjectURL(blob); a.download = base + (withMusic && clip ? ' - robot mix' : ' - robots') + ext;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 120000);
     say('DOWNLOADED ' + a.download.toUpperCase() + '. ' + (blob.size / 1e6).toFixed(1) + ' MB, ' + mmss(len));
@@ -2093,11 +2265,12 @@ let fitTimer = 0;
 $('lyrics').addEventListener('input', () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => fitTyped(true, false), 900); });
 $('lyrics').addEventListener('change', () => { clearTimeout(fitTimer); fitTyped(true, true); });
 $('dlmix').addEventListener('click', () => downloadMix(true));
+$('mp3').addEventListener('change', markDirty);
 $('dlrobots').addEventListener('click', () => downloadMix(false));
 $('lyrics').addEventListener('input', markDirty);
 $('score').addEventListener('input', () => { markDirty(); edSync(); });
 $('ring').addEventListener('click', () => { const es = editSound(); if (!es) return; es.ring = !es.ring; soundChanged(); });
-$('file').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; loadFile(f); });   // cleared so the same file can be chosen again
+$('file').addEventListener('change', e => { const f = [...e.target.files]; e.target.value = ''; loadFiles(f); });   // cleared so the same files can be chosen again
 $('analyse').addEventListener('click', analyseAgain);
 $('demo').addEventListener('click', loadDemo);
 $('score').addEventListener('change', () => showWords(parseScore($('score').value).words));
