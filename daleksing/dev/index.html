@@ -60,7 +60,16 @@ textarea:focus-visible, select:focus-visible, button:focus-visible, input:focus-
 #readout { height: 98px; overflow-y: auto; word-spacing: 3px; text-transform: uppercase; }
 #readout span { padding: 0 2px; }
 #readout span.on { background: var(--screen-ink); color: var(--screen); }
-#status { border-top: 2px solid var(--screen-ink); padding-top: 6px; font-size: 12px; overflow-wrap: anywhere; height: calc(3 * 1.75em + 6px); overflow-y: auto; }
+#status { position: relative; border-top: 2px solid var(--screen-ink); padding-top: 6px; font-size: 12px; overflow-wrap: anywhere; height: calc(3 * 1.75em + 6px); overflow-y: auto; }
+/* progress: a bar over the status line's top rule; striped when the end cannot be known */
+#busy { position: absolute; left: 0; top: -3px; height: 4px; width: 0; background: var(--red); transition: width .15s linear; }
+#busy[hidden] { display: none; }
+#busy.ind, .pbar.ind i { background: repeating-linear-gradient(90deg, var(--red) 0 10px, transparent 10px 16px); background-size: 32px 100%; animation: crawl .8s linear infinite; }
+@keyframes crawl { to { background-position: 32px 0; } }
+@media (prefers-reduced-motion: reduce) { #busy.ind, .pbar.ind i { animation: none; } #busy { transition: none; } }
+.pbar { height: 6px; background: var(--key); border: 1px solid var(--key-edge); border-radius: 3px; overflow: hidden; }
+.pbar[hidden] { display: none; }
+.pbar i { display: block; height: 100%; width: 0; background: var(--red); }
 .cursor { background: var(--screen-ink); color: var(--screen); padding: 0 3px; margin-right: 6px; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .big { font-size: 17px; padding: 14px 18px; flex: 1 1 110px; }
@@ -125,7 +134,7 @@ fieldset:disabled { opacity: .5; }
   <section class="screen">
     <canvas id="scope" width="140" height="24" aria-hidden="true"></canvas>
     <div id="readout"></div>
-    <div id="status"><span class="cursor">K</span><span id="statustext">READY</span></div>
+    <div id="status"><div id="busy" hidden role="progressbar" aria-label="Progress"></div><span class="cursor">K</span><span id="statustext">READY</span></div>
   </section>
 
   <div class="row">
@@ -321,6 +330,7 @@ fieldset:disabled { opacity: .5; }
       <button id="dlrobots" type="button">ROBOTS ONLY</button>
     </div>
     <label class="check" for="mp3"><input id="mp3" type="checkbox"> DOWNLOAD AS MP3 (192 KBPS)</label>
+    <div class="pbar" id="dlbar" hidden role="progressbar" aria-label="Download progress"><i></i></div>
     <p class="note">Makes a WAV file, or an MP3 if ticked, using the mixer settings and the Play setting above. ROBOTS ONLY keeps the same timing with silence where the music was, ready to line up in an audio editor. Three minutes of song is about 30 MB as WAV, or about 4 MB as MP3. The MP3 encoder downloads the first time you use it.</p>
   </section>
 </main>
@@ -1298,6 +1308,34 @@ function renderVoices(shown) {
 }
 function soundChanged() { renderSound(); markDirty(); }
 
+// ---------- progress ----------
+// The bar on the status line. frac 0..1, -1 for "working, end unknown", null to hide.
+function busy(frac) {
+  const b = $('busy');
+  if (frac == null) { b.hidden = true; b.removeAttribute('aria-valuenow'); return; }
+  b.hidden = false; b.classList.toggle('ind', frac < 0);
+  b.style.width = frac < 0 ? '100%' : (Math.max(0, Math.min(1, frac)) * 100).toFixed(1) + '%';
+  if (frac >= 0) b.setAttribute('aria-valuenow', Math.round(frac * 100));
+}
+function dlBar(frac) {
+  const b = $('dlbar');
+  if (frac == null) { b.hidden = true; return; }
+  b.hidden = false; b.classList.toggle('ind', frac < 0);
+  b.firstElementChild.style.width = frac < 0 ? '100%' : (Math.max(0, Math.min(1, frac)) * 100).toFixed(1) + '%';
+}
+// A part's own progress: drawn over it on the overview and in its label. stage: a short word; est: an estimate, not a measurement.
+let ovPending = 0, queueDone = 0;
+function ovRedraw() { if (!ovPending) ovPending = requestAnimationFrame(() => { ovPending = 0; drawWave(); }); }
+function partProgress(p, frac, stage, est) {
+  if (frac == null) { p._prog = null; p._stage = ''; p._est = false; }
+  else { p._prog = Math.max(p._prog || 0, Math.min(1, frac)); p._stage = stage; p._est = !!est; }
+  refreshPartLabels(); ovRedraw();
+  if (frac != null && clip) {                            // the whole queue, on the status line
+    const left = clip.parts.filter(q => !q.done && !q.failed && !q.held).length;
+    busy((queueDone + p._prog) / Math.max(1, queueDone + left));
+  }
+}
+
 // ---------- clip loading and analysis ----------
 function decode(ab) {
   return new Promise((res, rej) => { const p = ctx.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(rej); });
@@ -1408,17 +1446,19 @@ async function loadFiles(files) {
   if (!files.length) return;
   if (files.length === 1) return loadFile(files[0]);
   if (!ensureAudio()) return;
-  stopAll('READING ' + files.length + ' STEMS');
+  stopAll('READING ' + files.length + ' STEMS'); busy(0);
   const id = 'stems|' + files.map(f => f.name + ':' + f.size + ':' + f.lastModified).sort().join('|');
   const list = [], keep = [];
   for (const f of files) {
     try {
       const ab = await f.arrayBuffer(); keep.push({ name: f.name, data: ab.slice(0) });
       list.push({ name: f.name, buf: await decode(ab) });
-    } catch (e) { say('COULD NOT READ ' + f.name.toUpperCase() + ' AS AUDIO'); return; }
+      busy(list.length / files.length * 0.9); say('READ ' + list.length + ' OF ' + files.length + ' STEMS');
+    } catch (e) { busy(null); say('COULD NOT READ ' + f.name.toUpperCase() + ' AS AUDIO'); return; }
   }
   let saved = null; try { saved = await dbGet('work', id); } catch (e) {}
   stemRoles(list, saved && saved.stems);
+  busy(null);
   setupStems(list, stemsName(files), id);
   let restored = false;
   try { restored = !!saved && await restoreWork(id); } catch (e) {}
@@ -1432,13 +1472,14 @@ async function loadFiles(files) {
 async function loadFile(file) {
   if (!file || !ensureAudio()) return;
   $('stemsbox').hidden = true;
-  stopAll('READING ' + file.name.toUpperCase());
+  stopAll('READING ' + file.name.toUpperCase()); busy(-1);
   const id = file.name + '|' + file.size + '|' + file.lastModified;
   let full, keep;
   try {
     const ab = await file.arrayBuffer(); keep = ab.slice(0);       // decoding uses up the buffer, so keep a copy to save
     full = await decode(ab);
-  } catch (e) { say('COULD NOT READ THAT FILE AS AUDIO'); return; }
+  } catch (e) { busy(null); say('COULD NOT READ THAT FILE AS AUDIO'); return; }
+  busy(null);
   setupClip(full, file.name, id);
   let restored = false;
   try { restored = !!(await dbGet('meta', id)) && await restoreWork(id); } catch (e) {}
@@ -1449,28 +1490,42 @@ async function loadFile(file) {
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
 }
 let asrCache = {};
-async function transcribe(audio16k, modelId, tag = '') {
-  say(tag + 'LOADING THE SPEECH LIBRARY');
+// prog(frac, stage, estimated): reports 0.40 to 1.0 of the part's bar.
+async function transcribe(audio16k, modelId, tag = '', prog = () => {}) {
+  say(tag + 'LOADING THE SPEECH LIBRARY'); prog(0.41, 'LIBRARY');
   const T = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1');
   T.env.allowLocalModels = false;
   try { T.env.backends.onnx.wasm.proxy = true; } catch (e) {}
+  const files = {};
   if (!asrCache[modelId]) {
     asrCache[modelId] = await T.pipeline('automatic-speech-recognition', modelId, {
       dtype: 'q8',
-      progress_callback: p => { if (p && p.status === 'progress' && p.total) say(tag + 'DOWNLOADING SPEECH MODEL ' + Math.round(p.progress) + '%'); }
+      progress_callback: p => {                            // the model comes as several files: add up their bytes
+        if (!p || p.status !== 'progress' || !p.total) return;
+        files[p.file] = { loaded: p.loaded || 0, total: p.total };
+        let a = 0, b = 0; Object.values(files).forEach(f => { a += f.loaded; b += f.total; });
+        const f = b ? a / b : 0;
+        say(tag + 'DOWNLOADING SPEECH MODEL ' + Math.round(f * 100) + '%'); prog(0.45 + 0.3 * f, 'MODEL');
+      }
     });
   }
   const asr = asrCache[modelId];
   say(tag + 'LISTENING FOR THE WORDS. THIS CAN TAKE A MINUTE');
+  // the library reports nothing while it listens, so the bar eases forward on an estimate of how long it takes
+  const secs = audio16k.length / 16000, guess = Math.max(3, secs * ({ 'Xenova/whisper-tiny.en': 0.3, 'Xenova/whisper-base.en': 0.6, 'Xenova/whisper-small.en': 2 }[modelId] || 0.6));
+  const t0 = performance.now(), timer = setInterval(() => prog(0.75 + 0.24 * (1 - Math.exp(-(performance.now() - t0) / 1000 / guess)), 'WORDS', true), 250);
+  prog(0.75, 'WORDS', true);
   await tick();
+  try {
   const base = { chunk_length_s: 30, stride_length_s: 5 };
-  let out, level = 'word';
+  var out, level = 'word';
   try { out = await asr(audio16k, Object.assign({ return_timestamps: 'word' }, base)); }
   catch (e) {
     level = 'phrase';
     try { out = await asr(audio16k, Object.assign({ return_timestamps: true }, base)); }
     catch (e2) { level = 'none'; out = await asr(audio16k, base); }
   }
+  } finally { clearInterval(timer); }
   const junk = /[\[(♪].*?[\])♪]|♪/g;
   const text = String(out.text || '').replace(junk, ' ').replace(/\s+/g, ' ').trim();
   const timed = [];
@@ -1492,19 +1547,22 @@ function setScoreRange(a, b, text) {                   // swaps the score lines 
 async function analysePart(p, tag, modelId) {
   const sr = clip.sr, i0 = Math.floor(p.from * sr), i1 = Math.min(clip.L.length, Math.floor(p.to * sr)), off = p.from;
   const stemVoc = clip.vocal;                            // vocal stems: analyse those directly, no splitting needed
-  say(tag + (stemVoc ? 'READING THE VOCAL STEM 0%' : 'SPLITTING OFF THE VOCALS 0%')); await tick();
+  // shares of the bar: splitting 0-35%, tune 35-40%, speech library and model 40-75%, words 75-100%
+  const split = modelId ? 0.35 : 0.9;
+  say(tag + (stemVoc ? 'READING THE VOCAL STEM 0%' : 'SPLITTING OFF THE VOCALS 0%')); partProgress(p, 0.01, stemVoc ? 'VOCAL' : 'SPLIT'); await tick();
   const sp = stemVoc
-    ? await splitClip(stemVoc.subarray(i0, i1), null, sr, x => say(tag + 'READING THE VOCAL STEM ' + Math.round(x * 100) + '%'))
-    : await splitClip(clip.L.subarray(i0, i1), clip.R ? clip.R.subarray(i0, i1) : null, sr, x => say(tag + 'SPLITTING OFF THE VOCALS ' + Math.round(x * 100) + '%'));
+    ? await splitClip(stemVoc.subarray(i0, i1), null, sr, x => { say(tag + 'READING THE VOCAL STEM ' + Math.round(x * 100) + '%'); partProgress(p, x * split, 'VOCAL'); })
+    : await splitClip(clip.L.subarray(i0, i1), clip.R ? clip.R.subarray(i0, i1) : null, sr, x => { say(tag + 'SPLITTING OFF THE VOCALS ' + Math.round(x * 100) + '%'); partProgress(p, x * split, 'SPLIT'); });
   if (!clip || !clip.parts.includes(p)) return 'REMOVED';
   if (stemVoc) { p.stereo = true; p.centre = stemVoc.slice(i0, i1); }
   else { p.stereo = sp.stereo; p.centre = sp.stereo ? sp.centre : null; if (!sp.stereo) p.remove = false; }
-  say(tag + 'FOLLOWING THE TUNE'); await tick();
+  say(tag + 'FOLLOWING THE TUNE'); partProgress(p, split, 'TUNE'); await tick();
   p.midi = trackPitch(sp.sal, sp.frames); p.hopSec = sp.hopSec;
+  partProgress(p, split + (modelId ? 0.05 : 0.1), 'TUNE');
   p.notes = notesFromTrack(p.midi, sp.hopSec).map(x => ({ start: x.start + off, midi: x.midi, dur: x.dur }));
   let heard = null, why = '';
   if (modelId) {
-    try { heard = await transcribe(resampleTo(stemVoc ? p.centre : sp.centre, sr, 16000), modelId, tag); }
+    try { heard = await transcribe(resampleTo(stemVoc ? p.centre : sp.centre, sr, 16000), modelId, tag, (f, st, est) => partProgress(p, f, st, est)); }
     catch (e) { why = String(e && e.message || e).slice(0, 70).toUpperCase(); }
   }
   if (!clip || !clip.parts.includes(p)) return 'REMOVED';
@@ -1530,17 +1588,18 @@ function updateAnalyseBtn() { $('analyse').disabled = analysing || !clip || clip
 async function runQueue() {
   if (analysing || !clip) return;
   const c = clip, results = [];
-  analysing = true; updateAnalyseBtn();
+  analysing = true; queueDone = 0; updateAnalyseBtn();
   while (clip === c) {
     const p = c.parts.find(q => !q.done && !q.failed && !q.held); if (!p) break;
     const tag = 'PART ' + (c.parts.indexOf(p) + 1) + ': ';
     try { results.push(tag + await analysePart(p, tag, $('model').value)); }
     catch (e) { p.failed = true; results.push(tag + 'FAILED, ' + String(e && e.message || e).slice(0, 60).toUpperCase()); }
+    partProgress(p, null); queueDone++;
     if (clip !== c) break;
     renderParts();
     if (c.parts.includes(p)) await saveWork(p.centre ? [['vocals', vocalKey(c.id, p), p.centre]] : []);
   }
-  analysing = false; updateAnalyseBtn();
+  analysing = false; updateAnalyseBtn(); busy(null);
   if (clip === c && results.length) {
     const sp = c.parts[c.sel]; if (sp) $('lyrics').value = sp.text || '';
     say(results.filter(x => !/REMOVED$/.test(x)).join('. ') + '. CHECK THE WORDS, THEN SING');
@@ -1719,7 +1778,7 @@ function setRegion(a, b) {
 }
 // ---------- song overview: zoomable, with the parts marked and their edges draggable ----------
 const ov = { w0: 0, w1: 1, drag: null, ptrs: new Map(), pinch: null };
-const ovEditable = q => !q.done || q.held;              // suggested or waiting parts; analysed parts keep their edges
+const ovEditable = q => (!q.done || q.held) && q._prog == null;   // suggested or waiting parts; not while being analysed, nor once analysed
 function ovClamp() {
   if (!clip) return;
   const span = Math.max(Math.min(clip.dur, 2), Math.min(clip.dur, ov.w1 - ov.w0));
@@ -1758,6 +1817,16 @@ function drawWave() {
     const t = (t0 + t1) / 2, inside = clip.parts.some(q => t >= q.from && t < q.to);
     g.fillStyle = inside ? '#e5382d' : '#6c6c76'; g.fillRect(x, mid - hi * amp, 1, Math.max(1, (hi - lo) * amp));
   }
+  // a part being analysed fills from the left with a pale overlay, labelled with the step and how far it has got
+  clip.parts.forEach(q => {
+    if (q._prog == null) return;
+    const x0 = X(q.from), x1 = X(q.to); if (x1 < 0 || x0 > W) return;
+    const w = Math.max(1, (x1 - x0) * q._prog), lab = q._stage + ' ' + (q._est ? '~' : '') + Math.round(q._prog * 100) + '%';
+    g.fillStyle = 'rgba(241,239,232,.42)'; g.fillRect(x0, TOP, w, H - TOP);
+    g.fillStyle = '#f1efe8'; g.fillRect(x0 + w - 1, TOP, 2, H - TOP);
+    const tw = g.measureText(lab).width + 6, lx = Math.min(Math.max(x0 + 2, x0 + w - tw - 3), W - tw - 1);
+    g.fillStyle = '#141417'; g.fillRect(lx, H - 15, tw, 13); g.fillStyle = '#f1efe8'; g.fillText(lab, lx + 3, H - 8);
+  });
   // on top: outlines (dashed when suggested), numbers, and grips on edges that can be dragged
   clip.parts.forEach((q, i) => {
     const x0 = X(q.from), x1 = X(q.to); if (x1 < 0 || x0 > W) return;
@@ -1915,7 +1984,7 @@ $('to').addEventListener('change', () => { setRegion(clip.from, parseFloat($('to
 
 function partLabel(p, i) {
   return 'PART ' + (i + 1) + '  ' + p.from.toFixed(1) + ' TO ' + p.to.toFixed(1) + ' S  ' +
-    (p.failed ? 'FAILED' : p.held ? 'SUGGESTED' : !p.done ? (analysing ? 'FINDING...' : 'WAITING') : p.words ? p.words + ' WORDS' : p.notes.length + ' NOTES') + (p.sound ? '  OWN SOUND' : '');
+    (p.failed ? 'FAILED' : p.held ? 'SUGGESTED' : p._prog != null ? p._stage + ' ' + (p._est ? '~' : '') + Math.round(p._prog * 100) + '%' : !p.done ? (analysing ? 'QUEUED' : 'WAITING') : p.words ? p.words + ' WORDS' : p.notes.length + ' NOTES') + (p.sound ? '  OWN SOUND' : '');
 }
 // Updates the part labels without rebuilding the list, so a tap that is under way is not lost.
 function refreshPartLabels() { if (clip) clip.parts.forEach((p, i) => { const b = $('part-' + i); if (b) b.textContent = partLabel(p, i); }); }
@@ -1975,8 +2044,8 @@ async function suggestParts() {
       const ref = Float32Array.from(rms).sort()[Math.floor(nf * 0.95)] || 0;
       active = rms.map(x => x > Math.max(ref * 0.1, 1e-4) ? 1 : 0); hop = 0.05;
     } else {
-      say('LOOKING FOR THE SINGING 0%'); await tick();
-      const sp = await splitClip(c.L, c.R, sr, x => say('LOOKING FOR THE SINGING ' + Math.round(x * 100) + '%'), true);
+      say('LOOKING FOR THE SINGING 0%'); busy(0); await tick();
+      const sp = await splitClip(c.L, c.R, sr, x => { say('LOOKING FOR THE SINGING ' + Math.round(x * 100) + '%'); busy(x * 0.9); }, true);
       if (clip !== c) return;
       const midi = trackPitch(sp.sal, sp.frames), ref = Float32Array.from(sp.energy).sort()[Math.floor(sp.frames * 0.9)] || 0;
       active = new Uint8Array(sp.frames).map((_, f) => !isNaN(midi[f]) && sp.energy[f] > ref * 0.15 ? 1 : 0); hop = sp.hopSec;
@@ -1991,7 +2060,7 @@ async function suggestParts() {
     renderParts(); renderScope(); renderSound(); markDirty();
     say(regs.length ? 'FOUND ' + regs.length + (regs.length === 1 ? ' PART' : ' PARTS') + ' WITH SINGING. HEAR THEM, DELETE ANY THE ROBOT SHOULD NOT SING, THEN PRESS FIND TUNES AND WORDS'
       : 'NO SINGING FOUND. MARK THE PARTS BY HAND');
-  } finally { suggesting = false; $('suggest').disabled = false; }
+  } finally { suggesting = false; $('suggest').disabled = false; if (!analysing) busy(null); }
 }
 function findAll() {
   if (!clip) return;
@@ -2496,7 +2565,7 @@ async function restoreWork(id) {
 }
 async function openSaved(id) {
   if (!ensureAudio()) return;
-  stopAll('OPENING THE SAVED SONG');
+  stopAll('OPENING THE SAVED SONG'); busy(-1);
   try {
     const meta = await dbGet('meta', id);
     let ab = await dbGet('audio', id);
@@ -2513,8 +2582,8 @@ async function openSaved(id) {
     }
     await restoreWork(id);
     say('OPENED ' + meta.name.toUpperCase() + '. ' + clip.parts.length + (clip.parts.length === 1 ? ' PART' : ' PARTS'));
-    renderSaved(); runQueue();
-  } catch (e) { say('COULD NOT OPEN THAT SONG. ' + String(e && e.message || e).slice(0, 60).toUpperCase()); }
+    busy(null); renderSaved(); runQueue();
+  } catch (e) { busy(null); say('COULD NOT OPEN THAT SONG. ' + String(e && e.message || e).slice(0, 60).toUpperCase()); }
 }
 const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'JUST NOW' : m < 60 ? m + ' MIN AGO' : m < 1440 ? Math.round(m / 60) + ' H AGO' : new Date(t).toLocaleDateString(); };
 async function renderSaved() {
@@ -2572,8 +2641,8 @@ function loadLame() {
   });
   return lameP;
 }
-async function mp3Blob(b) {
-  say('LOADING THE MP3 ENCODER');
+async function mp3Blob(b, prog = () => {}) {
+  say('LOADING THE MP3 ENCODER'); prog(0, -1);
   const lame = await loadLame(), enc = new lame.Mp3Encoder(2, b.sampleRate, 192);
   const L = b.getChannelData(0), R = b.getChannelData(1), n = b.length, B = 1152, li = new Int16Array(B), ri = new Int16Array(B), out = [];
   const s16 = x => (x < -1 ? -32768 : x > 1 ? 32767 : x < 0 ? x * 32768 : x * 32767);
@@ -2582,7 +2651,7 @@ async function mp3Blob(b) {
     for (let j = 0; j < m; j++) { li[j] = s16(L[i + j]); ri[j] = s16(R[i + j]); }
     const chunk = enc.encodeBuffer(m < B ? li.subarray(0, m) : li, m < B ? ri.subarray(0, m) : ri);
     if (chunk.length) out.push(new Uint8Array(chunk));
-    if (k % 300 === 0) { say('MAKING THE MP3 ' + Math.round(i / n * 100) + '%'); await tick(); }
+    if (k % 300 === 0) { say('MAKING THE MP3 ' + Math.round(i / n * 100) + '%'); prog(i / n); await tick(); }
   }
   const end = enc.flush(); if (end.length) out.push(new Uint8Array(end));
   return new Blob(out, { type: 'audio/mpeg' });
@@ -2610,15 +2679,18 @@ async function downloadMix(withMusic) {
     }
     const step = Math.max(2, len / 20);
     for (let t = step; t < len - 0.5; t += step) {
-      try { oc.suspend(t).then(() => { say('MIXING ' + Math.round(t / len * 100) + '%'); oc.resume(); }); } catch (e) { break; }
+      try { oc.suspend(t).then(() => { say('MIXING ' + Math.round(t / len * 100) + '%'); const f = t / len * share; dlBar(f); busy(f); oc.resume(); }); } catch (e) { break; }
     }
-    say('MIXING 0%');
+    const share = mp3 ? 0.6 : 0.95;                     // mixing, then making the file
+    say('MIXING 0%'); dlBar(0); busy(0);
     const out = await oc.startRendering();
     say('MAKING THE FILE'); await tick();
     let peak = 0;
     for (let c = 0; c < 2; c++) { const d = out.getChannelData(c); for (let i = 0; i < d.length; i++) { const a = d[i] < 0 ? -d[i] : d[i]; if (a > peak) peak = a; } }
     if (peak > 0.97) for (let c = 0; c < 2; c++) { const d = out.getChannelData(c), k = 0.97 / peak; for (let i = 0; i < d.length; i++) d[i] *= k; }
-    const blob = mp3 ? await mp3Blob(out) : wavBlob(out), ext = mp3 ? '.mp3' : '.wav';
+    dlBar(share); busy(share);
+    const blob = mp3 ? await mp3Blob(out, (f, ind) => { const v = ind ? -1 : share + (1 - share) * f; dlBar(v); busy(v); }) : wavBlob(out), ext = mp3 ? '.mp3' : '.wav';
+    dlBar(1); busy(1);
     const base = (clip ? (clip.stems ? clip.name : clip.name.replace(/\.[^.]+$/, '')) : 'daisy-bell').replace(/[^\w .()-]+/g, '').trim() || 'song';
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = base + (withMusic && clip ? ' - robot mix' : ' - robots') + ext;
@@ -2626,6 +2698,7 @@ async function downloadMix(withMusic) {
     setTimeout(() => URL.revokeObjectURL(a.href), 120000);
     say('DOWNLOADED ' + a.download.toUpperCase() + '. ' + (blob.size / 1e6).toFixed(1) + ' MB, ' + mmss(len));
   } catch (e) { say('MIXING FAILED. ' + String(e && e.message || e).slice(0, 60).toUpperCase()); }
+  setTimeout(() => { dlBar(null); if (!analysing && !suggesting) busy(null); }, 600);
   rendering = false; $('dlmix').disabled = $('dlrobots').disabled = false;
 }
 
