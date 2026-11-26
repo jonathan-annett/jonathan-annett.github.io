@@ -1045,7 +1045,7 @@ function applySettings(st) {
   const setSel = (id, v) => { if (v != null && [...$(id).options].some(o => o.value === String(v))) $(id).value = String(v); };
   if (st.vrobot != null) $('vrobot').value = st.vrobot;
   if (st.vmusic != null) $('vmusic').value = st.vmusic;
-  setSel('span', st.span); setSel('model', st.model); if (st.mp3 != null) $('mp3').checked = !!st.mp3;
+  setSel('span', st.span); if (st.mp3 != null) $('mp3').checked = !!st.mp3;   // the speech model is a page-wide choice, not per song
   // songs saved before sounds existed kept these settings at the top level
   baseSound = cleanSound(st.base || { voices: st.voices, ring: st.ring, octave: st.octave, key: st.key, hold: st.hold });
   scopeRef = null; renderScope(); renderSound(); applyMix();
@@ -2412,7 +2412,11 @@ $('stop').addEventListener('click', () => stopAll('STOPPED'));
 const mixChanged = () => { applyMix(); markDirty(); };
 $('vrobot').addEventListener('input', mixChanged);
 $('vmusic').addEventListener('input', mixChanged);
-['span', 'model'].forEach(id => $(id).addEventListener('change', markDirty));
+$('span').addEventListener('change', markDirty);
+// The speech model is remembered for the whole page, in this browser.
+const MODEL_KEY = 'daleksing-model';
+$('model').addEventListener('change', () => { try { localStorage.setItem(MODEL_KEY, $('model').value); } catch (e) {} });
+try { const m = localStorage.getItem(MODEL_KEY); if (m != null && [...$('model').options].some(o => o.value === m)) $('model').value = m; } catch (e) {}
 ['hold', 'octave', 'key'].forEach(id => $(id).addEventListener('change', () => { const es = editSound(); if (!es) return; es[id] = $(id).value; soundChanged(); }));
 $('preset').addEventListener('change', () => {
   const es = editSound(), pr = PRESETS[$('preset').value]; if (!es || !pr) { renderSound(); return; }
