@@ -78,10 +78,19 @@ section > h2 + * { margin-top: 0; }
 #scrubt { font-family: var(--display); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
 #parts { display: flex; flex-direction: column; gap: 6px; }
 #parts:not(:empty) { margin-top: 10px; }
-.part { display: flex; gap: 6px; align-items: stretch; }
-.part button { font-size: 11px; padding: 10px; }
-.part .sel { flex: 1 1 auto; min-width: 0; text-align: left; }
-.part.cur .sel { border-color: var(--ink); }
+.part { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px solid var(--key-edge); border-radius: 4px; }
+.part.cur { border-color: var(--ink); }
+.part button, .voice button, .saved button { font-size: 11px; padding: 10px; }
+.prow, .voice, .saved { display: flex; gap: 6px; align-items: center; }
+.prow .sel, .saved .info { flex: 1 1 auto; min-width: 0; text-align: left; overflow-wrap: anywhere; }
+.prow input[type=range], .voice input[type=range] { flex: 1 1 auto; min-width: 60px; }
+.mini { font-family: var(--display); font-size: 11px; color: var(--muted); white-space: nowrap; margin: 0; letter-spacing: 0; font-weight: 400; text-transform: none; min-width: 34px; font-variant-numeric: tabular-nums; }
+.voice select { width: auto; flex: 0 1 150px; padding: 8px; font-size: 15px; }
+#voices, #saved { display: flex; flex-direction: column; gap: 6px; }
+.saved .info { font-family: var(--body); font-size: 15px; letter-spacing: 0; line-height: 1.3; }
+.saved .info small { display: block; font-family: var(--display); font-size: 10px; color: var(--muted); }
+.saved.cur .info { border-color: var(--ink); }
+#savedbox[hidden], #keyrow[hidden] { display: none; }
 #clipinfo { font-family: var(--display); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 @media (prefers-reduced-motion: reduce) { button:active, .filebtn:active { transform: none; } }
 </style>
@@ -115,6 +124,24 @@ section > h2 + * { margin-top: 0; }
         <label for="vmusic">Music volume <output id="vmusicv">70</output></label>
         <input id="vmusic" type="range" min="0" max="150" step="1" value="70">
       </div>
+    </div>
+    <div>
+      <label for="preset">Robot voices</label>
+      <div class="row">
+        <select id="preset" style="width:auto;flex:1 1 200px">
+          <option value="solo">Solo</option>
+          <option value="duet">Duet: lead and a third above</option>
+          <option value="trio">Trio: low, lead and high</option>
+          <option value="choir">Choir: four parts</option>
+          <option value="custom">Custom</option>
+        </select>
+        <button id="addvoice" type="button">ADD A VOICE</button>
+      </div>
+      <div id="voices" style="margin-top:10px"></div>
+    </div>
+    <div class="row" id="keyrow" hidden>
+      <label for="key" style="margin:0">Harmony key</label>
+      <select id="key" style="width:auto;flex:1 1 140px"></select>
     </div>
     <div class="row">
       <button id="ring" type="button" aria-pressed="false">RING MODULATOR</button>
@@ -153,6 +180,10 @@ section > h2 + * { margin-top: 0; }
       <label class="filebtn" style="margin:0;color:var(--ink);font-weight:400">CHOOSE A MUSIC CLIP<input id="file" type="file" accept="audio/*"></label>
       <button id="demo" type="button">LOAD DAISY BELL DEMO</button>
     </div>
+    <div id="savedbox" hidden>
+      <span class="label">Saved songs</span>
+      <div id="saved"></div>
+    </div>
     <div id="clipinfo">NO CLIP LOADED. THE DEMO NEEDS NONE.</div>
     <canvas id="wave" width="560" height="56" hidden aria-label="Song overview. Drag to move through the song"></canvas>
     <div class="row" id="scrubrow" hidden>
@@ -182,7 +213,7 @@ section > h2 + * { margin-top: 0; }
       </select>
     </div>
     <button id="analyse" type="button" disabled>FIND THE TUNE AND THE WORDS</button>
-    <p class="note">Play the song or drag through it to find a part, mark its start and end, and add it. Add as many parts as you like: a chorus, a line here and there, half of a duet. Only those parts are analysed. Each part is sung with the original singer unless you switch it to replace them. Slow songs with one clear, unprocessed voice in the middle of a stereo mix work best. Everything runs in your browser, and the speech model downloads once.</p>
+    <p class="note">Play the song or drag through it to find a part, mark its start and end, and add it. Add as many parts as you like: a chorus, a line here and there, half of a duet. Only those parts are analysed. HEAR plays one part with the robot, and each part has its own robot volume. Each part is sung with the original singer unless you switch it to replace them. Songs are saved in this browser as you work. Slow songs with one clear, unprocessed voice in the middle of a stereo mix work best. Everything runs in your browser, and the speech model downloads once.</p>
   </section>
 
   <section>
@@ -197,6 +228,15 @@ section > h2 + * { margin-top: 0; }
     <label for="score">One word per line: start time in seconds, word, then a note and its length for each syllable</label>
     <textarea id="score" rows="9" spellcheck="false" autocapitalize="off"></textarea>
     <p class="note">Edit any line to fix a note, a time or a word, then press SING. Notes run from C2 to C6, sharps as F#4. Extra notes on a line are slurred on the last syllable.</p>
+  </section>
+
+  <section>
+    <h2><b>4</b>DOWNLOAD</h2>
+    <div class="row">
+      <button id="dlmix" type="button">DOWNLOAD THE MIX</button>
+      <button id="dlrobots" type="button">ROBOTS ONLY</button>
+    </div>
+    <p class="note">Makes a WAV file using the mixer settings and the Play setting above. ROBOTS ONLY keeps the same timing with silence where the music was, ready to line up in an audio editor. Three minutes of song is about 30 MB.</p>
   </section>
 </main>
 
@@ -252,7 +292,8 @@ const PH = [
 const CODE = {}; PH.forEach((p, i) => CODE[p.n] = i);
 CODE['/'] = CODE.PA; CODE[','] = CODE.PA1; CODE['.'] = CODE.PA2;
 
-function createVoice(ctx) {
+// dest: where this voice's sound goes (several voices can share one bus, live or offline).
+function createVoice(ctx, dest = ctx.destination) {
   const sr = ctx.sampleRate;
   const nb = ctx.createBuffer(1, sr * 2, sr), ch = nb.getChannelData(0);
   for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
@@ -277,10 +318,16 @@ function createVoice(ctx) {
   const ringDepth = ctx.createGain(); ringDepth.gain.value = 0;
   ringOsc.connect(ringDepth); ringDepth.connect(ring.gain);
   const comp = ctx.createDynamicsCompressor();
-  mix.connect(lp); lp.connect(out); out.connect(ring); ring.connect(comp); comp.connect(ctx.destination);
+  // Volume controls come after the compressor, so it cannot even them out again.
+  const trim = ctx.createGain(); trim.gain.value = 0.7;       // headroom: one voice peaks well below full scale
+  const vol = ctx.createGain(); vol.gain.value = 1;           // this voice's volume
+  const lvl = ctx.createGain(); lvl.gain.value = 1;           // per-part level, automated while singing
+  const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+  mix.connect(lp); lp.connect(out); out.connect(ring); ring.connect(comp); comp.connect(trim); trim.connect(vol); vol.connect(lvl);
+  if (pan) { lvl.connect(pan); pan.connect(dest); } else lvl.connect(dest);
   osc.start(); noise.start(); ringOsc.start();
 
-  const params = [vg.gain, ag.gain, fg.gain, ff.frequency, ff.Q, osc.frequency, ...F.map(b => b.frequency)];
+  const params = [vg.gain, ag.gain, fg.gain, ff.frequency, ff.Q, osc.frequency, lvl.gain, ...F.map(b => b.frequency)];
   const form = (f, t, tau) => F.forEach((b, i) => b.frequency.setTargetAtTime(f[i], t, tau));
   const voice = (g, t, tau = .012) => vg.gain.setTargetAtTime(g, t, tau);
   const asp = (g, t, tau = .01) => ag.gain.setTargetAtTime(g, t, tau);
@@ -346,16 +393,19 @@ function createVoice(ctx) {
     return { times, dur: t - t0 + .08 };
   }
 
-  // Singing. events: [{ seq, start, dur, f, bends:[{at, f}] }], one per syllable, times in seconds.
+  // Singing. events: [{ seq, start, dur, f, bends:[{at, f}], level }], one per syllable, times in seconds.
+  // opt: at (start time), transpose (frequency ratio), detune (cents).
   // The vowel is stretched to fill the note; consonants keep their length, squeezed only on short notes.
   function sing(events, opt = {}) {
     stop();
-    const t0 = opt.at != null ? opt.at : ctx.currentTime + .1, tr = opt.transpose || 1;
+    const t0 = opt.at != null ? opt.at : ctx.currentTime + .1, tr = (opt.transpose || 1) * Math.pow(2, (opt.detune || 0) / 1200);
+    lvl.gain.setValueAtTime(events.length && events[0].level != null ? events[0].level : 1, Math.max(ctx.currentTime, t0 - .05));
     let t = t0; const times = [];
     for (const ev of events) {
       const st = t0 + ev.start, en = st + ev.dur;
       if (st > t + .02) { voice(0, t, .015); asp(0, t); fric(0, t); t = st; }      // a rest
       times.push(t - t0);
+      lvl.gain.setTargetAtTime(ev.level != null ? ev.level : 1, Math.max(t0, t - .02), .02);
       osc.frequency.setTargetAtTime(ev.f * tr, Math.max(t0, t - .01), .012);
       (ev.bends || []).forEach(b => osc.frequency.setTargetAtTime(b.f * tr, st + b.at, .02));
       const ps = ev.seq.map(c => PH[c]).filter(p => p && p.t !== 'p');
@@ -375,8 +425,9 @@ function createVoice(ctx) {
   }
   return {
     speak, sing, stop, tap: comp,
-    setVolume: v => out.gain.setTargetAtTime(1.6 * v, ctx.currentTime, .02),
-    setRing: on => { ring.gain.setTargetAtTime(on ? 0 : 1, ctx.currentTime, .01); ringDepth.gain.setTargetAtTime(on ? 1.4 : 0, ctx.currentTime, .01); }
+    setVolume: v => { vol.gain.cancelScheduledValues(0); vol.gain.setValueAtTime(v, ctx.currentTime); },
+    setPan: x => { if (pan) pan.pan.value = Math.max(-1, Math.min(1, x)); },
+    setRing: on => { ring.gain.setValueAtTime(on ? 0 : 1, ctx.currentTime); ringDepth.gain.setValueAtTime(on ? 1.4 : 0, ctx.currentTime); }
   };
 }
 
@@ -772,17 +823,48 @@ function scoreToEvents(words) {
     const syl = syllables(soundsOf(w.word)); if (!syl.length) return;
     const n = syl.length, k = w.notes.length; let t = w.start;
     for (let i = 0; i < n; i++) {
-      let f, dur, bends = [];
-      if (i < Math.min(n, k) - 1 || (i === n - 1 && k === n)) { f = midiHz(w.notes[i].midi); dur = w.notes[i].dur; }
+      let midi, dur, bends = [];
+      if (i < Math.min(n, k) - 1 || (i === n - 1 && k === n)) { midi = w.notes[i].midi; dur = w.notes[i].dur; }
       else if (k > n && i === n - 1) {
-        f = midiHz(w.notes[i].midi); dur = 0;
-        w.notes.slice(i).forEach((x, j) => { if (j) bends.push({ at: dur, f: midiHz(x.midi) }); dur += x.dur; });
-      } else { const last = w.notes[k - 1]; f = midiHz(last.midi); dur = last.dur / (n - k + 1); }
-      events.push({ seq: syl[i], start: t, dur, f, bends, wi });
+        midi = w.notes[i].midi; dur = 0;
+        w.notes.slice(i).forEach((x, j) => { if (j) bends.push({ at: dur, midi: x.midi, f: midiHz(x.midi) }); dur += x.dur; });
+      } else { const last = w.notes[k - 1]; midi = last.midi; dur = last.dur / (n - k + 1); }
+      events.push({ seq: syl[i], start: t, dur, midi, f: midiHz(midi), bends, wi });
       t += dur;
     }
   });
   return events;
+}
+// ---------- key and harmony ----------
+const MAJOR = [0, 2, 4, 5, 7, 9, 11], MINOR = [0, 2, 3, 5, 7, 8, 10];
+const PROFILE_MAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
+const PROFILE_MIN = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
+// Guesses the key from how long each note name sounds (Krumhansl-Schmuckler).
+function detectKey(events) {
+  const h = new Array(12).fill(0);
+  events.forEach(e => { h[((e.midi % 12) + 12) % 12] += e.dur; e.bends.forEach(b => { h[((b.midi % 12) + 12) % 12] += 0.1; }); });
+  const corr = (prof, t) => {
+    let ma = 0, mb = 0; for (let i = 0; i < 12; i++) { ma += h[i]; mb += prof[i]; } ma /= 12; mb /= 12;
+    let num = 0, da = 0, db = 0;
+    for (let i = 0; i < 12; i++) { const a = h[(i + t) % 12] - ma, b = prof[i] - mb; num += a * b; da += a * a; db += b * b; }
+    return da && db ? num / Math.sqrt(da * db) : 0;
+  };
+  let best = { tonic: 0, minor: false, r: -2 };
+  for (let t = 0; t < 12; t++) for (const minor of [false, true]) {
+    const r = corr(minor ? PROFILE_MIN : PROFILE_MAJ, t);
+    if (r > best.r) best = { tonic: t, minor, r };
+  }
+  return best;
+}
+const keyName = k => NOTE_NAMES[k.tonic] + (k.minor ? ' MINOR' : ' MAJOR');
+// Moves a note up or down the key's scale by a number of steps: 2 is a third, 4 a fifth, 7 an octave.
+// Notes outside the scale keep their sharp or flat.
+function harmonise(midi, steps, key) {
+  if (!steps) return midi;
+  const sc = key.minor ? MINOR : MAJOR, rel = ((midi - key.tonic) % 12 + 12) % 12;
+  let d = 0; for (let i = 0; i < 7; i++) if (sc[i] <= rel) d = i;
+  const chrom = rel - sc[d], base = midi - rel, T = d + steps, oct = Math.floor(T / 7), td = ((T % 7) + 7) % 7;
+  return base + 12 * oct + sc[td] + chrom;
 }
 /*ENDDSP*/
 
@@ -810,29 +892,72 @@ function daisyScore() {
 const $ = id => document.getElementById(id);
 const statusEl = $('statustext'), readout = $('readout');
 const say = t => { statusEl.textContent = t; };
-let ctx = null, voice = null, analyser = null, musicGain = null, musicSrc = null, timers = [], raf = 0;
-let clip = null;      // { name, sr, dur, L, R, origBuf, from, to, peaks, parts: [{ from, to, remove, done, stereo, centre, midi, hopSec, notes, text, words }], sel, mix, mixKey }
-let playing = null;   // { at, offset } while music is running, for the playhead
+let ctx = null, master = null, robotBus = null, analyser = null, musicGain = null, musicSrc = null, timers = [], raf = 0;
+let pool = [];        // live robot voices, made as needed
+let clip = null;      // { id, name, sr, dur, L, R, origBuf, from, to, pos, peaks, parts: [{ from, to, remove, done, stereo, centre, midi, hopSec, notes, text, words, level }], sel, mix, mixKey }
+let playing = null;   // { at, offset, kind: 'sing' | 'listen', opts } while music is running, for the playhead
 const MAX_REGION = 90;
+
+// Each robot voice sings the score moved up or down the key's scale: 2 steps is a third, 4 a fifth, 7 an octave.
+const INTERVALS = [[0, 'As written'], [2, 'Third above'], [-2, 'Third below'], [4, 'Fifth above'], [-4, 'Fifth below'], [-5, 'Sixth below'], [7, 'Octave up'], [-7, 'Octave down']];
+const PRESETS = { solo: [[0, 100]], duet: [[0, 100], [2, 75]], trio: [[-7, 70], [0, 100], [2, 70]], choir: [[-7, 70], [-4, 60], [0, 100], [2, 65]] };
+const DETUNE = [0, 5, -5, 8, -8];   // cents, so voices on the same note do not lock together
+const MAX_VOICES = 5;
+let voiceSet = PRESETS.solo.map(([iv, lvl]) => ({ iv, lvl }));
 
 function ensureAudio() {
   if (!ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) { say('THIS BROWSER HAS NO WEB AUDIO'); return false; }
-    ctx = new AC(); voice = createVoice(ctx);
-    analyser = ctx.createAnalyser(); analyser.fftSize = 1024; voice.tap.connect(analyser);
-    musicGain = ctx.createGain(); musicGain.connect(ctx.destination);
+    ctx = new AC();
+    master = makeLimiter(ctx); master.connect(ctx.destination);
+    robotBus = ctx.createGain(); robotBus.connect(master);
+    analyser = ctx.createAnalyser(); analyser.fftSize = 1024; robotBus.connect(analyser);
+    musicGain = ctx.createGain(); musicGain.connect(master);
     applyMix();
   }
   if (ctx.state === 'suspended') ctx.resume().catch(() => {});
   return true;
 }
+// Catches peaks when several robots and the music add up, live and in downloads.
+function makeLimiter(c) {
+  const l = c.createDynamicsCompressor();
+  l.threshold.value = -2; l.knee.value = 0; l.ratio.value = 20; l.attack.value = 0.002; l.release.value = 0.15;
+  return l;
+}
+function liveVoice(i) { while (pool.length <= i) pool.push(createVoice(ctx, robotBus)); return pool[i]; }
+function settings() {
+  return {
+    vrobot: +$('vrobot').value, vmusic: +$('vmusic').value, ring: $('ring').getAttribute('aria-pressed') === 'true',
+    hold: $('hold').value, span: $('span').value, octave: $('octave').value, key: $('key').value, model: $('model').value,
+    preset: $('preset').value, voices: voiceSet.map(v => ({ iv: v.iv, lvl: v.lvl }))
+  };
+}
+function applySettings(st) {
+  if (!st) return;
+  const setSel = (id, v) => { if (v != null && [...$(id).options].some(o => o.value === String(v))) $(id).value = String(v); };
+  if (st.vrobot != null) $('vrobot').value = st.vrobot;
+  if (st.vmusic != null) $('vmusic').value = st.vmusic;
+  $('ring').setAttribute('aria-pressed', String(!!st.ring));
+  ['hold', 'span', 'octave', 'key', 'model', 'preset'].forEach(k => setSel(k, st[k]));
+  if (Array.isArray(st.voices) && st.voices.length) voiceSet = st.voices.slice(0, MAX_VOICES).map(v => ({ iv: +v.iv || 0, lvl: v.lvl != null ? +v.lvl : 100 }));
+  renderVoices(); applyMix();
+}
+// Keeps a choir about as loud as one voice, so extra voices do not overload the output.
+function choirGain() { const e = voiceSet.reduce((a, v) => a + Math.pow(v.lvl / 100, 2), 0); return Math.min(1, 1 / Math.sqrt(e || 1)); }
+// Low voices sit a little left, high ones a little right.
+function panFor(i) {
+  const n = voiceSet.length; if (n < 2) return 0;
+  const order = voiceSet.map((v, j) => [v.iv, j]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(x => x[1]);
+  return -0.45 + 0.9 * order.indexOf(i) / (n - 1);
+}
 function applyMix() {
   $('vrobotv').textContent = $('vrobot').value; $('vmusicv').textContent = $('vmusic').value;
   if (!ctx) return;
-  voice.setVolume(+$('vrobot').value / 100);
-  voice.setRing($('ring').getAttribute('aria-pressed') === 'true');
-  musicGain.gain.setTargetAtTime(+$('vmusic').value / 100, ctx.currentTime, .02);
+  const st = settings();
+  voiceSet.forEach((v, i) => { const r = liveVoice(i); r.setVolume(st.vrobot / 100 * v.lvl / 100); r.setRing(st.ring); r.setPan(panFor(i)); });
+  robotBus.gain.setTargetAtTime(choirGain(), ctx.currentTime, .02);
+  musicGain.gain.setTargetAtTime(st.vmusic / 100, ctx.currentTime, .02);
 }
 function flatScope() {
   const cv = $('scope'), g = cv.getContext('2d');
@@ -859,7 +984,7 @@ function showWords(words) {
 }
 function stopAll(msg) {
   timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf);
-  if (voice) voice.stop();
+  pool.forEach(v => v.stop());
   if (musicSrc) { try { musicSrc.stop(); } catch (e) {} musicSrc = null; }
   if (clip && playing) clip.pos = clipPos();
   playing = null; cancelAnimationFrame(waveRaf); stopBlip(); drawWave();
@@ -873,30 +998,64 @@ function pickOctave(events) {
   let o = 0; while (med * Math.pow(2, o) > 250) o--; while (med * Math.pow(2, o) < 105) o++;
   return o;
 }
-function singNow() {
+// Reads the score into sung events, with each event's part, level, the key and the octave.
+function prepare() {
   const { words, bad } = parseScore($('score').value);
-  if (!words.length) { say(bad.length ? 'SCORE LINE ' + bad[0] + ' IS NOT RIGHT' : 'THE SCORE IS EMPTY. LOAD THE DEMO OR A CLIP'); return; }
-  if (!ensureAudio()) return;
-  stopAll(); applyMix(); showWords(words);
-  const events = scoreToEvents(words), oct = pickOctave(events), cap = +$('hold').value;
-  if (cap) events.forEach(e => { if (e.dur > cap) { e.dur = cap; e.bends = e.bends.filter(b => b.at < cap - 0.05); } });
-  const at = ctx.currentTime + 0.15;
-  let playFrom = 0, playLen = 0;
-  if (clip) {
-    if ($('span').value === 'all') { playFrom = 0; playLen = clip.dur; }
-    else {                                                // two seconds of lead-in and tail around the sung parts
-      const lastEv = events[events.length - 1], ps = clip.parts;
-      const a = Math.min(events[0].start, ps.length ? ps[0].from : Infinity), b = Math.max(lastEv.start + lastEv.dur, ps.length ? ps[ps.length - 1].to : 0);
-      playFrom = Math.max(0, a - 2); playLen = Math.min(clip.dur, b + 2) - playFrom;
-    }
-    events.forEach(e => { e.start -= playFrom; });
+  const all = scoreToEvents(words), cap = +$('hold').value;
+  if (cap) all.forEach(e => { if (e.dur > cap) { e.dur = cap; e.bends = e.bends.filter(b => b.at < cap - 0.05); } });
+  all.forEach(e => {
+    const p = clip ? clip.parts.find(q => e.start >= q.from - 0.05 && e.start < q.to + 0.05) : null;
+    e.part = p || null; e.level = p ? (p.level != null ? p.level : 100) / 100 : 1;
+  });
+  const kv = $('key').value;
+  const key = kv === 'auto' || !kv ? detectKey(all) : { tonic: +kv.split(':')[0], minor: kv.split(':')[1] === 'm' };
+  return { words, bad, all, key, oct: pickOctave(all) };
+}
+// Which stretch of the song to play, and which events fall in it. opts.part: one part; opts.from: carry on from a time.
+function windowFor(prep, opts = {}) {
+  const ev = prep.all, lastEnd = ev.reduce((m, e) => Math.max(m, e.start + e.dur), 0);
+  if (!clip) return { from: 0, to: lastEnd, events: ev };
+  let from = 0, to = clip.dur;
+  if (opts.part) { from = Math.max(0, opts.part.from - 1.5); to = Math.min(clip.dur, opts.part.to + 1); }
+  else if ($('span').value === 'parts' && (ev.length || clip.parts.length)) {
+    const ps = clip.parts;
+    const a = Math.min(ev.length ? ev[0].start : Infinity, ps.length ? ps[0].from : Infinity);
+    const b = Math.max(lastEnd, ps.length ? ps[ps.length - 1].to : 0);
+    from = Math.max(0, a - 2); to = Math.min(clip.dur, b + 2);
   }
-  const r = voice.sing(events, { at, transpose: Math.pow(2, oct) });
+  if (opts.from != null) from = Math.max(from, opts.from);
+  const events = ev.filter(e => e.start >= from - 0.01 && e.start < to && (!opts.part || e.part === opts.part));
+  return { from, to, events };
+}
+// Schedules every robot voice singing the events (times relative to `at`) in any audio context.
+function perform(voiceAt, events, at, prep, st) {
+  let times = [], dur = 0;
+  const tr = Math.pow(2, prep.oct);
+  voiceSet.forEach((v, i) => {
+    const robot = voiceAt(i);
+    robot.setVolume(st.vrobot / 100 * v.lvl / 100); robot.setRing(st.ring); robot.setPan(panFor(i));
+    const hz = m => { let f = midiHz(harmonise(m, v.iv, prep.key)); while (f * tr < 55) f *= 2; return f; };
+    const evs = events.map(e => Object.assign({}, e, { f: hz(e.midi), bends: e.bends.map(b => ({ at: b.at, f: hz(b.midi) })) }));
+    const r = robot.sing(evs, { at: at + i * 0.007, transpose: tr, detune: DETUNE[i % DETUNE.length] });
+    if (i === 0) times = r.times;
+    dur = Math.max(dur, r.dur);
+  });
+  return { times, dur };
+}
+function singNow(opts = {}) {
+  const prep = prepare();
+  if (!prep.all.length && !clip) { say(prep.bad.length ? 'SCORE LINE ' + prep.bad[0] + ' IS NOT RIGHT' : 'THE SCORE IS EMPTY. LOAD THE DEMO OR A SONG'); return; }
+  if (!ensureAudio()) return;
+  stopAll(); applyMix(); showWords(prep.words);
+  const w = windowFor(prep, opts);
+  if (clip && w.to - w.from < 0.1) { say('NOTHING LEFT TO PLAY FROM HERE'); return; }
+  const at = ctx.currentTime + 0.15, events = w.events.map(e => Object.assign({}, e, { start: e.start - w.from }));
+  const r = perform(liveVoice, events, at, prep, settings());
   let total = r.dur;
   if (clip) {
-    musicSrc = ctx.createBufferSource(); musicSrc.buffer = mixBuffer(); musicSrc.connect(musicGain); musicSrc.start(at, playFrom, playLen);
-    playing = { at, offset: playFrom }; runPlayhead();
-    total = Math.max(total, playLen);
+    musicSrc = ctx.createBufferSource(); musicSrc.buffer = mixBuffer(); musicSrc.connect(musicGain); musicSrc.start(at, w.from, w.to - w.from);
+    playing = { at, offset: w.from, kind: 'sing', opts }; runPlayhead();
+    total = Math.max(total, w.to - w.from);
   }
   const spans = readout.querySelectorAll('span');
   events.forEach((e, i) => timers.push(setTimeout(() => {
@@ -904,34 +1063,81 @@ function singNow() {
     if (spans[e.wi]) { spans[e.wi].classList.add('on'); spans[e.wi].scrollIntoView({ block: 'nearest' }); }
   }, (r.times[i] + 0.15) * 1000)));
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) drawScope();
-  say('SINGING' + (bad.length ? '. SKIPPED LINE ' + bad[0] : '') + (oct ? '. OCTAVE ' + (oct > 0 ? '+' : '') + oct : ''));
+  const n = opts.part ? clip.parts.indexOf(opts.part) + 1 : 0;
+  say((n ? (events.length ? 'HEARING PART ' + n : 'PART ' + n + ' HAS NO NOTES YET. MUSIC ONLY') : 'SINGING') +
+    (voiceSet.length > 1 && events.length ? '. ' + voiceSet.length + ' VOICES IN ' + keyName(prep.key) : '') +
+    (prep.bad.length ? '. SKIPPED LINE ' + prep.bad[0] : '') + (prep.oct ? '. OCTAVE ' + (prep.oct > 0 ? '+' : '') + prep.oct : ''));
   timers.push(setTimeout(() => stopAll('READY'), (total + 0.4) * 1000));
 }
+
+// ---------- robot voices list ----------
+function renderVoices() {
+  const box = $('voices'); box.textContent = '';
+  voiceSet.forEach((v, i) => {
+    const row = document.createElement('div'); row.className = 'voice';
+    const sel = document.createElement('select'); sel.id = 'viv-' + i; sel.setAttribute('aria-label', 'Voice ' + (i + 1) + ' sings');
+    INTERVALS.forEach(([iv, name]) => { const o = document.createElement('option'); o.value = iv; o.textContent = name; if (iv === v.iv) o.selected = true; sel.append(o); });
+    sel.addEventListener('change', () => { v.iv = +sel.value; voicesChanged(); });
+    const lv = document.createElement('input'); lv.type = 'range'; lv.min = 0; lv.max = 150; lv.step = 1; lv.value = v.lvl; lv.id = 'vlv-' + i;
+    lv.setAttribute('aria-label', 'Voice ' + (i + 1) + ' volume');
+    const out = document.createElement('output'); out.className = 'mini'; out.textContent = v.lvl;
+    lv.addEventListener('input', () => { v.lvl = +lv.value; out.textContent = v.lvl; applyMix(); markDirty(); });
+    const del = document.createElement('button'); del.type = 'button'; del.textContent = 'X'; del.setAttribute('aria-label', 'Remove voice ' + (i + 1));
+    del.disabled = voiceSet.length < 2;
+    del.addEventListener('click', () => { voiceSet.splice(i, 1); pool.forEach(r => r.stop()); voicesChanged(); });
+    row.append(sel, lv, out, del); box.append(row);
+  });
+  $('addvoice').disabled = voiceSet.length >= MAX_VOICES;
+  $('keyrow').hidden = !voiceSet.some(v => v.iv !== 0 && Math.abs(v.iv) !== 7);
+}
+function voicesChanged() {
+  const sig = voiceSet.map(v => v.iv).join(',');
+  const match = Object.keys(PRESETS).find(k => PRESETS[k].map(x => x[0]).join(',') === sig);
+  $('preset').value = match || 'custom';
+  renderVoices(); applyMix(); markDirty();
+}
+(function buildKeys() {
+  const k = $('key'), add = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; k.append(o); };
+  add('auto', 'Work it out');
+  [false, true].forEach(minor => NOTE_NAMES.forEach((nm, t) => add(t + ':' + (minor ? 'm' : 'M'), nm + (minor ? ' minor' : ' major'))));
+})();
 
 // ---------- clip loading and analysis ----------
 function decode(ab) {
   return new Promise((res, rej) => { const p = ctx.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(rej); });
 }
 const MAX_CLIP = 600;
+// Sets the page up for a decoded song.
+function setupClip(full, name, id) {
+  const sr = full.sampleRate, n = Math.min(full.length, Math.floor(MAX_CLIP * sr));
+  const L = full.getChannelData(0).slice(0, n), R = full.numberOfChannels > 1 ? full.getChannelData(1).slice(0, n) : null;
+  const origBuf = ctx.createBuffer(2, n, sr); origBuf.copyToChannel(L, 0); origBuf.copyToChannel(R || L, 1);
+  clip = { id, name, sr, dur: n / sr, L, R, origBuf, from: 0, to: Math.min(n / sr, 20), pos: 0, peaks: null, parts: [], sel: -1, mix: null, mixKey: '' };
+  const cols = 280, per = Math.max(1, Math.floor(n / cols)); clip.peaks = new Float32Array(cols);
+  for (let c = 0; c < cols; c++) { let m = 0; for (let i = c * per, e = Math.min(n, i + per); i < e; i += 16) { const a = Math.abs(L[i]); if (a > m) m = a; } clip.peaks[c] = m; }
+  ['wave', 'scrubrow', 'marks', 'range', 'partsbox'].forEach(k => { $(k).hidden = false; });
+  $('scrub').max = clip.dur.toFixed(2);
+  $('score').value = ''; $('lyrics').value = ''; readout.textContent = '';
+  setRegion(clip.from, clip.to); renderParts();
+  $('analyse').disabled = false;
+  $('clipinfo').textContent = name + '  ' + clip.dur.toFixed(1) + ' S' + (R ? '  STEREO' : '  MONO') + (full.length > n ? '  (FIRST ' + MAX_CLIP + ' S ONLY)' : '');
+}
 async function loadFile(file) {
   if (!file || !ensureAudio()) return;
   stopAll('READING ' + file.name.toUpperCase());
+  const id = file.name + '|' + file.size + '|' + file.lastModified;
+  let full, keep;
   try {
-    const full = await decode(await file.arrayBuffer());
-    const sr = full.sampleRate, n = Math.min(full.length, Math.floor(MAX_CLIP * sr));
-    const L = full.getChannelData(0).slice(0, n), R = full.numberOfChannels > 1 ? full.getChannelData(1).slice(0, n) : null;
-    const origBuf = ctx.createBuffer(2, n, sr); origBuf.copyToChannel(L, 0); origBuf.copyToChannel(R || L, 1);
-    clip = { name: file.name, sr, dur: n / sr, L, R, origBuf, from: 0, to: Math.min(n / sr, 20), pos: 0, peaks: null, parts: [], sel: -1, mix: null, mixKey: '' };
-    const cols = 280, per = Math.max(1, Math.floor(n / cols)); clip.peaks = new Float32Array(cols);
-    for (let c = 0; c < cols; c++) { let m = 0; for (let i = c * per, e = Math.min(n, i + per); i < e; i += 16) { const a = Math.abs(L[i]); if (a > m) m = a; } clip.peaks[c] = m; }
-    ['wave', 'scrubrow', 'marks', 'range', 'partsbox'].forEach(id => { $(id).hidden = false; });
-    $('scrub').max = clip.dur.toFixed(2);
-    setRegion(clip.from, clip.to); renderParts();
-    $('score').value = ''; $('lyrics').value = ''; readout.textContent = '';
-    $('analyse').disabled = false;
-    $('clipinfo').textContent = file.name + '  ' + clip.dur.toFixed(1) + ' S' + (R ? '  STEREO' : '  MONO') + (full.length > n ? '  (FIRST ' + MAX_CLIP + ' S ONLY)' : '');
-    say('SONG LOADED. PLAY OR DRAG TO FIND A PART, MARK IT, THEN ADD IT');
-  } catch (e) { say('COULD NOT READ THAT FILE AS AUDIO'); }
+    const ab = await file.arrayBuffer(); keep = ab.slice(0);       // decoding uses up the buffer, so keep a copy to save
+    full = await decode(ab);
+  } catch (e) { say('COULD NOT READ THAT FILE AS AUDIO'); return; }
+  setupClip(full, file.name, id);
+  let restored = false;
+  try { restored = !!(await dbGet('meta', id)) && await restoreWork(id); } catch (e) {}
+  if (restored) { say('WELCOME BACK. YOUR SAVED WORK FOR THIS SONG IS RESTORED'); renderSaved(); return; }
+  say('SONG LOADED AND SAVED. PLAY OR DRAG TO FIND A PART, MARK IT, THEN ADD IT');
+  saveWork([['audio', id, keep]]);
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
 }
 let asrCache = {};
 async function transcribe(audio16k, modelId, tag = '') {
@@ -1017,6 +1223,7 @@ async function analyse() {
     try { results.push(tag + await analysePart(p, tag, $('model').value)); }
     catch (e) { results.push(tag + 'FAILED, ' + String(e && e.message || e).slice(0, 60).toUpperCase()); }
     renderParts();
+    await saveWork(p.centre ? [['vocals', vocalKey(clip.id, p), p.centre]] : []);
   }
   if (clip.sel >= 0) $('lyrics').value = clip.parts[clip.sel].text || '';
   $('analyse').disabled = false;
@@ -1030,7 +1237,7 @@ function fitTyped() {
     if (!p || !p.done) { say('SELECT A PART THAT HAS BEEN ANALYSED FIRST'); return false; }
     if (!p.notes.length) { say('NO TUNE WAS FOUND IN THAT PART'); return false; }
     const r = fitWordsToNotes(words, p.notes);
-    p.text = $('lyrics').value; p.words = r.usedWords; setScoreRange(p.from, p.to, r.text); renderParts();
+    p.text = $('lyrics').value; p.words = r.usedWords; setScoreRange(p.from, p.to, r.text); renderParts(); markDirty();
     say('FITTED ' + r.usedWords + ' OF ' + words.length + ' WORDS TO ' + r.usedNotes + ' OF ' + p.notes.length + ' NOTES');
     return true;
   }
@@ -1107,16 +1314,16 @@ function previewFrom(offset) {
   offset = Math.max(0, Math.min(clip.dur - 0.05, offset));
   musicSrc = ctx.createBufferSource(); musicSrc.buffer = clip.origBuf; musicSrc.connect(musicGain);
   const at = ctx.currentTime + 0.05; musicSrc.start(at, offset);
-  playing = { at, offset }; runPlayhead();
+  playing = { at, offset, kind: 'listen' }; runPlayhead();
   say('PLAYING. MARK START AND MARK END AS IT GOES');
   timers.push(setTimeout(() => { stopAll('END OF THE SONG'); clip.pos = 0; drawWave(); }, (clip.dur - offset + 0.3) * 1000));
 }
 // Scrubbing: moving the cursor plays a short burst at that spot, so you can hear where you are.
-let blipSrc = null, blipAt = 0, resumeAfterScrub = false;
+let blipSrc = null, blipAt = 0, resumeAfterScrub = null;
 function stopBlip() { if (blipSrc) { try { blipSrc.stop(); } catch (e) {} blipSrc = null; } }
 function scrubTo(t) {
   if (!clip) return;
-  if (playing) { resumeAfterScrub = true; stopAll(); }
+  if (playing) { resumeAfterScrub = { kind: playing.kind, opts: playing.opts }; stopAll(); }
   clip.pos = Math.max(0, Math.min(clip.dur - 0.05, t));
   drawWave(); say('AT ' + mmss(clip.pos));
   const now = performance.now();
@@ -1126,7 +1333,11 @@ function scrubTo(t) {
     blipSrc.start(ctx.currentTime, clip.pos, 0.22);
   }
 }
-function scrubEnd() { if (resumeAfterScrub) { resumeAfterScrub = false; previewFrom(clip.pos); } }
+function scrubEnd() {
+  const r = resumeAfterScrub; resumeAfterScrub = null;
+  if (!r) return;
+  if (r.kind === 'sing') singNow(Object.assign({}, r.opts, { from: clip.pos })); else previewFrom(clip.pos);
+}
 $('scrub').addEventListener('input', e => scrubTo(parseFloat(e.target.value)));
 $('scrub').addEventListener('change', scrubEnd);
 let dragging = false;
@@ -1148,27 +1359,37 @@ $('mto').addEventListener('click', () => {
   const p = clipPos();
   setRegion(clip.from < p - 0.5 ? clip.from : Math.max(0, p - 15), p); say('END MARKED AT ' + mmss(clip.to) + '. ' + (clip.to - clip.from).toFixed(1) + ' S TO SING');
 });
-$('from').addEventListener('change', () => setRegion(parseFloat($('from').value) || 0, clip.to));
-$('to').addEventListener('change', () => setRegion(clip.from, parseFloat($('to').value) || clip.dur));
+$('from').addEventListener('change', () => { setRegion(parseFloat($('from').value) || 0, clip.to); markDirty(); });
+$('to').addEventListener('change', () => { setRegion(clip.from, parseFloat($('to').value) || clip.dur); markDirty(); });
 
 function renderParts() {
   const box = $('parts'); box.textContent = '';
   if (!clip) return;
   clip.parts.forEach((p, i) => {
-    const row = document.createElement('div'); row.className = 'part' + (i === clip.sel ? ' cur' : '');
+    const card = document.createElement('div'); card.className = 'part' + (i === clip.sel ? ' cur' : '');
+    const r1 = document.createElement('div'); r1.className = 'prow';
+    const r2 = document.createElement('div'); r2.className = 'prow';
     const sel = document.createElement('button'); sel.type = 'button'; sel.className = 'sel'; sel.id = 'part-' + i;
     sel.textContent = 'PART ' + (i + 1) + '  ' + p.from.toFixed(1) + ' TO ' + p.to.toFixed(1) + ' S  ' + (!p.done ? 'NOT ANALYSED' : p.words ? p.words + ' WORDS' : p.notes.length + ' NOTES');
     sel.addEventListener('click', () => { clip.sel = i; setRegion(p.from, p.to); $('lyrics').value = p.text || ''; renderParts(); say('PART ' + (i + 1) + ' SELECTED'); });
-    const mode = document.createElement('button'); mode.type = 'button'; mode.id = 'mode-' + i;
-    mode.textContent = p.remove ? 'REPLACES SINGER' : 'WITH SINGER'; mode.setAttribute('aria-pressed', String(!!p.remove));
-    mode.disabled = !clip.R || (p.done && !p.stereo);
-    mode.addEventListener('click', () => { p.remove = !p.remove; clip.mixKey = ''; renderParts(); say('PART ' + (i + 1) + (p.remove ? ': THE ROBOT REPLACES THE SINGER' : ': THE ROBOT SINGS WITH THE SINGER')); });
+    const hear = document.createElement('button'); hear.type = 'button'; hear.id = 'hear-' + i; hear.textContent = 'HEAR';
+    hear.setAttribute('aria-label', 'Hear part ' + (i + 1) + ' with the robot');
+    hear.addEventListener('click', () => { clip.sel = i; renderParts(); singNow({ part: p }); });
     const del = document.createElement('button'); del.type = 'button'; del.textContent = 'X'; del.setAttribute('aria-label', 'Remove part ' + (i + 1));
     del.addEventListener('click', () => {
       setScoreRange(p.from, p.to, ''); clip.parts.splice(i, 1); clip.sel = Math.min(clip.sel, clip.parts.length - 1); clip.mixKey = '';
-      renderParts(); say('PART REMOVED');
+      dbDelete('vocals', vocalKey(clip.id, p)); renderParts(); markDirty(); say('PART REMOVED');
     });
-    row.append(sel, mode, del); box.append(row);
+    const mode = document.createElement('button'); mode.type = 'button'; mode.id = 'mode-' + i;
+    mode.textContent = p.remove ? 'REPLACES SINGER' : 'WITH SINGER'; mode.setAttribute('aria-pressed', String(!!p.remove));
+    mode.disabled = !clip.R || (p.done && !p.stereo);
+    mode.addEventListener('click', () => { p.remove = !p.remove; clip.mixKey = ''; renderParts(); markDirty(); say('PART ' + (i + 1) + (p.remove ? ': THE ROBOT REPLACES THE SINGER' : ': THE ROBOT SINGS WITH THE SINGER')); });
+    const lab = document.createElement('label'); lab.className = 'mini'; lab.htmlFor = 'plv-' + i; lab.textContent = 'ROBOT';
+    const lv = document.createElement('input'); lv.type = 'range'; lv.min = 0; lv.max = 150; lv.step = 1; lv.id = 'plv-' + i;
+    lv.value = p.level != null ? p.level : 100;
+    const out = document.createElement('output'); out.className = 'mini'; out.textContent = lv.value;
+    lv.addEventListener('input', () => { p.level = +lv.value; out.textContent = p.level; markDirty(); });
+    r1.append(sel, hear, del); r2.append(mode, lab, lv, out); card.append(r1, r2); box.append(card);
   });
   drawWave();
 }
@@ -1177,24 +1398,207 @@ function addPart() {
   if (b - a > MAX_REGION) { say('MARK A SHORTER PART, ' + MAX_REGION + ' SECONDS AT MOST'); return false; }
   const hit = clip.parts.findIndex(p => a < p.to && b > p.from);
   if (hit >= 0) { say('THIS OVERLAPS PART ' + (hit + 1) + '. MOVE THE MARKS FIRST'); return false; }
-  const part = { from: a, to: b, remove: false, done: false, stereo: !!clip.R, centre: null, midi: null, hopSec: 0, notes: [], text: '', words: 0 };
+  const part = { from: a, to: b, remove: false, done: false, stereo: !!clip.R, centre: null, midi: null, hopSec: 0, notes: [], text: '', words: 0, level: 100 };
   clip.parts.push(part); clip.parts.sort((x, y) => x.from - y.from); clip.sel = clip.parts.indexOf(part);
-  $('lyrics').value = ''; renderParts();
+  $('lyrics').value = ''; renderParts(); markDirty();
   say('PART ' + (clip.sel + 1) + ' ADDED. ADD MORE, OR FIND THE TUNE AND THE WORDS');
   return true;
 }
+
+// ---------- saved songs, kept in this browser (IndexedDB) ----------
+// Stores: meta (for the list), audio (the original file), work (parts, score, settings), vocals (each part's split-off voice).
+let dbp = null, saveTimer = 0, saveWarned = false;
+function db() {
+  if (!dbp) dbp = new Promise((res, rej) => {
+    if (!window.indexedDB) { rej(new Error('NO STORAGE IN THIS BROWSER')); return; }
+    const r = indexedDB.open('daleksing', 1);
+    r.onupgradeneeded = () => { const d = r.result; ['meta', 'audio', 'work', 'vocals'].forEach(n => { if (!d.objectStoreNames.contains(n)) d.createObjectStore(n); }); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); r.onblocked = () => rej(new Error('STORAGE BUSY IN ANOTHER TAB'));
+  });
+  return dbp;
+}
+const idbReq = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+async function dbGet(store, key) { const d = await db(); return idbReq(d.transaction(store).objectStore(store).get(key)); }
+async function dbAll(store) { const d = await db(); return idbReq(d.transaction(store).objectStore(store).getAll()); }
+async function dbPutMany(puts) {
+  const d = await db(), stores = [...new Set(puts.map(x => x[0]))];
+  return new Promise((res, rej) => {
+    const t = d.transaction(stores, 'readwrite');
+    puts.forEach(([st, k, v]) => t.objectStore(st).put(v, k));
+    t.oncomplete = () => res(); t.onerror = t.onabort = () => rej(t.error);
+  });
+}
+async function dbDelete(store, key) { try { const d = await db(); await idbReq(d.transaction(store, 'readwrite').objectStore(store).delete(key)); } catch (e) {} }
+async function dbDeleteSong(id) {
+  const d = await db();
+  return new Promise((res, rej) => {
+    const t = d.transaction(['meta', 'audio', 'work', 'vocals'], 'readwrite');
+    ['meta', 'audio', 'work'].forEach(st => t.objectStore(st).delete(id));
+    t.objectStore('vocals').delete(IDBKeyRange.bound(id + '#', id + '#￿'));
+    t.oncomplete = () => res(); t.onerror = t.onabort = () => rej(t.error);
+  });
+}
+const vocalKey = (id, p) => id + '#' + p.from.toFixed(3) + '-' + p.to.toFixed(3);
+function markDirty() { if (!clip || !clip.id) return; clearTimeout(saveTimer); saveTimer = setTimeout(() => saveWork(), 700); }
+async function saveWork(extra = []) {
+  if (!clip || !clip.id) return;
+  clearTimeout(saveTimer);
+  const id = clip.id;
+  const work = {
+    parts: clip.parts.map(p => ({ from: p.from, to: p.to, remove: !!p.remove, done: !!p.done, stereo: !!p.stereo, midi: p.midi, hopSec: p.hopSec, notes: p.notes, text: p.text, words: p.words, level: p.level != null ? p.level : 100 })),
+    score: $('score').value, lyrics: $('lyrics').value, from: clip.from, to: clip.to, pos: clip.pos, sel: clip.sel, settings: settings()
+  };
+  const meta = { id, name: clip.name, dur: clip.dur, parts: clip.parts.length, savedAt: Date.now() };
+  try { await dbPutMany([['meta', id, meta], ['work', id, work], ...extra]); renderSaved(); }
+  catch (e) {
+    if (saveWarned) return; saveWarned = true;
+    const quota = e && /quota/i.test(e.name + ' ' + e.message);
+    say(quota ? 'OUT OF STORAGE SPACE. DELETE A SAVED SONG TO KEEP SAVING' : 'THIS BROWSER WOULD NOT SAVE THE SONG. ' + String(e && e.message || e).slice(0, 50).toUpperCase());
+  }
+}
+// Puts saved parts, score and settings back on the page for the song already set up.
+async function restoreWork(id) {
+  const w = await dbGet('work', id); if (!w) return false;
+  clip.parts = (w.parts || []).map(p => Object.assign({ centre: null, midi: null, hopSec: 0, notes: [], text: '', words: 0, level: 100 }, p));
+  for (const p of clip.parts) {
+    if (!(p.done && p.stereo)) continue;
+    p.centre = (await dbGet('vocals', vocalKey(id, p)).catch(() => null)) || null;
+    if (!p.centre && clip.R) {                              // missing: split it off again
+      say('RESTORING THE VOCALS FOR PART ' + (clip.parts.indexOf(p) + 1));
+      const i0 = Math.floor(p.from * clip.sr), i1 = Math.min(clip.L.length, Math.floor(p.to * clip.sr));
+      p.centre = (await splitClip(clip.L.subarray(i0, i1), clip.R.subarray(i0, i1), clip.sr)).centre;
+      dbPutMany([['vocals', vocalKey(id, p), p.centre]]).catch(() => {});
+    }
+  }
+  $('score').value = w.score || ''; $('lyrics').value = w.lyrics || '';
+  clip.sel = Math.min(w.sel != null ? w.sel : -1, clip.parts.length - 1);
+  clip.pos = Math.min(w.pos || 0, clip.dur);
+  applySettings(w.settings);
+  setRegion(w.from != null ? w.from : clip.from, w.to != null ? w.to : clip.to);
+  renderParts(); showWords(parseScore($('score').value).words);
+  return true;
+}
+async function openSaved(id) {
+  if (!ensureAudio()) return;
+  stopAll('OPENING THE SAVED SONG');
+  try {
+    const meta = await dbGet('meta', id);
+    let ab = await dbGet('audio', id);
+    if (!meta || !ab) { say('THE AUDIO FOR THIS SONG IS MISSING. LOAD THE FILE AGAIN'); return; }
+    if (ab instanceof Blob) ab = await ab.arrayBuffer();
+    setupClip(await decode(ab.slice(0)), meta.name, id);
+    await restoreWork(id);
+    say('OPENED ' + meta.name.toUpperCase() + '. ' + clip.parts.length + ' PARTS');
+    renderSaved();
+  } catch (e) { say('COULD NOT OPEN THAT SONG. ' + String(e && e.message || e).slice(0, 60).toUpperCase()); }
+}
+const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'JUST NOW' : m < 60 ? m + ' MIN AGO' : m < 1440 ? Math.round(m / 60) + ' H AGO' : new Date(t).toLocaleDateString(); };
+async function renderSaved() {
+  let list;
+  try { list = await dbAll('meta'); } catch (e) { $('savedbox').hidden = true; return; }
+  list.sort((a, b) => b.savedAt - a.savedAt);
+  const box = $('saved'); box.textContent = '';
+  $('savedbox').hidden = !list.length;
+  list.forEach((m, i) => {
+    const row = document.createElement('div'); row.className = 'saved' + (clip && clip.id === m.id ? ' cur' : '');
+    const info = document.createElement('button'); info.type = 'button'; info.className = 'info'; info.id = 'open-' + i;
+    info.textContent = m.name;
+    const sm = document.createElement('small');
+    sm.textContent = mmss(m.dur) + '  ' + m.parts + (m.parts === 1 ? ' PART' : ' PARTS') + '  ' + (clip && clip.id === m.id ? 'OPEN NOW' : 'SAVED ' + ago(m.savedAt));
+    info.append(sm);
+    info.addEventListener('click', () => openSaved(m.id));
+    const del = document.createElement('button'); del.type = 'button'; del.textContent = 'DELETE'; del.id = 'delsong-' + i;
+    del.setAttribute('aria-label', 'Delete saved song ' + m.name);
+    del.addEventListener('click', async () => {
+      if (del.dataset.armed !== '1') { del.dataset.armed = '1'; del.textContent = 'SURE?'; setTimeout(() => { del.dataset.armed = ''; del.textContent = 'DELETE'; }, 3000); return; }
+      try { await dbDeleteSong(m.id); if (clip && clip.id === m.id) clip.id = null; say('DELETED ' + m.name.toUpperCase() + ' FROM THIS BROWSER'); }
+      catch (e) { say('COULD NOT DELETE IT'); }
+      renderSaved();
+    });
+    row.append(info, del); box.append(row);
+  });
+}
+
+// ---------- download the mix ----------
+let rendering = false;
+function wavBlob(b) {
+  const ch = b.numberOfChannels, n = b.length, sr = b.sampleRate, hd = new DataView(new ArrayBuffer(44)), pcm = new Int16Array(n * ch);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) hd.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); hd.setUint32(4, 36 + pcm.byteLength, true); w(8, 'WAVEfmt '); hd.setUint32(16, 16, true); hd.setUint16(20, 1, true);
+  hd.setUint16(22, ch, true); hd.setUint32(24, sr, true); hd.setUint32(28, sr * ch * 2, true); hd.setUint16(32, ch * 2, true); hd.setUint16(34, 16, true);
+  w(36, 'data'); hd.setUint32(40, pcm.byteLength, true);
+  for (let c = 0; c < ch; c++) { const d = b.getChannelData(c); for (let i = 0, o = c; i < n; i++, o += ch) { const x = d[i] < -1 ? -1 : d[i] > 1 ? 1 : d[i]; pcm[o] = x < 0 ? x * 32768 : x * 32767; } }
+  return new Blob([hd, pcm], { type: 'audio/wav' });
+}
+async function downloadMix(withMusic) {
+  if (rendering) return;
+  const prep = prepare();
+  if (!prep.all.length && !(withMusic && clip)) { say('NOTHING TO MIX YET. ADD SOME WORDS FIRST'); return; }
+  if (!ensureAudio()) return;
+  stopAll(); rendering = true; $('dlmix').disabled = $('dlrobots').disabled = true;
+  try {
+    const st = settings(), w = windowFor(prep), sr = clip ? clip.sr : 44100;
+    const events = w.events.map(e => Object.assign({}, e, { start: e.start - w.from }));
+    const lastEnd = events.reduce((m, e) => Math.max(m, e.start + e.dur), 0);
+    const len = Math.max(clip ? w.to - w.from : 0, lastEnd + 0.6) + 0.1;
+    const oc = new OfflineAudioContext(2, Math.ceil(len * sr), sr);
+    const lim = makeLimiter(oc); lim.connect(oc.destination);
+    const bus = oc.createGain(); bus.gain.value = choirGain(); bus.connect(lim);
+    const made = [];
+    perform(i => made[i] || (made[i] = createVoice(oc, bus)), events, 0, prep, st);
+    if (withMusic && clip) {
+      const src = oc.createBufferSource(), g = oc.createGain();
+      src.buffer = mixBuffer(); g.gain.value = st.vmusic / 100; src.connect(g); g.connect(lim); src.start(0, w.from, w.to - w.from);
+    }
+    const step = Math.max(2, len / 20);
+    for (let t = step; t < len - 0.5; t += step) {
+      try { oc.suspend(t).then(() => { say('MIXING ' + Math.round(t / len * 100) + '%'); oc.resume(); }); } catch (e) { break; }
+    }
+    say('MIXING 0%');
+    const out = await oc.startRendering();
+    say('MAKING THE FILE'); await tick();
+    let peak = 0;
+    for (let c = 0; c < 2; c++) { const d = out.getChannelData(c); for (let i = 0; i < d.length; i++) { const a = d[i] < 0 ? -d[i] : d[i]; if (a > peak) peak = a; } }
+    if (peak > 0.97) for (let c = 0; c < 2; c++) { const d = out.getChannelData(c), k = 0.97 / peak; for (let i = 0; i < d.length; i++) d[i] *= k; }
+    const blob = wavBlob(out);
+    const base = (clip ? clip.name.replace(/\.[^.]+$/, '') : 'daisy-bell').replace(/[^\w .-]+/g, '').trim() || 'song';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = base + (withMusic && clip ? ' - robot mix.wav' : ' - robots.wav');
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 120000);
+    say('DOWNLOADED ' + a.download.toUpperCase() + '. ' + (blob.size / 1e6).toFixed(1) + ' MB, ' + mmss(len));
+  } catch (e) { say('MIXING FAILED. ' + String(e && e.message || e).slice(0, 60).toUpperCase()); }
+  rendering = false; $('dlmix').disabled = $('dlrobots').disabled = false;
+}
+
 $('addpart').addEventListener('click', addPart);
-$('sing').addEventListener('click', singNow);
+$('sing').addEventListener('click', () => singNow());
 $('stop').addEventListener('click', () => stopAll('STOPPED'));
-$('vrobot').addEventListener('input', applyMix);
-$('vmusic').addEventListener('input', applyMix);
-$('ring').addEventListener('click', e => { const b = e.currentTarget; b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); applyMix(); });
-$('file').addEventListener('change', e => loadFile(e.target.files[0]));
+const mixChanged = () => { applyMix(); markDirty(); };
+$('vrobot').addEventListener('input', mixChanged);
+$('vmusic').addEventListener('input', mixChanged);
+['hold', 'span', 'octave', 'key', 'model'].forEach(id => $(id).addEventListener('change', markDirty));
+$('preset').addEventListener('change', () => {
+  const p = PRESETS[$('preset').value]; if (!p) return;
+  voiceSet = p.map(([iv, lvl]) => ({ iv, lvl })); pool.forEach(r => r.stop()); renderVoices(); applyMix(); markDirty();
+});
+$('addvoice').addEventListener('click', () => {
+  if (voiceSet.length >= MAX_VOICES) return;
+  const used = voiceSet.map(v => v.iv), iv = [2, -7, -2, 4, 7, -4, -5, 0].find(x => !used.includes(x));
+  voiceSet.push({ iv: iv != null ? iv : 0, lvl: 70 }); voicesChanged();
+});
+$('dlmix').addEventListener('click', () => downloadMix(true));
+$('dlrobots').addEventListener('click', () => downloadMix(false));
+$('lyrics').addEventListener('input', markDirty);
+$('score').addEventListener('input', markDirty);
+$('ring').addEventListener('click', e => { const b = e.currentTarget; b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); mixChanged(); });
+$('file').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; loadFile(f); });   // cleared so the same file can be chosen again
 $('analyse').addEventListener('click', analyse);
 $('fit').addEventListener('click', fitTyped);
 $('demo').addEventListener('click', loadDemo);
 $('score').addEventListener('change', () => showWords(parseScore($('score').value).words));
-loadDemo(); flatScope();
+renderVoices(); loadDemo(); flatScope(); renderSaved();
+window.addEventListener('pagehide', () => { if (saveTimer) saveWork(); });
 </script>
 </body>
 </html>
