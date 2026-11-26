@@ -74,9 +74,10 @@ input[type=text]:disabled, input[type=number]:disabled { opacity: .5; }
 #edlen { background: var(--key); color: var(--ink); border: 1px solid var(--key-edge); border-radius: 4px; padding: 10px 8px; font-family: var(--display); font-size: 14px; font-variant-numeric: tabular-nums; }
 section > * + * { margin-top: 10px; }
 section > h2 + * { margin-top: 0; }
-#wave { width: 100%; height: 56px; display: block; background: var(--key); border: 1px solid var(--key-edge); border-radius: 4px; cursor: pointer; }
+#wave { width: 100%; height: 84px; display: block; background: var(--key); border: 1px solid var(--key-edge); border-radius: 4px; cursor: pointer; }
 #wave { touch-action: pan-y; }
-#wave[hidden], #marks[hidden], #range[hidden], #partsbox[hidden], #scrubrow[hidden] { display: none; }
+#wave[hidden], #marks[hidden], #range[hidden], #partsbox[hidden], #scrubrow[hidden], #ovrow[hidden], #ovpos[hidden] { display: none; }
+#ovpos { width: 100%; }
 #scrubrow { flex-wrap: nowrap; }
 #scrubrow input { flex: 1 1 auto; min-width: 0; }
 #scrubt { font-family: var(--display); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
@@ -214,7 +215,14 @@ fieldset:disabled { opacity: .5; }
       <span class="label">Stems. Mark the vocals the robot should copy</span>
       <div id="stems"></div>
     </div>
-    <canvas id="wave" width="560" height="56" hidden aria-label="Song overview. Drag to move through the song"></canvas>
+    <canvas id="wave" hidden aria-label="Song overview. Drag to move through the song; drag the edge of a suggested part to move it"></canvas>
+    <input id="ovpos" type="range" min="0" max="1000" value="0" hidden aria-label="Scroll the song overview">
+    <div class="row" id="ovrow" hidden>
+      <button id="ovout" type="button">ZOOM OUT</button>
+      <button id="ovin" type="button">ZOOM IN</button>
+      <button id="ovall" type="button">WHOLE SONG</button>
+      <button id="ovpart" type="button" disabled>SELECTED PART</button>
+    </div>
     <div class="row" id="scrubrow" hidden>
       <input id="scrub" type="range" min="0" max="1" step="0.05" value="0" aria-label="Position in the song">
       <output id="scrubt">0.0 S</output>
@@ -248,7 +256,7 @@ fieldset:disabled { opacity: .5; }
       </select>
     </div>
     <button id="analyse" type="button" disabled>FIND THE SELECTED PART AGAIN</button>
-    <p class="note">A new song is searched for singing, and each stretch with singing becomes a suggested part, split wherever there is a gap at least as long as the Gap setting. Delete the ones the robot should not sing, then press FIND TUNES AND WORDS. SUGGEST PARTS searches again. You can also play the song or drag through it to find a part, mark its start and end, and add it yourself. Add as many parts as you like: a chorus, a line here and there, half of a duet. Each part's tune and words are found as soon as you add it; only those parts are analysed. HEAR plays one part with the robot, and each part has its own robot volume. Each part is sung with the original singer unless you switch it to replace them. Songs are saved in this browser as you work. Choose several files at once to load time-aligned stems, such as a Suno stem export: the robot copies the stems marked as vocals, and replacing the singer simply leaves those out. With a single mixed file, slow songs with one clear, unprocessed voice in the middle of a stereo mix work best. Everything runs in your browser, and the speech model downloads once.</p>
+    <p class="note">A new song is searched for singing, and each stretch with singing becomes a suggested part, split wherever there is a gap at least as long as the Gap setting. Delete the ones the robot should not sing, then press FIND TUNES AND WORDS. SUGGEST PARTS searches again. On the overview, suggested parts have a dashed outline and analysed parts are solid, numbered as in the list. Drag the edge of a suggested or waiting part to move its start or end; zoom in for precision with the buttons, a pinch or ctrl-scroll. Analysed parts keep their edges. You can also play the song or drag through it to find a part, mark its start and end, and add it yourself. Add as many parts as you like: a chorus, a line here and there, half of a duet. Each part's tune and words are found as soon as you add it; only those parts are analysed. HEAR plays one part with the robot, and each part has its own robot volume. Each part is sung with the original singer unless you switch it to replace them. Songs are saved in this browser as you work. Choose several files at once to load time-aligned stems, such as a Suno stem export: the robot copies the stems marked as vocals, and replacing the singer simply leaves those out. With a single mixed file, slow songs with one clear, unprocessed voice in the middle of a stereo mix work best. Everything runs in your browser, and the speech model downloads once.</p>
   </section>
 
   <section>
@@ -1312,15 +1320,21 @@ function finishSetup(o) {
   scopeRef = null; scoreUndo = []; ed.p = null;
   rememberSong(o.id);
   makePeaks();
-  ['wave', 'scrubrow', 'marks', 'range', 'partsbox'].forEach(k => { $(k).hidden = false; });
+  ['wave', 'scrubrow', 'ovrow', 'marks', 'range', 'partsbox'].forEach(k => { $(k).hidden = false; });
   $('scrub').max = clip.dur.toFixed(2);
+  ov.w0 = 0; ov.w1 = clip.dur; ovClamp();
   $('score').value = ''; $('lyrics').value = ''; readout.textContent = '';
   setRegion(clip.from, clip.to); renderParts(); renderScope(); renderSound(); renderStems();
   $('clipinfo').textContent = o.name + '  ' + clip.dur.toFixed(1) + ' S' + (o.stems ? '  ' + o.stems.length + ' STEMS' : o.R ? '  STEREO' : '  MONO') + (o.cut ? '  (FIRST ' + MAX_CLIP + ' S ONLY)' : '');
 }
 function makePeaks() {
-  const n = clip.L.length, cols = 280, per = Math.max(1, Math.floor(n / cols)); clip.peaks = new Float32Array(cols);
-  for (let c = 0; c < cols; c++) { let m = 0; for (let i = c * per, e = Math.min(n, i + per); i < e; i += 16) { const a = Math.abs(clip.L[i]); if (a > m) m = a; } clip.peaks[c] = m; }
+  const L = clip.L, R = clip.R || L, n = L.length, B = 256, nb = Math.ceil(n / B), mn = new Float32Array(nb), mx = new Float32Array(nb); let top = 1e-6;
+  for (let b = 0; b < nb; b++) {
+    let lo = 0, hi = 0;
+    for (let i = b * B, e = Math.min(n, i + B); i < e; i += 2) { const v = (L[i] + R[i]) / 2; if (v < lo) lo = v; if (v > hi) hi = v; }
+    mn[b] = lo; mx[b] = hi; top = Math.max(top, -lo, hi);
+  }
+  clip.pk = { B, mn, mx, top };
 }
 
 // ---------- stems: several time-aligned files, some marked as the vocals the robot copies ----------
@@ -1677,11 +1691,12 @@ function mixBuffer() {
 function loadDemo() {
   stopAll(); clip = null; scopeRef = null; scoreUndo = []; renderStems();
   $('clipinfo').textContent = 'NO CLIP LOADED. THE DEMO NEEDS NONE.';
-  ['wave', 'scrubrow', 'marks', 'range', 'partsbox'].forEach(id => { $(id).hidden = true; });
+  ['wave', 'scrubrow', 'ovrow', 'ovpos', 'marks', 'range', 'partsbox'].forEach(id => { $(id).hidden = true; });
   $('analyse').disabled = true;
   $('lyrics').value = DAISY_WORDS; demoFitted = DAISY_WORDS; $('score').value = daisyScore();
   showWords(parseScore($('score').value).words);
-  renderScope(); renderSound(); edOpen(null); updateAnalyseBtn();
+  renderParts(); $('findall').hidden = true; $('edundo').disabled = true; ov.w0 = 0; ov.w1 = 1;   // nothing of the last song is left behind
+  renderScope(); renderSound(); edOpen(null); updateAnalyseBtn(); renderSaved();
   say('DAISY BELL LOADED. PRESS SING');
 }
 
@@ -1702,23 +1717,69 @@ function setRegion(a, b) {
   $('from').value = a.toFixed(1); $('to').value = b.toFixed(1);
   drawWave();
 }
+// ---------- song overview: zoomable, with the parts marked and their edges draggable ----------
+const ov = { w0: 0, w1: 1, drag: null, ptrs: new Map(), pinch: null };
+const ovEditable = q => !q.done || q.held;              // suggested or waiting parts; analysed parts keep their edges
+function ovClamp() {
+  if (!clip) return;
+  const span = Math.max(Math.min(clip.dur, 2), Math.min(clip.dur, ov.w1 - ov.w0));
+  ov.w0 = Math.max(0, Math.min(clip.dur - span, ov.w0)); ov.w1 = ov.w0 + span;
+  const room = clip.dur - span, zoomed = room > 0.01;
+  $('ovpos').hidden = !zoomed; if (zoomed) $('ovpos').value = Math.round(ov.w0 / room * 1000);
+}
+function ovZoom(f, at) {
+  const span = ov.w1 - ov.w0, c = at != null ? at : (clip.pos > ov.w0 && clip.pos < ov.w1 ? clip.pos : ov.w0 + span / 2);
+  const ns = Math.max(2, Math.min(clip.dur, span / f));
+  ov.w0 = c - (c - ov.w0) * ns / span; ov.w1 = ov.w0 + ns; ovClamp(); drawWave();
+}
 function drawWave() {
-  const cv = $('wave'); if (!clip || !clip.peaks || cv.hidden) return;
-  const g = cv.getContext('2d'), W = cv.width, H = cv.height, n = clip.peaks.length, bw = W / n;
-  g.clearRect(0, 0, W, H);
-  const px = t => t / clip.dur * W, inPart = x => clip.parts.some(q => x + bw > px(q.from) && x < px(q.to));
-  clip.parts.forEach((q, i) => { g.fillStyle = i === clip.sel ? 'rgba(229,56,45,.34)' : 'rgba(229,56,45,.2)'; g.fillRect(px(q.from), 0, Math.max(2, px(q.to) - px(q.from)), H); });
-  let top = 0; for (let c = 0; c < n; c++) if (clip.peaks[c] > top) top = clip.peaks[c];
-  for (let c = 0; c < n; c++) {
-    const x = c * bw, h = Math.max(1, clip.peaks[c] / (top || 1) * (H - 6));
-    g.fillStyle = inPart(x) ? '#e5382d' : '#6c6c76'; g.fillRect(x, (H - h) / 2, Math.max(1, bw - 1), h);
+  const cv = $('wave'); if (!clip || !clip.pk || cv.hidden) return;
+  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth || 300, H = cv.clientHeight || 84;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  if (!(ov.w1 > ov.w0)) { ov.w0 = 0; ov.w1 = clip.dur; }
+  const span = ov.w1 - ov.w0, X = t => (t - ov.w0) / span * W, sr = clip.sr, pk = clip.pk, TOP = 16, mid = TOP + (H - TOP) / 2, amp = ((H - TOP) / 2 - 3) / pk.top;
+  // time ticks
+  const step = [0.5, 1, 2, 5, 10, 15, 30, 60, 120].find(st => st / span * W >= 50) || 120;
+  g.font = '10px Silkscreen, "Courier New", monospace'; g.textBaseline = 'middle'; g.fillStyle = '#6c6c76';
+  for (let t = Math.ceil(ov.w0 / step) * step; t <= ov.w1; t += step) { const x = Math.round(X(t)); g.fillRect(x, TOP - 4, 1, 4); g.fillText(mmss(t).replace(' S', ''), x + 2, 6); }
+  // parts, behind the waveform: suggested lighter, analysed stronger, selected brightest
+  clip.parts.forEach((q, i) => {
+    const x0 = X(q.from), x1 = X(q.to); if (x1 < 0 || x0 > W) return;
+    g.fillStyle = i === clip.sel ? 'rgba(229,56,45,.36)' : q.held ? 'rgba(229,56,45,.12)' : 'rgba(229,56,45,.24)';
+    g.fillRect(x0, TOP, Math.max(2, x1 - x0), H - TOP);
+  });
+  // waveform
+  for (let x = 0; x < W; x++) {
+    const t0 = ov.w0 + x / W * span, t1 = ov.w0 + (x + 1) / W * span, i0 = Math.floor(t0 * sr), i1 = Math.max(i0 + 1, Math.floor(t1 * sr));
+    let lo = 0, hi = 0;
+    if (i1 - i0 > pk.B * 2) { for (let b = Math.floor(i0 / pk.B), e = Math.min(pk.mn.length, Math.ceil(i1 / pk.B)); b < e; b++) { if (pk.mn[b] < lo) lo = pk.mn[b]; if (pk.mx[b] > hi) hi = pk.mx[b]; } }
+    else { const L = clip.L, R = clip.R || L; for (let i = Math.max(0, i0), e = Math.min(L.length, i1); i < e; i++) { const v = (L[i] + R[i]) / 2; if (v < lo) lo = v; if (v > hi) hi = v; } }
+    const t = (t0 + t1) / 2, inside = clip.parts.some(q => t >= q.from && t < q.to);
+    g.fillStyle = inside ? '#e5382d' : '#6c6c76'; g.fillRect(x, mid - hi * amp, 1, Math.max(1, (hi - lo) * amp));
   }
-  g.strokeStyle = '#f1efe8'; g.lineWidth = 2; g.strokeRect(px(clip.from) + 1, 1, Math.max(3, px(clip.to) - px(clip.from) - 2), H - 2);   // the marker
+  // on top: outlines (dashed when suggested), numbers, and grips on edges that can be dragged
+  clip.parts.forEach((q, i) => {
+    const x0 = X(q.from), x1 = X(q.to); if (x1 < 0 || x0 > W) return;
+    const sel = i === clip.sel, lab = String(i + 1) + (q.held ? '?' : '');
+    g.strokeStyle = sel ? '#f1efe8' : '#e5382d'; g.lineWidth = 1.5; g.setLineDash(q.held ? [4, 3] : []);
+    g.strokeRect(x0 + 0.75, TOP + 0.75, Math.max(2, x1 - x0 - 1.5), H - TOP - 1.5); g.setLineDash([]);
+    const tw = g.measureText(lab).width + 6, lx = Math.max(1, x0 + 2);
+    g.fillStyle = sel ? '#f1efe8' : '#e5382d'; g.fillRect(lx, TOP + 2, tw, 13);
+    g.fillStyle = sel ? '#141417' : '#ffffff'; g.fillText(lab, lx + 3, TOP + 9);
+    if (ovEditable(q)) {
+      [x0, x1 - 5].forEach(x => { g.fillStyle = '#141417'; g.fillRect(x - 1, mid - 11, 7, 22); g.fillStyle = '#f1efe8'; g.fillRect(x, mid - 10, 5, 20); });
+    }
+  });
+  g.strokeStyle = '#f1efe8'; g.lineWidth = 1; g.setLineDash([2, 2]);                      // the manual marker
+  g.strokeRect(X(clip.from) + 0.5, TOP + 2.5, Math.max(3, X(clip.to) - X(clip.from) - 1), H - TOP - 5); g.setLineDash([]);
   const p = clipPos();
-  g.fillStyle = '#f1efe8'; g.fillRect(p / clip.dur * W - 1, 0, 3, H);
+  if (playing && p > ov.w1 && ov.w1 < clip.dur) { ov.w0 += span * 0.85; ov.w1 = ov.w0 + span; ovClamp(); }
+  g.fillStyle = '#f1efe8'; g.fillRect(X(p) - 1, 0, 3, H);
   if (document.activeElement !== $('scrub') || playing) $('scrub').value = p;
   $('scrubt').textContent = mmss(p);
   $('play').textContent = playing ? 'PAUSE' : 'PLAY';
+  $('ovpart').disabled = !(clip.parts[clip.sel]);
   playLabels();
 }
 // HEAR, PLAY FROM CURSOR and LISTEN read STOP while their own playback runs.
@@ -1762,12 +1823,81 @@ function scrubEnd() {
 $('scrub').addEventListener('input', e => scrubTo(parseFloat(e.target.value)));
 $('scrub').addEventListener('change', scrubEnd);
 let dragging = false;
-const waveTime = e => { const r = $('wave').getBoundingClientRect(); return (e.clientX - r.left) / r.width * clip.dur; };
-$('wave').addEventListener('pointerdown', e => { dragging = true; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {} scrubTo(waveTime(e)); });
-$('wave').addEventListener('pointermove', e => { if (dragging) scrubTo(waveTime(e)); });
-const dragEnd = () => { if (dragging) { dragging = false; scrubEnd(); } };
+const waveX = e => e.clientX - $('wave').getBoundingClientRect().left;
+const waveTime = e => ov.w0 + waveX(e) / ($('wave').clientWidth || 1) * (ov.w1 - ov.w0);
+// The editable part edge under the pointer, if any (nearest within 12 px).
+function ovEdgeAt(x) {
+  const W = $('wave').clientWidth || 1, X = t => (t - ov.w0) / (ov.w1 - ov.w0) * W; let best = null;
+  clip.parts.forEach(q => {
+    if (!ovEditable(q)) return;
+    [['from', X(q.from)], ['to', X(q.to)]].forEach(([side, ex]) => { const d = Math.abs(x - ex); if (d <= 12 && (!best || d < best.d)) best = { q, side, d }; });
+  });
+  return best;
+}
+function ovMoveEdge(d, t) {
+  const q = d.q, i = clip.parts.indexOf(q), prev = clip.parts[i - 1], next = clip.parts[i + 1];
+  if (d.side === 'from') q.from = Math.max(prev ? prev.to : 0, q.to - MAX_REGION, Math.min(q.to - 0.5, t));
+  else q.to = Math.min(next ? next.from : clip.dur, q.from + MAX_REGION, Math.max(q.from + 0.5, t));
+  q._vb = null; q._pk = null;
+  refreshPartLabels(); drawWave();
+  say('PART ' + (i + 1) + ': ' + mmss(q.from) + ' TO ' + mmss(q.to));
+}
+$('wave').addEventListener('pointerdown', e => {
+  if (!clip) return;
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {}
+  ov.ptrs.set(e.pointerId, waveX(e));
+  if (ov.ptrs.size === 2) {                                   // pinch: zoom
+    const [a, b] = [...ov.ptrs.values()];
+    if (ov.drag) { ov.drag.q.from = ov.drag.orig[0]; ov.drag.q.to = ov.drag.orig[1]; ov.drag = null; refreshPartLabels(); }
+    dragging = false; resumeAfterScrub = null;
+    ov.pinch = { d: Math.abs(a - b) || 1, t: ov.w0 + (a + b) / 2 / ($('wave').clientWidth || 1) * (ov.w1 - ov.w0), span: ov.w1 - ov.w0 };
+    return;
+  }
+  const edge = ovEdgeAt(waveX(e));
+  if (edge) { ov.drag = { q: edge.q, side: edge.side, orig: [edge.q.from, edge.q.to] }; clip.sel = clip.parts.indexOf(edge.q); return; }
+  dragging = true; scrubTo(waveTime(e));
+});
+$('wave').addEventListener('pointermove', e => {
+  if (!ov.ptrs.has(e.pointerId)) {                         // hovering: show where an edge can be grabbed
+    if (clip) $('wave').style.cursor = ovEdgeAt(waveX(e)) ? 'ew-resize' : 'pointer';
+    return;
+  }
+  ov.ptrs.set(e.pointerId, waveX(e));
+  if (ov.pinch && ov.ptrs.size >= 2) {
+    const [a, b] = [...ov.ptrs.values()], W = $('wave').clientWidth || 1;
+    const ns = Math.max(2, Math.min(clip.dur, ov.pinch.span * ov.pinch.d / (Math.abs(a - b) || 1)));
+    ov.w0 = ov.pinch.t - (a + b) / 2 / W * ns; ov.w1 = ov.w0 + ns; ovClamp(); drawWave(); return;
+  }
+  if (ov.drag) { ovMoveEdge(ov.drag, waveTime(e)); return; }
+  if (dragging) scrubTo(waveTime(e));
+});
+const dragEnd = e => {
+  if (e) ov.ptrs.delete(e.pointerId);
+  if (ov.pinch) { if (ov.ptrs.size < 2) ov.pinch = null; return; }
+  if (ov.drag) {
+    const q = ov.drag.q, moved = q.from !== ov.drag.orig[0] || q.to !== ov.drag.orig[1]; ov.drag = null;
+    if (moved) { setRegion(q.from, q.to); renderParts(); renderScope(); markDirty(); say('PART ' + (clip.parts.indexOf(q) + 1) + ' NOW ' + mmss(q.from) + ' TO ' + mmss(q.to)); }
+    else renderParts();
+    return;
+  }
+  if (dragging) { dragging = false; scrubEnd(); }
+};
 $('wave').addEventListener('pointerup', dragEnd);
 $('wave').addEventListener('pointercancel', dragEnd);
+$('wave').addEventListener('wheel', e => {
+  if (!clip) return;
+  if (e.ctrlKey || e.metaKey) { e.preventDefault(); ovZoom(Math.exp(-e.deltaY * 0.01), waveTime(e)); }
+  else if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) { e.preventDefault(); const dt = (e.deltaX || e.deltaY) / ($('wave').clientWidth || 1) * (ov.w1 - ov.w0); ov.w0 += dt; ov.w1 += dt; ovClamp(); drawWave(); }
+}, { passive: false });
+$('ovin').addEventListener('click', () => ovZoom(2));
+$('ovout').addEventListener('click', () => ovZoom(0.5));
+$('ovall').addEventListener('click', () => { ov.w0 = 0; ov.w1 = clip.dur; ovClamp(); drawWave(); });
+$('ovpart').addEventListener('click', () => {
+  const q = clip && clip.parts[clip.sel]; if (!q) return;
+  const pad = Math.max(1, (q.to - q.from) * 0.15); ov.w0 = q.from - pad; ov.w1 = q.to + pad; ovClamp(); drawWave();
+});
+$('ovpos').addEventListener('input', () => { const span = ov.w1 - ov.w0; ov.w0 = (clip.dur - span) * $('ovpos').value / 1000; ov.w1 = ov.w0 + span; drawWave(); });
+window.addEventListener('resize', () => drawWave());
 $('play').addEventListener('click', () => {
   if (playing) { stopAll(); say('PAUSED AT ' + mmss(clip.pos)); }
   else previewFrom(clip.pos >= clip.dur - 0.2 ? 0 : clip.pos);
@@ -1807,6 +1937,9 @@ function renderParts() {
     });
     const del = document.createElement('button'); del.type = 'button'; del.textContent = 'X'; del.setAttribute('aria-label', 'Remove part ' + (i + 1));
     del.addEventListener('click', () => {
+      // stop anything playing this part: its HEAR or editor preview, or singing that includes its robots
+      const o = playing && playing.opts;
+      if (o && (o.part === p || (playing.kind === 'sing' && !o.part))) stopAll('STOPPED');
       pushUndo();
       setScoreRange(p.from, p.to, ''); clip.parts.splice(i, 1); clip.sel = Math.min(clip.sel, clip.parts.length - 1); clip.mixKey = '';
       dbDelete('vocals', vocalKey(clip.id, p)); renderParts(); renderScope(); renderSound(); markDirty(); say('PART REMOVED');
@@ -2402,7 +2535,12 @@ async function renderSaved() {
     del.setAttribute('aria-label', 'Delete saved song ' + m.name);
     del.addEventListener('click', async () => {
       if (del.dataset.armed !== '1') { del.dataset.armed = '1'; del.textContent = 'SURE?'; setTimeout(() => { del.dataset.armed = ''; del.textContent = 'DELETE'; }, 3000); return; }
-      try { await dbDeleteSong(m.id); if (clip && clip.id === m.id) clip.id = null; if (lastSong() === m.id) rememberSong(null); say('DELETED ' + m.name.toUpperCase() + ' FROM THIS BROWSER'); }
+      try {
+        const open = clip && clip.id === m.id;
+        if (open) { stopAll(); clip = null; loadDemo(); }   // the open song is gone: stop it and fall back to the demo
+        await dbDeleteSong(m.id); if (lastSong() === m.id) rememberSong(null);
+        say('DELETED ' + m.name.toUpperCase() + ' FROM THIS BROWSER' + (open ? '. BACK TO THE DEMO' : ''));
+      }
       catch (e) { say('COULD NOT DELETE IT'); }
       renderSaved();
     });
