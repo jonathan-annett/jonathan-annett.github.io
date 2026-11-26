@@ -69,6 +69,8 @@ textarea:focus-visible, select:focus-visible, button:focus-visible, input:focus-
 .dials { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
 .dials output { color: var(--ink); font-variant-numeric: tabular-nums; }
 input[type=range] { width: 100%; accent-color: var(--red); height: 28px; margin: 0; }
+input[type=text] { background: var(--key); color: var(--ink); border: 1px solid var(--key-edge); border-radius: 4px; padding: 10px 12px; font-family: var(--body); font-size: 17px; }
+input[type=text]:disabled { opacity: .5; }
 section > * + * { margin-top: 10px; }
 section > h2 + * { margin-top: 0; }
 #wave { width: 100%; height: 56px; display: block; background: var(--key); border: 1px solid var(--key-edge); border-radius: 4px; cursor: pointer; }
@@ -246,7 +248,8 @@ fieldset:disabled { opacity: .5; }
     <h2><b>2</b>WORDS</h2>
     <label for="lyrics">Words for the selected part. Correct them here and they are fitted to the tune as you type</label>
     <textarea id="lyrics" rows="4" spellcheck="false"></textarea>
-    <p class="note">Same number of words: each keeps its timing. A different number: the words are spread over the part's notes again.</p>
+    <button id="respread" type="button">SPREAD THE WORDS EVENLY OVER THE TUNE</button>
+    <p class="note">Words you leave alone keep their timing. A changed word takes over the time of the word it replaces, shared out by syllables, with notes from the singer's pitch there: correct "needed" to "knee deep" and only that slot changes. New words go into the nearest gap. The button above ignores the existing timing and starts again.</p>
   </section>
 
   <section>
@@ -256,6 +259,10 @@ fieldset:disabled { opacity: .5; }
       <canvas id="ed" tabindex="0" aria-label="Timing editor. Arrow keys move the selection, up and down change its note"></canvas>
       <input id="edpos" type="range" min="0" max="1000" value="0" aria-label="Scroll through the part">
       <div id="edinfo"></div>
+      <div class="row">
+        <input id="edtext" type="text" autocomplete="off" spellcheck="false" placeholder="retype the selected words" aria-label="Words for the selection" style="flex:1 1 160px;min-width:0" disabled>
+        <button id="edapply" type="button" disabled>CHANGE WORDS</button>
+      </div>
       <div class="row">
         <button id="edword" type="button" disabled>SELECT WORD</button>
         <button id="edprev" type="button" disabled>ADD WORD BEFORE</button>
@@ -1465,8 +1472,79 @@ function partLines(p) {
   return $('score').value.split('\n').filter(l => { const t = parseFloat(l); return l.trim() && !isNaN(t) && t >= p.from && t < p.to; })
     .sort((a, b) => parseFloat(a) - parseFloat(b));
 }
-// Fits the words box to the tune. Same number of words: each word keeps its notes and timing.
-// A different number: spread over the part's notes again, but only when asked (leaving the box), since it loses hand timing.
+// Score lines to words with absolute note times. Notes after a word's last syllable are slurs.
+function wordsFromLines(lines) {
+  return parseScore(lines.join('\n')).words.map(w => {
+    const syl = syllables(soundsOf(w.word)), n = Math.max(1, syl.length), k = w.notes.length; let t = w.start;
+    return { word: w.word, notes: w.notes.map((x, j) => {
+      if (x.start != null && j < n) t = x.start;
+      const o = { midi: x.midi, dur: x.dur, at: t, slur: j >= n, label: j >= n ? '~' : (j === k - 1 && k < n ? syl.slice(j).map(phonemesOf).join(' . ') : phonemesOf(syl[j])) };
+      t += x.dur; return o;
+    }) };
+  });
+}
+const wordEnd = w => { const z = w.notes[w.notes.length - 1]; return z.at + z.dur; };
+// The note for a stretch of time: the singer's pitch there, else the old note that overlapped it most.
+function pitchFor(p, a, b, old) {
+  if (p && p.midi && p.hopSec) { const m = medianPitch(p.midi, p.hopSec, a - p.from, b - p.from); if (m != null) return m; }
+  let best = null, ov = 0;
+  old.forEach(w => w.notes.forEach(x => { const o = Math.min(b, x.at + x.dur) - Math.max(a, x.at); if (o > ov) { ov = o; best = x.midi; } }));
+  return best;
+}
+// New words laid over the time from a to b, shared out by syllables.
+function wordsOver(list, a, b, p, old, fallback) {
+  const syl = list.map(w => Math.max(1, syllables(soundsOf(w)).length)), each = (b - a) / syl.reduce((x, y) => x + y, 0);
+  let t = a, last = fallback != null ? fallback : 60;
+  return list.map((w, i) => ({ word: w, notes: Array.from({ length: syl[i] }, () => {
+    const m = pitchFor(p, t, t + each, old); if (m != null) last = m;
+    const x = { midi: last, dur: each, at: t, slur: false }; t += each; return x;
+  }) }));
+}
+// Squeezes a word's notes into a to b, keeping their proportions.
+function squeezeWord(w, a, b) { const s0 = w.notes[0].at, f = (b - a) / (wordEnd(w) - s0 || 1); w.notes.forEach(x => { x.at = a + (x.at - s0) * f; x.dur *= f; }); }
+// Which words stayed the same, by longest common subsequence. Returns blocks of kept and changed words.
+function diffWords(a, b) {
+  const n = a.length, m = b.length, L = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = a[i] === b[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const out = []; let i = 0, j = 0, cur = null;
+  while (i < n || j < m) {
+    if (i < n && j < m && a[i] === b[j]) { cur = null; out.push({ same: true, ai: i, an: 1, bi: j, bn: 1 }); i++; j++; continue; }
+    if (!cur) { cur = { same: false, ai: i, an: 0, bi: j, bn: 0 }; out.push(cur); }
+    if (j < m && (i >= n || L[i][j + 1] >= L[i + 1][j])) { cur.bn++; j++; } else { cur.an++; i++; }
+  }
+  return out;
+}
+// Puts the new words in place of the old ones, keeping the timing of every word that did not change.
+// old: words with note times; lo, hi: the time the words may use. Returns the new words and how many stretches changed.
+function realignWords(old, list, p, lo, hi) {
+  const blocks = diffWords(old.map(w => w.word), list), out = []; let changed = 0;
+  blocks.forEach(bk => {
+    if (bk.same) { out.push(old[bk.ai]); return; }
+    changed++;
+    const next = old[bk.ai + bk.an], prev = out[out.length - 1], newWords = list.slice(bk.bi, bk.bi + bk.bn);
+    if (!bk.bn) return;                                    // words removed: their time becomes a rest
+    let a, b;
+    if (bk.an) { a = old[bk.ai].notes[0].at; b = wordEnd(old[bk.ai + bk.an - 1]); }    // replaced: take over their time
+    else {                                                 // added: use the gap, borrowing from the word before if it is tight
+      a = prev ? wordEnd(prev) : lo; b = next ? next.notes[0].at : hi;
+      const need = 0.15 * newWords.reduce((x, w) => x + Math.max(1, syllables(soundsOf(w)).length), 0);
+      if (b - a < need && prev) { const ps = prev.notes[0].at, give = Math.min((wordEnd(prev) - ps) * 0.5, need - (b - a)); squeezeWord(prev, ps, wordEnd(prev) - give); a = wordEnd(prev); }
+      if (b - a < 0.06 * newWords.length) b = a + 0.06 * newWords.length;
+    }
+    const near = prev ? prev.notes[prev.notes.length - 1].midi : next ? next.notes[0].midi : null;
+    if (bk.an === bk.bn) {                                 // word for word: each new word takes its old word's slot
+      newWords.forEach((nw, k) => {
+        const ow = old[bk.ai + k], n = Math.max(1, syllables(soundsOf(nw)).length), plain = ow.notes.filter(x => !x.slur);
+        if (plain.length === n && ow.notes.length === n) out.push({ word: nw, notes: ow.notes.map(x => Object.assign({}, x)) });   // same syllables: keep the notes exactly
+        else out.push(...wordsOver([nw], ow.notes[0].at, wordEnd(ow), p, old, near));
+      });
+      return;
+    }
+    out.push(...wordsOver(newWords, a, b, p, old, near));
+  });
+  return { words: out, changed };
+}
+// Fits the words box to the tune, keeping the timing of words that did not change. respread: ignore it and start again.
 let demoFitted = '';
 function fitTyped(auto, respread) {
   const raw = $('lyrics').value, words = raw.split(/\s+/).map(cleanWord).filter(Boolean);
@@ -1474,26 +1552,27 @@ function fitTyped(auto, respread) {
   const p = clip ? clip.parts[clip.sel] : null;
   if (clip && (!p || !p.done)) { if (!auto) say('SELECT A PART THAT HAS BEEN ANALYSED FIRST'); return false; }
   const cur = p ? partLines(p) : $('score').value.split('\n').filter(l => l.trim() && !isNaN(parseFloat(l)));
-  if (cur.length === words.length) {
-    const text = cur.map((l, i) => { const t = l.trim().split(/\s+/); t[1] = words[i]; return t.join(' '); }).join('\n');
-    if (text === cur.join('\n')) return true;
-    pushUndo();
-    if (p) { p.text = raw; p.words = words.length; setScoreRange(p.from, p.to, text); refreshPartLabels(); }
-    else { demoFitted = raw; $('score').value = text; showWords(parseScore(text).words); }
-    markDirty(); say('WORDS UPDATED. EACH KEPT ITS TIMING');
+  const put = (text, n) => {
+    if (p) { p.text = raw; p.words = n; setScoreRange(p.from, p.to, text); refreshPartLabels(); }
+    else { demoFitted = raw; $('score').value = text; showWords(parseScore(text).words); edSync(); }
+    markDirty();
+  };
+  if (cur.length && !respread) {
+    const old = wordsFromLines(cur);
+    if (old.map(w => w.word).join(' ') === words.join(' ')) return true;
+    const lo = p ? p.from : 0, hi = p ? p.to : wordEnd(old[old.length - 1]) + 1;
+    const r = realignWords(old, words, p, lo, hi);
+    pushUndo(); put(r.words.map(edLine).join('\n'), r.words.length);
+    say(r.changed ? 'WORDS UPDATED. ' + r.changed + (r.changed === 1 ? ' STRETCH' : ' STRETCHES') + ' RETIMED, THE REST KEPT THEIR TIMING' : 'WORDS UPDATED');
     return true;
   }
-  if (!respread) { say(words.length + ' WORDS FOR ' + cur.length + ' PLACES. LEAVE THE BOX TO SPREAD THEM OVER THE TUNE AGAIN'); return false; }
-  if (raw === (p ? p.text : demoFitted)) return false;   // nothing new since the last fit
   let notes = [];
   if (p) notes = p.notes;
   else parseScore($('score').value).words.forEach(w => { let t = w.start; w.notes.forEach(x => { if (x.start != null) t = x.start; notes.push({ start: t, midi: x.midi, dur: x.dur }); t += x.dur; }); });
   if (!notes.length) { say('THERE IS NO TUNE YET TO FIT THE WORDS TO'); return false; }
   pushUndo();
   const r = fitWordsToNotes(words, notes);
-  if (p) { p.text = raw; p.words = r.usedWords; setScoreRange(p.from, p.to, r.text); refreshPartLabels(); }
-  else { demoFitted = raw; $('score').value = r.text; showWords(parseScore(r.text).words); edSync(); }
-  markDirty();
+  put(r.text, r.usedWords);
   say('SPREAD ' + r.usedWords + ' OF ' + words.length + ' WORDS OVER ' + r.usedNotes + ' OF ' + notes.length + ' NOTES. UNDO PUTS IT BACK');
   return true;
 }
@@ -1709,14 +1788,7 @@ function edSync(force) { if (!edOn() || ed.drag) return; if (!force && partLines
 const phonemesOf = seq => (seq || []).map(c => PH[c].n).join(' ');
 function edLoad(fresh) {
   const p = ed.p; ed.lines = partLines(p);
-  ed.words = parseScore(ed.lines.join('\n')).words.map(w => {
-    const syl = syllables(soundsOf(w.word)), n = Math.max(1, syl.length), k = w.notes.length; let t = w.start;
-    return { word: w.word, notes: w.notes.map((x, j) => {
-      if (x.start != null && j < n) t = x.start;
-      const o = { midi: x.midi, dur: x.dur, at: t, slur: j >= n, label: j >= n ? '~' : (j === k - 1 && k < n ? syl.slice(j).map(phonemesOf).join(' . ') : phonemesOf(syl[j])) };
-      t += x.dur; return o;
-    }) };
-  });
+  ed.words = wordsFromLines(ed.lines);
   edFlat();
   let lo = 127, hi = 0;
   ed.words.forEach(w => w.notes.forEach(x => { lo = Math.min(lo, x.midi); hi = Math.max(hi, x.midi); }));
@@ -1912,8 +1984,34 @@ function edInfo() {
   $('edprev').disabled = !(s0 && s0.w > 0);
   $('ednext').disabled = !(s0 && selEnd(s0) < ed.words.length - 1);
   $('edall').disabled = !ed.words.length;
+  if (document.activeElement !== $('edtext')) edFillText();
 }
 function edSelect(sel) { ed.sel = sel; edDraw(); edInfo(); }
+// The words box text follows the selection, so it can be retyped in place.
+function edFillText() {
+  const s0 = ed.sel, box = $('edtext');
+  box.disabled = $('edapply').disabled = !s0;
+  if (!s0) { box.value = ''; return; }
+  const w0 = s0.w, w1 = s0.j < 0 ? selEnd(s0) : s0.w;
+  box.value = ed.words.slice(w0, w1 + 1).map(w => w.word).join(' ');
+}
+// Replaces the selected words with what was typed, over the same stretch of time.
+function edRetype() {
+  const s0 = ed.sel; if (!edOn() || !s0) return;
+  const list = $('edtext').value.split(/\s+/).map(cleanWord).filter(Boolean);
+  const w0 = s0.w, w1 = s0.j < 0 ? selEnd(s0) : s0.w, old = ed.words.slice(w0, w1 + 1);
+  if (!list.length) { say('TYPE THE WORDS FIRST'); return; }
+  if (list.join(' ') === old.map(w => w.word).join(' ')) return;
+  const before = $('score').value, prev = ed.words[w0 - 1];
+  const fresh = wordsOver(list, old[0].notes[0].at, wordEnd(old[old.length - 1]), ed.p, old, prev ? prev.notes[prev.notes.length - 1].midi : old[0].notes[0].midi);
+  ed.words.splice(w0, old.length, ...fresh);
+  edFlat(); edWrite(); pushUndo(before);
+  const p = ed.p; p.words = ed.words.length; p.text = ed.words.map(w => w.word).join(' ');
+  if (clip.parts[clip.sel] === p) $('lyrics').value = p.text;
+  edSync(true); refreshPartLabels();
+  ed.sel = { w: w0, w1: w0 + fresh.length - 1, j: -1 }; edDraw(); edInfo();
+  say('CHANGED TO "' + list.join(' ').toUpperCase() + '" IN THE SAME TIME');
+}
 function edHit(x, y) {
   const G = edGeo(), bh = Math.max(G.rowH - 2, 12);
   if (y >= ED_TOP) {
@@ -2024,6 +2122,8 @@ function edPlay() {
   $('edout').addEventListener('click', () => edZoom(0.5));
   $('edfit').addEventListener('click', () => { ed.v0 = ed.p.from; ed.v1 = ed.p.to; edClamp(); edDraw(); });
   $('edundo').addEventListener('click', undo);
+  $('edapply').addEventListener('click', edRetype);
+  $('edtext').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); edRetype(); } });
   $('edword').addEventListener('click', () => { if (ed.sel && ed.sel.j >= 0) edSelect({ w: ed.sel.w, w1: ed.sel.w, j: -1 }); });
   $('edprev').addEventListener('click', () => { if (ed.sel && ed.sel.w > 0) edSelect({ w: ed.sel.w - 1, w1: selEnd(ed.sel), j: -1 }); });
   $('ednext').addEventListener('click', () => { if (ed.sel) edSelect({ w: ed.sel.w, w1: Math.min(ed.words.length - 1, selEnd(ed.sel) + 1), j: -1 }); });
@@ -2263,7 +2363,8 @@ $('ownsound').addEventListener('click', () => {
 });
 let fitTimer = 0;
 $('lyrics').addEventListener('input', () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => fitTyped(true, false), 900); });
-$('lyrics').addEventListener('change', () => { clearTimeout(fitTimer); fitTyped(true, true); });
+$('lyrics').addEventListener('change', () => { clearTimeout(fitTimer); fitTyped(true, false); });
+$('respread').addEventListener('click', () => { clearTimeout(fitTimer); fitTyped(false, true); });
 $('dlmix').addEventListener('click', () => downloadMix(true));
 $('mp3').addEventListener('change', markDirty);
 $('dlrobots').addEventListener('click', () => downloadMix(false));
