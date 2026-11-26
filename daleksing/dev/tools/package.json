@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "description": "Test tools for the Voice Box sing-along dev page. The page itself needs no build.",
+  "scripts": { "assets": "node gen_assets.js", "unit": "node tests/unit.js" },
+  "devDependencies": { "lamejs": "1.2.1" }
+}
