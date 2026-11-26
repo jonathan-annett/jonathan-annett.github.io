@@ -1,0 +1,2589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Box Sing-Along</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one black ZX81-style slab. Pale TV screen shows the lyric being sung; below it the
+   transport, a small mixer, then the three working steps (music, words, score). Single theme by choice. */
+:root {
+  color-scheme: dark;
+  --case: #141417;
+  --key: #202026;
+  --key-edge: #34343c;
+  --ink: #f1efe8;
+  --muted: #9a9aa3;
+  --red: #e5382d;
+  --screen: #d8d8cf;
+  --screen-ink: #121212;
+  --display: "Silkscreen", "Courier New", monospace;
+  --body: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--case); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.4; }
+main { max-width: 600px; margin: 0 auto; padding: 20px 16px 48px; display: flex; flex-direction: column; gap: 20px; }
+header { display: flex; flex-direction: column; gap: 6px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: 24px; letter-spacing: 1px; margin: 0; text-wrap: balance; }
+h1 span { color: var(--red); }
+h2 { font-family: var(--display); font-weight: 400; font-size: 15px; letter-spacing: 1px; margin: 0 0 10px; }
+h2 b { color: var(--red); font-weight: 400; margin-right: 8px; }
+.stripe { height: 4px; background: var(--red); }
+.sub, .note { color: var(--muted); font-size: 15px; margin: 0; }
+label, .label { font-size: 13px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 6px; }
+textarea, select, input[type=number] {
+  width: 100%; background: var(--key); color: var(--ink); border: 1px solid var(--key-edge);
+  border-radius: 4px; padding: 10px 12px; font-family: var(--body); font-size: 17px; line-height: 1.35;
+}
+textarea { resize: vertical; }
+#score { font-family: var(--display); font-size: 12px; line-height: 1.7; white-space: pre; overflow-x: auto; }
+button, .filebtn {
+  font-family: var(--display); cursor: pointer; border-radius: 4px; border: 1px solid var(--key-edge);
+  background: var(--key); color: var(--ink); font-size: 13px; padding: 12px 14px; letter-spacing: 1px;
+  display: inline-block; text-align: center;
+}
+button:active, .filebtn:active { transform: translateY(1px); background: #2b2b33; }
+button:disabled { opacity: .45; cursor: default; }
+button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--case); }
+textarea:focus-visible, select:focus-visible, button:focus-visible, input:focus-visible, .filebtn:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
+.filebtn input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.screen {
+  background: var(--screen); color: var(--screen-ink); border-radius: 10px; padding: 12px 14px 14px;
+  font-family: var(--display); font-size: 14px; line-height: 1.75; display: flex; flex-direction: column; gap: 8px;
+}
+#scope { width: 100%; height: 48px; display: block; image-rendering: pixelated; }
+/* fixed heights, so changing words or messages never shift the page below */
+#readout { height: 98px; overflow-y: auto; word-spacing: 3px; text-transform: uppercase; }
+#readout span { padding: 0 2px; }
+#readout span.on { background: var(--screen-ink); color: var(--screen); }
+#status { border-top: 2px solid var(--screen-ink); padding-top: 6px; font-size: 12px; overflow-wrap: anywhere; height: calc(3 * 1.75em + 6px); overflow-y: auto; }
+.cursor { background: var(--screen-ink); color: var(--screen); padding: 0 3px; margin-right: 6px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.big { font-size: 17px; padding: 14px 18px; flex: 1 1 110px; }
+#sing { background: var(--red); border-color: var(--red); color: #fff; flex: 3 1 200px; }
+#sing:active { background: #c42c22; }
+.dials { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+.dials output { color: var(--ink); font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--red); height: 28px; margin: 0; }
+input[type=text] { background: var(--key); color: var(--ink); border: 1px solid var(--key-edge); border-radius: 4px; padding: 10px 12px; font-family: var(--body); font-size: 17px; }
+input[type=text]:disabled, input[type=number]:disabled { opacity: .5; }
+#edlen { background: var(--key); color: var(--ink); border: 1px solid var(--key-edge); border-radius: 4px; padding: 10px 8px; font-family: var(--display); font-size: 14px; font-variant-numeric: tabular-nums; }
+section > * + * { margin-top: 10px; }
+section > h2 + * { margin-top: 0; }
+#wave { width: 100%; height: 56px; display: block; background: var(--key); border: 1px solid var(--key-edge); border-radius: 4px; cursor: pointer; }
+#wave { touch-action: pan-y; }
+#wave[hidden], #marks[hidden], #range[hidden], #partsbox[hidden], #scrubrow[hidden] { display: none; }
+#scrubrow { flex-wrap: nowrap; }
+#scrubrow input { flex: 1 1 auto; min-width: 0; }
+#scrubt { font-family: var(--display); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
+#parts { display: flex; flex-direction: column; gap: 6px; }
+#parts:not(:empty) { margin-top: 10px; }
+.part { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px solid var(--key-edge); border-radius: 4px; }
+.part.cur { border-color: var(--ink); }
+.part button, .voice button, .saved button { font-size: 11px; padding: 10px; }
+.prow, .voice, .saved { display: flex; gap: 6px; align-items: center; }
+.prow .sel, .saved .info { flex: 1 1 auto; min-width: 0; text-align: left; overflow-wrap: anywhere; }
+.prow input[type=range], .voice input[type=range] { flex: 1 1 auto; min-width: 60px; }
+.mini { font-family: var(--display); font-size: 11px; color: var(--muted); white-space: nowrap; margin: 0; letter-spacing: 0; font-weight: 400; text-transform: none; min-width: 34px; font-variant-numeric: tabular-nums; }
+.voice select { width: auto; flex: 0 1 150px; padding: 8px; font-size: 15px; }
+#stems { display: flex; flex-direction: column; gap: 6px; }
+.stem { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px; border: 1px solid var(--key-edge); border-radius: 4px; }
+.stem .nm { flex: 1 1 100%; font-family: var(--display); font-size: 11px; overflow-wrap: anywhere; }
+.stem.vocal { border-color: var(--red); }
+.stem select { width: auto; flex: 1 1 150px; padding: 8px; font-size: 15px; }
+.stem input[type=range] { flex: 1 1 90px; min-width: 60px; }
+.check { display: flex; gap: 8px; align-items: center; font-family: var(--display); font-size: 12px; letter-spacing: 1px; color: var(--ink); cursor: pointer; margin: 0; text-transform: none; font-weight: 400; }
+.check input { width: 20px; height: 20px; accent-color: var(--red); margin: 0; }
+#voices, #saved { display: flex; flex-direction: column; gap: 6px; }
+.saved .info { font-family: var(--body); font-size: 15px; letter-spacing: 0; line-height: 1.3; }
+.saved .info small { display: block; font-family: var(--display); font-size: 10px; color: var(--muted); }
+.saved.cur .info { border-color: var(--ink); }
+#savedbox[hidden], #stemsbox[hidden], #findall[hidden], #keyrow[hidden], #ownsound[hidden], #timing[hidden] { display: none; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+fieldset:disabled { opacity: .5; }
+#ed { width: 100%; height: 320px; display: block; background: var(--key); border: 1px solid var(--key-edge); border-radius: 4px; touch-action: none; cursor: default; }
+#ed:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+#edinfo { font-family: var(--display); font-size: 11px; color: var(--muted); min-height: 18px; overflow-wrap: anywhere; }
+#edpos { width: 100%; }
+#clipinfo { font-family: var(--display); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { button:active, .filebtn:active { transform: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>VOICE BOX <span>SING-ALONG</span> <span id="devtag" hidden style="font-size:13px;background:var(--ink);color:var(--case);padding:2px 6px;vertical-align:middle">DEV</span></h1>
+    <div class="stripe"></div>
+    <p class="sub">A 1980s-style speech synthesiser that sings. Load a music clip and it will try to find the tune and the words, then sing along.</p>
+  </header>
+
+  <section class="screen">
+    <canvas id="scope" width="140" height="24" aria-hidden="true"></canvas>
+    <div id="readout"></div>
+    <div id="status"><span class="cursor">K</span><span id="statustext">READY</span></div>
+  </section>
+
+  <div class="row">
+    <button id="sing" class="big" type="button">SING</button>
+    <button id="stop" class="big" type="button">STOP</button>
+  </div>
+
+  <section>
+    <div class="dials">
+      <div>
+        <label for="vrobot">Robot volume <output id="vrobotv">100</output></label>
+        <input id="vrobot" type="range" min="0" max="150" step="1" value="100">
+      </div>
+      <div>
+        <label for="vmusic">Music volume <output id="vmusicv">70</output></label>
+        <input id="vmusic" type="range" min="0" max="150" step="1" value="70">
+      </div>
+    </div>
+    <div class="row">
+      <label for="soundfor" style="margin:0">Sound for</label>
+      <select id="soundfor" style="width:auto;flex:1 1 160px"><option value="-1">Every part</option></select>
+    </div>
+    <button id="ownsound" type="button" hidden>GIVE THIS PART ITS OWN SOUND</button>
+    <fieldset id="soundbox">
+      <div>
+        <label for="preset">Robot voices</label>
+        <div class="row">
+          <select id="preset" style="width:auto;flex:1 1 200px">
+            <option value="solo">Solo</option>
+            <option value="duet">Duet: lead and a third above</option>
+            <option value="trio">Trio: low, lead and high</option>
+            <option value="choir">Choir: four parts</option>
+            <option value="custom">Custom</option>
+          </select>
+          <button id="addvoice" type="button">ADD A VOICE</button>
+        </div>
+        <div id="voices" style="margin-top:10px"></div>
+      </div>
+      <div class="row" id="keyrow" hidden>
+        <label for="key" style="margin:0">Harmony key</label>
+        <select id="key" style="width:auto;flex:1 1 140px"></select>
+      </div>
+      <div class="row">
+        <button id="ring" type="button" aria-pressed="false">RING MODULATOR</button>
+      </div>
+      <div class="row">
+        <label for="hold" style="margin:0">Longest held note</label>
+        <select id="hold" style="width:auto;flex:1 1 140px">
+          <option value="0.6">0.6 seconds</option>
+          <option value="1">1 second</option>
+          <option value="2" selected>2 seconds</option>
+          <option value="0">No limit</option>
+        </select>
+      </div>
+      <div class="row">
+        <label for="octave" style="margin:0">Robot octave</label>
+        <select id="octave" style="width:auto;flex:1 1 140px">
+          <option value="auto">Auto</option>
+          <option value="1">Up one</option>
+          <option value="0">As written</option>
+          <option value="-1">Down one</option>
+          <option value="-2">Down two</option>
+        </select>
+      </div>
+    </fieldset>
+    <div class="row">
+      <label for="span" style="margin:0">Play</label>
+      <select id="span" style="width:auto;flex:1 1 140px">
+        <option value="all">The whole song</option>
+        <option value="parts">Just the sung parts</option>
+      </select>
+    </div>
+  </section>
+
+  <section>
+    <h2><b>1</b>MUSIC</h2>
+    <div class="row">
+      <label class="filebtn" style="margin:0;color:var(--ink);font-weight:400">CHOOSE A SONG OR ITS STEMS<input id="file" type="file" accept="audio/*" multiple></label>
+      <button id="demo" type="button">LOAD DAISY BELL DEMO</button>
+    </div>
+    <div id="savedbox" hidden>
+      <span class="label">Saved songs</span>
+      <div id="saved"></div>
+    </div>
+    <div id="clipinfo">NO CLIP LOADED. THE DEMO NEEDS NONE.</div>
+    <div id="stemsbox" hidden>
+      <span class="label">Stems. Mark the vocals the robot should copy</span>
+      <div id="stems"></div>
+    </div>
+    <canvas id="wave" width="560" height="56" hidden aria-label="Song overview. Drag to move through the song"></canvas>
+    <div class="row" id="scrubrow" hidden>
+      <input id="scrub" type="range" min="0" max="1" step="0.05" value="0" aria-label="Position in the song">
+      <output id="scrubt">0.0 S</output>
+    </div>
+    <div class="row" id="marks" hidden>
+      <button id="play" type="button">PLAY</button>
+      <button id="mfrom" type="button">MARK START</button>
+      <button id="mto" type="button">MARK END</button>
+    </div>
+    <div class="dials" id="range" hidden>
+      <div><label for="from">Robot sings from, seconds</label><input id="from" type="number" min="0" step="0.1" inputmode="decimal"></div>
+      <div><label for="to">Until, seconds</label><input id="to" type="number" min="0" step="0.1" inputmode="decimal"></div>
+    </div>
+    <div id="partsbox" hidden>
+      <div class="row">
+        <button id="addpart" type="button">ADD THIS PART</button>
+        <button id="suggest" type="button">SUGGEST PARTS</button>
+        <label for="gap" style="margin:0">Gap, s</label>
+        <input id="gap" type="number" min="1" max="30" step="0.5" value="5" inputmode="decimal" style="width:70px;background:var(--key);color:var(--ink);border:1px solid var(--key-edge);border-radius:4px;padding:10px 8px;font-family:var(--display);font-size:13px">
+      </div>
+      <button id="findall" type="button" hidden style="margin-top:10px;width:100%;background:var(--red);border-color:var(--red);color:#fff">FIND TUNES AND WORDS</button>
+      <div id="parts"></div>
+    </div>
+    <div class="row">
+      <label for="model" style="margin:0">Speech model</label>
+      <select id="model" style="width:auto;flex:1 1 200px">
+        <option value="Xenova/whisper-tiny.en">Tiny, about 40 MB, quickest</option>
+        <option value="Xenova/whisper-base.en" selected>Base, about 80 MB</option>
+        <option value="Xenova/whisper-small.en">Small, about 250 MB, best and slow</option>
+        <option value="">None. I will type the words</option>
+      </select>
+    </div>
+    <button id="analyse" type="button" disabled>FIND THE SELECTED PART AGAIN</button>
+    <p class="note">A new song is searched for singing, and each stretch with singing becomes a suggested part, split wherever there is a gap at least as long as the Gap setting. Delete the ones the robot should not sing, then press FIND TUNES AND WORDS. SUGGEST PARTS searches again. You can also play the song or drag through it to find a part, mark its start and end, and add it yourself. Add as many parts as you like: a chorus, a line here and there, half of a duet. Each part's tune and words are found as soon as you add it; only those parts are analysed. HEAR plays one part with the robot, and each part has its own robot volume. Each part is sung with the original singer unless you switch it to replace them. Songs are saved in this browser as you work. Choose several files at once to load time-aligned stems, such as a Suno stem export: the robot copies the stems marked as vocals, and replacing the singer simply leaves those out. With a single mixed file, slow songs with one clear, unprocessed voice in the middle of a stereo mix work best. Everything runs in your browser, and the speech model downloads once.</p>
+  </section>
+
+  <section>
+    <h2><b>2</b>WORDS</h2>
+    <label for="lyrics">Words for the selected part. Correct them here and they are fitted to the tune as you type</label>
+    <textarea id="lyrics" rows="4" spellcheck="false"></textarea>
+    <button id="respread" type="button">SPREAD THE WORDS EVENLY OVER THE TUNE</button>
+    <p class="note">Words you leave alone keep their timing. A changed word takes over the time of the word it replaces, shared out by syllables, with notes from the singer's pitch there: correct "needed" to "knee deep" and only that slot changes. New words go into the nearest gap. The button above ignores the existing timing and starts again.</p>
+  </section>
+
+  <section>
+    <h2><b>3</b>TIMING</h2>
+    <p class="note" id="timingnote">Select an analysed part to line up its syllables with the singer.</p>
+    <div id="timing" hidden>
+      <canvas id="ed" tabindex="0" aria-label="Timing editor. Arrow keys move the selection, up and down change its note"></canvas>
+      <input id="edpos" type="range" min="0" max="1000" value="0" aria-label="Scroll through the part">
+      <div id="edinfo"></div>
+      <div class="row">
+        <input id="edtext" type="text" autocomplete="off" spellcheck="false" placeholder="retype the selected words" aria-label="Words for the selection" style="flex:1 1 160px;min-width:0" disabled>
+        <button id="edapply" type="button" disabled>CHANGE WORDS</button>
+      </div>
+      <div class="row">
+        <button id="edword" type="button" disabled>SELECT WORD</button>
+        <button id="edprev" type="button" disabled>ADD WORD BEFORE</button>
+        <button id="ednext" type="button" disabled>ADD NEXT WORD</button>
+        <button id="edall" type="button">SELECT ALL</button>
+      </div>
+      <div class="row" id="edlenrow">
+        <label for="edlen" style="margin:0">Syllable length, s</label>
+        <input id="edlen" type="number" min="0.05" max="5" step="0.01" inputmode="decimal" disabled style="width:110px">
+        <button id="edlisten2" type="button" disabled>LISTEN</button>
+      </div>
+      <div class="row">
+        <button id="edplay" type="button">PLAY FROM CURSOR</button>
+        <select id="edlisten" style="width:auto;flex:1 1 170px" aria-label="What to hear">
+          <option value="voice">Singer's voice and robot</option>
+          <option value="song">Song and robot</option>
+          <option value="solo">Singer's voice only</option>
+        </select>
+      </div>
+      <div class="row">
+        <button id="edout" type="button" aria-label="Zoom out">ZOOM OUT</button>
+        <button id="edin" type="button" aria-label="Zoom in">ZOOM IN</button>
+        <button id="edfit" type="button">WHOLE PART</button>
+        <button id="edundo" type="button" disabled>UNDO</button>
+      </div>
+      <p class="note">Drag a syllable sideways to move it, drag its right edge to change its length, or drag it up or down to change its note. Syllables that touch within a word stay joined: moving one slides the join and its neighbour stretches to fit. Drag a word in the word row to move the whole word. To move a phrase, select a syllable, press SELECT WORD, then add the words before or after it (or shift-click words in the word row), and drag any part of the selection. LISTEN plays just the selection. With one syllable selected, the length box sets its length to the hundredth of a second. Tap the waveform to set the cursor, drag it to scroll, and pinch or use the zoom buttons. The faint line is the singer's pitch, and the waveform is their voice split from the music.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><b>4</b>SCORE</h2>
+    <label for="score">One word per line: start time in seconds, word, then a note and its length for each syllable. @ gives a syllable its own start</label>
+    <textarea id="score" rows="9" spellcheck="false" autocapitalize="off"></textarea>
+    <p class="note">Edit any line to fix a note, a time or a word, then press SING. Notes run from C2 to C6, sharps as F#4. Extra notes on a line are slurred on the last syllable.</p>
+  </section>
+
+  <section>
+    <h2><b>5</b>DOWNLOAD</h2>
+    <div class="row">
+      <button id="dlmix" type="button">DOWNLOAD THE MIX</button>
+      <button id="dlrobots" type="button">ROBOTS ONLY</button>
+    </div>
+    <label class="check" for="mp3"><input id="mp3" type="checkbox"> DOWNLOAD AS MP3 (192 KBPS)</label>
+    <p class="note">Makes a WAV file, or an MP3 if ticked, using the mixer settings and the Play setting above. ROBOTS ONLY keeps the same timing with silence where the music was, ready to line up in an audio editor. Three minutes of song is about 30 MB as WAV, or about 4 MB as MP3. The MP3 encoder downloads the first time you use it.</p>
+  </section>
+</main>
+
+<script>
+// The copy in /dev/ keeps its own saved songs and settings, so testing never touches the live page's.
+const IS_DEV = typeof location !== 'undefined' && /\/dev(\/|\/index\.html)?$/.test(location.pathname);
+const APP_ID = IS_DEV ? 'daleksing-dev' : 'daleksing';
+// ---------- voice engine and English-to-sounds ----------
+// t: v vowel, d diphthong, l liquid/glide, n nasal, f fricative, z voiced fricative,
+//    h aspirate, s stop, b voiced stop, a affricate, p pause
+const PH = [
+  {n:'IY', t:'v', f:[270,2290,3010], d:150, ex:'sEE'},
+  {n:'IH', t:'v', f:[390,1990,2550], d:100, ex:'sIt'},
+  {n:'EH', t:'v', f:[530,1840,2480], d:110, ex:'bEd'},
+  {n:'AE', t:'v', f:[660,1720,2410], d:150, ex:'cAt'},
+  {n:'AA', t:'v', f:[730,1090,2440], d:150, ex:'hOt'},
+  {n:'AO', t:'v', f:[570,840,2410],  d:150, ex:'sAW'},
+  {n:'UH', t:'v', f:[440,1020,2240], d:100, ex:'pUt'},
+  {n:'UW', t:'v', f:[300,870,2240],  d:150, ex:'tOO'},
+  {n:'AH', t:'v', f:[640,1190,2390], d:110, ex:'cUp'},
+  {n:'AX', t:'v', f:[500,1500,2500], d:80,  ex:'About'},
+  {n:'ER', t:'v', f:[490,1350,1690], d:150, ex:'hER'},
+  {n:'EY', t:'d', f:[480,1950,2600], g:[310,2200,2850], d:200, ex:'dAY'},
+  {n:'AY', t:'d', f:[730,1150,2440], g:[360,2050,2600], d:220, ex:'mY'},
+  {n:'OY', t:'d', f:[560,850,2400],  g:[360,2000,2600], d:230, ex:'bOY'},
+  {n:'OW', t:'d', f:[560,950,2400],  g:[340,820,2250],  d:200, ex:'gO'},
+  {n:'AW', t:'d', f:[730,1150,2440], g:[400,900,2250],  d:220, ex:'nOW'},
+  {n:'W',  t:'l', f:[300,610,2200],  d:75, ex:'We'},
+  {n:'Y',  t:'l', f:[260,2200,3000], d:75, ex:'Yes'},
+  {n:'R',  t:'l', f:[420,1300,1600], d:85, ex:'Red'},
+  {n:'L',  t:'l', f:[380,1050,2700], d:85, ex:'Let'},
+  {n:'M',  t:'n', f:[280,1000,2200], d:90, ex:'Me'},
+  {n:'N',  t:'n', f:[280,1700,2600], d:85, ex:'No'},
+  {n:'NG', t:'n', f:[280,2300,2750], d:95, ex:'siNG'},
+  {n:'S',  t:'f', q:[5000,2.5], a:.35, d:115, ex:'See'},
+  {n:'SH', t:'f', q:[2700,2],   a:.4,  d:120, ex:'SHe'},
+  {n:'F',  t:'f', q:[4200,.6],  a:.11, d:95,  ex:'Fee'},
+  {n:'TH', t:'f', q:[5200,.8],  a:.09, d:95,  ex:'THin'},
+  {n:'HH', t:'h', d:70, ex:'He'},
+  {n:'Z',  t:'z', f:[250,1700,2600], q:[5000,2.5], a:.2,  d:85, ex:'Zoo'},
+  {n:'ZH', t:'z', f:[250,1900,2500], q:[2700,2],   a:.22, d:90, ex:'viSion'},
+  {n:'V',  t:'z', f:[250,1100,2300], q:[4200,.6],  a:.06, d:75, ex:'Van'},
+  {n:'DH', t:'z', f:[250,1400,2500], q:[5200,.8],  a:.05, d:65, ex:'THe'},
+  {n:'P',  t:'s', q:[700,.7],  a:.5,  ex:'Pie'},
+  {n:'T',  t:'s', q:[4300,1.2],a:.55, ex:'Tie'},
+  {n:'K',  t:'s', q:[2000,2],  a:.6,  ex:'Key'},
+  {n:'B',  t:'b', f:[200,900,2300],  q:[700,.7],   a:.3,  ex:'Bee'},
+  {n:'D',  t:'b', f:[200,1700,2700], q:[4000,1.2], a:.3,  ex:'Do'},
+  {n:'G',  t:'b', f:[200,2100,2400], q:[2000,2],   a:.35, ex:'Go'},
+  {n:'CH', t:'a', v:0,  q:[2700,2], a:.4,  ex:'CHip'},
+  {n:'JH', t:'a', v:.3, q:[2700,2], a:.25, f:[250,1900,2500], ex:'Jam'},
+  {n:'PA',  t:'p', d:40,  ex:'word gap  /'},
+  {n:'PA1', t:'p', d:160, ex:'short pause  ,'},
+  {n:'PA2', t:'p', d:380, ex:'long pause  .'}
+];
+const CODE = {}; PH.forEach((p, i) => CODE[p.n] = i);
+CODE['/'] = CODE.PA; CODE[','] = CODE.PA1; CODE['.'] = CODE.PA2;
+
+// dest: where this voice's sound goes (several voices can share one bus, live or offline).
+function createVoice(ctx, dest = ctx.destination) {
+  const sr = ctx.sampleRate;
+  const nb = ctx.createBuffer(1, sr * 2, sr), ch = nb.getChannelData(0);
+  for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource(); noise.buffer = nb; noise.loop = true;
+  const osc = ctx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.value = 110;
+  const vg = ctx.createGain(), ag = ctx.createGain(), fg = ctx.createGain(), mix = ctx.createGain();
+  vg.gain.value = 0; ag.gain.value = 0; fg.gain.value = 0;
+  const ff = ctx.createBiquadFilter(); ff.type = 'bandpass';
+  const F = [0, 1, 2].map(i => {
+    const b = ctx.createBiquadFilter(); b.type = 'bandpass';
+    b.Q.value = [6, 9, 11][i]; b.frequency.value = [500, 1500, 2500][i];
+    const g = ctx.createGain(); g.gain.value = [1, .8, .45][i];
+    vg.connect(b); ag.connect(b); b.connect(g); g.connect(mix);
+    return b;
+  });
+  osc.connect(vg); noise.connect(ag); noise.connect(ff); ff.connect(fg); fg.connect(mix);
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 6000;
+  const out = ctx.createGain(); out.gain.value = 1.6;
+  // ring modulator: multiplies the voice by a 30 Hz sine, the classic 1960s TV robot effect
+  const ring = ctx.createGain(); ring.gain.value = 1;
+  const ringOsc = ctx.createOscillator(); ringOsc.frequency.value = 30;
+  const ringDepth = ctx.createGain(); ringDepth.gain.value = 0;
+  ringOsc.connect(ringDepth); ringDepth.connect(ring.gain);
+  const comp = ctx.createDynamicsCompressor();
+  // Volume controls come after the compressor, so it cannot even them out again.
+  const trim = ctx.createGain(); trim.gain.value = 0.7;       // headroom: one voice peaks well below full scale
+  const vol = ctx.createGain(); vol.gain.value = 1;           // this voice's volume
+  const lvl = ctx.createGain(); lvl.gain.value = 1;           // per-part level, automated while singing
+  const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+  mix.connect(lp); lp.connect(out); out.connect(ring); ring.connect(comp); comp.connect(trim); trim.connect(vol); vol.connect(lvl);
+  if (pan) { lvl.connect(pan); pan.connect(dest); } else lvl.connect(dest);
+  osc.start(); noise.start(); ringOsc.start();
+
+  const params = [vg.gain, ag.gain, fg.gain, ff.frequency, ff.Q, osc.frequency, lvl.gain, ring.gain, ringDepth.gain, ...(pan ? [pan.pan] : []), ...F.map(b => b.frequency)];
+  const form = (f, t, tau) => F.forEach((b, i) => b.frequency.setTargetAtTime(f[i], t, tau));
+  const voice = (g, t, tau = .012) => vg.gain.setTargetAtTime(g, t, tau);
+  const asp = (g, t, tau = .01) => ag.gain.setTargetAtTime(g, t, tau);
+  const fric = (g, t, tau = .01) => fg.gain.setTargetAtTime(g, t, tau);
+  const fset = (q, t) => { ff.frequency.setValueAtTime(q[0], t); ff.Q.setValueAtTime(q[1], t); };
+
+  function stop() {
+    const now = ctx.currentTime;
+    params.forEach(p => { p.cancelScheduledValues(now); p.setValueAtTime(p.value, now); });
+    [vg, ag, fg].forEach(g => g.gain.setTargetAtTime(0, now, .005));
+  }
+  // Schedules one sound at time t lasting d seconds (stops ignore d). k below 1 squeezes it. Returns the end time.
+  function one(p, nx, t, d, k) {
+    const c = .055 * k;
+    switch (p.t) {
+      case 'v': form(p.f, t, .022 * k); voice(1, t); asp(0, t); fric(0, t); return t + d;
+      case 'd': {
+        const glide = d > .3 ? d - .14 : d * .4;                     // when held, the glide comes late, as sung
+        form(p.f, t, .022 * k); form(p.g, t + glide, Math.min(d * .2, .04)); voice(1, t); asp(0, t); fric(0, t); return t + d;
+      }
+      case 'l': form(p.f, t, .028 * k); voice(.8, t); asp(0, t); fric(0, t); return t + d;
+      case 'n': form(p.f, t, .015 * k); voice(.5, t); asp(0, t); fric(0, t); return t + d;
+      case 'f': voice(0, t, .008); asp(0, t); fset(p.q, t); fric(p.a, t); return t + d;
+      case 'z': form(p.f, t, .02 * k); voice(.45, t); asp(0, t); fset(p.q, t); fric(p.a, t); return t + d;
+      case 'h': if (nx && nx.f) form(nx.f, t, .01); voice(0, t, .008); fric(0, t); asp(1.4, t); return t + d;
+      case 's': {
+        voice(0, t, .005); asp(0, t, .005); fric(0, t, .005);
+        const tb = t + c; fset(p.q, tb);
+        fric(p.a, tb, .002); fric(0, tb + .012, .006);
+        asp(0.9, tb + .012, .005); asp(0, tb + .04, .008);
+        return tb + .05;
+      }
+      case 'b': {
+        form(p.f, t, .012); voice(.14, t, .006); asp(0, t, .005); fric(0, t, .005);
+        const tb = t + c; fset(p.q, tb);
+        fric(p.a, tb, .002); fric(0, tb + .008, .005);
+        return tb + .016;
+      }
+      case 'a': {
+        if (p.f) form(p.f, t, .012);
+        voice(p.v ? .14 : 0, t, .005); asp(0, t, .005); fric(0, t, .005);
+        const tb = t + c; fset(p.q, tb);
+        fric(p.a, tb, .003); voice(p.v, tb, .01);
+        return tb + .085 * k;
+      }
+      default: voice(0, t, .01); asp(0, t); fric(0, t); return t + d;
+    }
+  }
+  const plainDur = p => p.t === 's' ? .105 : p.t === 'b' ? .071 : p.t === 'a' ? .14 : (p.d || 0) / 1000;
+
+  // Plain speech. seq: array of sound codes.
+  function speak(seq, opt = {}) {
+    stop();
+    const k = 1 / (opt.speed || 1), t0 = ctx.currentTime + .06;
+    let t = t0; const times = [];
+    osc.frequency.setValueAtTime(opt.pitch || 110, t0);
+    for (let i = 0; i < seq.length; i++) {
+      const p = PH[seq[i]]; if (!p) continue;
+      times.push(t - t0);
+      t = one(p, PH[seq[i + 1]], t, (p.d || 0) * k / 1000, k);
+    }
+    voice(0, t, .015); asp(0, t); fric(0, t);
+    return { times, dur: t - t0 + .08 };
+  }
+
+  // Singing. events: [{ seq, start, dur, f, bends:[{at, f}], level, ring, pan }], one per syllable, times in seconds.
+  // ring and pan, when given, switch at the syllable, so one voice can sound different in different parts.
+  // opt: at (start time), transpose (frequency ratio), detune (cents).
+  // The vowel is stretched to fill the note; consonants keep their length, squeezed only on short notes.
+  function sing(events, opt = {}) {
+    stop();
+    const t0 = opt.at != null ? opt.at : ctx.currentTime + .1, tr = (opt.transpose || 1) * Math.pow(2, (opt.detune || 0) / 1200);
+    lvl.gain.setValueAtTime(events.length && events[0].level != null ? events[0].level : 1, Math.max(ctx.currentTime, t0 - .05));
+    let t = t0; const times = [];
+    for (const ev of events) {
+      const st = t0 + ev.start, en = st + ev.dur;
+      if (st > t + .02) { voice(0, t, .015); asp(0, t); fric(0, t); t = st; }      // a rest
+      times.push(t - t0);
+      lvl.gain.setTargetAtTime(ev.level != null ? ev.level : 1, Math.max(t0, t - .02), .02);
+      const sw = Math.max(t0, t - .005);
+      if (ev.ring != null) { ring.gain.setValueAtTime(ev.ring ? 0 : 1, sw); ringDepth.gain.setValueAtTime(ev.ring ? 1.4 : 0, sw); }
+      if (ev.pan != null && pan) pan.pan.setValueAtTime(Math.max(-1, Math.min(1, ev.pan)), sw);
+      osc.frequency.setTargetAtTime(ev.f * tr, Math.max(t0, t - .01), .012);
+      (ev.bends || []).forEach(b => osc.frequency.setTargetAtTime(b.f * tr, st + b.at, .02));
+      const ps = ev.seq.map(c => PH[c]).filter(p => p && p.t !== 'p');
+      let ni = ps.findIndex(p => p.t === 'v' || p.t === 'd');
+      if (ni < 0) ni = ps.findIndex(p => p.t === 'l' || p.t === 'n' || p.t === 'z');
+      const avail = Math.max(.05, en - t);
+      const fixed = ps.reduce((a, p, i) => a + (i === ni ? 0 : plainDur(p)), 0);
+      const k = fixed > 0 ? Math.min(1, avail * (ni < 0 ? 1 : .6) / fixed) : 1;
+      const coda = ni < 0 ? 0 : ps.slice(ni + 1).reduce((a, p) => a + plainDur(p), 0) * k;
+      ps.forEach((p, i) => {
+        const d = i === ni ? Math.max(.04, en - t - coda) : (p.d || 0) * k / 1000;
+        t = one(p, ps[i + 1], t, d, k);
+      });
+    }
+    voice(0, t, .03); asp(0, t); fric(0, t);
+    return { t0, times, dur: t - t0 + .1 };
+  }
+  return {
+    speak, sing, stop, tap: comp,
+    setVolume: v => { vol.gain.cancelScheduledValues(0); vol.gain.setValueAtTime(v, ctx.currentTime); },
+    setPan: x => { if (pan) pan.pan.value = Math.max(-1, Math.min(1, x)); },
+    setRing: on => { ring.gain.setValueAtTime(on ? 0 : 1, ctx.currentTime); ringDepth.gain.setValueAtTime(on ? 1.4 : 0, ctx.currentTime); }
+  };
+}
+
+// ---------- English to sounds ----------
+const DICT = {};
+(`the DH AX|a AX|an AE N|and AE N D|of AH V|to T UW|too T UW|two T UW|i AY|im AY M|you Y UW|your Y AO R|youre Y AO R
+are AA R|is IH Z|was W AH Z|as AE Z|his HH IH Z|has HH AE Z|have HH AE V|having HH AE V IH NG|do D UW|does D AH Z
+doing D UW IH NG|done D AH N|dont D OW N T|one W AH N|once W AH N S|four F AO R|fourteen F AO R T IY N|eight EY T
+ninety N AY N T IY|nineteen N AY N T IY N|eleven IH L EH V AX N|hundred HH AH N D R AX D|thousand TH AW Z AX N D
+said S EH D|says S EH Z|what W AH T|who HH UW|where W EH R|there DH EH R|their DH EH R|they DH EY|them DH EH M
+then DH EH N|than DH AE N|that DH AE T|this DH IH S|these DH IY Z|those DH OW Z|with W IH DH|other AH DH ER
+mother M AH DH ER|father F AA DH ER|brother B R AH DH ER|could K UH D|would W UH D|should SH UH D
+hello HH EH L OW|computer K AX M P Y UW T ER|computers K AX M P Y UW T ER Z|claude K L AO D|from F R AH M
+some S AH M|come K AH M|coming K AH M IH NG|any EH N IY|many M EH N IY|people P IY P AX L|because B IH K AH Z
+been B IH N|were W ER|want W AA N T|water W AO T ER|world W ER L D|work W ER K|word W ER D|words W ER D Z
+know N OW|now N AW|how HH AW|only OW N L IY|love L AH V|give G IH V|live L IH V|here HH IY R|sure SH UH R
+friend F R EH N D|machine M AX SH IY N|human HH Y UW M AX N|voice V OY S|ok OW K EY|okay OW K EY|hi HH AY
+oh OW|get G EH T|good G UH D|great G R EY T|today T AX D EY|yes Y EH S|us AH S|put P UH T|into IH N T UW
+over OW V ER|very V EH R IY|every EH V R IY|ever EH V ER|never N EH V ER|about AX B AW T|again AX G EH N
+also AO L S OW|robot R OW B AA T|data D EY T AX|ready R EH D IY|program P R OW G R AE M|memory M EH M ER IY
+error EH R ER|system S IH S T AX M|through TH R UW|though DH OW|zero Z IY R OW|girl G ER L|begin B IH G IH N
+together T AX G EH DH ER|forget F ER G EH T|sorry S AA R IY|dave D EY V|cannot K AE N AA T|open OW P AX N
+door D AO R|doors D AO R Z|game G EY M|play P L EY|chatterbox CH AE T ER B AA K S|sinclair S IH N K L EH R
+talk T AO K|speak S P IY K|speech S P IY CH|think TH IH NG K|thing TH IH NG|something S AH M TH IH NG
+our AW ER|hour AW ER|year Y IY R|years Y IY R Z|new N Y UW|day D EY|be B IY|me M IY|we W IY|he HH IY|she SH IY
+no N OW|go G OW|so S OW|my M AY|by B AY|why W AY|if IH F|it IH T|its IH T S|in IH N|on AA N|at AE T|or AO R
+for F AO R|not N AA T|but B AH T|can K AE N|will W IH L|am AE M|up AH P|out AW T|like L AY K|time T AY M`)
+  .split(/[|\n]/).forEach(e => { const p = e.trim().split(' '); if (p[0]) DICT[p[0]] = p.slice(1); });
+const LETTER = {};
+(`a EY|b B IY|c S IY|d D IY|e IY|f EH F|g JH IY|h EY CH|i AY|j JH EY|k K EY|l EH L|m EH M|n EH N|o OW|p P IY|q K Y UW
+r AA R|s EH S|t T IY|u Y UW|v V IY|w D AH B AX L Y UW|x EH K S|y W AY|z Z EH D`)
+  .split(/[|\n]/).forEach(e => { const p = e.trim().split(' '); LETTER[p[0]] = p.slice(1); });
+
+const ONES = 'zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen'.split(' ');
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+function numWords(n) {
+  if (n < 20) return ONES[n];
+  if (n < 100) return TENS[n / 10 | 0] + (n % 10 ? ' ' + ONES[n % 10] : '');
+  if (n < 1000) return ONES[n / 100 | 0] + ' hundred' + (n % 100 ? ' ' + numWords(n % 100) : '');
+  return String(n).split('').map(d => ONES[+d]).join(' ');
+}
+function expandNumbers(s) {
+  return s
+    .replace(/(\d\d)([2-9])0s\b/g, (m, a, b) => ' ' + numWords(+a) + ' ' + TENS[+b].slice(0, -1) + 'ies ')
+    .replace(/\b([2-9])0s\b/g, (m, b) => ' ' + TENS[+b].slice(0, -1) + 'ies ')
+    .replace(/\b(1\d|20)(\d\d)\b/g, (m, a, b) => ' ' + numWords(+a) + ' ' + (+b === 0 ? 'hundred' : +b < 10 ? 'oh ' + ONES[+b] : numWords(+b)) + ' ')
+    .replace(/\d+/g, m => ' ' + (m.length > 1 && m[0] === '0' ? m.split('').map(d => ONES[+d]).join(' ') : numWords(+m)) + ' ');
+}
+
+const VOW = 'aeiou';
+const isV = c => !!c && VOW.includes(c);
+const isC = c => !!c && /[a-z]/.test(c) && !VOW.includes(c);
+// [letters, sounds, where] where: 's' start, 'e' end, 'm' not at start, 'c' next letter is not a vowel
+const GRAPH = [
+  ['tion','SH AX N','m'], ['sion','ZH AX N','m'], ['ture','CH ER','me'], ['ment','M AX N T','me'], ['ness','N AX S','me'],
+  ['able','AX B AX L','me'], ['ible','AX B AX L','me'], ['tive','T IH V','me'], ['ous','AX S','me'], ['age','IH JH','me'],
+  ['ful','F AX L','me'], ['ight','AY T'], ['ough','AO'], ['augh','AO'], ['eigh','EY'], ['igh','AY'], ['tch','CH'],
+  ['dge','JH'], ['nge','N JH','e'], ['ing','IH NG','e'], ['ind','AY N D','e'], ['old','OW L D'], ['all','AO L'], ['alk','AO K'],
+  ['air','EH R'], ['ear','IY R'], ['eer','IY R'], ['are','EH R','me'], ['ore','AO R'], ['oor','AO R'], ['our','AW ER'],
+  ['kn','N','s'], ['wr','R','s'], ['mb','M','e'], ['le','AX L','me'], ['en','AX N','me'], ['el','AX L','me'], ['al','AX L','me'],
+  ['ch','CH'], ['sh','SH'], ['ph','F'], ['th','TH'], ['wh','W'], ['ck','K'], ['qu','K W'], ['ng','NG'], ['nk','NG K'], ['gh',''],
+  ['ee','IY'], ['ea','IY'], ['oo','UW'], ['ou','AW'], ['oi','OY'], ['oy','OY'], ['ai','EY'], ['ay','EY'], ['au','AO'],
+  ['aw','AO'], ['oa','OW'], ['ie','IY'], ['ei','EY'], ['ey','IY','e'], ['ew','Y UW'], ['ue','UW','e'],
+  ['ar','AA R','c'], ['or','AO R'], ['er','ER','c'], ['ir','ER','c'], ['ur','ER','c']
+];
+const LONG = { a: 'EY', e: 'IY', i: 'AY', o: 'OW', u: 'Y UW' };
+const SHORT = { a: 'AE', e: 'EH', i: 'IH', o: 'AA', u: 'AH' };
+const CONS = { b:'B', d:'D', f:'F', h:'HH', j:'JH', k:'K', l:'L', m:'M', n:'N', p:'P', q:'K', r:'R', t:'T', v:'V', w:'W', x:'K S', z:'Z' };
+
+function wordToSounds(w) {
+  if (DICT[w]) return DICT[w].slice();
+  if (w.length === 1) return (LETTER[w] || []).slice();
+  if (!/[aeiouy]/.test(w) && w.length <= 5) return w.split('').flatMap(c => LETTER[c] || []);
+  const n = w.length, out = [];
+  const add = s => { if (s) out.push(...s.split(' ')); };
+  const vowelBefore = i => /[aeiouy]/.test(w.slice(0, i));
+  let i = 0;
+  outer: while (i < n) {
+    const c = w[i], nx = w[i + 1] || '', n2 = w[i + 2] || '', pv = w[i - 1] || '', rest = w.slice(i);
+    // word endings
+    if (rest === 'ed' && isC(pv) && vowelBefore(i - 1)) { add('td'.includes(pv) ? 'IH D' : 'pkfsxh'.includes(pv) ? 'T' : 'D'); break; }
+    if (rest === 'es' && vowelBefore(i)) { add('sxzcgh'.includes(pv) ? 'IH Z' : 'ptkf'.includes(pv) ? 'S' : 'Z'); break; }
+    for (const [g, s, wh = ''] of GRAPH) {
+      if (!rest.startsWith(g)) continue;
+      if (wh.includes('s') && i !== 0) continue;
+      if (wh.includes('m') && (i === 0 || !vowelBefore(i))) continue;
+      if (wh.includes('e') && i + g.length !== n) continue;
+      if (wh.includes('c') && isV(w[i + g.length])) continue;
+      add(s); i += g.length; continue outer;
+    }
+    if (isV(c)) {
+      const tail = w.slice(i + 2);
+      const magic = isC(nx) && !'xw'.includes(nx) && (tail === 'e' || tail === 'es' || tail === 'ed' || tail === 'ing');
+      if (magic) add(c === 'u' && 'rlj'.includes(pv) ? 'UW' : LONG[c]);
+      else if (c === 'e' && i === n - 1) { if (!vowelBefore(i)) add('IY'); }
+      else if (c === 'a' && i === n - 1) add('AX');
+      else if (c === 'o' && i === n - 1) add('OW');
+      else if (c === 'i' && i === n - 1) add('IY');
+      else add(SHORT[c]);
+      i++; continue;
+    }
+    if (c === nx && c !== 'c') { i++; continue; }            // doubled consonant
+    if (c === 'c') add('eiy'.includes(nx) && nx ? 'S' : 'K');
+    else if (c === 'g') add('eiy'.includes(nx) && nx ? 'JH' : 'G');
+    else if (c === 's') {
+      if (i === n - 1) add(isC(pv) && !'ptkfs'.includes(pv) || 'ey'.includes(pv) ? 'Z' : 'S');
+      else add(isV(pv) && isV(nx) ? 'Z' : 'S');
+    }
+    else if (c === 'y') add(i === 0 ? 'Y' : i === n - 1 ? (vowelBefore(i) ? 'IY' : 'AY') : 'IH');
+    else if (c === 'h') { if (!(i === n - 1 && isV(pv))) add('HH'); }
+    else add(CONS[c] || '');
+    i++;
+  }
+  return out;
+}
+
+// Returns a string such as "HH EH L OW . AY / AE M"
+function textToCodes(text) {
+  const s = expandNumbers(text.toLowerCase().replace(/[’']/g, ''));
+  const parts = [];
+  const re = /([a-z]+)|([.!?]+)|([,;:—–()\n-]+)/g;
+  let m, last = '';
+  while ((m = re.exec(s))) {
+    if (m[1]) {
+      const ph = wordToSounds(m[1]);
+      if (!ph.length) continue;
+      if (last === 'w') parts.push('/');
+      parts.push(ph.join(' ')); last = 'w';
+    } else if (last === 'w') { parts.push(m[2] ? '.' : ','); last = 'p'; }
+  }
+  return parts.join(' ');
+}
+function parseCodes(str) {
+  const seq = [], bad = [];
+  str.toUpperCase().replace(/([/,.])/g, ' $1 ').split(/\s+/).forEach(tok => {
+    if (!tok) return;
+    if (/^\d+$/.test(tok) && PH[+tok]) seq.push(+tok);
+    else if (tok in CODE) seq.push(CODE[tok]);
+    else bad.push(tok);
+  });
+  return { seq, bad };
+}
+
+// ---------- signal processing (no page access, so it can be tested on its own) ----------
+/*DSP*/
+function makeFFT(N) {
+  const rev = new Uint32Array(N), cos = new Float64Array(N / 2), sin = new Float64Array(N / 2);
+  let bits = 0; while ((1 << bits) < N) bits++;
+  for (let i = 0; i < N; i++) { let r = 0; for (let b = 0; b < bits; b++) r |= ((i >> b) & 1) << (bits - 1 - b); rev[i] = r; }
+  for (let i = 0; i < N / 2; i++) { cos[i] = Math.cos(2 * Math.PI * i / N); sin[i] = Math.sin(2 * Math.PI * i / N); }
+  return function fft(re, im, inverse) {
+    for (let i = 0; i < N; i++) { const r = rev[i]; if (r > i) { let t = re[i]; re[i] = re[r]; re[r] = t; t = im[i]; im[i] = im[r]; im[r] = t; } }
+    for (let size = 2; size <= N; size <<= 1) {
+      const half = size >> 1, step = N / size;
+      for (let s = 0; s < N; s += size) for (let j = 0, k = 0; j < half; j++, k += step) {
+        const wr = cos[k], wi = inverse ? sin[k] : -sin[k];
+        const a = s + j, b = a + half, xr = re[b] * wr - im[b] * wi, xi = re[b] * wi + im[b] * wr;
+        re[b] = re[a] - xr; im[b] = im[a] - xi; re[a] += xr; im[a] += xi;
+      }
+    }
+    if (inverse) for (let i = 0; i < N; i++) { re[i] /= N; im[i] /= N; }
+  };
+}
+const MIDI_LO = 40, MIDI_HI = 84, STEPS = 4;                       // pitch candidates, quarter-semitone grid
+const NCAND = (MIDI_HI - MIDI_LO) * STEPS + 1;
+const midiHz = m => 440 * Math.pow(2, (m - 69) / 12);
+const hzMidi = f => 69 + 12 * Math.log2(f / 440);
+const tick = () => new Promise(r => setTimeout(r, 0));
+
+// Splits a stereo clip into "centre" (what is identical in both ears: usually the lead vocal) and the rest.
+// Returns the centre audio, the music with the centre removed, and a pitch-salience table for the centre.
+// energyOnly: skip rebuilding the audio (fast, little memory) and return each frame's centre energy instead.
+async function splitClip(L, R, sr, onProgress, energyOnly) {
+  const n = L.length;
+  let diff = 0, tot = 0;
+  if (R) for (let i = 0; i < n; i += 7) { const d = L[i] - R[i]; diff += d * d; tot += L[i] * L[i] + R[i] * R[i]; }
+  const stereo = !!R && tot > 0 && diff / tot > 1e-4;
+  const N = sr > 30000 ? 4096 : 2048, hop = N / 4, fft = makeFFT(N), half = N / 2;
+  const win = new Float64Array(N); for (let i = 0; i < N; i++) win[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / N);
+  const frames = Math.max(1, Math.ceil((n - N) / hop) + 1);
+  const centre = energyOnly ? null : new Float32Array(n), norm = energyOnly ? null : new Float32Array(n), energy = new Float32Array(frames);
+  const sal = new Float32Array(frames * NCAND);
+  const lr = new Float64Array(N), li = new Float64Array(N), rr = new Float64Array(N), ri = new Float64Array(N);
+  const mag = new Float32Array(half + 1);
+  const binHz = sr / N, loCut = 110 / binHz, loFull = 190 / binHz;
+  const candBin = new Float32Array(NCAND);
+  for (let c = 0; c < NCAND; c++) candBin[c] = midiHz(MIDI_LO + c / STEPS) / binHz;
+  const HW = [1, .85, .72, .61, .52, .44, .37, .32], maxBin = Math.min(half - 1, 5000 / binHz);
+  for (let f = 0; f < frames; f++) {
+    const off = f * hop;
+    for (let i = 0; i < N; i++) {
+      const j = off + i, w = win[i];
+      lr[i] = j < n ? L[j] * w : 0; li[i] = 0;
+      rr[i] = j < n ? (stereo ? R[j] : L[j]) * w : 0; ri[i] = 0;
+    }
+    fft(lr, li, false);
+    if (stereo) fft(rr, ri, false);
+    for (let k = 0; k <= half; k++) {
+      let cr, ci;
+      if (stereo) {
+        const a = lr[k], b = li[k], c = rr[k], d = ri[k];
+        const pw = a * a + b * b + c * c + d * d;
+        let sim = pw > 1e-18 ? 2 * (a * c + b * d) / pw : 0;        // 1 when both ears match exactly
+        if (sim < 0) sim = 0;
+        const m = sim * sim * sim * sim;
+        cr = m * (a + c) / 2; ci = m * (b + d) / 2;
+      } else { cr = lr[k]; ci = li[k]; }
+      const band = k <= loCut ? 0 : k >= loFull ? 1 : (k - loCut) / (loFull - loCut);   // leave the bass alone
+      cr *= band; ci *= band;
+      energy[f] += cr * cr + ci * ci;
+      mag[k] = Math.sqrt(Math.sqrt(cr * cr + ci * ci));              // compressed, so loud partials do not swamp
+      lr[k] = cr; li[k] = ci;
+      if (k > 0 && k < half) { lr[N - k] = cr; li[N - k] = -ci; }
+    }
+    // pitch salience: add up the centre's energy at each candidate note's harmonics
+    for (let c = 0; c < NCAND; c++) {
+      let s = 0;
+      for (let h = 1; h <= 8; h++) {
+        const x = candBin[c] * h; if (x >= maxBin) break;
+        const i0 = x | 0, fr = x - i0;
+        s += HW[h - 1] * (mag[i0] * (1 - fr) + mag[i0 + 1] * fr);
+      }
+      sal[f * NCAND + c] = s;
+    }
+    if (!energyOnly) {
+      fft(lr, li, true);
+      for (let i = 0; i < N; i++) { const j = off + i; if (j < n) { centre[j] += lr[i] * win[i]; norm[j] += win[i] * win[i]; } }
+    }
+    if (onProgress && f % 60 === 0) { onProgress(f / frames); await tick(); }
+  }
+  if (energyOnly) return { stereo, sal, frames, hopSec: hop / sr, energy };
+  for (let j = 0; j < n; j++) if (norm[j] > 1e-6) centre[j] /= norm[j];
+  let instL = L, instR = R || L;
+  if (stereo) {
+    instL = new Float32Array(n); instR = new Float32Array(n);
+    for (let j = 0; j < n; j++) { instL[j] = L[j] - centre[j]; instR[j] = R[j] - centre[j]; }
+  }
+  return { stereo, centre, instL, instR, sal, frames, hopSec: hop / sr };
+}
+
+// Picks the most likely tune through the salience table: prefers loud, steady notes and small steps.
+function trackPitch(sal, frames) {
+  const fmax = new Float32Array(frames);
+  for (let f = 0; f < frames; f++) { let m = 0; for (let c = 0; c < NCAND; c++) if (sal[f * NCAND + c] > m) m = sal[f * NCAND + c]; fmax[f] = m; }
+  const g = Float32Array.from(fmax).sort()[Math.floor(frames * 0.9)] || 1;
+  const UNV = NCAND, S = NCAND + 1, W = 3 * STEPS;
+  const STEP = 0.035, JUMP = 0.55, SILENT = 0.62, SWITCH = 0.35;
+  let prev = new Float32Array(S), cur = new Float32Array(S);
+  const back = new Int16Array(frames * S);
+  for (let f = 0; f < frames; f++) {
+    let bestPrev = 0;
+    for (let c = 1; c < NCAND; c++) if (prev[c] < prev[bestPrev]) bestPrev = c;
+    for (let c = 0; c < NCAND; c++) {
+      let best = prev[bestPrev] + JUMP, bi = bestPrev;
+      const lo = Math.max(0, c - W), hi = Math.min(NCAND - 1, c + W);
+      for (let p = lo; p <= hi; p++) { const v = prev[p] + STEP * Math.abs(p - c); if (v < best) { best = v; bi = p; } }
+      if (prev[UNV] + SWITCH < best) { best = prev[UNV] + SWITCH; bi = UNV; }
+      cur[c] = best + (1 - Math.min(1, sal[f * NCAND + c] / g));
+      back[f * S + c] = bi;
+    }
+    let best = prev[UNV], bi = UNV;
+    if (prev[bestPrev] + SWITCH < best) { best = prev[bestPrev] + SWITCH; bi = bestPrev; }
+    cur[UNV] = best + SILENT; back[f * S + UNV] = bi;
+    const t = prev; prev = cur; cur = t;
+  }
+  let s = 0; for (let c = 1; c < S; c++) if (prev[c] < prev[s]) s = c;
+  const midi = new Float32Array(frames);
+  for (let f = frames - 1; f >= 0; f--) { midi[f] = s === UNV ? NaN : MIDI_LO + s / STEPS; s = back[f * S + s]; }
+  return midi;
+}
+
+// Turns the frame-by-frame tune into notes of a whole semitone each.
+function notesFromTrack(midi, hopSec, minLen = 0.09) {
+  const notes = []; let cur = null;
+  for (let f = 0; f <= midi.length; f++) {
+    const m = f < midi.length && !isNaN(midi[f]) ? Math.round(midi[f]) : null;
+    if (cur && m === cur.midi) continue;
+    if (cur) { cur.dur = f * hopSec - cur.start; if (cur.dur >= minLen) notes.push(cur); cur = null; }
+    if (m !== null) cur = { start: f * hopSec, midi: m, dur: 0 };
+  }
+  // join a note to its neighbour when a short blip split them
+  const out = [];
+  for (const nt of notes) {
+    const last = out[out.length - 1];
+    if (last && last.midi === nt.midi && nt.start - (last.start + last.dur) < 0.08) last.dur = nt.start + nt.dur - last.start;
+    else out.push(nt);
+  }
+  return out;
+}
+function medianPitch(midi, hopSec, t0, t1) {
+  const a = [];
+  for (let f = Math.max(0, Math.floor(t0 / hopSec)); f < Math.min(midi.length, Math.ceil(t1 / hopSec)); f++) if (!isNaN(midi[f])) a.push(midi[f]);
+  if (!a.length) return null;
+  a.sort((x, y) => x - y);
+  return Math.round(a[a.length >> 1]);
+}
+// Where the voice actually sounds inside a time span: from its first voiced moment to the first real gap after it.
+// Speech models often stretch a word's end across a pause; this pulls it back. Returns null if no voice is found.
+function voicedSpan(midi, hopSec, t0, t1, gap = 0.18) {
+  const a = Math.max(0, Math.floor(t0 / hopSec)), b = Math.min(midi.length, Math.ceil(t1 / hopSec));
+  let first = -1, last = -1;
+  for (let f = a; f < b; f++) {
+    if (!isNaN(midi[f])) { if (first < 0) first = f; last = f; }
+    else if (first >= 0 && (f - last) * hopSec >= gap) break;
+  }
+  return first < 0 ? null : { start: first * hopSec, end: (last + 1) * hopSec };
+}
+function resampleTo(x, sr, target) {
+  const ratio = sr / target, n = Math.floor(x.length / ratio), out = new Float32Array(n), w = Math.max(1, Math.round(ratio));
+  for (let i = 0; i < n; i++) {
+    const c = Math.floor(i * ratio); let s = 0, k = 0;
+    for (let j = c; j < c + w && j < x.length; j++) { s += x[j]; k++; }
+    out[i] = k ? s / k : 0;
+  }
+  return out;
+}
+
+// ---------- words, syllables and the score ----------
+const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const noteName = m => NOTE_NAMES[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
+function noteMidi(s) {
+  const m = /^([A-Ga-g])([#b]?)(-?\d)$/.exec(s); if (!m) return null;
+  const base = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1].toUpperCase()];
+  return base + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0) + (+m[3] + 1) * 12;
+}
+const isNucleus = c => PH[c] && (PH[c].t === 'v' || PH[c].t === 'd');
+// Splits a word's sounds into syllables, one vowel each.
+function syllables(seq) {
+  const nuc = []; seq.forEach((c, i) => { if (isNucleus(c)) nuc.push(i); });
+  if (nuc.length < 2) return seq.length ? [seq] : [];
+  const out = []; let start = 0;
+  for (let k = 1; k < nuc.length; k++) {
+    const between = nuc[k] - nuc[k - 1] - 1;
+    const cut = between === 0 ? nuc[k] : nuc[k] - 1;      // the last consonant starts the next syllable
+    out.push(seq.slice(start, cut)); start = cut;
+  }
+  out.push(seq.slice(start));
+  return out;
+}
+const cleanWord = w => String(w).toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9]/g, '');
+function soundsOf(word) {
+  const codes = textToCodes(word).replace(/[\/,.]/g, ' ');
+  return parseCodes(codes).seq.filter(c => PH[c].t !== 'p');
+}
+const r2 = x => (Math.round(x * 100) / 100).toFixed(2);
+// One syllable per note, in order. Notes left over at the end are dropped; words left over are too.
+function fitWordsToNotes(words, notes) {
+  const lines = []; let ni = 0;
+  for (const w of words) {
+    const n = Math.max(1, syllables(soundsOf(w)).length);
+    if (ni >= notes.length) break;
+    const mine = notes.slice(ni, ni + n); ni += n;
+    lines.push(r2(mine[0].start) + ' ' + w + ' ' + mine.map((x, j) => noteName(x.midi) + ':' + r2(x.dur) +
+      (j && x.start - (mine[j - 1].start + mine[j - 1].dur) > 0.02 ? '@' + r2(x.start) : '')).join(' '));
+  }
+  return { text: lines.join('\n'), usedNotes: Math.min(ni, notes.length), usedWords: lines.length };
+}
+// Words with their own start and end times (from the speech model) take their pitch straight from the tune.
+function fitTimedWords(timed, midi, hopSec, offset = 0) {
+  const ws = timed.map(w => ({ word: cleanWord(w.text), t0: w.t0, t1: w.t1 })).filter(w => w.word);
+  // where the singer's notes begin: a voice starting, or the pitch moving by a semitone or more
+  const onsets = []; let prev = NaN;
+  for (let f = 0; f < midi.length; f++) { const m = midi[f]; if (!isNaN(m) && (isNaN(prev) || Math.abs(Math.round(m) - Math.round(prev)) >= 1)) onsets.push(f * hopSec); prev = m; }
+  const lines = []; let lastPitch = 57, floor = 0;
+  ws.forEach((w, i) => {
+    const word = w.word, n = Math.max(1, syllables(soundsOf(word)).length), next = ws[i + 1];
+    let t0 = Math.max(w.t0, floor), t1 = Math.max(w.t1, t0 + 0.05);
+    const v = voicedSpan(midi, hopSec, t0, t1);
+    if (!v) {
+      // speech models often put a word, especially the first, before the singing starts: look ahead for the voice
+      const look = voicedSpan(midi, hopSec, t0, Math.max(next ? next.t1 : t1 + 1.5, t1 + 0.5));
+      if (look) { const d = t1 - t0; t0 = look.start; t1 = Math.min(look.end, t0 + Math.max(d, 0.25 * n)); }
+      else t1 = Math.min(t1, t0 + 0.3 * n);               // no voice anywhere near: keep it short
+    } else { if (v.start > t0 + 0.05) t0 = v.start; if (v.end < t1 - 0.1) t1 = v.end; }
+    let snap = null;                                       // start on a note that begins close by
+    for (const o of onsets) if (o >= floor && Math.abs(o - t0) <= 0.12 && (snap === null || Math.abs(o - t0) < Math.abs(snap - t0))) snap = o;
+    if (snap !== null) t0 = snap;
+    t1 = Math.max(t1, t0 + 0.12 * n);
+    floor = t1;
+    const each = (t1 - t0) / n, parts = [];
+    for (let k = 0; k < n; k++) {
+      let pm = medianPitch(midi, hopSec, t0 + k * each, t0 + (k + 1) * each);
+      if (pm === null) pm = medianPitch(midi, hopSec, t0 + k * each - 0.25, t0 + (k + 1) * each + 0.25);
+      if (pm === null) pm = lastPitch;
+      lastPitch = pm; parts.push(noteName(pm) + ':' + r2(each));
+    }
+    lines.push(r2(t0 + offset) + ' ' + word + ' ' + parts.join(' '));
+  });
+  return lines.join('\n');
+}
+function parseScore(text) {
+  const words = [], bad = [];
+  text.split('\n').forEach((line, ln) => {
+    line = line.trim(); if (!line || line[0] === '#') return;
+    const p = line.split(/\s+/), start = parseFloat(p[0]), notes = [];
+    for (const tok of p.slice(2)) {                      // NOTE:LENGTH, or NOTE:LENGTH@START when a syllable is moved on its own
+      const m = tok.split(':'), midi = noteMidi(m[0]), q = String(m[1] || '').split('@'), dur = parseFloat(q[0]);
+      const at = q.length > 1 ? parseFloat(q[1]) : null;
+      if (midi === null || !(dur > 0) || (at !== null && isNaN(at))) { notes.length = 0; break; }
+      notes.push({ midi, dur, start: at });
+    }
+    if (isNaN(start) || !p[1] || !notes.length) { bad.push(ln + 1); return; }
+    words.push({ start, word: p[1], notes });
+  });
+  return { words, bad };
+}
+// Score to singing events: one per syllable, with any extra notes slurred on the last syllable.
+function scoreToEvents(words) {
+  const events = [];
+  words.forEach((w, wi) => {
+    const syl = syllables(soundsOf(w.word)); if (!syl.length) return;
+    const n = syl.length, k = w.notes.length; let t = w.start;
+    for (let i = 0; i < n; i++) {
+      const ni = Math.min(i, k - 1);
+      if (i === ni && w.notes[ni].start != null) t = w.notes[ni].start;
+      let midi, dur, bends = [];
+      if (i < Math.min(n, k) - 1 || (i === n - 1 && k === n)) { midi = w.notes[i].midi; dur = w.notes[i].dur; }
+      else if (k > n && i === n - 1) {
+        midi = w.notes[i].midi; dur = 0;
+        w.notes.slice(i).forEach((x, j) => { if (j) bends.push({ at: dur, midi: x.midi, f: midiHz(x.midi) }); dur += x.dur; });
+      } else { const last = w.notes[k - 1]; midi = last.midi; dur = last.dur / (n - k + 1); }
+      events.push({ seq: syl[i], start: t, dur, midi, f: midiHz(midi), bends, wi });
+      t += dur;
+    }
+  });
+  return events;
+}
+// ---------- finding the singing ----------
+// active: one flag per frame (singing or not). Joins singing separated by less than `gap` seconds into one region,
+// drops regions with under a second of singing, pads each a little, and splits any longer than maxLen at its widest pause.
+function regionsFrom(active, hop, gap, dur, maxLen) {
+  const regs = []; let cur = null;
+  for (let f = 0; f < active.length; f++) {
+    if (!active[f]) continue;
+    const t = f * hop;
+    if (cur && t - cur.end < gap - hop / 2) {          // a pause of `gap` or longer starts a new region
+      if (t - cur.end > 0.35) cur.gaps.push({ at: (cur.end + t) / 2, len: t - cur.end });
+      cur.end = t + hop; cur.on += hop;
+    } else { cur = { start: t, end: t + hop, on: hop, gaps: [] }; regs.push(cur); }
+  }
+  const split = r => {                                   // too long: cut at the widest pause in the back half of what fits
+    if (r.end - r.start <= maxLen) return [r];
+    const lim = r.start + maxLen, fits = r.gaps.filter(g => g.at > r.start + 3 && g.at <= lim);
+    const late = fits.filter(g => g.at >= r.start + maxLen / 2);
+    const g = (late.length ? late : fits).sort((a, b) => b.len - a.len || b.at - a.at)[0];
+    const cut = g ? g.at : lim;
+    return [...split({ start: r.start, end: cut, gaps: r.gaps.filter(x => x.at < cut) }), ...split({ start: cut, end: r.end, gaps: r.gaps.filter(x => x.at > cut) })];
+  };
+  const out = [];
+  regs.filter(r => r.on >= 1).forEach(r => {
+    const a = Math.max(0, r.start - 0.3, out.length ? out[out.length - 1].end : 0), b = Math.min(dur, r.end + 0.3);
+    split({ start: a, end: b, gaps: r.gaps }).forEach(x => out.push({ start: x.start, end: x.end }));
+  });
+  return out;
+}
+
+// ---------- key and harmony ----------
+const MAJOR = [0, 2, 4, 5, 7, 9, 11], MINOR = [0, 2, 3, 5, 7, 8, 10];
+const PROFILE_MAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
+const PROFILE_MIN = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
+// Guesses the key from how long each note name sounds (Krumhansl-Schmuckler).
+function detectKey(events) {
+  const h = new Array(12).fill(0);
+  events.forEach(e => { h[((e.midi % 12) + 12) % 12] += e.dur; e.bends.forEach(b => { h[((b.midi % 12) + 12) % 12] += 0.1; }); });
+  const corr = (prof, t) => {
+    let ma = 0, mb = 0; for (let i = 0; i < 12; i++) { ma += h[i]; mb += prof[i]; } ma /= 12; mb /= 12;
+    let num = 0, da = 0, db = 0;
+    for (let i = 0; i < 12; i++) { const a = h[(i + t) % 12] - ma, b = prof[i] - mb; num += a * b; da += a * a; db += b * b; }
+    return da && db ? num / Math.sqrt(da * db) : 0;
+  };
+  let best = { tonic: 0, minor: false, r: -2 };
+  for (let t = 0; t < 12; t++) for (const minor of [false, true]) {
+    const r = corr(minor ? PROFILE_MIN : PROFILE_MAJ, t);
+    if (r > best.r) best = { tonic: t, minor, r };
+  }
+  return best;
+}
+const keyName = k => NOTE_NAMES[k.tonic] + (k.minor ? ' MINOR' : ' MAJOR');
+// Moves a note up or down the key's scale by a number of steps: 2 is a third, 4 a fifth, 7 an octave.
+// Notes outside the scale keep their sharp or flat.
+function harmonise(midi, steps, key) {
+  if (!steps) return midi;
+  const sc = key.minor ? MINOR : MAJOR, rel = ((midi - key.tonic) % 12 + 12) % 12;
+  let d = 0; for (let i = 0; i < 7; i++) if (sc[i] <= rel) d = i;
+  const chrom = rel - sc[d], base = midi - rel, T = d + steps, oct = Math.floor(T / 7), td = ((T % 7) + 7) % 7;
+  return base + 12 * oct + sc[td] + chrom;
+}
+/*ENDDSP*/
+
+// ---------- demo: Daisy Bell (Harry Dacre, 1892), the first song a computer ever sang, in 1961 ----------
+Object.assign(DICT, {
+  daisy: ['D','EY','Z','IY'], crazy: ['K','R','EY','Z','IY'], answer: ['AE','N','S','ER'], stylish: ['S','T','AY','L','IH','SH'],
+  marriage: ['M','AE','R','IH','JH'], carriage: ['K','AE','R','IH','JH'], afford: ['AX','F','AO','R','D'], upon: ['AX','P','AA','N'],
+  bicycle: ['B','AY','S','IH','K','AX','L'], built: ['B','IH','L','T'], wont: ['W','OW','N','T'], cant: ['K','AA','N','T'],
+  youll: ['Y','UW','L'], half: ['HH','AA','F'], sweet: ['S','W','IY','T'], seat: ['S','IY','T'], look: ['L','UH','K']
+});
+const DAISY_WORDS = "Daisy Daisy give me your answer do I'm half crazy all for the love of you It won't be a stylish marriage I can't afford a carriage But you'll look sweet upon the seat of a bicycle built for two";
+const DAISY_TUNE = 'D5 3 B4 3 G4 3 D4 3 E4 1 F#4 1 G4 1 E4 2 G4 1 D4 5 R 1 A4 3 D5 3 B4 3 G4 3 E4 1 F#4 1 G4 1 A4 2 B4 1 A4 5 B4 1 ' +
+  'C5 1 B4 1 A4 1 D5 2 B4 1 A4 1 G4 1 A4 1 B4 2 G4 1 E4 2 G4 1 E4 1 D4 1 D4 1 G4 2 B4 1 A4 2 D4 1 G4 2 B4 1 A4 1 B4 1 C5 1 D5 1 B4 1 G4 1 A4 2 D4 1 G4 5';
+function daisyScore() {
+  const beat = 0.3, p = DAISY_TUNE.split(' '), notes = []; let t = 0.2;
+  for (let i = 0; i < p.length; i += 2) {
+    const d = +p[i + 1] * beat;
+    if (p[i] !== 'R') notes.push({ start: t, midi: noteMidi(p[i]), dur: d * 0.96 });
+    t += d;
+  }
+  return fitWordsToNotes(DAISY_WORDS.split(' ').map(cleanWord), notes).text;
+}
+
+// ---------- page ----------
+const $ = id => document.getElementById(id);
+const statusEl = $('statustext'), readout = $('readout');
+const say = t => { statusEl.textContent = t; };
+let ctx = null, master = null, robotBus = null, analyser = null, musicGain = null, musicSrc = null, timers = [], raf = 0;
+let pool = [];        // live robot voices, one per voice slot, made as needed
+let clip = null;      // { id, name, sr, dur, L, R, origBuf, from, to, pos, peaks, parts: [{ from, to, remove, done, stereo, centre, midi, hopSec, notes, text, words, level, sound }], sel, mix, mixKey }
+let playing = null;   // { at, offset, kind: 'sing' | 'listen', opts } while music is running, for the playhead
+const MAX_REGION = 90;
+
+// Each robot voice sings the score moved up or down the key's scale: 2 steps is a third, 4 a fifth, 7 an octave.
+const INTERVALS = [[0, 'As written'], [2, 'Third above'], [-2, 'Third below'], [4, 'Fifth above'], [-4, 'Fifth below'], [-5, 'Sixth below'], [7, 'Octave up'], [-7, 'Octave down']];
+const PRESETS = { solo: [[0, 100]], duet: [[0, 100], [2, 75]], trio: [[-7, 70], [0, 100], [2, 70]], choir: [[-7, 70], [-4, 60], [0, 100], [2, 65]] };
+const DETUNE = [0, 5, -5, 8, -8];   // cents, so voices on the same note do not lock together
+const MAX_VOICES = 5;
+(function buildKeys() {
+  const k = $('key'), add = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; k.append(o); };
+  add('auto', 'Work it out');
+  [false, true].forEach(minor => NOTE_NAMES.forEach((nm, t) => add(t + ':' + (minor ? 'm' : 'M'), nm + (minor ? ' minor' : ' major'))));
+})();
+
+// A sound: the robot voices and how they are treated. Every part uses the default sound unless it has its own.
+const newSound = () => ({ voices: [{ iv: 0, lvl: 100 }], ring: false, octave: 'auto', key: 'auto', hold: '2' });
+const copySound = x => ({ voices: x.voices.map(v => ({ iv: v.iv, lvl: v.lvl })), ring: !!x.ring, octave: x.octave, key: x.key, hold: x.hold });
+function cleanSound(x) {
+  const d = newSound(); if (!x) return d;
+  const ok = (id, v) => v != null && [...$(id).options].some(o => o.value === String(v));
+  return {
+    voices: Array.isArray(x.voices) && x.voices.length ? x.voices.slice(0, MAX_VOICES).map(v => ({ iv: +v.iv || 0, lvl: v.lvl != null ? +v.lvl : 100 })) : d.voices,
+    ring: !!x.ring, octave: ok('octave', x.octave) ? String(x.octave) : d.octave, key: ok('key', x.key) ? String(x.key) : d.key, hold: ok('hold', x.hold) ? String(x.hold) : d.hold
+  };
+}
+let baseSound = newSound();
+let scopeRef = null;                  // the part whose sound the mixer shows, or null for the default
+const soundOf = part => (part && part.sound) || baseSound;
+const scopePart = () => (scopeRef && clip && clip.parts.includes(scopeRef) ? scopeRef : null);
+function editSound() { const p = scopePart(); return p ? p.sound || null : baseSound; }   // null: that part follows the default
+
+function ensureAudio() {
+  if (!ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { say('THIS BROWSER HAS NO WEB AUDIO'); return false; }
+    ctx = new AC();
+    master = makeLimiter(ctx); master.connect(ctx.destination);
+    robotBus = ctx.createGain(); robotBus.connect(master);
+    analyser = ctx.createAnalyser(); analyser.fftSize = 1024; robotBus.connect(analyser);
+    musicGain = ctx.createGain(); musicGain.connect(master);
+    applyMix();
+  }
+  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+  return true;
+}
+// Catches peaks when several robots and the music add up, live and in downloads.
+function makeLimiter(c) {
+  const l = c.createDynamicsCompressor();
+  l.threshold.value = -2; l.knee.value = 0; l.ratio.value = 20; l.attack.value = 0.002; l.release.value = 0.15;
+  return l;
+}
+function liveVoice(i) { while (pool.length <= i) pool.push(createVoice(ctx, robotBus)); return pool[i]; }
+function settings() {
+  return { vrobot: +$('vrobot').value, vmusic: +$('vmusic').value, span: $('span').value, model: $('model').value, mp3: $('mp3').checked, base: copySound(baseSound) };
+}
+function applySettings(st) {
+  if (!st) return;
+  const setSel = (id, v) => { if (v != null && [...$(id).options].some(o => o.value === String(v))) $(id).value = String(v); };
+  if (st.vrobot != null) $('vrobot').value = st.vrobot;
+  if (st.vmusic != null) $('vmusic').value = st.vmusic;
+  setSel('span', st.span); if (st.mp3 != null) $('mp3').checked = !!st.mp3;   // the speech model is a page-wide choice, not per song
+  // songs saved before sounds existed kept these settings at the top level
+  baseSound = cleanSound(st.base || { voices: st.voices, ring: st.ring, octave: st.octave, key: st.key, hold: st.hold });
+  scopeRef = null; renderScope(); renderSound(); applyMix();
+}
+// Keeps a choir about as loud as one voice, so extra voices do not overload the output.
+function choirGain(voices) { const e = voices.reduce((a, v) => a + Math.pow(v.lvl / 100, 2), 0); return Math.min(1, 1 / Math.sqrt(e || 1)); }
+// Low voices sit a little left, high ones a little right.
+function panOf(voices, i) {
+  const n = voices.length; if (n < 2) return 0;
+  const order = voices.map((v, j) => [v.iv, j]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(x => x[1]);
+  return -0.45 + 0.9 * order.indexOf(i) / (n - 1);
+}
+function applyMix() {
+  $('vrobotv').textContent = $('vrobot').value; $('vmusicv').textContent = $('vmusic').value;
+  if (!ctx) return;
+  pool.forEach(r => r.setVolume(+$('vrobot').value / 100));
+  musicGain.gain.setTargetAtTime(+$('vmusic').value / 100, ctx.currentTime, .02);
+}
+function flatScope() {
+  const cv = $('scope'), g = cv.getContext('2d');
+  g.clearRect(0, 0, cv.width, cv.height); g.fillStyle = '#121212';
+  for (let x = 0; x < cv.width; x += 2) g.fillRect(x, cv.height / 2, 1, 1);
+}
+function drawScope() {
+  const cv = $('scope'), g = cv.getContext('2d'), buf = new Uint8Array(analyser.fftSize);
+  const loop = () => {
+    analyser.getByteTimeDomainData(buf);
+    g.clearRect(0, 0, cv.width, cv.height); g.fillStyle = '#121212';
+    for (let x = 0; x < cv.width; x += 2) {
+      const v = (buf[Math.floor(x / cv.width * 600)] - 128) / 128;
+      const y = Math.round(cv.height / 2 - v * cv.height * .9);
+      g.fillRect(x, Math.min(y, cv.height / 2), 1, Math.max(1, Math.abs(y - cv.height / 2)));
+    }
+    raf = requestAnimationFrame(loop);
+  };
+  loop();
+}
+function showWords(words) {
+  readout.textContent = '';
+  words.forEach(w => { const sp = document.createElement('span'); sp.textContent = w.word; readout.append(sp, ' '); });
+}
+function stopAll(msg) {
+  timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf);
+  pool.forEach(v => v.stop());
+  if (musicSrc) { try { musicSrc.stop(); } catch (e) {} musicSrc = null; }
+  if (clip && playing) clip.pos = clipPos();
+  playing = null; cancelAnimationFrame(waveRaf); stopBlip(); drawWave(); edDraw();
+  flatScope(); readout.querySelectorAll('span').forEach(s => s.classList.remove('on'));
+  if (msg) say(msg);
+}
+function autoOctave(events) {
+  const f = events.map(e => e.f).sort((a, b) => a - b), med = f[f.length >> 1] || 220;
+  let o = 0; while (med * Math.pow(2, o) > 250) o--; while (med * Math.pow(2, o) < 105) o++;
+  return o;
+}
+const keyOf = (snd, prep) => snd.key === 'auto' ? prep.songKey : { tonic: +snd.key.split(':')[0], minor: snd.key.split(':')[1] === 'm' };
+const octOf = (snd, prep) => snd.octave === 'auto' ? prep.autoOct : +snd.octave;
+// Reads the score into sung events, each with its part, level and sound, plus the song's key and octave.
+function prepare() {
+  const { words, bad } = parseScore($('score').value);
+  const all = scoreToEvents(words);
+  all.forEach(e => {
+    const p = clip ? clip.parts.find(q => e.start >= q.from - 0.05 && e.start < q.to + 0.05) : null;
+    e.part = p || null; e.level = p ? (p.level != null ? p.level : 100) / 100 : 1; e.sound = soundOf(p);
+    const cap = +e.sound.hold;
+    if (cap && e.dur > cap) { e.dur = cap; e.bends = e.bends.filter(b => b.at < cap - 0.05); }
+  });
+  return { words, bad, all, songKey: detectKey(all), autoOct: autoOctave(all) };
+}
+// Which stretch of the song to play, and which events fall in it. opts.part: one part; opts.from: carry on from a time.
+function windowFor(prep, opts = {}) {
+  const ev = prep.all, lastEnd = ev.reduce((m, e) => Math.max(m, e.start + e.dur), 0);
+  if (!clip) return { from: 0, to: lastEnd, events: ev };
+  let from = 0, to = clip.dur;
+  if (opts.part) { from = Math.max(0, opts.part.from - 1.5); to = Math.min(clip.dur, opts.part.to + 1); }
+  else if ($('span').value === 'parts' && (ev.length || clip.parts.length)) {
+    const ps = clip.parts;
+    const a = Math.min(ev.length ? ev[0].start : Infinity, ps.length ? ps[0].from : Infinity);
+    const b = Math.max(lastEnd, ps.length ? ps[ps.length - 1].to : 0);
+    from = Math.max(0, a - 2); to = Math.min(clip.dur, b + 2);
+  }
+  if (opts.from != null) from = Math.max(from, opts.from);
+  if (opts.to != null) to = Math.min(to, opts.to);
+  const evA = opts.evFrom != null ? opts.evFrom : from - 0.01, evB = opts.evTo != null ? opts.evTo : to;   // LISTEN: only the selected syllables
+  const events = ev.filter(e => e.start >= evA && e.start < evB && (!opts.part || e.part === opts.part));
+  return { from, to, events };
+}
+// Schedules the robots singing the events (times relative to `at`) in any audio context.
+// Voice slot i sings the i-th voice of whichever sound each syllable uses, so parts can sound different.
+function perform(voiceAt, events, at, prep, st) {
+  const slots = [];
+  events.forEach((e, ei) => {
+    const snd = e.sound || baseSound, key = keyOf(snd, prep), tr = Math.pow(2, octOf(snd, prep)), cg = choirGain(snd.voices);
+    snd.voices.forEach((v, i) => {
+      const hz = m => { let f = midiHz(harmonise(m, v.iv, key)) * tr; while (f < 55) f *= 2; return f; };
+      (slots[i] || (slots[i] = [])).push(Object.assign({}, e, {
+        f: hz(e.midi), bends: e.bends.map(b => ({ at: b.at, f: hz(b.midi) })),
+        level: e.level * v.lvl / 100 * cg, ring: !!snd.ring, pan: panOf(snd.voices, i), ei
+      }));
+    });
+  });
+  const times = new Array(events.length).fill(0); let dur = 0;
+  slots.forEach((list, i) => {
+    const robot = voiceAt(i);
+    robot.setVolume(st.vrobot / 100);
+    const r = robot.sing(list, { at: at + i * 0.007, detune: DETUNE[i % DETUNE.length] });
+    if (i === 0) list.forEach((e, j) => { times[e.ei] = r.times[j]; });
+    dur = Math.max(dur, r.dur);
+  });
+  return { times, dur };
+}
+// The part's split-off voice as a playable buffer (the original audio if it could not be split).
+function vocalBuffer(p) {
+  if (p._vb) return p._vb;
+  const sr = clip.sr, src = p.centre || clip.L.subarray(Math.floor(p.from * sr), Math.min(clip.L.length, Math.floor(p.to * sr)));
+  const b = ctx.createBuffer(1, Math.max(1, src.length), sr); b.copyToChannel(src, 0);
+  return (p._vb = b);
+}
+// opts: part (one part), from (start time), music ('song' or 'voice': the part's split-off singer), robot (false: no robot).
+function singNow(opts = {}) {
+  const prep = prepare();
+  if (!prep.all.length && !clip) { say(prep.bad.length ? 'SCORE LINE ' + prep.bad[0] + ' IS NOT RIGHT' : 'THE SCORE IS EMPTY. LOAD THE DEMO OR A SONG'); return; }
+  if (!ensureAudio()) return;
+  stopAll(); applyMix(); showWords(prep.words);
+  const w = windowFor(prep, opts);
+  if (clip && w.to - w.from < 0.1) { say('NOTHING LEFT TO PLAY FROM HERE'); return; }
+  const at = ctx.currentTime + 0.15, events = w.events.map(e => Object.assign({}, e, { start: e.start - w.from }));
+  const robot = opts.robot !== false;
+  const r = robot ? perform(liveVoice, events, at, prep, settings()) : { times: [], dur: 0 };
+  let total = r.dur;
+  if (clip) {
+    const len = w.to - w.from;
+    musicSrc = ctx.createBufferSource(); musicSrc.connect(musicGain);
+    if (opts.music === 'voice' && opts.part) {
+      const off = w.from - opts.part.from;
+      musicSrc.buffer = vocalBuffer(opts.part);
+      musicSrc.start(at + Math.max(0, -off), Math.max(0, off), Math.max(0.05, len - Math.max(0, -off)));
+    } else { musicSrc.buffer = mixBuffer(); musicSrc.start(at, w.from, len); }
+    playing = { at, offset: w.from, kind: 'sing', opts }; runPlayhead();
+    total = Math.max(total, len);
+  }
+  const spans = readout.querySelectorAll('span');
+  if (robot) events.forEach((e, i) => timers.push(setTimeout(() => {
+    spans.forEach(s => s.classList.remove('on'));
+    const sp = spans[e.wi]; if (!sp) return;
+    sp.classList.add('on');
+    // keep the word in view inside the word box only; never move the page
+    const r = readout.getBoundingClientRect(), q = sp.getBoundingClientRect();
+    if (q.top < r.top || q.bottom > r.bottom) readout.scrollTop += q.top - r.top - 4;
+  }, (r.times[i] + 0.15) * 1000)));
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) drawScope();
+  const n = opts.part ? clip.parts.indexOf(opts.part) + 1 : 0, snd = opts.part ? soundOf(opts.part) : baseSound;
+  const what = opts.music === 'voice' ? (robot ? ": SINGER'S VOICE AND ROBOT" : ": SINGER'S VOICE ONLY") : '';
+  say((n ? (events.length || !robot ? 'PLAYING PART ' + n + what : 'PART ' + n + ' HAS NO NOTES YET. MUSIC ONLY') : 'SINGING') +
+    (robot && snd.voices.length > 1 && events.length ? '. ' + snd.voices.length + ' VOICES IN ' + keyName(keyOf(snd, prep)) : '') +
+    (prep.bad.length ? '. SKIPPED LINE ' + prep.bad[0] : ''));
+  timers.push(setTimeout(() => stopAll('READY'), (total + 0.4) * 1000));
+}
+
+// ---------- the sound controls: the default, or one part's own ----------
+function renderScope() {
+  const sel = $('soundfor'), keep = scopePart();
+  sel.textContent = '';
+  const add = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.append(o); };
+  add(-1, 'Every part');
+  if (clip) clip.parts.forEach((p, i) => add(i, 'Part ' + (i + 1) + (p.sound ? ', own sound' : ', default sound')));
+  sel.value = keep ? clip.parts.indexOf(keep) : -1;
+  if (!keep) scopeRef = null;
+}
+function renderSound() {
+  const p = scopePart(), es = editSound(), shown = es || baseSound;
+  $('soundbox').disabled = !es;
+  $('ownsound').hidden = !p;
+  if (p) $('ownsound').textContent = p.sound ? 'USE THE DEFAULT SOUND FOR PART ' + (clip.parts.indexOf(p) + 1) : 'GIVE PART ' + (clip.parts.indexOf(p) + 1) + ' ITS OWN SOUND';
+  const sig = shown.voices.map(v => v.iv).join(',');
+  $('preset').value = Object.keys(PRESETS).find(k => PRESETS[k].map(x => x[0]).join(',') === sig) || 'custom';
+  $('key').value = shown.key; $('hold').value = shown.hold; $('octave').value = shown.octave;
+  $('ring').setAttribute('aria-pressed', String(!!shown.ring));
+  renderVoices(shown);
+}
+function renderVoices(shown) {
+  const box = $('voices'); box.textContent = '';
+  shown.voices.forEach((v, i) => {
+    const row = document.createElement('div'); row.className = 'voice';
+    const sel = document.createElement('select'); sel.id = 'viv-' + i; sel.setAttribute('aria-label', 'Voice ' + (i + 1) + ' sings');
+    INTERVALS.forEach(([iv, name]) => { const o = document.createElement('option'); o.value = iv; o.textContent = name; if (iv === v.iv) o.selected = true; sel.append(o); });
+    sel.addEventListener('change', () => { v.iv = +sel.value; soundChanged(); });
+    const lv = document.createElement('input'); lv.type = 'range'; lv.min = 0; lv.max = 150; lv.step = 1; lv.value = v.lvl; lv.id = 'vlv-' + i;
+    lv.setAttribute('aria-label', 'Voice ' + (i + 1) + ' volume');
+    const out = document.createElement('output'); out.className = 'mini'; out.textContent = v.lvl;
+    lv.addEventListener('input', () => { v.lvl = +lv.value; out.textContent = v.lvl; markDirty(); });
+    const del = document.createElement('button'); del.type = 'button'; del.textContent = 'X'; del.setAttribute('aria-label', 'Remove voice ' + (i + 1));
+    del.disabled = shown.voices.length < 2;
+    del.addEventListener('click', () => { shown.voices.splice(i, 1); pool.forEach(r => r.stop()); soundChanged(); });
+    row.append(sel, lv, out, del); box.append(row);
+  });
+  $('addvoice').disabled = shown.voices.length >= MAX_VOICES;
+  $('keyrow').hidden = !shown.voices.some(v => v.iv !== 0 && Math.abs(v.iv) !== 7);
+}
+function soundChanged() { renderSound(); markDirty(); }
+
+// ---------- clip loading and analysis ----------
+function decode(ab) {
+  return new Promise((res, rej) => { const p = ctx.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(rej); });
+}
+const MAX_CLIP = 600;
+// Sets the page up for a decoded song.
+function setupClip(full, name, id) {
+  const sr = full.sampleRate, n = Math.min(full.length, Math.floor(MAX_CLIP * sr));
+  const L = full.getChannelData(0).slice(0, n), R = full.numberOfChannels > 1 ? full.getChannelData(1).slice(0, n) : null;
+  const origBuf = ctx.createBuffer(2, n, sr); origBuf.copyToChannel(L, 0); origBuf.copyToChannel(R || L, 1);
+  finishSetup({ id, name, sr, n, L, R, origBuf, stems: null, vocal: null, cut: full.length > n });
+}
+// The song open last, reopened when the page loads.
+const LAST_KEY = APP_ID + '-last-song';
+function rememberSong(id) { try { if (id) localStorage.setItem(LAST_KEY, id); else localStorage.removeItem(LAST_KEY); } catch (e) {} }
+function lastSong() { try { return localStorage.getItem(LAST_KEY); } catch (e) { return null; } }
+function finishSetup(o) {
+  clip = { id: o.id, name: o.name, sr: o.sr, dur: o.n / o.sr, L: o.L, R: o.R, origBuf: o.origBuf, stems: o.stems, vocal: o.vocal,
+    from: 0, to: Math.min(o.n / o.sr, 20), pos: 0, peaks: null, parts: [], sel: -1, mix: null, mixKey: '' };
+  scopeRef = null; scoreUndo = []; ed.p = null;
+  rememberSong(o.id);
+  makePeaks();
+  ['wave', 'scrubrow', 'marks', 'range', 'partsbox'].forEach(k => { $(k).hidden = false; });
+  $('scrub').max = clip.dur.toFixed(2);
+  $('score').value = ''; $('lyrics').value = ''; readout.textContent = '';
+  setRegion(clip.from, clip.to); renderParts(); renderScope(); renderSound(); renderStems();
+  $('clipinfo').textContent = o.name + '  ' + clip.dur.toFixed(1) + ' S' + (o.stems ? '  ' + o.stems.length + ' STEMS' : o.R ? '  STEREO' : '  MONO') + (o.cut ? '  (FIRST ' + MAX_CLIP + ' S ONLY)' : '');
+}
+function makePeaks() {
+  const n = clip.L.length, cols = 280, per = Math.max(1, Math.floor(n / cols)); clip.peaks = new Float32Array(cols);
+  for (let c = 0; c < cols; c++) { let m = 0; for (let i = c * per, e = Math.min(n, i + per); i < e; i += 16) { const a = Math.abs(clip.L[i]); if (a > m) m = a; } clip.peaks[c] = m; }
+}
+
+// ---------- stems: several time-aligned files, some marked as the vocals the robot copies ----------
+// Suno names stems like "Song (Vocals).wav", "Song (Instrumental).wav", "Song (Backing Vocals).wav".
+const guessVocal = nm => /vocal|vox|voice|sing/i.test(nm) && !/backing|instrumental|no.?vocal|karaoke|accomp/i.test(nm);
+function stemRoles(list, saved) {
+  list.forEach(st => {
+    const k = saved && saved.find(x => x.name === st.name);
+    st.role = k ? k.role : guessVocal(st.name) ? 'vocal' : 'music';
+    st.lvl = k && k.lvl != null ? k.lvl : 100;
+  });
+}
+// Adds the stems into L and R at their levels. env, when given, scales the vocal stems sample by sample (0 = left out).
+function stemSum(stems, L, R, env) {
+  L.fill(0); R.fill(0);
+  stems.forEach(st => {
+    const g = st.lvl / 100, a = st.buf.getChannelData(0), b = st.buf.numberOfChannels > 1 ? st.buf.getChannelData(1) : a;
+    const m = Math.min(L.length, a.length), voc = env && st.role === 'vocal';
+    if (!g) return;
+    for (let i = 0; i < m; i++) { const k = voc ? g * env[i] : g; L[i] += a[i] * k; R[i] += b[i] * k; }
+  });
+}
+// The vocal stems as one mono track, at full level, for analysis and the editor.
+function vocalSum(stems, n) {
+  const v = stems.filter(st => st.role === 'vocal'); if (!v.length) return null;
+  const out = new Float32Array(n);
+  v.forEach(st => {
+    const a = st.buf.getChannelData(0), b = st.buf.numberOfChannels > 1 ? st.buf.getChannelData(1) : a, m = Math.min(n, a.length);
+    for (let i = 0; i < m; i++) out[i] += (a[i] + b[i]) / 2;
+  });
+  return out;
+}
+function setupStems(list, name, id) {
+  const sr = ctx.sampleRate, longest = Math.max(...list.map(st => st.buf.length)), n = Math.min(longest, Math.floor(MAX_CLIP * sr));
+  const origBuf = ctx.createBuffer(2, n, sr), L = origBuf.getChannelData(0), R = origBuf.getChannelData(1);
+  stemSum(list, L, R, null);
+  finishSetup({ id, name, sr, n, L, R, origBuf, stems: list, vocal: vocalSum(list, n), cut: longest > n });
+}
+// After a stem's role or level changes: remix, and if the vocals changed, find the parts again.
+function restem(rolesChanged) {
+  stopAll();
+  stemSum(clip.stems, clip.L, clip.R, null);
+  clip.mix = null; clip.mixKey = '';
+  if (rolesChanged) {
+    clip.vocal = vocalSum(clip.stems, clip.L.length);
+    clip.parts.forEach(p => { p.done = false; p.failed = false; p.centre = null; p._vb = null; p._pk = null; });
+  }
+  makePeaks(); drawWave(); renderStems(); renderParts(); markDirty();
+  if (rolesChanged && clip.parts.length) { say(clip.vocal ? 'VOCALS CHANGED. FINDING THE PARTS AGAIN' : 'NO STEM IS MARKED AS VOCALS. USING THE MIX INSTEAD'); runQueue(); }
+}
+function renderStems() {
+  const box = $('stems'); box.textContent = '';
+  $('stemsbox').hidden = !(clip && clip.stems);
+  if (!clip || !clip.stems) return;
+  clip.stems.forEach((st, i) => {
+    const row = document.createElement('div'); row.className = 'stem' + (st.role === 'vocal' ? ' vocal' : '');
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = st.name;
+    const sel = document.createElement('select'); sel.id = 'stemrole-' + i; sel.setAttribute('aria-label', st.name + ' is');
+    [['vocal', 'Vocal: the robot copies it'], ['music', 'Music']].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; if (v === st.role) o.selected = true; sel.append(o); });
+    sel.addEventListener('change', () => { st.role = sel.value; restem(true); });
+    const lv = document.createElement('input'); lv.type = 'range'; lv.min = 0; lv.max = 150; lv.step = 1; lv.value = st.lvl; lv.id = 'stemlvl-' + i;
+    lv.setAttribute('aria-label', st.name + ' level');
+    const out = document.createElement('output'); out.className = 'mini'; out.textContent = st.lvl;
+    lv.addEventListener('input', () => { st.lvl = +lv.value; out.textContent = st.lvl; });
+    lv.addEventListener('change', () => restem(false));
+    row.append(nm, sel, lv, out); box.append(row);
+  });
+}
+const stemsName = files => { const b = files[0].name.replace(/\.[^.]+$/, '').replace(/\s*[\(\[][^\)\]]*[\)\]]\s*$/, '').trim() || files[0].name; return b + ' (' + files.length + ' stems)'; };
+async function loadFiles(files) {
+  if (!files.length) return;
+  if (files.length === 1) return loadFile(files[0]);
+  if (!ensureAudio()) return;
+  stopAll('READING ' + files.length + ' STEMS');
+  const id = 'stems|' + files.map(f => f.name + ':' + f.size + ':' + f.lastModified).sort().join('|');
+  const list = [], keep = [];
+  for (const f of files) {
+    try {
+      const ab = await f.arrayBuffer(); keep.push({ name: f.name, data: ab.slice(0) });
+      list.push({ name: f.name, buf: await decode(ab) });
+    } catch (e) { say('COULD NOT READ ' + f.name.toUpperCase() + ' AS AUDIO'); return; }
+  }
+  let saved = null; try { saved = await dbGet('work', id); } catch (e) {}
+  stemRoles(list, saved && saved.stems);
+  setupStems(list, stemsName(files), id);
+  let restored = false;
+  try { restored = !!saved && await restoreWork(id); } catch (e) {}
+  if (restored) { say('WELCOME BACK. YOUR SAVED WORK FOR THESE STEMS IS RESTORED'); renderSaved(); runQueue(); return; }
+  const voc = list.filter(st => st.role === 'vocal').length;
+  say(files.length + ' STEMS LOADED AND SAVED. ' + (voc ? voc + ' MARKED AS VOCALS' : 'MARK THE VOCAL STEMS BELOW'));
+  await saveWork([['audio', id, { stems: keep }]]);
+  suggestParts();
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
+}
+async function loadFile(file) {
+  if (!file || !ensureAudio()) return;
+  $('stemsbox').hidden = true;
+  stopAll('READING ' + file.name.toUpperCase());
+  const id = file.name + '|' + file.size + '|' + file.lastModified;
+  let full, keep;
+  try {
+    const ab = await file.arrayBuffer(); keep = ab.slice(0);       // decoding uses up the buffer, so keep a copy to save
+    full = await decode(ab);
+  } catch (e) { say('COULD NOT READ THAT FILE AS AUDIO'); return; }
+  setupClip(full, file.name, id);
+  let restored = false;
+  try { restored = !!(await dbGet('meta', id)) && await restoreWork(id); } catch (e) {}
+  if (restored) { say('WELCOME BACK. YOUR SAVED WORK FOR THIS SONG IS RESTORED'); renderSaved(); runQueue(); return; }
+  say('SONG LOADED AND SAVED');
+  await saveWork([['audio', id, keep]]);
+  suggestParts();
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
+}
+let asrCache = {};
+async function transcribe(audio16k, modelId, tag = '') {
+  say(tag + 'LOADING THE SPEECH LIBRARY');
+  const T = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1');
+  T.env.allowLocalModels = false;
+  try { T.env.backends.onnx.wasm.proxy = true; } catch (e) {}
+  if (!asrCache[modelId]) {
+    asrCache[modelId] = await T.pipeline('automatic-speech-recognition', modelId, {
+      dtype: 'q8',
+      progress_callback: p => { if (p && p.status === 'progress' && p.total) say(tag + 'DOWNLOADING SPEECH MODEL ' + Math.round(p.progress) + '%'); }
+    });
+  }
+  const asr = asrCache[modelId];
+  say(tag + 'LISTENING FOR THE WORDS. THIS CAN TAKE A MINUTE');
+  await tick();
+  const base = { chunk_length_s: 30, stride_length_s: 5 };
+  let out, level = 'word';
+  try { out = await asr(audio16k, Object.assign({ return_timestamps: 'word' }, base)); }
+  catch (e) {
+    level = 'phrase';
+    try { out = await asr(audio16k, Object.assign({ return_timestamps: true }, base)); }
+    catch (e2) { level = 'none'; out = await asr(audio16k, base); }
+  }
+  const junk = /[\[(♪].*?[\])♪]|♪/g;
+  const text = String(out.text || '').replace(junk, ' ').replace(/\s+/g, ' ').trim();
+  const timed = [];
+  (out.chunks || []).forEach(c => {
+    const ts = c.timestamp || [], t0 = ts[0], t1 = ts[1] == null ? t0 + 0.4 : ts[1];
+    if (t0 == null || isNaN(t0)) return;
+    const ws = String(c.text || '').replace(junk, ' ').trim().split(/\s+/).filter(cleanWord);
+    ws.forEach((w, i) => timed.push({ text: w, t0: t0 + (t1 - t0) * i / ws.length, t1: t0 + (t1 - t0) * (i + 1) / ws.length }));
+  });
+  return { text, timed, level };
+}
+function setScoreRange(a, b, text) {                   // swaps the score lines between two times for new ones
+  const keep = $('score').value.split('\n').filter(l => { const t = parseFloat(l); return l.trim() && (isNaN(t) || t < a || t >= b); });
+  const all = keep.concat(text ? text.split('\n') : []).sort((x, y) => (parseFloat(x) || 0) - (parseFloat(y) || 0));
+  $('score').value = all.join('\n');
+  showWords(parseScore($('score').value).words);
+  edSync();
+}
+async function analysePart(p, tag, modelId) {
+  const sr = clip.sr, i0 = Math.floor(p.from * sr), i1 = Math.min(clip.L.length, Math.floor(p.to * sr)), off = p.from;
+  const stemVoc = clip.vocal;                            // vocal stems: analyse those directly, no splitting needed
+  say(tag + (stemVoc ? 'READING THE VOCAL STEM 0%' : 'SPLITTING OFF THE VOCALS 0%')); await tick();
+  const sp = stemVoc
+    ? await splitClip(stemVoc.subarray(i0, i1), null, sr, x => say(tag + 'READING THE VOCAL STEM ' + Math.round(x * 100) + '%'))
+    : await splitClip(clip.L.subarray(i0, i1), clip.R ? clip.R.subarray(i0, i1) : null, sr, x => say(tag + 'SPLITTING OFF THE VOCALS ' + Math.round(x * 100) + '%'));
+  if (!clip || !clip.parts.includes(p)) return 'REMOVED';
+  if (stemVoc) { p.stereo = true; p.centre = stemVoc.slice(i0, i1); }
+  else { p.stereo = sp.stereo; p.centre = sp.stereo ? sp.centre : null; if (!sp.stereo) p.remove = false; }
+  say(tag + 'FOLLOWING THE TUNE'); await tick();
+  p.midi = trackPitch(sp.sal, sp.frames); p.hopSec = sp.hopSec;
+  p.notes = notesFromTrack(p.midi, sp.hopSec).map(x => ({ start: x.start + off, midi: x.midi, dur: x.dur }));
+  let heard = null, why = '';
+  if (modelId) {
+    try { heard = await transcribe(resampleTo(stemVoc ? p.centre : sp.centre, sr, 16000), modelId, tag); }
+    catch (e) { why = String(e && e.message || e).slice(0, 70).toUpperCase(); }
+  }
+  if (!clip || !clip.parts.includes(p)) return 'REMOVED';
+  p.done = true; p._vb = null; p._pk = null; clip.mixKey = '';
+  if (heard && heard.text && heard.timed.length) {
+    p.text = heard.text; p.words = heard.timed.length;
+    setScoreRange(p.from, p.to, fitTimedWords(heard.timed, p.midi, sp.hopSec, off));
+    return p.words + ' WORDS';
+  }
+  if (!p.notes.length) { p.text = ''; p.words = 0; setScoreRange(p.from, p.to, ''); return 'NO TUNE FOUND'; }
+  if (heard && heard.text) {
+    p.text = heard.text; const ws = heard.text.split(/\s+/).map(cleanWord).filter(Boolean), r = fitWordsToNotes(ws, p.notes);
+    p.words = r.usedWords; setScoreRange(p.from, p.to, r.text);
+    return p.words + ' WORDS, TIMING GUESSED';
+  }
+  p.text = ''; p.words = 0;
+  setScoreRange(p.from, p.to, fitWordsToNotes(p.notes.map(() => 'la'), p.notes).text);
+  return p.notes.length + ' NOTES, ' + (why ? 'SPEECH MODEL FAILED: ' + why : modelId ? 'NO WORDS HEARD' : 'NO WORDS YET');
+}
+// Parts are analysed one at a time as they are added. Parts added meanwhile join the queue.
+let analysing = false;
+function updateAnalyseBtn() { $('analyse').disabled = analysing || !clip || clip.sel < 0; $('analyse').textContent = analysing ? 'FINDING THE TUNE AND WORDS' : 'FIND THE SELECTED PART AGAIN'; }
+async function runQueue() {
+  if (analysing || !clip) return;
+  const c = clip, results = [];
+  analysing = true; updateAnalyseBtn();
+  while (clip === c) {
+    const p = c.parts.find(q => !q.done && !q.failed && !q.held); if (!p) break;
+    const tag = 'PART ' + (c.parts.indexOf(p) + 1) + ': ';
+    try { results.push(tag + await analysePart(p, tag, $('model').value)); }
+    catch (e) { p.failed = true; results.push(tag + 'FAILED, ' + String(e && e.message || e).slice(0, 60).toUpperCase()); }
+    if (clip !== c) break;
+    renderParts();
+    if (c.parts.includes(p)) await saveWork(p.centre ? [['vocals', vocalKey(c.id, p), p.centre]] : []);
+  }
+  analysing = false; updateAnalyseBtn();
+  if (clip === c && results.length) {
+    const sp = c.parts[c.sel]; if (sp) $('lyrics').value = sp.text || '';
+    say(results.filter(x => !/REMOVED$/.test(x)).join('. ') + '. CHECK THE WORDS, THEN SING');
+  }
+}
+function analyseAgain() {
+  const p = clip && clip.parts[clip.sel]; if (!p) { say('SELECT A PART FIRST'); return; }
+  p.done = false; p.failed = false; p.held = false; renderParts(); runQueue();
+}
+// The score lines that belong to a part, by start time.
+function partLines(p) {
+  return $('score').value.split('\n').filter(l => { const t = parseFloat(l); return l.trim() && !isNaN(t) && t >= p.from && t < p.to; })
+    .sort((a, b) => parseFloat(a) - parseFloat(b));
+}
+// Score lines to words with absolute note times. Notes after a word's last syllable are slurs.
+function wordsFromLines(lines) {
+  return parseScore(lines.join('\n')).words.map(w => {
+    const syl = syllables(soundsOf(w.word)), n = Math.max(1, syl.length), k = w.notes.length; let t = w.start;
+    return { word: w.word, notes: w.notes.map((x, j) => {
+      if (x.start != null && j < n) t = x.start;
+      const o = { midi: x.midi, dur: x.dur, at: t, slur: j >= n, label: j >= n ? '~' : (j === k - 1 && k < n ? syl.slice(j).map(phonemesOf).join(' . ') : phonemesOf(syl[j])) };
+      t += x.dur; return o;
+    }) };
+  });
+}
+const wordEnd = w => { const z = w.notes[w.notes.length - 1]; return z.at + z.dur; };
+// The note for a stretch of time: the singer's pitch there, else the old note that overlapped it most.
+function pitchFor(p, a, b, old) {
+  if (p && p.midi && p.hopSec) { const m = medianPitch(p.midi, p.hopSec, a - p.from, b - p.from); if (m != null) return m; }
+  let best = null, ov = 0;
+  old.forEach(w => w.notes.forEach(x => { const o = Math.min(b, x.at + x.dur) - Math.max(a, x.at); if (o > ov) { ov = o; best = x.midi; } }));
+  return best;
+}
+// New words laid over the time from a to b, shared out by syllables.
+function wordsOver(list, a, b, p, old, fallback) {
+  const syl = list.map(w => Math.max(1, syllables(soundsOf(w)).length)), each = (b - a) / syl.reduce((x, y) => x + y, 0);
+  let t = a, last = fallback != null ? fallback : 60;
+  return list.map((w, i) => ({ word: w, notes: Array.from({ length: syl[i] }, () => {
+    const m = pitchFor(p, t, t + each, old); if (m != null) last = m;
+    const x = { midi: last, dur: each, at: t, slur: false }; t += each; return x;
+  }) }));
+}
+// Squeezes a word's notes into a to b, keeping their proportions.
+function squeezeWord(w, a, b) { const s0 = w.notes[0].at, f = (b - a) / (wordEnd(w) - s0 || 1); w.notes.forEach(x => { x.at = a + (x.at - s0) * f; x.dur *= f; }); }
+// Which words stayed the same, by longest common subsequence. Returns blocks of kept and changed words.
+function diffWords(a, b) {
+  const n = a.length, m = b.length, L = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = a[i] === b[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const out = []; let i = 0, j = 0, cur = null;
+  while (i < n || j < m) {
+    if (i < n && j < m && a[i] === b[j]) { cur = null; out.push({ same: true, ai: i, an: 1, bi: j, bn: 1 }); i++; j++; continue; }
+    if (!cur) { cur = { same: false, ai: i, an: 0, bi: j, bn: 0 }; out.push(cur); }
+    if (j < m && (i >= n || L[i][j + 1] >= L[i + 1][j])) { cur.bn++; j++; } else { cur.an++; i++; }
+  }
+  return out;
+}
+// Puts the new words in place of the old ones, keeping the timing of every word that did not change.
+// old: words with note times; lo, hi: the time the words may use. Returns the new words and how many stretches changed.
+function realignWords(old, list, p, lo, hi) {
+  const blocks = diffWords(old.map(w => w.word), list), out = []; let changed = 0;
+  blocks.forEach(bk => {
+    if (bk.same) { out.push(old[bk.ai]); return; }
+    changed++;
+    const next = old[bk.ai + bk.an], prev = out[out.length - 1], newWords = list.slice(bk.bi, bk.bi + bk.bn);
+    if (!bk.bn) return;                                    // words removed: their time becomes a rest
+    let a, b;
+    if (bk.an) { a = old[bk.ai].notes[0].at; b = wordEnd(old[bk.ai + bk.an - 1]); }    // replaced: take over their time
+    else {                                                 // added: use the gap, borrowing from the word before if it is tight
+      a = prev ? wordEnd(prev) : lo; b = next ? next.notes[0].at : hi;
+      const need = 0.15 * newWords.reduce((x, w) => x + Math.max(1, syllables(soundsOf(w)).length), 0);
+      if (b - a < need && prev) { const ps = prev.notes[0].at, give = Math.min((wordEnd(prev) - ps) * 0.5, need - (b - a)); squeezeWord(prev, ps, wordEnd(prev) - give); a = wordEnd(prev); }
+      if (b - a < 0.06 * newWords.length) b = a + 0.06 * newWords.length;
+    }
+    const near = prev ? prev.notes[prev.notes.length - 1].midi : next ? next.notes[0].midi : null;
+    if (bk.an === bk.bn) {                                 // word for word: each new word takes its old word's slot
+      newWords.forEach((nw, k) => {
+        const ow = old[bk.ai + k], n = Math.max(1, syllables(soundsOf(nw)).length), plain = ow.notes.filter(x => !x.slur);
+        if (plain.length === n && ow.notes.length === n) out.push({ word: nw, notes: ow.notes.map(x => Object.assign({}, x)) });   // same syllables: keep the notes exactly
+        else out.push(...wordsOver([nw], ow.notes[0].at, wordEnd(ow), p, old, near));
+      });
+      return;
+    }
+    out.push(...wordsOver(newWords, a, b, p, old, near));
+  });
+  return { words: out, changed };
+}
+// Fits the words box to the tune, keeping the timing of words that did not change. respread: ignore it and start again.
+let demoFitted = '';
+function fitTyped(auto, respread) {
+  const raw = $('lyrics').value, words = raw.split(/\s+/).map(cleanWord).filter(Boolean);
+  if (!words.length) { if (!auto) say('TYPE SOME WORDS FIRST'); return false; }
+  const p = clip ? clip.parts[clip.sel] : null;
+  if (clip && (!p || !p.done)) { if (!auto) say('SELECT A PART THAT HAS BEEN ANALYSED FIRST'); return false; }
+  const cur = p ? partLines(p) : $('score').value.split('\n').filter(l => l.trim() && !isNaN(parseFloat(l)));
+  const put = (text, n) => {
+    if (p) { p.text = raw; p.words = n; setScoreRange(p.from, p.to, text); refreshPartLabels(); }
+    else { demoFitted = raw; $('score').value = text; showWords(parseScore(text).words); edSync(); }
+    markDirty();
+  };
+  if (cur.length && !respread) {
+    const old = wordsFromLines(cur);
+    if (old.map(w => w.word).join(' ') === words.join(' ')) return true;
+    const lo = p ? p.from : 0, hi = p ? p.to : wordEnd(old[old.length - 1]) + 1;
+    const r = realignWords(old, words, p, lo, hi);
+    pushUndo(); put(r.words.map(edLine).join('\n'), r.words.length);
+    say(r.changed ? 'WORDS UPDATED. ' + r.changed + (r.changed === 1 ? ' STRETCH' : ' STRETCHES') + ' RETIMED, THE REST KEPT THEIR TIMING' : 'WORDS UPDATED');
+    return true;
+  }
+  let notes = [];
+  if (p) notes = p.notes;
+  else parseScore($('score').value).words.forEach(w => { let t = w.start; w.notes.forEach(x => { if (x.start != null) t = x.start; notes.push({ start: t, midi: x.midi, dur: x.dur }); t += x.dur; }); });
+  if (!notes.length) { say('THERE IS NO TUNE YET TO FIT THE WORDS TO'); return false; }
+  pushUndo();
+  const r = fitWordsToNotes(words, notes);
+  put(r.text, r.usedWords);
+  say('SPREAD ' + r.usedWords + ' OF ' + words.length + ' WORDS OVER ' + r.usedNotes + ' OF ' + notes.length + ' NOTES. UNDO PUTS IT BACK');
+  return true;
+}
+// With stems: the vocal stems fade out of every part set to replace the singer. Exact, nothing else is touched.
+function stemMixBuffer() {
+  const on = p => p.done && p.remove, key = 'S' + clip.parts.map(p => (on(p) ? 'x' : '-') + p.from + '-' + p.to).join('') + clip.stems.map(st => st.role[0] + st.lvl).join('');
+  if (!clip.parts.some(on)) return clip.origBuf;
+  if (clip.mix && clip.mixKey === key) return clip.mix;
+  const sr = clip.sr, n = clip.L.length, env = new Float32Array(n).fill(1), fade = Math.floor(.03 * sr);
+  clip.parts.filter(on).forEach(p => {
+    const i0 = Math.max(0, Math.floor(p.from * sr)), i1 = Math.min(n, Math.floor(p.to * sr));
+    for (let i = i0; i < i1; i++) env[i] = 1 - Math.min(1, (i - i0) / fade, (i1 - 1 - i) / fade);
+  });
+  const b = ctx.createBuffer(2, n, sr);
+  stemSum(clip.stems, b.getChannelData(0), b.getChannelData(1), env);
+  clip.mix = b; clip.mixKey = key;
+  return b;
+}
+// The song with the original singer taken out of every part set to replace them.
+function mixBuffer() {
+  if (clip.stems && clip.vocal) return stemMixBuffer();
+  const on = p => p.done && p.stereo && p.remove && p.centre, key = clip.parts.map(p => (on(p) ? 'x' : '-') + p.from).join('');
+  if (!clip.parts.some(on)) return clip.origBuf;
+  if (clip.mix && clip.mixKey === key) return clip.mix;
+  const sr = clip.sr, il = clip.L.slice(), ir = clip.R.slice();
+  clip.parts.filter(on).forEach(p => {
+    const i0 = Math.floor(p.from * sr), len = p.centre.length, fade = Math.max(1, Math.min(Math.floor(.03 * sr), len >> 1));
+    for (let j = 0; j < len; j++) { const c = p.centre[j] * Math.min(1, j / fade, (len - 1 - j) / fade); il[i0 + j] -= c; ir[i0 + j] -= c; }
+  });
+  clip.mix = ctx.createBuffer(2, il.length, sr); clip.mix.copyToChannel(il, 0); clip.mix.copyToChannel(ir, 1); clip.mixKey = key;
+  return clip.mix;
+}
+function loadDemo() {
+  stopAll(); clip = null; scopeRef = null; scoreUndo = []; renderStems();
+  $('clipinfo').textContent = 'NO CLIP LOADED. THE DEMO NEEDS NONE.';
+  ['wave', 'scrubrow', 'marks', 'range', 'partsbox'].forEach(id => { $(id).hidden = true; });
+  $('analyse').disabled = true;
+  $('lyrics').value = DAISY_WORDS; demoFitted = DAISY_WORDS; $('score').value = daisyScore();
+  showWords(parseScore($('score').value).words);
+  renderScope(); renderSound(); edOpen(null); updateAnalyseBtn();
+  say('DAISY BELL LOADED. PRESS SING');
+}
+
+// ---------- marking the part to sing ----------
+let waveRaf = 0;
+// Where we are in the song: the playhead while music runs, otherwise the cursor left by the scrubber.
+function clipPos() {
+  if (!clip) return null;
+  return playing && ctx ? Math.min(clip.dur, playing.offset + Math.max(0, ctx.currentTime - playing.at)) : clip.pos;
+}
+const mmss = t => { const m = Math.floor(t / 60); return (m ? m + ':' + String(Math.floor(t % 60)).padStart(2, '0') : Math.floor(t % 60)) + '.' + Math.floor(t * 10 % 10) + ' S'; };
+function setRegion(a, b) {
+  if (!clip) return;
+  a = Math.max(0, Math.min(clip.dur, a)); b = Math.max(0, Math.min(clip.dur, b));
+  if (b < a + 0.5) b = Math.min(clip.dur, a + 0.5);
+  if (b < a + 0.5) a = Math.max(0, b - 0.5);
+  clip.from = a; clip.to = b;
+  $('from').value = a.toFixed(1); $('to').value = b.toFixed(1);
+  drawWave();
+}
+function drawWave() {
+  const cv = $('wave'); if (!clip || !clip.peaks || cv.hidden) return;
+  const g = cv.getContext('2d'), W = cv.width, H = cv.height, n = clip.peaks.length, bw = W / n;
+  g.clearRect(0, 0, W, H);
+  const px = t => t / clip.dur * W, inPart = x => clip.parts.some(q => x + bw > px(q.from) && x < px(q.to));
+  clip.parts.forEach((q, i) => { g.fillStyle = i === clip.sel ? 'rgba(229,56,45,.34)' : 'rgba(229,56,45,.2)'; g.fillRect(px(q.from), 0, Math.max(2, px(q.to) - px(q.from)), H); });
+  let top = 0; for (let c = 0; c < n; c++) if (clip.peaks[c] > top) top = clip.peaks[c];
+  for (let c = 0; c < n; c++) {
+    const x = c * bw, h = Math.max(1, clip.peaks[c] / (top || 1) * (H - 6));
+    g.fillStyle = inPart(x) ? '#e5382d' : '#6c6c76'; g.fillRect(x, (H - h) / 2, Math.max(1, bw - 1), h);
+  }
+  g.strokeStyle = '#f1efe8'; g.lineWidth = 2; g.strokeRect(px(clip.from) + 1, 1, Math.max(3, px(clip.to) - px(clip.from) - 2), H - 2);   // the marker
+  const p = clipPos();
+  g.fillStyle = '#f1efe8'; g.fillRect(p / clip.dur * W - 1, 0, 3, H);
+  if (document.activeElement !== $('scrub') || playing) $('scrub').value = p;
+  $('scrubt').textContent = mmss(p);
+  $('play').textContent = playing ? 'PAUSE' : 'PLAY';
+  playLabels();
+}
+// HEAR, PLAY FROM CURSOR and LISTEN read STOP while their own playback runs.
+function playLabels() {
+  const o = playing && playing.opts;
+  if (clip) clip.parts.forEach((p, i) => { const b = $('hear-' + i); if (b) b.textContent = o && o.part === p && !o.ed ? 'STOP' : 'HEAR'; });
+  $('edplay').textContent = o && o.ed && !o.sel ? 'STOP' : 'PLAY FROM CURSOR';
+  $('edlisten2').textContent = o && o.sel && o.sel === JSON.stringify(ed.sel) ? 'STOP' : 'LISTEN';
+}
+function runPlayhead() { cancelAnimationFrame(waveRaf); const loop = () => { drawWave(); edDraw(); if (playing) waveRaf = requestAnimationFrame(loop); }; loop(); }
+function previewFrom(offset) {
+  if (!clip || !ensureAudio()) return;
+  stopAll(); applyMix();
+  offset = Math.max(0, Math.min(clip.dur - 0.05, offset));
+  musicSrc = ctx.createBufferSource(); musicSrc.buffer = clip.origBuf; musicSrc.connect(musicGain);
+  const at = ctx.currentTime + 0.05; musicSrc.start(at, offset);
+  playing = { at, offset, kind: 'listen' }; runPlayhead();
+  say('PLAYING. MARK START AND MARK END AS IT GOES');
+  timers.push(setTimeout(() => { stopAll('END OF THE SONG'); clip.pos = 0; drawWave(); }, (clip.dur - offset + 0.3) * 1000));
+}
+// Scrubbing: moving the cursor plays a short burst at that spot, so you can hear where you are.
+let blipSrc = null, blipAt = 0, resumeAfterScrub = null;
+function stopBlip() { if (blipSrc) { try { blipSrc.stop(); } catch (e) {} blipSrc = null; } }
+function scrubTo(t) {
+  if (!clip) return;
+  if (playing) { resumeAfterScrub = { kind: playing.kind, opts: playing.opts }; stopAll(); }
+  clip.pos = Math.max(0, Math.min(clip.dur - 0.05, t));
+  drawWave(); say('AT ' + mmss(clip.pos));
+  const now = performance.now();
+  if (now - blipAt > 110 && ensureAudio()) {
+    blipAt = now; stopBlip(); applyMix();
+    blipSrc = ctx.createBufferSource(); blipSrc.buffer = clip.origBuf; blipSrc.connect(musicGain);
+    blipSrc.start(ctx.currentTime, clip.pos, 0.22);
+  }
+}
+function scrubEnd() {
+  const r = resumeAfterScrub; resumeAfterScrub = null;
+  if (!r) return;
+  if (r.kind === 'sing') singNow(Object.assign({}, r.opts, { from: clip.pos })); else previewFrom(clip.pos);
+}
+$('scrub').addEventListener('input', e => scrubTo(parseFloat(e.target.value)));
+$('scrub').addEventListener('change', scrubEnd);
+let dragging = false;
+const waveTime = e => { const r = $('wave').getBoundingClientRect(); return (e.clientX - r.left) / r.width * clip.dur; };
+$('wave').addEventListener('pointerdown', e => { dragging = true; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {} scrubTo(waveTime(e)); });
+$('wave').addEventListener('pointermove', e => { if (dragging) scrubTo(waveTime(e)); });
+const dragEnd = () => { if (dragging) { dragging = false; scrubEnd(); } };
+$('wave').addEventListener('pointerup', dragEnd);
+$('wave').addEventListener('pointercancel', dragEnd);
+$('play').addEventListener('click', () => {
+  if (playing) { stopAll(); say('PAUSED AT ' + mmss(clip.pos)); }
+  else previewFrom(clip.pos >= clip.dur - 0.2 ? 0 : clip.pos);
+});
+$('mfrom').addEventListener('click', () => {
+  const p = clipPos();
+  setRegion(p, clip.to > p + 0.5 ? clip.to : Math.min(clip.dur, p + 15)); say('START MARKED AT ' + mmss(clip.from));
+});
+$('mto').addEventListener('click', () => {
+  const p = clipPos();
+  setRegion(clip.from < p - 0.5 ? clip.from : Math.max(0, p - 15), p); say('END MARKED AT ' + mmss(clip.to) + '. ' + (clip.to - clip.from).toFixed(1) + ' S TO SING');
+});
+$('from').addEventListener('change', () => { setRegion(parseFloat($('from').value) || 0, clip.to); markDirty(); });
+$('to').addEventListener('change', () => { setRegion(clip.from, parseFloat($('to').value) || clip.dur); markDirty(); });
+
+function partLabel(p, i) {
+  return 'PART ' + (i + 1) + '  ' + p.from.toFixed(1) + ' TO ' + p.to.toFixed(1) + ' S  ' +
+    (p.failed ? 'FAILED' : p.held ? 'SUGGESTED' : !p.done ? (analysing ? 'FINDING...' : 'WAITING') : p.words ? p.words + ' WORDS' : p.notes.length + ' NOTES') + (p.sound ? '  OWN SOUND' : '');
+}
+// Updates the part labels without rebuilding the list, so a tap that is under way is not lost.
+function refreshPartLabels() { if (clip) clip.parts.forEach((p, i) => { const b = $('part-' + i); if (b) b.textContent = partLabel(p, i); }); }
+function renderParts() {
+  const box = $('parts'); box.textContent = '';
+  if (!clip) return;
+  clip.parts.forEach((p, i) => {
+    const card = document.createElement('div'); card.className = 'part' + (i === clip.sel ? ' cur' : '');
+    const r1 = document.createElement('div'); r1.className = 'prow';
+    const r2 = document.createElement('div'); r2.className = 'prow';
+    const sel = document.createElement('button'); sel.type = 'button'; sel.className = 'sel'; sel.id = 'part-' + i;
+    sel.textContent = partLabel(p, i);
+    sel.addEventListener('click', () => { clip.sel = i; setRegion(p.from, p.to); $('lyrics').value = p.text || ''; renderParts(); say('PART ' + (i + 1) + ' SELECTED'); });
+    const hear = document.createElement('button'); hear.type = 'button'; hear.id = 'hear-' + i; hear.textContent = 'HEAR';
+    hear.setAttribute('aria-label', 'Hear part ' + (i + 1) + ' with the robot');
+    hear.addEventListener('click', () => {
+      if (playing && playing.opts && playing.opts.part === p && !playing.opts.ed) { stopAll('STOPPED'); return; }
+      clip.sel = i; renderParts(); singNow({ part: p });
+    });
+    const del = document.createElement('button'); del.type = 'button'; del.textContent = 'X'; del.setAttribute('aria-label', 'Remove part ' + (i + 1));
+    del.addEventListener('click', () => {
+      pushUndo();
+      setScoreRange(p.from, p.to, ''); clip.parts.splice(i, 1); clip.sel = Math.min(clip.sel, clip.parts.length - 1); clip.mixKey = '';
+      dbDelete('vocals', vocalKey(clip.id, p)); renderParts(); renderScope(); renderSound(); markDirty(); say('PART REMOVED');
+    });
+    const mode = document.createElement('button'); mode.type = 'button'; mode.id = 'mode-' + i;
+    mode.textContent = p.remove ? 'REPLACES SINGER' : 'WITH SINGER'; mode.setAttribute('aria-pressed', String(!!p.remove));
+    mode.disabled = !clip.R || (p.done && !p.stereo);
+    mode.addEventListener('click', () => { p.remove = !p.remove; clip.mixKey = ''; renderParts(); markDirty(); say('PART ' + (i + 1) + (p.remove ? ': THE ROBOT REPLACES THE SINGER' : ': THE ROBOT SINGS WITH THE SINGER')); });
+    const lab = document.createElement('label'); lab.className = 'mini'; lab.htmlFor = 'plv-' + i; lab.textContent = 'ROBOT';
+    const lv = document.createElement('input'); lv.type = 'range'; lv.min = 0; lv.max = 150; lv.step = 1; lv.id = 'plv-' + i;
+    lv.value = p.level != null ? p.level : 100;
+    const out = document.createElement('output'); out.className = 'mini'; out.textContent = lv.value;
+    lv.addEventListener('input', () => { p.level = +lv.value; out.textContent = p.level; markDirty(); });
+    r1.append(sel, hear, del); r2.append(mode, lab, lv, out); card.append(r1, r2); box.append(card);
+  });
+  drawWave(); updateAnalyseBtn();
+  const held = clip.parts.filter(p => p.held).length;
+  $('findall').hidden = !held;
+  $('findall').textContent = 'FIND TUNES AND WORDS FOR ' + (held === 1 ? 'THE SUGGESTED PART' : 'THE ' + held + ' SUGGESTED PARTS');
+  if (!ed.drag) edOpen(clip.parts[clip.sel] || null);
+}
+// Looks for the singing and adds each stretch as a suggested part, waiting to be analysed.
+// Vocal stems: by their loudness. A mixed file: where the centre of the mix carries a steady pitch.
+let suggesting = false;
+async function suggestParts() {
+  if (!clip || suggesting) return;
+  const c = clip, sr = c.sr; suggesting = true; $('suggest').disabled = true;
+  try {
+    let active, hop;
+    if (c.vocal) {
+      const H = Math.floor(0.05 * sr), nf = Math.floor(c.vocal.length / H), rms = new Float32Array(nf);
+      for (let f = 0; f < nf; f++) { let q = 0; for (let i = f * H, e = i + H; i < e; i++) q += c.vocal[i] * c.vocal[i]; rms[f] = Math.sqrt(q / H); }
+      const ref = Float32Array.from(rms).sort()[Math.floor(nf * 0.95)] || 0;
+      active = rms.map(x => x > Math.max(ref * 0.1, 1e-4) ? 1 : 0); hop = 0.05;
+    } else {
+      say('LOOKING FOR THE SINGING 0%'); await tick();
+      const sp = await splitClip(c.L, c.R, sr, x => say('LOOKING FOR THE SINGING ' + Math.round(x * 100) + '%'), true);
+      if (clip !== c) return;
+      const midi = trackPitch(sp.sal, sp.frames), ref = Float32Array.from(sp.energy).sort()[Math.floor(sp.frames * 0.9)] || 0;
+      active = new Uint8Array(sp.frames).map((_, f) => !isNaN(midi[f]) && sp.energy[f] > ref * 0.15 ? 1 : 0); hop = sp.hopSec;
+    }
+    if (clip !== c) return;
+    const gap = Math.max(1, +$('gap').value || 5);
+    c.parts = c.parts.filter(p => !p.held);                // earlier suggestions nobody analysed are replaced
+    const regs = regionsFrom(active, hop, gap, c.dur, MAX_REGION).filter(r => !c.parts.some(p => r.start < p.to && r.end > p.from)).slice(0, 40);
+    regs.forEach(r => c.parts.push({ from: r.start, to: r.end, remove: false, done: false, held: true, stereo: !!c.R, centre: null, midi: null, hopSec: 0, notes: [], text: '', words: 0, level: 100 }));
+    c.parts.sort((x, y) => x.from - y.from);
+    if (c.sel >= c.parts.length) c.sel = -1;
+    renderParts(); renderScope(); renderSound(); markDirty();
+    say(regs.length ? 'FOUND ' + regs.length + (regs.length === 1 ? ' PART' : ' PARTS') + ' WITH SINGING. HEAR THEM, DELETE ANY THE ROBOT SHOULD NOT SING, THEN PRESS FIND TUNES AND WORDS'
+      : 'NO SINGING FOUND. MARK THE PARTS BY HAND');
+  } finally { suggesting = false; $('suggest').disabled = false; }
+}
+function findAll() {
+  if (!clip) return;
+  clip.parts.forEach(p => { p.held = false; });
+  renderParts(); markDirty(); runQueue();
+}
+function addPart() {
+  const a = clip.from, b = clip.to;
+  if (b - a > MAX_REGION) { say('MARK A SHORTER PART, ' + MAX_REGION + ' SECONDS AT MOST'); return false; }
+  const hit = clip.parts.findIndex(p => a < p.to && b > p.from);
+  if (hit >= 0) { say('THIS OVERLAPS PART ' + (hit + 1) + '. MOVE THE MARKS FIRST'); return false; }
+  const part = { from: a, to: b, remove: false, done: false, stereo: !!clip.R, centre: null, midi: null, hopSec: 0, notes: [], text: '', words: 0, level: 100 };
+  clip.parts.push(part); clip.parts.sort((x, y) => x.from - y.from); clip.sel = clip.parts.indexOf(part);
+  $('lyrics').value = ''; renderParts(); renderScope(); markDirty();
+  say('PART ' + (clip.sel + 1) + ' ADDED. FINDING ITS TUNE AND WORDS');
+  runQueue();
+  return true;
+}
+
+// ---------- timing editor ----------
+// Shows one part: a ruler, the singer's split-off voice, a row of words, and the syllables as note blocks over the pitch line.
+// Edits rewrite that part's score lines; syllables stay inside the part and in order.
+const ed = { p: null, v0: 0, v1: 1, words: [], flat: [], lines: [], sel: null, drag: null, cursor: null, ptrs: new Map(), pinch: null, lo: 48, hi: 72 };
+const ED_RULER = 16, ED_WAVE = 70, ED_WORDS = 26, ED_TOP = ED_RULER + ED_WAVE + ED_WORDS;
+const COL = { bg: '#202026', edge: '#34343c', ink: '#f1efe8', muted: '#9a9aa3', red: '#e5382d', dim: '#2a2a31' };
+let scoreUndo = [];
+function pushUndo(before) { scoreUndo.push(before != null ? before : $('score').value); if (scoreUndo.length > 60) scoreUndo.shift(); $('edundo').disabled = false; }
+function undo() {
+  if (!scoreUndo.length) return;
+  $('score').value = scoreUndo.pop(); $('edundo').disabled = !scoreUndo.length;
+  showWords(parseScore($('score').value).words); edSync(true); markDirty(); say('UNDONE');
+}
+const edOn = () => !!ed.p && !$('timing').hidden && clip && clip.parts.includes(ed.p);
+function edOpen(p) {
+  if (!p || !p.done || !clip) {
+    ed.p = null; $('timing').hidden = true; $('timingnote').hidden = false;
+    $('timingnote').textContent = p && clip ? 'PART ' + (clip.parts.indexOf(p) + 1) + (p.held ? ' IS SUGGESTED. PRESS FIND TUNES AND WORDS FIRST.' : ' IS STILL BEING ANALYSED.') : 'Select an analysed part to line up its syllables with the singer.';
+    return;
+  }
+  const fresh = ed.p !== p;
+  ed.p = p; $('timing').hidden = false; $('timingnote').hidden = true;
+  if (fresh) { ed.v0 = p.from; ed.v1 = p.to; ed.sel = null; ed.cursor = null; }
+  edLoad(fresh); edClamp(); edDraw(); edInfo();
+}
+// Rebuilds the editor from the score, unless the score text is what the editor last wrote.
+function edSync(force) { if (!edOn() || ed.drag) return; if (!force && partLines(ed.p).join('\n') === ed.lines.join('\n')) return; edLoad(false); edDraw(); edInfo(); }
+const phonemesOf = seq => (seq || []).map(c => PH[c].n).join(' ');
+function edLoad(fresh) {
+  const p = ed.p; ed.lines = partLines(p);
+  ed.words = wordsFromLines(ed.lines);
+  edFlat();
+  let lo = 127, hi = 0;
+  ed.words.forEach(w => w.notes.forEach(x => { lo = Math.min(lo, x.midi); hi = Math.max(hi, x.midi); }));
+  if (p.midi) for (let i = 0; i < p.midi.length; i++) { const m = p.midi[i]; if (!isNaN(m)) { lo = Math.min(lo, Math.floor(m)); hi = Math.max(hi, Math.ceil(m)); } }
+  if (lo > hi) { lo = 55; hi = 67; }
+  lo -= 2; hi += 2; while (hi - lo < 12) { lo--; hi++; }
+  if (fresh) { ed.lo = lo; ed.hi = hi; } else { ed.lo = Math.min(ed.lo, lo); ed.hi = Math.max(ed.hi, hi); }
+  if (ed.sel && !(ed.words[ed.sel.w] && (ed.sel.j < 0 ? ed.words[selEnd(ed.sel)] : ed.words[ed.sel.w].notes[ed.sel.j]))) ed.sel = null;
+}
+function edFlat() { ed.flat = []; ed.words.forEach((w, wi) => w.notes.forEach((x, j) => ed.flat.push({ w: wi, j, x }))); ed.flat.sort((a, b) => a.x.at - b.x.at); }
+function edFixSlurs(w) { for (let j = 1; j < w.notes.length; j++) if (w.notes[j].slur) w.notes[j].at = w.notes[j - 1].at + w.notes[j - 1].dur; }
+function edLine(w) {
+  return r2(w.notes[0].at) + ' ' + w.word + ' ' + w.notes.map((x, j) => noteName(x.midi) + ':' + r2(x.dur) +
+    (j && !x.slur && Math.abs(x.at - (w.notes[j - 1].at + w.notes[j - 1].dur)) > 0.006 ? '@' + r2(x.at) : '')).join(' ');
+}
+function edWrite() {
+  const fresh = ed.words.map(edLine), rm = ed.lines.slice();
+  const keep = $('score').value.split('\n').filter(l => { const i = rm.indexOf(l); if (i >= 0) { rm.splice(i, 1); return false; } return l.trim(); });
+  $('score').value = keep.concat(fresh).sort((a, b) => (parseFloat(a) || 0) - (parseFloat(b) || 0)).join('\n');
+  ed.lines = fresh;
+  showWords(parseScore($('score').value).words); markDirty();
+}
+// Room a note has: from the end of whatever sounds before it to the start of whatever comes after its slurs.
+function edRoom(w, j) {
+  const fi = ed.flat.findIndex(f => f.w === w && f.j === j), word = ed.words[w];
+  let tail = 0, k = j + 1; while (k < word.notes.length && word.notes[k].slur) { tail += word.notes[k].dur; k++; }
+  const prev = ed.flat[fi - 1], after = ed.flat.find((f, i) => i > fi && !(f.w === w && f.j > j && f.j < k));
+  return { lo: prev ? prev.x.at + prev.x.dur : ed.p.from, hi: (after ? after.x.at : ed.p.to) - tail };
+}
+// Selection: { w, j } is one syllable; { w, w1, j: -1 } is the words w to w1 (one word, or a phrase).
+const selEnd = sel => (sel.w1 != null ? sel.w1 : sel.w);
+const inGroup = (sel, wi) => !!sel && sel.j < 0 && wi >= sel.w && wi <= selEnd(sel);
+// How far a group of words can shift: up to whatever sounds just before it and just after it.
+function edGroupRoom(w0, w1) {
+  let first = Infinity, last = -Infinity;
+  for (let k = w0; k <= w1; k++) ed.words[k].notes.forEach(n => { first = Math.min(first, n.at); last = Math.max(last, n.at + n.dur); });
+  const others = ed.flat.filter(f => f.w < w0 || f.w > w1), before = others.filter(f => f.x.at < first), after = others.filter(f => f.x.at >= first);
+  const pb = before[before.length - 1];
+  return { lo: (pb ? pb.x.at + pb.x.dur : ed.p.from) - first, hi: (after.length ? after[0].x.at : ed.p.to) - last };
+}
+// The selection's values when an edit begins.
+// A syllable touching the one before or after it in the same word stays joined to it while it moves.
+function edOrig(sel) {
+  if (sel.j >= 0) {
+    const ns = ed.words[sel.w].notes, x = ns[sel.j], pv = ns[sel.j - 1], nx = ns[sel.j + 1];
+    const joinedPrev = pv && !x.slur && Math.abs(pv.at + pv.dur - x.at) < 0.006 ? { at: pv.at, dur: pv.dur } : null;
+    const joinedNext = nx && !nx.slur && Math.abs(x.at + x.dur - nx.at) < 0.006 ? { at: nx.at, dur: nx.dur } : null;
+    return { at: x.at, dur: x.dur, midi: x.midi, prev: joinedPrev, next: joinedNext };
+  }
+  const ws = ed.words.slice(sel.w, selEnd(sel) + 1);
+  return { first: ws[0].notes[0].at, ats: ws.map(w => w.notes.map(n => n.at)), midis: ws.map(w => w.notes.map(n => n.midi)) };
+}
+const clampN = (v, lo, hi) => hi < lo ? null : Math.max(lo, Math.min(hi, v));
+// Applies a change to the selection. kind: 'move' (time), 'pitch', 'size' or 'word'. o: the values when the drag began.
+function edApply(sel, kind, d, o) {
+  const word = ed.words[sel.w]; if (!word) return;
+  if (kind === 'word') {                                  // shift a word or phrase in time
+    const w1 = selEnd(sel), r = edGroupRoom(sel.w, w1), cur = word.notes[0].at - o.first, sh = clampN(d, r.lo + cur, r.hi + cur);
+    if (sh === null) return;
+    for (let k = sel.w; k <= w1; k++) ed.words[k].notes.forEach((x, j) => { x.at = o.ats[k - sel.w][j] + sh; });
+  } else if (kind === 'wordpitch') {                      // move a word or phrase up or down by d semitones
+    for (let k = sel.w; k <= selEnd(sel); k++) ed.words[k].notes.forEach((x, j) => { x.midi = Math.max(24, Math.min(108, o.midis[k - sel.w][j] + d)); });
+  } else {
+    const x = word.notes[sel.j];
+    if (kind === 'pitch') x.midi = Math.max(24, Math.min(108, o.midi + d));
+    else if (kind === 'move') {                           // slides the syllable; joined neighbours stretch or shrink to stay joined
+      if (x.slur) return;
+      const r = edRoom(sel.w, sel.j), pv = word.notes[sel.j - 1], nx = word.notes[sel.j + 1];
+      const lo = o.prev ? o.prev.at + 0.05 : r.lo, hi = (o.next ? o.next.at + o.next.dur - 0.05 : r.hi) - o.dur;
+      const v = clampN(o.at + d, lo, hi); if (v === null) return;
+      x.at = v;
+      if (o.prev) pv.dur = v - o.prev.at;
+      if (o.next) { const end = o.next.at + o.next.dur; nx.at = v + x.dur; nx.dur = end - nx.at; }
+    } else if (kind === 'size') {                         // moves the syllable's end; a joined next syllable starts there
+      const r = edRoom(sel.w, sel.j), nx = word.notes[sel.j + 1];
+      const v = clampN(o.dur + d, 0.05, (o.next ? o.next.at + o.next.dur - 0.05 : r.hi) - x.at); if (v === null) return;
+      x.dur = v;
+      if (o.next) { const end = o.next.at + o.next.dur; nx.at = x.at + v; nx.dur = end - nx.at; }
+    }
+    edFixSlurs(word);
+  }
+  edFlat();
+}
+function edClamp() {
+  if (!ed.p) return;
+  const full = ed.p.to - ed.p.from, span = Math.max(Math.min(full, 0.4), Math.min(full, ed.v1 - ed.v0));
+  ed.v0 = Math.max(ed.p.from, Math.min(ed.p.to - span, ed.v0)); ed.v1 = ed.v0 + span;
+  const room = full - span; $('edpos').value = room > 0.001 ? Math.round((ed.v0 - ed.p.from) / room * 1000) : 0;
+  $('edpos').disabled = room <= 0.001;
+}
+function edZoom(f, at) {
+  const span = ed.v1 - ed.v0, c = at != null ? at : (ed.cursor != null && ed.cursor > ed.v0 && ed.cursor < ed.v1 ? ed.cursor : ed.v0 + span / 2);
+  const ns = Math.max(0.4, Math.min(ed.p.to - ed.p.from, span / f));
+  ed.v0 = c - (c - ed.v0) * ns / span; ed.v1 = ed.v0 + ns; edClamp(); edDraw();
+}
+function edGeo() {
+  const cv = $('ed'), W = cv.clientWidth || 300, H = cv.clientHeight || 320, pps = W / (ed.v1 - ed.v0), rowH = (H - ED_TOP) / (ed.hi - ed.lo + 1);
+  return { cv, W, H, pps, rowH, X: t => (t - ed.v0) * pps, T: x => ed.v0 + x / pps, Y: m => ED_TOP + (ed.hi - m) * rowH };
+}
+function edPeaks() {
+  const p = ed.p;
+  if (p._pk) return p._pk;
+  const sr = clip.sr, src = p.centre || clip.L.subarray(Math.floor(p.from * sr), Math.min(clip.L.length, Math.floor(p.to * sr)));
+  const B = 128, nb = Math.ceil(src.length / B), mn = new Float32Array(nb), mx = new Float32Array(nb); let top = 1e-6;
+  for (let b = 0; b < nb; b++) { let lo = 0, hi = 0; for (let i = b * B, e = Math.min(src.length, i + B); i < e; i++) { const v = src[i]; if (v < lo) lo = v; if (v > hi) hi = v; } mn[b] = lo; mx[b] = hi; top = Math.max(top, -lo, hi); }
+  return (p._pk = { src, B, mn, mx, top });
+}
+function edDraw() {
+  if (!edOn()) return;
+  const G = edGeo(), { cv, W, H, pps, rowH, X, Y } = G, p = ed.p, dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  g.font = '10px Silkscreen, "Courier New", monospace'; g.textBaseline = 'middle';
+  // ruler
+  const step = [0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10].find(st => st * pps >= 56) || 10;
+  g.fillStyle = COL.muted; g.strokeStyle = COL.edge; g.lineWidth = 1;
+  for (let t = Math.ceil(ed.v0 / step) * step; t <= ed.v1; t += step) {
+    const x = Math.round(X(t)) + 0.5; g.beginPath(); g.moveTo(x, ED_RULER - 5); g.lineTo(x, H); g.stroke();
+    g.fillText(t.toFixed(step < 0.1 ? 2 : step < 1 ? 1 : 0), x + 3, 7);
+  }
+  // waveform of the singer's voice
+  const pk = edPeaks(), sr = clip.sr, mid = ED_RULER + ED_WAVE / 2, amp = (ED_WAVE / 2 - 4) / pk.top;
+  g.fillStyle = COL.muted;
+  for (let x = 0; x < W; x++) {
+    const i0 = Math.floor((G.T(x) - p.from) * sr), i1 = Math.floor((G.T(x + 1) - p.from) * sr);
+    if (i1 <= 0 || i0 >= pk.src.length) continue;
+    let lo = 0, hi = 0;
+    if (i1 - i0 > pk.B * 2) { for (let b = Math.max(0, Math.floor(i0 / pk.B)), e = Math.min(pk.mn.length, Math.ceil(i1 / pk.B)); b < e; b++) { if (pk.mn[b] < lo) lo = pk.mn[b]; if (pk.mx[b] > hi) hi = pk.mx[b]; } }
+    else for (let i = Math.max(0, i0), e = Math.min(pk.src.length, Math.max(i1, i0 + 1)); i < e; i++) { const v = pk.src[i]; if (v < lo) lo = v; if (v > hi) hi = v; }
+    g.fillRect(x, mid - hi * amp, 1, Math.max(1, (hi - lo) * amp));
+  }
+  // note rows: darker for sharps, labels on each C
+  for (let m = ed.lo; m <= ed.hi; m++) {
+    const y = Y(m);
+    if ([1, 3, 6, 8, 10].includes(((m % 12) + 12) % 12)) { g.fillStyle = COL.dim; g.fillRect(0, y, W, rowH); }
+    if (m % 12 === 0) { g.fillStyle = COL.edge; g.fillRect(0, y + rowH - 1, W, 1); g.fillStyle = COL.muted; g.fillText(noteName(m), 3, y + rowH / 2); }
+  }
+  g.fillStyle = COL.edge; g.fillRect(0, ED_TOP - 1, W, 1); g.fillRect(0, ED_RULER + ED_WAVE, W, 1);
+  // the singer's pitch
+  if (p.midi && p.hopSec) {
+    g.strokeStyle = 'rgba(241,239,232,.35)'; g.lineWidth = 2; g.beginPath(); let pen = false;
+    const f0 = Math.max(0, Math.floor((ed.v0 - p.from) / p.hopSec) - 1), f1 = Math.min(p.midi.length, Math.ceil((ed.v1 - p.from) / p.hopSec) + 1);
+    for (let f = f0; f < f1; f++) {
+      const m = p.midi[f]; if (isNaN(m)) { pen = false; continue; }
+      const x = X(p.from + f * p.hopSec), y = Y(m) + rowH / 2;
+      if (pen) g.lineTo(x, y); else g.moveTo(x, y); pen = true;
+    }
+    g.stroke();
+  }
+  // words and syllables
+  const bh = Math.max(rowH - 2, 12);
+  ed.words.forEach((w, wi) => {
+    const a = w.notes[0].at, z = w.notes[w.notes.length - 1].at + w.notes[w.notes.length - 1].dur;
+    if (z >= ed.v0 && a <= ed.v1) {
+      const sw = inGroup(ed.sel, wi);
+      g.fillStyle = sw ? COL.ink : '#3a3a43'; g.fillRect(X(a), ED_RULER + ED_WAVE + 4, Math.max(2, X(z) - X(a) - 1), ED_WORDS - 8);
+      g.save(); g.beginPath(); g.rect(X(a), ED_RULER + ED_WAVE, Math.max(2, X(z) - X(a) - 2), ED_WORDS); g.clip();
+      g.fillStyle = sw ? COL.bg : COL.ink; g.fillText(w.word.toUpperCase(), X(a) + 4, ED_RULER + ED_WAVE + ED_WORDS / 2); g.restore();
+    }
+    w.notes.forEach((x, j) => {
+      const x0 = X(x.at), x1 = X(x.at + x.dur); if (x1 < 0 || x0 > W) return;
+      const y = Y(x.midi) + rowH / 2 - bh / 2, sel = ed.sel && ed.sel.w === wi && ed.sel.j === j, grp = inGroup(ed.sel, wi);
+      g.fillStyle = x.slur ? 'rgba(229,56,45,.55)' : COL.red; g.fillRect(x0, y, Math.max(2, x1 - x0 - 1), bh);
+      if (sel || grp) { g.strokeStyle = COL.ink; g.lineWidth = sel ? 2 : 1; g.strokeRect(x0 + 1, y + 1, Math.max(2, x1 - x0 - 3), bh - 2); }
+      if (x1 - x0 > 18) {
+        g.save(); g.beginPath(); g.rect(x0, y, x1 - x0 - 2, bh); g.clip(); g.fillStyle = '#fff';
+        g.fillText(x.label + (x1 - x0 > 70 ? '  ' + noteName(x.midi) : ''), x0 + 3, y + bh / 2); g.restore();
+      }
+      if (x1 - x0 > 14) { g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(x1 - 4, y + 3, 2, bh - 6); }   // edge grip
+    });
+  });
+  // cursor and playhead
+  if (ed.cursor != null) { g.fillStyle = COL.muted; g.fillRect(X(ed.cursor) - 1, 0, 2, H); }
+  const pos = playing ? clipPos() : null;
+  if (pos != null && playing.opts && playing.opts.part === p) {
+    if (pos > ed.v1 && ed.v1 < p.to) { const span = ed.v1 - ed.v0; ed.v0 += span * 0.85; ed.v1 = ed.v0 + span; edClamp(); }
+    g.fillStyle = COL.ink; g.fillRect(X(pos) - 1, 0, 2, H);
+  }
+  playLabels();
+}
+function edInfo() {
+  if (!edOn()) return;
+  const s0 = ed.sel, w = s0 && ed.words[s0.w];
+  if (w && s0.j >= 0) {
+    const x = w.notes[s0.j];
+    $('edinfo').textContent = '"' + w.word.toUpperCase() + '"  ' + (x.slur ? 'SLUR' : 'SYLLABLE ' + (s0.j + 1)) + '  ' + x.label + '  ' + noteName(x.midi) + '  ' + x.at.toFixed(2) + ' TO ' + (x.at + x.dur).toFixed(2) + ' S';
+  } else if (w) {
+    const ws = ed.words.slice(s0.w, selEnd(s0) + 1), z = ws[ws.length - 1].notes[ws[ws.length - 1].notes.length - 1];
+    $('edinfo').textContent = '"' + ws.map(x => x.word).join(' ').toUpperCase() + '"  ' + (ws.length > 1 ? ws.length + ' WORDS  ' : '') +
+      ws[0].notes[0].at.toFixed(2) + ' TO ' + (z.at + z.dur).toFixed(2) + ' S';
+  } else $('edinfo').textContent = 'TAP A SYLLABLE OR WORD TO SELECT IT' + (ed.cursor != null ? '. CURSOR AT ' + ed.cursor.toFixed(2) + ' S' : '');
+  $('edword').disabled = !(s0 && s0.j >= 0);
+  $('edprev').disabled = !(s0 && s0.w > 0);
+  $('ednext').disabled = !(s0 && selEnd(s0) < ed.words.length - 1);
+  $('edall').disabled = !ed.words.length;
+  if (document.activeElement !== $('edtext')) edFillText();
+  const one = s0 && s0.j >= 0 ? ed.words[s0.w].notes[s0.j] : null;
+  $('edlen').disabled = !one;
+  if (document.activeElement !== $('edlen')) $('edlen').value = one ? one.dur.toFixed(2) : '';
+  $('edlisten2').disabled = !s0;
+}
+function edSelect(sel) { ed.sel = sel; edDraw(); edInfo(); }
+// The words box text follows the selection, so it can be retyped in place.
+function edFillText() {
+  const s0 = ed.sel, box = $('edtext');
+  box.disabled = $('edapply').disabled = !s0;
+  if (!s0) { box.value = ''; return; }
+  const w0 = s0.w, w1 = s0.j < 0 ? selEnd(s0) : s0.w;
+  box.value = ed.words.slice(w0, w1 + 1).map(w => w.word).join(' ');
+}
+// Replaces the selected words with what was typed, over the same stretch of time.
+function edRetype() {
+  const s0 = ed.sel; if (!edOn() || !s0) return;
+  const list = $('edtext').value.split(/\s+/).map(cleanWord).filter(Boolean);
+  const w0 = s0.w, w1 = s0.j < 0 ? selEnd(s0) : s0.w, old = ed.words.slice(w0, w1 + 1);
+  if (!list.length) { say('TYPE THE WORDS FIRST'); return; }
+  if (list.join(' ') === old.map(w => w.word).join(' ')) return;
+  const before = $('score').value, prev = ed.words[w0 - 1];
+  const fresh = wordsOver(list, old[0].notes[0].at, wordEnd(old[old.length - 1]), ed.p, old, prev ? prev.notes[prev.notes.length - 1].midi : old[0].notes[0].midi);
+  ed.words.splice(w0, old.length, ...fresh);
+  edFlat(); edWrite(); pushUndo(before);
+  const p = ed.p; p.words = ed.words.length; p.text = ed.words.map(w => w.word).join(' ');
+  if (clip.parts[clip.sel] === p) $('lyrics').value = p.text;
+  edSync(true); refreshPartLabels();
+  ed.sel = { w: w0, w1: w0 + fresh.length - 1, j: -1 }; edDraw(); edInfo();
+  say('CHANGED TO "' + list.join(' ').toUpperCase() + '" IN THE SAME TIME');
+}
+function edHit(x, y) {
+  const G = edGeo(), bh = Math.max(G.rowH - 2, 12);
+  if (y >= ED_TOP) {
+    let best = null;
+    ed.words.forEach((w, wi) => w.notes.forEach((n, j) => {
+      const x0 = G.X(n.at), x1 = G.X(n.at + n.dur), cy = G.Y(n.midi) + G.rowH / 2;
+      if (x >= x0 - 2 && x <= x1 + 2 && Math.abs(y - cy) <= Math.max(bh / 2, 10)) {
+        const edge = x1 - x0 > 14 && x >= x1 - 10;
+        if (!best || edge) best = { kind: edge ? 'size' : 'note', w: wi, j };
+      }
+    }));
+    if (best) return best;
+  } else if (y >= ED_RULER + ED_WAVE) {
+    const wi = ed.words.findIndex(w => x >= G.X(w.notes[0].at) - 2 && x <= G.X(w.notes[w.notes.length - 1].at + w.notes[w.notes.length - 1].dur) + 2);
+    if (wi >= 0) return { kind: 'word', w: wi, j: -1 };
+  }
+  return { kind: 'bg' };
+}
+function edDown(e) {
+  if (!edOn()) return;
+  const cv = $('ed'), r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+  try { cv.focus({ preventScroll: true }); } catch (err) {}   // so the arrow keys work after a tap
+  ed.ptrs.set(e.pointerId, { x, y });
+  if (ed.ptrs.size === 2) {
+    const [a, b] = [...ed.ptrs.values()];
+    ed.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, t: edGeo().T((a.x + b.x) / 2), span: ed.v1 - ed.v0 };
+    if (ed.drag && ed.drag.moved && ed.drag.h.kind !== 'bg') { ed.drag.cancel = true; }
+    return;
+  }
+  const h = edHit(x, y), grp = ed.sel && ed.sel.j < 0 ? ed.sel : null;
+  const d = { h, x0: x, y0: y, moved: false, axis: null, before: $('score').value, v0: ed.v0, v1: ed.v1 };
+  if (h.kind === 'word') {
+    if (e.shiftKey && ed.sel) ed.sel = { w: Math.min(ed.sel.w, h.w), w1: Math.max(selEnd(ed.sel), h.w), j: -1 };
+    else if (!inGroup(grp, h.w)) ed.sel = { w: h.w, w1: h.w, j: -1 };
+    d.h = { kind: 'word', w: ed.sel.w, w1: selEnd(ed.sel), j: -1 };
+  } else if ((h.kind === 'note' || h.kind === 'size') && inGroup(grp, h.w)) {
+    d.h = { kind: 'word', w: grp.w, w1: selEnd(grp), j: -1 }; d.tap = { w: h.w, j: h.j };   // a tap without dragging picks that syllable alone
+  } else if (h.kind !== 'bg') ed.sel = { w: h.w, j: h.j };
+  if (d.h.kind !== 'bg') { d.o = edOrig(d.h); edDraw(); edInfo(); }
+  ed.drag = d; e.preventDefault();
+}
+function edMove(e) {
+  if (!ed.ptrs.has(e.pointerId)) return;
+  const r = $('ed').getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  ed.ptrs.set(e.pointerId, { x, y });
+  if (ed.pinch && ed.ptrs.size >= 2) {
+    const [a, b] = [...ed.ptrs.values()], W = $('ed').clientWidth;
+    const ns = Math.max(0.4, Math.min(ed.p.to - ed.p.from, ed.pinch.span * ed.pinch.d / (Math.hypot(a.x - b.x, a.y - b.y) || 1)));
+    ed.v0 = ed.pinch.t - ((a.x + b.x) / 2) / W * ns; ed.v1 = ed.v0 + ns; edClamp(); edDraw(); return;
+  }
+  const d = ed.drag; if (!d || d.cancel) return;
+  const dx = x - d.x0, dy = y - d.y0;
+  if (!d.moved && Math.hypot(dx, dy) < 5) return;
+  d.moved = true;
+  const G = edGeo(), dt = dx / G.pps;
+  if (d.h.kind === 'bg') { ed.v0 = d.v0 - dt; ed.v1 = d.v1 - dt; edClamp(); edDraw(); return; }
+  if (d.h.kind === 'note') {
+    if (!d.axis) d.axis = Math.abs(dx) >= Math.abs(dy) ? 'x' : 'y';
+    if (d.axis === 'x') edApply(d.h, 'move', dt, d.o); else edApply(d.h, 'pitch', -Math.round(dy / G.rowH), d.o);
+  } else if (d.h.kind === 'size') edApply(d.h, 'size', dt, d.o);
+  else if (d.h.kind === 'word') edApply(d.h, 'word', dt, d.o);
+  edDraw(); edInfo();
+}
+function edUp(e) {
+  ed.ptrs.delete(e.pointerId);
+  if (ed.pinch) { if (ed.ptrs.size < 2) ed.pinch = null; if (ed.drag) ed.drag.cancel = true; if (!ed.ptrs.size) { edEndDrag(); } return; }
+  edEndDrag(e);
+}
+function edEndDrag(e) {
+  const d = ed.drag; ed.drag = null; if (!d) return;
+  if (d.cancel) { edLoad(false); edDraw(); edInfo(); return; }
+  if (!d.moved && (d.h.kind === 'bg') && e) { ed.cursor = Math.max(ed.p.from, Math.min(ed.p.to, edGeo().T(d.x0))); ed.sel = null; }
+  if (!d.moved && d.tap) ed.sel = d.tap;
+  if (d.moved && d.h.kind !== 'bg') { const old = $('score').value; edWrite(); if ($('score').value !== old) pushUndo(d.before); }
+  edDraw(); edInfo();
+}
+function edKey(e) {
+  if (!edOn() || !ed.sel) return;
+  const map = { ArrowLeft: ['move', -1], ArrowRight: ['move', 1], ArrowUp: ['pitch', 1], ArrowDown: ['pitch', -1] };
+  const m = map[e.key]; if (!m) return;
+  e.preventDefault();
+  const word = ed.words[ed.sel.w]; if (!word) return;
+  const before = $('score').value, isWord = ed.sel.j < 0, step = e.shiftKey ? 0.1 : 0.01;
+  if (isWord) edApply(ed.sel, m[0] === 'pitch' ? 'wordpitch' : 'word', m[0] === 'pitch' ? m[1] : m[1] * step, edOrig(ed.sel));
+  else edApply(ed.sel, m[0], m[0] === 'pitch' ? m[1] : m[1] * step, edOrig(ed.sel));
+  edWrite(); if ($('score').value !== before) pushUndo(before);
+  edDraw(); edInfo();
+}
+function edPlay() {
+  if (playing && playing.opts && playing.opts.ed && !playing.opts.sel) { stopAll('STOPPED'); return; }
+  const mode = $('edlisten').value;
+  singNow({ part: ed.p, from: ed.cursor != null ? ed.cursor : undefined, music: mode === 'song' ? 'song' : 'voice', robot: mode !== 'solo', ed: true });
+}
+// The selection's stretch of time.
+function edSelSpan() {
+  const s0 = ed.sel; if (!s0) return null;
+  if (s0.j >= 0) { const x = ed.words[s0.w].notes[s0.j]; return { a: x.at, b: x.at + x.dur }; }
+  return { a: ed.words[s0.w].notes[0].at, b: wordEnd(ed.words[selEnd(s0)]) };
+}
+// Plays just the selection, with a breath either side, in the chosen listening mode.
+function edListen() {
+  const key = JSON.stringify(ed.sel);
+  if (playing && playing.opts && playing.opts.sel === key) { stopAll('STOPPED'); return; }   // same selection: stop; a new one: play that
+  const sp = edSelSpan(); if (!edOn() || !sp) return;
+  const mode = $('edlisten').value;
+  singNow({ part: ed.p, from: Math.max(ed.p.from - 1.5, sp.a - 0.25), to: sp.b + 0.25, evFrom: sp.a - 0.01, evTo: sp.b - 0.005,
+    music: mode === 'song' ? 'song' : 'voice', robot: mode !== 'solo', ed: true, sel: key });
+}
+// The length box: sets the selected syllable's length; a joined next syllable starts where it now ends.
+function edSetLen() {
+  const s0 = ed.sel; if (!edOn() || !s0 || s0.j < 0) return;
+  const v = parseFloat($('edlen').value), x = ed.words[s0.w].notes[s0.j];
+  if (!(v > 0)) { $('edlen').value = x.dur.toFixed(2); return; }
+  const before = $('score').value;
+  edApply(s0, 'size', v - x.dur, edOrig(s0));
+  edWrite(); if ($('score').value !== before) pushUndo(before);
+  $('edlen').value = x.dur.toFixed(2);
+  if (Math.abs(x.dur - v) > 0.005) say('LONGEST IT CAN BE HERE IS ' + x.dur.toFixed(2) + ' S');
+  edDraw(); edInfo();
+}
+(function edWire() {
+  const cv = $('ed');
+  cv.addEventListener('pointerdown', edDown); cv.addEventListener('pointermove', edMove);
+  cv.addEventListener('pointerup', edUp); cv.addEventListener('pointercancel', edUp);
+  cv.addEventListener('keydown', edKey);
+  cv.addEventListener('wheel', e => {
+    if (!edOn()) return;
+    const G = edGeo(), r = cv.getBoundingClientRect();
+    if (e.ctrlKey || e.metaKey) { e.preventDefault(); edZoom(Math.exp(-e.deltaY * 0.01), G.T(e.clientX - r.left)); }
+    else if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) { e.preventDefault(); const dt = (e.deltaX || e.deltaY) / G.pps; ed.v0 += dt; ed.v1 += dt; edClamp(); edDraw(); }
+  }, { passive: false });
+  $('edpos').addEventListener('input', () => { const span = ed.v1 - ed.v0, room = ed.p.to - ed.p.from - span; ed.v0 = ed.p.from + room * $('edpos').value / 1000; ed.v1 = ed.v0 + span; edDraw(); });
+  $('edin').addEventListener('click', () => edZoom(2));
+  $('edout').addEventListener('click', () => edZoom(0.5));
+  $('edfit').addEventListener('click', () => { ed.v0 = ed.p.from; ed.v1 = ed.p.to; edClamp(); edDraw(); });
+  $('edundo').addEventListener('click', undo);
+  $('edapply').addEventListener('click', edRetype);
+  $('edlisten2').addEventListener('click', edListen);
+  $('edlen').addEventListener('change', edSetLen);
+  $('edlen').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); edSetLen(); } });
+  $('edtext').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); edRetype(); } });
+  $('edword').addEventListener('click', () => { if (ed.sel && ed.sel.j >= 0) edSelect({ w: ed.sel.w, w1: ed.sel.w, j: -1 }); });
+  $('edprev').addEventListener('click', () => { if (ed.sel && ed.sel.w > 0) edSelect({ w: ed.sel.w - 1, w1: selEnd(ed.sel), j: -1 }); });
+  $('ednext').addEventListener('click', () => { if (ed.sel) edSelect({ w: ed.sel.w, w1: Math.min(ed.words.length - 1, selEnd(ed.sel) + 1), j: -1 }); });
+  $('edall').addEventListener('click', () => { if (ed.words.length) edSelect({ w: 0, w1: ed.words.length - 1, j: -1 }); });
+  $('edplay').addEventListener('click', edPlay);
+  window.addEventListener('resize', () => edDraw());
+})();
+
+// ---------- saved songs, kept in this browser (IndexedDB) ----------
+// Stores: meta (for the list), audio (the original file), work (parts, score, settings), vocals (each part's split-off voice).
+let dbp = null, saveTimer = 0, saveWarned = false;
+function db() {
+  if (!dbp) dbp = new Promise((res, rej) => {
+    if (!window.indexedDB) { rej(new Error('NO STORAGE IN THIS BROWSER')); return; }
+    const r = indexedDB.open(APP_ID, 1);
+    r.onupgradeneeded = () => { const d = r.result; ['meta', 'audio', 'work', 'vocals'].forEach(n => { if (!d.objectStoreNames.contains(n)) d.createObjectStore(n); }); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); r.onblocked = () => rej(new Error('STORAGE BUSY IN ANOTHER TAB'));
+  });
+  return dbp;
+}
+const idbReq = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+async function dbGet(store, key) { const d = await db(); return idbReq(d.transaction(store).objectStore(store).get(key)); }
+async function dbAll(store) { const d = await db(); return idbReq(d.transaction(store).objectStore(store).getAll()); }
+async function dbPutMany(puts) {
+  const d = await db(), stores = [...new Set(puts.map(x => x[0]))];
+  return new Promise((res, rej) => {
+    const t = d.transaction(stores, 'readwrite');
+    puts.forEach(([st, k, v]) => t.objectStore(st).put(v, k));
+    t.oncomplete = () => res(); t.onerror = t.onabort = () => rej(t.error);
+  });
+}
+async function dbDelete(store, key) { try { const d = await db(); await idbReq(d.transaction(store, 'readwrite').objectStore(store).delete(key)); } catch (e) {} }
+async function dbDeleteSong(id) {
+  const d = await db();
+  return new Promise((res, rej) => {
+    const t = d.transaction(['meta', 'audio', 'work', 'vocals'], 'readwrite');
+    ['meta', 'audio', 'work'].forEach(st => t.objectStore(st).delete(id));
+    t.objectStore('vocals').delete(IDBKeyRange.bound(id + '#', id + '#￿'));
+    t.oncomplete = () => res(); t.onerror = t.onabort = () => rej(t.error);
+  });
+}
+const vocalKey = (id, p) => id + '#' + p.from.toFixed(3) + '-' + p.to.toFixed(3);
+function markDirty() { if (!clip || !clip.id) return; clearTimeout(saveTimer); saveTimer = setTimeout(() => saveWork(), 700); }
+async function saveWork(extra = []) {
+  if (!clip || !clip.id) return;
+  clearTimeout(saveTimer);
+  const id = clip.id;
+  const work = {
+    parts: clip.parts.map(p => ({ from: p.from, to: p.to, remove: !!p.remove, done: !!p.done, stereo: !!p.stereo, midi: p.midi, hopSec: p.hopSec, notes: p.notes, text: p.text, words: p.words, level: p.level != null ? p.level : 100, sound: p.sound ? copySound(p.sound) : null, held: !!p.held })),
+    score: $('score').value, lyrics: $('lyrics').value, from: clip.from, to: clip.to, pos: clip.pos, sel: clip.sel, settings: settings(),
+    stems: clip.stems ? clip.stems.map(st => ({ name: st.name, role: st.role, lvl: st.lvl })) : null
+  };
+  const meta = { id, name: clip.name, dur: clip.dur, parts: clip.parts.length, savedAt: Date.now() };
+  try { await dbPutMany([['meta', id, meta], ['work', id, work], ...extra]); renderSaved(); }
+  catch (e) {
+    if (saveWarned) return; saveWarned = true;
+    const quota = e && /quota/i.test(e.name + ' ' + e.message);
+    say(quota ? 'OUT OF STORAGE SPACE. DELETE A SAVED SONG TO KEEP SAVING' : 'THIS BROWSER WOULD NOT SAVE THE SONG. ' + String(e && e.message || e).slice(0, 50).toUpperCase());
+  }
+}
+// Puts saved parts, score and settings back on the page for the song already set up.
+async function restoreWork(id) {
+  const w = await dbGet('work', id); if (!w) return false;
+  clip.parts = (w.parts || []).map(p => Object.assign({ centre: null, midi: null, hopSec: 0, notes: [], text: '', words: 0, level: 100 }, p, { sound: p.sound ? cleanSound(p.sound) : null }));
+  for (const p of clip.parts) {
+    if (!(p.done && p.stereo)) continue;
+    if (clip.vocal) { p.centre = clip.vocal.slice(Math.floor(p.from * clip.sr), Math.min(clip.L.length, Math.floor(p.to * clip.sr))); continue; }
+    p.centre = (await dbGet('vocals', vocalKey(id, p)).catch(() => null)) || null;
+    if (!p.centre && clip.R) {                              // missing: split it off again
+      say('RESTORING THE VOCALS FOR PART ' + (clip.parts.indexOf(p) + 1));
+      const i0 = Math.floor(p.from * clip.sr), i1 = Math.min(clip.L.length, Math.floor(p.to * clip.sr));
+      p.centre = (await splitClip(clip.L.subarray(i0, i1), clip.R.subarray(i0, i1), clip.sr)).centre;
+      dbPutMany([['vocals', vocalKey(id, p), p.centre]]).catch(() => {});
+    }
+  }
+  $('score').value = w.score || ''; $('lyrics').value = w.lyrics || '';
+  clip.sel = Math.min(w.sel != null ? w.sel : -1, clip.parts.length - 1);
+  clip.pos = Math.min(w.pos || 0, clip.dur);
+  applySettings(w.settings);
+  setRegion(w.from != null ? w.from : clip.from, w.to != null ? w.to : clip.to);
+  renderParts(); renderScope(); renderSound(); showWords(parseScore($('score').value).words);
+  return true;
+}
+async function openSaved(id) {
+  if (!ensureAudio()) return;
+  stopAll('OPENING THE SAVED SONG');
+  try {
+    const meta = await dbGet('meta', id);
+    let ab = await dbGet('audio', id);
+    if (!meta || !ab) { say('THE AUDIO FOR THIS SONG IS MISSING. LOAD THE FILE AGAIN'); return; }
+    if (ab && ab.stems) {
+      const list = [];
+      for (const st of ab.stems) list.push({ name: st.name, buf: await decode(st.data.slice(0)) });
+      const w = await dbGet('work', id).catch(() => null);
+      stemRoles(list, w && w.stems);
+      setupStems(list, meta.name, id);
+    } else {
+      if (ab instanceof Blob) ab = await ab.arrayBuffer();
+      setupClip(await decode(ab.slice(0)), meta.name, id);
+    }
+    await restoreWork(id);
+    say('OPENED ' + meta.name.toUpperCase() + '. ' + clip.parts.length + (clip.parts.length === 1 ? ' PART' : ' PARTS'));
+    renderSaved(); runQueue();
+  } catch (e) { say('COULD NOT OPEN THAT SONG. ' + String(e && e.message || e).slice(0, 60).toUpperCase()); }
+}
+const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'JUST NOW' : m < 60 ? m + ' MIN AGO' : m < 1440 ? Math.round(m / 60) + ' H AGO' : new Date(t).toLocaleDateString(); };
+async function renderSaved() {
+  let list;
+  try { list = await dbAll('meta'); } catch (e) { $('savedbox').hidden = true; return; }
+  list.sort((a, b) => b.savedAt - a.savedAt);
+  const box = $('saved'); box.textContent = '';
+  $('savedbox').hidden = !list.length;
+  list.forEach((m, i) => {
+    const row = document.createElement('div'); row.className = 'saved' + (clip && clip.id === m.id ? ' cur' : '');
+    const info = document.createElement('button'); info.type = 'button'; info.className = 'info'; info.id = 'open-' + i;
+    info.textContent = m.name;
+    const sm = document.createElement('small');
+    sm.textContent = mmss(m.dur) + '  ' + m.parts + (m.parts === 1 ? ' PART' : ' PARTS') + '  ' + (clip && clip.id === m.id ? 'OPEN NOW' : 'SAVED ' + ago(m.savedAt));
+    info.append(sm);
+    info.addEventListener('click', () => openSaved(m.id));
+    const del = document.createElement('button'); del.type = 'button'; del.textContent = 'DELETE'; del.id = 'delsong-' + i;
+    del.setAttribute('aria-label', 'Delete saved song ' + m.name);
+    del.addEventListener('click', async () => {
+      if (del.dataset.armed !== '1') { del.dataset.armed = '1'; del.textContent = 'SURE?'; setTimeout(() => { del.dataset.armed = ''; del.textContent = 'DELETE'; }, 3000); return; }
+      try { await dbDeleteSong(m.id); if (clip && clip.id === m.id) clip.id = null; if (lastSong() === m.id) rememberSong(null); say('DELETED ' + m.name.toUpperCase() + ' FROM THIS BROWSER'); }
+      catch (e) { say('COULD NOT DELETE IT'); }
+      renderSaved();
+    });
+    row.append(info, del); box.append(row);
+  });
+}
+
+// ---------- download the mix ----------
+let rendering = false;
+function wavBlob(b) {
+  const ch = b.numberOfChannels, n = b.length, sr = b.sampleRate, hd = new DataView(new ArrayBuffer(44)), pcm = new Int16Array(n * ch);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) hd.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); hd.setUint32(4, 36 + pcm.byteLength, true); w(8, 'WAVEfmt '); hd.setUint32(16, 16, true); hd.setUint16(20, 1, true);
+  hd.setUint16(22, ch, true); hd.setUint32(24, sr, true); hd.setUint32(28, sr * ch * 2, true); hd.setUint16(32, ch * 2, true); hd.setUint16(34, 16, true);
+  w(36, 'data'); hd.setUint32(40, pcm.byteLength, true);
+  for (let c = 0; c < ch; c++) { const d = b.getChannelData(c); for (let i = 0, o = c; i < n; i++, o += ch) { const x = d[i] < -1 ? -1 : d[i] > 1 ? 1 : d[i]; pcm[o] = x < 0 ? x * 32768 : x * 32767; } }
+  return new Blob([hd, pcm], { type: 'audio/wav' });
+}
+// MP3 encoding runs in the page with lamejs, loaded the first time it is needed.
+let lameP = null;
+function loadLame() {
+  if (window.lamejs && window.lamejs.Mp3Encoder) return Promise.resolve(window.lamejs);
+  if (!lameP) lameP = new Promise((res, rej) => {
+    const sc = document.createElement('script');
+    sc.src = 'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js';
+    sc.onload = () => (window.lamejs && window.lamejs.Mp3Encoder ? res(window.lamejs) : rej(new Error('THE MP3 ENCODER DID NOT START')));
+    sc.onerror = () => { lameP = null; rej(new Error('COULD NOT LOAD THE MP3 ENCODER. CHECK THE CONNECTION')); };
+    document.head.appendChild(sc);
+  });
+  return lameP;
+}
+async function mp3Blob(b) {
+  say('LOADING THE MP3 ENCODER');
+  const lame = await loadLame(), enc = new lame.Mp3Encoder(2, b.sampleRate, 192);
+  const L = b.getChannelData(0), R = b.getChannelData(1), n = b.length, B = 1152, li = new Int16Array(B), ri = new Int16Array(B), out = [];
+  const s16 = x => (x < -1 ? -32768 : x > 1 ? 32767 : x < 0 ? x * 32768 : x * 32767);
+  for (let i = 0, k = 0; i < n; i += B, k++) {
+    const m = Math.min(B, n - i);
+    for (let j = 0; j < m; j++) { li[j] = s16(L[i + j]); ri[j] = s16(R[i + j]); }
+    const chunk = enc.encodeBuffer(m < B ? li.subarray(0, m) : li, m < B ? ri.subarray(0, m) : ri);
+    if (chunk.length) out.push(new Uint8Array(chunk));
+    if (k % 300 === 0) { say('MAKING THE MP3 ' + Math.round(i / n * 100) + '%'); await tick(); }
+  }
+  const end = enc.flush(); if (end.length) out.push(new Uint8Array(end));
+  return new Blob(out, { type: 'audio/mpeg' });
+}
+async function downloadMix(withMusic) {
+  if (rendering) return;
+  const prep = prepare();
+  if (!prep.all.length && !(withMusic && clip)) { say('NOTHING TO MIX YET. ADD SOME WORDS FIRST'); return; }
+  if (!ensureAudio()) return;
+  stopAll(); rendering = true; $('dlmix').disabled = $('dlrobots').disabled = true;
+  try {
+    const st = settings(), w = windowFor(prep), mp3 = $('mp3').checked;
+    const sr = mp3 && ![32000, 44100, 48000].includes(clip ? clip.sr : 44100) ? 44100 : clip ? clip.sr : 44100;   // MP3 allows only some rates
+    const events = w.events.map(e => Object.assign({}, e, { start: e.start - w.from }));
+    const lastEnd = events.reduce((m, e) => Math.max(m, e.start + e.dur), 0);
+    const len = Math.max(clip ? w.to - w.from : 0, lastEnd + 0.6) + 0.1;
+    const oc = new OfflineAudioContext(2, Math.ceil(len * sr), sr);
+    const lim = makeLimiter(oc); lim.connect(oc.destination);
+    const bus = oc.createGain(); bus.connect(lim);
+    const made = [];
+    perform(i => made[i] || (made[i] = createVoice(oc, bus)), events, 0, prep, st);
+    if (withMusic && clip) {
+      const src = oc.createBufferSource(), g = oc.createGain();
+      src.buffer = mixBuffer(); g.gain.value = st.vmusic / 100; src.connect(g); g.connect(lim); src.start(0, w.from, w.to - w.from);
+    }
+    const step = Math.max(2, len / 20);
+    for (let t = step; t < len - 0.5; t += step) {
+      try { oc.suspend(t).then(() => { say('MIXING ' + Math.round(t / len * 100) + '%'); oc.resume(); }); } catch (e) { break; }
+    }
+    say('MIXING 0%');
+    const out = await oc.startRendering();
+    say('MAKING THE FILE'); await tick();
+    let peak = 0;
+    for (let c = 0; c < 2; c++) { const d = out.getChannelData(c); for (let i = 0; i < d.length; i++) { const a = d[i] < 0 ? -d[i] : d[i]; if (a > peak) peak = a; } }
+    if (peak > 0.97) for (let c = 0; c < 2; c++) { const d = out.getChannelData(c), k = 0.97 / peak; for (let i = 0; i < d.length; i++) d[i] *= k; }
+    const blob = mp3 ? await mp3Blob(out) : wavBlob(out), ext = mp3 ? '.mp3' : '.wav';
+    const base = (clip ? (clip.stems ? clip.name : clip.name.replace(/\.[^.]+$/, '')) : 'daisy-bell').replace(/[^\w .()-]+/g, '').trim() || 'song';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = base + (withMusic && clip ? ' - robot mix' : ' - robots') + ext;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 120000);
+    say('DOWNLOADED ' + a.download.toUpperCase() + '. ' + (blob.size / 1e6).toFixed(1) + ' MB, ' + mmss(len));
+  } catch (e) { say('MIXING FAILED. ' + String(e && e.message || e).slice(0, 60).toUpperCase()); }
+  rendering = false; $('dlmix').disabled = $('dlrobots').disabled = false;
+}
+
+$('addpart').addEventListener('click', addPart);
+$('suggest').addEventListener('click', suggestParts);
+$('findall').addEventListener('click', findAll);
+const GAP_KEY = APP_ID + '-gap';
+$('gap').addEventListener('change', () => { try { localStorage.setItem(GAP_KEY, $('gap').value); } catch (e) {} });
+try { const g = localStorage.getItem(GAP_KEY); if (g && +g >= 1) $('gap').value = g; } catch (e) {}
+$('sing').addEventListener('click', () => singNow());
+$('stop').addEventListener('click', () => stopAll('STOPPED'));
+const mixChanged = () => { applyMix(); markDirty(); };
+$('vrobot').addEventListener('input', mixChanged);
+$('vmusic').addEventListener('input', mixChanged);
+$('span').addEventListener('change', markDirty);
+// The speech model is remembered for the whole page, in this browser.
+const MODEL_KEY = APP_ID + '-model';
+$('model').addEventListener('change', () => { try { localStorage.setItem(MODEL_KEY, $('model').value); } catch (e) {} });
+try { const m = localStorage.getItem(MODEL_KEY); if (m != null && [...$('model').options].some(o => o.value === m)) $('model').value = m; } catch (e) {}
+['hold', 'octave', 'key'].forEach(id => $(id).addEventListener('change', () => { const es = editSound(); if (!es) return; es[id] = $(id).value; soundChanged(); }));
+$('preset').addEventListener('change', () => {
+  const es = editSound(), pr = PRESETS[$('preset').value]; if (!es || !pr) { renderSound(); return; }
+  es.voices = pr.map(([iv, lvl]) => ({ iv, lvl })); pool.forEach(r => r.stop()); soundChanged();
+});
+$('addvoice').addEventListener('click', () => {
+  const es = editSound(); if (!es || es.voices.length >= MAX_VOICES) return;
+  const used = es.voices.map(v => v.iv), iv = [2, -7, -2, 4, 7, -4, -5, 0].find(x => !used.includes(x));
+  es.voices.push({ iv: iv != null ? iv : 0, lvl: 70 }); soundChanged();
+});
+$('soundfor').addEventListener('change', () => { const i = +$('soundfor').value; scopeRef = i >= 0 && clip ? clip.parts[i] : null; renderSound(); });
+$('ownsound').addEventListener('click', () => {
+  const p = scopePart(); if (!p) return;
+  p.sound = p.sound ? null : copySound(baseSound);
+  renderScope(); renderSound(); renderParts(); markDirty();
+  say(p.sound ? 'PART ' + (clip.parts.indexOf(p) + 1) + ' HAS ITS OWN SOUND. CHANGE IT ABOVE' : 'PART ' + (clip.parts.indexOf(p) + 1) + ' USES THE DEFAULT SOUND AGAIN');
+});
+let fitTimer = 0;
+$('lyrics').addEventListener('input', () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => fitTyped(true, false), 900); });
+$('lyrics').addEventListener('change', () => { clearTimeout(fitTimer); fitTyped(true, false); });
+$('respread').addEventListener('click', () => { clearTimeout(fitTimer); fitTyped(false, true); });
+$('dlmix').addEventListener('click', () => downloadMix(true));
+$('mp3').addEventListener('change', markDirty);
+$('dlrobots').addEventListener('click', () => downloadMix(false));
+$('lyrics').addEventListener('input', markDirty);
+$('score').addEventListener('input', () => { markDirty(); edSync(); });
+$('ring').addEventListener('click', () => { const es = editSound(); if (!es) return; es.ring = !es.ring; soundChanged(); });
+$('file').addEventListener('change', e => { const f = [...e.target.files]; e.target.value = ''; loadFiles(f); });   // cleared so the same files can be chosen again
+$('analyse').addEventListener('click', analyseAgain);
+$('demo').addEventListener('click', () => { rememberSong(null); loadDemo(); });
+$('score').addEventListener('change', () => showWords(parseScore($('score').value).words));
+renderScope(); renderSound(); loadDemo(); flatScope();
+if (IS_DEV) { $('devtag').hidden = false; document.title += ' (dev)'; }
+// Dev copy, first visit: copies the live page's saved songs and settings in. Only reads the live storage.
+async function importLive() {
+  const flag = APP_ID + '-imported';
+  try { if (localStorage.getItem(flag)) return 0; } catch (e) { return 0; }
+  const done = () => { try { localStorage.setItem(flag, String(Date.now())); } catch (e) {} };
+  try {
+    if (!indexedDB.databases) { done(); return 0; }
+    if (!(await indexedDB.databases()).some(d => d.name === 'daleksing')) { done(); return 0; }
+    const live = await new Promise((res, rej) => {
+      const r = indexedDB.open('daleksing');
+      r.onupgradeneeded = () => { r.transaction.abort(); };     // it did not exist after all: never create it
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    });
+    const stores = ['meta', 'audio', 'work', 'vocals'].filter(n => live.objectStoreNames.contains(n)), puts = [];
+    for (const st of stores) {
+      const t = live.transaction(st), os = t.objectStore(st);
+      const [keys, vals] = await Promise.all([idbReq(os.getAllKeys()), idbReq(os.getAll())]);
+      keys.forEach((k, i) => puts.push([st, k, vals[i]]));
+    }
+    live.close();
+    if (puts.length) await dbPutMany(puts);
+    ['last-song', 'model', 'gap'].forEach(k => { try { const v = localStorage.getItem('daleksing-' + k); if (v != null && localStorage.getItem(APP_ID + '-' + k) == null) localStorage.setItem(APP_ID + '-' + k, v); } catch (e) {} });
+    done();
+    return puts.filter(x => x[0] === 'meta').length;
+  } catch (e) { return 0; }
+}
+(async function start() {
+  if (IS_DEV) {
+    const n = await importLive();
+    if (n) say('DEV COPY: BROUGHT IN ' + n + (n === 1 ? ' SAVED SONG' : ' SAVED SONGS') + ' FROM THE LIVE PAGE');
+    try { const m = localStorage.getItem(MODEL_KEY); if (m != null && [...$('model').options].some(o => o.value === m)) $('model').value = m; } catch (e) {}
+    try { const g = localStorage.getItem(GAP_KEY); if (g && +g >= 1) $('gap').value = g; } catch (e) {}
+  }
+  renderSaved();
+  await reopenLast();
+})();
+async function reopenLast() {
+  const id = lastSong(); if (!id) return;
+  let meta = null; try { meta = await dbGet('meta', id); } catch (e) {}
+  if (!meta) { rememberSong(null); return; }
+  say('REOPENING ' + meta.name.toUpperCase());
+  await openSaved(id);
+}
+window.addEventListener('pagehide', () => { if (saveTimer) saveWork(); });
+</script>
+</body>
+</html>
