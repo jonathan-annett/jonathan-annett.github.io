@@ -1259,10 +1259,15 @@ function setupClip(full, name, id) {
   const origBuf = ctx.createBuffer(2, n, sr); origBuf.copyToChannel(L, 0); origBuf.copyToChannel(R || L, 1);
   finishSetup({ id, name, sr, n, L, R, origBuf, stems: null, vocal: null, cut: full.length > n });
 }
+// The song open last, reopened when the page loads.
+const LAST_KEY = 'daleksing-last-song';
+function rememberSong(id) { try { if (id) localStorage.setItem(LAST_KEY, id); else localStorage.removeItem(LAST_KEY); } catch (e) {} }
+function lastSong() { try { return localStorage.getItem(LAST_KEY); } catch (e) { return null; } }
 function finishSetup(o) {
   clip = { id: o.id, name: o.name, sr: o.sr, dur: o.n / o.sr, L: o.L, R: o.R, origBuf: o.origBuf, stems: o.stems, vocal: o.vocal,
     from: 0, to: Math.min(o.n / o.sr, 20), pos: 0, peaks: null, parts: [], sel: -1, mix: null, mixKey: '' };
   scopeRef = null; scoreUndo = []; ed.p = null;
+  rememberSong(o.id);
   makePeaks();
   ['wave', 'scrubrow', 'marks', 'range', 'partsbox'].forEach(k => { $(k).hidden = false; });
   $('scrub').max = clip.dur.toFixed(2);
@@ -2312,7 +2317,7 @@ async function renderSaved() {
     del.setAttribute('aria-label', 'Delete saved song ' + m.name);
     del.addEventListener('click', async () => {
       if (del.dataset.armed !== '1') { del.dataset.armed = '1'; del.textContent = 'SURE?'; setTimeout(() => { del.dataset.armed = ''; del.textContent = 'DELETE'; }, 3000); return; }
-      try { await dbDeleteSong(m.id); if (clip && clip.id === m.id) clip.id = null; say('DELETED ' + m.name.toUpperCase() + ' FROM THIS BROWSER'); }
+      try { await dbDeleteSong(m.id); if (clip && clip.id === m.id) clip.id = null; if (lastSong() === m.id) rememberSong(null); say('DELETED ' + m.name.toUpperCase() + ' FROM THIS BROWSER'); }
       catch (e) { say('COULD NOT DELETE IT'); }
       renderSaved();
     });
@@ -2437,9 +2442,16 @@ $('score').addEventListener('input', () => { markDirty(); edSync(); });
 $('ring').addEventListener('click', () => { const es = editSound(); if (!es) return; es.ring = !es.ring; soundChanged(); });
 $('file').addEventListener('change', e => { const f = [...e.target.files]; e.target.value = ''; loadFiles(f); });   // cleared so the same files can be chosen again
 $('analyse').addEventListener('click', analyseAgain);
-$('demo').addEventListener('click', loadDemo);
+$('demo').addEventListener('click', () => { rememberSong(null); loadDemo(); });
 $('score').addEventListener('change', () => showWords(parseScore($('score').value).words));
 renderScope(); renderSound(); loadDemo(); flatScope(); renderSaved();
+(async function reopenLast() {
+  const id = lastSong(); if (!id) return;
+  let meta = null; try { meta = await dbGet('meta', id); } catch (e) {}
+  if (!meta) { rememberSong(null); return; }
+  say('REOPENING ' + meta.name.toUpperCase());
+  await openSaved(id);
+})();
 window.addEventListener('pagehide', () => { if (saveTimer) saveWork(); });
 </script>
 </body>
